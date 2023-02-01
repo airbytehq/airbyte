@@ -42,7 +42,7 @@ definitions:
     record_selector:
       extractor:
         type: DpathExtractor
-        field_pointer: ["{{ parameters['name'] }}"]
+        field_path: ["{{ parameters['name'] }}"]
     paginator:
       type: DefaultPaginator
       pagination_strategy:

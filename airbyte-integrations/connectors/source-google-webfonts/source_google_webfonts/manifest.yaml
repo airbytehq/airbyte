@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["items"]
+      field_path: ["items"]
   requester:
     url_base: "https://webfonts.googleapis.com/v1"
     http_method: "GET"

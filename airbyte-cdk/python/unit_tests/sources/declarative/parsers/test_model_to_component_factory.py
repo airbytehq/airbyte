@@ -136,7 +136,7 @@ list_stream:
     primary_key: "id"
     extractor:
       $ref: "#/extractor"
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
   retriever:
     $ref: "#/retriever"
     requester:
@@ -202,7 +202,7 @@ spec:
 
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
     assert isinstance(stream.retriever.record_selector.extractor.decoder, JsonDecoder)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["lists"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["lists"]
 
     assert isinstance(stream.retriever.record_selector.record_filter, RecordFilter)
     assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
@@ -337,7 +337,7 @@ def test_create_substream_slicer():
         path: "kek"
       record_selector:
         extractor:
-          field_pointer: []
+          field_path: []
     stream_A:
       type: DeclarativeStream
       $parameters:
@@ -524,7 +524,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
         condition: "{{{{ record['id'] > stream_state['id'] }}}}"
       extractor:
         $ref: "#/extractor"
-        field_pointer: ["{record_selector}"]
+        field_path: ["{record_selector}"]
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
@@ -534,7 +534,7 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in selector.extractor.field_pointer] == [expected_runtime_selector]
+    assert [fp.eval(input_config) for fp in selector.extractor.field_path] == [expected_runtime_selector]
     assert isinstance(selector.record_filter, RecordFilter)
     assert selector.record_filter.condition == "{{ record['id'] > stream_state['id'] }}"
 
@@ -697,7 +697,7 @@ def test_config_with_defaults():
               page_size: 10
           record_selector:
             extractor:
-              field_pointer: ["result"]
+              field_path: ["result"]
     streams:
       - "#/lists_stream"
     """
@@ -725,7 +725,7 @@ def test_config_with_defaults():
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
     assert isinstance(stream.retriever.record_selector.extractor, DpathExtractor)
-    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_pointer] == ["result"]
+    assert [fp.eval(input_config) for fp in stream.retriever.record_selector.extractor.field_path] == ["result"]
 
     assert isinstance(stream.retriever.paginator, DefaultPaginator)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
@@ -779,20 +779,20 @@ def test_create_default_paginator():
             {
                 "type": "CustomErrorHandler",
                 "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
-                "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_pointer": []},
+                "subcomponent_field_with_hint": {"type": "DpathExtractor", "field_path": []},
             },
             "subcomponent_field_with_hint",
-            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
+            DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
             id="test_create_custom_component_with_subcomponent_that_must_be_parsed",
         ),
         pytest.param(
             {
                 "type": "CustomErrorHandler",
                 "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
-                "subcomponent_field_with_hint": {"field_pointer": []},
+                "subcomponent_field_with_hint": {"field_path": []},
             },
             "subcomponent_field_with_hint",
-            DpathExtractor(field_pointer=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
+            DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
             id="test_create_custom_component_with_subcomponent_that_must_infer_type_from_explicit_hints",
         ),
         pytest.param(
@@ -871,7 +871,7 @@ def test_custom_components_do_not_contain_extra_fields():
                         "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
-                            "extractor": {"type": "DpathExtractor", "field_pointer": []},
+                            "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
                         "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
                     },
@@ -919,7 +919,7 @@ def test_parse_custom_component_fields_if_subcomponent():
                         "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
-                            "extractor": {"type": "DpathExtractor", "field_pointer": []},
+                            "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
                         "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
                     },
@@ -966,7 +966,7 @@ class TestCreateTransformations:
                       page_size: 10
                   record_selector:
                     extractor:
-                      field_pointer: ["result"]
+                      field_path: ["result"]
     """
 
     def test_no_transformations(self):
@@ -1065,7 +1065,7 @@ class TestCreateTransformations:
                     },
                     "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config['api_key'] }}"},
                 },
-                "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": ["items"]}},
+                "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": ["items"]}},
                 "paginator": {"type": "NoPagination"},
             },
         }

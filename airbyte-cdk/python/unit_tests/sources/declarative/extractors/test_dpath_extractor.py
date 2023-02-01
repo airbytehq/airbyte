@@ -16,7 +16,7 @@ decoder = JsonDecoder(parameters={})
 
 
 @pytest.mark.parametrize(
-    "test_name, field_pointer, body, expected_records",
+    "test_name, field_path, body, expected_records",
     [
         ("test_extract_from_array", ["data"], {"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_extract_single_record", ["data"], {"data": {"id": 1}}, [{"id": 1}]),
@@ -35,8 +35,8 @@ decoder = JsonDecoder(parameters={})
         ("test_complex_nested_list", ['data', '*', 'list', 'data2', '*'], {"data": [{"list": {"data2": [{"id": 1}, {"id": 2}]}},{"list": {"data2": [{"id": 3}, {"id": 4}]}}]}, [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}])
     ],
 )
-def test_dpath_extractor(test_name, field_pointer, body, expected_records):
-    extractor = DpathExtractor(field_pointer=field_pointer, config=config, decoder=decoder, parameters=parameters)
+def test_dpath_extractor(test_name, field_path, body, expected_records):
+    extractor = DpathExtractor(field_path=field_path, config=config, decoder=decoder, parameters=parameters)
 
     response = create_response(body)
     actual_records = extractor.extract_records(response)

@@ -39,7 +39,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["users"]
+          field_path: ["users"]
       $ref: "#/definitions/retriever"
     $parameters:
       name: "users"
@@ -58,7 +58,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["meetings"]
+          field_path: ["meetings"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -82,7 +82,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_path: []
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -106,7 +106,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["registrants"]
+          field_path: ["registrants"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -144,7 +144,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["polls"]
+          field_path: ["polls"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -181,7 +181,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
+          field_path: ["questions"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -219,7 +219,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_path: []
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -257,7 +257,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["webinars"]
+          field_path: ["webinars"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -290,7 +290,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_path: []
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -324,7 +324,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["panelists"]
+          field_path: ["panelists"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -362,7 +362,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["registrants"]
+          field_path: ["registrants"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -401,7 +401,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["registrants"]
+          field_path: ["registrants"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -439,7 +439,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["polls"]
+          field_path: ["polls"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -477,7 +477,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
+          field_path: ["questions"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -513,7 +513,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_path: []
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -551,7 +551,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["tracking_sources"]
+          field_path: ["tracking_sources"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -587,7 +587,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["questions"]
+          field_path: ["questions"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -624,7 +624,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["tracking_sources"]
+          field_path: ["tracking_sources"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -661,7 +661,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["participants"]
+          field_path: ["participants"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -697,7 +697,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: []
+          field_path: []
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"
@@ -733,7 +733,7 @@ definitions:
       record_selector:
         extractor:
           type: DpathExtractor
-          field_pointer: ["participants"]
+          field_path: ["participants"]
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/requester"

@@ -2,7 +2,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   url_stream_slicer:
     type: "ListStreamSlicer"
     slice_values: "{{ config['urls'] }}"

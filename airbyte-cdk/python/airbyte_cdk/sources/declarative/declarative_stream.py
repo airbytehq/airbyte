@@ -28,7 +28,6 @@ class DeclarativeStream(Stream):
         stream_cursor_field (Optional[List[str]]): The cursor field
         transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the
         stream. Transformations are applied in the order in which they are defined.
-        checkpoint_interval (Optional[int]): How often the stream will checkpoint state (i.e: emit a STATE message)
     """
 
     retriever: Retriever
@@ -42,7 +41,6 @@ class DeclarativeStream(Stream):
     _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
     stream_cursor_field: Optional[Union[List[str], str]] = None
     transformations: List[RecordTransformation] = None
-    checkpoint_interval: Optional[int] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.stream_cursor_field = self.stream_cursor_field or []
@@ -69,20 +67,6 @@ class DeclarativeStream(Stream):
     def name(self, value: str) -> None:
         if not isinstance(value, property):
             self._name = value
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        """
-        Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
-        100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
-
-        Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
-
-        return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
-        ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
-        created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
-        """
-        return self.checkpoint_interval
 
     @property
     def state(self) -> MutableMapping[str, Any]:

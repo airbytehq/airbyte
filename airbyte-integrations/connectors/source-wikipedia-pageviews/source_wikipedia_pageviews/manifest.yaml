@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["items"]
+      field_path: ["items"]
   requester:
     url_base: "https://wikimedia.org/api/rest_v1/metrics/pageviews"
     http_method: "GET"

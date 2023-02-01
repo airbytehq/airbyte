@@ -409,7 +409,6 @@ class ModelToComponentFactory:
             for transformation_model in model.transformations:
                 transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
-            checkpoint_interval=model.checkpoint_interval,
             name=model.name,
             primary_key=model.primary_key,
             retriever=retriever,
@@ -473,7 +472,7 @@ class ModelToComponentFactory:
 
     def create_dpath_extractor(self, model: DpathExtractorModel, config: Config, **kwargs) -> DpathExtractor:
         decoder = self._create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(parameters={})
-        return DpathExtractor(decoder=decoder, field_pointer=model.field_pointer, config=config, parameters=model.parameters)
+        return DpathExtractor(decoder=decoder, field_path=model.field_path, config=config, parameters=model.parameters)
 
     @staticmethod
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:

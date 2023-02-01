@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["data"]
+      field_path: ["data"]
   requester:
     url_base: "https://pro-api.coinmarketcap.com"
     http_method: "GET"

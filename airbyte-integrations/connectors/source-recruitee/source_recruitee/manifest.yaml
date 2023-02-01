@@ -6,7 +6,7 @@ definitions:
     file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
-      field_pointer:
+      field_path:
         - "{{ parameters['name'] }}"
   requester:
     url_base: "https://api.recruitee.com/c/{{ config.company_id }}"

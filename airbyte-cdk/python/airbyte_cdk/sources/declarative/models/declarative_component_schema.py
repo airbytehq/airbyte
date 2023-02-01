@@ -379,7 +379,7 @@ class DefaultPaginator(BaseModel):
 
 class DpathExtractor(BaseModel):
     type: Literal["DpathExtractor"]
-    field_pointer: List[str]
+    field_path: List[str]
     decoder: Optional[JsonDecoder] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -461,7 +461,6 @@ class DeclarativeStream(BaseModel):
 
     type: Literal["DeclarativeStream"]
     retriever: Union[CustomRetriever, SimpleRetriever]
-    checkpoint_interval: Optional[int] = None
     name: Optional[str] = ""
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None

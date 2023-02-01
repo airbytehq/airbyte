@@ -82,7 +82,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: []
+          field_path: []
       requester:
         $ref: "#/definitions/requester"
       paginator:
@@ -93,7 +93,7 @@ streams:
       name: "lists"
       primary_key: "id"
       path: "/v3/marketing/lists"
-      field_pointer: ["result"]
+      field_path: ["result"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -103,7 +103,7 @@ streams:
       name: "campaigns"
       primary_key: "id"
       path: "/v3/marketing/campaigns"
-      field_pointer: ["result"]
+      field_path: ["result"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -113,13 +113,13 @@ streams:
       name: "contacts"
       primary_key: "id"
       path: "/v3/marketing/contacts"
-      field_pointer: ["result"]
+      field_path: ["result"]
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "stats_automations"
       primary_key: "id"
       path: "/v3/marketing/stats/automations"
-      field_pointer: ["results"]
+      field_path: ["results"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -129,13 +129,13 @@ streams:
       name: "segments"
       primary_key: "id"
       path: "/v3/marketing/segments"
-      field_pointer: ["results"]
+      field_path: ["results"]
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "single_sends"
       primary_key: "id"
       path: "/v3/marketing/stats/singlesends"
-      field_pointer: ["results"]
+      field_path: ["results"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -145,7 +145,7 @@ streams:
       name: "templates"
       primary_key: "id"
       path: "/v3/templates"
-      field_pointer: ["result"]
+      field_path: ["result"]
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       requester:
@@ -160,7 +160,7 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/bounces"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -173,7 +173,7 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/unsubscribes"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -186,7 +186,7 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/blocks"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -198,13 +198,13 @@ streams:
       name: "suppression_groups"
       primary_key: "id"
       path: "/v3/asm/groups"
-      field_pointer: []
+      field_path: []
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "suppression_group_members"
       primary_key: "group_id"
       path: "/v3/asm/suppressions"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -215,7 +215,7 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/invalid_emails"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -228,7 +228,7 @@ streams:
       primary_key: "email"
       stream_cursor_field: "created"
       path: "/v3/suppression/spam_reports"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
@@ -241,7 +241,7 @@ streams:
       primary_key: "msg_id"
       stream_cursor_field: "last_event_time"
       path: "/v3/messages"
-      field_pointer: []
+      field_path: []
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       requester:
