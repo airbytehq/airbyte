@@ -14,7 +14,7 @@ export const config: AirbyteWebappConfig = {
   integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS ?? "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
   cloudApiUrl: window.CLOUD_API_URL ?? process.env.REACT_APP_CLOUD_API_URL,
-  cloudPublicApiUrl: process.env.REACT_APP_CLOUD_PUBLIC_API_URL ?? "/cloud_api",
+  cloudPublicApiUrl: process.env.REACT_APP_CLOUD_PUBLIC_API_URL,
   firebase: {
     apiKey: window.FIREBASE_API_KEY ?? process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: window.FIREBASE_AUTH_DOMAIN ?? process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
