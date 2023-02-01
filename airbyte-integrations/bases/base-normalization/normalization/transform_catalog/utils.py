@@ -23,12 +23,12 @@ def is_type_included(definition: dict, is_type: Callable[[dict], bool]) -> bool:
         return is_type(definition)
 
 
-def get_type_param(definition: dict, is_type: Callable[[dict], bool], param: str, default_value) -> any:
+def get_type_param(definition: dict, is_type: Callable[[dict], bool], param: str, default_value):
     # We're going to just pick the first oneOf entry. We don't handle conflicts yet.
     if data_type.ONE_OF_VAR_NAME in definition:
         for option in definition[data_type.ONE_OF_VAR_NAME]:
             # Recurse just in case this is yet another oneOf, for whatever reason
-            return get_type_param(option[param], is_type, param, default_value)
+            return get_type_param(option, is_type, param, default_value)
     elif is_type(definition) and param in definition:
         # We're guaranteed that this isn't a oneOf, so this should be a raw array decl (or whatever)
         return definition[param]
@@ -115,7 +115,7 @@ def is_array(definition: dict) -> bool:
     )
 
 
-def get_array_items(definition: dict, default_value) -> any:
+def get_array_items(definition: dict, default_value):
     return get_type_param(
         definition,
         is_array,
