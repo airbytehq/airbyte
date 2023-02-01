@@ -49,7 +49,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     start_datetime: Union[MinMaxDatetime, str]
     end_datetime: Union[MinMaxDatetime, str]
-    step: str
+    step: Union[InterpolatedString, str]
     cursor_field: Union[InterpolatedString, str]
     datetime_format: str
     cursor_granularity: str
@@ -72,7 +72,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
-        self._step = self._parse_timedelta(self.step)
+        self._step = self._parse_timedelta(InterpolatedString.create(self.step, options=options).eval(self.config))
         self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
         self.lookback_window = InterpolatedString.create(self.lookback_window, options=options)

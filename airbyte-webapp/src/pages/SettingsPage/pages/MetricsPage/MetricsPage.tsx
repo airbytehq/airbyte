@@ -6,9 +6,9 @@ import { HeadTitle } from "components/common/HeadTitle";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
+import MetricsForm from "./components/MetricsForm";
 import useWorkspaceEditor from "../../components/useWorkspaceEditor";
 import { Content, SettingsCard } from "../SettingsComponents";
-import MetricsForm from "./components/MetricsForm";
 
 const MetricsPage: React.FC = () => {
   const workspace = useCurrentWorkspace();

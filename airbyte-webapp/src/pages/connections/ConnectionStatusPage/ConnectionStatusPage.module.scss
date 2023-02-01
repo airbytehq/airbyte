@@ -31,11 +31,8 @@
   }
 }
 
-.contentCard {
-  margin-bottom: variables.$spacing-xl;
-}
-
 .footer {
+  padding-top: variables.$spacing-xl;
   width: 100%;
   display: flex;
   align-items: center;

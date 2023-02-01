@@ -1,7 +1,7 @@
 import { getAuth, connectAuthEmulator } from "firebase/auth";
 import React from "react";
 
-import { useConfig } from "packages/cloud/services/config";
+import { useConfig } from "config";
 import { FirebaseAppProvider, useFirebaseApp, AuthProvider } from "packages/firebaseReact";
 
 const FirebaseAppSdksProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {

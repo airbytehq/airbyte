@@ -9,7 +9,6 @@ dependencies {
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-commons-worker')
 
     implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
     implementation 'org.junit.jupiter:junit-jupiter-api'
