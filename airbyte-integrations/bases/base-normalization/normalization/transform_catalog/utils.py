@@ -28,7 +28,10 @@ def get_type_param(definition: dict, is_type: Callable[[dict], bool], param: str
     if data_type.ONE_OF_VAR_NAME in definition:
         for option in definition[data_type.ONE_OF_VAR_NAME]:
             # Recurse just in case this is yet another oneOf, for whatever reason
-            return get_type_param(option, is_type, param, default_value)
+            result = get_type_param(option, is_type, param, default_value)
+            if result != default_value:
+                return result
+        return default_value
     elif is_type(definition) and param in definition:
         # We're guaranteed that this isn't a oneOf, so this should be a raw array decl (or whatever)
         return definition[param]
@@ -169,3 +172,26 @@ def is_combining_node(properties: dict) -> Set[str]:
         return set()
     else:
         return set(properties).intersection({"anyOf", "oneOf", "allOf"})
+
+
+def count_complex_options(schema: dict) -> bool:
+    # schema should be a oneOf node, e.g. {"oneOf": [....]}
+    # this method returns how many of the oneOf options are complex types (i.e. array/object)
+    if data_type.ONE_OF_VAR_NAME not in schema:
+        return 0
+    count = 0
+    for option in schema[data_type.ONE_OF_VAR_NAME]:
+        if data_type.ONE_OF_VAR_NAME in option:
+            count += count_complex_options(option)
+        else:
+            if is_object(option) or is_array(option):
+                count += 1
+    return count
+
+
+def has_exactly_one_complex_option(schema: dict) -> bool:
+    is_oneof = data_type.ONE_OF_VAR_NAME in schema
+    if not is_oneof:
+        return False
+    count = count_complex_options(schema)
+    return count == 1

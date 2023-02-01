@@ -17,6 +17,7 @@ from normalization.transform_catalog.table_name_registry import TableNameRegistr
 from normalization.transform_catalog.utils import (
     contains_typeless_schema,
     get_array_items,
+    has_exactly_one_complex_option,
     is_airbyte_column,
     is_array,
     is_big_integer,
@@ -360,7 +361,7 @@ class StreamProcessor(object):
             json_column_name = ""
             if is_airbyte_column(field):
                 pass
-            elif is_combining_node(properties[field]):
+            elif is_combining_node(properties[field]) and not has_exactly_one_complex_option(properties[field]):
                 # TODO: merge properties of all combinations
                 pass
             elif contains_typeless_schema(properties[field]) or is_object(properties[field]):
@@ -509,11 +510,7 @@ where 1 = 1
     def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
         is_numeric = False
-        if (
-            data_type.TYPE_VAR_NAME not in definition
-            and data_type.REF_TYPE_VAR_NAME not in definition
-            and data_type.ONE_OF_VAR_NAME not in definition
-        ):
+        if contains_typeless_schema(definition):
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}: {definition}")
             return column_name
         elif is_array(definition):
