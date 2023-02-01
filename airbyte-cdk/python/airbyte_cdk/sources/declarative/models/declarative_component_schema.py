@@ -469,7 +469,6 @@ class DeclarativeStream(BaseModel):
     name: Optional[str] = ""
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
-    stream_cursor_field: Optional[Union[str, List[str]]] = None
     transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
