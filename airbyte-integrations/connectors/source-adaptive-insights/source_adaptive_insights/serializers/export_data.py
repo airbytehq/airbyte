@@ -1,3 +1,5 @@
+import logging
+from typing import Union, Optional
 import pandas as pd
 from uuid import uuid4
 import csv
@@ -6,6 +8,8 @@ from datetime import datetime
 from io import StringIO
 import hashlib
 import json
+
+logger = logging.getLogger(f"airbyte.streams.{__name__}")
 
 
 class Data:
@@ -29,6 +33,16 @@ class Data:
         except Exception as e:
             return date
 
+    @staticmethod
+    def parse_amount(amount: Optional[Union[str, float]]) -> float:
+        if not amount:
+            return 0.0
+        try:
+            return round(float(amount), 5)
+        except ValueError as e:
+            logger.exception(f"ERROR: Parsing non valid decimal number: '{amount}'.")
+
+
     def parse_row(self, row: dict) -> None:
         account_code = row.get("Account Code")
         level_name = row.get("Level Name")
@@ -37,13 +51,14 @@ class Data:
         location = row.get("Location Name")
         contract = row.get("Contract Name")
         assignment = row.get("Assignment Name")
+        amount = row.get("Amount")
         _id = f"{account_code}{level_name}{date}{gl_account}{location}{contract}{assignment}".encode("utf-8")
         self.id = int(hashlib.sha1(_id).hexdigest(), 16) % (10 ** 12)
         self.account_name = row.get("Account Name")
         self.account_code = account_code
         self.level_name = level_name
         self.date = self.parse_date(date)
-        self.amount = row.get("Amount")
+        self.amount = self.parse_amount(amount)
         self.gl_account = gl_account
         self.location = location
         self.contract = contract
@@ -64,6 +79,7 @@ class Data:
             "amount": self.amount
         }
 
+
 class DataProcessor:
     def __init__(self):
         self.file_path = os.path.join(os.getcwd(), f"{str(uuid4())}.csv")
@@ -73,7 +89,7 @@ class DataProcessor:
         if not response:
             return None
 
-        df = pd.read_csv(StringIO(response), sep=",")
+        df = pd.read_csv(StringIO(response), sep=",", float_precision='high')
         del response  # memory management
 
         df = df.melt(
