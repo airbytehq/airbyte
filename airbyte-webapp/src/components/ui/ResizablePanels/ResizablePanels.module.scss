@@ -1,0 +1,78 @@
+@use "scss/colors";
+@use "scss/variables";
+
+/*
+* This eliminates flickering scrollbars when resizing using the reflex splitter.
+* Class names need to be repeated so that it overrides default reflex styles.
+* See more details in https://github.com/airbytehq/airbyte/pull/15996#issuecomment-1229019827
+*/
+.panelStyle.panelStyle {
+  overflow: hidden;
+}
+
+.panelContainer {
+  overflow: auto;
+  height: 100%;
+}
+
+.lightOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  background-color: colors.$white;
+  overflow: hidden;
+  padding-top: variables.$spacing-2xl;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.rotatedHeader {
+  // this causes header to be rotated clockwise by default
+  writing-mode: vertical-lr;
+  white-space: nowrap;
+}
+
+.counterClockwise {
+  transform: rotate(180deg);
+}
+
+.panelGrabberVertical {
+  height: 100vh;
+  width: 10px;
+  display: flex;
+  flex-direction: row;
+}
+
+.panelGrabberHorizontal {
+  width: 100%;
+  height: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.handleIcon {
+  background-color: colors.$grey-100;
+  border-radius: variables.$border-radius-md;
+}
+
+.handleIconVertical {
+  margin: auto 0 auto auto;
+  height: 30px;
+  width: 3px;
+}
+
+.handleIconHorizontal {
+  margin: 0 auto auto;
+  width: 30px;
+  height: 3px;
+}
+
+.splitter {
+  // !important is necessary to override the default reflex styles
+  border: 0 !important;
+  background-color: transparent !important;
+}

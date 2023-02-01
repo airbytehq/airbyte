@@ -1,0 +1,121 @@
+micronaut:
+  application:
+    name: airbyte-bootloader
+  server:
+    port: 9002
+
+airbyte:
+  bootloader:
+    auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false}
+    migration-baseline-version: ${BOOTLOADER_MIGRATION_BASELINE_VERSION:0.29.0.001}
+    run-migration-on-startup: ${RUN_DATABASE_MIGRATION_ON_STARTUP:true}
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+    jobs:
+      initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+  platform:
+    remote-connector-catalog:
+      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:10000}
+      url: ${REMOTE_CONNECTOR_CATALOG_URL:}
+  protocol:
+    target:
+      range:
+        min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
+        max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:1.0.0}
+  secret:
+    persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
+    store:
+      aws:
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      gcp:
+        credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
+        project-id: ${SECRET_STORE_GCP_PROJECT_ID:}
+      vault:
+        address: ${VAULT_ADDRESS:}
+        prefix: ${VAULT_PREFIX:}
+        token: ${VAULT_AUTH_TOKEN:}
+  version: ${AIRBYTE_VERSION}
+
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    maximum-pool-size: 5
+    minimum-idle: 0
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  jobs:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    maximum-pool-size: 5
+    minimum-idle: 0
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
+
+flyway:
+  enabled: true
+  datasources:
+    config:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/configs/migrations'
+    jobs:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/jobs/migrations'
+
+jpa:
+  default:
+    properties:
+      hibernate:
+        show_sql: true
+
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+    jobs:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+
+logger:
+  levels:
+# Uncomment to help resolve issues with conditional beans
+#    io.micronaut.context.condition: DEBUG

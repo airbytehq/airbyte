@@ -1,0 +1,18 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "PhoneNumber": {
+      "type": ["null", "string"]
+    },
+    "PhoneAreaCode": {
+      "type": ["null", "string"]
+    },
+    "PhoneCountryCode": {
+      "type": ["null", "string"]
+    },
+    "PhoneType": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,26 +1,28 @@
 import { useEffect, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { useConfig } from "config";
 import { HealthService } from "core/health/HealthService";
 import { useGetService } from "core/servicesProvider";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 
+import { ToastType } from "../../../components/ui/Toast";
+import { Notification } from "../Notification";
+
 const HEALTH_NOTIFICATION_ID = "health.error";
 const HEALTHCHECK_MAX_COUNT = 3;
+const HEALTHCHECK_INTERVAL = 20000;
 
 function useApiHealthPoll(): void {
   const [count, setCount] = useState(0);
   const { formatMessage } = useIntl();
-  const { healthCheckInterval } = useConfig();
   const healthService = useGetService<HealthService>("HealthService");
   const { registerNotification, unregisterNotificationById } = useNotificationService();
 
   useEffect(() => {
-    const errorNotification = {
+    const errorNotification: Notification = {
       id: HEALTH_NOTIFICATION_ID,
-      title: formatMessage({ id: "notifications.error.health" }),
-      isError: true,
+      text: formatMessage({ id: "notifications.error.health" }),
+      type: ToastType.ERROR,
     };
 
     const interval = setInterval(async () => {
@@ -37,10 +39,10 @@ function useApiHealthPoll(): void {
           registerNotification(errorNotification);
         }
       }
-    }, healthCheckInterval);
+    }, HEALTHCHECK_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [count, healthCheckInterval, formatMessage, unregisterNotificationById, registerNotification, healthService]);
+  }, [count, formatMessage, unregisterNotificationById, registerNotification, healthService]);
 }
 
 export { useApiHealthPoll };

@@ -13,7 +13,6 @@ export const theme = {
   blue800: scss.blue800,
   blue900: scss.blue900,
   blue: scss.blue,
-  blueTransparent: scss.blueTransparent,
 
   darkBlue50: scss.darkBlue50,
   darkBlue100: scss.darkBlue100,
@@ -76,10 +75,6 @@ export const theme = {
   red900: scss.red900,
   red: scss.red,
 
-  beige50: scss.beige50,
-  beige100: scss.beige100,
-  beige: scss.beige,
-
   black: scss.black,
   white: scss.white,
 
@@ -115,14 +110,11 @@ export const theme = {
   dangerTransparentColor: scss.red50,
   successColor: scss.green,
   successColor20: scss.green50,
-  backgroundColor: scss.beige,
   shadowColor: scss.shadowColor,
   cardShadowColor: scss.cardShadowColor,
 
   textColor: scss.darkBlue,
   lightTextColor: scss.grey,
-  textColor90: scss.textColor90,
-  darkBlue90: scss.darkBlue90,
   greyColor70: scss.grey600,
   greyColor60: scss.grey500,
   greyColor55: scss.grey400,
@@ -134,8 +126,6 @@ export const theme = {
 
   whiteColor: scss.white,
   blackColor: scss.black,
-  beigeColor: scss.beige,
-  darkBeigeColor: scss.beige100,
   borderTableColor: scss.grey100,
   lightTableColor: scss.grey50,
   darkGreyColor: scss.grey400,

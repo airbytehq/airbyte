@@ -88,11 +88,11 @@ public class JobNotifier {
         try {
           final Builder<String, Object> notificationMetadata = ImmutableMap.builder();
           notificationMetadata.put("connection_id", connectionId);
-          if (notification.getNotificationType().equals(NotificationType.SLACK) &&
+          if (NotificationType.SLACK.equals(notification.getNotificationType()) &&
               notification.getSlackConfiguration().getWebhook().contains("hooks.slack.com")) {
             // flag as slack if the webhook URL is also pointing to slack
             notificationMetadata.put("notification_type", NotificationType.SLACK);
-          } else if (notification.getNotificationType().equals(NotificationType.CUSTOMERIO)) {
+          } else if (NotificationType.CUSTOMERIO.equals(notification.getNotificationType())) {
             notificationMetadata.put("notification_type", NotificationType.CUSTOMERIO);
           } else {
             // Slack Notification type could be "hacked" and re-used for custom webhooks
@@ -103,23 +103,23 @@ public class JobNotifier {
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
 
-          if (FAILURE_NOTIFICATION == action) {
+          if (FAILURE_NOTIFICATION.equalsIgnoreCase(action)) {
             if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
               LOGGER.warn("Failed to successfully notify failure: {}", notification);
             }
             break;
-          } else if (SUCCESS_NOTIFICATION == action) {
+          } else if (SUCCESS_NOTIFICATION.equalsIgnoreCase(action)) {
             if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl, job.getId())) {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
             break;
-          } else if (CONNECTION_DISABLED_NOTIFICATION == action) {
+          } else if (CONNECTION_DISABLED_NOTIFICATION.equalsIgnoreCase(action)) {
             if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
                 workspaceId, connectionId)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
             }
             break;
-          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION == action) {
+          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION.equalsIgnoreCase(action)) {
             if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
                 workspaceId, connectionId)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);

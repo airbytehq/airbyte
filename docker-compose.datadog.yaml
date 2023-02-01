@@ -1,0 +1,55 @@
+# Adds settings for allowing datadog metrics to be published from a local environment.
+# This exists _only_ for testing datadog integrations!
+#
+# Usage:
+# 1. create an API Key in datadog
+# 2. wget -O dd-java-agent.jar 'https://dtdg.co/latest-java-tracer'
+# 3. DD_API_KEY=[datadog api key] VERSION=dev docker-compose -f docker-compose.yaml -f docker-compose.datadog.yaml up -d
+version: "3.8"
+
+x-datadog: &datadogged
+  volumes:
+    - type: bind
+      source: ./dd-java-agent.jar
+      target: /dd-java-agent.jar
+  environment:
+    - DD_AGENT_HOST=airbyte-datadog
+    - DD_TRACE_AGENT_URL=http://airbyte-datadog:8126
+    - JAVA_OPTS=-javaagent:/dd-java-agent.jar
+
+services:
+  datadog:
+    image: datadog/agent:7-rc
+    container_name: airbyte-datadog
+    environment:
+      - DD_API_KEY
+      - DD_ENV=${DD_ENV:-local}
+      - DD_SITE=datadoghq.com
+      - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
+      - DD_APM_ENABLED=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+    networks:
+      - airbyte_internal
+  init:
+    <<: *datadogged
+    environment:
+      - DD_SERVICE=airbyte-init
+  bootloader:
+    <<: *datadogged
+    environment:
+      - DD_SERVICE=airbyte-bootloader
+  worker:
+    <<: *datadogged
+    environment:
+      - DD_SERVICE=airbyte-worker
+  server:
+    <<: *datadogged
+    environment:
+      - DD_SERVICE=airbyte-server
+  airbyte-cron:
+    <<: *datadogged
+    environment:
+      - DD_SERVICE=airbyte-cron

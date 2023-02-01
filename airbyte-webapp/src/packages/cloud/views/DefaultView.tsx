@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 
 import { RoutePaths } from "../../../pages/routePaths";
-import { CloudRoutes } from "../cloudRoutes";
+import { CloudRoutes } from "../cloudRoutePaths";
 import { useListCloudWorkspaces } from "../services/workspaces/CloudWorkspacesService";
 
 export const DefaultView: React.FC = () => {
@@ -20,3 +20,5 @@ export const DefaultView: React.FC = () => {
     />
   );
 };
+
+export default DefaultView;

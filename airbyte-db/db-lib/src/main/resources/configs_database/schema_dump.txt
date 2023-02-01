@@ -54,6 +54,12 @@ create table "public"."actor_definition"(
   "public" bool not null default false,
   "custom" bool not null default false,
   "protocol_version" varchar(255) null,
+  "normalization_repository" varchar(255) null,
+  "normalization_tag" varchar(255) null,
+  "supports_dbt" bool null,
+  "normalization_integration_type" varchar(255) null,
+  "allowed_hosts" jsonb null,
+  "suggested_streams" jsonb null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -108,6 +114,8 @@ create table "public"."connection"(
   "notify_schema_changes" bool not null default true,
   "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
   "breaking_change" bool not null default false,
+  "unsupported_protocol_version" bool not null default false,
+  "field_selection_data" jsonb null,
   constraint "connection_pkey"
     primary key ("id")
 );
@@ -276,6 +284,7 @@ create index "airbyte_configs_migrations_s_idx" on "public"."airbyte_configs_mig
 create index "connection_destination_id_idx" on "public"."connection"("destination_id" asc);
 create unique index "connection_pkey" on "public"."connection"("id" asc);
 create index "connection_source_id_idx" on "public"."connection"("source_id" asc);
+create index "connection_status_idx" on "public"."connection"("status" asc);
 create index "connection_operation_connection_id_idx" on "public"."connection_operation"("connection_id" asc);
 create unique index "connection_operation_pkey" on "public"."connection_operation"(
   "id" asc, 

@@ -1,15 +1,13 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/kafka",
   "supportsIncremental": true,
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_source_sync_modes": ["append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Kafka Source Spec",
     "type": "object",
     "required": ["bootstrap_servers", "subscription", "protocol"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "MessageFormat": {
         "title": "MessageFormat",
@@ -21,8 +19,7 @@
             "properties": {
               "deserialization_type": {
                 "type": "string",
-                "enum": ["JSON"],
-                "default": "JSON"
+                "const": "JSON"
               }
             }
           },
@@ -30,9 +27,7 @@
             "title": "AVRO",
             "properties": {
               "deserialization_type": {
-                "type": "string",
-                "enum": ["AVRO"],
-                "default": "AVRO"
+                "const": "AVRO"
               },
               "deserialization_strategy": {
                 "type": "string",
@@ -77,9 +72,7 @@
               "subscription_type": {
                 "description": "Manually assign a list of partitions to this consumer. This interface does not allow for incremental assignment and will replace the previous assignment (if there is one).\nIf the given list of topic partitions is empty, it is treated the same as unsubscribe().",
                 "type": "string",
-                "const": "assign",
-                "enum": ["assign"],
-                "default": "assign"
+                "const": "assign"
               },
               "topic_partitions": {
                 "title": "List of topic:partition Pairs",
@@ -95,9 +88,7 @@
               "subscription_type": {
                 "description": "The Topic pattern from which the records will be read.",
                 "type": "string",
-                "const": "subscribe",
-                "enum": ["subscribe"],
-                "default": "subscribe"
+                "const": "subscribe"
               },
               "topic_pattern": {
                 "title": "Topic Pattern",
@@ -143,8 +134,7 @@
             "properties": {
               "security_protocol": {
                 "type": "string",
-                "enum": ["PLAINTEXT"],
-                "default": "PLAINTEXT"
+                "const": "PLAINTEXT"
               }
             }
           },
@@ -158,15 +148,13 @@
             "properties": {
               "security_protocol": {
                 "type": "string",
-                "enum": ["SASL_PLAINTEXT"],
-                "default": "SASL_PLAINTEXT"
+                "const": "SASL_PLAINTEXT"
               },
               "sasl_mechanism": {
                 "title": "SASL Mechanism",
                 "description": "The SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.",
                 "type": "string",
-                "default": "PLAIN",
-                "enum": ["PLAIN"]
+                "const": "PLAIN"
               },
               "sasl_jaas_config": {
                 "title": "SASL JAAS Config",
@@ -187,8 +175,7 @@
             "properties": {
               "security_protocol": {
                 "type": "string",
-                "enum": ["SASL_SSL"],
-                "default": "SASL_SSL"
+                "const": "SASL_SSL"
               },
               "sasl_mechanism": {
                 "title": "SASL Mechanism",

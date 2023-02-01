@@ -1,0 +1,9 @@
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-source-acceptance-test'
+}
+
+airbytePython {
+    moduleDirectory 'source_the_guardian_api'
+}

@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.extension.ExtendWith;

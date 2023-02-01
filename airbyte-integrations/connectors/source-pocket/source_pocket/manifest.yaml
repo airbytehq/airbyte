@@ -1,0 +1,68 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      class_name: "source_pocket.PocketExtractor"
+  requester:
+    url_base: "https://getpocket.com/v3"
+    http_method: "POST"
+    request_options_provider:
+      request_parameters:
+        consumer_key: "{{ config['consumer_key'] }}"
+        access_token: "{{ config['access_token'] }}"
+        state: "{{ config['state'] }}"
+        favorite: "{% if config['favorite'] %}{{ 1 }}{% else %}{{ 0 }}{% endif %}"
+        tag: "{{ config['tag'] }}"
+        contentType: "{{ config['content_type'] }}"
+        sort: "{{ config['sort'] }}"
+        detailType: "{{ config['detail_type'] }}"
+        search: "{{ config['search'] }}"
+        domain: "{{ config['domain'] }}"
+        since: "{{ timestamp(config['since']) }}"
+    error_handler:
+      type: "DefaultErrorHandler"
+      error_handlers:
+        - response_filters:
+            - http_codes: [401] # User authentication error
+              action: FAIL
+            - http_codes: [403] # Access denied due to lack of permission or rate limiting
+              action: RETRY
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "X-Limit-User-Reset"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "count"
+      pagination_strategy:
+        type: "OffsetIncrement"
+        page_size: 10
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "offset"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+    schema_loader:
+      type: "JsonSchema"
+  retrieve_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "retrieve"
+      primary_key: "item_id"
+      path: "/get"
+
+streams:
+  - "*ref(definitions.retrieve_stream)"
+
+check:
+  stream_names:
+    - "retrieve"

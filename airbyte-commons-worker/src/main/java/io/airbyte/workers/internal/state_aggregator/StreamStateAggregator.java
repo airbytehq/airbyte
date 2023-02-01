@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.internal.state_aggregator;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -15,6 +18,7 @@ class StreamStateAggregator implements StateAggregator {
 
   Map<StreamDescriptor, AirbyteStateMessage> aggregatedState = new HashMap<>();
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void ingest(final AirbyteStateMessage stateMessage) {
     /**
@@ -27,6 +31,7 @@ class StreamStateAggregator implements StateAggregator {
     aggregatedState.put(stateMessage.getStream().getStreamDescriptor(), stateMessage);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public State getAggregated() {
 

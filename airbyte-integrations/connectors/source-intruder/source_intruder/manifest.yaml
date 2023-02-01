@@ -1,0 +1,83 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["results"]
+  requester:
+    url_base: "https://api.intruder.io/v1"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['access_token'] }}"
+  offset_paginator:
+    type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 100
+    page_token_option:
+      field_name: "offset"
+      inject_into: "request_parameter"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      $ref: "*ref(definitions.offset_paginator)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  issues_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "issues"
+      primary_key: "id"
+      path: "/issues"
+  issue_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.issues_stream)"
+        parent_key: id
+        stream_slice_field: id
+  occurrences_issue_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "occurrences_issues"
+      primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/issues/{{ stream_slice.id }}/occurrences"
+      stream_slicer:
+        $ref: "*ref(definitions.issue_stream_slicer)"
+  scans_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "scans"
+      primary_key: "id"
+      path: "/scans"
+  targets_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "targets"
+      primary_key: "id"
+      path: "/targets"
+
+streams:
+  - "*ref(definitions.issues_stream)"
+  - "*ref(definitions.occurrences_issue_stream)"
+  - "*ref(definitions.scans_stream)"
+  - "*ref(definitions.targets_stream)"
+
+check:
+  stream_names:
+    - "issues"

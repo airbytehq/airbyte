@@ -1,0 +1,93 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Type": {
+      "type": ["null", "string"]
+    },
+    "Contact": {
+      "$ref": "contacts.json"
+    },
+    "Date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "AppliedAmount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "LineAmountTypes": {
+      "type": ["null", "string"]
+    },
+    "LineItems": {
+      "items": {
+        "$ref": "line_items.json"
+      },
+      "type": ["null", "array"]
+    },
+    "SubTotal": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalTax": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Total": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "UpdatedDateUTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "OverpaymentID": {
+      "type": ["string"]
+    },
+    "CurrencyRate": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "RemainingCredit": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Allocations": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "allocations.json"
+      }
+    },
+    "Payments": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "payments.json"
+      }
+    },
+    "Reference": {
+      "type": ["null", "string"]
+    },
+    "HasAttachments": {
+      "type": ["null", "boolean"]
+    },
+    "ID": {
+      "type": ["null", "string"]
+    },
+    "DateString": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": true
+}

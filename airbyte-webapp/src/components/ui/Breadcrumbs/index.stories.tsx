@@ -10,22 +10,17 @@ export default {
 
 const Template: ComponentStory<typeof Breadcrumbs> = (args) => <Breadcrumbs {...args} />;
 
-const onClick = () => {
-  console.log("onClick");
-};
-
 const data: BreadcrumbsDataItem[] = [
   {
-    name: "Workspace",
-    onClick,
+    label: "Workspace",
+    to: "/workspace",
   },
   {
-    name: "Source",
-    onClick,
+    label: "Source",
+    to: "/workspace/source",
   },
   {
-    name: "Settings",
-    onClick,
+    label: "Settings",
   },
 ];
 

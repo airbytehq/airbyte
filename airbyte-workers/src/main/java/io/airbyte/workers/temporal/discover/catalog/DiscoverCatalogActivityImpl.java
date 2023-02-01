@@ -4,14 +4,18 @@
 
 package io.airbyte.workers.temporal.discover.catalog;
 
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DOCKER_IMAGE_KEY;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -26,8 +30,9 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
-import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
@@ -40,6 +45,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
@@ -53,10 +59,12 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final AirbyteApiClient airbyteApiClient;;
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
-
   private final ConfigRepository configRepository;
+  private final AirbyteMessageSerDeProvider serDeProvider;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
+  private final FeatureFlags featureFlags;
 
   public DiscoverCatalogActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("discoverProcessFactory") final ProcessFactory processFactory,
@@ -66,7 +74,10 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final AirbyteApiClient airbyteApiClient,
-                                     @Value("${airbyte.version}") final String airbyteVersion) {
+                                     @Value("${airbyte.version}") final String airbyteVersion,
+                                     final AirbyteMessageSerDeProvider serDeProvider,
+                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory,
+                                     final FeatureFlags featureFlags) {
     this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -76,6 +87,9 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.logConfigs = logConfigs;
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
+    this.serDeProvider = serDeProvider;
+    this.migratorFactory = migratorFactory;
+    this.featureFlags = featureFlags;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -83,7 +97,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
                                 final IntegrationLauncherConfig launcherConfig,
                                 final StandardDiscoverCatalogInput config) {
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY, launcherConfig.getDockerImage()));
+    ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY,
+        launcherConfig.getDockerImage()));
     final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
@@ -110,13 +125,19 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     return temporalAttemptExecution.get();
   }
 
-  private CheckedSupplier<Worker<StandardDiscoverCatalogInput, ConnectorJobOutput>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
+  private CheckedSupplier<Worker<StandardDiscoverCatalogInput, ConnectorJobOutput>, Exception> getWorkerFactory(
+                                                                                                                final IntegrationLauncherConfig launcherConfig) {
     return () -> {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
-              processFactory, workerConfigs.getResourceRequirements());
-      final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
-      return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, streamFactory);
+              processFactory, workerConfigs.getResourceRequirements(), launcherConfig.getAllowedHosts(), launcherConfig.getIsCustomConnector(),
+              featureFlags);
+      final AirbyteStreamFactory streamFactory =
+          new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion(), Optional.empty(),
+              Optional.empty());
+      final ConnectorConfigUpdater connectorConfigUpdater =
+          new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi());
+      return new DefaultDiscoverCatalogWorker(configRepository, integrationLauncher, connectorConfigUpdater, streamFactory);
     };
   }
 

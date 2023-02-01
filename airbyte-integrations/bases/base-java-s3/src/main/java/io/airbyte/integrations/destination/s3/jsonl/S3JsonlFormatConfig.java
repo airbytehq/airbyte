@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3.jsonl;
 
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.FLATTEN_DATA;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
@@ -20,10 +21,13 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
 
   private final CompressionType compressionType;
 
+  private final boolean flattenData;
+
   public S3JsonlFormatConfig(final JsonNode formatConfig) {
     this.compressionType = formatConfig.has(COMPRESSION_ARG_NAME)
         ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
         : DEFAULT_COMPRESSION_TYPE;
+    this.flattenData = formatConfig.has(FLATTEN_DATA) && formatConfig.get(FLATTEN_DATA).asBoolean();
   }
 
   @Override
@@ -40,10 +44,15 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
     return compressionType;
   }
 
+  public boolean getFlattenData() {
+    return flattenData;
+  }
+
   @Override
   public String toString() {
     return "S3JsonlFormatConfig{" +
-        ", compression=" + compressionType.name() +
+        "compressionType=" + compressionType +
+        ", flattenData=" + flattenData +
         '}';
   }
 

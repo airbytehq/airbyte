@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -21,9 +22,11 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.SshException;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -40,6 +43,8 @@ import org.slf4j.LoggerFactory;
 public class SshTunnel implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnel.class);
+  public static final String SSH_TIMEOUT_DISPLAY_MESSAGE =
+      "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
 
   public enum TunnelMethod {
     NO_TUNNEL,
@@ -298,6 +303,7 @@ public class SshTunnel implements AutoCloseable {
    * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the
    * keys from the key info, and return the key pair for use in authentication.
    *
+   * @return The {@link KeyPair} to add - may not be {@code null}
    * @see <a href=
    *      "https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html#loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-">loadKeyPairs()</a>
    */
@@ -310,7 +316,7 @@ public class SshTunnel implements AutoCloseable {
     if (keyPairs != null && keyPairs.iterator().hasNext()) {
       return keyPairs.iterator().next();
     }
-    return null;
+    throw new ConfigErrorException("Unable to load private key pairs, verify key pairs are properly inputted");
   }
 
   private String validateKey() {
@@ -362,7 +368,13 @@ public class SshTunnel implements AutoCloseable {
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      throw new RuntimeException(e);
+      if (e instanceof SshException && e.getMessage()
+          .toLowerCase(Locale.ROOT)
+          .contains("failed to get operation result within specified timeout")) {
+        throw new ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e);
+      } else {
+        throw new RuntimeException(e);
+      }
     }
   }
 

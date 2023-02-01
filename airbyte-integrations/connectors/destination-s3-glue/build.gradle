@@ -1,0 +1,25 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.s3_glue.S3GlueDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:bases:base-java-s3')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-glue
+    implementation 'com.amazonaws:aws-java-sdk-glue:1.12.334'
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-s3-glue')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:s3-destination-base-integration-test')
+
+}

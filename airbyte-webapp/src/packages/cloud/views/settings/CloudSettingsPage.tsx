@@ -6,6 +6,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { DbtCloudSettingsView } from "packages/cloud/views/settings/integrations/DbtCloudSettingsView";
 import { AccountSettingsView } from "packages/cloud/views/users/AccountSettingsView";
 import { UsersSettingsView } from "packages/cloud/views/users/UsersSettingsView";
+import { DataResidencyView } from "packages/cloud/views/workspaces/DataResidencyView";
 import { WorkspaceSettingsView } from "packages/cloud/views/workspaces/WorkspaceSettingsView";
 import SettingsPage from "pages/SettingsPage";
 import {
@@ -23,6 +24,7 @@ export const CloudSettingsPage: React.FC = () => {
   // TODO: uncomment when supported in cloud
   // const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
   const supportsCloudDbtIntegration = useFeature(FeatureItem.AllowDBTCloudIntegration);
+  const supportsDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
 
   const pageConfig = useMemo<PageConfig>(
     () => ({
@@ -55,6 +57,15 @@ export const CloudSettingsPage: React.FC = () => {
               component: WorkspaceSettingsView,
               id: "workspaceSettings.generalSettings",
             },
+            ...(supportsDataResidency
+              ? [
+                  {
+                    path: CloudSettingsRoutes.DataResidency,
+                    name: <FormattedMessage id="settings.dataResidency" />,
+                    component: DataResidencyView,
+                  },
+                ]
+              : []),
             {
               path: CloudSettingsRoutes.Source,
               name: <FormattedMessage id="tables.sources" />,
@@ -102,8 +113,10 @@ export const CloudSettingsPage: React.FC = () => {
           : []),
       ],
     }),
-    [supportsCloudDbtIntegration]
+    [supportsCloudDbtIntegration, supportsDataResidency]
   );
 
   return <SettingsPage pageConfig={pageConfig} />;
 };
+
+export default CloudSettingsPage;

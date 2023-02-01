@@ -1,0 +1,131 @@
+{
+  "type": "object",
+  "properties": {
+    "owner": {
+      "type": ["string", "null"]
+    },
+    "contact": {
+      "type": ["string", "null"]
+    },
+    "organization": {
+      "type": ["string", "null"]
+    },
+    "group": {
+      "type": ["string", "null"]
+    },
+    "stage": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "percent": {
+      "type": ["string", "null"]
+    },
+    "cdate": {
+      "type": ["string", "null"]
+    },
+    "mdate": {
+      "type": ["string", "null"]
+    },
+    "nextdate": {
+      "type": ["string", "null"]
+    },
+    "nexttaskid": {
+      "type": ["string", "null"]
+    },
+    "nextTask": {
+      "type": ["string", "null"]
+    },
+    "value": {
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "winProbability": {
+      "type": ["integer", "null"]
+    },
+    "winProbabilityMdate": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "activitycount": {
+      "type": ["string", "null"]
+    },
+    "nextdealid": {
+      "type": ["string", "null"]
+    },
+    "edate": {
+      "type": ["string", "null"]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "dealActivities": {
+          "type": ["string", "null"]
+        },
+        "contact": {
+          "type": ["string", "null"]
+        },
+        "contactDeals": {
+          "type": ["string", "null"]
+        },
+        "group": {
+          "type": ["string", "null"]
+        },
+        "nextTask": {
+          "type": ["string", "null"]
+        },
+        "notes": {
+          "type": ["string", "null"]
+        },
+        "account": {
+          "type": ["string", "null"]
+        },
+        "customerAccount": {
+          "type": ["string", "null"]
+        },
+        "organization": {
+          "type": ["string", "null"]
+        },
+        "owner": {
+          "type": ["string", "null"]
+        },
+        "scoreValues": {
+          "type": ["string", "null"]
+        },
+        "stage": {
+          "type": ["string", "null"]
+        },
+        "tasks": {
+          "type": ["string", "null"]
+        },
+        "dealCustomFieldData": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "id": {
+      "type": "string"
+    },
+    "hash": {
+      "type": ["string", "null"]
+    },
+    "isDisabled": {
+      "type": ["boolean", "null"]
+    },
+    "account": {
+      "type": ["string", "null"]
+    },
+    "customerAccount": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["id"]
+}

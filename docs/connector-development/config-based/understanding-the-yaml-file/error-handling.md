@@ -143,8 +143,8 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-                    - http_codes: [ 429 ]
-                    action: RETRY
+        - http_codes: [ 429 ]
+          action: RETRY
 ```
 
 ## Backoff Strategies
@@ -157,8 +157,8 @@ Schema:
   BackoffStrategy:
     type: object
     anyOf:
-      - "$ref": "#/definitions/ExponentialBackoff"
-      - "$ref": "#/definitions/ConstantBackoff"
+      - "$ref": "#/definitions/ExponentialBackoffStrategy"
+      - "$ref": "#/definitions/ConstantBackoffStrategy"
       - "$ref": "#/definitions/WaitTimeFromHeader"
       - "$ref": "#/definitions/WaitUntilTimeFromHeader"
 ```
@@ -170,7 +170,7 @@ This is the default backoff strategy. The requester will backoff with an exponen
 Schema:
 
 ```yaml
-  ExponentialBackoff:
+  ExponentialBackoffStrategy:
     type: object
     additionalProperties: true
     properties:
@@ -183,12 +183,12 @@ Schema:
 
 ### Constant Backoff
 
-When using the `ConstantBackoff` strategy, the requester will backoff with a constant interval.
+When using the `ConstantBackoffStrategy` strategy, the requester will backoff with a constant interval.
 
 Schema:
 
 ```yaml
-  ConstantBackoff:
+  ConstantBackoffStrategy:
     type: object
     additionalProperties: true
     required:
@@ -340,13 +340,13 @@ requester:
           - predicate: "{{ 'code' in response }}"
             action: RETRY
         backoff_strategies:
-          - type: "ConstantBackoff"
+          - type: "ConstantBackoffStrategy"
             backoff_time_in_seconds: 5
       - response_filters:
           - http_codes: [ 403 ]
             action: RETRY
         backoff_strategies:
-          - type: "ExponentialBackoff"
+          - type: "ExponentialBackoffStrategy"
 ```
 
 ## More readings

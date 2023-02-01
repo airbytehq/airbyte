@@ -1,5 +1,180 @@
 # Changelog
 
+## 0.26.0
+Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
+
+## 0.25.2
+Low-Code: SubstreamSlicer.parent_key - dpath support added
+
+## 0.25.1
+Fix issue when trying to log stream slices that are non-JSON-serializable
+
+## 0.25.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.23.0
+Limiting the number of HTTP requests during a test read
+
+## 0.22.0
+Surface the resolved manifest in the CDK
+
+## 0.21.0
+Add AvailabilityStrategy concept and use check_availability within CheckStream
+
+## 0.20.2
+Add missing package in previous patch release
+
+## 0.20.1
+Handle edge cases for CheckStream - checking connection to empty stream, and checking connection to substream with no parent records
+
+## 0.20.0
+Low-Code: Refactor low-code to use Pydantic model based manifest parsing and component creation
+
+## 0.19.1
+Low-code: Make documentation_url in the Spec be optional
+
+## 0.19.0
+Low-Code: Handle forward references in manifest
+
+## 0.18.1
+Allow for CustomRequester to be defined within declarative manifests
+
+## 0.18.0
+Adding `cursor_granularity` to the declarative API of DatetimeStreamSlicer
+
+## 0.17.0
+Add utility class to infer schemas from real records
+
+## 0.16.3
+Do not eagerly refresh access token in `SingleUseRefreshTokenOauth2Authenticator` [#20923](https://github.com/airbytehq/airbyte/pull/20923)
+
+## 0.16.2
+Fix the naming of OAuthAuthenticator
+
+## 0.16.1
+Include declarative_component_schema.yaml in the publish to PyPi
+
+## 0.16.0
+Start validating low-code manifests using the declarative_component_schema.yaml file
+
+## 0.15.0
+Reverts additions from versions 0.13.0 and 0.13.3.
+
+## 0.14.0
+Low-code: Add token_expiry_date_format to OAuth Authenticator. Resolve ref schema
+
+## 0.13.3
+Fixed `StopIteration` exception for empty streams while `check_availability` runs.
+
+## 0.13.2
+Low-code: Enable low-code CDK users to specify schema inline in the manifest
+
+## 0.13.1
+Low-code: Add `SessionTokenAuthenticator`
+
+## 0.13.0
+Add `Stream.check_availability` and `Stream.AvailabilityStrategy`. Make `HttpAvailabilityStrategy` the default `HttpStream.AvailabilityStrategy`.
+
+## 0.12.4
+Lookback window should applied when a state is supplied as well
+
+## 0.12.3
+Low-code: Finally, make `OffsetIncrement.page_size` interpolated string or int
+
+## 0.12.2
+Revert breaking change on `read_config` while keeping the improvement on the error message
+
+## 0.12.0
+Improve error readability when reading JSON config files
+
+## 0.11.3
+Low-code: Log response error message on failure
+
+## 0.11.2
+Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
+
+## 0.11.1
+Low-code: Fix the component manifest schema to and validate check instead of checker
+
+## 0.11.0
+Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
+
+## 0.10.0
+Low-code: Add `start_from_page` option to a PageIncrement class
+
+## 0.9.5
+Low-code: Add jinja macro `format_datetime`
+
+## 0.9.4
+Low-code: Fix reference resolution for connector builder
+
+## 0.9.3
+Low-code: Avoid duplicate HTTP query in `simple_retriever`
+
+## 0.9.2
+Low-code: Make `default_paginator.page_token_option` optional
+
+## 0.9.1
+Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
+
+## 0.9.0
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
+## 0.8.1
+Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
+## 0.5.4
+Low-code: Get response.json in a safe way
+
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
+## 0.4.2
+Low-code: Fix off by one error with the stream slicers
+
+## 0.4.1
+Low-code: Fix a few bugs with the stream slicers
+
+## 0.4.0
+Low-code: Add support for custom error messages on error response filters
+
+## 0.3.0
+Publish python typehints via `py.typed` file. 
+
+## 0.2.3
+- Propagate options to InterpolatedRequestInputProvider
+
+## 0.2.2
+- Report config validation errors as failed connection status during `check`.
+- Report config validation errors as `config_error` failure type.
+
+## 0.2.1
+
+- Low-code: Always convert stream slices output to an iterator
+
+## 0.2.0
+
+- Replace caching method: VCR.py -> requests-cache with SQLite backend
+
 ## 0.1.104
 
 - Protocol change: `supported_sync_modes` is now a required properties on AirbyteStream. [#15591](https://github.com/airbytehq/airbyte/pull/15591)

@@ -1,9 +1,7 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-    // 6.1.0-SNAPSHOT contains this fix: https://github.com/OpenAPITools/openapi-generator/issues/13025
-    // TODO update to v6.1.0 when it officially releases (due end of August 2022) so that we don't need to depend on a SNAPSHOT version anymore
-    id "org.openapi.generator" version "6.1.0-SNAPSHOT"
+    id "org.openapi.generator" version "6.2.1"
     id "java-library"
 }
 

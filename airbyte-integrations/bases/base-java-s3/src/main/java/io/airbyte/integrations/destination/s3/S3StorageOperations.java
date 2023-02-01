@@ -8,6 +8,7 @@ import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
@@ -15,12 +16,14 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -93,18 +96,16 @@ public class S3StorageOperations extends BlobStorageOperations {
             .replaceAll("/+", "/"));
   }
 
+  /**
+   * Create a directory object at the specified location. Creates the bucket if necessary.
+   */
   @Override
-  public void createBucketObjectIfNotExists(final String objectPath) {
+  public void createBucketIfNotExists() {
     final String bucket = s3Config.getBucketName();
     if (!doesBucketExist(bucket)) {
       LOGGER.info("Bucket {} does not exist; creating...", bucket);
       s3Client.createBucket(bucket);
       LOGGER.info("Bucket {} has been created.", bucket);
-    }
-    if (!s3Client.doesObjectExist(bucket, objectPath)) {
-      LOGGER.info("Storage Object {}/{} does not exist in bucket; creating...", bucket, objectPath);
-      s3Client.putObject(bucket, objectPath.endsWith("/") ? objectPath : objectPath + "/", "");
-      LOGGER.info("Storage Object {}/{} has been created in bucket.", bucket, objectPath);
     }
   }
 
@@ -132,7 +133,18 @@ public class S3StorageOperations extends BlobStorageOperations {
         exceptionsThrown.add(e);
       }
     }
-    throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+    // Verifying that ALL exceptions are authentication related before assuming this is a configuration
+    // issue
+    // reduces risk of misidentifying errors or reporting a transient error.
+    final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
+        .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
+        .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)
+        .count() == exceptionsThrown.size();
+    if (areAllExceptionsAuthExceptions) {
+      throw new ConfigErrorException(exceptionsThrown.get(0).getMessage(), exceptionsThrown.get(0));
+    } else {
+      throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
+    }
   }
 
   /**

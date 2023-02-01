@@ -1,0 +1,61 @@
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
+
+plugins {
+    id "org.openapi.generator" version "5.3.1"
+    id 'airbyte-python-docker'
+    id 'airbyte-docker'
+}
+
+airbytePythonDocker {
+    moduleDirectory 'connector_builder'
+}
+
+task generateOpenApiPythonServer(type: GenerateTask) {
+    outputs.upToDateWhen { false }
+
+    def generatedCodeDir = "$buildDir/airbyte_connector_builder_server"
+    inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
+    outputDir = generatedCodeDir
+
+    generatorName = "python-fastapi"
+    configFile = "$projectDir/openapi/generator_config.yaml"
+    templateDir = "$projectDir/openapi/templates"
+    packageName = "connector_builder.generated"
+
+    // After we generate, we're only interested in the API declaration and the generated pydantic models.
+    // So we copy those from the build/ directory
+    doLast {
+        def sourceDir = "$generatedCodeDir/src/connector_builder/generated/"
+        def targetDir = "$projectDir/connector_builder/generated"
+        mkdir targetDir
+        copy {
+            from "$sourceDir/apis"
+            include "*_interface.py", "__init__.py"
+            into "$targetDir/apis"
+        }
+        copy {
+            from "$sourceDir/models"
+            include "*.py"
+            into "$targetDir/models"
+        }
+    }
+}
+
+project.build.dependsOn(generateOpenApiPythonServer)
+
+// java modules such as airbyte-server can use copyGeneratedTar to copy the files to the docker image
+// We cannot do this here because we don't generate a tar file
+// Instead, we copy the files into the build directory so they can be copied to the docker container
+task prepareBuild(type: Copy) {
+    from layout.projectDirectory.file(".")
+    exclude '.*'
+    exclude 'build'
+    exclude '**/*.pyc'
+
+    into layout.buildDirectory.dir("docker")
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn prepareBuild
+    dependsOn copyDocker
+}

@@ -1,0 +1,13 @@
+@use "./variables";
+
+@mixin shadow {
+  box-shadow: variables.$box-shadow;
+}
+
+@mixin left-shadow {
+  box-shadow: variables.$box-shadow-left;
+}
+
+@mixin right-shadow {
+  box-shadow: variables.$box-shadow-right;
+}

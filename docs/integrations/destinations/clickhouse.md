@@ -80,6 +80,7 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 
 | Version | Date       | Pull Request | Subject                                      |
 |:--------|:-----------| :--- |:---------------------------------------------|
+| 0.2.1  | 2022-12-06 | [19573](https://github.com/airbytehq/airbyte/pull/19573)   | Update dbt version to 1.3.1 |
 | 0.2.0  | 2022-09-27 | [16970](https://github.com/airbytehq/airbyte/pull/16970)   | Remove TCP port from spec parameters |
 | 0.1.12  | 2022-09-08 | [16444](https://github.com/airbytehq/airbyte/pull/16444)   | Added custom jdbc params field |
 | 0.1.10  | 2022-07-05 | [\#13639](https://github.com/airbytehq/airbyte/pull/13639) | Change JDBC ClickHouse version into 0.3.2-patch9 |
@@ -91,4 +92,3 @@ Therefore, Airbyte ClickHouse destination will create tables and schemas using t
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.1   | 2021-12-21 | [\#8982](https://github.com/airbytehq/airbyte/pull/8982) | Set isSchemaRequired to false                |
 | 0.1.0   | 2021-11-04 | [\#7620](https://github.com/airbytehq/airbyte/pull/7620) | Add ClickHouse destination                   |
-

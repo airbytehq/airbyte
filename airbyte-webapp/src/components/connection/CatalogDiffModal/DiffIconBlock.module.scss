@@ -1,0 +1,8 @@
+@use "scss/variables";
+
+.iconBlock {
+  display: flex;
+  flex-direction: row;
+  gap: variables.$spacing-sm;
+  margin-left: auto;
+}

@@ -1,0 +1,42 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "stream_test_scd_drop",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
+            },
+            "date": {
+              "$ref": "WellKnownTypes.json#/definitions/Date"
+            },
+            "timestamp_col": {
+              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+            },
+            "datetime_to_string": {
+              "$ref": "WellKnownTypes.json#/definitions/String"
+            },
+            "string_to_dt": {
+              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+            },
+            "number_to_int": {
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
+            },
+            "int_to_number": {
+              "$ref": "WellKnownTypes.json#/definitions/Number"
+            }
+          }
+        },
+        "supported_sync_modes": ["incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
+    }
+  ]
+}

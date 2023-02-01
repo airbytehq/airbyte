@@ -13,6 +13,16 @@
         "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
         "examples": ["2022-07-28"]
       },
+      "status": {
+        "title": "Status",
+        "description": "Entity statuses based off of campaigns, ad_groups, and ads. If you do not have a status set, it will be ignored completely.",
+        "type": ["array", "null"],
+        "items": {
+          "type": "string",
+          "enum": ["ACTIVE", "PAUSED", "ARCHIVED"]
+        },
+        "uniqueItems": true
+      },
       "credentials": {
         "title": "Authorization Method",
         "type": "object",

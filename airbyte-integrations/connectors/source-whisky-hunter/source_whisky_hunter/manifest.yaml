@@ -1,0 +1,45 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://whiskyhunter.net/api"
+    http_method: "GET"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  auctions_data_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "auctions_data"
+      path: "/auctions_data/?format=json"
+  auctions_info_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "auctions_info"
+      path: "/auctions_info?format=json"
+  distilleries_info_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "distilleries_info"
+      path: "/distilleries_info/?format=json"
+
+streams:
+  - "*ref(definitions.auctions_data_stream)"
+  - "*ref(definitions.auctions_info_stream)"
+  - "*ref(definitions.distilleries_info_stream)"
+
+check:
+  stream_names:
+    - "auctions_data"
+    - "auctions_info"
+    - "distilleries_info"

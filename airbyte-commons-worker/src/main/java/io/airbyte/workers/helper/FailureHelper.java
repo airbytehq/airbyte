@@ -173,6 +173,7 @@ public class FailureHelper {
 
   public static FailureReason unknownOriginFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return genericFailure(t, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.UNKNOWN)
         .withExternalMessage("An unknown failure occurred");
   }
 
@@ -225,6 +226,12 @@ public class FailureHelper {
     } else {
       return unknownOriginFailure(t, jobId, attemptNumber);
     }
+  }
+
+  public static FailureReason platformFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+    return genericFailure(t, jobId, attemptNumber)
+        .withFailureOrigin(FailureOrigin.AIRBYTE_PLATFORM)
+        .withExternalMessage("Something went wrong within the airbyte platform");
   }
 
   private static Metadata jobAndAttemptMetadata(final Long jobId, final Integer attemptNumber) {

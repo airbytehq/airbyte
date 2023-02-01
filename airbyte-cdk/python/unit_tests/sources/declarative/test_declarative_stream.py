@@ -5,11 +5,9 @@
 from unittest import mock
 from unittest.mock import MagicMock, call
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteTraceMessage, Level, SyncMode, TraceType
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-
-from .schema.source_test import SourceTest  # noqa #pylint: disable=unused-import
 
 
 def test_declarative_stream():
@@ -22,8 +20,17 @@ def test_declarative_stream():
     schema_loader.get_json_schema.return_value = json_schema
 
     state = MagicMock()
-    records = [{"pk": 1234, "field": "value"}, {"pk": 4567, "field": "different_value"}]
-    stream_slices = [{"date": "2021-01-01"}, {"date": "2021-01-02"}, {"date": "2021-01-03"}]
+    records = [
+        {"pk": 1234, "field": "value"},
+        {"pk": 4567, "field": "different_value"},
+        AirbyteLogMessage(level=Level.INFO, message="This is a log  message"),
+        AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=12345),
+    ]
+    stream_slices = [
+        {"date": "2021-01-01"},
+        {"date": "2021-01-02"},
+        {"date": "2021-01-03"},
+    ]
     checkpoint_interval = 1000
 
     retriever = MagicMock()
@@ -60,5 +67,7 @@ def test_declarative_stream():
     assert stream.state_checkpoint_interval == checkpoint_interval
     for transformation in transformations:
         assert len(transformation.transform.call_args_list) == len(records)
-        expected_calls = [call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records]
+        expected_calls = [
+            call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records if isinstance(record, dict)
+        ]
         transformation.transform.assert_has_calls(expected_calls, any_order=False)

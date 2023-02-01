@@ -1,0 +1,40 @@
+@use "scss/colors";
+@use "scss/fonts";
+@use "scss/variables";
+
+.circle {
+  height: 20px;
+  width: fit-content;
+  min-width: 20px;
+  border-radius: variables.$border-radius-lg;
+  padding: 0 4px;
+  text-align: center;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: normal;
+  font-family: fonts.$primary;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 10px;
+
+  &.default {
+    background: colors.$dark-blue-100;
+  }
+
+  &.green {
+    background: colors.$green;
+    color: colors.$black;
+  }
+
+  &.red {
+    background: colors.$red;
+    color: colors.$black;
+  }
+
+  &.blue {
+    background: colors.$blue;
+    color: colors.$white;
+  }
+}

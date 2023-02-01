@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 from airbyte_cdk import AirbyteLogger
 from source_file import SourceFile
-from source_file.client import Client
+from source_file.client import Client, ConfigurationError
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/formats")
 
@@ -40,6 +40,28 @@ def test_local_file_read(file_format, extension, expected_columns, expected_rows
     file_path = str(file_directory.joinpath(f"{filename}.{extension}"))
     configs = {"dataset_name": "test", "format": file_format, "url": file_path, "provider": {"storage": "local"}}
     check_read(configs, expected_columns, expected_rows)
+
+
+@pytest.mark.parametrize(
+    "file_format, extension, wrong_format, filename",
+    [
+        ("excel", "xls", "csv", "demo"),
+        ("excel", "xlsx", "csv", "demo"),
+        ("csv", "csv", "excel", "demo"),
+        ("csv", "csv", "excel", "demo"),
+        ("jsonl", "jsonl", "excel", "jsonl_nested"),
+        ("feather", "feather", "csv", "demo"),
+        ("parquet", "parquet", "feather", "demo"),
+        ("yaml", "yaml", "json", "demo"),
+    ],
+)
+def test_raises_file_wrong_format(file_format, extension, wrong_format, filename):
+    file_directory = SAMPLE_DIRECTORY.joinpath(file_format)
+    file_path = str(file_directory.joinpath(f"{filename}.{extension}"))
+    configs = {"dataset_name": "test", "format": wrong_format, "url": file_path, "provider": {"storage": "local"}}
+    client = Client(**configs)
+    with pytest.raises((TypeError, ValueError, ConfigurationError)):
+        list(client.read())
 
 
 def run_load_dataframes(config, expected_columns=10, expected_rows=42):

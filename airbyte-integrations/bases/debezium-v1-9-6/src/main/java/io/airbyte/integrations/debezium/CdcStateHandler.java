@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.debezium;
 
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.Map;
 
 /**

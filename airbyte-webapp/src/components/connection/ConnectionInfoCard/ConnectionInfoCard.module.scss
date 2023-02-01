@@ -1,0 +1,56 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.connectorLink {
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: variables.$border-radius-lg;
+
+  &:hover {
+    background-color: colors.$grey-50;
+
+    &.breaking {
+      background-color: colors.$red-100;
+    }
+
+    &.nonBreaking {
+      background-color: colors.$yellow-100;
+    }
+  }
+}
+
+.container,
+.pathContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: variables.$spacing-md;
+}
+
+.pathContainer,
+.pathContainer > *,
+.enabledControlContainer {
+  flex-grow: 1;
+}
+
+.container {
+  width: 650px;
+  flex-wrap: wrap;
+  padding: variables.$spacing-md variables.$spacing-xl;
+  background-color: white;
+  border-radius: variables.$border-radius-lg;
+}
+
+.enabledControlContainer {
+  display: flex;
+  justify-content: space-around;
+}
+
+.breaking {
+  background: colors.$red-50;
+}
+
+.nonBreaking {
+  background: colors.$yellow-50;
+}

@@ -5,7 +5,10 @@
 from typing import Any, BinaryIO, Iterator, List, Mapping, TextIO, Tuple, Union
 
 import pyarrow.parquet as pq
+from airbyte_cdk.models import FailureType
 from pyarrow.parquet import ParquetFile
+from source_s3.exceptions import S3Exception
+from source_s3.source_files_abstract.file_info import FileInfo
 
 from .abstract_file_parser import AbstractFileParser
 from .parquet_spec import ParquetFormat
@@ -85,7 +88,7 @@ class ParquetParser(AbstractFileParser):
             return func(field_value) if func else field_value
         raise TypeError(f"unsupported field type: {logical_type}, value: {field_value}")
 
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> dict:
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> dict:
         """
         https://arrow.apache.org/docs/python/parquet.html#finer-grained-reading-and-writing
 
@@ -97,10 +100,10 @@ class ParquetParser(AbstractFileParser):
         }
         if not schema_dict:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
-            raise OSError("empty Parquet file")
+            raise S3Exception(file_info, "empty Parquet file", "The .parquet file is empty!", FailureType.config_error)
         return schema_dict
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.parquet.ParquetFile.html
         PyArrow reads streaming batches from a Parquet file
@@ -116,7 +119,7 @@ class ParquetParser(AbstractFileParser):
         }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
-            raise OSError("empty Parquet file")
+            raise S3Exception(file_info, "empty Parquet file", "The .parquet file is empty!", FailureType.config_error)
 
         args = self._select_options("columns", "batch_size")  # type: ignore[arg-type]
         self.logger.debug(f"Found the {reader.num_row_groups} Parquet groups")

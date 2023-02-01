@@ -14,6 +14,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -41,6 +42,10 @@ class LinkedinAdsStream(HttpStream, ABC):
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
         return ",".join(map(str, self.config.get("account_ids")))
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs) -> str:
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""
@@ -253,6 +258,24 @@ class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
         params["owner"] = stream_slice.get("reference_id")
         params["q"] = self.search_param
         return params
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        parent_stream = self.parent_stream(config=self.config)
+        for record in parent_stream.read_records(**kwargs):
+
+            if record.get("reference", "").startswith("urn:li:person"):
+                self.logger.warn(
+                    f'Skip {record.get("name")} account, ORGANIZATION permissions required, but referenced to PERSON {record.get("reference")}'
+                )
+                continue
+
+            child_stream_slice = super(LinkedInAdsStreamSlicing, self).read_records(
+                stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs
+            )
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=child_stream_slice)
 
 
 class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream):

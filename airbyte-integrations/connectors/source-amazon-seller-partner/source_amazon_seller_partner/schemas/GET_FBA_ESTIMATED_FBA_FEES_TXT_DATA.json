@@ -1,0 +1,48 @@
+{
+  "title": "FBA Fee Preview Report",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "sku": { "type": ["null", "string"] },
+    "fnsku": { "type": ["null", "string"] },
+    "asin": { "type": ["null", "string"] },
+    "product-name": { "type": ["null", "string"] },
+    "product-group": { "type": ["null", "string"] },
+    "brand": { "type": ["null", "string"] },
+    "fulfilled-by": { "type": ["null", "string"] },
+    "your-price": { "type": ["null", "string"] },
+    "sales-price": { "type": ["null", "string"] },
+    "longest-side": { "type": ["null", "string"] },
+    "median-side": { "type": ["null", "string"] },
+    "shortest-side": { "type": ["null", "string"] },
+    "length-and-girth": { "type": ["null", "string"] },
+    "unit-of-dimension": { "type": ["null", "string"] },
+    "item-package-weight": { "type": ["null", "string"] },
+    "unit-of-weight": { "type": ["null", "string"] },
+    "product-size-tier": { "type": ["null", "string"] },
+    "currency": { "type": ["null", "string"] },
+    "estimated-fee-total": { "type": ["null", "string"] },
+    "estimated-referral-fee-per-unit": { "type": ["null", "string"] },
+    "estimated-variable-closing-fee": { "type": ["null", "string"] },
+    "estimated-order-handling-fee-per-order": { "type": ["null", "string"] },
+    "estimated-pick-pack-fee-per-unit": { "type": ["null", "string"] },
+    "estimated-weight-handling-fee-per-unit": { "type": ["null", "string"] },
+    "expected-fulfillment-fee-per-unit": { "type": ["null", "string"] },
+    "estimated-future-fee (Current Selling on Amazon + Future Fulfillment fees)": {
+      "type": ["null", "string"]
+    },
+    "estimated-future-order-handling-fee-per-order": {
+      "type": ["null", "string"]
+    },
+    "estimated-future-pick-pack-fee-per-unit": { "type": ["null", "string"] },
+    "estimated-future-weight-handling-fee-per-unit": {
+      "type": ["null", "string"]
+    },
+    "expected-future-fulfillment-fee-per-unit": { "type": ["null", "string"] },
+    "estimated-future-referral-fee-per-unit": { "type": ["null", "string"] },
+    "current-fee-category": { "type": ["null", "string"] },
+    "future-fee-category": { "type": ["null", "string"] },
+    "future-fee-category-effective-date": { "type": ["null", "string"] }
+  }
+}

@@ -22,7 +22,7 @@ from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
-from source_amazon_ads.utils import iterate_one_by_one
+from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
 
 class RecordType(str, Enum):
@@ -90,8 +90,6 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
 
     primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
-    # Amazon ads updates the data for the next 3 days
-    LOOK_BACK_WINDOW = 3
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
     REPORTING_PERIOD = 60
     # (Service limits section)
@@ -108,18 +106,21 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
-        (406, "Report date is too far in the past."),
+        (406, re.compile(r"^Report date is too far in the past\.")),
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        super().__init__(config, profiles)
         self._state = {}
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = config.get("report_wait_timeout", 60)
-        self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         self._start_date: Optional[Date] = config.get("start_date")
-        super().__init__(config, profiles)
+        self._look_back_window: int = config["look_back_window"]
+        # Timeout duration in minutes for Reports. Default is 180 minutes.
+        self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
+        # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
+        self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
 
     @property
     def model(self) -> CatalogModel:
@@ -327,7 +328,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def _update_state(self, profile: Profile, report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
-        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW - 1)
+        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self._look_back_window - 1)
         start_date = self.get_start_date(profile, self._state)
         updated_state = max(min(report_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
 
@@ -407,7 +408,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if isinstance(exception, ReportGenerationInProgress):
-            return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
+            return f"Report(s) generation time took more than {self.report_wait_timeout} minutes and failed because of Amazon API issues. Please wait some time and run synchronization again."
         return super().get_error_display_message(exception)
 
     def _get_response_error_details(self, response) -> Optional[str]:

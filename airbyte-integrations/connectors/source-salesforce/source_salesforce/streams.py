@@ -16,6 +16,7 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from numpy import nan
@@ -59,6 +60,10 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.sf_api.instance_url
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:
@@ -129,6 +134,11 @@ class SalesforceStream(HttpStream, ABC):
                     self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
                     return
             raise error
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, exceptions.ConnectionError):
+            return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
+        return super().get_error_display_message(exception)
 
 
 class BulkSalesforceStream(SalesforceStream):
@@ -246,7 +256,7 @@ class BulkSalesforceStream(SalesforceStream):
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None, None
+                return None, job_status
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
@@ -279,7 +289,7 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.encoding or response.apparent_encoding or self.encoding
+            response_encoding = response.apparent_encoding or response.encoding or self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists

@@ -1,0 +1,27 @@
+@use "scss/colors";
+
+.content {
+  padding: 74px 0 111px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 27px;
+  color: colors.$dark-blue-900;
+}
+
+.imgBlock {
+  height: 80px;
+  width: 80px;
+  border-radius: 50%;
+  background: colors.$grey-100;
+  margin: 0 auto 10px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.description {
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 19px;
+  color: colors.$grey-500;
+  margin-top: 5px;
+}

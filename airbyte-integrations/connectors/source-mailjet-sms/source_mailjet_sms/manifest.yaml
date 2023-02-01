@@ -1,0 +1,59 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["Data"]
+  requester:
+    url_base: "https://api.mailjet.com/v4"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        fromTS: "{{ config['start_date'] }}"
+        ToTS: "{{ config['end_date'] }}"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['token'] }}"
+  offset_paginator:
+    type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 100
+    page_token_option:
+      field_name: "Offset"
+      inject_into: "request_parameter"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "Limit"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  sms_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      paginator:
+        $ref: "*ref(definitions.offset_paginator)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+    $options:
+      name: "sms"
+      primary_key: "ID"
+      path: "/sms"
+
+streams:
+  - "*ref(definitions.sms_stream)"
+
+check:
+  stream_names:
+    - "sms"

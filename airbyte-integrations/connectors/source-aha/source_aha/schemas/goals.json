@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "reference_num": {
+      "type": ["null", "string"]
+    },
+    "effort": {
+      "type": ["null", "number"]
+    },
+    "value": {
+      "type": ["null", "number"]
+    },
+    "position": {
+      "type": ["null", "number"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "product_id": {
+      "type": ["null", "string"]
+    },
+    "progress": {
+      "type": ["null", "string"]
+    },
+    "progress_source": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "resource": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "object"]
+    },
+    "success_metric": {
+      "type": ["null", "object"]
+    },
+    "project": {
+      "type": ["null", "object"]
+    },
+    "timeframe": {
+      "type": ["null", "object"]
+    },
+    "initiatives": {
+      "type": ["null", "array"]
+    },
+    "comments_count": {
+      "type": ["null", "integer"]
+    },
+    "features": {
+      "type": ["null", "array"]
+    },
+    "releases": {
+      "type": ["null", "array"]
+    },
+    "custom_fields": {
+      "type": ["null", "array"]
+    }
+  }
+}

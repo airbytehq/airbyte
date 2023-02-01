@@ -1,0 +1,338 @@
+openapi: 3.0.0
+info:
+  description: |
+    Connector Builder Server API
+
+  version: "1.0.0"
+  title: Connector Builder Server API
+  contact:
+    email: contact@airbyte.io
+  license:
+    name: MIT
+    url: "https://opensource.org/licenses/MIT"
+externalDocs:
+  description: Find out more about Connector Builder
+  url: "https://docs.airbyte.com/connector-development/config-based/overview/"
+
+paths:
+  /v1/stream/read:
+    post:
+      summary: Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.
+      operationId: readStream
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamReadRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamRead"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/streams/list:
+    post:
+      summary: List all streams present in the connector manifest, along with their specific request URLs
+      operationId: listStreams
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StreamsListRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamsListRead"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/manifest_template:
+    get:
+      summary: Return a connector manifest template to use as the default value for the yaml editor
+      operationId: getManifestTemplate
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+                description: Connector manifest template string
+  /v1/manifest/resolve:
+    post:
+      summary: Given a JSON manifest, returns a JSON manifest with all of the $refs and $options resolved and flattened
+      operationId: resolveManifest
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveManifestRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolveManifest"
+        "400":
+          $ref: "#/components/responses/ExceptionResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+
+components:
+  schemas:
+    StreamRead:
+      type: object
+      required:
+        - logs
+        - slices
+        - test_read_limit_reached
+      properties:
+        logs:
+          type: array
+          description: The LOG AirbyteMessages that were emitted during the read of this slice
+          items:
+            type: object
+            # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteLogMessage"
+        slices:
+          type: array
+          description: The stream slices returned from the read command. If no stream slicer is configured, this should contain a single item containing all of the results.
+          items:
+            type: object
+            required:
+              - pages
+            properties:
+              pages:
+                type: array
+                description: The pages returned from the read command. If no pagination is configured, this should contain a single item containing all of the results.
+                items:
+                  type: object
+                  required:
+                    - records
+                  properties:
+                    records:
+                      type: array
+                      description: The RECORD AirbyteMessages coming from the read operation for this page
+                      items:
+                        type: object
+                        # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteRecordMessage"
+                    request:
+                      $ref: "#/components/schemas/HttpRequest"
+                    response:
+                      $ref: "#/components/schemas/HttpResponse"
+              sliceDescriptor:
+                type: object
+                description: "An object describing the current slice. This can be omitted if a stream slicer is not configured."
+                properties:
+                  startDatetime:
+                    type: string
+                    format: date-time
+                  listItem:
+                    type: string
+              state:
+                type: object
+                description: The STATE AirbyteMessage emitted at the end of this slice. This can be omitted if a stream slicer is not configured.
+                # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
+        test_read_limit_reached:
+          type: boolean
+          description: Whether the maximum number of request per slice or the maximum number of slices queried has been reached
+        inferred_schema:
+          type: object
+          description: The narrowest JSON Schema against which every AirbyteRecord in the slices can validate successfully. This is inferred from reading every record in the output slices.
+    StreamReadRequestBody:
+      type: object
+      required:
+        - manifest
+        - stream
+        - config
+      properties:
+        manifest:
+          type: object
+          description: The config-based connector manifest contents
+          # $ref: "#/components/schemas/ConnectorManifest"
+        stream:
+          type: string
+          description: Name of the stream to read
+        config:
+          type: object
+          description: The config blob containing the user inputs for testing
+        state:
+          type: object
+          description: The AirbyteStateMessage object to use as the starting state for this read
+          # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
+        record_limit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          description: Number of records that will be returned to the client from the connector builder (max of 1000)
+        # --- Potential addition for a later phase ---
+        # numPages:
+        #   type: integer
+        #   description: Number of pages to read from the source for each slice
+        #   default: 1
+    HttpRequest:
+      type: object
+      required:
+        - url
+        - http_method
+      properties:
+        url:
+          type: string
+          description: URL that the request was sent to
+        parameters:
+          type: object
+          description: The request parameters that were set on the HTTP request, if any
+        body:
+          type: object
+          description: The body of the HTTP request, if present
+        headers:
+          type: object
+          description: The headers of the HTTP request, if any
+        http_method:
+          type: string
+          enum: ["GET", "POST", "PUT", "PATCH"]
+          description: The http method of the request ("GET", "POST", "PUT", or "PATCH")
+    HttpResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: integer
+          description: The status of the response
+        body:
+          type: object
+          description: The body of the HTTP response, if present
+        headers:
+          type: object
+          description: The headers of the HTTP response, if any
+    # --- Commenting out for now since they do not work with our orval openapi client generator ---
+    # ConnectorManifest:
+    #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    # AirbyteProtocol:
+    #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+    StreamsListRequestBody:
+      type: object
+      required:
+        - manifest
+        - config
+      properties:
+        manifest:
+          type: object
+          description: The config-based connector manifest contents
+          # $ref: "#/components/schemas/ConnectorManifest"
+        config:
+          type: object
+          description: The config blob containing the user inputs for testing
+    StreamsListRead:
+      type: object
+      required:
+        - streams
+      properties:
+        streams:
+          type: array
+          items:
+            type: object
+            description: The stream names present in the connector manifest
+            required:
+              - name
+              - url
+            properties:
+              name:
+                type: string
+                description: The name of the stream
+              url:
+                type: string
+                description: The URL to which read requests will be made for this stream
+              # --- Potential addition for a later phase ---
+              # slices:
+              #   type: array
+              #   description: list of slices that will be retrieved for this stream
+              #   items:
+              #     type: object
+    ResolveManifestRequestBody:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: object
+          description: The config-based connector manifest contents
+    ResolveManifest:
+      type: object
+      required:
+        - manifest
+      properties:
+        manifest:
+          type: object
+          description: The config-based connector manifest contents with $refs and $options resolved
+
+    # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
+    InvalidInputProperty:
+      type: object
+      required:
+        - propertyPath
+      properties:
+        propertyPath:
+          type: string
+        invalidValue:
+          type: string
+        message:
+          type: string
+    KnownExceptionInfo:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+    InvalidInputExceptionInfo:
+      type: object
+      required:
+        - message
+        - validationErrors
+      properties:
+        message:
+          type: string
+        exceptionClassName:
+          type: string
+        exceptionStack:
+          type: array
+          items:
+            type: string
+        validationErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvalidInputProperty"
+
+  responses:
+    InvalidInputResponse:
+      description: Input failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InvalidInputExceptionInfo"
+    ExceptionResponse:
+      description: Exception occurred; see message for details.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/KnownExceptionInfo"

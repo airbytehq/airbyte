@@ -9,6 +9,7 @@ from urllib.parse import quote_plus, unquote_plus
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
@@ -32,6 +33,10 @@ class GoogleSearchConsole(HttpStream, ABC):
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @staticmethod
     def sanitize_urls_list(site_urls: list) -> List[str]:
@@ -298,6 +303,14 @@ class SearchAnalyticsAllFields(SearchAnalytics):
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
+    dimension_to_property_schema_map = {
+        "country": [{"country": {"type": ["null", "string"]}}],
+        "date": [],
+        "device": [{"device": {"type": ["null", "string"]}}],
+        "page": [{"page": {"type": ["null", "string"]}}],
+        "query": [{"query": {"type": ["null", "string"]}}],
+    }
+
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
         self.dimensions = dimensions
@@ -305,7 +318,7 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
     def get_json_schema(self) -> Mapping[str, Any]:
         try:
             return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
-        except IOError:
+        except FileNotFoundError:
             schema: Mapping[str, Any] = {
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": ["null", "object"],
@@ -327,16 +340,9 @@ class SearchAnalyticsByCustomDimensions(SearchAnalytics):
             return schema
 
     def dimension_to_property_schema(self) -> dict:
-        dimension_to_property_schema_map = {
-            "country": [{"country": {"type": ["null", "string"]}}],
-            "date": [],
-            "device": [{"device": {"type": ["null", "string"]}}],
-            "page": [{"page": {"type": ["null", "string"]}}],
-            "query": [{"query": {"type": ["null", "string"]}}],
-        }
         properties = {}
         for dimension in sorted(self.dimensions):
-            fields = dimension_to_property_schema_map[dimension]
+            fields = self.dimension_to_property_schema_map[dimension]
             for field in fields:
                 properties = {**properties, **field}
         return properties

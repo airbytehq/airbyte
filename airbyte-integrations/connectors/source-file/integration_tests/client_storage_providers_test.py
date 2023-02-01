@@ -90,7 +90,7 @@ def test__read_from_public_provider(download_gcs_public_data, storage_provider, 
     config = {
         "format": "csv",
         "dataset_name": "output",
-        "reader_options": json.dumps({"sep": separator, "nrows": 42}),
+        "reader_options": {"sep": separator, "nrows": 42},
         "provider": {"storage": storage_provider, "user_agent": False},
         "url": url,
     }
@@ -103,7 +103,7 @@ def test__read_from_private_gcs(google_cloud_service_credentials, private_google
         "dataset_name": "output",
         "format": "csv",
         "url": private_google_cloud_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "GCS",
             "service_account_json": json.dumps(google_cloud_service_credentials),
@@ -117,7 +117,7 @@ def test__read_from_private_aws(aws_credentials, private_aws_file):
         "dataset_name": "output",
         "format": "csv",
         "url": private_aws_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "S3",
             "aws_access_key_id": aws_credentials["aws_access_key_id"],
@@ -132,7 +132,7 @@ def test__read_from_public_azblob(azblob_credentials, public_azblob_file):
         "dataset_name": "output",
         "format": "csv",
         "url": public_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {"storage": "AzBlob", "storage_account": azblob_credentials["storage_account"]},
     }
     check_read(config)
@@ -143,7 +143,7 @@ def test__read_from_private_azblob_shared_key(azblob_credentials, private_azblob
         "dataset_name": "output",
         "format": "csv",
         "url": private_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "AzBlob",
             "storage_account": azblob_credentials["storage_account"],
@@ -158,7 +158,7 @@ def test__read_from_private_azblob_sas_token(azblob_credentials, private_azblob_
         "dataset_name": "output",
         "format": "csv",
         "url": private_azblob_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": {"sep": ",", "nrows": 42},
         "provider": {
             "storage": "AzBlob",
             "storage_account": azblob_credentials["storage_account"],

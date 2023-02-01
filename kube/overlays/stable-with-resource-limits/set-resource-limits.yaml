@@ -9,8 +9,8 @@ spec:
         - name: airbyte-db-container
           resources:
             limits:
-              cpu: 2
-              memory: 2Gi
+              cpu: 0.5
+              memory: 512Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -29,8 +29,8 @@ spec:
                   key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
           resources:
             limits:
-              cpu: 2
-              memory: 1Gi
+              cpu: 0.5
+              memory: 512Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -49,8 +49,8 @@ spec:
                   key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
           resources:
             limits:
-              cpu: 1
-              memory: 2Gi
+              cpu: 0.5
+              memory: 512Mi
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -63,7 +63,7 @@ spec:
         - name: airbyte-temporal
           resources:
             limits:
-              cpu: 2
+              cpu: 0.5
               memory: 512Mi
 ---
 apiVersion: apps/v1
@@ -77,7 +77,7 @@ spec:
         - name: airbyte-webapp-container
           resources:
             limits:
-              cpu: 1
+              cpu: 0.5
               memory: 512Mi
 ---
 apiVersion: apps/v1
@@ -91,7 +91,7 @@ spec:
         - name: airbyte-minio
           resources:
             limits:
-              cpu: 1
+              cpu: 0.5
               memory: 512Mi
 ---
 apiVersion: apps/v1
@@ -117,6 +117,20 @@ spec:
     spec:
       containers:
         - name: airbyte-cron-container
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-connector-builder-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-connector-builder-server-container
           resources:
             limits:
               cpu: 0.5

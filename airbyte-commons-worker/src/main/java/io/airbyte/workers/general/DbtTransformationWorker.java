@@ -4,14 +4,21 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +47,12 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
     this.cancelled = new AtomicBoolean(false);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Void run(final OperatorDbtInput operatorDbtInput, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
     LineGobbler.startSection("DBT TRANSFORMATION");
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot));
 
     try (dbtTransformationRunner) {
       LOGGER.info("Running dbt transformation.");
@@ -59,6 +68,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
         throw new WorkerException("DBT Transformation Failed.");
       }
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       throw new WorkerException("Dbt Transformation Failed.", e);
     }
     if (cancelled.get()) {
@@ -72,6 +82,7 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
     return null;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     LOGGER.info("Cancelling Dbt Transformation runner...");
@@ -79,7 +90,8 @@ public class DbtTransformationWorker implements Worker<OperatorDbtInput, Void> {
       cancelled.set(true);
       dbtTransformationRunner.close();
     } catch (final Exception e) {
-      e.printStackTrace();
+      ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Unable to cancel Dbt Transformation runner.", e);
     }
   }
 

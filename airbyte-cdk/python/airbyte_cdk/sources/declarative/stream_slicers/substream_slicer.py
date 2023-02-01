@@ -3,12 +3,14 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
-from airbyte_cdk.models import SyncMode
+import dpath.util
+from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
 
@@ -25,10 +27,15 @@ class ParentStreamConfig(JsonSchemaMixin):
     """
 
     stream: Stream
-    parent_key: str
-    stream_slice_field: str
+    parent_key: Union[InterpolatedString, str]
+    stream_slice_field: Union[InterpolatedString, str]
+    config: Config
     options: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        self.parent_key = InterpolatedString.create(self.parent_key, options=options)
+        self.stream_slice_field = InterpolatedString.create(self.stream_slice_field, options=options)
 
 
 @dataclass
@@ -42,6 +49,7 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
 
     parent_stream_configs: List[ParentStreamConfig]
+    config: Config
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
@@ -51,11 +59,13 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._options = options
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        # This method is called after the records are processed.
         cursor = {}
         for parent_stream_config in self.parent_stream_configs:
-            slice_value = stream_slice.get(parent_stream_config.stream_slice_field)
+            stream_slice_field = parent_stream_config.stream_slice_field.eval(self.config)
+            slice_value = stream_slice.get(stream_slice_field)
             if slice_value:
-                cursor.update({parent_stream_config.stream_slice_field: slice_value})
+                cursor.update({stream_slice_field: slice_value})
         self._cursor = cursor
 
     def get_request_params(
@@ -64,7 +74,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.request_parameter)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.request_parameter, stream_slice)
 
     def get_request_headers(
         self,
@@ -72,7 +83,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.header)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.header, stream_slice)
 
     def get_request_body_data(
         self,
@@ -80,7 +92,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._get_request_option(RequestOptionType.body_data)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.body_data, stream_slice)
 
     def get_request_body_json(
         self,
@@ -88,16 +101,18 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
-        return self._get_request_option(RequestOptionType.body_json)
+        # Pass the stream_slice from the argument, not the cursor because the cursor is updated after processing the response
+        return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
-    def _get_request_option(self, option_type: RequestOptionType):
+    def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         params = {}
-        for parent_config in self.parent_stream_configs:
-            if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                key = parent_config.stream_slice_field
-                value = self._cursor.get(key)
-                if value:
-                    params.update({key: value})
+        if stream_slice:
+            for parent_config in self.parent_stream_configs:
+                if parent_config.request_option and parent_config.request_option.inject_into == option_type:
+                    key = parent_config.stream_slice_field.eval(self.config)
+                    value = stream_slice.get(key)
+                    if value:
+                        params.update({key: value})
         return params
 
     def get_stream_state(self) -> StreamState:
@@ -123,8 +138,8 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         else:
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.parent_key
-                stream_state_field = parent_stream_config.stream_slice_field
+                parent_field = parent_stream_config.parent_key.eval(self.config)
+                stream_state_field = parent_stream_config.stream_slice_field.eval(self.config)
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
@@ -132,10 +147,20 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
-                        empty_parent_slice = False
-                        stream_state_value = parent_record.get(parent_field)
-                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                        # Skip non-records (eg AirbyteLogMessage)
+                        if isinstance(parent_record, AirbyteMessage):
+                            if parent_record.type == Type.RECORD:
+                                parent_record = parent_record.record.data
+                            else:
+                                continue
+
+                        try:
+                            stream_state_value = dpath.util.get(parent_record, parent_field)
+                        except KeyError:
+                            pass
+                        else:
+                            empty_parent_slice = False
+                            yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
-                        stream_state_value = parent_stream_slice.get(parent_field)
-                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                        yield from []

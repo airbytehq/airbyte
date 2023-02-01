@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.dynamodb;
 
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.util.LinkedList;
 import java.util.List;
 

@@ -4,9 +4,16 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_DATE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
 import org.jooq.DSLContext;
@@ -545,16 +552,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("(\"2010-01-01 14:30:00\",\"2010-01-01 15:30:00\")", null)
             .build());
 
-    // array
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("text")
-            .fullSourceDataType("text[]")
-            .airbyteType(JsonSchemaType.ARRAY)
-            .addInsertValues("'{10001, 10002, 10003, 10004}'", "null")
-            .addExpectedValues("[\"10001\",\"10002\",\"10003\",\"10004\"]", null)
-            .build());
-
     // composite type
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -580,6 +577,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .build());
 
     addTimeWithTimeZoneTest();
+    addArraysTestData();
   }
 
   protected void addTimeWithTimeZoneTest() {
@@ -615,6 +613,268 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "+292269055-12-02T23:00:00.000000 BC")
               .build());
     }
+  }
+
+  private void addArraysTestData() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int2_array")
+            .fullSourceDataType("INT2[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.INTEGER)
+                .build())
+            .addInsertValues("'{1,2,3}'", "'{4,5,6}'")
+            .addExpectedValues("[1,2,3]", "[4,5,6]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int4_array")
+            .fullSourceDataType("INT4[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.INTEGER)
+                .build())
+            .addInsertValues("'{-2147483648,2147483646}'")
+            .addExpectedValues("[-2147483648,2147483646]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("int8_array")
+            .fullSourceDataType("INT8[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.INTEGER)
+                .build())
+            .addInsertValues("'{-9223372036854775808,9223372036854775801}'")
+            .addExpectedValues("[-9223372036854775808,9223372036854775801]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("oid_array")
+            .fullSourceDataType("OID[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                    .build())
+                .build())
+            .addInsertValues("'{564182,234181}'")
+            .addExpectedValues("[564182,234181]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("varchar_array")
+            .fullSourceDataType("VARCHAR[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                    .build())
+                .build())
+            .addInsertValues("'{lorem ipsum,dolor sit,amet}'")
+            .addExpectedValues("[\"lorem ipsum\",\"dolor sit\",\"amet\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("char_array")
+            .fullSourceDataType("CHAR(1)[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                    .build())
+                .build())
+            .addInsertValues("'{l,d,a}'")
+            .addExpectedValues("[\"l\",\"d\",\"a\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bpchar_array")
+            .fullSourceDataType("BPCHAR(2)[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                    .build())
+                .build())
+            .addInsertValues("'{l,d,a}'")
+            .addExpectedValues("[\"l \",\"d \",\"a \"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("text_array")
+            .fullSourceDataType("TEXT[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                    .build())
+                .build())
+            .addInsertValues("'{someeeeee loooooooooong teeeeext,vvvvvvveeeeeeeeeeeruyyyyyyyyy looooooooooooooooong teeeeeeeeeeeeeeext}'")
+            .addExpectedValues("[\"someeeeee loooooooooong teeeeext\",\"vvvvvvveeeeeeeeeeeruyyyyyyyyy looooooooooooooooong teeeeeeeeeeeeeeext\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("name_array")
+            .fullSourceDataType("NAME[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                    .build())
+                .build())
+            .addInsertValues("'{object,integer}'")
+            .addExpectedValues("[\"object\",\"integer\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric_array")
+            .fullSourceDataType("NUMERIC[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                    .build())
+                .build())
+            .addInsertValues("'{131070.23,231072.476596593}'")
+            .addExpectedValues("[131070.23,231072.476596593]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal_array")
+            .fullSourceDataType("DECIMAL[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                    .build())
+                .build())
+            .addInsertValues("'{131070.23,231072.476596593}'")
+            .addExpectedValues("[131070.23,231072.476596593]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("float4_array")
+            .fullSourceDataType("FLOAT4[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                    .build())
+                .build())
+            .addInsertValues("'{131070.237689,231072.476596593}'")
+            .addExpectedValues("[131070.234,231072.48]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("float8_array")
+            .fullSourceDataType("FLOAT8[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                    .build())
+                .build())
+            .addInsertValues("'{131070.237689,231072.476596593}'")
+            .addExpectedValues("[131070.237689,231072.476596593]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money_array")
+            .fullSourceDataType("MONEY[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                    .build())
+                .build())
+            .addInsertValues("'{$999.99,$1001.01,45000, $1.001,$800,22222.006, 1001.01}'")
+            .addExpectedValues("[999.99,1001.01,45000.0,1.0,800.0,22222.01,1001.01]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bool_array")
+            .fullSourceDataType("BOOL[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+                    .build())
+                .build())
+            .addInsertValues("'{true,yes,1,false,no,0,null}'")
+            .addExpectedValues("[true,true,true,false,false,false,null]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bit_array")
+            .fullSourceDataType("BIT[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
+                    .build())
+                .build())
+            .addInsertValues("'{null,1,0}'")
+            .addExpectedValues("[null,true,false]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("bytea_array")
+            .fullSourceDataType("BYTEA[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+                    .build())
+                .build())
+            .addInsertValues(
+                "'{\\xA6697E974E6A320F454390BE03F74955E8978F1A6971EA6730542E37B66179BC,\\x4B52414B00000000000000000000000000000000000000000000000000000000}'")
+            .addExpectedValues(
+                "[\"eEE2Njk3RTk3NEU2QTMyMEY0NTQzOTBCRTAzRjc0OTU1RTg5NzhGMUE2OTcxRUE2NzMwNTQyRTM3QjY2MTc5QkM=\",\"eDRCNTI0MTRCMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA=\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date_array")
+            .fullSourceDataType("DATE[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(STRING_DATE)
+                .build())
+            .addInsertValues("'{1999-01-08,1991-02-10 BC}'")
+            .addExpectedValues("[\"1999-01-08\",\"1991-02-10 BC\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("time_array")
+            .fullSourceDataType("TIME(6)[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(STRING_TIME_WITHOUT_TIMEZONE)
+                .build())
+            .addInsertValues("'{13:00:01,13:00:02+8,13:00:03-8,13:00:04Z,13:00:05.000000+8,13:00:00Z-8}'")
+            .addExpectedValues(
+                "[\"13:00:01.000000\",\"13:00:02.000000\",\"13:00:03.000000\",\"13:00:04.000000\",\"13:00:05.000000\",\"13:00:00.000000\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timetz_array")
+            .fullSourceDataType("TIMETZ[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(STRING_TIME_WITH_TIMEZONE)
+                .build())
+            .addInsertValues("'{null,13:00:01,13:00:00+8,13:00:03-8,13:00:04Z,13:00:05.012345Z+8,13:00:06.00000Z-8,13:00}'")
+            .addExpectedValues(
+                "[null,\"13:00:01.000000-07:00\",\"13:00:00.000000+08:00\",\"13:00:03.000000-08:00\",\"13:00:04.000000Z\",\"13:00:05.012345-08:00\",\"13:00:06.000000+08:00\",\"13:00:00.000000-07:00\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamptz_array")
+            .fullSourceDataType("TIMESTAMPTZ[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(STRING_TIMESTAMP_WITH_TIMEZONE)
+                .build())
+            .addInsertValues("'{null,2004-10-19 10:23:00-08,2004-10-19 10:23:54.123456-08}'")
+            .addExpectedValues("[null,\"2004-10-19T18:23:00.000000Z\",\"2004-10-19T18:23:54.123456Z\"]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timestamp_array")
+            .fullSourceDataType("TIMESTAMP[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+                .build())
+            .addInsertValues("'{null,2004-10-19 10:23:00,2004-10-19 10:23:54.123456,3004-10-19 10:23:54.123456 BC}'")
+            .addExpectedValues("[null,\"2004-10-19T10:23:00.000000\",\"2004-10-19T10:23:54.123456\",\"3004-10-19T10:23:54.123456 BC\"]")
+            .build());
   }
 
 }

@@ -1,0 +1,84 @@
+version: "0.1.0"
+
+definitions:
+  page_size: 100
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_sentry/schemas/{{ options.name }}.json"
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://{{ config['account_subdomain'] }}.workable.com"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+    request_options_provider:
+      request_parameters:
+        created_after: "{{ config['start_date'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    paginator:
+      type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
+      limit_option:
+        inject_into: "request_parameter"
+        field_name: ""
+      page_token_option:
+        inject_into: "path"
+      page_size_option:
+        inject_into: "request_parameter"
+        field_name: "limit"
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.paging.next }}"
+        stop_condition: "{{ 'next' not in response['paging'] }}"
+        page_size: "*ref(definitions.page_size)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  jobs_stream: # https://workable.readme.io/reference/jobs
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "jobs"
+      primary_key: "id"
+      path: "/spi/v3/jobs"
+      field_pointer: ["jobs"]
+  candidates_stream: # https://workable.readme.io/reference/job-candidates-index
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "candidates"
+      primary_key: "id"
+      path: "/spi/v3/candidates"
+      field_pointer: ["candidates"]
+  stages_stream: # https://workable.readme.io/reference/stages
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "stages"
+      primary_key: "slug"
+      path: "/spi/v3/stages"
+      field_pointer: ["stages"]
+  recruiters_stream: # https://workable.readme.io/reference/recruiters
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "recruiters"
+      primary_key: "id"
+      path: "/spi/v3/recruiters"
+      field_pointer: ["recruiters"]
+
+streams:
+  - "*ref(definitions.jobs_stream)"
+  - "*ref(definitions.candidates_stream)"
+  - "*ref(definitions.stages_stream)"
+  - "*ref(definitions.recruiters_stream)"
+
+check:
+  stream_names:
+    - "jobs"
+    - "candidates"
+    - "stages"
+    - "recruiters"

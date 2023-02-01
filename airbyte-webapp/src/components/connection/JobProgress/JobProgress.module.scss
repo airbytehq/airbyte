@@ -1,0 +1,23 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.estimationStats {
+  display: flex;
+  justify-content: space-between;
+}
+
+.estimationDetails {
+  display: flex;
+  gap: variables.$spacing-lg;
+  margin: variables.$spacing-md 0;
+
+  .icon {
+    color: colors.$grey-400;
+    margin-right: variables.$spacing-sm;
+  }
+}
+
+.streams {
+  margin: variables.$spacing-md 0 0;
+  width: 100%;
+}

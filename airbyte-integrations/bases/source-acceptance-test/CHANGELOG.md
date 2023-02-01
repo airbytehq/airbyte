@@ -1,5 +1,65 @@
 # Changelog
 
+## 0.5.0
+Re-release of 0.3.0 [#21451](https://github.com/airbytehq/airbyte/pull/21451)
+
+## 0.4.0
+Revert 0.3.0
+
+## 0.3.0
+(Broken) Add various stricter checks for specs (see PR for details). [#21451](https://github.com/airbytehq/airbyte/pull/21451)
+
+## 0.2.26
+Check `future_state` only for incremental streams. [#21248](https://github.com/airbytehq/airbyte/pull/21248)
+
+## 0.2.25
+Enable bypass reason for future state test config.[#20549](https://github.com/airbytehq/airbyte/pull/20549)
+
+## 0.2.24
+Check for nullity of docker runner in `previous_discovered_catalog_fixture`.[#20899](https://github.com/airbytehq/airbyte/pull/20899)
+
+## 0.2.23
+Skip backward compatibility tests on specifications if actual and previous specifications and discovered catalogs are identical.[#20435](https://github.com/airbytehq/airbyte/pull/20435)
+
+## 0.2.22
+Capture control messages to store and use updated configurations. [#19979](https://github.com/airbytehq/airbyte/pull/19979).
+
+## 0.2.21
+Optionally disable discovered catalog caching. [#19806](https://github.com/airbytehq/airbyte/pull/19806).
+
+## 0.2.20
+Stricter integer field schema validation. [#19820](https://github.com/airbytehq/airbyte/pull/19820).
+
+## 0.2.19
+Test for exposed secrets: const values can not hold secrets. [#19465](https://github.com/airbytehq/airbyte/pull/19465).
+
+## 0.2.18
+Test connector specification against exposed secret fields. [#19124](https://github.com/airbytehq/airbyte/pull/19124).
+
+## 0.2.17
+Make `incremental.future_state` mandatory in `high` `test_strictness_level`. [#19085](https://github.com/airbytehq/airbyte/pull/19085/).
+
+## 0.2.16
+Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
+
+## 0.2.15
+Make `expect_records` mandatory in `high` `test_strictness_level`. [#18497](https://github.com/airbytehq/airbyte/pull/18497/).
+
+## 0.2.14
+Fail basic read in `high` `test_strictness_level` if no `bypass_reason` is set on empty_streams. [#18425](https://github.com/airbytehq/airbyte/pull/18425/).
+
+## 0.2.13
+Fail tests in `high` `test_strictness_level` if all tests are not configured. [#18414](https://github.com/airbytehq/airbyte/pull/18414/).
+
+## 0.2.12
+Declare `bypass_reason` field in test configuration. [#18364](https://github.com/airbytehq/airbyte/pull/18364).
+
+## 0.2.11
+Declare `test_strictness_level` field in test configuration. [#18218](https://github.com/airbytehq/airbyte/pull/18218).
+
+## 0.2.10
+Bump `airbyte-cdk~=0.2.0`
+
 ## 0.2.9
 Update tests after protocol change making `supported_sync_modes` a required property of `AirbyteStream` [#15591](https://github.com/airbytehq/airbyte/pull/15591/)
 

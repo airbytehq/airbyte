@@ -17,6 +17,9 @@ public class OrchestratorConstants {
 
   // necessary for s3/minio logging. used in the log4j2 configuration.
   private static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
+  private static final String FEATURE_FLAG_CLIENT = "FEATURE_FLAG_CLIENT";
+  private static final String FEATURE_FLAG_PATH = "FEATURE_FLAG_PATH";
+  private static final String LAUNCHDARKLY_KEY = "LAUNCHDARKLY_KEY";
 
   // set of env vars necessary for the container orchestrator app to run
   public static final Set<String> ENV_VARS_TO_TRANSFER = new ImmutableSet.Builder<String>()
@@ -31,6 +34,8 @@ public class OrchestratorConstants {
           EnvConfigs.JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET,
           EnvConfigs.JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY,
           EnvConfigs.JOB_KUBE_NODE_SELECTORS,
+          EnvConfigs.JOB_ISOLATED_KUBE_NODE_SELECTORS,
+          EnvConfigs.USE_CUSTOM_NODE_SELECTOR,
           EnvConfigs.DOCKER_NETWORK,
           EnvConfigs.LOCAL_DOCKER_MOUNT,
           EnvConfigs.WORKSPACE_DOCKER_MOUNT,
@@ -65,7 +70,15 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_REGION,
-          EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE))
+          EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE,
+          EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
+          EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
+          EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES,
+          FEATURE_FLAG_CLIENT,
+          FEATURE_FLAG_PATH,
+          LAUNCHDARKLY_KEY,
+          EnvConfigs.SOCAT_KUBE_CPU_LIMIT,
+          EnvConfigs.SOCAT_KUBE_CPU_REQUEST))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";

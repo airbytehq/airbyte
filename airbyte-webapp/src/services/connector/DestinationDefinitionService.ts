@@ -4,11 +4,13 @@ import { useConfig } from "config";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { connectorDefinitionKeys } from "./ConnectorDefinitions";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 import { DestinationDefinitionCreate, DestinationDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
-import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const destinationDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "destinationDefinition"] as const,
@@ -16,7 +18,7 @@ export const destinationDefinitionKeys = {
   detail: (id: string) => [...destinationDefinitionKeys.all, "details", id] as const,
 };
 
-function useGetDestinationDefinitionService(): DestinationDefinitionService {
+export function useGetDestinationDefinitionService(): DestinationDefinitionService {
   const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
@@ -35,9 +37,10 @@ const useDestinationDefinitionList = (): {
   destinationDefinitions: DestinationDefinitionReadWithLatestTag[];
 } => {
   const service = useGetDestinationDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([service.list(), service.listLatest()]);
+    const [definition, latestDefinition] = await Promise.all([service.list(workspaceId), service.listLatest()]);
 
     const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
       (destination: DestinationDefinitionRead) => {
@@ -57,21 +60,27 @@ const useDestinationDefinitionList = (): {
 };
 
 const useDestinationDefinition = <T extends string | undefined>(
-  id: T
+  destinationDefinitionId: T
 ): T extends string ? DestinationDefinitionRead : DestinationDefinitionRead | undefined => {
   const service = useGetDestinationDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useSuspenseQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-    enabled: isDefined(id),
-  });
+  return useSuspenseQuery(
+    destinationDefinitionKeys.detail(destinationDefinitionId || ""),
+    () => service.get({ workspaceId, destinationDefinitionId: destinationDefinitionId || "" }),
+    {
+      enabled: isDefined(destinationDefinitionId),
+    }
+  );
 };
 
 const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
-    (destinationDefinition) => service.create(destinationDefinition),
+    (destinationDefinition) => service.createCustom({ workspaceId, destinationDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
@@ -109,6 +118,8 @@ const useUpdateDestinationDefinition = () => {
             ) ?? [],
         })
       );
+
+      queryClient.invalidateQueries(connectorDefinitionKeys.count());
     },
   });
 };

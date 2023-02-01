@@ -168,7 +168,7 @@ class CdcAcceptanceTests {
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 1: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final Database source = testHarness.getSourceDatabase();
 
@@ -194,11 +194,11 @@ class CdcAcceptanceTests {
     // new value and an updated_at time corresponding to this update query
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, "geralt").build()),
         beforeFirstUpdate,
         Optional.empty()));
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_NAME, "yennefer").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "2").put(COLUMN_NAME, "yennefer").build()),
         beforeFirstUpdate,
         Optional.empty()));
 
@@ -206,11 +206,11 @@ class CdcAcceptanceTests {
     source.query(ctx -> ctx.execute("INSERT INTO color_palette(id, color) VALUES(4, 'yellow')"));
     source.query(ctx -> ctx.execute("UPDATE color_palette SET color='purple' WHERE id=2"));
     expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 4).put(COLUMN_COLOR, "yellow").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "4").put(COLUMN_COLOR, "yellow").build()),
         beforeFirstUpdate,
         Optional.empty()));
     expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_COLOR, "purple").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "2").put(COLUMN_COLOR, "purple").build()),
         beforeFirstUpdate,
         Optional.empty()));
 
@@ -218,7 +218,7 @@ class CdcAcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 2: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
     assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
@@ -230,7 +230,7 @@ class CdcAcceptanceTests {
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
 
-    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after reset: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertDestinationMatches(ID_AND_NAME_TABLE, Collections.emptyList());
     assertDestinationMatches(COLOR_PALETTE_TABLE, Collections.emptyList());
@@ -241,7 +241,7 @@ class CdcAcceptanceTests {
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
-    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 3: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
@@ -285,7 +285,7 @@ class CdcAcceptanceTests {
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
-    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 1: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final Database source = testHarness.getSourceDatabase();
     final List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
@@ -298,7 +298,7 @@ class CdcAcceptanceTests {
     source.query(ctx -> ctx.execute("DELETE FROM id_and_name WHERE id=1"));
 
     final Map<String, Object> deletedRecordMap = new HashMap<>();
-    deletedRecordMap.put(COLUMN_ID, 1);
+    deletedRecordMap.put(COLUMN_ID, "1");
     deletedRecordMap.put(COLUMN_NAME, null);
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(deletedRecordMap),
@@ -309,7 +309,7 @@ class CdcAcceptanceTests {
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
-    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    LOGGER.info("state after sync 2: {}", apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
   }
@@ -431,13 +431,13 @@ class CdcAcceptanceTests {
     final Instant beforeInsert = Instant.now();
     source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "6").put(COLUMN_NAME, "geralt").build()),
         beforeInsert,
         Optional.empty()));
 
     source.query(ctx -> ctx.execute("INSERT INTO color_palette(id, color) VALUES(4, 'yellow')"));
     expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
-        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 4).put(COLUMN_COLOR, "yellow").build()),
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, "4").put(COLUMN_COLOR, "yellow").build()),
         beforeInsert,
         Optional.empty()));
 
@@ -559,7 +559,7 @@ class CdcAcceptanceTests {
   }
 
   private void assertGlobalStateContainsStreams(final UUID connectionId, final List<StreamDescriptor> expectedStreams) throws ApiException {
-    final ConnectionState state = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionState state = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     LOGGER.info("state: {}", state);
     assertEquals(ConnectionStateType.GLOBAL, state.getStateType());
     final List<StreamDescriptor> stateStreams = state.getGlobalState().getStreamStates().stream().map(StreamState::getStreamDescriptor).toList();
@@ -569,7 +569,7 @@ class CdcAcceptanceTests {
   }
 
   private void assertNoState(final UUID connectionId) throws ApiException {
-    final ConnectionState state = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionState state = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     assertEquals(ConnectionStateType.NOT_SET, state.getStateType());
     assertNull(state.getState());
     assertNull(state.getStreamState());

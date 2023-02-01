@@ -1,10 +1,13 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
-import mockConnection from "test-utils/mock-data/mockConnection.json";
-import mockDest from "test-utils/mock-data/mockDestinationDefinition.json";
+import { mockConnection } from "test-utils/mock-data/mockConnection";
+import {
+  mockDestinationDefinition,
+  mockDestinationDefinitionSpecification,
+} from "test-utils/mock-data/mockDestination";
+import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper } from "test-utils/testutils";
 
-import { AirbyteCatalog, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { FormError } from "utils/errorStatusMessage";
 
 import {
@@ -14,7 +17,15 @@ import {
 } from "./ConnectionFormService";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
-  useGetDestinationDefinitionSpecification: () => mockDest,
+  useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,
+}));
+
+jest.mock("services/connector/DestinationDefinitionService", () => ({
+  useDestinationDefinition: () => mockDestinationDefinition,
+}));
+
+jest.mock("services/workspaces/WorkspacesService", () => ({
+  useCurrentWorkspace: () => mockWorkspace,
 }));
 
 describe("ConnectionFormService", () => {
@@ -32,7 +43,7 @@ describe("ConnectionFormService", () => {
 
   it("should take a partial Connection", async () => {
     const partialConnection: ConnectionOrPartialConnection = {
-      syncCatalog: mockConnection.syncCatalog as AirbyteCatalog,
+      syncCatalog: mockConnection.syncCatalog,
       source: mockConnection.source,
       destination: mockConnection.destination,
     };
@@ -52,7 +63,7 @@ describe("ConnectionFormService", () => {
     const { result } = renderHook(useConnectionFormService, {
       wrapper: Wrapper,
       initialProps: {
-        connection: mockConnection as WebBackendConnectionRead,
+        connection: mockConnection,
         mode: "create",
         refreshSchema,
       },
@@ -66,7 +77,7 @@ describe("ConnectionFormService", () => {
       const { result } = renderHook(useConnectionFormService, {
         wrapper: Wrapper,
         initialProps: {
-          connection: mockConnection as WebBackendConnectionRead,
+          connection: mockConnection,
           mode: "create",
           refreshSchema,
         },
@@ -81,7 +92,7 @@ describe("ConnectionFormService", () => {
       const { result } = renderHook(useConnectionFormService, {
         wrapper: Wrapper,
         initialProps: {
-          connection: mockConnection as WebBackendConnectionRead,
+          connection: mockConnection,
           mode: "create",
           refreshSchema,
         },
@@ -94,7 +105,7 @@ describe("ConnectionFormService", () => {
       const { result } = renderHook(useConnectionFormService, {
         wrapper: Wrapper,
         initialProps: {
-          connection: mockConnection as WebBackendConnectionRead,
+          connection: mockConnection,
           mode: "create",
           refreshSchema,
         },
@@ -107,7 +118,7 @@ describe("ConnectionFormService", () => {
       const { result } = renderHook(useConnectionFormService, {
         wrapper: Wrapper,
         initialProps: {
-          connection: mockConnection as WebBackendConnectionRead,
+          connection: mockConnection,
           mode: "create",
           refreshSchema,
         },

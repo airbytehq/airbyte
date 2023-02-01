@@ -1,0 +1,76 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
+
+// ------- <table/> --------
+.table {
+  border-spacing: 0;
+  width: 100%;
+  max-width: 100%;
+  border-radius: variables.$border-radius-md;
+}
+
+.thead {
+  position: sticky;
+  top: 0;
+  z-index: z-indices.$tableScroll;
+}
+
+// --------- <th/> ---------
+.th {
+  background: colors.$grey-50;
+  color: colors.$grey;
+  text-transform: uppercase;
+  border-bottom: none;
+  text-align: left;
+  font-size: 10px;
+  line-height: 12px;
+  font-weight: 600;
+
+  &:first-child {
+    padding-left: calc(variables.$spacing-2xl + variables.$spacing-sm);
+    border-radius: variables.$border-radius-md 0 0;
+  }
+
+  &:last-child {
+    padding-left: variables.$spacing-lg;
+    border-radius: 0 variables.$border-radius-md 0 0;
+  }
+}
+
+// --------- <tr/> ---------
+.tr {
+  background: colors.$white;
+  cursor: auto;
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+}
+
+// --------- <td/> ---------
+
+.td {
+  padding: variables.$spacing-lg calc(variables.$spacing-md + variables.$spacing-xs);
+  font-size: 12px;
+  line-height: 15px;
+  font-weight: normal;
+  color: colors.$dark-blue;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: variables.$border-thin solid colors.$grey-100;
+  width: auto;
+
+  tr:last-child > & {
+    border-bottom: none;
+
+    &:first-child {
+      border-radius: 0 0 0 variables.$border-radius-md;
+    }
+
+    &:last-child {
+      border-radius: 0 0 variables.$border-radius-md;
+    }
+  }
+}

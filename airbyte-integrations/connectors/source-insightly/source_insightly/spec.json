@@ -1,0 +1,25 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/insightly",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Insightly Spec",
+    "type": "object",
+    "required": ["token", "start_date"],
+    "additionalProperties": true,
+    "properties": {
+      "token": {
+        "type": ["string", "null"],
+        "title": "API Token",
+        "description": "Your Insightly API token.",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "type": ["string", "null"],
+        "title": "Start Date",
+        "description": "The date from which you'd like to replicate data for Insightly in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated. Note that it will be used only for incremental streams.",
+        "examples": ["2021-03-01T00:00:00Z"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      }
+    }
+  }
+}

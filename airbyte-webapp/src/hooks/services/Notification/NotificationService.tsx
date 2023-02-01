@@ -33,9 +33,8 @@ const NotificationService = ({ children }: { children: React.ReactNode }) => {
       {firstNotification ? (
         // Show only first notification
         <Toast
-          title={firstNotification.title}
           text={firstNotification.text}
-          hasError={firstNotification.isError}
+          type={firstNotification.type}
           onClose={
             firstNotification.nonClosable
               ? undefined
@@ -50,14 +49,16 @@ const NotificationService = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useNotificationService: (
-  notification?: Notification,
-  dependencies?: []
-) => {
+interface NotificationServiceHook {
   registerNotification: (notification: Notification) => void;
   unregisterAllNotifications: () => void;
   unregisterNotificationById: (notificationId: string | number) => void;
-} = (notification, dependencies) => {
+}
+
+export const useNotificationService: (notification?: Notification, dependencies?: []) => NotificationServiceHook = (
+  notification,
+  dependencies
+) => {
   const notificationService = useContext(notificationServiceContext);
   if (!notificationService) {
     throw new Error("useNotificationService must be used within a NotificationService.");

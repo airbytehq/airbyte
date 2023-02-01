@@ -1,0 +1,104 @@
+@use "scss/colors";
+@use "scss/variables";
+
+$cell-height: 28px;
+$cell-padding: variables.$spacing-xl + variables.$spacing-sm;
+$cell-fixed-width: 100px;
+
+.customTableStyle {
+  td {
+    border-bottom-color: colors.$grey-50;
+  }
+}
+
+.headerGroupCell {
+  height: 58px;
+  background-color: colors.$white;
+  color: colors.$dark-blue;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: $cell-height;
+  text-transform: capitalize;
+
+  &:first-child {
+    padding-left: $cell-padding;
+    border-radius: 0;
+  }
+
+  &:last-child {
+    padding-left: 0;
+  }
+}
+
+.headerCell {
+  color: colors.$grey;
+  background-color: colors.$grey-50;
+  height: $cell-height;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  text-transform: capitalize;
+
+  &--syncCell {
+    width: 0; /** Collapses the th to the exact size of its content **/
+    padding-right: variables.$spacing-lg;
+  }
+
+  &:first-child {
+    padding-left: $cell-padding;
+    border-radius: 0;
+  }
+
+  &:last-child {
+    padding-left: 0;
+    border-radius: 0;
+  }
+}
+
+%bodyCell {
+  height: $cell-height;
+  padding: 0;
+
+  &:first-child {
+    padding-left: $cell-padding;
+    border-radius: 0;
+    min-width: 130px;
+  }
+
+  &:last-child {
+    padding-right: $cell-padding;
+  }
+}
+
+.textCell {
+  @extend %bodyCell;
+
+  color: colors.$dark-blue;
+  max-width: 0;
+}
+
+.dataTypeCell {
+  @extend %bodyCell;
+
+  width: $cell-fixed-width;
+  color: colors.$grey-400;
+}
+
+.cursorCell {
+  padding: 0;
+  width: $cell-fixed-width;
+}
+
+.pkCell {
+  @extend %bodyCell;
+
+  width: $cell-fixed-width;
+}
+
+.arrowCell {
+  @extend %bodyCell;
+
+  svg {
+    color: colors.$grey-200;
+  }
+}

@@ -133,6 +133,7 @@ OAuth authentication is supported through the `OAuthAuthenticator`, which requir
 - access_token_name (Optional): The field to extract access token from in the response. Default: "access_token".
 - expires_in_name (Optional): The field to extract expires_in from in the response. Default: "expires_in"
 - refresh_request_body (Optional): The request body to send in the refresh request. Default: None
+- grant_type (Optional): The parameter specified grant_type to request access_token. Default: "refresh_token"
 
 Schema:
 
@@ -173,6 +174,9 @@ Schema:
         default: "expires_in"
       refresh_request_body:
         type: object
+      grant_type:
+        type: string
+        default: "refresh_token"
 ```
 
 Example:

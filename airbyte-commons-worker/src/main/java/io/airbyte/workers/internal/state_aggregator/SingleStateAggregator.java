@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.internal.state_aggregator;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -14,11 +17,13 @@ class SingleStateAggregator implements StateAggregator {
 
   AirbyteStateMessage state;
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void ingest(final AirbyteStateMessage stateMessage) {
     state = stateMessage;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public State getAggregated() {
     if (state.getType() == null || state.getType() == AirbyteStateType.LEGACY) {

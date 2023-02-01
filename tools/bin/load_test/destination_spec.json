@@ -1,0 +1,8 @@
+{
+  "name": "End-to-End Testing (/dev/null)",
+  "destinationDefinitionId": "replace_destination_definition_id",
+  "workspaceId": "replace_workspace_id",
+  "connectionConfiguration": {
+    "type": "SILENT"
+  }
+}

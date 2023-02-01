@@ -21,12 +21,31 @@ pluginManagement {
 // as much information as possible.
 plugins {
     id "com.gradle.enterprise" version "3.4.1"
+    id 'com.github.burrunan.s3-build-cache' version "1.5"
 }
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+    }
+}
+
+ext.isCiServer = System.getenv().containsKey("CI")
+
+buildCache {
+    local {
+        // Local build cache is dangerous as it might produce inconsistent results
+        // in case developer modifies files while the build is running
+        enabled = false
+    }
+    remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
+        region = 'us-east-2'
+        bucket = 'airbyte-buildcache'
+        prefix = 'cache/'
+        push = isCiServer
+        // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
+        // anonymous access will be used if environment variables are missing
     }
 }
 
@@ -72,7 +91,6 @@ include ':airbyte-json-validation'
 include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
 include ':airbyte-protocol:protocol-models'
-include ':airbyte-queue'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
@@ -80,18 +98,22 @@ include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
+include ':airbyte-featureflag'
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
+include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 include ':airbyte-worker-models'
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
+    include ':airbyte-commons-server'
     include ':airbyte-config:specs'
+    include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
     include ':airbyte-metrics:reporter'
+    include ':airbyte-proxy'
     include ':airbyte-server'
     include ':airbyte-temporal'
     include ':airbyte-tests'
@@ -113,7 +135,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:s3-destination-base-integration-test'
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
-    include ':airbyte-integrations:bases:debezium-v1-4-2'
     include ':airbyte-integrations:bases:debezium-v1-9-6'
 
     // Needed by normalization integration tests
@@ -152,3 +173,5 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
+
+

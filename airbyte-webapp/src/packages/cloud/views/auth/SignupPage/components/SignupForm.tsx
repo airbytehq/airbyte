@@ -1,4 +1,4 @@
-import { Field, FieldProps, Formik } from "formik";
+import { Field, FieldProps, Formik, Form } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useSearchParams } from "react-router-dom";
@@ -14,9 +14,9 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { isGdprCountry } from "utils/dataPrivacy";
 import { links } from "utils/links";
 
-import CheckBoxControl from "../../components/CheckBoxControl";
-import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
+import CheckBoxControl from "../../components/CheckBoxControl";
+import { BottomBlock, FieldItem, RowFieldItem } from "../../components/FormComponents";
 
 interface FormValues {
   name: string;
@@ -114,24 +114,15 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
   );
 };
 
-export const NewsField: React.FC = () => {
-  const { formatMessage } = useIntl();
-  return (
-    <Field name="news">
-      {({ field, meta }: FieldProps<string>) => (
-        <MarginBlock>
-          <CheckBoxControl
-            {...field}
-            checked={!!field.value}
-            checkbox
-            label={<FormattedMessage id="login.subscribe" />}
-            message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-          />
-        </MarginBlock>
-      )}
-    </Field>
-  );
-};
+export const NewsField: React.FC = () => (
+  <Field name="news">
+    {({ field }: FieldProps<string>) => (
+      <MarginBlock>
+        <CheckBoxControl {...field} checked={!!field.value} label={<FormattedMessage id="login.subscribe" />} />
+      </MarginBlock>
+    )}
+  </Field>
+);
 
 export const Disclaimer: React.FC = () => {
   return (
@@ -231,7 +222,6 @@ export const SignupForm: React.FC = () => {
               {showCompanyName && <CompanyNameField />}
             </RowFieldItem>
           )}
-
           <FieldItem>
             <EmailField />
           </FieldItem>

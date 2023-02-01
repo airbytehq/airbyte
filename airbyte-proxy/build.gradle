@@ -1,0 +1,21 @@
+task prepareBuild(type: Copy) {
+    from layout.projectDirectory.file("nginx-auth.conf.template")
+    from layout.projectDirectory.file("nginx-no-auth.conf.template")
+    from layout.projectDirectory.file("run.sh")
+    from layout.projectDirectory.file("401.html")
+
+    into layout.buildDirectory.dir("docker")
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn prepareBuild
+    dependsOn copyDocker
+}
+
+task bashTest(type: Exec) {
+    dependsOn buildDockerImage
+    commandLine "./test.sh"
+}
+
+// we can't override the 'test' command, so we can make our bash test a dependency
+test.dependsOn(project.tasks.bashTest)

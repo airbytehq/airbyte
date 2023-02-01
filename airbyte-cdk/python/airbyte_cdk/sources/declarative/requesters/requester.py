@@ -70,9 +70,9 @@ class Requester(RequestOptionsProvider, JsonSchemaMixin):
         """
 
     @abstractmethod
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         """
-        Specifies conditions for backoff based on the response from the server.
+        Specifies conditions for backoff, error handling and reporting based on the response from the server.
 
         By default, back off on the following HTTP response statuses:
          - 429 (Too Many Requests) indicating rate limiting

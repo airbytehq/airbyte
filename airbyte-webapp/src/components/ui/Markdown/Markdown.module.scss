@@ -1,5 +1,6 @@
-@use "../../../scss/colors";
-@use "../../../scss/fonts";
+@use "scss/colors";
+@use "scss/fonts";
+@use "scss/variables";
 
 .markdown {
   * {
@@ -75,8 +76,8 @@
     display: block;
     padding: 15px;
     overflow: auto;
-    border-radius: 8px;
-    border-bottom: 2px solid colors.$grey-100;
+    border-radius: variables.$border-radius-md;
+    border-bottom: variables.$border-thick solid colors.$grey-100;
   }
 
   img {

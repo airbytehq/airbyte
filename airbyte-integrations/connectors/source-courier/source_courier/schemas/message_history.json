@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string"
+    },
+    "ts": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "event": {
+      "type": "string"
+    },
+    "profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "override": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "recipient": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "notification_id": {
+      "type": "string"
+    },
+    "merged_profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "received_profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "stored_profile": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "output": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": true
+    },
+    "channel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "integration": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "provider": {
+          "type": "string"
+        }
+      }
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "FILTERED",
+        "NO_CHANNELS",
+        "NO_PROVIDERS",
+        "PROVIDER_ERROR",
+        "UNPUBLISHED",
+        "UNDELIVERABLE",
+        "UNSUBSCRIBED"
+      ]
+    },
+    "reasonCode": {
+      "type": "string",
+      "enum": ["HARD", "SOFT"]
+    }
+  }
+}

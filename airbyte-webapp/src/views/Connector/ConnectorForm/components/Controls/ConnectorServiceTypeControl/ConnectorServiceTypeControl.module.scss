@@ -1,0 +1,53 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.connectorListFooter {
+  width: 100%;
+  padding: variables.$spacing-md;
+  border-top: variables.$border-thin solid colors.$grey-50;
+  min-height: 36px;
+  position: relative;
+
+  .requestNewConnectorBtn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: variables.$spacing-md;
+    border: none;
+    cursor: pointer;
+    background: colors.$white;
+    color: colors.$dark-blue;
+
+    &:hover {
+      color: colors.$blue;
+    }
+  }
+}
+
+.connectorName {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: variables.$spacing-md;
+}
+
+.stageLabel {
+  padding: 2px 6px;
+  height: 14px;
+  background: colors.$grey-100;
+  color: colors.$dark-blue;
+  text-transform: uppercase;
+  border-radius: variables.$border-radius-pill;
+  font-weight: 500;
+  font-size: 8px;
+  line-height: 10px;
+}
+
+.singleValueContent {
+  width: 100%;
+  padding-right: 38px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}

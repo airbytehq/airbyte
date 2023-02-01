@@ -79,7 +79,7 @@ cat integration_tests/test_data/messages.txt | docker run --rm -v $(pwd)/secrets
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
-pip install .[tests]
+pip install .'[tests]'
 ```
 ### Unit Tests
 To run unit tests locally, from the connector directory run:

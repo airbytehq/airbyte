@@ -8,7 +8,7 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 ## Low-code Connector-Development Framework
 
-You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs by modifying boilerplate YAML files.
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
 
 ## Python Connector-Development Kit \(CDK\)
 
@@ -109,6 +109,32 @@ The steps for updating an existing connector are the same as for building a new 
 2. Run tests
 3. Add any needed docs updates
 4. Create a PR to get the connector published
+
+## Adding normalization to a connector
+
+In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` file.
+
+### New connectors
+If you're adding normalization to a new connector, you'll need to first add a destination definitions entry:
+1. Add a new connector definition in `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml`. You can copy an existing entry and modify it to match your connector, generating a new UUIDv4 for the `destinationDefinitionId`.
+2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/specs) for more information.
+
+### Add normalization fields
+
+Once you have a destination definitions entry, you'll need to add a `normaliationConfig` field to enable normalization.
+
+Here's an example of normalization fields being set to enable normalization for the Postgres destination:
+
+```yaml
+normalizationConfig:
+    normalizationRepository: airbyte/normalization
+    normalizationTag: 0.2.25
+    normalizationIntegrationType: postgres
+```
+
+For more information about what these fields mean, see the [NormalizationDestinationDefinitionConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/config-models/src/main/resources/types/NormalizationDestinationDefinitionConfig.yaml) schema.
+
+The presence of these fields will enable normalization for the connector, and determine which docker image will run.
 
 ## Publishing a connector
 

@@ -1,0 +1,82 @@
+name: Deploy docs.airbyte.com
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "docs/**"
+
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths:
+      - "docs/**"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy-docs:
+    name: Build and Deploy Docs Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Node.js is needed for Yarn
+      - name: Setup Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16.14.0"
+          cache: "yarn"
+          cache-dependency-path: docusaurus
+
+
+      - name: Run Docusaurus
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |-
+          export SKIP_DEPLOY="yes"
+          if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' ]; then
+              export SKIP_DEPLOY="no"
+          fi
+
+          ./tools/bin/deploy_docusaurus
+
+
+      - name: Notify Slack -- deploy failed
+        if: always() && ( github.event_name == 'push' || github.event_name == 'workflow_dispatch' ) && job.status != 'success'
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          # 'C02TYDSUM8F' => '#dev-deploys'
+          # 'C03BEADRPNY' => '#docs'
+          args: >-
+            {\"channel\":\"C03BEADRPNY\",\"attachments\":[
+            {\"color\":\"#ff0000\",\"blocks\":[
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"OSS Docs deploy fails on the latest master :bangbang:\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}*\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run>\"}}
+            ]}]}
+
+      - name: Notify Slack -- deploy succeeded
+        if: always() && ( github.event_name == 'push' || github.event_name == 'workflow_dispatch' ) && job.status == 'success'
+        uses: abinoda/slack-action@master
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+        with:
+          # 'C02TYDSUM8F' => '#dev-deploys'
+          # 'C03BEADRPNY' => '#docs'
+          args: >-
+            {\"channel\":\"C03BEADRPNY\",\"attachments\":[
+            {\"color\":\"#00ff00\",\"blocks\":[
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"OSS Docs deploy was successful :tada:\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}*\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run>\"}}
+            ]}]}

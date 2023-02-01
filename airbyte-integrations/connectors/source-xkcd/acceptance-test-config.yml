@@ -1,0 +1,16 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-xkcd:dev
+tests:
+  spec:
+    - spec_path: "source_xkcd/spec.yaml"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: []
+      timeout_seconds: 3600

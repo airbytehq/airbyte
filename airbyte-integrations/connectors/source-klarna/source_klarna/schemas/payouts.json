@@ -1,0 +1,135 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "totals",
+    "payment_reference",
+    "payout_date",
+    "currency_code",
+    "merchant_settlement_type",
+    "merchant_id"
+  ],
+  "properties": {
+    "totals": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "commission_amount": {
+          "description": "The total amount of commissions, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "repay_amount": {
+          "description": "The total amount of money that has been repaid by the merchant from the debt to Klarna, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "sale_amount": {
+          "description": "The total amount of sales, in minor units",
+          "example": 500,
+          "type": "integer",
+          "format": "int64"
+        },
+        "holdback_amount": {
+          "description": "The total amount of money withheld by Klarna, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "tax_amount": {
+          "description": "The total amount of tax, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "settlement_amount": {
+          "description": "The total amount of the settlement in question, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "fee_correction_amount": {
+          "description": "The total amount of fee correction, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "reversal_amount": {
+          "description": "The total amount of reversals, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "release_amount": {
+          "description": "The total amount of money released from holdback by Klarna, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "return_amount": {
+          "description": "The total amount of returns, in minor units",
+          "example": 550,
+          "type": "integer",
+          "format": "int64"
+        },
+        "fee_amount": {
+          "description": "The total amount of fees, in minor units",
+          "example": 500,
+          "type": "integer",
+          "format": "int64"
+        },
+        "charge_amount": {
+          "description": "The total amount of charges, in minor units. The additional field detailed_type contains the purpose of the charge",
+          "example": 500,
+          "type": "integer",
+          "format": "int64"
+        },
+        "credit_amount": {
+          "description": "The total amount of credits, in minor units. The additional field detailed_type contains the purpose of the credit",
+          "example": 500,
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "payment_reference": {
+      "description": "The reference id of the payout",
+      "example": "XISA93DJ",
+      "type": "string"
+    },
+    "payout_date": {
+      "description": "ISO 8601 formatted date-time string",
+      "example": "2016-12-14T07:52:26Z",
+      "type": "string",
+      "format": "date-time"
+    },
+    "currency_code": {
+      "description": "ISO 4217 Currency Code. Like USD, EUR, AUD or GBP.",
+      "example": "USD",
+      "type": "string"
+    },
+    "currency_code_of_registration_country": {
+      "type": "string",
+      "description": "ISO 4217 Currency Code of the country you are registered in.",
+      "example": "EUR"
+    },
+    "merchant_settlement_type": {
+      "description": "Whether the amounts are net or gross",
+      "example": "NET",
+      "type": "string",
+      "enum": ["GROSS", "NET", "GROSS_FEE"]
+    },
+    "merchant_id": {
+      "description": "The merchant id",
+      "type": "string"
+    },
+    "transactions": {
+      "description": "Link to the transactions that are part of this payout",
+      "example": "https://{settlements_api}/transactions?payment_reference=XISA93DJ",
+      "type": "string"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

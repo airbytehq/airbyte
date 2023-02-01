@@ -14,7 +14,6 @@ export interface ControlLabelsProps {
   success?: boolean;
   nextLine?: boolean;
   message?: React.ReactNode;
-  labelAdditionLength?: number;
   label?: React.ReactNode;
   infoTooltipContent?: React.ReactNode;
   optional?: boolean;
@@ -27,7 +26,6 @@ const ControlLabels: React.FC<React.PropsWithChildren<ControlLabelsProps>> = (pr
       error={props.error}
       success={props.success}
       message={props.message}
-      additionLength={props.labelAdditionLength}
       nextLine={props.nextLine}
       htmlFor={props.htmlFor}
     >

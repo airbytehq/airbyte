@@ -4,8 +4,9 @@
 
 
 from functools import reduce
-from typing import Any, List, Mapping, Optional, Set
+from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
 
+import dpath.util
 import pendulum
 from jsonref import JsonRef
 
@@ -121,22 +122,34 @@ class JsonSchemaHelper:
             node = node[segment]
         return node
 
-    def find_nodes(self, keys: List[str]) -> List[List[str]]:
-        """Get all nodes of schema that has specifies properties
+    def get_parent(self, path: str) -> Any:
+        """
+        Returns the parent dict of a given path within the `obj` dict
+        """
+        absolute_path = f"/{path}"
+        parent_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+        if parent_path == "":
+            return self._schema
+        return dpath.util.get(self._schema, parent_path)
 
-        :param keys:
+    def find_nodes(self, keys: List[str]) -> List[List[str]]:
+        """Find all paths that lead to nodes with the specified keys.
+
+        :param keys: list of keys
         :return: list of json object paths
         """
         variant_paths = []
 
-        def traverse_schema(_schema, path=None):
+        def traverse_schema(_schema: Union[Dict[Text, Any], List], path=None):
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
-            for item in _schema:
-                next_obj = _schema[item] if isinstance(_schema, dict) else item
-                if isinstance(next_obj, (list, dict)):
-                    traverse_schema(next_obj, [*path, item])
+            if isinstance(_schema, dict):
+                for item in _schema:
+                    traverse_schema(_schema[item], [*path, item])
+            elif isinstance(_schema, list):
+                for i, item in enumerate(_schema):
+                    traverse_schema(_schema[i], [*path, i])
 
         traverse_schema(self._schema)
         return variant_paths

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "organizationId": {
+      "type": "object"
+    },
+    "name": {
+      "type": "string"
+    },
+    "productId": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer"
+    },
+    "reasonRequired": {
+      "type": "boolean"
+    }
+  }
+}

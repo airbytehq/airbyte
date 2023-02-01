@@ -1,0 +1,8 @@
+.container {
+  max-height: 600px;
+  overflow: unset;
+  min-width: fit-content;
+  padding-right: 15px;
+
+  --webkit-overlay: true;
+}

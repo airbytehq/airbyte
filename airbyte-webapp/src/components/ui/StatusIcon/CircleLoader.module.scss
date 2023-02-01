@@ -1,0 +1,24 @@
+@use "scss/colors";
+
+@keyframes spinning {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spinning 1000ms linear infinite normal forwards;
+}
+
+.centerDot {
+  fill: colors.$blue;
+}
+
+:export {
+  // Export colors to be used in SVG gradients
+  gradientColor: colors.$blue;
+}

@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string"
+    },
+    "access": {
+      "type": "string"
+    },
+    "article": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "granularity": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "views": {
+      "type": "integer",
+      "format": "int64"
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

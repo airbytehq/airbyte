@@ -49,17 +49,32 @@ To make complex changes or edit multiple files, edit the files on your local mac
 
    While cloning on Windows, you might encounter errors about long filenames. Refer to the instructions [here](../deploying-airbyte/local-deployment.md#handling-long-filename-error) to correct it.
 
-3. Test changes locally: 
+3. Test changes locally:
 
-  Run the following commands in your terminal:
+   To install the docs locally, run the following commands in your terminal:
 
-  ```bash
-  cd docusaurus
-  yarn install
-  yarn build
-  yarn serve
-  ```
-  Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.
+   ```bash
+   cd docusaurus
+   yarn install
+   ```
+
+   To see changes as you make them, run:
+
+   ```bash
+   yarn start
+   ```
+
+   Then navigate to [http://localhost:3000/](http://localhost:3000/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
+
+   You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
+
+   ```bash
+   yarn build
+   yarn serve
+   ```
+  
+   Then navigate to [http://localhost:3000/](http://localhost:3000/) to see your changes. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
+
 
 4. [Follow the GitHub workflow](https://docs.github.com/en/get-started/quickstart/contributing-to-projects/) to edit the files and create a pull request.
 
@@ -96,13 +111,23 @@ To add a redirect, open the [`docusaurus.config.js`](https://github.com/airbyteh
 Copy this section, replace the values, and [test the changes locally](#editing-on-your-local-machine) by going to the path you created a redirect for and verify that the address changes to the new one.
 
 :::note 
-Your path **needs* a leading slash `/` to work
+Your path **needs** a leading slash `/` to work
 :::
 
 ### Deploying and reverting the documentation site
 
 :::note
 Only the Airbyte team and maintainers have permissions to deploy the documentation site.
+:::
+
+#### Automated documentation site deployment
+
+When `docs/` folder gets changed in `master` branch of the repository, [`Deploy docs.airbyte.com` Github workflow](https://github.com/airbytehq/airbyte/actions/workflows/deploy-docs-site.yml) steps in, builds and deploys the documentation site.  This process is automatic, takes five to ten minutes, and needs no human intervention.
+
+#### Manual documentation site deployment
+
+:::note
+Manual deployment is reserved for emergency cases.  Please, bear in mind that automatic deployment is triggered by changes to `docs/` folder, so it needs to be disabled to avoid interference with manual deployment.
 :::
 
 You'll need a GitHub SSH key to deploy the documentation site using the [deployment tool](https://github.com/airbytehq/airbyte/blob/master/tools/bin/deploy_docusaurus). 

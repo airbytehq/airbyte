@@ -10,7 +10,6 @@ import com.google.common.base.Preconditions;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.commons.util.MoreLists;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,7 +47,8 @@ public class JsonSchemas {
   private static final String ALL_OF_TYPE = "allOf";
   private static final String ANY_OF_TYPE = "anyOf";
 
-  private static final Set<String> COMPOSITE_KEYWORDS = Set.of(ONE_OF_TYPE, ALL_OF_TYPE, ANY_OF_TYPE);
+  private static final Set<String> COMPOSITE_KEYWORDS = Set.of(ONE_OF_TYPE, ALL_OF_TYPE,
+      ANY_OF_TYPE);
 
   /**
    * JsonSchema supports to ways of declaring type. `type: "string"` and `type: ["null", "string"]`.
@@ -114,11 +114,11 @@ public class JsonSchemas {
    *         Collection } because there is no order or uniqueness guarantee so neither List nor Set
    *         make sense.
    */
-  public static <T> List<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema,
-                                                            final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
+  public static <T> List<T> traverseJsonSchemaWithCollector(final JsonNode jsonSchema, final BiFunction<JsonNode, List<FieldNameOrList>, T> mapper) {
     // for the sake of code reuse, use the filtered collector method but makes sure the filter always
     // returns true.
-    return traverseJsonSchemaWithFilteredCollector(jsonSchema, (node, path) -> Optional.ofNullable(mapper.apply(node, path)));
+    return traverseJsonSchemaWithFilteredCollector(jsonSchema,
+        (node, path) -> Optional.ofNullable(mapper.apply(node, path)));
   }
 
   /**
@@ -135,7 +135,8 @@ public class JsonSchemas {
   public static <T> List<T> traverseJsonSchemaWithFilteredCollector(final JsonNode jsonSchema,
                                                                     final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
     final List<T> collector = new ArrayList<>();
-    traverseJsonSchema(jsonSchema, (node, path) -> mapper.apply(node, path).ifPresent(collector::add));
+    traverseJsonSchema(jsonSchema,
+        (node, path) -> mapper.apply(node, path).ifPresent(collector::add));
     return collector.stream().toList(); // make list unmodifiable
   }
 
@@ -166,14 +167,14 @@ public class JsonSchemas {
    * @param jsonSchemaNode - jsonschema object to traverse.
    * @param consumer - consumer to be called at each node. it accepts the current node and the path to
    *        the node from the root of the object passed at the root level invocation
-   *
    */
   @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
                                                  final List<FieldNameOrList> path,
                                                  final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {
     if (!jsonSchemaNode.isObject()) {
-      throw new IllegalArgumentException(String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
+      throw new IllegalArgumentException(
+          String.format("json schema nodes should always be object nodes. path: %s actual: %s", path, jsonSchemaNode));
     }
     consumer.accept(jsonSchemaNode, path);
     // if type is missing assume object. not official JsonSchema, but it seems to be a common
@@ -184,7 +185,8 @@ public class JsonSchemas {
       switch (nodeType) {
         // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
         case ARRAY_TYPE -> {
-          final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.list());
+          final List<FieldNameOrList> newPath = new ArrayList<>(List.copyOf(path));
+          newPath.add(FieldNameOrList.list());
           if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
             // hit every node.
             traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
@@ -195,9 +197,11 @@ public class JsonSchemas {
         case OBJECT_TYPE -> {
           final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
           if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
-            for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
+            for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(
+                JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
               final Entry<String, JsonNode> child = it.next();
-              final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.fieldName(child.getKey()));
+              final List<FieldNameOrList> newPath = new ArrayList<>(List.copyOf(path));
+              newPath.add(FieldNameOrList.fieldName(child.getKey()));
               traverseJsonSchemaInternal(child.getValue(), newPath, consumer);
             }
           } else if (comboKeyWordOptional.isPresent()) {
@@ -272,11 +276,11 @@ public class JsonSchemas {
   /**
    * Provides a basic scheme for describing the path into a JSON object. Each element in the path is
    * either a field name or a list.
-   *
+   * <p>
    * This class is helpful in the case where fields can be any UTF-8 string, so the only simple way to
    * keep track of the different parts of a path without going crazy with escape characters is to keep
    * it in a list with list set aside as a special case.
-   *
+   * <p>
    * We prefer using this scheme instead of JSONPath in the tree traversal because, it is easier to
    * decompose a path in this scheme than it is in JSONPath. Some callers of the traversal logic want
    * to isolate parts of the path easily without the need for complex regex (that would be required if

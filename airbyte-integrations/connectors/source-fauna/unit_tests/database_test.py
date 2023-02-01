@@ -228,7 +228,7 @@ def run_removes_order_test(source: SourceFauna, logger, stream: ConfiguredAirbyt
 
 def run_general_remove_test(source: SourceFauna, logger):
     stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="deletions_test", json_schema={}),
+        stream=AirbyteStream(name="deletions_test", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append_dedup,
     )
@@ -478,7 +478,7 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
 def run_test(db_data, source: SourceFauna):
     logger = mock_logger()
     stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="foo", json_schema={}),
+        stream=AirbyteStream(name="foo", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append_dedup,
     )

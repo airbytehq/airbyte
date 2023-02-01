@@ -8,7 +8,8 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
+from xmlrpc.client import Boolean
 
 import dpath.util
 import jsonschema
@@ -27,16 +28,56 @@ from airbyte_cdk.models import (
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, DiscoveryTestConfig, SpecTestConfig
+from source_acceptance_test.config import (
+    BasicReadTestConfig,
+    Config,
+    ConnectionTestConfig,
+    DiscoveryTestConfig,
+    EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
+    SpecTestConfig,
+)
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
-from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
+from source_acceptance_test.utils.common import (
+    build_configured_catalog_from_custom_catalog,
+    build_configured_catalog_from_discovered_catalog_and_empty_streams,
+    find_all_values_for_key_in_schema,
+    find_keyword_schema,
+)
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
 @pytest.fixture(name="connector_spec_dict")
 def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
+
+
+@pytest.fixture(name="secret_property_names")
+def secret_property_names_fixture():
+    return (
+        "client_token",
+        "access_token",
+        "api_token",
+        "token",
+        "secret",
+        "client_secret",
+        "password",
+        "key",
+        "service_account_info",
+        "service_account",
+        "tenant_id",
+        "certificate",
+        "jwt",
+        "credentials",
+        "app_id",
+        "appid",
+        "refresh_token",
+    )
+
+
+DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
+DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
 @pytest.mark.default_timeout(10)
@@ -46,7 +87,16 @@ class TestSpec(BaseTest):
     previous_spec_cache: ConnectorSpecification = None
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+    def skip_backward_compatibility_tests_fixture(
+        self,
+        inputs: SpecTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        previous_connector_spec: ConnectorSpecification,
+        actual_connector_spec: ConnectorSpecification,
+    ) -> bool:
+        if actual_connector_spec == previous_connector_spec:
+            pytest.skip("The previous and actual specifications are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
@@ -80,6 +130,20 @@ class TestSpec(BaseTest):
         assert docker_runner.env_variables.get("AIRBYTE_ENTRYPOINT") == " ".join(
             docker_runner.entry_point
         ), "env should be equal to space-joined entrypoint"
+
+    def test_enum_usage(self, actual_connector_spec: ConnectorSpecification):
+        """Check that enum lists in specs contain distinct values."""
+        docs_url = "https://docs.airbyte.io/connector-development/connector-specification-reference"
+        docs_msg = f"See specification reference at {docs_url}."
+
+        schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
+        enum_paths = schema_helper.find_nodes(keys=["enum"])
+
+        for path in enum_paths:
+            enum_list = schema_helper.get_node(path)
+            assert len(set(enum_list)) == len(
+                enum_list
+            ), f"Enum lists should not contain duplicate values. Misconfigured enum array: {enum_list}. {docs_msg}"
 
     def test_oneof_usage(self, actual_connector_spec: ConnectorSpecification):
         """Check that if spec contains oneOf it follows the rules according to reference
@@ -135,6 +199,216 @@ class TestSpec(BaseTest):
 
     def test_secret_never_in_the_output(self):
         """This test should be injected into any docker command it needs to know current config and spec"""
+
+    @staticmethod
+    def _is_spec_property_name_secret(path: str, secret_property_names) -> Tuple[Optional[str], bool]:
+        """
+        Given a path to a type field, extract a field name and decide whether it is a name of secret or not
+        based on a provided list of secret names.
+        Split the path by `/`, drop the last item and make list reversed.
+        Then iterate over it and find the first item that's not a reserved keyword or an index.
+        Example:
+        properties/credentials/oneOf/1/properties/api_key/type -> [api_key, properties, 1, oneOf, credentials, properties] -> api_key
+        """
+        reserved_keywords = ("anyOf", "oneOf", "allOf", "not", "properties", "items", "type", "prefixItems")
+        for part in reversed(path.split("/")[:-1]):
+            if part.isdigit() or part in reserved_keywords:
+                continue
+            return part, part.lower() in secret_property_names
+        return None, False
+
+    @staticmethod
+    def _property_can_store_secret(prop: dict) -> bool:
+        """
+        Some fields can not hold a secret by design, others can.
+        Null type as well as boolean can not hold a secret value.
+        A string, a number or an integer type can always store secrets.
+        Secret objects and arrays can not be rendered correctly in the UI:
+        A field with a constant value can not hold a secret as well.
+        """
+        unsecure_types = {"string", "integer", "number"}
+        type_ = prop["type"]
+        is_property_constant_value = bool(prop.get("const"))
+        can_store_secret = any(
+            [
+                isinstance(type_, str) and type_ in unsecure_types,
+                isinstance(type_, list) and (set(type_) & unsecure_types),
+            ]
+        )
+        if not can_store_secret:
+            return False
+        # if a property can store a secret, additional check should be done if it's a constant value
+        return not is_property_constant_value
+
+    def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
+        """
+        Each field has a type, therefore we can make a flat list of fields from the returned specification.
+        Iterate over the list, check if a field name is a secret name, can potentially hold a secret value
+        and make sure it is marked as `airbyte_secret`.
+        """
+        secrets_exposed = []
+        non_secrets_hidden = []
+        spec_properties = connector_spec_dict["connectionSpecification"]["properties"]
+        for type_path, type_value in dpath.util.search(spec_properties, "**/type", yielded=True):
+            _, is_property_name_secret = self._is_spec_property_name_secret(type_path, secret_property_names)
+            if not is_property_name_secret:
+                continue
+            absolute_path = f"/{type_path}"
+            property_path, _ = absolute_path.rsplit(sep="/", maxsplit=1)
+            property_definition = dpath.util.get(spec_properties, property_path)
+            marked_as_secret = property_definition.get("airbyte_secret", False)
+            possibly_a_secret = self._property_can_store_secret(property_definition)
+            if marked_as_secret and not possibly_a_secret:
+                non_secrets_hidden.append(property_path)
+            if not marked_as_secret and possibly_a_secret:
+                secrets_exposed.append(property_path)
+
+        if non_secrets_hidden:
+            properties = "\n".join(non_secrets_hidden)
+            pytest.fail(
+                f"""Some properties are marked with `airbyte_secret` although they probably should not be.
+                Please double check them. If they're okay, please fix this test.
+                {properties}"""
+            )
+        if secrets_exposed:
+            properties = "\n".join(secrets_exposed)
+            pytest.fail(
+                f"""The following properties should be marked with `airbyte_secret!`
+                    {properties}"""
+            )
+
+    def _fail_on_errors(self, errors: List[str]):
+        if len(errors) > 0:
+            pytest.fail("\n".join(errors))
+
+    def test_property_type_is_not_array(self, connector_spec: ConnectorSpecification):
+        """
+        Each field has one or multiple types, but the UI only supports a single type and optionally "null" as a second type.
+        """
+        errors = []
+        for type_path, type_value in dpath.util.search(connector_spec.connectionSpecification, "**/properties/*/type", yielded=True):
+            if isinstance(type_value, List):
+                number_of_types = len(type_value)
+                if number_of_types != 2 and number_of_types != 1:
+                    errors.append(
+                        f"{type_path} is not either a simple type or an array of a simple type plus null: {type_value} (for example: type: [string, null])"
+                    )
+                if number_of_types == 2 and type_value[1] != "null":
+                    errors.append(
+                        f"Second type of {type_path} is not null: {type_value}. Type can either be a simple type or an array of a simple type plus null (for example: type: [string, null])"
+                    )
+        self._fail_on_errors(errors)
+
+    def test_object_not_empty(self, connector_spec: ConnectorSpecification):
+        """
+        Each object field needs to have at least one property as the UI won't be able to show them otherwise.
+        If the whole spec is empty, it's allowed to have a single empty object at the top level
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for type_path, type_value in dpath.util.search(connector_spec.connectionSpecification, "**/type", yielded=True):
+            if type_path == "type":
+                # allow empty root object
+                continue
+            if type_value == "object":
+                property = schema_helper.get_parent(type_path)
+                if "oneOf" not in property and ("properties" not in property or len(property["properties"]) == 0):
+                    errors.append(
+                        f"{type_path} is an empty object which will not be represented correctly in the UI. Either remove or add specific properties"
+                    )
+        self._fail_on_errors(errors)
+
+    def test_array_type(self, connector_spec: ConnectorSpecification):
+        """
+        Each array has one or multiple types for its items, but the UI only supports a single type which can either be object, string or an enum
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        errors = []
+        for type_path, type_type in dpath.util.search(connector_spec.connectionSpecification, "**/type", yielded=True):
+            property_definition = schema_helper.get_parent(type_path)
+            if type_type != "array":
+                # unrelated "items", not an array definition
+                continue
+            items_value = property_definition.get("items", None)
+            if items_value is None:
+                continue
+            elif isinstance(items_value, List):
+                errors.append(f"{type_path} is not just a single item type: {items_value}")
+            elif items_value.get("type") not in ["object", "string", "number", "integer"] and "enum" not in items_value:
+                errors.append(f"Items of {type_path} has to be either object or string or define an enum")
+        self._fail_on_errors(errors)
+
+    def test_forbidden_complex_types(self, connector_spec: ConnectorSpecification):
+        """
+        not, anyOf, patternProperties, prefixItems, allOf, if, then, else, dependentSchemas and dependentRequired are not allowed
+        """
+        forbidden_keys = [
+            "not",
+            "anyOf",
+            "patternProperties",
+            "prefixItems",
+            "allOf",
+            "if",
+            "then",
+            "else",
+            "dependentSchemas",
+            "dependentRequired",
+        ]
+        found_keys = set()
+        for forbidden_key in forbidden_keys:
+            for path, value in dpath.util.search(connector_spec.connectionSpecification, f"**/{forbidden_key}", yielded=True):
+                found_keys.add(path)
+
+        for forbidden_key in forbidden_keys:
+            # remove forbidden keys if they are used as properties directly
+            for path, _value in dpath.util.search(connector_spec.connectionSpecification, f"**/properties/{forbidden_key}", yielded=True):
+                found_keys.remove(path)
+
+        if len(found_keys) > 0:
+            key_list = ", ".join(found_keys)
+            pytest.fail(f"Found the following disallowed JSON schema features: {key_list}")
+
+    def test_date_pattern(self, connector_spec: ConnectorSpecification, detailed_logger):
+        """
+        Properties with format date or date-time should always have a pattern defined how the date/date-time should be formatted
+        that corresponds with the format the datepicker component is creating.
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for format_path, format in dpath.util.search(connector_spec.connectionSpecification, "**/format", yielded=True):
+            if not isinstance(format, str):
+                # format is not a format definition here but a property named format
+                continue
+            property_definition = schema_helper.get_parent(format_path)
+            pattern = property_definition.get("pattern")
+            if format == "date" and not pattern == DATE_PATTERN:
+                detailed_logger.warning(
+                    f"{format_path} is defining a date format without the corresponding pattern. Consider setting the pattern to {DATE_PATTERN} to make it easier for users to edit this field in the UI."
+                )
+            if format == "date-time" and not pattern == DATETIME_PATTERN:
+                detailed_logger.warning(
+                    f"{format_path} is defining a date-time format without the corresponding pattern Consider setting the pattern to {DATETIME_PATTERN} to make it easier for users to edit this field in the UI."
+                )
+
+    def test_date_format(self, connector_spec: ConnectorSpecification, detailed_logger):
+        """
+        Properties with a pattern that looks like a date should have their format set to date or date-time.
+        """
+        schema_helper = JsonSchemaHelper(connector_spec.connectionSpecification)
+        for pattern_path, pattern in dpath.util.search(connector_spec.connectionSpecification, "**/pattern", yielded=True):
+            if not isinstance(pattern, str):
+                # pattern is not a pattern definition here but a property named pattern
+                continue
+            if pattern == DATE_PATTERN or pattern == DATETIME_PATTERN:
+                property_definition = schema_helper.get_parent(pattern_path)
+                format = property_definition.get("format")
+                if not format == "date" and pattern == DATE_PATTERN:
+                    detailed_logger.warning(
+                        f"{pattern_path} is defining a pattern that looks like a date without setting the format to `date`. Consider specifying the format to make it easier for users to edit this field in the UI."
+                    )
+                if not format == "date-time" and pattern == DATETIME_PATTERN:
+                    detailed_logger.warning(
+                        f"{pattern_path} is defining a pattern that looks like a date-time without setting the format to `date-time`. Consider specifying the format to make it easier for users to edit this field in the UI."
+                    )
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
@@ -223,8 +497,15 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+        self,
+        inputs: DiscoveryTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ) -> bool:
+        if discovered_catalog == previous_discovered_catalog:
+            pytest.skip("The previous and actual discovered catalogs are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
@@ -360,7 +641,10 @@ class TestBasicRead(BaseTest):
                 continue
             record_fields = set(get_object_structure(record.data))
             common_fields = set.intersection(record_fields, schema_pathes)
-            assert common_fields, f" Record from {record.stream} stream should have some fields mentioned by json schema, {schema_pathes}"
+
+            assert (
+                common_fields
+            ), f" Record {record} from {record.stream} stream with fields {record_fields} should have some fields mentioned by json schema: {schema_pathes}"
 
     @staticmethod
     def _validate_schema(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
@@ -382,13 +666,14 @@ class TestBasicRead(BaseTest):
         """
         Only certain streams allowed to be empty
         """
+        allowed_empty_stream_names = set([allowed_empty_stream.name for allowed_empty_stream in allowed_empty_streams])
         counter = Counter(record.stream for record in records)
 
         all_streams = set(stream.stream.name for stream in configured_catalog.streams)
         streams_with_records = set(counter.keys())
         streams_without_records = all_streams - streams_with_records
 
-        streams_without_records = streams_without_records - allowed_empty_streams
+        streams_without_records = streams_without_records - allowed_empty_stream_names
         assert not streams_without_records, f"All streams should return some records, streams without records: {streams_without_records}"
 
     def _validate_field_appears_at_least_once_in_stream(self, records: List, schema: Dict):
@@ -431,14 +716,17 @@ class TestBasicRead(BaseTest):
         assert not stream_name_to_empty_fields_mapping, msg
 
     def _validate_expected_records(
-        self, records: List[AirbyteRecordMessage], expected_records: List[AirbyteRecordMessage], flags, detailed_logger: Logger
+        self,
+        records: List[AirbyteRecordMessage],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
+        flags,
+        detailed_logger: Logger,
     ):
         """
         We expect some records from stream to match expected_records, partially or fully, in exact or any order.
         """
         actual_by_stream = self.group_by_stream(records)
-        expected_by_stream = self.group_by_stream(expected_records)
-        for stream_name, expected in expected_by_stream.items():
+        for stream_name, expected in expected_records_by_stream.items():
             actual = actual_by_stream.get(stream_name, [])
             detailed_logger.info(f"Actual records for stream {stream_name}:")
             detailed_logger.log_json_list(actual)
@@ -455,12 +743,59 @@ class TestBasicRead(BaseTest):
                 detailed_logger=detailed_logger,
             )
 
+    @pytest.fixture(name="should_validate_schema")
+    def should_validate_schema_fixture(self, inputs: BasicReadTestConfig, test_strictness_level: Config.TestStrictnessLevel):
+        if not inputs.validate_schema and test_strictness_level is Config.TestStrictnessLevel.high:
+            pytest.fail("High strictness level error: validate_schema must be set to true in the basic read test configuration.")
+        else:
+            return inputs.validate_schema
+
+    @pytest.fixture(name="should_validate_data_points")
+    def should_validate_data_points_fixture(self, inputs: BasicReadTestConfig) -> Boolean:
+        # TODO: we might want to enforce this when Config.TestStrictnessLevel.high
+        return inputs.validate_data_points
+
+    @pytest.fixture(name="configured_catalog")
+    def configured_catalog_fixture(
+        self,
+        test_strictness_level: Config.TestStrictnessLevel,
+        configured_catalog_path: Optional[str],
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        empty_streams: Set[EmptyStreamConfiguration],
+    ) -> ConfiguredAirbyteCatalog:
+        """Build a configured catalog for basic read only.
+        We discard the use of custom configured catalog if:
+        - No custom configured catalog is declared with configured_catalog_path.
+        - We are in high test strictness level.
+        When a custom configured catalog is discarded we use the discovered catalog from which we remove the declared empty streams.
+        We use a custom configured catalog if a configured_catalog_path is declared and we are not in high test strictness level.
+        Args:
+            test_strictness_level (Config.TestStrictnessLevel): The current test strictness level according to the global test configuration.
+            configured_catalog_path (Optional[str]): Path to a JSON file containing a custom configured catalog.
+            discovered_catalog (MutableMapping[str, AirbyteStream]): The discovered catalog.
+            empty_streams (Set[EmptyStreamConfiguration]): The empty streams declared in the test configuration.
+
+        Returns:
+            ConfiguredAirbyteCatalog: the configured Airbyte catalog.
+        """
+        if test_strictness_level is Config.TestStrictnessLevel.high or not configured_catalog_path:
+            if configured_catalog_path:
+                pytest.fail(
+                    "High strictness level error: you can't set a custom configured catalog on the basic read test when strictness level is high."
+                )
+            return build_configured_catalog_from_discovered_catalog_and_empty_streams(discovered_catalog, empty_streams)
+        else:
+            return build_configured_catalog_from_custom_catalog(configured_catalog_path, discovered_catalog)
+
     def test_read(
         self,
         connector_config,
         configured_catalog,
-        inputs: BasicReadTestConfig,
-        expected_records: List[AirbyteRecordMessage],
+        expect_records_config: ExpectedRecordsConfig,
+        should_validate_schema: Boolean,
+        should_validate_data_points: Boolean,
+        empty_streams: Set[EmptyStreamConfiguration],
+        expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
     ):
@@ -469,10 +804,10 @@ class TestBasicRead(BaseTest):
 
         assert records, "At least one record should be read using provided catalog"
 
-        if inputs.validate_schema:
+        if should_validate_schema:
             self._validate_schema(records=records, configured_catalog=configured_catalog)
 
-        self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=inputs.empty_streams)
+        self._validate_empty_streams(records=records, configured_catalog=configured_catalog, allowed_empty_streams=empty_streams)
         for pks, record in primary_keys_for_records(streams=configured_catalog.streams, records=records):
             for pk_path, pk_value in pks.items():
                 assert (
@@ -480,12 +815,15 @@ class TestBasicRead(BaseTest):
                 ), f"Primary key subkeys {repr(pk_path)} have null values or not present in {record.stream} stream records."
 
         # TODO: remove this condition after https://github.com/airbytehq/airbyte/issues/8312 is done
-        if inputs.validate_data_points:
+        if should_validate_data_points:
             self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
-        if expected_records:
+        if expected_records_by_stream:
             self._validate_expected_records(
-                records=records, expected_records=expected_records, flags=inputs.expect_records, detailed_logger=detailed_logger
+                records=records,
+                expected_records_by_stream=expected_records_by_stream,
+                flags=expect_records_config,
+                detailed_logger=detailed_logger,
             )
 
     def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):

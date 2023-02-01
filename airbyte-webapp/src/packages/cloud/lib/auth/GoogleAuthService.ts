@@ -20,14 +20,15 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   GithubAuthProvider,
+  getIdToken,
+  reload,
 } from "firebase/auth";
 
-import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
 export class GoogleAuthService {
-  constructor(private firebaseAuthProvider: Provider<Auth>) {}
+  constructor(private firebaseAuthProvider: () => Auth) {}
 
   get auth(): Auth {
     return this.firebaseAuthProvider();
@@ -38,7 +39,11 @@ export class GoogleAuthService {
   }
 
   async loginWithOAuth(provider: OAuthProviders) {
-    await signInWithPopup(this.auth, provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider());
+    // Instantiate the appropriate auth provider. For Google we're specifying the `hd` parameter, to only show
+    // Google accounts in the selector that are linked to a business (GSuite) account.
+    const authProvider =
+      provider === "github" ? new GithubAuthProvider() : new GoogleAuthProvider().setCustomParameters({ hd: "*" });
+    await signInWithPopup(this.auth, authProvider);
   }
 
   async login(email: string, password: string): Promise<UserCredential> {
@@ -140,7 +145,13 @@ export class GoogleAuthService {
   }
 
   async confirmEmailVerify(code: string): Promise<void> {
-    return applyActionCode(this.auth, code);
+    await applyActionCode(this.auth, code);
+
+    // Reload the user and get a fresh token with email_verified: true
+    if (this.auth.currentUser) {
+      await reload(this.auth.currentUser);
+      await getIdToken(this.auth.currentUser, true);
+    }
   }
 
   async signInWithEmailLink(email: string): Promise<UserCredential> {

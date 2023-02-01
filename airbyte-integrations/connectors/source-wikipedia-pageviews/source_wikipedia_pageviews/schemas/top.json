@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string"
+    },
+    "access": {
+      "type": "string"
+    },
+    "year": {
+      "type": "string"
+    },
+    "month": {
+      "type": "string"
+    },
+    "day": {
+      "type": "string"
+    },
+    "articles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "article": {
+            "type": "string"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/schema#"
+}

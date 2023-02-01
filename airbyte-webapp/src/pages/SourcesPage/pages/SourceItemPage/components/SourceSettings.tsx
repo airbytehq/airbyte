@@ -1,13 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-
-import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
+import { useDeleteModal } from "hooks/useDeleteModal";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
@@ -49,28 +48,43 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
     });
   };
 
-  const onDelete = async () => {
+  const onDelete = useCallback(async () => {
     clearFormChange(formId);
     await deleteSource({ connectionsWithSource, source: currentSource });
-  };
+  }, [clearFormChange, connectionsWithSource, currentSource, deleteSource, formId]);
+
+  const modalAdditionalContent = useMemo<React.ReactNode>(() => {
+    if (connectionsWithSource.length === 0) {
+      return null;
+    }
+    return (
+      <p>
+        <FormattedMessage id="tables.affectedConnectionsOnDeletion" values={{ count: connectionsWithSource.length }} />
+        {connectionsWithSource.map((connection) => (
+          <>
+            - <strong>{`${connection.name}\n`}</strong>
+          </>
+        ))}
+      </p>
+    );
+  }, [connectionsWithSource]);
+
+  const onDeleteClick = useDeleteModal("source", onDelete, modalAdditionalContent);
 
   return (
     <div className={styles.content}>
       <ConnectorCard
-        formId={formId}
+        formType="source"
         title={<FormattedMessage id="sources.sourceSettings" />}
         isEditMode
-        onSubmit={onSubmit}
-        formType="source"
-        connector={currentSource}
-        availableServices={[sourceDefinition]}
-        formValues={{
-          ...currentSource,
-          serviceType: currentSource.sourceDefinitionId,
-        }}
+        formId={formId}
+        availableConnectorDefinitions={[sourceDefinition]}
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+        selectedConnectorDefinitionId={sourceDefinitionSpecification.sourceDefinitionId}
+        connector={currentSource}
+        onSubmit={onSubmit}
+        onDeleteClick={onDeleteClick}
       />
-      <DeleteBlock type="source" onDelete={onDelete} />
     </div>
   );
 };

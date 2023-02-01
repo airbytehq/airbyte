@@ -91,15 +91,15 @@ SOME_BACKOFF_TIME = 60
 )
 def test_composite_error_handler(test_name, first_handler_behavior, second_handler_behavior, expected_behavior):
     first_error_handler = MagicMock()
-    first_error_handler.should_retry.return_value = first_handler_behavior
+    first_error_handler.interpret_response.return_value = first_handler_behavior
     second_error_handler = MagicMock()
-    second_error_handler.should_retry.return_value = second_handler_behavior
-    second_error_handler.should_retry.return_value = second_handler_behavior
+    second_error_handler.interpret_response.return_value = second_handler_behavior
+    second_error_handler.interpret_response.return_value = second_handler_behavior
     retriers = [first_error_handler, second_error_handler]
     retrier = CompositeErrorHandler(error_handlers=retriers, options={})
     response_mock = MagicMock()
     response_mock.ok = first_handler_behavior == response_status.SUCCESS or second_handler_behavior == response_status.SUCCESS
-    assert retrier.should_retry(response_mock) == expected_behavior
+    assert retrier.interpret_response(response_mock) == expected_behavior
 
 
 def test_composite_error_handler_no_handlers():

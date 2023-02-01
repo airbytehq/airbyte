@@ -1,0 +1,19 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/recruitee
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Recruitee Spec
+  type: object
+  required:
+    - api_key
+    - company_id
+  additionalProperties: true
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: Recruitee API Key. See <a href="https://docs.recruitee.com/reference/getting-started#generate-api-token">here</a>.
+      airbyte_secret: true
+    company_id:
+      title: Company ID
+      type: integer
+      description: Recruitee Company ID. You can also find this ID on the <a href="https://app.recruitee.com/#/settings/api_tokens">Recruitee API tokens page</a>.

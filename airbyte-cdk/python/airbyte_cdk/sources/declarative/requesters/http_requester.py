@@ -60,7 +60,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(options=options)
+        self.error_handler = self.error_handler or DefaultErrorHandler(options=options, config=self.config)
         self._options = options
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
@@ -88,9 +88,9 @@ class HttpRequester(Requester, JsonSchemaMixin):
     # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
     # only care about the status of the last response received
     @lru_cache(maxsize=10)
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
-        return self.error_handler.should_retry(response)
+        return self.error_handler.interpret_response(response)
 
     def get_request_params(
         self,

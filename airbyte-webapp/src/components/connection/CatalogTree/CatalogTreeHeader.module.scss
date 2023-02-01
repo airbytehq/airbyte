@@ -1,0 +1,30 @@
+@use "scss/variables";
+
+%headerCell {
+  font-size: 10px;
+  line-height: 13px;
+}
+
+.checkboxCell {
+  @extend %headerCell;
+
+  max-width: 43px;
+  padding-left: variables.$spacing-sm;
+}
+
+.catalogHeader,
+%catalogHeader {
+  min-height: 33px;
+  margin-bottom: 0 !important;
+  margin-left: 20px;
+}
+
+.readonlyCatalogHeader {
+  @extend %catalogHeader;
+
+  margin-left: 50px;
+}
+
+.nextLineText {
+  margin-top: 10px;
+}

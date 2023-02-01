@@ -21,6 +21,10 @@ public class RedisDataFactory {
         .put("username", "default")
         .put("password", "pw")
         .put("cache_type", "hash")
+        .put("ssl", "false")
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "disable")
+            .build())
         .build());
   }
 

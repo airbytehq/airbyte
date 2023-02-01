@@ -1,0 +1,40 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  list-style-type: none;
+  padding: 0;
+  align-items: stretch;
+  margin: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+}
+
+.itemLabel {
+  flex-grow: 1;
+}
+
+.itemButton {
+  background: none !important;
+  border: none !important;
+  padding: variables.$spacing-xs;
+}
+
+.inputsDescription {
+  margin-top: variables.$spacing-xl;
+  margin-bottom: variables.$spacing-lg;
+}
+
+.addInputButton {
+  align-self: center;
+}
+
+.inputsCard {
+  align-self: stretch;
+}

@@ -30,6 +30,10 @@ properties:
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  destinationProtocolVersion:
+    description: Airbyte Protocol Version of the destination
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   operationSequence:
     description: Sequence of configurations of operations to apply as part of the sync
     type: array
@@ -48,3 +52,13 @@ properties:
   state:
     description: optional current state of the connection
     "$ref": State.yaml
+  isSourceCustomConnector:
+    description: determine if the running image of the source is a custom connector.
+    type: boolean
+  isDestinationCustomConnector:
+    description: determine if the running image of the destination is a custom connector.
+    type: boolean
+  workspaceId:
+    description: The id of the workspace associated with the sync
+    type: string
+    format: uuid

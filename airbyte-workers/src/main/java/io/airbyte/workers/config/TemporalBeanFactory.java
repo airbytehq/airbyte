@@ -33,7 +33,6 @@ import io.temporal.worker.WorkerFactory;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
@@ -43,24 +42,30 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public TrackingClient trackingClient(final Optional<TrackingStrategy> trackingStrategy,
+  public TrackingClient trackingClient(final TrackingStrategy trackingStrategy,
                                        final DeploymentMode deploymentMode,
-                                       Optional<JobPersistence> jobPersistence,
-                                       WorkerEnvironment workerEnvironment,
-                                       @Value("${airbyte.role}") String airbyteRole,
-                                       AirbyteVersion airbyteVersion,
-                                       Optional<ConfigRepository> configRepository)
+                                       final JobPersistence jobPersistence,
+                                       final WorkerEnvironment workerEnvironment,
+                                       @Value("${airbyte.role}") final String airbyteRole,
+                                       final AirbyteVersion airbyteVersion,
+                                       final ConfigRepository configRepository)
       throws IOException {
 
     TrackingClientSingleton.initialize(
-        trackingStrategy.orElseThrow(),
-        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
+        trackingStrategy,
+        new Deployment(deploymentMode, jobPersistence.getDeployment().orElseThrow(),
             workerEnvironment),
         airbyteRole,
         airbyteVersion,
-        configRepository.orElseThrow());
+        configRepository);
 
     return TrackingClientSingleton.get();
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  public OAuthConfigSupplier oAuthConfigSupplier(final ConfigRepository configRepository, final TrackingClient trackingClient) {
+    return new OAuthConfigSupplier(configRepository, trackingClient);
   }
 
   @Singleton
@@ -71,12 +76,12 @@ public class TemporalBeanFactory {
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
                                              defaultValue = "false") final boolean connectorSpecificResourceDefaultsEnabled,
                                    final DefaultJobCreator jobCreator,
-                                   final TrackingClient trackingClient) {
+                                   final OAuthConfigSupplier oAuthConfigSupplier) {
     return new DefaultSyncJobFactory(
         connectorSpecificResourceDefaultsEnabled,
         jobCreator,
         configRepository,
-        new OAuthConfigSupplier(configRepository, trackingClient),
+        oAuthConfigSupplier,
         new WorkspaceHelper(configRepository, jobPersistence));
   }
 

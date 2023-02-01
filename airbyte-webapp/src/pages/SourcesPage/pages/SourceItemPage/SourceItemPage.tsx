@@ -1,71 +1,66 @@
 import React, { Suspense, useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { HeadTitle } from "components/common/HeadTitle";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import { ConnectorIcon } from "components/ConnectorIcon";
-import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
-import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useDestinationList } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { getIcon } from "utils/imageUtils";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
-import { RoutePaths } from "../../../routePaths";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
+import { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
+import { RoutePaths } from "../../../routePaths";
 
 const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
   const params = useParams<{ "*": StepsTypes | "" | undefined; id: string }>();
   const navigate = useNavigate();
+  const { formatMessage } = useIntl();
   const currentStep = useMemo<StepsTypes | "" | undefined>(
     () => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]),
     [params]
   );
 
-  const { destinations } = useDestinationList();
-
-  const { destinationDefinitions } = useDestinationDefinitionList();
-
   const source = useGetSource(params.id || "");
-  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
+  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
 
-  const { connections } = useConnectionList();
+  // We load only connections attached to this source to be shown in the connections grid
+  const { connections } = useConnectionList({ sourceId: [source.sourceId] });
 
   const breadcrumbsData = [
     {
-      name: <FormattedMessage id="sidebar.sources" />,
-      onClick: () => navigate(".."),
+      label: formatMessage({ id: "sidebar.sources" }),
+      to: "..",
     },
-    { name: source.name },
+    { label: source.name },
   ];
 
-  const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);
-
-  const destinationsDropDownData = useMemo(
+  // We load all destinations so the add destination button has a pre-filled list of options.
+  const { destinations } = useDestinationList();
+  const destinationDropdownOptions: DropdownMenuOptionType[] = useMemo(
     () =>
-      destinations.map((item) => {
-        const destinationDef = destinationDefinitions.find(
-          (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
-        );
+      destinations.map((destination) => {
         return {
-          label: item.name,
-          value: item.destinationId,
-          img: <ConnectorIcon icon={destinationDef?.icon} />,
+          as: "button",
+          icon: <ConnectorIcon icon={destination.icon} />,
+          iconPosition: "right",
+          displayName: destination.name,
+          value: destination.destinationId,
         };
       }),
-    [destinations, destinationDefinitions]
+    [destinations]
   );
 
   const onSelectStep = (id: string) => {
@@ -73,7 +68,7 @@ const SourceItemPage: React.FC = () => {
     navigate(path);
   };
 
-  const onSelect = (data: DropDownOptionDataItem) => {
+  const onSelect = (data: DropdownMenuOptionType) => {
     const path = `../${RoutePaths.ConnectionNew}`;
     const state =
       data.value === "create-new-item"
@@ -99,7 +94,7 @@ const SourceItemPage: React.FC = () => {
           <Routes>
             <Route
               path="/settings"
-              element={<SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />}
+              element={<SourceSettings currentSource={source} connectionsWithSource={connections} />}
             />
             <Route
               index
@@ -107,15 +102,15 @@ const SourceItemPage: React.FC = () => {
                 <>
                   <TableItemTitle
                     type="destination"
-                    dropDownData={destinationsDropDownData}
+                    dropdownOptions={destinationDropdownOptions}
                     onSelect={onSelect}
                     entity={source.sourceName}
                     entityName={source.name}
-                    entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
+                    entityIcon={source.icon}
                     releaseStage={sourceDefinition.releaseStage}
                   />
-                  {connectionsWithSource.length ? (
-                    <SourceConnectionTable connections={connectionsWithSource} />
+                  {connections.length ? (
+                    <SourceConnectionTable connections={connections} />
                   ) : (
                     <Placeholder resource={ResourceTypes.Destinations} />
                   )}

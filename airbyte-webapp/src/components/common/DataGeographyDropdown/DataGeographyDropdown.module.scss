@@ -1,0 +1,18 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.requestLink {
+  padding: variables.$spacing-md variables.$spacing-lg;
+  color: colors.$blue-400;
+  text-decoration: none;
+  display: block;
+  border-top: 1px solid colors.$grey-100;
+
+  &:hover {
+    background: colors.$grey-100;
+  }
+}
+
+.linkText {
+  margin-left: variables.$spacing-md;
+}
