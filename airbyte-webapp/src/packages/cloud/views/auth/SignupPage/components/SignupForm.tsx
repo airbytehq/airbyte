@@ -14,9 +14,9 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { isGdprCountry } from "utils/dataPrivacy";
 import { links } from "utils/links";
 
+import styles from "./SignupForm.module.scss";
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, RowFieldItem } from "../../components/FormComponents";
-import styles from "./SignupForm.module.scss";
 
 interface FormValues {
   name: string;

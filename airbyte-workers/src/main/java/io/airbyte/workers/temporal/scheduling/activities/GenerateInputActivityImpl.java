@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -67,6 +69,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   private final AttemptApi attemptApi;
   private final StateApi stateApi;
   private final FeatureFlags featureFlags;
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(GenerateInputActivity.class);
 
   public GenerateInputActivityImpl(final JobPersistence jobPersistence,
                                    final ConfigRepository configRepository,
@@ -163,7 +167,11 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                                                                        final StandardSourceDefinition sourceDefinition,
                                                                        final JsonNode sourceConfiguration)
       throws IOException {
-    final ConfigReplacer configReplacer = new ConfigReplacer();
+    final ConfigReplacer configReplacer = new ConfigReplacer(LOGGER);
+    
+    // .withAllowedHosts(ConfigType.RESET_CONNECTION.equals(jobConfigType) ? null
+    //          : configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), attemptSyncConfig.getSourceConfiguration()));
+
     return new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
@@ -179,7 +187,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                                                                             final StandardDestinationDefinition destinationDefinition,
                                                                             final JsonNode destinationConfiguration)
       throws IOException {
-    final ConfigReplacer configReplacer = new ConfigReplacer();
+    final ConfigReplacer configReplacer = new ConfigReplacer(LOGGER);
     final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
         ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
             destinationDefinition.getNormalizationConfig().getNormalizationTag())
@@ -250,6 +258,13 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
 
       final ConfigType jobConfigType = job.getConfig().getConfigType();
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+
+      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
+      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
+
       if (ConfigType.SYNC.equals(jobConfigType)) {
         final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
         attemptSyncConfig.setSourceConfiguration(source.getConfiguration());
@@ -300,6 +315,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withResourceRequirements(config.getResourceRequirements())
           .withSourceResourceRequirements(config.getSourceResourceRequirements())
           .withDestinationResourceRequirements(config.getDestinationResourceRequirements())
+          .withConnectionId(standardSync.getConnectionId())
           .withWorkspaceId(config.getWorkspaceId());
 
       saveAttemptSyncConfig(jobId, attempt, connectionId, attemptSyncConfig);

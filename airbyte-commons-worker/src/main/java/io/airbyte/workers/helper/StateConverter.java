@@ -13,6 +13,7 @@ import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import java.util.List;
 import java.util.Optional;
@@ -205,6 +206,7 @@ public class StateConverter {
         && connectionState.getStateType() == io.airbyte.api.client.model.generated.ConnectionStateType.GLOBAL
         && connectionState.getGlobalState() != null) {
       return Optional.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.GLOBAL)
           .withGlobal(new AirbyteGlobalState()
               .withSharedState(connectionState.getGlobalState().getSharedState())
               .withStreamStates(connectionState.getGlobalState().getStreamStates()
@@ -282,7 +284,7 @@ public class StateConverter {
       return Optional.ofNullable(connectionState.getStreamState()
           .stream()
           .map(StateConverter::clientStreamStateStructToInternal)
-          .map(s -> new AirbyteStateMessage().withStream(s))
+          .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(s))
           .toList());
     } else {
       return Optional.empty();
