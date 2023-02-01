@@ -17,6 +17,7 @@ class Model(BaseModel):
     dimensions: list[str]
     metrics: list[str]
     filter: Optional[str]
+    segments: Optional[list[str]]
 
     @validator("dimensions", "metrics")
     def check_field_reference_forrmat(cls, value):
@@ -103,6 +104,8 @@ class CustomReportsValidator:
         try:
             for report in self.reports:
                 self.model.parse_obj(report)
+                if "segments" in report and "ga:segment" not in report["dimensions"]:
+                    raise ValueError("ga:segment is required in dimensions if segments are provided")
         except ValidationError as e:
             raise AirbyteTracedException(
                 message=None,
