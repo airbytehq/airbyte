@@ -17,6 +17,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.ReleaseStage;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.server.ServerConstants;
 import io.airbyte.commons.server.converters.ApiPojoConverters;
@@ -31,11 +32,7 @@ import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.ActorType;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.*;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -298,7 +295,7 @@ public class DestinationDefinitionsHandler {
 
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag, final boolean isCustomConnector)
       throws IOException {
-    final String imageName = dockerRepository + ":" + imageTag;
+    final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
     final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName, isCustomConnector);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
   }
