@@ -64,16 +64,19 @@ export const NextTable = <T,>({
               key={`table-row-${row.id}`}
               onClick={() => onClickRow?.(row.original)}
             >
-              {row.getVisibleCells().map((cell) => (
-                <td
-                  className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName, {
-                    [styles.responsive]: (cell.column.columnDef.meta as ColumnMeta | undefined)?.responsive,
-                  })}
-                  key={`table-cell-${row.id}-${cell.id}`}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
+              {row.getVisibleCells().map((cell) => {
+                const meta = cell.column.columnDef.meta as ColumnMeta | undefined;
+                return (
+                  <td
+                    className={classNames(styles.td, meta?.tdClassName, {
+                      [styles.responsive]: meta?.responsive,
+                    })}
+                    key={`table-cell-${row.id}-${cell.id}`}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                );
+              })}
             </tr>
           );
         })}
