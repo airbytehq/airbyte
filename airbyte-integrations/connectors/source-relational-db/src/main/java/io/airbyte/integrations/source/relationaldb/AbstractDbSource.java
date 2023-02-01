@@ -271,10 +271,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                              final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
+    final Set<String> systemViews = getExcludedViews();
     final List<TableInfo<CommonField<DataType>>> discoveredTables = discoverInternal(database);
     return (systemNameSpaces == null || systemNameSpaces.isEmpty() ? discoveredTables
         : discoveredTables.stream()
-            .filter(table -> !systemNameSpaces.contains(table.getNameSpace())).collect(
+            .filter(table -> !systemNameSpaces.contains(table.getNameSpace()) && !systemViews.contains(table.getName())).collect(
                 Collectors.toList()));
   }
 
@@ -639,6 +640,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return set of system namespaces(schemas) to be excluded
    */
   protected abstract Set<String> getExcludedInternalNameSpaces();
+
+  /**
+   * Get list of system tables in order to exclude them from the discover result list.
+   *
+   * @return set of tables to be excluded
+   */
+  protected abstract Set<String> getExcludedViews();
 
   /**
    * Discover all available tables in the source database.

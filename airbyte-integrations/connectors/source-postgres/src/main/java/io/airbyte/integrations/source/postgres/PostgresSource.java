@@ -203,6 +203,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
+  }
+
+  @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 

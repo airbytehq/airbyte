@@ -34,6 +34,11 @@ public class JdbcSource extends AbstractJdbcSource<JDBCType> implements Source {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
 
+  @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements");
+  }
+
   public static void main(final String[] args) throws Exception {
     final Source source = new JdbcSource();
     LOGGER.info("starting source: {}", JdbcSource.class);
