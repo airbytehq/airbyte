@@ -6,6 +6,7 @@ package io.airbyte.persistence.job.errorreporter;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.AttemptFailureSummary;
@@ -116,9 +117,8 @@ public class JobErrorReporter {
               getNormalizationMetadata(destinationDefinition.getNormalizationConfig().getNormalizationRepository()),
               prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
               getDestinationMetadata(destinationDefinition));
-          final String dockerImage =
-              destinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":" +
-                  destinationDefinition.getNormalizationConfig().getNormalizationTag();
+          final String dockerImage = DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
+              destinationDefinition.getNormalizationConfig().getNormalizationTag());
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }
@@ -225,7 +225,7 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
   }
 
-  private Map<String, String> getNormalizationMetadata(final String normalizationImage) {
+  private Map<String, String> getNormalizationMetadata(String normalizationImage) {
     return Map.ofEntries(
         Map.entry(NORMALIZATION_REPOSITORY_META_KEY, normalizationImage));
   }

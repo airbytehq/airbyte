@@ -43,8 +43,8 @@ dependencies {
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation libs.jmh.core
     testImplementation libs.jmh.annotations
-    testImplementation 'com.github.docker-java:docker-java:3.2.8'
-    testImplementation 'com.github.docker-java:docker-java-transport-httpclient5:3.2.8'
+
+    testImplementation project(':airbyte-commons-docker')
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
