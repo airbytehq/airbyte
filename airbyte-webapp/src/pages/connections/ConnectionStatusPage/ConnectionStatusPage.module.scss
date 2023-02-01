@@ -11,13 +11,6 @@
 .actions {
   display: flex;
 
-  .resetButton,
-  .syncButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   .resetButton {
     margin-right: variables.$spacing-md;
   }
