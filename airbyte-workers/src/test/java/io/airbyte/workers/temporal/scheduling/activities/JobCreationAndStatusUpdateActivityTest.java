@@ -195,7 +195,7 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void isLastJobOrAttemptFailureTrueTest() throws Exception {
       final int activeAttemptNumber = 0;
-      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
+      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(),
           new JobConfig(), List.of(), JobStatus.SUCCEEDED, 4L, 4L, 5L);
@@ -215,7 +215,7 @@ class JobCreationAndStatusUpdateActivityTest {
     @Test
     void isLastJobOrAttemptFailureFalseTest() throws Exception {
       final int activeAttemptNumber = 0;
-      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
+      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(),
           new JobConfig(), List.of(), JobStatus.FAILED, 4L, 4L, 5L);
@@ -234,9 +234,9 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     void isLastJobOrAttemptFailurePreviousAttemptFailureTest() throws Exception {
-      final Attempt previousAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, null, 2L, 3L, 3L);
+      final Attempt previousAttempt = new Attempt(0, 1, Path.of(""), null, null, AttemptStatus.FAILED, null, null, 2L, 3L, 3L);
       final int activeAttemptNumber = 1;
-      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
+      final Attempt activeAttempt = new Attempt(activeAttemptNumber, 1, Path.of(""), null, null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
 
       final Job previousJob = new Job(PREVIOUS_JOB_ID, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(),
           JobStatus.SUCCEEDED, 4L, 4L, 5L);
@@ -474,9 +474,9 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     void ensureCleanJobState() throws IOException {
-      final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, null, 2L, 3L, 3L);
+      final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, null, AttemptStatus.FAILED, null, null, 2L, 3L, 3L);
       final int runningAttemptNumber = 1;
-      final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
+      final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, null, AttemptStatus.RUNNING, null, null, 4L, 5L, null);
       final Job runningJob = new Job(1, ConfigType.SYNC, CONNECTION_ID.toString(), new JobConfig(), List.of(failedAttempt, runningAttempt),
           JobStatus.RUNNING, 2L, 2L, 3L);
 
