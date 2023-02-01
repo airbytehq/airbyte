@@ -281,17 +281,17 @@ public class EnvConfigs implements Configs {
   }
 
   private Optional<CloudStorageConfigs> getStateStorageConfiguration() {
-    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
+    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null && !getEnv(STATE_STORAGE_GCS_BUCKET_NAME).isBlank()) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
-    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
+    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null && !getEnv(STATE_STORAGE_MINIO_ENDPOINT).isBlank()) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
-    } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
+    } else if (getEnv(STATE_STORAGE_S3_REGION) != null && !getEnv(STATE_STORAGE_S3_REGION).isBlank()) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
