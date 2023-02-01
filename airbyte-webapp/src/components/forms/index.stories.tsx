@@ -3,11 +3,15 @@ import { useForm, FormProvider } from "react-hook-form";
 
 import { RHFControl } from "./index";
 
-const RHF: React.FC = () => {
-  const methods = useForm({ defaultValues: { test2: "test2 default", test3: "test3 also default" } });
-  const onSubmit = (values: Record<string, string>) => {
-    alert(JSON.stringify(values));
-  };
+interface RHFProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubmit: (values: any) => void;
+}
+
+const RHF: React.FC<RHFProps> = ({ onSubmit }) => {
+  const methods = useForm({
+    defaultValues: { some_input: "Default input value", some_password: "Default password value" },
+  });
 
   return (
     <FormProvider {...methods}>
@@ -24,7 +28,9 @@ const RHF: React.FC = () => {
 export default {
   title: "UI/Forms",
   component: RHF,
-  argTypes: {},
+  argTypes: {
+    onSubmit: { action: "submitted" },
+  },
 } as ComponentMeta<typeof RHF>;
 
 const Template: ComponentStory<typeof RHF> = (args) => <RHF {...args} />;
