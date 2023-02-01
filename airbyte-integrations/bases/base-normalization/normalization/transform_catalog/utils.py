@@ -23,6 +23,19 @@ def is_type_included(definition: dict, is_type: Callable[[dict], bool]) -> bool:
         return is_type(definition)
 
 
+def get_type_param(definition: dict, is_type: Callable[[dict], bool], param: str, default_value) -> any:
+    # We're going to just pick the first oneOf entry. We don't handle conflicts yet.
+    if data_type.ONE_OF_VAR_NAME in definition:
+        for option in definition[data_type.ONE_OF_VAR_NAME]:
+            # Recurse just in case this is yet another oneOf, for whatever reason
+            return get_type_param(option[param], is_type, param, default_value)
+    elif is_type(definition) and param in definition:
+        # We're guaranteed that this isn't a oneOf, so this should be a raw array decl (or whatever)
+        return definition[param]
+    else:
+        return default_value
+
+
 def get_reftype_function(type: str) -> Callable[[dict], bool]:
     def is_reftype(definition: dict) -> bool:
         return data_type.REF_TYPE_VAR_NAME in definition and type == definition[data_type.REF_TYPE_VAR_NAME]
@@ -92,12 +105,33 @@ def is_boolean(definition: dict) -> bool:
     return is_type_included(definition, get_reftype_function(data_type.BOOLEAN_TYPE))
 
 
-def is_array(property_type) -> bool:
+def is_array_schema(property_type) -> bool:
     return property_type == "array" or "array" in property_type
 
 
-def is_object(property_type) -> bool:
+def is_array(definition: dict) -> bool:
+    return is_type_included(
+        definition, lambda schema: data_type.TYPE_VAR_NAME in schema and is_array_schema(schema[data_type.TYPE_VAR_NAME])
+    )
+
+
+def get_array_items(definition: dict, default_value) -> any:
+    return get_type_param(
+        definition,
+        is_array,
+        "items",
+        default_value,
+    )
+
+
+def is_object_schema(property_type) -> bool:
     return property_type == "object" or "object" in property_type
+
+
+def is_object(definition: dict) -> bool:
+    return is_type_included(
+        definition, lambda schema: data_type.TYPE_VAR_NAME in schema and is_object_schema(schema[data_type.TYPE_VAR_NAME])
+    )
 
 
 def is_airbyte_column(name: str) -> bool:
