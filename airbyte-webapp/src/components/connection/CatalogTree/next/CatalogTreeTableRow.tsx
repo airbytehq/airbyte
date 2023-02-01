@@ -67,12 +67,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </CatalogTreeTableCell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <CatalogTreeTableCell withTooltip>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
@@ -104,7 +104,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip={pkType === "sourceDefined"}>
+      <CatalogTreeTableCell>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -120,12 +120,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <CatalogTreeTableCell size="xsmall">
         <ArrowRightIcon />
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>

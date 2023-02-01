@@ -14,7 +14,6 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
         >
           <p
             class="<removed-for-snapshot-test>"
-            data-type="text"
           >
             Most frequently used destinations
           </p>

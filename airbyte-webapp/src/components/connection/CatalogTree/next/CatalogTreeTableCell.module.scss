@@ -6,13 +6,9 @@ $large: 200px;
 .tableCell {
   flex: 1 0 $medium;
   min-width: $medium;
-
-  [data-type="text"] {
-    word-break: break-word;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &.xsmall {
     flex-basis: $xsmall;
@@ -28,12 +24,4 @@ $large: 200px;
     flex-basis: $large;
     min-width: $large;
   }
-}
-
-.noEllipsis > * {
-  overflow: visible;
-}
-
-.fullWidthTooltip {
-  max-width: none;
 }

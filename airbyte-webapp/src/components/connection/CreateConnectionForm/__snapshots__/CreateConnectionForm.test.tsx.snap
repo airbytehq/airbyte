@@ -514,7 +514,6 @@ exports[`CreateConnectionForm should render 1`] = `
                       </span>
                       <p
                         class="<removed-for-snapshot-test>"
-                        data-type="text"
                       >
                         Optional
                       </p>
@@ -1195,13 +1194,11 @@ exports[`CreateConnectionForm should render with an error 1`] = `
         </div>
         <p
           class="<removed-for-snapshot-test>"
-          data-type="text"
         >
           Failed to fetch schema. Please try again
         </p>
         <p
           class="<removed-for-snapshot-test>"
-          data-type="text"
         >
           Error: Test Error
         </p>

@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 import { autoUpdate, flip, offset, shift, useFloating, UseFloatingProps } from "@floating-ui/react-dom";
 import classNames from "classnames";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import { tooltipContext } from "./context";
@@ -54,7 +54,7 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
     };
   }, [isMouseOver]);
 
-  const canShowTooltip = useMemo(() => isVisible && !disabled, [disabled, isVisible]);
+  const canShowTooltip = isVisible && !disabled;
 
   const onMouseOver = () => {
     setIsMouseOver(true);
@@ -75,8 +75,8 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
       >
         {control}
       </span>
-      {createPortal(
-        canShowTooltip ? (
+      {canShowTooltip &&
+        createPortal(
           <div
             role="tooltip"
             ref={floating}
@@ -96,10 +96,9 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
             onMouseOut={onMouseOut}
           >
             <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
-          </div>
-        ) : null,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 };
