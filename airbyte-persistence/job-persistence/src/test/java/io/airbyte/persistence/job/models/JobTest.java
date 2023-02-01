@@ -43,7 +43,7 @@ class JobTest {
 
   private static Job jobWithAttemptWithStatus(final AttemptStatus... attemptStatuses) {
     final List<Attempt> attempts = IntStream.range(0, attemptStatuses.length)
-        .mapToObj(idx -> new Attempt(idx + 1, 1L, null, null, null, attemptStatuses[idx], null, null, idx, 0L, null))
+        .mapToObj(idx -> new Attempt(idx + 1, 1L, null, null, attemptStatuses[idx], null, null, idx, 0L, null))
         .collect(Collectors.toList());
     return new Job(1L, null, null, null, attempts, null, 0L, 0L, 0L);
   }
@@ -76,13 +76,6 @@ class JobTest {
     final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
     assertTrue(job.getLastAttempt().isPresent());
     assertEquals(3, job.getLastAttempt().get().getAttemptNumber());
-  }
-
-  @Test
-  void testGetAttemptByNumber() {
-    final Job job = jobWithAttemptWithStatus(AttemptStatus.FAILED, AttemptStatus.FAILED, AttemptStatus.SUCCEEDED);
-    assertTrue(job.getAttemptByNumber(2).isPresent());
-    assertEquals(2, job.getAttemptByNumber(2).get().getAttemptNumber());
   }
 
   @Test
