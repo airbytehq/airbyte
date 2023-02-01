@@ -22,7 +22,6 @@ import { CursorCell } from "./CursorCell";
 import { PKCell } from "./PKCell";
 import styles from "./StreamFieldsTable.module.scss";
 import { SyncFieldCell } from "./SyncFieldCell";
-import { CatalogTreeTableCell } from "../../CatalogTreeTableCell";
 
 export interface TableStream {
   field: SyncSchemaField;
@@ -157,11 +156,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("path", {
         id: "sourcePath",
         header: () => <FormattedMessage id="form.field.name" />,
-        cell: ({ getValue }) => (
-          <CatalogTreeTableCell size="small" withTooltip>
-            <Text size="sm">{pathDisplayName(getValue())}</Text>
-          </CatalogTreeTableCell>
-        ),
+        cell: ({ getValue }) => <Text size="sm">{pathDisplayName(getValue())}</Text>,
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.textCell,
@@ -239,11 +234,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("path", {
         id: "destinationPath",
         header: () => <FormattedMessage id="form.field.name" />,
-        cell: ({ getValue }) => (
-          <CatalogTreeTableCell size="small" withTooltip>
-            <Text size="sm">{pathDisplayName(getValue())}</Text>
-          </CatalogTreeTableCell>
-        ),
+        cell: ({ getValue }) => <Text size="sm">{pathDisplayName(getValue())}</Text>,
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.textCell,
