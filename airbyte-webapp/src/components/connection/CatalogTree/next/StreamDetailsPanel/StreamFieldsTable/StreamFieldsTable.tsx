@@ -148,7 +148,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
               ),
               meta: {
                 thClassName: classNames(styles.headerCell, styles["headerCell--syncCell"]),
-                tdClassName: styles.textCell,
+                tdClassName: styles.syncCell,
               },
             }),
           ]
@@ -251,7 +251,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         header: () => <ConnectorHeaderGroupIcon type="source" icon={source.icon} />,
         columns: sourceColumns,
         meta: {
-          thClassName: styles.headerGroupCell,
+          thClassName: classNames(styles.headerGroupCell, styles.light),
         },
       }),
       columnHelper.group({
@@ -268,7 +268,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
           },
         ],
         meta: {
-          thClassName: styles.headerGroupCell,
+          thClassName: classNames(styles.headerGroupCell, styles.light),
         },
       }),
       columnHelper.group({
@@ -276,7 +276,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         header: () => <ConnectorHeaderGroupIcon type="destination" icon={destination.icon} />,
         columns: destinationColumns,
         meta: {
-          thClassName: styles.headerGroupCell,
+          thClassName: classNames(styles.headerGroupCell, styles.light),
           tdClassName: styles.bodyCell,
         },
       }),
@@ -284,5 +284,5 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     [columnHelper, destination.icon, destinationColumns, source.icon, sourceColumns]
   );
 
-  return <NextTable<TableStream> columns={columns} data={tableData} className={styles.customTableStyle} />;
+  return <NextTable<TableStream> light columns={columns} data={tableData} className={styles.customTableStyle} />;
 };
