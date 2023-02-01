@@ -14,7 +14,6 @@ interface StatusCellProps {
   isSyncing?: boolean;
   isManual?: boolean;
   id: string;
-  onSync: (id: string) => void;
   schemaChange?: SchemaChange;
 }
 
@@ -23,7 +22,6 @@ export const StatusCell: React.FC<StatusCellProps> = ({
   isManual,
   id,
   isSyncing,
-  onSync,
   allowSync,
   schemaChange,
   hasBreakingChange,
@@ -37,7 +35,6 @@ export const StatusCell: React.FC<StatusCellProps> = ({
         id={id}
         isSyncing={isSyncing}
         isManual={isManual}
-        onSync={onSync}
         hasBreakingChange={hasBreakingChange}
         allowSync={allowSync}
       />
