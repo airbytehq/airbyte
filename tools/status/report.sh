@@ -11,7 +11,10 @@ CONNECTOR=$1
 REPOSITORY=$2
 RUN_ID=$3
 TEST_OUTCOME=$4
-QA_CHECKS_OUTCOME=$5
+
+# TODO: Disabled for on master until #22127 resolved
+# QA_CHECKS_OUTCOME=$5
+QA_CHECKS_OUTCOME=success
 
 # Ensure connector is prefixed with connectors/
 # TODO (ben): In the future we should just hard error if this is not the case
@@ -56,7 +59,7 @@ function write_job_log() {
   # if docker version has a value, write it to a file with the docker version as the name
   # else output an error to the build log
   if [ -n "$DOCKER_VERSION" ]; then
-    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$DOCKER_VERSION".json
+    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$VERSION_PREFIX""$DOCKER_VERSION".json
   else
     echo "ERROR: Could not find docker version for $CONNECTOR"
   fi

@@ -1023,7 +1023,7 @@
 - name: Marketo
   sourceDefinitionId: 9e0556f4-69df-4522-a3fb-03264d36b348
   dockerRepository: airbyte/source-marketo
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/marketo
   icon: marketo.svg
   sourceType: api
