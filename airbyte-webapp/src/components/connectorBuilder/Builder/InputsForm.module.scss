@@ -2,6 +2,10 @@
 @use "scss/colors";
 
 .inputForm {
+  display: contents;
+}
+
+.inputFormBody {
   gap: variables.$spacing-lg;
   display: flex;
   flex-direction: column;

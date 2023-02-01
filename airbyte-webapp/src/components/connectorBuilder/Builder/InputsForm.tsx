@@ -174,17 +174,17 @@ const InputModal = ({
   });
 
   return (
-    <Form>
-      <Modal
-        size="sm"
-        title={
-          <FormattedMessage
-            id={inputInEditing.isNew ? "connectorBuilder.inputModal.newTitle" : "connectorBuilder.inputModal.editTitle"}
-          />
-        }
-        onClose={onClose}
-      >
-        <ModalBody className={styles.inputForm}>
+    <Modal
+      size="sm"
+      title={
+        <FormattedMessage
+          id={inputInEditing.isNew ? "connectorBuilder.inputModal.newTitle" : "connectorBuilder.inputModal.editTitle"}
+        />
+      }
+      onClose={onClose}
+    >
+      <Form className={styles.inputForm}>
+        <ModalBody className={styles.inputFormBody}>
           <BuilderField
             path="definition.title"
             type="string"
@@ -292,7 +292,7 @@ const InputModal = ({
             <FormattedMessage id={inputInEditing.isNew ? "form.create" : "form.saveChanges"} />
           </Button>
         </ModalFooter>
-      </Modal>
-    </Form>
+      </Form>
+    </Modal>
   );
 };
