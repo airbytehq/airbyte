@@ -16,6 +16,8 @@ from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator
 from source_iterable.source import SourceIterable
 
+from airbyte_cdk.models import Type as MessageType
+
 TEST_START_DATE = "2020"
 
 
@@ -108,8 +110,8 @@ def test_email_stream_chunked_encoding(mocker, mock_lists_resp, catalog, days_du
 
     responses.add(responses.GET, "https://api.iterable.com/api/lists/getUsers?listId=1", json={"lists": [{"id": 1}]}, status=200)
     responses.add_callback("GET", "https://api.iterable.com/api/export/data.json", callback=response_cb)
-
-    records = read_from_source(catalog)
+    # added condition because read_from_source also returns LOG messages
+    records = [record for record in read_from_source(catalog) if record.type == MessageType.RECORD]
     assert sum(ranges) == days_duration
     assert len(ranges) == len(records)
     # since read is called on source instance, under the hood .streams() is called which triggers one more http call

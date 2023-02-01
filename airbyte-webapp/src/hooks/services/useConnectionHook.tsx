@@ -1,5 +1,8 @@
 import { useCallback } from "react";
+import { useIntl } from "react-intl";
 import { useMutation, useQueryClient } from "react-query";
+
+import { ToastType } from "components/ui/Toast";
 
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
@@ -7,8 +10,11 @@ import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { useAnalyticsService } from "./Analytics";
+import { useAppMonitoringService } from "./AppMonitoringService";
+import { useNotificationService } from "./Notification";
 import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "../../config";
 import {
@@ -74,20 +80,43 @@ export function useConnectionService() {
 
 export const useSyncConnection = () => {
   const service = useConnectionService();
+  const webConnectionService = useWebConnectionService();
+  const { trackError } = useAppMonitoringService();
+  const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
+  const notificationService = useNotificationService();
+  const workspaceId = useCurrentWorkspaceId();
+  const { formatMessage } = useIntl();
 
-  return useMutation((connection: WebBackendConnectionRead | WebBackendConnectionListItem) => {
-    analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
-      actionDescription: "Manual triggered sync",
-      connector_source: connection.source?.sourceName,
-      connector_source_definition_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: getFrequencyFromScheduleData(connection.scheduleData),
-    });
+  return useMutation(
+    (connection: WebBackendConnectionRead | WebBackendConnectionListItem) => {
+      analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
+        actionDescription: "Manual triggered sync",
+        connector_source: connection.source?.sourceName,
+        connector_source_definition_id: connection.source?.sourceDefinitionId,
+        connector_destination: connection.destination?.destinationName,
+        connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+        frequency: getFrequencyFromScheduleData(connection.scheduleData),
+      });
 
-    return service.sync(connection.connectionId);
-  });
+      return service.sync(connection.connectionId);
+    },
+    {
+      onError: (error: Error) => {
+        trackError(error);
+        notificationService.registerNotification({
+          id: `tables.startSyncError.${error.message}`,
+          text: `${formatMessage({ id: "connection.startSyncError" })}: ${error.message}`,
+          type: ToastType.ERROR,
+        });
+      },
+      onSuccess: async () => {
+        await webConnectionService
+          .list({ workspaceId })
+          .then((updatedConnections) => queryClient.setQueryData(connectionsKeys.lists(), updatedConnections));
+      },
+    }
+  );
 };
 
 export const useResetConnection = () => {
@@ -239,9 +268,12 @@ export const useRemoveConnectionsFromList = (): ((connectionIds: string[]) => vo
 const useConnectionList = (payload: Pick<WebBackendConnectionListRequestBody, "destinationId" | "sourceId"> = {}) => {
   const workspace = useCurrentWorkspace();
   const service = useWebConnectionService();
+  const REFETCH_CONNECTION_LIST_INTERVAL = 60_000;
 
-  return useSuspenseQuery(connectionsKeys.lists(payload.destinationId ?? payload.sourceId), () =>
-    service.list({ ...payload, workspaceId: workspace.workspaceId })
+  return useSuspenseQuery(
+    connectionsKeys.lists(payload.destinationId ?? payload.sourceId),
+    () => service.list({ ...payload, workspaceId: workspace.workspaceId }),
+    { refetchInterval: REFETCH_CONNECTION_LIST_INTERVAL }
   );
 };
 
