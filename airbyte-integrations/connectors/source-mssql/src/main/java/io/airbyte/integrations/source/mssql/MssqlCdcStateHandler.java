@@ -72,7 +72,7 @@ public class MssqlCdcStateHandler implements CdcStateHandler {
   @Override
   public boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB) {
     // TODO: With this implementation the checkpoint is not going to be saved ever. Add required logic like in Postgres
-    return false;
+    return true;
   }
 
 }
