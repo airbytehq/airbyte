@@ -100,11 +100,9 @@ class IncrementalMarketoStream(MarketoStream):
         self._state = value
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        self._state = {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.start_date), current_stream_state.get(self.cursor_field, self.start_date)
-            )
-        }
+        latest_cursor_value = latest_record.get(self.cursor_field, self.start_date) or self.start_date
+        current_cursor_value = current_stream_state.get(self.cursor_field, self.start_date) or self.start_date
+        self._state = {self.cursor_field: max(latest_cursor_value, current_cursor_value)}
         return self._state
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
