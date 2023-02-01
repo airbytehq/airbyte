@@ -6,6 +6,7 @@ package io.airbyte.persistence.job.factory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
@@ -66,8 +67,9 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final StandardDestinationDefinition destinationDefinition = configRepository
           .getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
 
-      final String sourceImageName = sourceDefinition.getDockerRepository() + ":" + sourceDefinition.getDockerImageTag();
-      final String destinationImageName = destinationDefinition.getDockerRepository() + ":" + destinationDefinition.getDockerImageTag();
+      final String sourceImageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
+      final String destinationImageName =
+          DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag());
 
       final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
       for (final var operationId : standardSync.getOperationIds()) {

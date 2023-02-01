@@ -29,6 +29,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.ReleaseStage;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.commons.server.errors.UnsupportedProtocolVersionException;
@@ -381,7 +382,7 @@ class DestinationDefinitionsHandlerTest {
     final String invalidProtocolVersion = "121.5.6";
     final StandardDestinationDefinition destination = generateDestinationDefinition();
     destination.getSpec().setProtocolVersion(invalidProtocolVersion);
-    final String imageName = destination.getDockerRepository() + ":" + destination.getDockerImageTag();
+    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -416,7 +417,7 @@ class DestinationDefinitionsHandlerTest {
   @DisplayName("createCustomDestinationDefinition should correctly create a destinationDefinition")
   void testCreateCustomDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestinationDefinition();
-    final String imageName = destination.getDockerRepository() + ":" + destination.getDockerImageTag();
+    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -473,7 +474,7 @@ class DestinationDefinitionsHandlerTest {
     final String invalidProtocol = "122.1.22";
     final StandardDestinationDefinition destination = generateDestinationDefinition();
     destination.getSpec().setProtocolVersion(invalidProtocol);
-    final String imageName = destination.getDockerRepository() + ":" + destination.getDockerImageTag();
+    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -520,7 +521,7 @@ class DestinationDefinitionsHandlerTest {
     assertNotEquals(newDockerImageTag, currentTag);
     assertNotEquals(newProtocolVersion, currentDestination.getProtocolVersion());
 
-    final String newImageName = destinationDefinition.getDockerRepository() + ":" + newDockerImageTag;
+    final String newImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), newDockerImageTag);
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
@@ -556,7 +557,7 @@ class DestinationDefinitionsHandlerTest {
     assertNotEquals(newDockerImageTag, currentTag);
     assertNotEquals(newProtocolVersion, currentDestination.getProtocolVersion());
 
-    final String newImageName = destinationDefinition.getDockerRepository() + ":" + newDockerImageTag;
+    final String newImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), newDockerImageTag);
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
