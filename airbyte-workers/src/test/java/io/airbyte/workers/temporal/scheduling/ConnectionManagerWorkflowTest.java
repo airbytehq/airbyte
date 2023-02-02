@@ -22,6 +22,7 @@ import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
+import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardSyncInput;
@@ -37,6 +38,7 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.Get
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInputWithAttemptNumber;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncJobCheckConnectionInputs;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
@@ -169,6 +171,13 @@ class ConnectionManagerWorkflowTest {
         .thenReturn(new AttemptNumberCreationOutput(
             1));
 
+    when(mGenerateInputActivityImpl.getCheckConnectionInputs(Mockito.any(SyncInputWithAttemptNumber.class)))
+        .thenReturn(new SyncJobCheckConnectionInputs(
+            new IntegrationLauncherConfig().withDockerImage("some_source"),
+            new IntegrationLauncherConfig(),
+            new StandardCheckConnectionInput(),
+            new StandardCheckConnectionInput()));
+
     when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
         .thenReturn(
             new GeneratedJobInput(
@@ -234,6 +243,13 @@ class ConnectionManagerWorkflowTest {
   }
 
   private void mockResetJobInput(final JobRunConfig jobRunConfig) {
+    when(mGenerateInputActivityImpl.getCheckConnectionInputs(Mockito.any(SyncInputWithAttemptNumber.class)))
+        .thenReturn(
+            new SyncJobCheckConnectionInputs(
+                new IntegrationLauncherConfig().withDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB),
+                new IntegrationLauncherConfig(),
+                new StandardCheckConnectionInput(),
+                new StandardCheckConnectionInput()));
     when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
         .thenReturn(
             new GeneratedJobInput(
@@ -1461,7 +1477,7 @@ class ConnectionManagerWorkflowTest {
           Arguments.of(new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
               .when(mJobCreationAndStatusUpdateActivity).reportJobStart(Mockito.any()))),
           Arguments.of(new Thread(
-              () -> when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
+              () -> when(mGenerateInputActivityImpl.getCheckConnectionInputs(Mockito.any(SyncInputWithAttemptNumber.class)))
                   .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))));
     }
 
