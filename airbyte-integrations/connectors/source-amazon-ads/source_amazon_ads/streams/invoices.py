@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from pendulum import Date
+
 from source_amazon_ads.schemas import InvoicePayload
 from source_amazon_ads.streams.common import AmazonAdsStream
 
@@ -30,7 +31,7 @@ class Invoices(AmazonAdsStream):
     page_size = 100
     REPORT_DATE_FORMAT = "YYYYMMDD"
 
-    _payload_field = "payload"
+    _invoices_payload = "payload"
     _invoice_summaries_field = "invoiceSummaries"
     _next_page_token_field = "nextCursor"
     _current_profile_id = ""
@@ -67,7 +68,7 @@ class Invoices(AmazonAdsStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if not self._got_all_invoices:
             stream_data = response.json()
-            next_page_token = stream_data.get(self._payload_field, {}).get(self._next_page_token_field, "")
+            next_page_token = stream_data.get(self._invoices_payload, {}).get(self._next_page_token_field, "")
             if next_page_token:
                 return {self._next_page_token_field: next_page_token}
 
@@ -92,7 +93,7 @@ class Invoices(AmazonAdsStream):
         """
         return an object representing single record in the response
         """
-        invoice_summaries = response.json().get(self._payload_field, {}).get(self._invoice_summaries_field, [])
+        invoice_summaries = response.json().get(self._invoices_payload, {}).get(self._invoice_summaries_field, [])
         if response.status_code == HTTPStatus.OK:
             invoice_list = []
             for record in invoice_summaries:
