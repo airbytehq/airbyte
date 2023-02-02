@@ -1469,6 +1469,7 @@ class ConnectionManagerWorkflowTest {
     }
 
     static Stream<Arguments> getSetupFailingActivity() {
+      // TODO can this please trigger the build?
       return Stream.of(
           Arguments.of(new Thread(() -> when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))), 0),
