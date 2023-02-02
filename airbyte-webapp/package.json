@@ -11,7 +11,7 @@
     "start": "node -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
     "prestart:cloud": "make generate-client",
     "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
-    "prebuild": "make generate-client",
+    "prebuild": "npm run generate-client",
     "build": "vite build",
     "pretest": "make generate-client",
     "test": "jest --watch",
