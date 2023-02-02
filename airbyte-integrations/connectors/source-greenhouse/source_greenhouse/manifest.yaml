@@ -57,7 +57,6 @@ definitions:
         $ref: "#/definitions/requester"
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
@@ -70,7 +69,6 @@ definitions:
     $parameters:
       name: "applications"
       path: "applications"
-    stream_cursor_field: "applied_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
@@ -125,7 +123,6 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "applications_demographics_answers"
-    stream_cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -142,7 +139,6 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "applications_interviews"
-    stream_cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -224,7 +220,6 @@ definitions:
     $parameters:
       name: "jobs_stages"
       path: "jobs/{{ stream_slice.parent_id }}/stages"
-      stream_cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester:

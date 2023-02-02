@@ -132,7 +132,6 @@ definitions:
         $ref: "#/definitions/stream_slicer__cursor_date_updated"
       requester:
         $ref: "#/definitions/requester"
-    stream_cursor_field: "date_updated"
   incremental_cursor_based_stream:
     $ref: "#/definitions/incremental_stream"
     retriever:
@@ -146,7 +145,6 @@ definitions:
       $ref: "#/definitions/incremental_stream/retriever"
       stream_slicer:
         $ref: "#/definitions/stream_slicer__cursor_date_created"
-    stream_cursor_field: "date_created"
     $parameters:
       items_per_page: 100
 
@@ -164,7 +162,6 @@ definitions:
     $parameters:
       path: "task"
       items_per_page: 1000
-    stream_cursor_field: "date_created"
 
   connected_accounts_base_stream:
     $ref: "#/definitions/full_refresh_stream"

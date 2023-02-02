@@ -52,7 +52,6 @@ definitions:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "#/definitions/step"
-    cursor_field: "{{ parameters.stream_cursor_field }}"
     start_time_option:
       field_name: "start_time"
       inject_into: "request_parameter"
@@ -70,7 +69,6 @@ definitions:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f%z"
     step: "#/definitions/step"
-    cursor_field: "{{ parameters.stream_cursor_field }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     cursor_granularity: "PT0.000001S"
 
@@ -158,7 +156,7 @@ streams:
     $parameters:
       name: "bounces"
       primary_key: "email"
-      stream_cursor_field: "created"
+      cursor_field: "created"
       path: "/v3/suppression/bounces"
       field_path: []
     retriever:
@@ -171,7 +169,7 @@ streams:
     $parameters:
       name: "global_suppressions"
       primary_key: "email"
-      stream_cursor_field: "created"
+      cursor_field: "created"
       path: "/v3/suppression/unsubscribes"
       field_path: []
     retriever:
@@ -184,7 +182,7 @@ streams:
     $parameters:
       name: "blocks"
       primary_key: "email"
-      stream_cursor_field: "created"
+      cursor_field: "created"
       path: "/v3/suppression/blocks"
       field_path: []
     retriever:
@@ -213,7 +211,7 @@ streams:
     $parameters:
       name: "invalid_emails"
       primary_key: "email"
-      stream_cursor_field: "created"
+      cursor_field: "created"
       path: "/v3/suppression/invalid_emails"
       field_path: []
     retriever:
@@ -226,7 +224,7 @@ streams:
     $parameters:
       name: "spam_reports"
       primary_key: "email"
-      stream_cursor_field: "created"
+      cursor_field: "created"
       path: "/v3/suppression/spam_reports"
       field_path: []
     retriever:
@@ -239,7 +237,7 @@ streams:
     $parameters:
       name: "messages"
       primary_key: "msg_id"
-      stream_cursor_field: "last_event_time"
+      cursor_field: "last_event_time"
       path: "/v3/messages"
       field_path: []
     retriever:

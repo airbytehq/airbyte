@@ -21,7 +21,7 @@ definitions:
       datetime_format: "%Y-%m-%d %H:%M:%S.%f"
     step: "1d"
     datetime_format: "%Y-%m-%d"
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: "date"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -37,7 +37,6 @@ definitions:
     $parameters:
       name: "booking"
       path: "/wa-api/searchBooking"
-      stream_cursor_field: "date"
 
 streams:
   - "#/definitions/booking_stream"
