@@ -28,7 +28,7 @@ jobs:
       - name: Launch Integration Tests
         run: python ./tools/bin/ci_integration_workflow_launcher.py base-normalization source-acceptance-test source:beta source:GA destination:beta destination:GA
         env:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
   launch_integration_tests_alpha_only:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
@@ -47,4 +47,4 @@ jobs:
       - name: Launch Integration Tests (Alpha connectors)
         run: python ./tools/bin/ci_integration_workflow_launcher.py source:alpha destination:alpha
         env:
-          GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}

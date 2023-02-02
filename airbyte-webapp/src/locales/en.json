@@ -65,7 +65,6 @@
   "form.saveChangesAndTest": "Test and save",
   "form.sourceRetest": "Retest saved source",
   "form.destinationRetest": "Retest saved destination",
-  "form.test": "Test",
   "form.sourceRetestTitle": "Test the source",
   "form.destinationRetestTitle": "Test the destination",
   "form.discardChanges": "Discard changes",
