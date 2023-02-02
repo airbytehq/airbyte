@@ -635,16 +635,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected abstract JsonSchemaType getAirbyteType(DataType columnType);
 
   /**
-   * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
+   * Get list of system namespaces(schemas) in order to exclude them from the `discover` result list.
    *
    * @return set of system namespaces(schemas) to be excluded
    */
   protected abstract Set<String> getExcludedInternalNameSpaces();
 
   /**
-   * Get list of system tables in order to exclude them from the discover result list.
+   * Get list of system views in order to exclude them from the `discover` result list.
    *
-   * @return set of tables to be excluded
+   * @return set of views to be excluded
    */
   protected abstract Set<String> getExcludedViews();
 
