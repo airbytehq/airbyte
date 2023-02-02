@@ -216,6 +216,7 @@ public class KubePodProcess implements KubePod {
 
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
+    LOGGER.info("==== Kube pod process envmap: {}", envMap);
     final List<EnvVar> envVars = envMap.entrySet().stream()
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());

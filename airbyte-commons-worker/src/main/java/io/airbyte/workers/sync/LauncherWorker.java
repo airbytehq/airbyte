@@ -123,6 +123,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
         // Manually add the worker environment to the env var map
         envMap.put(WorkerConstants.WORKER_ENVIRONMENT, containerOrchestratorConfig.workerEnvironment().name());
 
+        // this is copied into the env map
         final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
         fileMap.putAll(Map.of(
             OrchestratorConstants.INIT_FILE_APPLICATION, application,

@@ -24,6 +24,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -33,9 +34,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteIntegrationLauncher.class);
   private static final String CONFIG = "--config";
 
   private final String jobId;
@@ -219,6 +223,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   private Map<String, String> getWorkerMetadata() {
+    LOGGER.info("===== getWorkerMetadata: {}", new EnvConfigs().getSocatSidecarKubeCpuRequest());
     return Map.of(
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
@@ -226,7 +231,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
         EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
         EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
-        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
+        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces(),
+        EnvConfigs.SOCAT_KUBE_CPU_REQUEST, new EnvConfigs().getSocatSidecarKubeCpuRequest());
   }
 
 }

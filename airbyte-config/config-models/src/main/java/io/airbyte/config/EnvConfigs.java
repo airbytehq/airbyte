@@ -866,6 +866,7 @@ public class EnvConfigs implements Configs {
     final Map<String, String> jobSharedEnvMap = JOB_SHARED_ENVS.entrySet().stream().collect(Collectors.toMap(
         Entry::getKey,
         entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
+    LOGGER.info("==== job default env map: {}", MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap));
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
 
@@ -1198,4 +1199,13 @@ public class EnvConfigs implements Configs {
     return Path.of(value);
   }
 
+  @Override
+  public String toString() {
+    return "EnvConfigs{" +
+        "getEnv=" + getEnv +
+        ", getAllEnvKeys=" + getAllEnvKeys +
+        ", logConfigs=" + logConfigs +
+        ", stateStorageCloudConfigs=" + stateStorageCloudConfigs +
+        '}';
+  }
 }

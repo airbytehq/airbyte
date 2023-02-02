@@ -90,6 +90,7 @@ public class ProcessFactoryBeanFactory {
                                                         @Value("${airbyte.worker.job.kube.namespace}") final String kubernetesNamespace,
                                                         @Value("${micronaut.server.port}") final Integer serverPort)
       throws UnknownHostException {
+
     return createKubernetesProcessFactory(workerConfigs,
         kubernetesNamespace,
         serverPort);

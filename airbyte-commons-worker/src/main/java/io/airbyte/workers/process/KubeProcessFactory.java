@@ -112,6 +112,7 @@ public class KubeProcessFactory implements ProcessFactory {
           isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
               : workerConfigs.getworkerKubeNodeSelectors();
 
+      LOGGER.info("===== kube process factory job metadata: {}", jobMetadata);
       return new KubePodProcess(
           isOrchestrator,
           processRunnerHost,

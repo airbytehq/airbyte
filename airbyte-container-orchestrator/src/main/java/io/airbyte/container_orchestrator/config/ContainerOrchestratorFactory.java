@@ -41,9 +41,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Factory
 class ContainerOrchestratorFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorFactory.class);
 
   @Singleton
   FeatureFlags featureFlags() {
@@ -52,11 +56,13 @@ class ContainerOrchestratorFactory {
 
   @Singleton
   EnvConfigs envConfigs(@Named("envVars") final Map<String, String> env) {
+    LOGGER.info("==== Loading env config container orchestrator: {}", env);
     return new EnvConfigs(env);
   }
 
   @Singleton
   WorkerConfigs workerConfigs(final EnvConfigs envConfigs) {
+    LOGGER.info("==== Loading worker config container orchestrator: {}", envConfigs.getSocatSidecarKubeCpuRequest());
     return new WorkerConfigs(envConfigs);
   }
 
@@ -85,7 +91,8 @@ class ContainerOrchestratorFactory {
     // this needs to have two ports for the source and two ports for the destination (all four must be
     // exposed)
     KubePortManagerSingleton.init(OrchestratorConstants.PORTS);
-
+    LOGGER.info("===== loading kube process factory with env configs: {}", configs.getSocatSidecarKubeCpuRequest());
+    LOGGER.info("===== loading kube process factory with worker configs: {}", workerConfigs.getEnvMap());
     return new KubeProcessFactory(
         workerConfigs,
         configs.getJobKubeNamespace(),

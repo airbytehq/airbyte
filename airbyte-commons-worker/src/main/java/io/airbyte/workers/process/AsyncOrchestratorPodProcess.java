@@ -465,6 +465,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final var updatedFileMap = new HashMap<>(fileMap);
     updatedFileMap.put(KUBE_POD_INFO, Jsons.serialize(kubePodInfo));
 
+    // env map is copied to the orchestrator, does the kube pod process use this?
+    // otherwise what uses the env map?
     copyFilesToKubeConfigVolumeMain(createdPod, updatedFileMap);
   }
 

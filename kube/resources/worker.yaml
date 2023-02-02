@@ -194,11 +194,17 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_KUBE_NODE_SELECTORS
+            - name: SOCAT_KUBE_CPU_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: SOCAT_KUBE_CPU_REQUEST
             - name: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY
+
             # todo: add other state storage keys
             - name: STATE_STORAGE_MINIO_BUCKET_NAME
               valueFrom:

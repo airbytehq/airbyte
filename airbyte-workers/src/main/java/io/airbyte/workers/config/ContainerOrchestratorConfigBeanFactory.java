@@ -7,10 +7,12 @@ package io.airbyte.workers.config;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.StateClients;
+import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
@@ -23,12 +25,16 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Micronaut bean factory for container orchestrator configuration-related singletons.
  */
 @Factory
 public class ContainerOrchestratorConfigBeanFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorConfigBeanFactory.class);
 
   private static final String METRIC_CLIENT_ENV_VAR = "METRIC_CLIENT";
   private static final String DD_AGENT_HOST_ENV_VAR = "DD_AGENT_HOST";
@@ -98,6 +104,10 @@ public class ContainerOrchestratorConfigBeanFactory {
     environmentVariables.put(CONTROL_PLANE_AUTH_ENDPOINT_ENV_VAR, controlPlaneAuthEndpoint);
     environmentVariables.put(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH_ENV_VAR, dataPlaneServiceAccountCredentialsPath);
     environmentVariables.put(DATA_PLANE_SERVICE_ACCOUNT_EMAIL_ENV_VAR, dataPlaneServiceAccountEmail);
+
+    LOGGER.info("==== setting env vars in bean factory: {}", new EnvConfigs().getSocatSidecarKubeCpuRequest());
+
+    environmentVariables.put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, new EnvConfigs().getSocatSidecarKubeCpuRequest());
 
     if (System.getenv(DD_ENV_ENV_VAR) != null) {
       environmentVariables.put(DD_ENV_ENV_VAR, System.getenv(DD_ENV_ENV_VAR));

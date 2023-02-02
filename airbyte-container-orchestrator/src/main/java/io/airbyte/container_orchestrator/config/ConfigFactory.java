@@ -20,10 +20,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 @Factory
 public class ConfigFactory {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFactory.class);
 
   /**
    * Returns the config directory which contains all the configuration files.
@@ -62,8 +66,10 @@ public class ConfigFactory {
   @Singleton
   @Named("envVars")
   Map<String, String> envVars(@Named("configDir") final String configDir) {
-    return Jsons.deserialize(
+    Map<String, String> a = Jsons.deserialize(
         Path.of(configDir, OrchestratorConstants.INIT_FILE_ENV_MAP).toFile(), new TypeReference<>() {});
+    LOGGER.info("==== Loading env var map: {}", a);
+    return a;
   }
 
   /**
