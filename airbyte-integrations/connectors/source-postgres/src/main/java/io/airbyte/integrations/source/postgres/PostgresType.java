@@ -70,6 +70,7 @@ public enum PostgresType implements SQLType {
   FLOAT4_ARRAY(Types.ARRAY),
   FLOAT8_ARRAY(Types.ARRAY),
   BYTEA_ARRAY(Types.ARRAY),
+  JSONB_ARRAY(Types.ARRAY),
   JSONB(Types.JAVA_OBJECT);
 
   /**

@@ -199,6 +199,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_timestamp" -> putTimestampArray(json, columnName, resultSet, colIndex);
         case "_timetz" -> putTimeTzArray(json, columnName, resultSet, colIndex);
         case "_time" -> putTimeArray(json, columnName, resultSet, colIndex);
+        case "_jsonb" -> putJsonbArray(json, columnName, resultSet, colIndex);
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
@@ -220,6 +221,23 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         }
       }
     }
+  }
+
+  private void putJsonbArray(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
+    final ArrayNode arrayNode = Jsons.arrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+
+    while (arrayResultSet.next()) {
+      final PGobject object = getObject(arrayResultSet, colIndex, PGobject.class);
+      final JsonNode value;
+      try {
+        value = new ObjectMapper().readTree(object.getValue());
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException("Could not parse 'jsonb' value:" + e);
+      }
+      arrayNode.add(value);
+    }
+    node.set(columnName, arrayNode);
   }
 
   private void putJsonb(ObjectNode node, String columnName, ResultSet resultSet, int colIndex) throws SQLException {
@@ -416,6 +434,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "_time" -> PostgresType.TIME_ARRAY;
         case "_date" -> PostgresType.DATE_ARRAY;
         case "_bytea" -> PostgresType.BYTEA_ARRAY;
+        case "_jsonb" -> PostgresType.JSONB_ARRAY;
         case "bool", "boolean" -> PostgresType.BOOLEAN;
         // BYTEA is variable length binary string with hex output format by default (e.g. "\x6b707a").
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
@@ -519,6 +538,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
           .build();
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
           .withItems(JsonSchemaType.STRING_DATE)
+          .build();
+      case JSONB_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaType.JSONB)
           .build();
       case JSONB -> JsonSchemaType.JSONB;
       case DATE -> JsonSchemaType.STRING_DATE;

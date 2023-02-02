@@ -268,7 +268,9 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("jsonb")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.JSONB).build())
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.JSONB)
+                .withLegacyAirbyteTypeProperty("json")
+                .build())
             .addInsertValues("null", "'10000'::jsonb", "'true'::jsonb", "'[1,2,3]'::jsonb",
                 "'{\"Janet\": 1, \"Melissa\": {\"loves\": \"trees\", \"married\": true}}'::jsonb")
             .addExpectedValues(null, "10000", "true", "[1,2,3]", "{\"Janet\":1,\"Melissa\":{\"loves\":\"trees\",\"married\":true}}")
@@ -594,6 +596,23 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     addTimeWithTimeZoneTest();
     addArraysTestData();
+    addJsonbArrayTest();
+  }
+
+  protected void addJsonbArrayTest() {
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.JSONB)
+                .build())
+            .addInsertValues(
+                "ARRAY['[1,2,1]', 'false']::jsonb[]",
+                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
+            .addExpectedValues("[[1,2,1],false]", "[{\"digit\":30,\"letter\":\"A\"},{\"digit\":31,\"letter\":\"B\"}]")
+            .build());
   }
 
   protected void addTimeWithTimeZoneTest() {
