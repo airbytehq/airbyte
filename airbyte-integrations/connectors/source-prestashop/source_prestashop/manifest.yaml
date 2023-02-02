@@ -31,7 +31,6 @@ definitions:
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
     stream_cursor_field: "date_upd"
-    checkpoint_interval: 500
     retriever:
       $ref: "#/definitions/retriever"
       stream_slicer:
