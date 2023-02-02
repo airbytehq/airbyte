@@ -11,13 +11,11 @@ export const SideBar: React.FC = () => {
 
   return (
     <GenericSideBar>
-      {/* <MenuContent> */}
       <AirbyteHomeLink />
       <MenuContent>
         <MainNav />
         <BottomItems version={version} />
       </MenuContent>
-      {/* </MenuContent> */}
     </GenericSideBar>
   );
 };
