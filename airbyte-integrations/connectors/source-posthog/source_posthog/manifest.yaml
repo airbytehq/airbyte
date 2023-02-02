@@ -101,7 +101,6 @@ definitions:
       name: "events"
       path: "events"
     primary_key: "id"
-    stream_cursor_field: "timestamp"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:

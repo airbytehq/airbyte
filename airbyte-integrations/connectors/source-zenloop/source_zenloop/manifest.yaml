@@ -39,7 +39,6 @@ definitions:
         $ref: "#/definitions/requester"
   incremental_base_stream:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "inserted_at"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
