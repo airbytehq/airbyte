@@ -107,10 +107,10 @@ class SchemaHelpers:
                 # reference issue: https://github.com/airbytehq/oncall/issues/1432#issuecomment-1412743120
                 if complex_type == SchemaTypes.array_with_any:
                     if field_type in SIMPLE_AIRTABLE_TYPES:
-                        complex_type["items"] = SIMPLE_AIRTABLE_TYPES.get(field_type)
+                        complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
                     else:
-                        logger.warning(f"Unknown field type: {field_type}, falling back to simpleText")
-                        complex_type["items"] = SIMPLE_AIRTABLE_TYPES.get("simpleText")
+                        complex_type["items"] = SchemaTypes.string
+                        logger.warning(f"Unknown field type: {field_type}, falling back to `simpleText` type")
                 properties.update(**{name: complex_type})
             elif original_type in SIMPLE_AIRTABLE_TYPES.keys():
                 field_type: str = exec_type if exec_type else original_type
