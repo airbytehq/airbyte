@@ -5,8 +5,8 @@
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
-from source_amazon_ads import SourceAmazonAds
 
+from source_amazon_ads import SourceAmazonAds
 from .utils import command_check, url_strip_query
 
 
@@ -76,7 +76,7 @@ def test_source_streams(config):
     setup_responses()
     source = SourceAmazonAds()
     streams = source.streams(config)
-    assert len(streams) == 22
+    assert len(streams) == 23
     actual_stream_names = {stream.name for stream in streams}
     expected_stream_names = set(
         [
@@ -97,6 +97,7 @@ def test_source_streams(config):
             "attribution_report_performance_campaign",
             "attribution_report_performance_creative",
             "attribution_report_products",
+            "invoices",
         ]
     )
     assert not expected_stream_names - actual_stream_names
