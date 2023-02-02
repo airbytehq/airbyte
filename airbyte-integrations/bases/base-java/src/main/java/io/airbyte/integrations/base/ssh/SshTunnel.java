@@ -378,7 +378,7 @@ public class SshTunnel implements AutoCloseable {
 
   private boolean isTimeout(Exception e) {
     return e.getMessage().toLowerCase(Locale.ROOT).contains("failed to get operation result within specified timeout")
-            || e.getMessage().contains("Failed (ConnectException) to execute: Connection refused");
+        || e.getMessage().contains("Failed (ConnectException) to execute: Connection refused");
   }
 
   @Override
