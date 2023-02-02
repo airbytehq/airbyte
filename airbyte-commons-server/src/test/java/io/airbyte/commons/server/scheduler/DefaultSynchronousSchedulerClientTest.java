@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.JobMetadata;
 import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.temporal.scheduling.RouterService;
 import io.airbyte.commons.version.Version;
@@ -99,8 +100,8 @@ class DefaultSynchronousSchedulerClientTest {
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
 
-    when(routerService.getCheckTaskQueue(any())).thenReturn(CHECK_TASK_QUEUE);
-    when(routerService.getDiscoverTaskQueue(any())).thenReturn(DISCOVER_TASK_QUEUE);
+    when(routerService.getTaskQueue(any(), eq(TemporalJobType.CHECK_CONNECTION))).thenReturn(CHECK_TASK_QUEUE);
+    when(routerService.getTaskQueue(any(), eq(TemporalJobType.DISCOVER_SCHEMA))).thenReturn(DISCOVER_TASK_QUEUE);
   }
 
   private static JobMetadata createMetadata(final boolean succeeded) {

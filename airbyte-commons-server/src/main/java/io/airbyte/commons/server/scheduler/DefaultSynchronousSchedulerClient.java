@@ -12,6 +12,7 @@ import com.google.common.hash.Hashing;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.temporal.scheduling.RouterService;
 import io.airbyte.commons.version.Version;
@@ -85,7 +86,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
-    String taskQueue = routerService.getCheckTaskQueue(source.getWorkspaceId());
+    String taskQueue = routerService.getTaskQueue(source.getWorkspaceId(), TemporalJobType.CHECK_CONNECTION);
 
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
@@ -116,7 +117,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
-    String taskQueue = routerService.getCheckTaskQueue(destination.getWorkspaceId());
+    String taskQueue = routerService.getTaskQueue(destination.getWorkspaceId(), TemporalJobType.CHECK_CONNECTION);
 
     return execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
@@ -151,7 +152,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
 
-    String taskQueue = routerService.getDiscoverTaskQueue(source.getWorkspaceId());
+    String taskQueue = routerService.getTaskQueue(source.getWorkspaceId(), TemporalJobType.DISCOVER_SCHEMA);
 
     return execute(
         ConfigType.DISCOVER_SCHEMA,

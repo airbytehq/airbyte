@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.temporal.scheduling;
 
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.config.Geography;
 import io.airbyte.config.persistence.ConfigRepository;
 import jakarta.inject.Singleton;
@@ -31,19 +32,9 @@ public class RouterService {
    * Given a connectionId, look up the connection's configured {@link Geography} in the config DB and
    * use it to determine which Task Queue should be used for this connection's sync.
    */
-  public String getTaskQueue(final UUID connectionId) throws IOException {
+  public String getTaskQueue(final UUID connectionId, final TemporalJobType jobType) throws IOException {
     final Geography geography = configRepository.getGeographyForConnection(connectionId);
-    return taskQueueMapper.getTaskQueue(geography);
-  }
-
-  public String getDiscoverTaskQueue(final UUID workspaceId) throws IOException {
-    final Geography geography = configRepository.getGeographyForWorkspace(workspaceId);
-    return taskQueueMapper.getDiscoverTaskQueue(geography);
-  }
-
-  public String getCheckTaskQueue(final UUID workspaceId) throws IOException {
-    final Geography geography = configRepository.getGeographyForWorkspace(workspaceId);
-    return taskQueueMapper.getCheckTaskQueue(geography);
+    return taskQueueMapper.getTaskQueue(geography, jobType);
   }
 
 }
