@@ -5,9 +5,9 @@ import { timer, delay, from, concatMap, takeWhile, last, raceWith, lastValueFrom
 export function pollUntil<ResponseType>(
   apiFn: () => Promise<ResponseType>,
   condition: (res: ResponseType) => boolean,
-  interval: number,
-  maxTimeout?: number
+  options: { interval: number; maxTimeout?: number }
 ) {
+  const { interval, maxTimeout } = options;
   const poll$ = timer(0, interval).pipe(
     concatMap((_) => from(apiFn())),
     takeWhile((result) => !condition(result), true),
