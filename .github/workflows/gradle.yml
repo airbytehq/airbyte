@@ -317,6 +317,7 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
           fail-on-error: 'false'
+          token: ${{ env.PAT }}
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
@@ -825,6 +826,7 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
           fail-on-error: 'false'
+          token: ${{ env.PAT }}
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -1041,6 +1043,7 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
           reporter: java-junit
           fail-on-error: 'false'
+          token: ${{ env.PAT }}
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -1265,6 +1268,7 @@ jobs:
           path: "./*/build/test-results/*/*.xml"
           reporter: java-junit
           fail-on-error: 'false'
+          token: ${{ env.PAT }}
 
       - uses: actions/upload-artifact@v2
         if: failure()
