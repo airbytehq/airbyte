@@ -1,44 +1,27 @@
-import React, { useContext, useMemo } from "react";
-import { useAsync } from "react-use";
+import React, { useContext } from "react";
 
-import { LoadingPage } from "components";
+import { AirbyteWebappConfig } from "./types";
 
-import { applyProviders } from "./configProviders";
-import { Config, ValueProvider } from "./types";
-
-export interface ConfigContextData<T extends Config = Config> {
-  config: T;
+export interface ConfigContextData {
+  config: AirbyteWebappConfig;
 }
 
 export const ConfigContext = React.createContext<ConfigContextData | null>(null);
 
-export function useConfig<T extends Config>(): T {
+export function useConfig(): AirbyteWebappConfig {
   const configService = useContext(ConfigContext);
 
   if (configService === null) {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
-  return useMemo(() => configService.config as unknown as T, [configService.config]);
+  return configService.config;
 }
 
-const ConfigServiceInner: React.FC<
+export const ConfigServiceProvider: React.FC<
   React.PropsWithChildren<{
-    defaultConfig: Config;
-    providers?: ValueProvider<Config>;
+    config: AirbyteWebappConfig;
   }>
-> = ({ children, defaultConfig, providers }) => {
-  const { loading, value } = useAsync(
-    async () => (providers ? applyProviders(defaultConfig, providers) : defaultConfig),
-    [providers]
-  );
-  const config: ConfigContextData | null = useMemo(() => (value ? { config: value } : null), [value]);
-
-  if (loading) {
-    return <LoadingPage />;
-  }
-
-  return <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>;
+> = ({ children, config }) => {
+  return <ConfigContext.Provider value={{ config }}>{children}</ConfigContext.Provider>;
 };
-
-export const ConfigServiceProvider = React.memo(ConfigServiceInner);

@@ -3,29 +3,17 @@
 #
 
 
-import pandas as pd
-from .models import QAReport
+from .constants import CLOUD_CATALOG_URL, OSS_CATALOG_URL
+from . import enrichments, inputs, validations
 
-GCS_QA_REPORT_PATH = "gs://prod-airbyte-cloud-connector-metadata-service/qa_report.json"
-DUMMY_REPORT = pd.DataFrame([
-        {
-            "connector_type": "source",
-            "connector_name": "test",
-            "docker_image_tag": "0.0.0",
-            "release_stage": "alpha",
-            "is_on_cloud": False,
-            "latest_build_is_successful": False,
-            "documentation_is_available": False,
-            "number_of_connections": 0,
-            "number_of_users": 0,
-            "sync_success_rate": .99
-        }
-    ])
-
-def write_qa_report_to_gcs(qa_report: pd.DataFrame, output_file_path: str):
-    # Validate the report structure with pydantic QAReport model.
-    QAReport(connectors_qa_report=qa_report.to_dict(orient="records"))
-    qa_report.to_json(output_file_path, orient="records")
 
 def main():
-    write_qa_report_to_gcs(DUMMY_REPORT, GCS_QA_REPORT_PATH)
+    oss_catalog = inputs.fetch_remote_catalog(OSS_CATALOG_URL)
+    cloud_catalog = inputs.fetch_remote_catalog(CLOUD_CATALOG_URL)
+    adoption_metrics_per_connector_version = inputs.fetch_adoption_metrics_per_connector_version()
+    enriched_catalog = enrichments.get_enriched_catalog(
+        oss_catalog,
+        cloud_catalog,
+        adoption_metrics_per_connector_version
+    )
+    validations.get_qa_report(enriched_catalog, len(oss_catalog))
