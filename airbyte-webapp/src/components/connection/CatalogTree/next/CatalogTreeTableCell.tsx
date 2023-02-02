@@ -27,6 +27,9 @@ const TooltipText: React.FC<{ textNodes: Element[] }> = ({ textNodes }) => {
     return null;
   }
   const text = textNodes.map((t) => decodeURIComponent(t.innerHTML)).join(" | ");
+  // This is not a safe use, and need to be removed still.
+  // https://github.com/airbytehq/airbyte/issues/22196
+  // eslint-disable-next-line react/no-danger
   return <div dangerouslySetInnerHTML={{ __html: text }} />;
 };
 
