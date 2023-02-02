@@ -13,7 +13,7 @@
         },
         "title": "Website URL Property",
         "description": "The URLs of the website property attached to your GSC account. Read more <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
-        "examples": ["https://example1.com/", "https://example2.com/"],
+        "examples": ["https://example1.com/", "sc-domain:example2.com"],
         "order": 0
       },
       "start_date": {
