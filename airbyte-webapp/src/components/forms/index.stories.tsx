@@ -1,6 +1,10 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import * as yup from "yup";
 
+import { Button } from "components/ui/Button";
+import { Card } from "components/ui/Card";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
+
 import { RHFForm, RHFControl } from "./index";
 
 /**
@@ -30,11 +34,15 @@ export const Primary = Template.bind({});
 Primary.args = {
   schema,
   children: (
-    <>
+    <Card withPadding>
       <RHFControl fieldType="input" name="some_input" />
       <RHFControl fieldType="input" type="password" name="some_password" />
       <RHFControl fieldType="date" name="some_date" format="date-time" />
-      <button type="submit">Submit</button>
-    </>
+      <FlexContainer justifyContent="flex-end">
+        <FlexItem>
+          <Button type="submit">Submit</Button>
+        </FlexItem>
+      </FlexContainer>
+    </Card>
   ),
 };

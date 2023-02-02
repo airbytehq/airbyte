@@ -1,0 +1,15 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.control {
+  margin-top: variables.$spacing-lg;
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.errorMessage {
+  font-size: 1rem;
+  color: colors.$red;
+}

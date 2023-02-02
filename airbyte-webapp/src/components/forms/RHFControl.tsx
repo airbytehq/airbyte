@@ -1,6 +1,7 @@
 import { HTMLInputTypeAttribute } from "react";
 import { useFormContext } from "react-hook-form";
 
+import styles from "./RHFControl.module.scss";
 import { RHFDateWrapper } from "./RHFDateWrapper";
 import { RHFInputWrapper } from "./RHFInputWrapper";
 
@@ -49,9 +50,9 @@ export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, name, ...prop
   }
 
   return (
-    <div>
+    <div className={styles.control}>
       {renderControl()}
-      {error && isTouched && <p>{error.message}</p>}
+      {error && isTouched && <p className={styles.errorMessage}>{error.message}</p>}
     </div>
   );
 };
