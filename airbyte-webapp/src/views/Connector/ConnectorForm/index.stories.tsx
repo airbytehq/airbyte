@@ -1,5 +1,5 @@
 import { ComponentMeta, ComponentStory } from "@storybook/react";
-import withMock from "storybook-addon-mock";
+import React from "react";
 
 import { Card } from "components/ui/Card";
 
@@ -23,16 +23,6 @@ export default {
   component: ConnectorForm,
   parameters: {
     actions: { argTypesRegex: "^on.*" },
-    mockData: [
-      {
-        url: "http://localhost:8001/api/v1/workspaces/get",
-        method: "POST",
-        status: 200,
-        response: {
-          workspaceId: "abc",
-        },
-      },
-    ],
   },
   args: {
     formType: "source",
@@ -42,10 +32,9 @@ export default {
     onSubmit: async (v) => console.log(v),
     availableServices: [TempConnector],
   },
-  decorators: [withMock],
 } as ComponentMeta<typeof ConnectorForm>;
 
-const Template: ComponentStory<typeof ConnectorForm> = (args) => {
+const Template: ComponentStory<typeof ConnectorForm> = (args: React.ComponentProps<typeof ConnectorForm>) => {
   const selectedSpecification = args.selectedConnectorDefinitionSpecification as ConnectorDefinitionSpecification;
   // Hack to allow devs to not specify sourceDefinitionId
   if (!ConnectorSpecification.id(selectedSpecification)) {

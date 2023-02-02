@@ -1,4 +1,6 @@
-# Config Database
+# Airbyte Databases Data Catalog
+
+## Config Database
 * `workspace`
   * Each record represents a logical workspace for an Airbyte user. In the open-source version of the product, only one workspace is allowed.
 * `actor_definition`
@@ -67,7 +69,7 @@
 * `airbyte_configs`
   * Legacy table for config storage. Should be dropped.
 
-# Jobs Database
+## Jobs Database
 * `jobs`
   * Each record in this table represents a job.
   * The `config_type` column captures the type of job. We only make jobs for `sync` and `reset` (we do not use them for `spec`, `check`, `discover`).

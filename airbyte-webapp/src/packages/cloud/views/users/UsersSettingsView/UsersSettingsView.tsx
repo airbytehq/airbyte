@@ -1,12 +1,12 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { createColumnHelper } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { CellProps } from "react-table";
 
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
-import { Table } from "components/ui/Table";
+import { NextTable } from "components/ui/NextTable";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
@@ -71,20 +71,18 @@ export const UsersTable: React.FC = () => {
   const users = useListUsers();
   const { user } = useAuthService();
 
+  const columnHelper = createColumnHelper<User>();
+
   const columns = useMemo(
     () => [
-      {
-        Header: <FormattedMessage id="userSettings.table.column.fullname" />,
-        headerHighlighted: true,
-        accessor: "name",
-        Cell: ({ cell }: CellProps<User>) => cell.value,
-      },
-      {
-        Header: <FormattedMessage id="userSettings.table.column.email" />,
-        headerHighlighted: true,
-        accessor: "email",
-        Cell: ({ cell }: CellProps<User>) => cell.value,
-      },
+      columnHelper.accessor("name", {
+        header: () => <FormattedMessage id="userSettings.table.column.fullname" />,
+        cell: (props) => props.cell.getValue(),
+      }),
+      columnHelper.accessor("email", {
+        header: () => <FormattedMessage id="userSettings.table.column.email" />,
+        cell: (props) => props.cell.getValue(),
+      }),
       // TEMP: Currently all cloud users are admins.
       // Remove when there is more than role
       // {
@@ -98,22 +96,20 @@ export const UsersTable: React.FC = () => {
       //   accessor: "userId",
       //   Cell: (_: CellProps<User>) => "Admin",
       // },
-      {
-        Header: <FormattedMessage id="userSettings.table.column.action" />,
-        headerHighlighted: true,
-        accessor: "status",
-        Cell: ({ row }: CellProps<User>) =>
+      columnHelper.accessor("status", {
+        header: () => <FormattedMessage id="userSettings.table.column.action" />,
+        cell: (props) =>
           [
-            user?.userId !== row.original.userId ? (
-              <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
+            user?.userId !== props.row.original.userId ? (
+              <RemoveUserSection workspaceId={workspaceId} email={props.row.original.email} />
             ) : null,
           ].filter(Boolean),
-      },
+      }),
     ],
-    [workspaceId, user]
+    [columnHelper, user?.userId, workspaceId]
   );
 
-  return <Table data={users ?? []} columns={columns} />;
+  return <NextTable data={users ?? []} columns={columns} />;
 };
 
 export const UsersSettingsView: React.VFC = () => {

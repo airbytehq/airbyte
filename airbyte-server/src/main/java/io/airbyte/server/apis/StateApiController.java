@@ -11,7 +11,8 @@ import io.airbyte.api.generated.StateApi;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
-import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.commons.auth.SecuredWorkspace;
+import io.airbyte.commons.server.handlers.StateHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
@@ -39,6 +40,7 @@ public class StateApiController implements StateApi {
 
   @Post("/get")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> stateHandler.getState(connectionIdRequestBody));

@@ -134,7 +134,8 @@ public class TestConfigHelpers {
         .withCatalog(standardSync.getCatalog())
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
         .withState(state)
-        .withOperationSequence(List.of(normalizationOperation, customDbtOperation));
+        .withOperationSequence(List.of(normalizationOperation, customDbtOperation))
+        .withWorkspaceId(workspaceId);
 
     return new ImmutablePair<>(standardSync, syncInput);
   }

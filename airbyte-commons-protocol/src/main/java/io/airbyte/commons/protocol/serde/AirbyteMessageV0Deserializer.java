@@ -4,15 +4,15 @@
 
 package io.airbyte.commons.protocol.serde;
 
-import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.protocol.models.AirbyteMessage;
 import jakarta.inject.Singleton;
 
 @Singleton
 public class AirbyteMessageV0Deserializer extends AirbyteMessageGenericDeserializer<AirbyteMessage> {
 
   public AirbyteMessageV0Deserializer() {
-    super(new AirbyteVersion("0.3.0"), AirbyteMessage.class);
+    super(AirbyteProtocolVersion.V0, AirbyteMessage.class);
   }
 
 }
