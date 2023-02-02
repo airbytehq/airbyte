@@ -14,7 +14,9 @@ export const useBuilderErrors = () => {
   const invalidViews = useCallback(
     (ignoreUntouched: boolean, limitToViews?: BuilderView[], inputErrors?: FormikErrors<BuilderFormValues>) => {
       const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
-      const errorKeys = Object.keys(errorsToCheck);
+      const errorKeys = Object.keys(errorsToCheck).filter((errorKey) =>
+        Boolean(errorsToCheck[errorKey as keyof BuilderFormValues])
+      );
 
       const invalidViews: BuilderView[] = [];
 
@@ -33,7 +35,9 @@ export const useBuilderErrors = () => {
       }
 
       if (errorKeys.includes("streams")) {
-        const errorStreamNums = Object.keys(errorsToCheck.streams ?? {});
+        const errorStreamNums = Object.keys(errorsToCheck.streams ?? {}).filter((errorKey) =>
+          Boolean(errorsToCheck.streams?.[Number(errorKey)])
+        );
 
         if (ignoreUntouched) {
           if (errorsToCheck.streams && touched.streams) {
