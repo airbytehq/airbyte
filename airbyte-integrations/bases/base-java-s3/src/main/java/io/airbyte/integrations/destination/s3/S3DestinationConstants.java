@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.s3;
 
 import io.airbyte.integrations.destination.s3.util.CompressionType;
+import io.airbyte.integrations.destination.s3.util.FlatteningType;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 
 public final class S3DestinationConstants {
@@ -16,8 +17,11 @@ public final class S3DestinationConstants {
   // gzip compression for CSV and JSONL
   public static final String COMPRESSION_ARG_NAME = "compression";
   public static final String COMPRESSION_TYPE_ARG_NAME = "compression_type";
-  public static final String FLATTEN_DATA = "flatten_data";
   public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
+
+  // Flattening for Jsonl
+  public static final String FLATTENING_TYPE_ARG_NAME = "flattening";
+  public static final FlatteningType DEFAULT_FLATTENING_TYPE = FlatteningType.NO;
 
   private S3DestinationConstants() {}
 
