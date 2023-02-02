@@ -12,10 +12,10 @@ dependencies:
   repository: https://airbytehq.github.io/helm-charts/
   version: 0.43.22
 - name: server
-  repository: https://airbytehq.github.io/helm-charts/
+  repository: file://../airbyte-server
   version: 0.43.22
 - name: worker
-  repository: https://airbytehq.github.io/helm-charts/
+  repository: file://../airbyte-worker
   version: 0.43.22
 - name: pod-sweeper
   repository: https://airbytehq.github.io/helm-charts/
@@ -29,5 +29,5 @@ dependencies:
 - name: connector-builder-server
   repository: https://airbytehq.github.io/helm-charts/
   version: 0.43.22
-digest: sha256:3f86ccd42c1eb353dd2d45237b21706c6d8a1d564dc8babb26c0fd961c56ed9d
-generated: "2023-01-25T02:03:57.511452543Z"
+digest: sha256:cd0bc2180d518dc292c8d02e62e87f2150e9b6c81d48424cb7c216f0569b8d0c
+generated: "2023-02-01T23:26:15.204239-05:00"
