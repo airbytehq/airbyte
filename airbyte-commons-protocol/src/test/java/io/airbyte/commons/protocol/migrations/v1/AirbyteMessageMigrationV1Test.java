@@ -1056,7 +1056,7 @@ class AirbyteMessageMigrationV1Test {
                 "oneOf": [
                   {"$ref": "WellKnownTypes.json#/definitions/String"},
                   {
-                    "type": "object",
+                    "type": ["null", "object"],
                     "properties": {
                       "id": {"$ref": "WellKnownTypes.json#/definitions/String"}
                     },
@@ -1066,7 +1066,7 @@ class AirbyteMessageMigrationV1Test {
                     "additionalProperties": {"$ref": "WellKnownTypes.json#/definitions/String"}
                   },
                   {
-                    "type": "array",
+                    "type": ["null", "array"],
                     "items": {"$ref": "WellKnownTypes.json#/definitions/String"},
                     "additionalItems": {"$ref": "WellKnownTypes.json#/definitions/String"},
                     "contains": {"$ref": "WellKnownTypes.json#/definitions/String"}
@@ -1107,7 +1107,7 @@ class AirbyteMessageMigrationV1Test {
             "type": "object",
             "properties": {
               "multityped_field": {
-                "type": ["string", "object", "array"],
+                "type": ["string", "null", "object", "array"],
                 "properties": {
                   "id": {"type": "string"}
                 },

@@ -208,11 +208,22 @@ public class SchemaMigrationV1 {
           // First, update our list of types.
           final JsonNode subschemaType = subschema.get(TYPE_KEY);
           if (subschemaType != null) {
-            if (types.contains(subschemaType.asText())) {
-              // If another subschema has the same type, then we can't combine them.
-              canRecombineSubschemas = false;
+            if (subschemaType.isArray()) {
+              for (final JsonNode typeEntry : subschemaType){
+                if (types.contains(typeEntry.asText()) && !"null".equals(typeEntry.asText())) {
+                  // If another subschema has the same type, then we can't combine them.
+                  canRecombineSubschemas = false;
+                } else {
+                  types.add(typeEntry.asText());
+                }
+              }
             } else {
-              types.add(subschemaType.asText());
+              if (types.contains(subschemaType.asText())) {
+                // If another subschema has the same type, then we can't combine them.
+                canRecombineSubschemas = false;
+              } else {
+                types.add(subschemaType.asText());
+              }
             }
           }
 
