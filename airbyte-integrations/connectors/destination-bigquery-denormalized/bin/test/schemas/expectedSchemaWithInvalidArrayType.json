@@ -1,0 +1,35 @@
+{
+  "type": ["object"],
+  "properties": {
+    "name": {
+      "type": ["string"]
+    },
+    "permission-list": {
+      "type": ["object"],
+      "properties": {
+        "big_query_array": {
+          "type": ["array"],
+          "items": {
+            "type": ["object"],
+            "properties": {
+              "domain": {
+                "type": ["string"]
+              },
+              "grants": {
+                "type": ["object"],
+                "properties": {
+                  "big_query_array": {
+                    "type": ["array"],
+                    "items": {
+                      "type": ["string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

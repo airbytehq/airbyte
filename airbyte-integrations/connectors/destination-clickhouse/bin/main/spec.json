@@ -1,0 +1,68 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/clickhouse",
+  "supportsIncremental": true,
+  "supportsNormalization": true,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ClickHouse Destination Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "Hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "JDBC port (not the native port) of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 8123,
+        "examples": ["8123"],
+        "order": 1
+      },
+      "tcp-port": {
+        "title": "Native Port",
+        "description": "Native port (not the JDBC) of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 9000,
+        "examples": ["9000"],
+        "order": 2
+      },
+      "database": {
+        "title": "DB Name",
+        "description": "Name of the database.",
+        "type": "string",
+        "order": 3
+      },
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the database.",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "ssl": {
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
+      }
+    }
+  }
+}

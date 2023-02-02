@@ -1,0 +1,22 @@
+{
+  "schema": {
+    "streams": [
+      {
+        "name": "id_and_name",
+        "selected": true,
+        "fields": [
+          {
+            "name": "name",
+            "dataType": "string",
+            "selected": true
+          },
+          {
+            "name": "id",
+            "dataType": "number",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  }
+}

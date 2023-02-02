@@ -1,0 +1,12 @@
+{
+  "destinationDefinitionId": "f7a7d195-377f-cf5b-70a5-be6b819019dc",
+  "name": "Redshift",
+  "dockerRepository": "airbyte/destination-redshift",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+    "connectionSpecification": {},
+    "supportsIncremental": true
+  }
+}

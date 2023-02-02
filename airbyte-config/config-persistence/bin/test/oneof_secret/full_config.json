@@ -1,0 +1,9 @@
+{
+  "credentials": {
+    "auth_method": "oauth2.0",
+    "client_id": "clientId_1",
+    "client_secret": "client_secret_1",
+    "access_token": "access_token_1",
+    "refresh_token": "refresh_token_1"
+  }
+}

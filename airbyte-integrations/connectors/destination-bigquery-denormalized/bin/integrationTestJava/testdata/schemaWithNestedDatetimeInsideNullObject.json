@@ -1,0 +1,20 @@
+{
+  "type": ["object"],
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "appointment": {
+      "type": ["null", "object"],
+      "properties": {
+        "street": {
+          "type": ["null", "string"]
+        },
+        "expTime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

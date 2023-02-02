@@ -1,0 +1,13 @@
+{
+  "type": ["object"],
+  "properties": {
+    "salary": {
+      "type": ["number"],
+      "airbyte_type": "big_integer"
+    },
+    "updated_at": {
+      "type": ["string"],
+      "format": "date-time"
+    }
+  }
+}

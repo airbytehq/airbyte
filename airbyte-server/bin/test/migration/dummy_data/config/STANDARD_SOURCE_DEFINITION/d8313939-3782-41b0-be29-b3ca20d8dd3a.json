@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "d8313939-3782-41b0-be29-b3ca20d8dd3a",
+  "name": "Intercom",
+  "dockerRepository": "airbyte/source-intercom-singer",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-intercom-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/intercom",
+    "connectionSpecification": {}
+  }
+}

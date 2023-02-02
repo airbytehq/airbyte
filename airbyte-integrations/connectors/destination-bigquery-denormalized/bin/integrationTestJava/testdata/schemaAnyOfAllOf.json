@@ -1,0 +1,79 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "avatar": {
+      "type": ["null", "object"],
+      "properties": {
+        "image_url": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "team_ids": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "admin_ids": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "all_of_field": {
+      "allOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        }
+      ]
+    },
+    "job_title": {
+      "type": ["null", "string"]
+    },
+    "has_inbox_seat": {
+      "type": ["null", "boolean"]
+    },
+    "away_mode_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "away_mode_reassign": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

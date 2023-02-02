@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "properties": {
+    "cred": {
+      "oneOf": [
+        {
+          "type": "string",
+          "airbyte_secret": true
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "airbyte_secret": true
+          }
+        }
+      ]
+    }
+  }
+}

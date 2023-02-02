@@ -1,0 +1,92 @@
+{
+  "streams": [
+    {
+      "table_name": "id_and_name",
+      "stream": "id_and_name",
+      "metadata": [
+        {
+          "breadcrumb": [],
+          "metadata": {
+            "table-key-properties": [],
+            "schema-name": "public",
+            "database-name": "test",
+            "row-count": 5,
+            "is-view": false,
+            "selected": true,
+            "replication-method": "FULL_TABLE"
+          }
+        },
+        {
+          "breadcrumb": ["properties", "id"],
+          "metadata": {
+            "sql-datatype": "integer",
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        },
+        {
+          "breadcrumb": ["properties", "name"],
+          "metadata": {
+            "sql-datatype": "character varying",
+            "inclusion": "available",
+            "selected-by-default": true
+          }
+        }
+      ],
+      "tap_stream_id": "test-public-id_and_name",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"],
+            "minimum": -2147483648,
+            "maximum": 2147483647
+          },
+          "name": {
+            "type": ["null", "string"],
+            "maxLength": 200
+          }
+        },
+        "definitions": {
+          "sdc_recursive_integer_array": {
+            "type": ["null", "integer", "array"],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_integer_array"
+            }
+          },
+          "sdc_recursive_number_array": {
+            "type": ["null", "number", "array"],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_number_array"
+            }
+          },
+          "sdc_recursive_string_array": {
+            "type": ["null", "string", "array"],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_string_array"
+            }
+          },
+          "sdc_recursive_boolean_array": {
+            "type": ["null", "boolean", "array"],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_boolean_array"
+            }
+          },
+          "sdc_recursive_timestamp_array": {
+            "type": ["null", "string", "array"],
+            "format": "date-time",
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_timestamp_array"
+            }
+          },
+          "sdc_recursive_object_array": {
+            "type": ["null", "object", "array"],
+            "items": {
+              "$ref": "#/definitions/sdc_recursive_object_array"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

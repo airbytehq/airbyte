@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "date": { "type": "string", "format": "date-time" },
+    "CAD": { "type": ["null", "string"] },
+    "COD": { "type": ["null", "string"] },
+    "ISK": { "type": ["null", "number"] },
+    "PHP": { "type": ["null", "number"] },
+    "DKK": { "type": ["null", "number"] },
+    "HUF": { "type": ["null", "number"] },
+    "文": { "type": ["null", "number"] },
+    "something": {
+      "type": ["null", "object"],
+      "properties": {
+        "somekey": {
+          "type": ["null", "object"],
+          "properties": {
+            "nestedkey": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        ".+": {}
+      }
+    },
+    "someArray": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "newName": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
+      }
+    }
+  }
+}

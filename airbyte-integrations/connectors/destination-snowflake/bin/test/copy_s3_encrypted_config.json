@@ -1,0 +1,21 @@
+{
+  "host": "testhost.snowflakecomputing.com",
+  "role": "AIRBYTE_ROLE",
+  "warehouse": "AIRBYTE_WAREHOUSE",
+  "database": "AIRBYTE_DATABASE",
+  "schema": "AIRBYTE_SCHEMA",
+  "username": "AIRBYTE_USER",
+  "credentials": {
+    "password": "test"
+  },
+  "loading_method": {
+    "method": "S3 Staging",
+    "s3_bucket_name": "airbyte-snowflake-integration-tests",
+    "s3_bucket_region": "us-east-2",
+    "access_key_id": "test",
+    "secret_access_key": "test",
+    "encryption": {
+      "encryption_type": "aes_cbc_envelope"
+    }
+  }
+}
