@@ -42,7 +42,7 @@ data:
 {{- end }}
   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.29.15.001"
   LOCAL_ROOT: /tmp/airbyte_local
-  RUN_DATABASE_MIGRATION_ON_STARTUP: {{ .Values.airbyte-bootloader.run_database_migrations_on_startup | default "true"  }}
+  RUN_DATABASE_MIGRATION_ON_STARTUP: {{ .Values.airbyte-bootloader.runDatabaseMigrationsOnStartup | default "true"  }}
   S3_LOG_BUCKET: {{ .Values.global.logs.s3.bucket | quote }}
   S3_LOG_BUCKET_REGION: {{ .Values.global.logs.s3.bucketRegion | quote }}
   S3_MINIO_ENDPOINT: {{ include "airbyte.minio.endpoint" . | quote }}
@@ -58,9 +58,9 @@ data:
   WORKSPACE_ROOT: /workspace
   METRIC_CLIENT: {{ .Values.global.metrics.metricClient | default "" | quote }}
   OTEL_COLLECTOR_ENDPOINT: {{ .Values.global.metrics.otelCollectorEndpoint | default "" | quote }}
-  ACTIVITY_MAX_ATTEMPT: {{ .Values.worker.activity_max_attempt | default ""  }}
-  ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activity_initial_delay_between_attempts_seconds | default ""  }}
-  ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activity_max_delay_between_attempts_seconds | default ""  }}
+  ACTIVITY_MAX_ATTEMPT: {{ .Values.worker.activityMaxAttempt | default ""  }}
+  ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activityInitialDelayBetweenAttemptsSeconds | default ""  }}
+  ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activityMaxDelayBetweenAttemptsSeconds | default ""  }}
   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
   USE_STREAM_CAPABLE_STATE: "true"
   AUTO_DETECT_SCHEMA: "true"
@@ -71,5 +71,5 @@ data:
   WORKER_LOGS_STORAGE_TYPE: {{ .Values.global.logs.storage.type | quote }}
   WORKER_STATE_STORAGE_TYPE:  {{ .Values.global.state.storage.type | quote }}
   SHOULD_RUN_NOTIFY_WORKFLOWS: "false"
-  MAX_NOTIFY_WORKERS: {{ .Values.worker.max_notify_workers | default "5"  }}
+  MAX_NOTIFY_WORKERS: {{ .Values.worker.maxNotifyWorkers | default "5"  }}
 {{- end }}
