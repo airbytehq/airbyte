@@ -87,15 +87,20 @@ be returned as a keyword argument.
 The CDK defines an `AvailabilityStrategy` for a stream, which is used to perform the `check_availability` method. This method checks whether
 the stream is available before performing `read_records`.
 
-For HTTP streams, a `HttpAvailabilityStrategy` is defined, which attempts to read the first record of the stream, and excepts
+For HTTP streams, a default `HttpAvailabilityStrategy` is defined, which attempts to read the first record of the stream, and excepts
 a dictionary of known error codes and associated reasons, `reasons_for_unavailable_status_codes`. By default, this list contains only
 `requests.status_codes.FORBIDDEN` (403), with an associated error message that tells the user that they are likely missing permissions associated with that stream.
 
-You can use this `HttpAvailabilityStrategy` in your `HttpStream` by adding the following property to your stream class:
+### Customizing stream availability
+
+You can subclass `HttpAvailabilityStrategy` to override the `reasons_for_unavailable_status_codes` to except more HTTP error codes and inform the user how to resolve errors specific to your connector or stream.
+
+### Disabling stream availability check
+
+You can disable the `HttpAvailabilityStrategy` in your `HttpStream` by adding the following property to your stream class:
 
 ```python
+    @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HttpAvailabilityStrategy()
+        return None
 ```
-
-You can also subclass `HttpAvailabilityStrategy` to override the list of known errors to except more error codes and inform the user how to resolve errors specific to your connector or stream.
