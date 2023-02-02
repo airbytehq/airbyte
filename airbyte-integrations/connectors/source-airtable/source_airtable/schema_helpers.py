@@ -58,6 +58,7 @@ SIMPLE_AIRTABLE_TYPES: Dict = {
     "rating": SchemaTypes.number,
     "richText": SchemaTypes.string,
     "singleLineText": SchemaTypes.string,
+    "singleSelect": SchemaTypes.string,
     "externalSyncSource": SchemaTypes.string,
     "url": SchemaTypes.string,
     # referal default type
