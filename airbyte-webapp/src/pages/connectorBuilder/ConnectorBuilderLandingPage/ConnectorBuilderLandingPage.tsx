@@ -104,6 +104,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
           if (fileName) {
             const fileNameNoType = lowerCase(fileName.split(".")[0].trim());
             if (fileNameNoType === "manifest") {
+              // remove http protocol from beginning of url
               convertedFormValues.global.connectorName = convertedFormValues.global.urlBase.replace(
                 /(^\w+:|^)\/\//,
                 ""
