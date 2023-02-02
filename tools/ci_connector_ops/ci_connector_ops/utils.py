@@ -20,13 +20,13 @@ print(f"File path: {file_path}")
 print(f"File directory: {os.path.dirname(file_path)}")
 
 # ensure we are at the repository root
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+# os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # os.chdir('../../..')
 
 # print the current working directory
 print(f"Current working directory: {os.getcwd()}")
 
-AIRBYTE_REPO = git.Repo(".", search_parent_directories=True)
+AIRBYTE_REPO = git.Repo(search_parent_directories=True)
 
 branch = AIRBYTE_REPO.active_branch
 print(f"Active Branch: {branch.name}")
