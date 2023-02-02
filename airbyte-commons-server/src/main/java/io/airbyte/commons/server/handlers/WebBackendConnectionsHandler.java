@@ -191,7 +191,7 @@ public class WebBackendConnectionsHandler {
         .collect(Collectors.toMap(DestinationSnippetRead::getDestinationId, Function.identity()));
   }
 
-  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead, final Optional<UUID> currentSourceCatalogId)
+  private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead, final CatalogDiff diff)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceRead source = getSourceRead(connectionRead.getSourceId());
     final DestinationRead destination = getDestinationRead(connectionRead.getDestinationId());
@@ -209,10 +209,10 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
 
-    final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-        configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
+    // final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
+    // configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
 
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentSourceCatalogId, mostRecentFetchEvent);
+    final SchemaChange schemaChange = getSchemaChange(connectionRead, diff);
 
     webBackendConnectionRead.setSchemaChange(schemaChange);
 
@@ -234,7 +234,7 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
     final Optional<UUID> currentCatalogId = connectionRead == null ? Optional.empty() : Optional.ofNullable(connectionRead.getSourceCatalogId());
 
-    final SchemaChange schemaChange = getSchemaChange(connectionRead, currentCatalogId, latestFetchEvent);
+    final SchemaChange schemaChange = getSchemaChangeForList(connectionRead, currentCatalogId, latestFetchEvent);
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -266,8 +266,25 @@ public class WebBackendConnectionsHandler {
   @VisibleForTesting
   static SchemaChange getSchemaChange(
                                       final ConnectionRead connectionRead,
-                                      final Optional<UUID> currentSourceCatalogId,
-                                      final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent) {
+                                      final CatalogDiff diff) {
+    if (connectionRead == null || diff == null) {
+      return SchemaChange.NO_CHANGE;
+    }
+
+    if (connectionRead.getBreakingChange() != null && connectionRead.getBreakingChange()) {
+      return SchemaChange.BREAKING;
+    }
+
+    if (!diff.getTransforms().isEmpty()) {
+      return SchemaChange.NON_BREAKING;
+    }
+
+    return SchemaChange.NO_CHANGE;
+  }
+
+  static SchemaChange getSchemaChangeForList(final ConnectionRead connectionRead,
+                                             final Optional<UUID> currentSourceCatalogId,
+                                             final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent) {
     if (connectionRead == null || currentSourceCatalogId.isEmpty()) {
       return SchemaChange.NO_CHANGE;
     }
@@ -360,7 +377,7 @@ public class WebBackendConnectionsHandler {
 
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
+
     if (refreshedCatalog.isPresent()) {
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
@@ -383,8 +400,18 @@ public class WebBackendConnectionsHandler {
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithOriginalDiscoveredCatalog(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
-      // diff not relevant if there was no refresh.
-      diff = null;
+      Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(connection.getSourceId());
+      // Get the diff between existing connection catalog and most recent fetched catalog
+      if (mostRecentActorCatalog.isPresent()) {
+        final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
+            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(connection.getSourceId());
+        diff =
+            connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.get(), CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
+                CatalogConverter.toConfiguredProtocol(catalogUsedToMakeConfiguredCatalog.get()));
+      } else {
+        diff = null;
+      }
     } else {
       // fallback. over time this should be rarely used because source_catalog_id should always be set.
       syncCatalog = configuredCatalog;
@@ -393,7 +420,7 @@ public class WebBackendConnectionsHandler {
     }
 
     connection.setSyncCatalog(syncCatalog);
-    return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
+    return buildWebBackendConnectionRead(connection, diff).catalogDiff(diff);
   }
 
   private AirbyteCatalog updateSchemaWithOriginalDiscoveredCatalog(final AirbyteCatalog configuredCatalog,
@@ -516,8 +543,7 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
 
     final ConnectionCreate connectionCreate = toConnectionCreate(webBackendConnectionCreate, operationIds);
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionCreate.getSourceCatalogId());
-    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate), currentSourceCatalogId);
+    return buildWebBackendConnectionRead(connectionsHandler.createConnection(connectionCreate), null);
   }
 
   /**
@@ -533,6 +559,7 @@ public class WebBackendConnectionsHandler {
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
     final ConnectionRead originalConnectionRead = connectionsHandler.getConnection(connectionId);
     boolean breakingChange = originalConnectionRead.getBreakingChange() != null && originalConnectionRead.getBreakingChange();
+    CatalogDiff catalogDiff = null;
 
     // If there have been changes to the sync catalog, check whether these changes result in or fix a
     // broken connection
@@ -546,13 +573,12 @@ public class WebBackendConnectionsHandler {
         final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
             Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
         final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(originalConnectionRead.getSourceId());
-        final CatalogDiff catalogDiff =
+        catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
                 CatalogConverter.toConfiguredProtocol(newAirbyteCatalog));
         breakingChange = containsBreakingChange(catalogDiff);
       }
     }
-
     // before doing any updates, fetch the existing catalog so that it can be diffed
     // with the final catalog to determine which streams might need to be reset.
     final ConfiguredAirbyteCatalog oldConfiguredCatalog =
@@ -583,8 +609,7 @@ public class WebBackendConnectionsHandler {
       updatedConnectionRead.setSyncCatalog(syncCatalog);
     }
 
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(updatedConnectionRead.getSourceCatalogId());
-    return buildWebBackendConnectionRead(updatedConnectionRead, currentSourceCatalogId);
+    return buildWebBackendConnectionRead(updatedConnectionRead, catalogDiff);
   }
 
   /**
