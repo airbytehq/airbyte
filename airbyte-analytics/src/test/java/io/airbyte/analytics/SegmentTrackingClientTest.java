@@ -155,7 +155,7 @@ class SegmentTrackingClientTest {
     final String analyticSource = "test";
     final HttpHeaders httpHeaders = mock(HttpHeaders.class);
     final HttpRequest<?> httpRequest = mock(HttpRequest.class);
-    
+
     when(httpHeaders.get(AIRBYTE_ANALYTIC_SOURCE_HEADER)).thenReturn(analyticSource);
     when(httpRequest.getHeaders()).thenReturn(httpHeaders);
     ServerRequestContext.set(httpRequest);
