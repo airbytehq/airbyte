@@ -5,8 +5,8 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "smartsheet-python-sdk==2.105.1"]
-TEST_REQUIREMENTS = ["pytest==6.1.2", "pytest-mock~=3.6.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "smartsheet-python-sdk==2.177.1"]
+TEST_REQUIREMENTS = ["pytest==7.2.1", "pytest-mock~=3.6.1"]
 
 
 setup(
