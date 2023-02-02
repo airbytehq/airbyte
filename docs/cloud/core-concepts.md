@@ -146,8 +146,13 @@ After a sync is complete, Airbyte normalizes the data. When setting up a connect
 
 * Raw data (no normalization): Airbyte places the JSON blob version of your data in a table called `_airbyte_raw_<stream name>`
 * Basic Normalization: Airbyte converts the raw JSON blob version of your data to the format of your destination. *Note: Not all destinations support normalization.*
+* [dbt Cloud integration](https://docs.airbyte.com/cloud/dbt-cloud-integration): Airbyte's dbt Cloud integration allows you to use dbt Cloud for transforming and cleaning your data during the normalization process.
 
-*Note: Custom normalization through dbt is not yet available for Airbyte Cloud.*
+:::note
+
+Normalizing data may cause an increase in your destination's compute cost. This cost will vary depending on the amount of data that is normalized and is not related to Airbyte credit usage.
+
+:::
 
 ## Workspace
 

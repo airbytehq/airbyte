@@ -18,7 +18,6 @@ import { User } from "packages/cloud/lib/domain/users";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
 import { useInitService } from "services/useInitService";
-import { getUtmFromStorage } from "utils/utmStorage";
 
 import { FREE_EMAIL_SERVICE_PROVIDERS } from "./freeEmailProviders";
 import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
@@ -119,7 +118,6 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<unknown>> 
       isCorporate: ctx.hasCorporateEmail(user.email),
       // Which login provider was used, e.g. "password", "google.com", "github.com"
       provider: firebaseUser.providerData[0]?.providerId,
-      ...getUtmFromStorage(),
     });
 
     return user;

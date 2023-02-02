@@ -37,6 +37,7 @@ const ConnectorBuilderEditPageInner: React.FC = React.memo(() => {
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
 
   const initialFormValues = useRef(builderFormValues);
+
   return useMemo(
     () => (
       <Formik

@@ -1,5 +1,4 @@
 import { dump } from "js-yaml";
-import isEqual from "lodash/isEqual";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { UseQueryResult } from "react-query";
@@ -26,6 +25,7 @@ export type BuilderView = "global" | "inputs" | number;
 
 interface FormStateContext {
   builderFormValues: BuilderFormValues;
+  formValuesValid: boolean;
   jsonManifest: ConnectorManifest;
   lastValidJsonManifest: DeclarativeComponentSchema | undefined;
   yamlManifest: string;
@@ -33,14 +33,12 @@ interface FormStateContext {
   yamlIsValid: boolean;
   selectedView: BuilderView;
   editorView: EditorView;
-  showLandingPage: boolean;
   setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedView: (view: BuilderView) => void;
   setEditorView: (editorView: EditorView) => void;
-  setShowLandingPage: (value: boolean) => void;
 }
 
 interface TestStateContext {
@@ -51,6 +49,7 @@ interface TestStateContext {
   setTestStreamIndex: (streamIndex: number) => void;
   testStreamIndex: number;
   streamRead: UseQueryResult<StreamRead, unknown>;
+  isFetchingStreamList: boolean;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -69,6 +68,8 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedFormValues);
   const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedFormValues);
 
+  const [formValuesValid, setFormValuesValid] = useState(true);
+
   const setBuilderFormValues = useCallback(
     (values: BuilderFormValues, isValid: boolean) => {
       if (isValid) {
@@ -77,6 +78,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
       }
       currentBuilderFormValuesRef.current = values;
       setStoredFormValues(values);
+      setFormValuesValid(isValid);
     },
     [setStoredFormValues]
   );
@@ -92,11 +94,6 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
   const manifestRef = useRef(derivedJsonManifest);
   manifestRef.current = derivedJsonManifest;
-
-  const [showLandingPage, setShowLandingPage] = useState(
-    isEqual(builderFormValues, DEFAULT_BUILDER_FORM_VALUES) &&
-      isEqual(derivedJsonManifest, DEFAULT_JSON_MANIFEST_VALUES)
-  );
 
   const setEditorView = useCallback(
     (view: EditorView) => {
@@ -139,13 +136,13 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
   const ctx = {
     builderFormValues,
+    formValuesValid,
     jsonManifest: derivedJsonManifest,
     lastValidJsonManifest,
     yamlManifest,
     yamlEditorIsMounted,
     yamlIsValid,
     selectedView,
-    showLandingPage,
     editorView: storedEditorView,
     setBuilderFormValues,
     setJsonManifest: setStoredManifest,
@@ -153,7 +150,6 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     setYamlEditorIsMounted,
     setSelectedView,
     setEditorView,
-    setShowLandingPage,
   };
 
   return <ConnectorBuilderFormStateContext.Provider value={ctx}>{children}</ConnectorBuilderFormStateContext.Provider>;
@@ -173,6 +169,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
+    isFetching: isFetchingStreamList,
   } = useListStreams({ manifest, config: testInputJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
@@ -205,6 +202,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     testStreamIndex,
     setTestStreamIndex,
     streamRead,
+    isFetchingStreamList,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;
