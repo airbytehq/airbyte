@@ -149,9 +149,7 @@ public class SegmentTrackingClient implements TrackingClient {
   private Optional<String> getAirbyteSource() {
     final Optional<HttpRequest<Object>> currentRequest = ServerRequestContext.currentRequest();
     if (currentRequest.isPresent()) {
-      if (currentRequest.get().getHeaders().contains(AIRBYTE_ANALYTIC_SOURCE_HEADER)) {
-        return Optional.of(currentRequest.get().getHeaders().get(AIRBYTE_ANALYTIC_SOURCE_HEADER));
-      }
+        return Optional.ofNullable(currentRequest.get().getHeaders().get(AIRBYTE_ANALYTIC_SOURCE_HEADER));
     }
 
     return Optional.empty();
