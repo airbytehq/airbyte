@@ -75,6 +75,7 @@ import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.server.handlers.helpers.CatalogConverter;
 import io.airbyte.commons.server.helpers.ConnectionHelpers;
 import io.airbyte.commons.server.helpers.DestinationDefinitionHelpers;
@@ -124,6 +125,8 @@ class WebBackendConnectionsHandlerTest {
   private StateHandler stateHandler;
   private WebBackendConnectionsHandler wbHandler;
   private SourceRead sourceRead;
+  private CatalogDiff catalogDiff;
+  private CatalogDiff brokenCatalogDiff;
   private ConnectionRead connectionRead;
   private ConnectionRead brokenConnectionRead;
   private WebBackendConnectionListItem expectedListItem;
@@ -204,6 +207,11 @@ class WebBackendConnectionsHandlerTest {
             .operationId(brokenConnectionRead.getOperationIds().get(0))
             .name("Test Operation")));
 
+    catalogDiff = new CatalogDiff().transforms(List.of(new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)));
+    brokenCatalogDiff = new CatalogDiff().transforms(
+        List.of(new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM).addUpdateStreamItem(new FieldTransform().transformType(
+            FieldTransform.TransformTypeEnum.REMOVE_FIELD))));
+
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
     sourceIdRequestBody.setSourceId(connectionRead.getSourceId());
     when(sourceHandler.getSource(sourceIdRequestBody)).thenReturn(sourceRead);
@@ -267,9 +275,9 @@ class WebBackendConnectionsHandlerTest {
         SchemaChange.NO_CHANGE);
 
     expected = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead, operationReadList, SchemaChange.NO_CHANGE, now,
-        connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId());
+        connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId(), null);
     expectedNoDiscoveryWithNewSchema = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead, operationReadList,
-        SchemaChange.NON_BREAKING, now, connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId());
+        SchemaChange.NON_BREAKING, now, connectionRead.getSyncCatalog(), connectionRead.getSourceCatalogId(), catalogDiff);
 
     final AirbyteCatalog modifiedCatalog = ConnectionHelpers.generateMultipleStreamsApiCatalog(2);
     final SourceDiscoverSchemaRequestBody sourceDiscoverSchema = new SourceDiscoverSchemaRequestBody();
@@ -281,21 +289,21 @@ class WebBackendConnectionsHandlerTest {
             .catalog(modifiedCatalog));
 
     expectedWithNewSchema = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
-        new OperationReadList().operations(expected.getOperations()), SchemaChange.NON_BREAKING, now, modifiedCatalog, null)
-            .catalogDiff(new CatalogDiff().transforms(List.of(
-                new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
-                    .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
-                    .updateStream(null))));
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.NON_BREAKING, now, modifiedCatalog, null,
+        new CatalogDiff().transforms(List.of(
+            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
+                .updateStream(null))));
 
     expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead,
-        new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null)
-            .catalogDiff(new CatalogDiff().transforms(List.of(
-                new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
-                    .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
-                    .updateStream(null))));
+        new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null,
+        new CatalogDiff().transforms(List.of(
+            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
+                .updateStream(null))));
 
     expectedWithNewSchemaBroken = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead, brokenOperationReadList,
-        SchemaChange.BREAKING, now, connectionRead.getSyncCatalog(), brokenConnectionRead.getSourceCatalogId());
+        SchemaChange.BREAKING, now, connectionRead.getSyncCatalog(), brokenConnectionRead.getSourceCatalogId(), brokenCatalogDiff);
     when(schedulerHandler.resetConnection(any(ConnectionIdRequestBody.class)))
         .thenReturn(new JobInfoRead().job(new JobRead().status(JobStatus.SUCCEEDED)));
   }
@@ -308,7 +316,8 @@ class WebBackendConnectionsHandlerTest {
                                                                   final SchemaChange schemaChange,
                                                                   final Instant now,
                                                                   final AirbyteCatalog syncCatalog,
-                                                                  final UUID catalogId) {
+                                                                  final UUID catalogId,
+                                                                  final CatalogDiff diff) {
     return new WebBackendConnectionRead()
         .connectionId(connectionRead.getConnectionId())
         .sourceId(connectionRead.getSourceId())
@@ -331,6 +340,7 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobStatus(JobStatus.SUCCEEDED)
         .isSyncing(false)
         .schemaChange(schemaChange)
+        .catalogDiff(diff)
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -579,9 +589,10 @@ class WebBackendConnectionsHandlerTest {
 
   @Test
   void testWebBackendGetConnectionNoDiscoveryWithNewSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
-        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
-    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(Optional.of(connectionRead.getSyncCatalog()));
+    when(configRepository.getMostRecentActorCatalogForSource(any())).thenReturn(Optional.of(new ActorCatalog().withCatalog(Jsons.deserialize(
+        MoreResources.readResource("valid_schema.json")))));
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
     final WebBackendConnectionRead result = testWebBackendGetConnection(false, connectionRead, operationReadList);
     assertEquals(expectedNoDiscoveryWithNewSchema, result);
   }
@@ -589,9 +600,12 @@ class WebBackendConnectionsHandlerTest {
   @Test
   void testWebBackendGetConnectionNoDiscoveryWithNewSchemaBreaking() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(connectionsHandler.getConnection(brokenConnectionRead.getConnectionId())).thenReturn(brokenConnectionRead);
-    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
-        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
-    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    when(connectionsHandler.getConnectionAirbyteCatalog(brokenConnectionRead.getConnectionId()))
+        .thenReturn(Optional.of(brokenConnectionRead.getSyncCatalog()));
+    when(configRepository.getMostRecentActorCatalogForSource(any())).thenReturn(Optional.of(new ActorCatalog().withCatalog(Jsons.deserialize(
+        MoreResources.readResource("valid_schema.json")))));
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(brokenCatalogDiff);
+
     final WebBackendConnectionRead result = testWebBackendGetConnection(false, brokenConnectionRead, brokenOperationReadList);
     assertEquals(expectedWithNewSchemaBroken, result);
   }
@@ -1363,14 +1377,9 @@ class WebBackendConnectionsHandlerTest {
   void testGetSchemaChangeNoChange() {
     final ConnectionRead connectionReadNotBreaking = new ConnectionRead().breakingChange(false);
 
-    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(null, Optional.of(UUID.randomUUID()), Optional.of(new ActorCatalogFetchEvent())));
-    assertEquals(SchemaChange.NO_CHANGE,
-        wbHandler.getSchemaChange(connectionReadNotBreaking, Optional.empty(), Optional.of(new ActorCatalogFetchEvent())));
-
-    final UUID catalogId = UUID.randomUUID();
-
-    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadNotBreaking, Optional.of(catalogId),
-        Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(catalogId))));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(null, null));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadNotBreaking, null));
+    assertEquals(SchemaChange.NO_CHANGE, wbHandler.getSchemaChange(connectionReadNotBreaking, new CatalogDiff()));
   }
 
   @Test
@@ -1379,18 +1388,16 @@ class WebBackendConnectionsHandlerTest {
     final ConnectionRead connectionReadWithSourceId = new ConnectionRead().sourceCatalogId(UUID.randomUUID()).sourceId(sourceId).breakingChange(true);
 
     assertEquals(SchemaChange.BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
-        Optional.of(UUID.randomUUID()), Optional.empty()));
+        new CatalogDiff()));
   }
 
   @Test
   void testGetSchemaChangeNotBreaking() {
-    final UUID catalogId = UUID.randomUUID();
-    final UUID differentCatalogId = UUID.randomUUID();
     final ConnectionRead connectionReadWithSourceId =
         new ConnectionRead().breakingChange(false);
 
-    assertEquals(SchemaChange.NON_BREAKING, wbHandler.getSchemaChange(connectionReadWithSourceId,
-        Optional.of(catalogId), Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(differentCatalogId))));
+    assertEquals(SchemaChange.NON_BREAKING,
+        wbHandler.getSchemaChange(connectionReadWithSourceId, new CatalogDiff().transforms(List.of(new StreamTransform()))));
   }
 
 }

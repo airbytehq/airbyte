@@ -397,25 +397,13 @@ public class WebBackendConnectionsHandler {
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithOriginalDiscoveredCatalog(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
-      Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(connection.getSourceId());
-      // Get the diff between existing connection catalog and most recent fetched catalog
-      if (mostRecentActorCatalog.isPresent()) {
-        final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
-            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
-        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(connection.getSourceId());
-        diff =
-            connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.get(), CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
-                CatalogConverter.toConfiguredProtocol(catalogUsedToMakeConfiguredCatalog.get()));
-      } else {
-        diff = null;
-      }
+      diff = getDiffBetweenExistingCatalogAndMostRecentFetchedCatalogForSource(connection.getSourceId(), catalogUsedToMakeConfiguredCatalog.get());
     } else {
       // fallback. over time this should be rarely used because source_catalog_id should always be set.
       syncCatalog = configuredCatalog;
       // diff not relevant if there was no refresh.
       diff = null;
     }
-
     connection.setSyncCatalog(syncCatalog);
     return buildWebBackendConnectionRead(connection, diff).catalogDiff(diff);
   }
@@ -561,20 +549,9 @@ public class WebBackendConnectionsHandler {
     // If there have been changes to the sync catalog, check whether these changes result in or fix a
     // broken connection
     if (webBackendConnectionPatch.getSyncCatalog() != null) {
-      // Get the most recent actor catalog fetched for this connection's source and the newly updated sync
-      // catalog
-      Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(originalConnectionRead.getSourceId());
-      AirbyteCatalog newAirbyteCatalog = webBackendConnectionPatch.getSyncCatalog();
-      // Get the diff between these two catalogs to check for breaking changes
-      if (mostRecentActorCatalog.isPresent()) {
-        final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
-            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
-        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(originalConnectionRead.getSourceId());
-        catalogDiff =
-            connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
-                CatalogConverter.toConfiguredProtocol(newAirbyteCatalog));
-        breakingChange = containsBreakingChange(catalogDiff);
-      }
+      catalogDiff = getDiffBetweenExistingCatalogAndMostRecentFetchedCatalogForSource(originalConnectionRead.getSourceId(),
+          webBackendConnectionPatch.getSyncCatalog());
+      breakingChange = containsBreakingChange(catalogDiff);
     }
     // before doing any updates, fetch the existing catalog so that it can be diffed
     // with the final catalog to determine which streams might need to be reset.
@@ -607,6 +584,21 @@ public class WebBackendConnectionsHandler {
     }
 
     return buildWebBackendConnectionRead(updatedConnectionRead, catalogDiff);
+  }
+
+  private CatalogDiff getDiffBetweenExistingCatalogAndMostRecentFetchedCatalogForSource(final UUID sourceId, AirbyteCatalog oldAirbyteCatalog)
+      throws IOException, JsonValidationException {
+    // Get the most recent actor catalog fetched for this connection's source
+    Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(sourceId);
+    if (mostRecentActorCatalog.isPresent()) {
+      final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
+          Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+      final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(sourceId);
+      return connectionsHandler.getDiff(oldAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog, sourceDefinition),
+          CatalogConverter.toConfiguredProtocol(oldAirbyteCatalog));
+    } else {
+      return null;
+    }
   }
 
   /**
@@ -790,17 +782,18 @@ public class WebBackendConnectionsHandler {
   }
 
   private boolean containsBreakingChange(final CatalogDiff diff) {
-    for (final StreamTransform streamTransform : diff.getTransforms()) {
-      if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
-        continue;
-      }
+    if (diff != null && !diff.getTransforms().isEmpty()) {
+      for (final StreamTransform streamTransform : diff.getTransforms()) {
+        if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
+          continue;
+        }
 
-      final boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(FieldTransform::getBreaking);
-      if (anyBreakingFieldTransforms) {
-        return true;
+        final boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(FieldTransform::getBreaking);
+        if (anyBreakingFieldTransforms) {
+          return true;
+        }
       }
     }
-
     return false;
   }
 
