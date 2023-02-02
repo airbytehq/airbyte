@@ -8,7 +8,7 @@ import random
 import string
 import tempfile
 from datetime import datetime
-from typing import Dict
+from typing import Any, Dict
 from unittest.mock import MagicMock
 
 import duckdb
@@ -16,6 +16,7 @@ import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
@@ -95,6 +96,11 @@ def airbyte_message2(test_table_name: str):
     )
 
 
+@pytest.fixture
+def airbyte_message3():
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"}))
+
+
 @pytest.mark.parametrize("config", ["invalid_config"])
 @pytest.mark.disable_autouse
 def test_check_fails(config, request):
@@ -112,6 +118,10 @@ def test_check_succeeds(config, request):
     assert status.status == Status.SUCCEEDED
 
 
+def _state(data: Dict[str, Any]) -> AirbyteMessage:
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
+
+
 @pytest.mark.parametrize("config", ["local_file_config"])
 def test_write(
     config: Dict[str, str],
@@ -119,16 +129,15 @@ def test_write(
     configured_catalogue: ConfiguredAirbyteCatalog,
     airbyte_message1: AirbyteMessage,
     airbyte_message2: AirbyteMessage,
+    airbyte_message3: AirbyteMessage,
     test_table_name: str,
 ):
     config = request.getfixturevalue(config)
     destination = DestinationDuckdb()
-    generator = destination.write(
-        config=config, configured_catalog=configured_catalogue, input_messages=[airbyte_message1, airbyte_message2]
-    )
+    generator = destination.write(config, configured_catalogue, [airbyte_message1, airbyte_message2, airbyte_message3])
 
     result = list(generator)
-    assert len(result) == 0
+    assert len(result) == 1
 
     con = duckdb.connect(database=config.get("destination_path"), read_only=False)
     with con:
