@@ -1,19 +1,17 @@
 import { FormattedMessage } from "react-intl";
 
-import { FlexContainer } from "components/ui/Flex";
-
 import { RoutePaths } from "pages/routePaths";
 
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
+import { MenuContent } from "./components/MenuContent";
 import { NavItem } from "./components/NavItem";
 import SourceIcon from "./components/SourceIcon";
-import styles from "./MainNav.module.scss";
 
 export const MainNav: React.FC = () => {
   return (
     <ul data-testid="navMainItems">
-      <FlexContainer direction="column" gap="sm" className={styles.menuContent}>
+      <MenuContent>
         <li>
           <NavItem
             as="navLink"
@@ -41,7 +39,7 @@ export const MainNav: React.FC = () => {
             to={RoutePaths.Destination}
           />
         </li>
-      </FlexContainer>
+      </MenuContent>
     </ul>
   );
 };

@@ -3,12 +3,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage } from "react-intl";
 
 import { Version } from "components/common/Version";
-import { FlexContainer } from "components/ui/Flex";
 
 import { RoutePaths } from "pages/routePaths";
 import { links } from "utils/links";
 
-import styles from "./BottomItems.module.scss";
+import { MenuContent } from "./components/MenuContent";
 import { NavItem } from "./components/NavItem";
 import { ResourcesDropdown } from "./components/ResourcesDropdown";
 import SettingsIcon from "./components/SettingsIcon";
@@ -19,12 +18,12 @@ interface BottomItemProps {
 export const BottomItems: React.FC<BottomItemProps> = ({ version }) => {
   return (
     <ul>
-      <FlexContainer direction="column" gap="xs" className={styles.menuContent}>
+      <MenuContent>
         <li>
           <NavItem
             as="a"
             to={links.updateLink}
-            icon={<FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />}
+            icon={<FontAwesomeIcon icon={faRocket} />}
             label={<FormattedMessage id="sidebar.update" />}
             testId="updateLink"
           />
@@ -42,7 +41,7 @@ export const BottomItems: React.FC<BottomItemProps> = ({ version }) => {
           />
         </li>
         {version && <Version primary />}
-      </FlexContainer>
+      </MenuContent>
     </ul>
   );
 };

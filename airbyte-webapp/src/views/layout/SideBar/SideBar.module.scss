@@ -2,12 +2,6 @@
 @use "scss/variables";
 @use "scss/z-indices";
 
-.menuContent {
-  height: 100%;
-  padding: 0;
-  width: 100%;
-}
-
 .nav {
   z-index: z-indices.$sidebar;
   position: relative;
@@ -25,6 +19,7 @@
 
     li {
       list-style-type: none;
+      width: 100%;
     }
   }
 }

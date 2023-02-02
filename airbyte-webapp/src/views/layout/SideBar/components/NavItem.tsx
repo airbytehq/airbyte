@@ -8,15 +8,32 @@ import { Text } from "components/ui/Text";
 import styles from "./NavItem.module.scss";
 import { NotificationIndicator } from "../NotificationIndicator";
 
-interface NavItemProps {
-  label: React.ReactNode;
-  icon: React.ReactNode;
+interface NavItemProps extends NavItemInnerProps {
   as: "a" | "div" | "navLink";
   to: string; // todo: make this not required for buttons
   className?: string;
   testId?: string;
+}
+
+interface NavItemInnerProps {
+  label: React.ReactNode;
+  icon: React.ReactNode;
   withNotification?: boolean;
 }
+
+const NavItemInner: React.FC<NavItemInnerProps> = ({ icon, label, withNotification }) => {
+  return (
+    <FlexContainer direction="column" alignItems="center" justifyContent="center" className={styles.fullHeight}>
+      {icon}
+      {withNotification && (
+        <React.Suspense fallback={null}>
+          <NotificationIndicator />
+        </React.Suspense>
+      )}
+      <Text size="sm">{label}</Text>
+    </FlexContainer>
+  );
+};
 export const useCalculateSidebarStyles = (className?: string) => {
   const location = useLocation();
 
@@ -51,44 +68,14 @@ export const NavItem: React.FC<NavItemProps> = ({
         className={classNames(styles.menuItem, className)}
         data-testid={testId}
       >
-        <FlexContainer direction="column" alignItems="center" justifyContent="center">
-          {icon}
-          {withNotification && (
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
-          )}
-          <Text size="sm">{label}</Text>
-        </FlexContainer>
+        <NavItemInner label={label} icon={icon} withNotification={withNotification} />
       </a>
     );
   } else if (as === "navLink") {
     return (
       <NavLink className={navLinkClassName} to={to} data-testid={testId}>
-        <FlexContainer direction="column" alignItems="center" justifyContent="center" className={styles.fullHeight}>
-          {icon}
-          {withNotification && (
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
-          )}
-          <Text size="sm">{label}</Text>
-        </FlexContainer>
+        <NavItemInner label={label} icon={icon} withNotification={withNotification} />
       </NavLink>
-    );
-  } else if (as === "div") {
-    return (
-      <div className={classNames(styles.menuItem, className)} data-testid={testId}>
-        <FlexContainer direction="column" alignItems="center" justifyContent="center" className={styles.fullHeight}>
-          {icon}
-          {withNotification && (
-            <React.Suspense fallback={null}>
-              <NotificationIndicator />
-            </React.Suspense>
-          )}
-          <Text size="sm">{label}</Text>
-        </FlexContainer>
-      </div>
     );
   }
   return null;
