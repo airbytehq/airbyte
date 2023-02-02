@@ -1,0 +1,383 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": ["object", "null"],
+  "properties": {
+    "ad_plan_id": {
+      "type": ["string", "null"]
+    },
+    "date": {
+      "type": ["string", "null"]
+    },
+    "base": {
+      "type": ["object", "null"],
+      "properties": {
+        "shows": {
+          "type": ["integer", "null"]
+        },
+        "clicks": {
+          "type": ["integer", "null"]
+        },
+        "goals": {
+          "type": ["integer", "null"]
+        },
+        "spent": {
+          "type": ["number", "null"]
+        },
+        "a_amount": {
+          "type": ["number", "null"]
+        },
+        "n_amount": {
+          "type": ["number", "null"]
+        },
+        "cpm": {
+          "type": ["number", "null"]
+        },
+        "cpc": {
+          "type": ["number", "null"]
+        },
+        "cpa": {
+          "type": ["number", "null"]
+        },
+        "ctr": {
+          "type": ["number", "null"]
+        },
+        "cr": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "events": {
+      "type": ["object", "null"],
+      "properties": {
+        "opening_app": {
+          "type": ["integer", "null"]
+        },
+        "opening_post": {
+          "type": ["integer", "null"]
+        },
+        "moving_into_group": {
+          "type": ["integer", "null"]
+        },
+        "clicks_on_external_url": {
+          "type": ["integer", "null"]
+        },
+        "launching_video": {
+          "type": ["integer", "null"]
+        },
+        "comments": {
+          "type": ["integer", "null"]
+        },
+        "joinings": {
+          "type": ["integer", "null"]
+        },
+        "likes": {
+          "type": ["integer", "null"]
+        },
+        "shares": {
+          "type": ["integer", "null"]
+        },
+        "votings": {
+          "type": ["integer", "null"]
+        },
+        "sending_form": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "uniques": {
+      "type": ["object", "null"],
+      "properties": {
+        "reach": {
+          "type": ["integer", "null"]
+        },
+        "total": {
+          "type": ["integer", "null"]
+        },
+        "increment": {
+          "type": ["integer", "null"]
+        },
+        "frequency": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "uniques_video": {
+      "type": ["object", "null"],
+      "properties": {
+        "started": {
+          "type": ["integer", "null"]
+        },
+        "viewed_10_seconds": {
+          "type": ["integer", "null"]
+        },
+        "viewed_25_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_50_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_75_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_100_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_10_seconds_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_25_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_50_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_75_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_100_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "depth_of_view": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "video": {
+      "type": ["object", "null"],
+      "properties": {
+        "started": {
+          "type": ["integer", "null"]
+        },
+        "paused": {
+          "type": ["integer", "null"]
+        },
+        "resumed_after_pause": {
+          "type": ["integer", "null"]
+        },
+        "fullscreen_on": {
+          "type": ["integer", "null"]
+        },
+        "fullscreen_off": {
+          "type": ["integer", "null"]
+        },
+        "sound_turned_off": {
+          "type": ["integer", "null"]
+        },
+        "sound_turned_on": {
+          "type": ["integer", "null"]
+        },
+        "viewed_10_seconds": {
+          "type": ["integer", "null"]
+        },
+        "viewed_25_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_50_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_75_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_100_percent": {
+          "type": ["integer", "null"]
+        },
+        "viewed_10_seconds_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_25_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_50_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_75_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "viewed_100_percent_rate": {
+          "type": ["number", "null"]
+        },
+        "depth_of_view": {
+          "type": ["number", "null"]
+        },
+        "measurement_rate": {
+          "type": ["number", "null"]
+        },
+        "vr": {
+          "type": ["number", "null"]
+        },
+        "viewed_10_seconds_cost": {
+          "type": ["number", "null"]
+        },
+        "viewed_25_percent_cost": {
+          "type": ["number", "null"]
+        },
+        "viewed_50_percent_cost": {
+          "type": ["number", "null"]
+        },
+        "viewed_75_percent_cost": {
+          "type": ["number", "null"]
+        },
+        "viewed_100_percent_cost": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "carousel": {
+      "type": ["object", "null"],
+      "properties": {
+        "slide_1_clicks": {
+          "type": ["integer", "null"]
+        },
+        "slide_1_shows": {
+          "type": ["integer", "null"]
+        },
+        "slide_2_clicks": {
+          "type": ["integer", "null"]
+        },
+        "slide_2_shows": {
+          "type": ["integer", "null"]
+        },
+        "slide_3_clicks": {
+          "type": ["integer", "null"]
+        },
+        "slide_3_shows": {
+          "type": ["integer", "null"]
+        },
+        "slide_4_clicks": {
+          "type": ["integer", "null"]
+        },
+        "slide_4_shows": {
+          "type": ["integer", "null"]
+        },
+        "slide_5_clicks": {
+          "type": ["integer", "null"]
+        },
+        "slide_5_shows": {
+          "type": ["integer", "null"]
+        },
+        "slide_6_clicks": {
+          "type": ["integer", "null"]
+        },
+        "slide_6_shows": {
+          "type": ["integer", "null"]
+        },
+        "slide_1_ctr": {
+          "type": ["number", "null"]
+        },
+        "slide_2_ctr": {
+          "type": ["number", "null"]
+        },
+        "slide_3_ctr": {
+          "type": ["number", "null"]
+        },
+        "slide_4_ctr": {
+          "type": ["number", "null"]
+        },
+        "slide_5_ctr": {
+          "type": ["number", "null"]
+        },
+        "slide_6_ctr": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "playable": {
+      "type": ["object", "null"],
+      "properties": {
+        "playable_game_open": {
+          "type": ["integer", "null"]
+        },
+        "playable_game_close": {
+          "type": ["integer", "null"]
+        },
+        "playable_call_to_action": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "tps": {
+      "type": ["object", "null"],
+      "properties": {
+        "tps": {
+          "type": ["number", "null"]
+        },
+        "tpd": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "moat": {
+      "type": ["object", "null"],
+      "properties": {
+        "impressions": {
+          "type": ["integer", "null"]
+        },
+        "in_view": {
+          "type": ["integer", "null"]
+        },
+        "never_focused": {
+          "type": ["integer", "null"]
+        },
+        "never_visible": {
+          "type": ["integer", "null"]
+        },
+        "never_50_perc_visible": {
+          "type": ["integer", "null"]
+        },
+        "never_1_sec_visible": {
+          "type": ["integer", "null"]
+        },
+        "human_impressions": {
+          "type": ["integer", "null"]
+        },
+        "impressions_analyzed": {
+          "type": ["integer", "null"]
+        },
+        "in_view_percent": {
+          "type": ["number", "null"]
+        },
+        "human_and_viewable_perc": {
+          "type": ["number", "null"]
+        },
+        "never_focused_percent": {
+          "type": ["number", "null"]
+        },
+        "never_visible_percent": {
+          "type": ["number", "null"]
+        },
+        "never_50_perc_visible_percent": {
+          "type": ["number", "null"]
+        },
+        "never_1_sec_visible_percent": {
+          "type": ["number", "null"]
+        },
+        "in_view_diff_percent": {
+          "type": ["number", "null"]
+        },
+        "active_in_view_time": {
+          "type": ["number", "null"]
+        },
+        "attention_quality": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "romi": {
+      "type": ["object", "null"],
+      "properties": {
+        "value": {
+          "type": ["number", "null"]
+        },
+        "romi": {
+          "type": ["number", "null"]
+        },
+        "adv_cost_share": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "custom_event": {
+      "type": ["string", "null"]
+    }
+  }
+}

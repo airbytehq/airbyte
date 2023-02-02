@@ -5,15 +5,14 @@
     "id": {
       "type": ["null", "string"]
     },
-    "name": {
+    "ad_group_id": {
       "type": ["null", "string"]
     },
-    "years_of_service": {
-      "type": ["null", "integer"]
+    "campaign_id": {
+      "type": ["null", "string"]
     },
-    "start_date": {
-      "type": ["null", "string"],
-      "format": "date-time"
+    "moderation_status": {
+      "type": ["null", "string"]
     }
   }
 }

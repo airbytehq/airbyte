@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "ad_group_id": {
+      "type": ["integer", "null"]
+    },
+    "content": {
+      "type": ["string", "null"]
+    },
+    "created": {
+      "type": ["string", "null"]
+    },
+    "delivery": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "issues": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "arguments": {
+            "type": ["object", "null"]
+          },
+          "code": {
+            "type": ["string", "null"]
+          },
+          "message": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "moderation_reasons": {
+      "type": ["array", "null"]
+    },
+    "moderation_status": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "textblocks": {
+      "type": ["string", "null"]
+    },
+    "updated": {
+      "type": ["string", "null"]
+    },
+    "urls": {
+      "type": ["object", "null"],
+      "properties": {
+        "primary": {
+          "type": ["object", "null"],
+          "properties": {
+            "id": {
+              "type": ["integer", "null"]
+            },
+            "preview_link": {
+              "type": ["string", "null"]
+            },
+            "url": {
+              "type": ["string", "null"]
+            },
+            "url_object_id": {
+              "type": ["string", "null"]
+            },
+            "url_object_type": {
+              "type": ["string", "null"]
+            },
+            "url_types": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

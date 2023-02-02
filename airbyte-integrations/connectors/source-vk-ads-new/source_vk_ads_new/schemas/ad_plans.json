@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "ad_groups": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["integer", "null"]
+          },
+          "name": {
+            "type": ["string", "null"]
+          },
+          "package_id": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "autobidding_mode": {
+      "type": ["string", "null"]
+    },
+    "budget_limit": {
+      "type": ["number", "null"]
+    },
+    "budget_limit_day": {
+      "type": ["number", "null"]
+    },
+    "created": {
+      "type": ["string", "null"]
+    },
+    "date_end": {
+      "type": ["string", "null"]
+    },
+    "date_start": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "max_price": {
+      "type": ["number", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "objective": {
+      "type": ["string", "null"]
+    },
+    "priced_goal": {
+      "type": ["object", "null"],
+      "properties": {
+        "inapp_event_category_id": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "source_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "pricelist_id": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "updated": {
+      "type": ["string", "null"]
+    },
+    "vkads_status": {
+      "type": ["object", "null"],
+      "properties": {
+        "codes": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["string", "null"]
+          }
+        },
+        "major_status": {
+          "type": ["string", "null"]
+        },
+        "status": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

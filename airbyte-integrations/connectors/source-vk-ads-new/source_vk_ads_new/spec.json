@@ -4,17 +4,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Vk Ads New Spec",
     "type": "object",
-    "required": ["credentials", "account_id", "account_type"],
+    "required": ["credentials", "date_range"],
     "additionalProperties": false,
     "properties": {
       "credentials": {
         "title": "Authorization Method",
-        "default": {},
         "order": 0,
         "type": "object",
         "oneOf": [
           {
-            "title": "Access Token Auth",
+            "title": "Access Token Authorization",
             "type": "object",
             "properties": {
               "auth_type": {
@@ -25,12 +24,12 @@
               },
               "access_token": {
                 "title": "Access Token",
-                "description": "Long-term Authorized Access Token.",
-                "airbyte_secret": true,
-                "type": "string"
+                "description": "Client ID",
+                "type": "string",
+                "airbyte_secret": true
               }
             },
-            "required": ["access_token"]
+            "required": ["auth_type", "access_token"]
           },
           {
             "title": "CredentialsCraft Auth",
@@ -50,13 +49,13 @@
               },
               "credentials_craft_token": {
                 "title": "CredentialsCraft Token",
-                "description": "Long-term CredentialsCraft Access Token (NOT VK token).",
+                "description": "Long-term CredentialsCraft Access Token (NOT VK Ads token).",
                 "type": "string",
                 "airbyte_secret": true
               },
               "credentials_craft_token_id": {
-                "title": "CredentialsCraft VK Token ID",
-                "desctiption": "VK Token ID in CredentialsCraft",
+                "title": "CredentialsCraft VK Ads Token ID",
+                "desctiption": "VK Ads Token ID in CredentialsCraft",
                 "examples": [3345435],
                 "type": "integer"
               }
@@ -70,78 +69,77 @@
           }
         ]
       },
-      "account_type": {
-        "order": 1,
-        "type": "string",
-        "description": "Client IDs must be specified only for Agency Account Type. You must specify only Account ID you're using Client Account Type",
-        "enum": ["Client", "Agency"]
-      },
-      "account_id": {
-        "order": 2,
-        "type": "string",
-        "title": "Account ID",
-        "description": "VK Ads Account ID"
-      },
-      "client_id": {
+      "date_range": {
+        "title": "Date Range",
+        "description": "Choose date period that must be loaded",
+        "type": "object",
         "order": 3,
-        "title": "Client ID",
-        "description": "Only available if for Agency Account Type",
-        "type": "string"
-      },
-      "include_deleted": {
-        "order": 4,
-        "type": "boolean",
-        "title": "Include Deleted",
-        "description": "Include deleted and archived records in Ads, Campaigns, AdsLayout streams"
-      },
-      "date_from": {
-        "order": 5,
-        "type": "string",
-        "title": "Date From",
-        "description": "Start replication date in format YYYY-MM-DD",
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["2021-11-01"]
-      },
-      "date_to": {
-        "order": 6,
-        "type": "string",
-        "title": "Date To",
-        "description": "End replication date in format YYYY-MM-DD",
-        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "examples": ["2021-12-01"]
-      },
-      "last_days": {
-        "order": 7,
-        "type": "integer",
-        "title": "Load last n days",
-        "description": "If not set – last 30 days will be used",
-        "minimum": 0,
-        "maximum": 3650,
-        "examples": ["30"]
-      },
-      "client_name": {
-        "order": 8,
-        "title": "Client Name Constant",
-        "description": "Constant that will be used in record __clientName property",
-        "type": "string",
-        "examples": ["abcd"],
-        "default": ""
-      },
-      "product_name": {
-        "order": 9,
-        "title": "Product Name Constant",
-        "description": "Constant that will be used in record __productName property",
-        "type": "string",
-        "examples": ["abcd"],
-        "default": ""
-      },
-      "custom_json": {
-        "order": 10,
-        "title": "Custom JSON",
-        "description": "Custom JSON for additional record properties. Must be string of JSON object with first-level properties",
-        "type": "string",
-        "examples": ["{\"abc\": \"123\", \"cde\": \"132\"}"],
-        "default": "{}"
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Custom Date Range",
+            "required": ["date_from", "date_to", "date_range_type"],
+            "properties": {
+              "date_from": {
+                "title": "Start Date",
+                "type": "string",
+                "description": "Start date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": ["2023-01-01"],
+                "order": 0
+              },
+              "date_to": {
+                "title": "End Date",
+                "type": "string",
+                "description": "End date in format YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": ["2023-01-30"],
+                "order": 1
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Custom Date",
+                "const": "custom_date",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Last N Days",
+            "required": [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties": {
+              "last_days_count": {
+                "title": "Last Days Count",
+                "type": "integer",
+                "description": "Count of last days exclude today.",
+                "minimum": 0,
+                "maximum": 3650,
+                "examples": [30],
+                "order": 0
+              },
+              "should_load_today": {
+                "title": "Load Today?",
+                "type": "boolean",
+                "description": "Should connector load today time as End Time? If not, End Time will be yesterday.",
+                "order": 1,
+                "default": false
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Date Range Type",
+                "description": "Last N Days",
+                "const": "last_n_days",
+                "order": 1
+              }
+            }
+          }
+        ]
       }
     }
   }

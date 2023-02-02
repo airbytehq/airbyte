@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "age_restrictions": {
+      "type": ["string", "null"]
+    },
+    "autobidding_mode": {
+      "type": ["string", "null"]
+    },
+    "banner_uniq_shows_limit": {
+      "type": ["integer", "null"]
+    },
+    "banners": {
+      "type": ["string", "null"]
+    },
+    "budget_limit": {
+      "type": ["number", "null"]
+    },
+    "budget_limit_day": {
+      "type": ["number", "null"]
+    },
+    "created": {
+      "type": ["string", "null"]
+    },
+    "date_end": {
+      "type": ["string", "null"]
+    },
+    "date_start": {
+      "type": ["string", "null"]
+    },
+    "delivery": {
+      "type": ["string", "null"]
+    },
+    "enable_offline_goals": {
+      "type": ["boolean", "null"]
+    },
+    "enable_utm": {
+      "type": ["boolean", "null"]
+    },
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "issues": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "arguments": {
+            "type": ["string", "null"]
+          },
+          "code": {
+            "type": ["string", "null"]
+          },
+          "message": {
+            "type": ["string", "null"]
+          }
+        }
+      }
+    },
+    "language": {
+      "type": ["string", "null"]
+    },
+    "marketplace_app_client_id": {
+      "type": ["string", "null"]
+    },
+    "max_price": {
+      "type": ["number", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "objective": {
+      "type": ["string", "null"]
+    },
+    "package_id": {
+      "type": ["string", "null"]
+    },
+    "package_priced_event_type": {
+      "type": ["integer", "null"]
+    },
+    "price": {
+      "type": ["string", "null"]
+    },
+    "priced_goal": {
+      "type": ["object", "null"],
+      "properties": {
+        "inapp_event_category_id": {
+          "type": ["string", "null"]
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "source_id": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "sk_ad_campaign_id": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "targetings": {
+      "type": ["object", "null"],
+      "properties": {
+        "age": {
+          "type": ["object", "null"],
+          "properties": {
+            "age_list": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "expand": {
+              "type": ["boolean", "null"]
+            }
+          }
+        },
+        "fulltime": {
+          "type": ["object", "null"],
+          "properties": {
+            "flags": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["string", "null"]
+              }
+            },
+            "fri": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "mon": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "sat": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "sun": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "thu": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "tue": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            },
+            "wed": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            }
+          }
+        },
+        "geo": {
+          "type": ["object", "null"],
+          "properties": {
+            "regions": {
+              "type": ["array", "null"],
+              "items": {
+                "type": ["integer", "null"]
+              }
+            }
+          }
+        },
+        "interests": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["integer", "null"]
+          }
+        },
+        "pads": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["integer", "null"]
+          }
+        },
+        "sex": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["string", "null"]
+          }
+        },
+        "split_audience": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["integer", "null"]
+          }
+        }
+      }
+    },
+    "uniq_shows_limit": {
+      "type": ["integer", "null"]
+    },
+    "uniq_shows_period": {
+      "type": ["string", "null"]
+    },
+    "updated": {
+      "type": ["string", "null"]
+    },
+    "utm": {
+      "type": ["string", "null"]
+    }
+  }
+}

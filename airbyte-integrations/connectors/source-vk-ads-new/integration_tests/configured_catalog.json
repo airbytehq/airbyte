@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "banners",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,12 +11,48 @@
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "banners_statistics",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_plans",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_plans_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "ad_groups_statistics",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
