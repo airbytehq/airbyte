@@ -21,14 +21,6 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         empty_streams:
-        - name: companies
-          bypass_reason: unable to populate
-        - name: deals
-          bypass_reason: unable to populate
-        - name: property_history
-          bypass_reason: unable to populate
-        - name: tickets
-          bypass_reason: unable to populate
         - name: form_submissions
           bypass_reason: unable to populate
         - name: ticket_pipelines
@@ -37,13 +29,9 @@ acceptance_tests:
           bypass_reason: unable to populate
         - name: engagements_emails
           bypass_reason: unable to populate
-        - name: engagements
-          bypass_reason: unable to populate
         - name: engagements_calls
           bypass_reason: unable to populate
         - name: quotes
-          bypass_reason: unable to populate
-        - name: contacts_list_memberships
           bypass_reason: unable to populate
         timeout_seconds: 3600
         expect_records:
