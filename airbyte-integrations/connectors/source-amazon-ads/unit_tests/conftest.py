@@ -181,3 +181,1096 @@ def attribution_report_response():
 @fixture
 def attribution_report_bad_response():
     return "bad response"
+
+
+@fixture
+def invoices_response():
+    response = {
+        "status": "success",
+        "payload": {
+            "nextCursor": "abcd",
+            "invoiceSummaries": [
+                {
+                    "id": "1",
+                    "status": "ACCUMULATING",
+                    "fromDate": "20230127",
+                    "amountDue": {
+                        "amount": 428.32,
+                        "currencyCode": "USD"
+                    },
+                    "remainingAmountDue": {
+                        "amount": 428.32,
+                        "currencyCode": "USD"
+                    }
+                },
+                {
+                    "id": "2",
+                    "status": "PAID_IN_FULL",
+                    "fromDate": "20230129",
+                    "toDate": "20230130",
+                    "invoiceDate": "20230130",
+                    "amountDue": {
+                        "amount": 502.26,
+                        "currencyCode": "USD"
+                    },
+                    "taxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingTaxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "fees": [],
+                    "remainingFees": []
+                },
+            ]
+        }
+    }
+
+    return json.dumps(response)
+
+
+@fixture
+def invoices_response_with_next_page_token():
+    response = {
+        "status": "success",
+        "payload": {
+            "invoiceSummaries": [
+                {
+                    "id": "3",
+                    "status": "PAID_IN_FULL",
+                    "fromDate": "20230128",
+                    "toDate": "20230129",
+                    "invoiceDate": "20230129",
+                    "amountDue": {
+                        "amount": 502.21,
+                        "currencyCode": "USD"
+                    },
+                    "taxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingTaxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "fees": [],
+                    "remainingFees": []
+                },
+                {
+                    "id": "4",
+                    "status": "PAID_IN_FULL",
+                    "fromDate": "20230127",
+                    "toDate": "20230128",
+                    "invoiceDate": "20230128",
+                    "amountDue": {
+                        "amount": 502.26,
+                        "currencyCode": "USD"
+                    },
+                    "taxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingTaxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "fees": [],
+                    "remainingFees": []
+                },
+                {
+                    "id": "5",
+                    "status": "PAID_IN_FULL",
+                    "fromDate": "20230126",
+                    "toDate": "20230127",
+                    "invoiceDate": "20230127",
+                    "amountDue": {
+                        "amount": 502.26,
+                        "currencyCode": "USD"
+                    },
+                    "taxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "remainingTaxAmountDue": {
+                        "amount": 0.0,
+                        "currencyCode": "USD"
+                    },
+                    "fees": [],
+                    "remainingFees": []
+                }
+            ]
+        }
+    }
+
+    return json.dumps(response)
+
+
+@fixture
+def invoice_response():
+    def _internal(invoice_id: str):
+        responses = {
+            "1": {
+                "status": "success",
+                "payload": {
+                    "invoiceSummary": {
+                        "id": "1",
+                        "status": "ACCUMULATING",
+                        "fromDate": "20230127",
+                        "amountDue": {
+                            "amount": 500.03,
+                            "currencyCode": "USD"
+                        },
+                        "taxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingTaxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "taxRate": 0.00,
+                        "fees": [],
+                        "remainingFees": [],
+                        "downloadableDocuments": [
+                            "INVOICE"
+                        ]
+                    },
+                    "taxDetail": {
+                        "taxCalculationDate": "20230130",
+                        "taxBreakups": [
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "FL"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "BROWARD"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            }
+                        ]
+                    },
+                    "issuerContactInformation": {
+                        "address": {
+                            "companyName": "company1",
+                            "addressLine1": "PO Box 12345",
+                            "addressLine2": "",
+                            "addressLine3": "",
+                            "postalCode": "12345-6789",
+                            "city": "Seattle",
+                            "stateOrRegion": "WA",
+                            "countryCode": "US"
+                        },
+                        "email": {
+                            "displayName": "company1",
+                            "emailAddress": ""
+                        }
+                    },
+                    "payerContactInformation": {
+                        "address": {
+                            "companyName": "company2",
+                            "addressLine1": "1234 W Broward Blvd",
+                            "addressLine2": "abcdefgh",
+                            "postalCode": "33312",
+                            "city": "Fort Lauderdale",
+                            "stateOrRegion": "FL",
+                            "countryCode": "US"
+                        }
+                    },
+                    "thirdPartyContactInformation": [],
+                    "payments": [],
+                    "promotions": [],
+                    "adjustments": [],
+                    "invoiceLines": [],
+                    "portfolios": []
+                }
+            },
+            "2": {
+                "status": "success",
+                "payload": {
+                    "invoiceSummary": {
+                        "id": "2",
+                        "status": "PAID_IN_FULL",
+                        "paymentMethod": "CREDIT_CARD",
+                        "fromDate": "20230129",
+                        "toDate": "20230130",
+                        "invoiceDate": "20230130",
+                        "amountDue": {
+                            "amount": 500.03,
+                            "currencyCode": "USD"
+                        },
+                        "taxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingTaxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "taxRate": 0.00,
+                        "fees": [],
+                        "remainingFees": [],
+                        "downloadableDocuments": [
+                            "INVOICE"
+                        ]
+                    },
+                    "taxDetail": {
+                        "taxCalculationDate": "20230130",
+                        "taxBreakups": [
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "FL"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "BROWARD"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            }
+                        ]
+                    },
+                    "issuerContactInformation": {
+                        "address": {
+                            "companyName": "company1",
+                            "addressLine1": "PO Box 12345",
+                            "addressLine2": "",
+                            "addressLine3": "",
+                            "postalCode": "12345-6789",
+                            "city": "Seattle",
+                            "stateOrRegion": "WA",
+                            "countryCode": "US"
+                        },
+                        "email": {
+                            "displayName": "company1",
+                            "emailAddress": ""
+                        }
+                    },
+                    "payerContactInformation": {
+                        "address": {
+                            "companyName": "company2",
+                            "addressLine1": "1234 W Broward Blvd",
+                            "addressLine2": "abcdefgh",
+                            "postalCode": "33312",
+                            "city": "Fort Lauderdale",
+                            "stateOrRegion": "FL",
+                            "countryCode": "US"
+                        }
+                    },
+                    "thirdPartyContactInformation": [],
+                    "payments": [
+                        {
+                            "id": 145343583,
+                            "paymentMethod": "CREDIT_CARD",
+                            "amount": {
+                                "amount": 500.03,
+                                "currencyCode": "USD"
+                            },
+                            "status": "SUCCEEDED",
+                            "lastPaymentAttemptDate": "20230130"
+                        }
+                    ],
+                    "promotions": [
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during October"
+                        },
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during September"
+                        }
+                    ],
+                    "adjustments": [],
+                    "invoiceLines": [
+                        {
+                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignId": 18577060820822,
+                            "campaignAID": 200050732464681,
+                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "portfolioId": 249200181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 29,
+                            "cost": {
+                                "amount": 14.42,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 0.50,
+                            "costPerEventType": 0.50,
+                            "fees": []
+                        },
+                        {
+                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignId": 173364525457238,
+                            "campaignAID": 200051432057081,
+                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "portfolioId": 251220181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 14,
+                            "cost": {
+                                "amount": 27.22,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 1.94,
+                            "costPerEventType": 1.94,
+                            "fees": []
+                        }
+                    ],
+                    "portfolios": [
+                        {
+                            "id": 251420181,
+                            "name": "Deck Stain Brush",
+                            "totalAmount": {
+                                "amount": 0.85,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        },
+                        {
+                            "id": 461200181,
+                            "name": "Boat Hook",
+                            "totalAmount": {
+                                "amount": 40.91,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        }
+                    ]
+                }
+            },
+            "3": {
+                "status": "success",
+                "payload": {
+                    "invoiceSummary": {
+                        "id": "3",
+                        "status": "PAID_IN_FULL",
+                        "paymentMethod": "CREDIT_CARD",
+                        "fromDate": "20230128",
+                        "toDate": "20230129",
+                        "invoiceDate": "20230129",
+                        "amountDue": {
+                            "amount": 500.03,
+                            "currencyCode": "USD"
+                        },
+                        "taxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingTaxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "taxRate": 0.00,
+                        "fees": [],
+                        "remainingFees": [],
+                        "downloadableDocuments": [
+                            "INVOICE"
+                        ]
+                    },
+                    "taxDetail": {
+                        "taxCalculationDate": "20230130",
+                        "taxBreakups": [
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "FL"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "BROWARD"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            }
+                        ]
+                    },
+                    "issuerContactInformation": {
+                        "address": {
+                            "companyName": "company1",
+                            "addressLine1": "PO Box 12345",
+                            "addressLine2": "",
+                            "addressLine3": "",
+                            "postalCode": "12345-6789",
+                            "city": "Seattle",
+                            "stateOrRegion": "WA",
+                            "countryCode": "US"
+                        },
+                        "email": {
+                            "displayName": "company1",
+                            "emailAddress": ""
+                        }
+                    },
+                    "payerContactInformation": {
+                        "address": {
+                            "companyName": "company2",
+                            "addressLine1": "1234 W Broward Blvd",
+                            "addressLine2": "abcdefgh",
+                            "postalCode": "33312",
+                            "city": "Fort Lauderdale",
+                            "stateOrRegion": "FL",
+                            "countryCode": "US"
+                        }
+                    },
+                    "thirdPartyContactInformation": [],
+                    "payments": [
+                        {
+                            "id": 145343583,
+                            "paymentMethod": "CREDIT_CARD",
+                            "amount": {
+                                "amount": 500.03,
+                                "currencyCode": "USD"
+                            },
+                            "status": "SUCCEEDED",
+                            "lastPaymentAttemptDate": "20230130"
+                        }
+                    ],
+                    "promotions": [
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during October"
+                        },
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during September"
+                        }
+                    ],
+                    "adjustments": [],
+                    "invoiceLines": [
+                        {
+                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignId": 18577060820822,
+                            "campaignAID": 200050732464681,
+                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "portfolioId": 249200181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 29,
+                            "cost": {
+                                "amount": 14.42,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 0.50,
+                            "costPerEventType": 0.50,
+                            "fees": []
+                        },
+                        {
+                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignId": 173364525457238,
+                            "campaignAID": 200051432057081,
+                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "portfolioId": 251220181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 14,
+                            "cost": {
+                                "amount": 27.22,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 1.94,
+                            "costPerEventType": 1.94,
+                            "fees": []
+                        }
+                    ],
+                    "portfolios": [
+                        {
+                            "id": 251420181,
+                            "name": "Deck Stain Brush",
+                            "totalAmount": {
+                                "amount": 0.85,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        },
+                        {
+                            "id": 461200181,
+                            "name": "Boat Hook",
+                            "totalAmount": {
+                                "amount": 40.91,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        }
+                    ]
+                }
+            },
+            "4": {
+                "status": "success",
+                "payload": {
+                    "invoiceSummary": {
+                        "id": "4",
+                        "status": "PAID_IN_FULL",
+                        "paymentMethod": "CREDIT_CARD",
+                        "fromDate": "20230127",
+                        "toDate": "20230128",
+                        "invoiceDate": "20230128",
+                        "amountDue": {
+                            "amount": 500.03,
+                            "currencyCode": "USD"
+                        },
+                        "taxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingTaxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "taxRate": 0.00,
+                        "fees": [],
+                        "remainingFees": [],
+                        "downloadableDocuments": [
+                            "INVOICE"
+                        ]
+                    },
+                    "taxDetail": {
+                        "taxCalculationDate": "20230130",
+                        "taxBreakups": [
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "FL"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "BROWARD"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            }
+                        ]
+                    },
+                    "issuerContactInformation": {
+                        "address": {
+                            "companyName": "company1",
+                            "addressLine1": "PO Box 12345",
+                            "addressLine2": "",
+                            "addressLine3": "",
+                            "postalCode": "12345-6789",
+                            "city": "Seattle",
+                            "stateOrRegion": "WA",
+                            "countryCode": "US"
+                        },
+                        "email": {
+                            "displayName": "company1",
+                            "emailAddress": ""
+                        }
+                    },
+                    "payerContactInformation": {
+                        "address": {
+                            "companyName": "company2",
+                            "addressLine1": "1234 W Broward Blvd",
+                            "addressLine2": "abcdefgh",
+                            "postalCode": "33312",
+                            "city": "Fort Lauderdale",
+                            "stateOrRegion": "FL",
+                            "countryCode": "US"
+                        }
+                    },
+                    "thirdPartyContactInformation": [],
+                    "payments": [
+                        {
+                            "id": 145343583,
+                            "paymentMethod": "CREDIT_CARD",
+                            "amount": {
+                                "amount": 500.03,
+                                "currencyCode": "USD"
+                            },
+                            "status": "SUCCEEDED",
+                            "lastPaymentAttemptDate": "20230130"
+                        }
+                    ],
+                    "promotions": [
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during October"
+                        },
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during September"
+                        }
+                    ],
+                    "adjustments": [],
+                    "invoiceLines": [
+                        {
+                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignId": 18577060820822,
+                            "campaignAID": 200050732464681,
+                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "portfolioId": 249200181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 29,
+                            "cost": {
+                                "amount": 14.42,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 0.50,
+                            "costPerEventType": 0.50,
+                            "fees": []
+                        },
+                        {
+                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignId": 173364525457238,
+                            "campaignAID": 200051432057081,
+                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "portfolioId": 251220181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 14,
+                            "cost": {
+                                "amount": 27.22,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 1.94,
+                            "costPerEventType": 1.94,
+                            "fees": []
+                        }
+                    ],
+                    "portfolios": [
+                        {
+                            "id": 251420181,
+                            "name": "Deck Stain Brush",
+                            "totalAmount": {
+                                "amount": 0.85,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        },
+                        {
+                            "id": 461200181,
+                            "name": "Boat Hook",
+                            "totalAmount": {
+                                "amount": 40.91,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        }
+                    ]
+                }
+            },
+            "5": {
+                "status": "success",
+                "payload": {
+                    "invoiceSummary": {
+                        "id": "5",
+                        "status": "PAID_IN_FULL",
+                        "paymentMethod": "CREDIT_CARD",
+                        "fromDate": "20230126",
+                        "toDate": "20230127",
+                        "invoiceDate": "20230127",
+                        "amountDue": {
+                            "amount": 500.03,
+                            "currencyCode": "USD"
+                        },
+                        "taxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "remainingTaxAmountDue": {
+                            "amount": 0.0,
+                            "currencyCode": "USD"
+                        },
+                        "taxRate": 0.00,
+                        "fees": [],
+                        "remainingFees": [],
+                        "downloadableDocuments": [
+                            "INVOICE"
+                        ]
+                    },
+                    "taxDetail": {
+                        "taxCalculationDate": "20230130",
+                        "taxBreakups": [
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "FL"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "BROWARD"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            },
+                            {
+                                "taxName": "Tax",
+                                "taxRate": 0.00,
+                                "taxAmount": {
+                                    "amount": 0.0,
+                                    "currencyCode": "USD"
+                                },
+                                "payerTaxInformation": {},
+                                "issuerTaxInformation": {},
+                                "taxedJurisdictionName": "NOT APPLICABLE"
+                            }
+                        ]
+                    },
+                    "issuerContactInformation": {
+                        "address": {
+                            "companyName": "company1",
+                            "addressLine1": "PO Box 12345",
+                            "addressLine2": "",
+                            "addressLine3": "",
+                            "postalCode": "12345-6789",
+                            "city": "Seattle",
+                            "stateOrRegion": "WA",
+                            "countryCode": "US"
+                        },
+                        "email": {
+                            "displayName": "company1",
+                            "emailAddress": ""
+                        }
+                    },
+                    "payerContactInformation": {
+                        "address": {
+                            "companyName": "company2",
+                            "addressLine1": "1234 W Broward Blvd",
+                            "addressLine2": "abcdefgh",
+                            "postalCode": "33312",
+                            "city": "Fort Lauderdale",
+                            "stateOrRegion": "FL",
+                            "countryCode": "US"
+                        }
+                    },
+                    "thirdPartyContactInformation": [],
+                    "payments": [
+                        {
+                            "id": 145343583,
+                            "paymentMethod": "CREDIT_CARD",
+                            "amount": {
+                                "amount": 500.03,
+                                "currencyCode": "USD"
+                            },
+                            "status": "SUCCEEDED",
+                            "lastPaymentAttemptDate": "20230130"
+                        }
+                    ],
+                    "promotions": [
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during October"
+                        },
+                        {
+                            "amount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            },
+                            "lastConsumedDate": "20230129",
+                            "description": "Click Credits for Sponsored Products campaign for technical issue during September"
+                        }
+                    ],
+                    "adjustments": [],
+                    "invoiceLines": [
+                        {
+                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignId": 18577060820822,
+                            "campaignAID": 200050732464681,
+                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "portfolioId": 249200181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 29,
+                            "cost": {
+                                "amount": 14.42,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 0.50,
+                            "costPerEventType": 0.50,
+                            "fees": []
+                        },
+                        {
+                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignId": 173364525457238,
+                            "campaignAID": 200051432057081,
+                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "portfolioId": 251220181,
+                            "programName": "SPONSORED PRODUCTS",
+                            "priceType": "CPC",
+                            "costEventType": "CLICKS",
+                            "costEventCount": 14,
+                            "cost": {
+                                "amount": 27.22,
+                                "currencyCode": "USD"
+                            },
+                            "costPerUnit": 1.94,
+                            "costPerEventType": 1.94,
+                            "fees": []
+                        }
+                    ],
+                    "portfolios": [
+                        {
+                            "id": 251420181,
+                            "name": "Deck Stain Brush",
+                            "totalAmount": {
+                                "amount": 0.85,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        },
+                        {
+                            "id": 461200181,
+                            "name": "Boat Hook",
+                            "totalAmount": {
+                                "amount": 40.91,
+                                "currencyCode": "USD"
+                            },
+                            "feeAmount": {
+                                "amount": 0.0,
+                                "currencyCode": "USD"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+
+        return json.dumps(responses[invoice_id])
+
+    return _internal
