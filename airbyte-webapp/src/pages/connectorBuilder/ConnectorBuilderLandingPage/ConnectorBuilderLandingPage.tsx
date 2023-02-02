@@ -128,6 +128,11 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
     ]
   );
 
+  // clear out notification on unmount, so it doesn't persist after a redirect
+  useEffect(() => {
+    return () => unregisterNotificationById(YAML_UPLOAD_ERROR_ID);
+  }, [unregisterNotificationById]);
+
   return (
     <FlexContainer direction="column" alignItems="center" gap="2xl">
       <FlexContainer direction="column" gap="md" alignItems="center" className={styles.titleContainer}>
