@@ -110,6 +110,7 @@ class ConnectionManagerWorkflowTest {
   private static final String WORKFLOW_ID = "workflow-id";
 
   private static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(600);
+  private static final String SOURCE_DOCKER_IMAGE = "some_source";
 
   private final ConfigFetchActivity mConfigFetchActivity =
       mock(ConfigFetchActivity.class, Mockito.withSettings().withoutAnnotations());
@@ -173,7 +174,7 @@ class ConnectionManagerWorkflowTest {
 
     when(mGenerateInputActivityImpl.getCheckConnectionInputs(Mockito.any(SyncInputWithAttemptNumber.class)))
         .thenReturn(new SyncJobCheckConnectionInputs(
-            new IntegrationLauncherConfig().withDockerImage("some_source"),
+            new IntegrationLauncherConfig().withDockerImage(SOURCE_DOCKER_IMAGE),
             new IntegrationLauncherConfig(),
             new StandardCheckConnectionInput(),
             new StandardCheckConnectionInput()));
@@ -182,7 +183,7 @@ class ConnectionManagerWorkflowTest {
         .thenReturn(
             new GeneratedJobInput(
                 new JobRunConfig(),
-                new IntegrationLauncherConfig().withDockerImage("some_source"),
+                new IntegrationLauncherConfig().withDockerImage(SOURCE_DOCKER_IMAGE),
                 new IntegrationLauncherConfig(),
                 new StandardSyncInput()));
 
@@ -231,7 +232,7 @@ class ConnectionManagerWorkflowTest {
         .thenReturn(
             new GeneratedJobInput(
                 jobRunConfig,
-                new IntegrationLauncherConfig().withDockerImage("some_source").withProtocolVersion(new Version("0.2.0")),
+                new IntegrationLauncherConfig().withDockerImage(SOURCE_DOCKER_IMAGE).withProtocolVersion(new Version("0.2.0")),
                 new IntegrationLauncherConfig().withProtocolVersion(new Version("0.2.0")),
                 new StandardSyncInput()));
   }
@@ -1205,7 +1206,7 @@ class ConnectionManagerWorkflowTest {
           .thenReturn(
               new GeneratedJobInput(
                   jobRunConfig,
-                  new IntegrationLauncherConfig().withDockerImage("some_source"),
+                  new IntegrationLauncherConfig().withDockerImage(SOURCE_DOCKER_IMAGE),
                   new IntegrationLauncherConfig(),
                   new StandardSyncInput()));
 
@@ -1469,7 +1470,6 @@ class ConnectionManagerWorkflowTest {
     }
 
     static Stream<Arguments> getSetupFailingActivity() {
-      // TODO can this please trigger the build?
       return Stream.of(
           Arguments.of(new Thread(() -> when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
               .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))), 0),
