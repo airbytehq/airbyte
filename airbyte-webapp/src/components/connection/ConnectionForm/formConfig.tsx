@@ -401,7 +401,7 @@ export const useInitialValues = (
       initialValues.transformations = getInitialTransformations(operations);
     }
 
-    if (destDefinition.normalizationConfig.supported) {
+    if (destDefinition.normalizationConfig?.supported) {
       initialValues.normalization = getInitialNormalization(operations, isNotCreateMode);
     }
 

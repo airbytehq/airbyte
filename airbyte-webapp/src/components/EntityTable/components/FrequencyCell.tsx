@@ -9,7 +9,7 @@ import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/Air
 import styles from "./FrequencyCell.module.scss";
 
 interface FrequencyCellProps {
-  value: ConnectionScheduleData;
+  value?: ConnectionScheduleData;
   enabled?: boolean;
   scheduleType?: ConnectionScheduleType;
 }
@@ -26,8 +26,8 @@ export const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled, sc
   return (
     <Text className={classNames(styles.text, { [styles.enabled]: enabled })} size="sm">
       <FormattedMessage
-        id={`frequency.${value ? value.basicSchedule?.timeUnit : "manual"}`}
-        values={{ value: value.basicSchedule?.units }}
+        id={`frequency.${value?.basicSchedule?.timeUnit ?? "manual"}`}
+        values={{ value: value?.basicSchedule?.units }}
       />
     </Text>
   );
