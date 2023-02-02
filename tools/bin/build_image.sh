@@ -18,8 +18,14 @@ assert_root
 
 cd "$PROJECT_DIR"
 
-echo ">>>>> $PATH <<<<<"
-echo $PATH
+export
+echo "DOCKER_BUILDKIT: $DOCKER_BUILDKIT"
+echo ">>>>> PATH <<<<<"
+echo "PATH: $PATH"
+echo "HOME: $HOME"
+echo "which docker: $(which docker)"
+echo "$(ls -lha /usr/lib)"
+echo "$(ls -lha /usr/lib/docker)"
 echo "$(ls -lha /usr/lib/docker/cli-plugins)"
 echo "$(ls -lha $HOME/.docker/cli-plugins)"
 
