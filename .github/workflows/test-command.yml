@@ -82,7 +82,6 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-          fetch-depth: 0
       - name: Install Java
         uses: actions/setup-java@v3
         with:
@@ -153,7 +152,8 @@ jobs:
           retention-days: 3
       - name: Run QA checks for ${{ github.event.inputs.connector }}
         id: qa_checks
-        if: always()
+        # TODO: Disabled for on master until #22127 resolved
+        if: contains(github.ref, 'feat-qa-engine')
         run: |
           run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
