@@ -40,8 +40,7 @@ export const useFreeConnectorProgram = () => {
       pollUntil(
         () => webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions),
         ({ hasPaymentAccountSaved }) => hasPaymentAccountSaved,
-        1000,
-        10000
+        { interval: 1000, maxTimeout: 10000 }
       ).then((maybeFcpInfo) => {
         if (maybeFcpInfo) {
           setSearchParams({}, { replace: true });

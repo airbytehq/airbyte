@@ -13,7 +13,7 @@ describe("pollUntil", () => {
     it("calls the provided apiFn until condition returns true and resolves to its final return value", () => {
       const pollableFn = fourZerosAndThenSeven();
 
-      return expect(pollUntil(pollableFn, truthyResponse, 1)).resolves.toBe(7);
+      return expect(pollUntil(pollableFn, truthyResponse, { interval: 1 })).resolves.toBe(7);
     });
   });
 
@@ -21,7 +21,7 @@ describe("pollUntil", () => {
     it("calls the provided apiFn until condition returns true and resolves to its final return value", () => {
       const pollableFn = fourZerosAndThenSeven();
 
-      return expect(pollUntil(pollableFn, truthyResponse, 1, 100)).resolves.toBe(7);
+      return expect(pollUntil(pollableFn, truthyResponse, { interval: 1, maxTimeout: 100 })).resolves.toBe(7);
     });
   });
 
@@ -29,7 +29,7 @@ describe("pollUntil", () => {
     it("resolves to false", () => {
       const pollableFn = fourZerosAndThenSeven();
 
-      return expect(pollUntil(pollableFn, truthyResponse, 100, 1)).resolves.toBe(false);
+      return expect(pollUntil(pollableFn, truthyResponse, { interval: 100, maxTimeout: 1 })).resolves.toBe(false);
     });
 
     // Because the timing of the polling depends on both the provided `interval` and the
@@ -46,7 +46,7 @@ describe("pollUntil", () => {
           return val;
         });
 
-      await pollUntil(pollableFn, (_) => false, 20, 78);
+      await pollUntil(pollableFn, (_) => false, { interval: 20, maxTimeout: 78 });
 
       // In theory, this is what just happened:
       // | time elapsed | value (source)  |
