@@ -5,7 +5,7 @@ import { FlexContainer } from "components/ui/Flex";
 import { AirbyteHomeLink } from "views/layout/SideBar/AirbyteHomeLink";
 import { MenuContent } from "views/layout/SideBar/components/MenuContent";
 import { GenericSideBar } from "views/layout/SideBar/GenericSideBar";
-import { MainNav } from "views/layout/SideBar/MainNav";
+import { MainNavItems } from "views/layout/SideBar/MainNavItems";
 
 import { CloudBottomItems } from "./CloudBottomItems";
 import styles from "./CloudSideBar.module.scss";
@@ -33,7 +33,7 @@ export const CloudSideBar: React.FC = () => {
           justifyContent="space-between"
           className={styles.menuContent}
         >
-          <MainNav />
+          <MainNavItems />
           <CloudBottomItems />
         </FlexContainer>
       </MenuContent>

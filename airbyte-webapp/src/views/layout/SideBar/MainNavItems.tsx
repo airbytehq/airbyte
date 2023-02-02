@@ -8,7 +8,7 @@ import { MenuContent } from "./components/MenuContent";
 import { NavItem } from "./components/NavItem";
 import SourceIcon from "./components/SourceIcon";
 
-export const MainNav: React.FC = () => {
+export const MainNavItems: React.FC = () => {
   return (
     <ul data-testid="navMainItems">
       <MenuContent>

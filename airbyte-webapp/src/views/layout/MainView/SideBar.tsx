@@ -4,7 +4,7 @@ import { AirbyteHomeLink } from "../SideBar/AirbyteHomeLink";
 import { BottomItems } from "../SideBar/BottomItems";
 import { MenuContent } from "../SideBar/components/MenuContent";
 import { GenericSideBar } from "../SideBar/GenericSideBar";
-import { MainNav } from "../SideBar/MainNav";
+import { MainNavItems } from "../SideBar/MainNavItems";
 
 export const SideBar: React.FC = () => {
   const { version } = useConfig();
@@ -13,7 +13,7 @@ export const SideBar: React.FC = () => {
     <GenericSideBar>
       <AirbyteHomeLink />
       <MenuContent>
-        <MainNav />
+        <MainNavItems />
         <BottomItems version={version} />
       </MenuContent>
     </GenericSideBar>
