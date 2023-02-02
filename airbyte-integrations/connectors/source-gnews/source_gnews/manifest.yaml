@@ -26,18 +26,18 @@ definitions:
       $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
-    incremental:
-      type: "DatetimeBasedCursor"
-      start_datetime:
-        datetime: "{{ config['start_date'] or ' '.join(day_delta(-7).split('.')[0].split('T')) }}"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-      end_datetime:
-        datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-      step: "P1W"
-      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_granularity: "PT1S"
-      cursor_field: "{{ parameters['stream_cursor_field'] }}"
+  incremental_sync:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: "{{ config['start_date'] or ' '.join(day_delta(-7).split('.')[0].split('T')) }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    end_datetime:
+      datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d %H:%M:%S') }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    step: "P1W"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT1S"
+    cursor_field: "{{ parameters['stream_cursor_field'] }}"
   common_parameters:
     token: "{{ config['api_key'] }}"
     lang: "{{ config['language'] }}"
@@ -56,6 +56,8 @@ definitions:
       primary_key: "url"
       path: "/search"
       stream_cursor_field: "publishedAt"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -74,6 +76,8 @@ definitions:
       primary_key: "url"
       path: "/top-headlines"
       stream_cursor_field: "publishedAt"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:

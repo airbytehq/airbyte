@@ -446,65 +446,45 @@ def test_datetime_based_cursor():
 
 def test_incremental_with_stream_slicer():
     content = """
-retriever:
-    type: SimpleRetriever
-    stream_slicer:
-        type: ListStreamSlicer
-        slice_values: "{{config['repos']}}"
-        cursor_field: a_key
-        request_option:
-            inject_into: header
-            field_name: a_key
-    incremental:
-        type: DatetimeBasedCursor
-        $parameters:
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_time'] }}"
-          min_datetime: "{{ config['start_time'] + day_delta(2) }}"
-        end_datetime: "{{ config['end_time'] }}"
-        step: "P10D"
-        cursor_field: "created"
-        cursor_granularity: "PT0.000001S"
-        lookback_window: "P5D"
-        start_time_option:
-          inject_into: request_parameter
-          field_name: created[gte]
-        end_time_option:
-          inject_into: body_json
-          field_name: end_time
-        stream_state_field_start: star
-        stream_state_field_end: en
-    requester:
-        type: HttpRequester
-        path: "/v3/marketing/lists"
-        $parameters:
-            name: 'lists'
-        url_base: "https://api.sendgrid.com"
-        authenticator:
-            type: "BasicHttpAuthenticator"
-            username: "{{{{ parameters.name}}}}"
-            password: "{{{{ config.apikey }}}}"
-        request_parameters:
-            a_parameter: "something_here"
-        request_headers:
-            header: header_value
+stream:
+  type: DeclarativeStream
+  incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime: "{{config.start}}"
+    end_datetime: "{{config.end}}"
+    step: "P1D"
+    cursor_field: "timestamp"
+    datetime_format: "%Y%m%d"
+    cursor_granularity: "P1D"
+  retriever:
     record_selector:
-        extractor:
-            field_pointer: ["result"]
-    """
+      extractor:
+        field_path: ["items"]
+    requester:
+      url_base: "https://a-base-url/path"
+      path: "/a-path"
+      http_method: "GET"
+    stream_slicer:
+      type: ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      cursor_field: a_key
+      request_option:
+        inject_into: header
+        field_name: a_key
+  $parameters:
+    name: "a-name"
+"""
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["retriever"], {})
+    stream_definition = transformer.propagate_types_and_parameters("", resolved_manifest["stream"], {})
 
-    simple_retriever = factory.create_component(
-        model_type=SimpleRetrieverModel, component_definition=slicer_manifest, config=input_config
+    stream = factory.create_component(
+        model_type=DeclarativeStreamModel, component_definition=stream_definition, config=input_config
     )
 
-    assert isinstance(simple_retriever.stream_slicer, CartesianProductStreamSlicer)
-    assert len(simple_retriever.stream_slicer.stream_slicers) == 2
-    assert set(map(lambda slicer: type(slicer), simple_retriever.stream_slicer.stream_slicers)) == {DatetimeStreamSlicer, ListStreamSlicer}
+    assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
+    assert len(stream.retriever.stream_slicer.stream_slicers) == 2
+    assert set(map(lambda slicer: type(slicer), stream.retriever.stream_slicer.stream_slicers)) == {DatetimeStreamSlicer, ListStreamSlicer}
 
 
 @pytest.mark.parametrize(

@@ -31,20 +31,20 @@ definitions:
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
     stream_cursor_field: "date_upd"
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      end_datetime:
+        datetime: "{{ now_utc() }}"
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+      step: "P1Y"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+      cursor_granularity: "PT1S"
     checkpoint_interval: 500
     retriever:
       $ref: "#/definitions/retriever"
-      incremental:
-        type: "DatetimeBasedCursor"
-        start_datetime:
-          datetime: "{{ config['start_date'] }}"
-          datetime_format: "%Y-%m-%d"
-        end_datetime:
-          datetime: "{{ now_utc() }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-        step: "P1Y"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
-        cursor_granularity: "PT1S"
       requester:
         $ref: "#/definitions/requester"
         request_headers:

@@ -16,7 +16,7 @@ definitions:
           if parameters['name'] == 'web' 
           else ''
         }}
-  incremental:
+  incremental_sync:
     type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ config['start_date'] }}"
@@ -38,9 +38,9 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    incremental:
-      $ref: "#/definitions/incremental"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   domestic_stream:

@@ -22,7 +22,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
 
-  incremental:
+  incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
@@ -49,12 +49,12 @@ definitions:
       page_token_option:
         field_name: "offset"
         inject_into: "request_parameter"
-    incremental:
-      $ref: "#/definitions/incremental"
     requester:
       $ref: "#/definitions/requester"
 
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   dataset_stream:

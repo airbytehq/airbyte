@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @dataclass
-class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
+class DatetimeIncrementalSyncComponent(DatetimeStreamSlicer):
     """
     Extending DatetimeStreamSlicer by adding step option to existing start_time/end_time options
     """
@@ -24,7 +24,7 @@ class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
     stream_state_field_step: Optional[str] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        super(DatetimeStreamSlicerComponent, self).__post_init__(parameters=parameters)
+        super(DatetimeIncrementalSyncComponent, self).__post_init__(parameters=parameters)
 
         self.stream_slice_field_step = InterpolatedString.create(self.stream_state_field_step or "step", parameters=parameters)
 
@@ -32,7 +32,7 @@ class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
             raise ValueError("Step cannot be passed by path")
 
     def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
-        options = super(DatetimeStreamSlicerComponent, self)._get_request_options(option_type, stream_slice)
+        options = super(DatetimeIncrementalSyncComponent, self)._get_request_options(option_type, stream_slice)
         if self.step_option and self.step_option.inject_into == option_type:
             options[self.step_option.field_name] = stream_slice.get(self.stream_slice_field_step.eval(self.config))
         return options
@@ -45,7 +45,7 @@ class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
         get_end_time = operator.itemgetter(self.stream_slice_field_end.eval(self.config))
         date_range = [
             dr
-            for dr in super(DatetimeStreamSlicerComponent, self)._partition_daterange(start, end, step)
+            for dr in super(DatetimeIncrementalSyncComponent, self)._partition_daterange(start, end, step)
             if get_start_time(dr) < get_end_time(dr)
         ]
         for i, _slice in enumerate(date_range):

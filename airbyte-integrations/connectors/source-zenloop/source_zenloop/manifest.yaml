@@ -40,6 +40,8 @@ definitions:
   incremental_base_stream:
     $ref: "#/definitions/base_stream"
     stream_cursor_field: "inserted_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -76,7 +78,7 @@ definitions:
       - stream: "#/definitions/survey_groups"
         parent_key: public_hash_id
         stream_slice_field: id
-  incremental:
+  incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "inserted_at"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -116,8 +118,6 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
-      incremental:
-        $ref: "#/definitions/incremental"
       stream_slicer:
         $ref: "#/definitions/surveys_slicer"
   answers_survey_group:
@@ -130,8 +130,6 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
-      incremental:
-        $ref: "#/definitions/incremental"
       stream_slicer:
         $ref: "#/definitions/surveys_slicer"
 

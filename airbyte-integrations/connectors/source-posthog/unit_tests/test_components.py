@@ -11,18 +11,18 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
 from source_posthog.components import EventsCartesianProductStreamSlicer
 
 stream_slicers = [
-    ListStreamSlicer(slice_values=[2331], cursor_field="project_id", config={}, options={}),
+    ListStreamSlicer(slice_values=[2331], cursor_field="project_id", config={}, parameters={}),
     DatetimeStreamSlicer(
-        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", options={}),
-        end_datetime=MinMaxDatetime(datetime="2021-02-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", options={}),
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-02-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", parameters={}),
         step="P10D",
         cursor_field="timestamp",
         datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
         cursor_granularity="PT0.000001S",
-        start_time_option=RequestOption(inject_into="request_parameter", field_name="after", options={}),
-        end_time_option=RequestOption(inject_into="request_parameter", field_name="before", options={}),
+        start_time_option=RequestOption(inject_into="request_parameter", field_name="after", parameters={}),
+        end_time_option=RequestOption(inject_into="request_parameter", field_name="before", parameters={}),
         config={},
-        options={},
+        parameters={},
     ),
 ]
 
@@ -70,7 +70,7 @@ stream_slicers = [
     ],
 )
 def test_update_cursor(test_name, initial_state, stream_slice, last_record, expected_state):
-    slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
+    slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
     # set initial state
     slicer.update_cursor(initial_state, None)
 
@@ -138,6 +138,6 @@ def test_update_cursor(test_name, initial_state, stream_slice, last_record, expe
     ],
 )
 def test_stream_slices(test_name, stream_state, expected_stream_slices):
-    slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
+    slicer = EventsCartesianProductStreamSlicer(stream_slicers=stream_slicers, parameters={})
     stream_slices = slicer.stream_slices(SyncMode.incremental, stream_state=stream_state)
     assert list(stream_slices) == expected_stream_slices

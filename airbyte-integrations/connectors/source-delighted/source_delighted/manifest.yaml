@@ -19,7 +19,7 @@ definitions:
       backoff_strategies:
         - type: WaitTimeFromHeader
           header: "Retry-After"
-  incremental:
+  incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters['stream_cursor_field'] }}"
     datetime_format: "%s"
@@ -56,10 +56,10 @@ definitions:
         inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/requester"
-    incremental:
-      $ref: "#/definitions/incremental"
   base_stream:
     primary_key: "id"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   people:
@@ -102,16 +102,16 @@ definitions:
   survey_responses:
     $ref: "#/definitions/base_stream"
     stream_cursor_field: "updated_at"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      end_time_option:
+        field_name: "updated_until"
+        inject_into: "request_parameter"
+      start_time_option:
+        field_name: "updated_since"
+        inject_into: "request_parameter"
     retriever:
       $ref: "#/definitions/retriever"
-      incremental:
-        $ref: "#/definitions/incremental"
-        end_time_option:
-          field_name: "updated_until"
-          inject_into: "request_parameter"
-        start_time_option:
-          field_name: "updated_since"
-          inject_into: "request_parameter"
     $parameters:
       stream_cursor_field: "updated_at"
       name: "survey_responses"

@@ -5,7 +5,7 @@
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from source_braze import DatetimeStreamSlicerComponent
+from source_braze import DatetimeIncrementalSyncComponent
 
 
 def test_datetime_slicer():
@@ -15,7 +15,7 @@ def test_datetime_slicer():
     - `step` value exactly equal to difference in days between end/start dates for first slice item
     - take into account if difference in days between end/start dates less than `step` argument for last record
     """
-    slicer = DatetimeStreamSlicerComponent(
+    slicer = DatetimeIncrementalSyncComponent(
         start_datetime="2022-12-01",
         end_datetime="2022-12-08",
         step="P3D",

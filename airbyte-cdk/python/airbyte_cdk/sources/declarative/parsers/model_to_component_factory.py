@@ -115,6 +115,11 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
 
     def _init_mappings(self):
+        self.CUSTOM_PARENT_KWARGS_MAPPING = {
+            DefaultPaginatorModel: lambda retriever_model: {
+                "url_base": retriever_model.requester.url_base if hasattr(retriever_model.requester, "url_base") else ""
+            }
+        }
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
             AddedFieldDefinitionModel: self.create_added_field_definition,
             AddFieldsModel: self.create_add_fields,
@@ -194,6 +199,13 @@ class ModelToComponentFactory:
         return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
     def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs) -> Any:
+        if type(model) == dict:
+            model_type = self.TYPE_NAME_TO_MODEL.get(model.get("type", None), None)
+            if model_type:
+                parsed_model = model_type.parse_obj(model)
+                kwargs = self.CUSTOM_PARENT_KWARGS_MAPPING.get(type(parsed_model), lambda _: {})(model)
+                return self._create_component_from_model(model=parsed_model, config=config, **kwargs)
+
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
         component_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
@@ -346,7 +358,8 @@ class ModelToComponentFactory:
         model_type = self.TYPE_NAME_TO_MODEL.get(type_name, None)
         if model_type:
             parsed_model = model_type.parse_obj(model_value)
-            return self._create_component_from_model(model=parsed_model, config=config)
+            kwargs = self.CUSTOM_PARENT_KWARGS_MAPPING.get(type(parsed_model), lambda _: {})(model)
+            return self._create_component_from_model(model=parsed_model, config=config, **kwargs)
         else:
             raise ValueError(
                 f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"

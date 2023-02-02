@@ -18,7 +18,7 @@ definitions:
       orderby: "id"
       order: "asc"
       dates_are_gmt: "true"
-  date_incremental:
+  date_incremental_sync:
     type: DatetimeBasedCursor
     lookback_window: "P{{ config.get('conversion_window_days', 0) }}D"
     start_datetime:
@@ -57,10 +57,10 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
   base_incremental_stream:
+    incremental_sync:
+      $ref: "#/definitions/date_incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
-      incremental:
-        $ref: "#/definitions/date_incremental"
   customers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -150,16 +150,16 @@ definitions:
       path: "/products/categories"
   product_reviews_stream:
     $ref: "#/definitions/base_incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/date_incremental_sync"
+      start_time_option:
+        field_name: after
+        inject_into: request_parameter
+      end_time_option:
+        field_name: before
+        inject_into: request_parameter
     retriever:
       $ref: "#/definitions/retriever"
-      incremental:
-        $ref: "#/definitions/date_incremental"
-        start_time_option:
-          field_name: after
-          inject_into: request_parameter
-        end_time_option:
-          field_name: before
-          inject_into: request_parameter
     $parameters:
       name: "product_reviews"
       stream_cursor_field: "date_created_gmt"

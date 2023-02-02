@@ -62,24 +62,24 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
-      incremental:
-        cursor_field: "startDate"
+    incremental_sync:
+      cursor_field: "startDate"
+      datetime_format: "%Y-%m-%d"
+      cursor_granularity: "P1D"
+      start_datetime:
+        datetime: "2020-01-01"
         datetime_format: "%Y-%m-%d"
-        cursor_granularity: "P1D"
-        start_datetime:
-          datetime: "2020-01-01"
-          datetime_format: "%Y-%m-%d"
-        end_datetime:
-          datetime: "{{ today_utc() }}"
-          datetime_format: "%Y-%m-%d"
-        step: "P1W"
-        end_time_option:
-          field_name: "to"
-          inject_into: "request_parameter"
-        start_time_option:
-          field_name: "from"
-          inject_into: "request_parameter"
-        type: DatetimeBasedCursor
+      end_datetime:
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      step: "P1W"
+      end_time_option:
+        field_name: "to"
+        inject_into: "request_parameter"
+      start_time_option:
+        field_name: "from"
+        inject_into: "request_parameter"
+      type: DatetimeBasedCursor
     $parameters:
       name: "worklogs"
       path: "worklogs"

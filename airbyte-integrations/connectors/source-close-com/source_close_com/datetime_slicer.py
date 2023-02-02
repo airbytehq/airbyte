@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 
 
 @dataclass
-class CustomDatetimeStreamSlicer(DatetimeStreamSlicer):
+class CustomDatetimeIncrementalSync(DatetimeStreamSlicer):
     """
     This customization helps us to avoid problems when we meet different datetime formats in a single stream.
     For example if a stream "S" has a `date_created` field filled with "2021-01-01T00:00:00.000000+00:00" value in record 1,

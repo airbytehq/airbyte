@@ -45,9 +45,9 @@ definitions:
     page_size_option:
       inject_into: request_parameter
       field_name: ""
-  stream_query_slicer:
-    #    type: DatetimeStreamSlicer
-    class_name: "source_close_com.CustomDatetimeStreamSlicer"
+  query_incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_close_com.CustomDatetimeIncrementalSync"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -59,9 +59,9 @@ definitions:
     datetime_format: "%Y-%m-%d"
     cursor_granularity: "P1D"
 
-  stream_slicer__cursor_date_created:
-    #    type: DatetimeStreamSlicer
-    class_name: "source_close_com.CustomDatetimeStreamSlicer"
+  incremental_sync__cursor_date_created:
+    type: CustomIncrementalSync
+    class_name: "source_close_com.CustomDatetimeIncrementalSync"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -79,9 +79,9 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
     cursor_granularity: "PT0.000001S"
 
-  stream_slicer__cursor_date_updated:
-    #    type: DatetimeStreamSlicer
-    class_name: "source_close_com.CustomDatetimeStreamSlicer"
+  incremental_sync__cursor_date_updated:
+    type: CustomIncrementalSync
+    class_name: "source_close_com.CustomDatetimeIncrementalSync"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -126,10 +126,10 @@ definitions:
         $ref: "#/definitions/cursor_paginator"
   incremental_stream:
     $ref: "#/definitions/full_refresh_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync__cursor_date_updated"
     retriever:
       $ref: "#/definitions/full_refresh_stream/retriever"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer__cursor_date_updated"
       requester:
         $ref: "#/definitions/requester"
     stream_cursor_field: "date_updated"
@@ -142,16 +142,16 @@ definitions:
 
   activities_base_stream:
     $ref: "#/definitions/incremental_stream"
-    retriever:
-      $ref: "#/definitions/incremental_stream/retriever"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer__cursor_date_created"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync__cursor_date_created"
     stream_cursor_field: "date_created"
     $parameters:
       items_per_page: 100
 
   tasks_base_stream:
     $ref: "#/definitions/incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync__cursor_date_created"
     retriever:
       $ref: "#/definitions/incremental_stream/retriever"
       requester:
@@ -159,8 +159,6 @@ definitions:
         request_parameters:
           _type: "{{ parameters['task_type'] }}"
           _order_by: "date_created"
-      stream_slicer:
-        $ref: "#/definitions/stream_slicer__cursor_date_created"
     $parameters:
       path: "task"
       items_per_page: 1000
@@ -312,10 +310,10 @@ definitions:
       items_per_page: 50
   leads_steam:
     $ref: "#/definitions/incremental_stream"
+    incremental_sync:
+      $ref: "#/definitions/query_incremental_sync"
     retriever:
       $ref: "#/definitions/incremental_stream/retriever"
-      stream_slicer:
-        $ref: "#/definitions/stream_query_slicer"
       requester:
         $ref: "#/definitions/incremental_query_requester"
     $parameters:

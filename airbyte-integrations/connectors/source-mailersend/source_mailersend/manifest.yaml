@@ -12,7 +12,7 @@ definitions:
       api_token: "{{ config['api_token'] }}"
     request_parameters:
       limit: "100"
-  incremental:
+  incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
@@ -45,9 +45,9 @@ definitions:
       $ref: "#/definitions/paginator"
     requester:
       $ref: "#/definitions/requester"
-    incremental:
-      $ref: "#/definitions/incremental"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   activity_stream:

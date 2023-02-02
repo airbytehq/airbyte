@@ -18,7 +18,7 @@ definitions:
       api_token: "{{ config['api_key'] }}"
 
   # ----- Retriever -----
-  list_retriever:
+  paginated_retriever:
     record_selector:
       $ref: "#/definitions/list_selector"
     paginator:
@@ -37,7 +37,7 @@ definitions:
   # ----- Stream bases -----
   list_stream:
     retriever:
-      $ref: "#/definitions/list_retriever"
+      $ref: "#/definitions/paginated_retriever"
 
   # ----- Parent streams -----
   campaigns_stream:
@@ -75,10 +75,10 @@ definitions:
       name: "events"
       path: "/events/list"
 
-  # ----- Slicers -----
-  datetime_100d_slicer:
-    type: CustomIncremental
-    class_name: "source_braze.DatetimeStreamSlicerComponent"
+  # ----- Incremental sync -----
+  datetime_100d_incremental_sync:
+    type: CustomIncrementalSync
+    class_name: "source_braze.DatetimeIncrementalSyncComponent"
     cursor_field: "time"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
@@ -96,47 +96,53 @@ definitions:
     step: "P100D"
     cursor_granularity: "P1D"
 
-  datetime_14d_slicer:
-    $ref: "#/definitions/datetime_100d_slicer"
+  datetime_14d_incremental_sync:
+    $ref: "#/definitions/datetime_100d_incremental_sync"
     step: "P14D"
 
-  # ----- Sliced streams -----
-  sliced_retriever:
+  # ----- Incremental streams -----
+  non_paginated_retriever:
     record_selector:
       $ref: "#/definitions/base_selector"
     paginator:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    incremental:
-      $ref: "#/definitions/datetime_100d_slicer"
 
   kpi_daily_new_users_stream:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
     stream_cursor_field: "time"
     $parameters:
       name: "kpi_daily_new_users"
       path: "/kpi/new_users/data_series"
   kpi_daily_active_users_stream:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
     stream_cursor_field: "time"
     $parameters:
       name: "kpi_daily_active_users"
       path: "/kpi/dau/data_series"
   kpi_daily_app_uninstalls_stream:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
     stream_cursor_field: "time"
     $parameters:
       name: "kpi_daily_app_uninstalls"
       path: "/kpi/uninstalls/data_series"
 
-  # ----- Sliced sub-streams -----
+  # ----- Incremental sub-streams -----
   campaigns_analytics_substream_config:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -146,8 +152,6 @@ definitions:
             request_option:
               field_name: "campaign_id"
               inject_into: "request_parameter"
-      incremental:
-        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -155,8 +159,10 @@ definitions:
             value: "{{ stream_slice.campaign_id }}"
     stream_cursor_field: "time"
   canvases_analytics_substream_config:
+    incremental_sync:
+      $ref: "#/definitions/datetime_14d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
       record_selector:
         extractor:
           field_path: ["data", "stats"]
@@ -169,8 +175,6 @@ definitions:
             request_option:
               field_name: "canvas_id"
               inject_into: "request_parameter"
-      incremental:
-        "$ref": "#/definitions/datetime_14d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -178,8 +182,10 @@ definitions:
             value: "{{ stream_slice.canvas_id }}"
     stream_cursor_field: "time"
   cards_analytics_substream_config:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -189,8 +195,6 @@ definitions:
             request_option:
               field_name: "card_id"
               inject_into: "request_parameter"
-      incremental:
-        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -198,8 +202,10 @@ definitions:
             value: "{{ stream_slice.card_id }}"
     stream_cursor_field: "time"
   segments_analytics_substream_config:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
       stream_slicer:
         type: SubstreamSlicer
         parent_stream_configs:
@@ -209,8 +215,6 @@ definitions:
             request_option:
               field_name: "segment_id"
               inject_into: "request_parameter"
-      incremental:
-        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:
@@ -218,10 +222,12 @@ definitions:
             value: "{{ stream_slice.segment_id }}"
     stream_cursor_field: "time"
   events_analytics_substream_config:
+    incremental_sync:
+      $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
-      $ref: "#/definitions/sliced_retriever"
+      $ref: "#/definitions/non_paginated_retriever"
       requester:
-        $ref: "#/definitions/sliced_retriever/requester"
+        $ref: "#/definitions/non_paginated_retriever/requester"
         request_parameters:
           unit: "day"
       stream_slicer:
@@ -233,8 +239,6 @@ definitions:
             request_option:
               field_name: "event"
               inject_into: "request_parameter"
-      incremental:
-        "$ref": "#/definitions/datetime_100d_slicer"
     transformations:
       - type: AddFields
         fields:

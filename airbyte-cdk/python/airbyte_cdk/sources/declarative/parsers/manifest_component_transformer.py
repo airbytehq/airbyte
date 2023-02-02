@@ -19,11 +19,11 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DatetimeBasedCursor.end_time_option": "RequestOption",
     "DatetimeBasedCursor.start_datetime": "MinMaxDatetime",
     "DatetimeBasedCursor.start_time_option": "RequestOption",
-    # CustomIncremental
-    "CustomIncremental.end_datetime": "MinMaxDatetime",
-    "CustomIncremental.end_time_option": "RequestOption",
-    "CustomIncremental.start_datetime": "MinMaxDatetime",
-    "CustomIncremental.start_time_option": "RequestOption",
+    # CustomIncrementalSync
+    "CustomIncrementalSync.end_datetime": "MinMaxDatetime",
+    "CustomIncrementalSync.end_time_option": "RequestOption",
+    "CustomIncrementalSync.start_datetime": "MinMaxDatetime",
+    "CustomIncrementalSync.start_time_option": "RequestOption",
     # DeclarativeSource
     "DeclarativeSource.check": "CheckStream",
     "DeclarativeSource.spec": "Spec",

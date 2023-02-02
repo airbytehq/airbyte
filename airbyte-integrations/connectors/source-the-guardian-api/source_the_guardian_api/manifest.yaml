@@ -17,7 +17,7 @@ definitions:
       order-by: "oldest"
       # from-date: "{{ config['start_date'] }}"
       # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
-  incremental:
+  incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
@@ -53,9 +53,9 @@ definitions:
         field_name: "page_size"
     requester:
       $ref: "#/definitions/requester"
-    incremental:
-      $ref: "#/definitions/incremental"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   content_stream:

@@ -57,6 +57,21 @@ definitions:
   base_incremental_stream:
     $parameters:
       stream_cursor_field: "created_at"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: "P30D"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.000001S"
+      cursor_field: "created_at"
+      start_time_option:
+        field_name: begin_time
+        inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -77,27 +92,27 @@ definitions:
         page_size_option:
           field_name: "limit"
           inject_into: "body_json"
-      incremental:
-        type: DatetimeBasedCursor
-        start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        end_datetime:
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: "P30D"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        cursor_granularity: "PT0.000001S"
-        cursor_field: "created_at"
-        start_time_option:
-          field_name: begin_time
-          inject_into: body_json
   base_catalog_objects_stream:
     $ref: "#/definitions/base_incremental_stream"
     stream_cursor_field: "updated_at"
     $parameters:
       primary_key: "id"
       path: "/catalog/search"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: "P30D"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.000001S"
+      cursor_field: "updated_at"
+      start_time_option:
+        field_name: begin_time
+        inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -123,21 +138,6 @@ definitions:
         page_size_option:
           field_name: "limit"
           inject_into: "body_json"
-      incremental:
-        type: DatetimeBasedCursor
-        start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        end_datetime:
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: "P30D"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        cursor_granularity: "PT0.000001S"
-        cursor_field: "updated_at"
-        start_time_option:
-          field_name: begin_time
-          inject_into: body_json
   base_stream_page_json_limit:
     retriever:
       $ref: "#/definitions/retriever"
