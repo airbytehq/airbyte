@@ -277,6 +277,17 @@ definitions:
       step_default: "P1Y"
       primary_key: ["account_sid", "category", "start_date"]
     stream_cursor_field: "start_date"
+  # https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources
+  usage_triggers_stream:
+    $ref: "*ref(definitions.base_nested_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_nested_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_nested_stream.retriever.requester)"
+        path: "/2010-04-01/Accounts/{{ stream_slice.record.sid }}/Usage/Triggers.json"
+    $options:
+      name: "usage_triggers"
+      primary_key: "sid"
 
 
 streams:
@@ -299,6 +310,7 @@ streams:
   - "*ref(definitions.recordings_stream)"
   - "*ref(definitions.alerts_stream)"
   - "*ref(definitions.usage_records_stream)"
+  - "*ref(definitions.usage_triggers_stream)"
 
 check:
   stream_names:
