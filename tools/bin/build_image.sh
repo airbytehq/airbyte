@@ -18,6 +18,11 @@ assert_root
 
 cd "$PROJECT_DIR"
 
+echo ">>>>> $PATH <<<<<"
+echo $PATH
+echo "$(ls -lha /usr/lib/docker/cli-plugins)"
+echo "$(ls -lha $HOME/.docker/cli-plugins)"
+
 function validate_dockerignore() {
   excludes_all=$(grep -w '^\*$' .dockerignore || true)
   excludes_except=$(grep -w '^!.*' .dockerignore || true)
