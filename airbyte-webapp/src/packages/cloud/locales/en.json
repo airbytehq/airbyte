@@ -180,6 +180,7 @@
   "freeConnectorProgram.enrollNow": "Enroll now!",
   "freeConnectorProgram.enroll.description": "Enroll in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <b>free</b>.",
   "freeConnectorProgram.enroll.success": "Successfully enrolled in the Free Connector Program",
+  "freeConnectorProgram.enroll.failure": "Unable to verify that payment details were saved successfully",
   "freeConnectorProgram.enrollmentModal.title": "Free connector program",
   "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have moved into General Availability (GA)</p2>",
   "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before your connection will start being charged.",
