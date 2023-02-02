@@ -146,7 +146,6 @@ jobs:
             **/normalization_test_output/**/build/compiled/airbyte_utils/**
             **/normalization_test_output/**/build/run/airbyte_utils/**
             **/normalization_test_output/**/models/generated/**
-
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
         uses: actions/upload-artifact@v3
@@ -155,10 +154,15 @@ jobs:
           path: |
             **/${{ github.event.inputs.connector }}/htmlcov/**
           retention-days: 3
-
+      - name: Run QA checks for ${{ github.event.inputs.connector }}
+        id: qa_checks
+        # TODO: Disabled for on master until #22127 resolved
+        if: contains(github.ref, 'feat-qa-engine')
+        run: |
+          run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
         if: github.ref == 'refs/heads/master' && always()
-        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
+        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}

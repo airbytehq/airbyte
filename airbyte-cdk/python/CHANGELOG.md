@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.26.0
+Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
+
+## 0.25.2
+Low-Code: SubstreamSlicer.parent_key - dpath support added
+
+## 0.25.1
+Fix issue when trying to log stream slices that are non-JSON-serializable
+
+## 0.25.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.23.0
+Limiting the number of HTTP requests during a test read
+
 ## 0.22.0
 Surface the resolved manifest in the CDK
 

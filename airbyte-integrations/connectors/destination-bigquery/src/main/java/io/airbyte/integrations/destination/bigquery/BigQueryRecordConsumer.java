@@ -19,6 +19,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Record Consumer used for STANDARD INSERTS
+ */
 public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
