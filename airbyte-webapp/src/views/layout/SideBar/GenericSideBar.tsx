@@ -10,7 +10,7 @@ import styles from "./SideBar.module.scss";
 export const useCalculateSidebarStyles = () => {
   const location = useLocation();
 
-  const menuItemStyle = (isActive: boolean) => {
+  const menuItemStyle = (isActive?: boolean) => {
     const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
     return classNames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };

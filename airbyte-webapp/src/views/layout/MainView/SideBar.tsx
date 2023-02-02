@@ -1,24 +1,28 @@
 import { FlexContainer } from "components/ui/Flex";
 
+import { useConfig } from "config";
+
 import styles from "./SideBar.module.scss";
+import { AirbyteHomeLink } from "../SideBar/AirbyteHomeLink";
+import { BottomItems } from "../SideBar/BottomItems";
 import { GenericSideBar } from "../SideBar/GenericSideBar";
 import { MainNav } from "../SideBar/MainNav";
-import { TopItems } from "../SideBar/TopItems";
 
 export const SideBar: React.FC = () => {
+  const { version } = useConfig();
+
   return (
     <GenericSideBar>
       <FlexContainer direction="column" className={styles.menuContent}>
-        <TopItems />
+        <AirbyteHomeLink />
         <FlexContainer
           direction="column"
           alignItems="center"
           justifyContent="space-between"
           className={styles.menuContent}
         >
-          <TopItems />
           <MainNav />
-          {/* <BottomItems /> */}
+          <BottomItems version={version} />
         </FlexContainer>
       </FlexContainer>
     </GenericSideBar>

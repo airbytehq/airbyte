@@ -3,19 +3,16 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { DocsIcon } from "components/icons/DocsIcon";
-import { DropdownMenu } from "components/ui/DropdownMenu";
-import { Text } from "components/ui/Text";
 
 import { links } from "utils/links";
 
+import { NavDropdown } from "./NavDropdown";
 import RecipesIcon from "./RecipesIcon";
 
-export const SupportDropdown: React.FC = () => {
+export const ResourcesDropdown: React.FC = () => {
   const { formatMessage } = useIntl();
   return (
-    <DropdownMenu
-      placement="right"
-      displacement={10}
+    <NavDropdown
       options={[
         {
           as: "a",
@@ -36,15 +33,8 @@ export const SupportDropdown: React.FC = () => {
           displayName: formatMessage({ id: "sidebar.recipes" }),
         },
       ]}
-    >
-      {({ open }) => (
-        <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
-          <DocsIcon />
-          <Text className={styles.text} size="sm">
-            <FormattedMessage id="sidebar.resources" />
-          </Text>
-        </button>
-      )}
-    </DropdownMenu>
+      label={<FormattedMessage id="sidebar.resources" />}
+      icon={<DocsIcon />}
+    />
   );
 };

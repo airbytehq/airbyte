@@ -20,6 +20,7 @@ import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { RoutePaths } from "pages/routePaths";
 import { links } from "utils/links";
+import { AirbyteHomeLink } from "views/layout/SideBar/AirbyteHomeLink";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import StatusIcon from "views/layout/SideBar/components/StatusIcon";
@@ -28,12 +29,12 @@ import { MainNav } from "views/layout/SideBar/MainNav";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 
 // eslint-disable-next-line css-modules/no-unused-class
-import { TopItems } from "views/layout/SideBar/TopItems";
 
 import styles from "./CloudSideBar.module.scss";
 import { LOW_BALANCE_CREDIT_TRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
 import { WorkspacePopout } from "../../workspaces/WorkspacePopout";
 
+// todo: these styles seem weird
 const cloudWorkspaces = (
   <WorkspacePopout>
     {({ onOpen, value }) => (
@@ -147,7 +148,7 @@ export const CloudSideBar: React.FC = () => {
   return (
     <GenericSideBar>
       <FlexContainer direction="column" className={styles.menuContent}>
-        <TopItems />
+        <AirbyteHomeLink />
         {cloudWorkspaces}
         <FlexContainer
           direction="column"
