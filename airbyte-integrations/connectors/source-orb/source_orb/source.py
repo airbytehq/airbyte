@@ -696,9 +696,9 @@ class SourceOrb(AbstractSource):
         numeric_event_properties_keys = config.get("numeric_event_properties_keys")
         subscription_usage_grouping_key = config.get("subscription_usage_grouping_key")
         plan_id = config.get("plan_id")
-        start_date = config.get("start_date")
+        start_date = to_datetime(config.get("start_date"))
         # this field is not exposed to spec, used only for testing purposes
-        end_date = config.get("end_date")
+        end_date = to_datetime(config.get("end_date"))
 
         if not self.input_keys_mutually_exclusive(string_event_properties_keys, numeric_event_properties_keys):
             raise ValueError("Supplied property keys for string and numeric valued property values must be mutually exclusive.")
