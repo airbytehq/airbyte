@@ -31,14 +31,11 @@ def get_reftype_function(type: str) -> Callable[[dict], bool]:
 
 
 def is_string(definition: dict) -> bool:
-    return is_type_included(definition, get_reftype_function(data_type.STRING_TYPE)) or is_type_included(
-        definition, get_reftype_function(data_type.BINARY_DATA_TYPE)
-    )
+    return is_type_included(definition, get_reftype_function(data_type.STRING_TYPE))
 
 
 def is_binary_datatype(definition: dict) -> bool:
-    return False
-    # return is_type_included(definition, get_reftype_function(data_type.BINARY_DATA_TYPE))
+    return is_type_included(definition, get_reftype_function(data_type.BINARY_DATA_TYPE))
 
 
 def is_datetime(definition: dict) -> bool:
