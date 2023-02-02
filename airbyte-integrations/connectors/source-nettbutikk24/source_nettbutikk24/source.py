@@ -5,7 +5,7 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -60,6 +60,8 @@ class Nettbutikk24Stream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.access_token = config.get("access_token")
+        self.today = pendulum.today()
+        self.initial_unix_start_time = config.get('initial_unix_start_time')
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -92,7 +94,7 @@ class Nettbutikk24Stream(HttpStream, ABC):
         TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
-        yield {}
+        yield from response.json().get("data")
 
 
 class Customers(Nettbutikk24Stream):
