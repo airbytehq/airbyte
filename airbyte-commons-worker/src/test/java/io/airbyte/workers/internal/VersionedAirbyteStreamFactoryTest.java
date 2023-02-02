@@ -12,8 +12,6 @@ import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.protocol.ConfiguredAirbyteCatalogMigrator;
-import io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1;
-import io.airbyte.commons.protocol.migrations.v1.ConfiguredAirbyteCatalogMigrationV1;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV1Deserializer;

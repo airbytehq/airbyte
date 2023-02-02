@@ -487,13 +487,14 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   private List<StandardSync> copyWithV1Types(final List<StandardSync> syncs) {
     return syncs;
     // TODO adjust with data types feature flag testing
-//    return syncs.stream()
-//        .map(standardSync -> {
-//          final StandardSync copiedStandardSync = Jsons.deserialize(Jsons.serialize(standardSync), StandardSync.class);
-//          copiedStandardSync.setCatalog(MockData.getConfiguredCatalogWithV1DataTypes());
-//          return copiedStandardSync;
-//        })
-//        .toList();
+    // return syncs.stream()
+    // .map(standardSync -> {
+    // final StandardSync copiedStandardSync = Jsons.deserialize(Jsons.serialize(standardSync),
+    // StandardSync.class);
+    // copiedStandardSync.setCatalog(MockData.getConfiguredCatalogWithV1DataTypes());
+    // return copiedStandardSync;
+    // })
+    // .toList();
   }
 
   private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {
