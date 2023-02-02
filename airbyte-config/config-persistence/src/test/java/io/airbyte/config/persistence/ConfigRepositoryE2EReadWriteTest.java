@@ -161,7 +161,7 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     configRepository.writeSourceConnectionNoSecrets(source);
 
     final AirbyteCatalog actorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
-    final AirbyteCatalog expectedActorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING_V1));
+    final AirbyteCatalog expectedActorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
 
@@ -201,7 +201,8 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
     final int catalogDbEntry2 = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
-    assertEquals(2, catalogDbEntry2);
+    // TODO this should be 2 once we re-enable datatypes v1
+    assertEquals(1, catalogDbEntry2);
   }
 
   @Test
@@ -484,13 +485,15 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   }
 
   private List<StandardSync> copyWithV1Types(final List<StandardSync> syncs) {
-    return syncs.stream()
-        .map(standardSync -> {
-          final StandardSync copiedStandardSync = Jsons.deserialize(Jsons.serialize(standardSync), StandardSync.class);
-          copiedStandardSync.setCatalog(MockData.getConfiguredCatalogWithV1DataTypes());
-          return copiedStandardSync;
-        })
-        .toList();
+    return syncs;
+    // TODO adjust with data types feature flag testing
+//    return syncs.stream()
+//        .map(standardSync -> {
+//          final StandardSync copiedStandardSync = Jsons.deserialize(Jsons.serialize(standardSync), StandardSync.class);
+//          copiedStandardSync.setCatalog(MockData.getConfiguredCatalogWithV1DataTypes());
+//          return copiedStandardSync;
+//        })
+//        .toList();
   }
 
   private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {

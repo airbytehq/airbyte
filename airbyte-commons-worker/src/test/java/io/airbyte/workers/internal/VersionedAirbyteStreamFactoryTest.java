@@ -45,10 +45,12 @@ class VersionedAirbyteStreamFactoryTest {
         List.of(new AirbyteMessageV0Serializer(), new AirbyteMessageV1Serializer())));
     serDeProvider.initialize();
     final AirbyteMessageMigrator airbyteMessageMigrator = new AirbyteMessageMigrator(
-        List.of(new AirbyteMessageMigrationV1()));
+        // TODO once data types v1 is re-enabled, this test should contain the migration
+        List.of(/* new AirbyteMessageMigrationV1() */));
     airbyteMessageMigrator.initialize();
     final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator = new ConfiguredAirbyteCatalogMigrator(
-        List.of(new ConfiguredAirbyteCatalogMigrationV1()));
+        // TODO once data types v1 is re-enabled, this test should contain the migration
+        List.of(/* new ConfiguredAirbyteCatalogMigrationV1() */));
     configuredAirbyteCatalogMigrator.initialize();
     migratorFactory = spy(new AirbyteProtocolVersionedMigratorFactory(airbyteMessageMigrator, configuredAirbyteCatalogMigrator));
   }
