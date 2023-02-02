@@ -2,6 +2,7 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { load, YAMLException } from "js-yaml";
 import isEqual from "lodash/isEqual";
+import lowerCase from "lodash/lowerCase";
 import startCase from "lodash/startCase";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
@@ -101,7 +102,15 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
           }
 
           if (fileName) {
-            convertedFormValues.global.connectorName = startCase(fileName.split(".")[0]);
+            const fileNameNoType = lowerCase(fileName.split(".")[0].trim());
+            if (fileNameNoType === "manifest") {
+              convertedFormValues.global.connectorName = convertedFormValues.global.urlBase.replace(
+                /(^\w+:|^)\/\//,
+                ""
+              );
+            } else {
+              convertedFormValues.global.connectorName = startCase(fileNameNoType);
+            }
           }
           setStoredEditorView("ui");
           setStoredFormValues(convertedFormValues);
