@@ -1,39 +1,40 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
-import { useForm, FormProvider } from "react-hook-form";
+import * as yup from "yup";
 
-import { RHFControl } from "./index";
+import { RHFForm, RHFControl } from "./index";
 
-interface RHFProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSubmit: (values: any) => void;
-}
+/**
+ * todo:
+ * - Add RHHFForm component
+ * - Add Dropdown control
+ * - Style errors (optional)
+ * - add labels (optional)
+ */
 
-const RHF: React.FC<RHFProps> = ({ onSubmit }) => {
-  const methods = useForm({
-    defaultValues: { some_input: "Default input value", some_password: "Default password value" },
-  });
-
-  return (
-    <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
-        <RHFControl fieldType="input" name="some_input" />
-        <RHFControl fieldType="input" type="password" name="some_password" />
-        <RHFControl fieldType="date" name="some_date" format="date-time" />
-        <button type="submit">Submit</button>
-      </form>
-    </FormProvider>
-  );
-};
+const schema = yup.object({
+  some_input: yup.string().required(),
+  some_password: yup.string().min(5, "too short!"),
+});
 
 export default {
   title: "UI/Forms",
-  component: RHF,
+  component: RHFForm,
   argTypes: {
     onSubmit: { action: "submitted" },
   },
-} as ComponentMeta<typeof RHF>;
+} as ComponentMeta<typeof RHFForm>;
 
-const Template: ComponentStory<typeof RHF> = (args) => <RHF {...args} />;
+const Template: ComponentStory<typeof RHFForm> = (args) => <RHFForm {...args} />;
 
 export const Primary = Template.bind({});
-Primary.args = {};
+Primary.args = {
+  schema,
+  children: (
+    <>
+      <RHFControl fieldType="input" name="some_input" />
+      <RHFControl fieldType="input" type="password" name="some_password" />
+      <RHFControl fieldType="date" name="some_date" format="date-time" />
+      <button type="submit">Submit</button>
+    </>
+  ),
+};

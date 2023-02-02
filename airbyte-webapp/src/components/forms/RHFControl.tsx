@@ -51,7 +51,7 @@ export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, name, ...prop
   return (
     <div>
       {renderControl()}
-      {error && isTouched && <p>{error}</p>}
+      {error && isTouched && <p>{error.message}</p>}
     </div>
   );
 };
