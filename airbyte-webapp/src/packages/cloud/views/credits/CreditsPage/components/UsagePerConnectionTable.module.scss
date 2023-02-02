@@ -1,4 +1,5 @@
 @use "scss/variables";
+@use "scss/colors";
 
 .content {
   padding: 0 variables.$spacing-2xl 0 variables.$spacing-lg;
@@ -7,4 +8,34 @@
 .usageValue {
   padding-right: 10px;
   min-width: 53px;
+}
+
+%lightBackgroundOverride {
+  &.light {
+    background-color: colors.$white;
+  }
+}
+
+.thConnection {
+  @extend %lightBackgroundOverride;
+
+  width: 30%;
+}
+
+.thCreditsConsumed {
+  @extend %lightBackgroundOverride;
+
+  padding-right: 0;
+}
+
+.thCreditsConsumedPercent {
+  @extend %lightBackgroundOverride;
+
+  padding-left: 0;
+}
+
+.thConnectionId {
+  @extend %lightBackgroundOverride;
+
+  width: 20%;
 }
