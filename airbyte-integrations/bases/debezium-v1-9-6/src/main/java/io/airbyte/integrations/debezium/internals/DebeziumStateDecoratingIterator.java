@@ -54,9 +54,22 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private final Integer syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
   private Integer recordsLastSync;
-  private HashMap<String, String> checkpointOffset = new HashMap<>();
-  private HashMap<String, String> previousCheckpointOffset;
   private boolean sendCheckpointMessage = false;
+
+  /** `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as message.
+   * As Debezium is reading records faster that we process them, if we try to send `offsetManger.read()`
+   * offset, it is possible that the state is behind the record we are currently propagating. To avoid that,
+   * we store the offset as soon as we reach the checkpoint threshold (time or records) and we wait to send
+   * it until we are sure that the record we are processing is behind the offset to be sent.
+   */
+  private final HashMap<String, String> checkpointOffsetToSend = new HashMap<>();
+
+  /** `previousCheckpointOffset` is used to make sure we don't send duplicated states with the same offset.
+   * Is it possible that the offset Debezium report doesn't move for a period of time, and if we just rely on
+   * the `offsetManger.read()`, there is a chance to sent duplicate states, generating an unneeded usage of
+   * networking and processing.
+   */
+  private final HashMap<String, String> previousCheckpointOffset;
 
   /**
    * @param changeEventIterator Base iterator that we want to enrich with checkpoint messages
@@ -110,9 +123,9 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
     }
 
     if (sendCheckpointMessage) {
-      AirbyteMessage stateMessage = createStateMessage(checkpointOffset);
+      AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
       previousCheckpointOffset.clear();
-      previousCheckpointOffset.putAll(checkpointOffset);
+      previousCheckpointOffset.putAll(checkpointOffsetToSend);
       resetCheckpointValues();
       return stateMessage;
     }
@@ -122,20 +135,20 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
         final ChangeEvent<String, String> event = changeEventIterator.next();
         recordsLastSync++;
 
-        if (checkpointOffset.size() == 0 &&
+        if (checkpointOffsetToSend.size() == 0 &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
-          checkpointOffset.putAll(offsetManager.read());
+          checkpointOffsetToSend.putAll(offsetManager.read());
           if (!previousCheckpointOffset.isEmpty() &&
-              cdcStateHandler.isSameOffset(checkpointOffset, previousCheckpointOffset)) {
-            checkpointOffset.clear();
+              cdcStateHandler.isSameOffset(checkpointOffsetToSend, previousCheckpointOffset)) {
+            checkpointOffsetToSend.clear();
           }
         }
 
-        if (checkpointOffset.size() == 1
+        if (checkpointOffsetToSend.size() == 1
             && changeEventIterator.hasNext()
             && !cdcStateHandler.isSnapshotEvent(event)
-            && cdcStateHandler.isRecordBehindOffset(checkpointOffset, event)) {
+            && cdcStateHandler.isRecordBehindOffset(checkpointOffsetToSend, event)) {
           sendCheckpointMessage = true;
         }
 
@@ -154,7 +167,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    */
   private void resetCheckpointValues() {
     sendCheckpointMessage = false;
-    checkpointOffset.clear();
+    checkpointOffsetToSend.clear();
     recordsLastSync = 0;
     dateTimeLastSync = OffsetDateTime.now();
   }

@@ -24,7 +24,9 @@ public interface CdcStateHandler {
    * @param event Event from the CDC load
    * @return Returns `true` when the DB event is part of the snapshot load. Otherwise, returns `false`
    */
-  boolean isSnapshotEvent(ChangeEvent<String, String> event);
+  default boolean isSnapshotEvent(ChangeEvent<String, String> event){
+    return false;
+  }
 
   /**
    * This function checks if the event we are processing in the loop is already behind the offset so
@@ -34,7 +36,10 @@ public interface CdcStateHandler {
    * @param event Event from the CDC load
    * @return Returns `true` when the record is behind the offset. Otherwise, it returns `false`
    */
-  boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event);
+  default boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event)
+  {
+    return false;
+  }
 
   /**
    * This function compares two offsets to make sure both are not pointing to the same position. The
@@ -44,6 +49,8 @@ public interface CdcStateHandler {
    * @param offsetB Offset to compare
    * @return Returns `true` if both offsets are at the same position. Otherwise, it returns `false`
    */
-  boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB);
+  default boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB){
+    return true;
+  }
 
 }
