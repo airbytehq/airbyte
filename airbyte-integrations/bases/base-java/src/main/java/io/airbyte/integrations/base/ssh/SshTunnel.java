@@ -368,8 +368,7 @@ public class SshTunnel implements AutoCloseable {
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      if (e instanceof SshException &&
-          (isTimeout(e) || e.getMessage().contains("Failed (ConnectException) to execute: Connection refused"))) {
+      if (e instanceof SshException && isTimeout(e)) {
         throw new ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e);
       } else {
         throw new RuntimeException(e);
@@ -378,9 +377,8 @@ public class SshTunnel implements AutoCloseable {
   }
 
   private boolean isTimeout(Exception e) {
-    return e.getMessage()
-        .toLowerCase(Locale.ROOT)
-        .contains("failed to get operation result within specified timeout");
+    return e.getMessage().toLowerCase(Locale.ROOT).contains("failed to get operation result within specified timeout")
+            || e.getMessage().contains("Failed (ConnectException) to execute: Connection refused");
   }
 
   @Override

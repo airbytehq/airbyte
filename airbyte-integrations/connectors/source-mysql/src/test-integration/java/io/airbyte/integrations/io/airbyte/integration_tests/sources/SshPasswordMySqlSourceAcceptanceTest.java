@@ -61,7 +61,8 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
   public void sshConnectionExceptionMarkAsConfigErrorTest() throws Exception {
     prepareBastionEnv();
     // set fake port
-    JsonNode fakeConfig = ((ObjectNode) config).put("tunnel_port", 1111);;
+    JsonNode fakeConfig = Jsons.clone(config);
+    ((ObjectNode) fakeConfig.get("tunnel_method")).put("tunnel_port", 1111);
     Source sshWrappedSource = MySqlSource.sshWrappedSource();
     Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(fakeConfig));
 
