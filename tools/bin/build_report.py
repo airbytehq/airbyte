@@ -3,7 +3,12 @@
 #
 
 """
+Report Connector Build Status to Slack
+
 All invocations of this script must be run from the Airbyte repository root.
+
+BEFORE RUNNING THIS SCRIPT:
+- Ensure you have read the documentation on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
 
 To Run tests:
 pytest ./tools/bin/build_report.py
