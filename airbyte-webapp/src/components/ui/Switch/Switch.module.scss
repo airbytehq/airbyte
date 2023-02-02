@@ -114,6 +114,7 @@
     margin: variables.$spacing-xs;
 
     &:focus-visible ~ .slider {
+      transition: none;
       @include mixins.focus-ring-style;
     }
 

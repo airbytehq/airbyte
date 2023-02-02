@@ -14,7 +14,8 @@
 }
 
 @mixin focus-ring-style {
-  outline: 1px solid colors.$blue;
+  outline: 2px solid colors.$blue;
+  outline-offset: 1px;
 }
 
 @mixin focus-ring {
@@ -23,7 +24,7 @@
   }
 }
 
-@mixin sr-only {
+@mixin screen-reader-only {
   /** 
     * Hide the element visually, but make it accessible to screen readers.
     * https://webaim.org/techniques/css/invisiblecontent/

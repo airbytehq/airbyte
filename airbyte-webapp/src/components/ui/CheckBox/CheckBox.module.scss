@@ -19,7 +19,7 @@ $sm-size: 14px;
   @include mixins.focus-ring;
 
   input {
-    @include mixins.sr-only;
+    @include mixins.screen-reader-only;
   }
 
   &.disabled {
