@@ -1,0 +1,34 @@
+{
+  "title": "Flat File Settlement Reports V2",
+  "description": "",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "settlement-id": { "type": ["null", "string","number"] },
+    "settlement-start-date": { "type": ["null", "string"] },
+    "settlement-end-date": { "type": ["null", "string"] },
+    "deposit-date": { "type": ["null", "string"] },
+    "total-amount": { "type": ["null", "string"] },
+    "currency": { "type": ["null", "string"] },
+    "transaction-type": { "type": ["null", "string"] },
+    "order-id": { "type": ["null", "string"] },
+    "merchant-order-id": { "type": ["null", "string"] },
+    "adjustment-id": { "type": ["null", "string"] },
+    "shipment-id": { "type": ["null", "string"] },
+    "marketplace-name": { "type": ["null", "string"] },
+    "fulfillment-id": { "type": ["null", "string"] },
+    "posted-date": { "type": ["null", "string"] },
+    "posted-date-time" : { "type": ["null", "string"] }, 
+    "order-item-code": { "type": ["null", "string"] },
+    "merchant-order-item-id": { "type": ["null", "string"] },
+    "merchant-adjustment-item-id": { "type": ["null", "string", "number"] },
+    "sku": { "type": ["null", "string"] },
+    "quantity-purchased": { "type": ["null", "string"] },
+    "promotion-id": { "type": ["null", "string"] },
+    "shipment-fee-amount": { "type": ["null", "string"] },
+    "amount-type": { "type": ["null", "string"] },
+    "amount-description": { "type": ["null", "string"] },
+    "amount": { "type": ["null", "string", "number"] }
+  }
+}
+

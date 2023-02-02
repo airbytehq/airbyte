@@ -24,6 +24,8 @@ from airbyte_cdk.sources.streams.http.http import BODY_REQUEST_METHODS
 from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_amazon_seller_partner.auth import AWSSignature
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+
 
 REPORTS_API_VERSION = "2021-06-30"  # 2020-09-04
 ORDERS_API_VERSION = "v0"
@@ -1163,3 +1165,160 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+class FlatFileSettlementV2ReportsV2(ReportsAmazonSPStream,IncrementalMixin):
+
+    name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2"
+    replication_start_date_field = "createdSince"
+    replication_end_date_field = "createdUntil"
+    cursor_field = "createdSince"
+    
+    def __init__(self, url_base: str, aws_signature: AWSSignature, replication_start_date: str, marketplace_id: str, period_in_days: Optional[int], report_options: Optional[str], max_wait_seconds: Optional[int], replication_end_date: Optional[str], authenticator: HttpAuthenticator = None):
+       super().__init__(url_base, aws_signature, replication_start_date, marketplace_id, period_in_days, report_options, max_wait_seconds, replication_end_date, authenticator)
+       self._cursor_value = None
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if isinstance(self._cursor_value, str) and self._cursor_value != "" :
+            self._cursor_value = self._cursor_value
+        return {self.cursor_field: self._cursor_value}        
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        if self.cursor_field not in value:
+            self._cursor_value = None
+        else: 
+            self._cursor_value = value[self.cursor_field]
+
+    def _create_report(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+
+        # For backwards
+        return {"reportId": stream_slice.get("report_id")}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        From https://developer-docs.amazon.com/sp-api/docs/report-type-values
+        documentation:
+        ```Settlement reports cannot be requested or scheduled.
+            They are automatically scheduled by Amazon.
+            You can search for these reports using the getReports operation.
+        ```
+        """
+        strict_start_date = pendulum.now("utc").subtract(days=90)
+        
+        start_date = max(pendulum.parse(self._replication_start_date), strict_start_date)
+        end_date = pendulum.parse(self._replication_end_date or pendulum.now("utc").date().to_date_string())
+        
+        if sync_mode == SyncMode.incremental:
+            if self._cursor_value:
+                start_date = pendulum.parse(self._cursor_value)
+
+            if stream_state and stream_state.get(self.cursor_field):
+                start_date = pendulum.parse(stream_state[self.cursor_field])
+
+            start_date = max(start_date, strict_start_date)
+        
+        if end_date < strict_start_date:
+            end_date = strict_start_date
+
+        if end_date < start_date:
+            return []
+
+        params = {
+            "reportTypes": self.name,
+            "pageSize": 100,
+            "createdSince": start_date.strftime(DATE_TIME_FORMAT),
+            "createdUntil": end_date.strftime(DATE_TIME_FORMAT),
+        }
+        unique_records = list()
+        complete = False
+
+        while not complete:
+
+            request_headers = self.request_headers()
+            get_reports = self._create_prepared_request(
+                http_method="GET",
+                path=f"{self.path_prefix}/reports",
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=params,
+            )
+            report_response = self._send_request(get_reports)
+            response = report_response.json()
+            data = response.get("reports", list())
+            records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]
+            unique_records += records
+            reports = [{"report_id": report_id,
+                        "createdSince": start_date.strftime(DATE_TIME_FORMAT),
+                        "createdUntil": end_date.strftime(DATE_TIME_FORMAT)
+                        } for report_id in records]
+
+            yield from reports
+
+            next_value = response.get("nextToken", None)
+            params = {"nextToken": next_value}
+            if not next_value:
+                complete = True
+
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        """
+        Create and retrieve the report.
+        Decrypt and parse the report is its fully proceed, then yield the report document records.
+        """
+        report_payload = {}
+        is_processed = False
+        is_done = False
+        start_time = pendulum.now("utc")
+        seconds_waited = 0
+        report_id = self._create_report(sync_mode, cursor_field, stream_slice, stream_state)["reportId"]
+
+        # create and retrieve the report
+        while not is_processed and seconds_waited < self.max_wait_seconds:
+            report_payload = self._retrieve_report(report_id=report_id)
+            seconds_waited = (pendulum.now("utc") - start_time).seconds
+            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
+            is_done = report_payload.get("processingStatus") == "DONE"
+            is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
+            is_fatal = report_payload.get("processingStatus") == "FATAL"
+            time.sleep(self.sleep_seconds)
+        
+        if is_done:
+            # retrieve and decrypt the report document
+            document_id = report_payload["reportDocumentId"]
+            request_headers = self.request_headers()
+            request = self._create_prepared_request(
+                path=self.path(document_id=document_id),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(),
+            )
+            response = self._send_request(request)
+            
+            for r in self.parse_response(response, stream_state, stream_slice):
+                yield r
+
+            new_cursor_value = stream_slice.get("createdUntil")
+            if (self._cursor_value is None) or (pendulum.parse(new_cursor_value) > pendulum.parse(self._cursor_value)):
+                self._cursor_value =  new_cursor_value
+                logger.info(f"Updating cursor value for {self.name} stream to {self._cursor_value}")
+            
+
+        elif is_fatal:
+            raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
+        elif is_cancelled:
+            logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
+        else:
+            raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")

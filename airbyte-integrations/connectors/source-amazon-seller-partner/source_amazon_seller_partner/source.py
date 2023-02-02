@@ -63,6 +63,7 @@ from source_amazon_seller_partner.streams import (
     VendorInventoryReports,
     VendorSalesReports,
     XmlAllOrdersDataByOrderDataGeneral,
+    FlatFileSettlementV2ReportsV2,
 )
 
 
@@ -205,6 +206,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FlatFileReturnsDataByReturnDate(**stream_kwargs),
             FbaInventoryPlaningReport(**stream_kwargs),
             LedgerSummaryViewReport(**stream_kwargs),
+            FlatFileSettlementV2ReportsV2(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
