@@ -330,6 +330,94 @@ def test_read(schema, record, expectation):
 
 
 @pytest.mark.parametrize(
+    "schema, records_1, records_2, expectation",
+    [
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+            ],
+            does_not_raise()
+        ),
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
+            ],
+            does_not_raise()
+        ),
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+            ],
+            pytest.raises(AssertionError, match="emitted_at should increase on subsequent runs")
+        ),
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 25}, emitted_at=112)),
+            ],
+            pytest.raises(AssertionError, match="records should be the same on subsequent runs")
+        ),
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+            ],
+            pytest.raises(AssertionError, match="records should be the same on subsequent runs")
+        ),
+
+    ],
+)
+def test_emitted_at_increase_on_subsequent_runs(schema, records_1, records_2, expectation):
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            )
+        ]
+    )
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.side_effect = [records_1, records_2]
+    t = test_core.TestBasicRead()
+    with expectation:
+        t.test_emitted_at_increase_on_subsequent_runs(
+            connector_config=None,
+            configured_catalog=configured_catalog,
+            docker_runner=docker_runner_mock,
+        )
+
+
+@pytest.mark.parametrize(
     "output, expect_trace_message_on_failure, should_fail",
     [
         (
