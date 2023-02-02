@@ -20,7 +20,12 @@ os.chdir('../../..')
 print("Current working directory:")
 print(os.getcwd())
 
-AIRBYTE_REPO = git.Repo(".")
+AIRBYTE_REPO = git.Repo(search_parent_directories=True)
+
+branch = AIRBYTE_REPO.active_branch
+print(f"Active Branch: {branch.name}")
+
+
 DIFFED_BRANCH = "origin/master"
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
