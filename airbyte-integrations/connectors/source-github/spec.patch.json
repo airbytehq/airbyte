@@ -2,7 +2,8 @@
   "properties": {
     "start_date": {
       "description": "The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. For the streams which support this configuration, only data generated on or after the startdate will be replicated. This field doesn't apply to all streams, see the docs for more info: https://go.estuary.dev/xLGlPL",
-      "order": 0
+      "order": 0,
+      "format": "date-time"
     },
     "repository": {
       "description": "Space-delimited list of GitHub organizations/repositories, e.g. `estuary/flow` for single repository, `estuary/*`to get all repositories from organization and `estuary/flow estuary/another-repo` for multiple repositories.",

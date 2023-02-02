@@ -2,6 +2,9 @@
   "required": ["credentials", "start_date"],
   "properties": {
     "access_token": null,
+    "start_date": {
+      "format": "date-time"
+    },
     "credentials": {
       "type": "object",
       "title": "Credentials",
@@ -12,6 +15,7 @@
       "oneOf": [{
         "x-oauth2-provider": "surveymonkey",
         "required": ["auth_type", "access_token", "client_id", "client_secret"],
+        "title": "OAuth",
         "properties": {
           "auth_type": {
             "type": "string",
@@ -38,6 +42,7 @@
         }
       }, {
         "required": ["auth_type", "access_token"],
+        "title": "Access Token",
         "properties": {
           "auth_type": {
             "type": "string",

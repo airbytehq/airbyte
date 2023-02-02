@@ -1,5 +1,11 @@
 {
   "properties": {
+    "start_date": {
+      "format": "date"
+    },
+    "end_date": {
+      "format": "date"
+    },
     "credentials": {
         "title": "Authentication Method",
         "description": "Authentication method",

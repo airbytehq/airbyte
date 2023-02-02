@@ -1,7 +1,8 @@
 {
   "properties": {
     "start_date": {
-      "description": "The date in the format YYYY-MM-DD. Data will begin from this date."
+      "description": "The date in the format YYYY-MM-DD. Data will begin from this date.",
+      "format": "date"
     },
     "access_key": {
       "description": "Your API Access Key. The key is case sensitive. See this article to generate one: https://go.estuary.dev/K4HVxT"

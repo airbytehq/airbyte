@@ -28,7 +28,11 @@
     },
     "end_date": {
       "title": "End Date (Optional)",
-      "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "format": "date"
+    },
+    "start_date": {
+      "format": "date"
     },
     "customer_id": {
       "description": "Comma separated list of (client) customer IDs. Each customer ID must be specified as a 10-digit number without dashes. More instruction on how to find this value in our docs https://go.estuary.dev/q3rQAD. Metrics streams like AdGroupAdReport cannot be requested for a manager account."

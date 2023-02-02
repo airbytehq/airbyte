@@ -1,6 +1,9 @@
 {
   "required": ["start_date", "credentials"],
   "properties": {
+    "start_date": {
+      "format": "date-time"
+    },
     "credentials": {
       "title": "Authenticate using",
       "description": "Pick an authentication method.",

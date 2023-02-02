@@ -1,5 +1,8 @@
 {
     "properties": {
+        "start_date": {
+          "format": "date-time"
+        },
         "account_id": {
             "description": "Your Stripe account ID (starts with acct_). Find yours here: https://go.estuary.dev/t7DgTg"
         },

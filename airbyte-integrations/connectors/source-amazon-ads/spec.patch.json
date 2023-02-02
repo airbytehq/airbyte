@@ -4,7 +4,8 @@
             "description": "Region to pull data from (EU/NA/FE). See the docs for more details https://go.estuary.dev/8Ra66M"
         },
         "start_date": {
-            "description": "Date from which to start collecting reports, in YYYY-MM-DD format. Shouldn’t be more than 60 days in the past."
+            "description": "Date from which to start collecting reports, in YYYY-MM-DD format. Shouldn’t be more than 60 days in the past.",
+            "format": "date"
         }
     }
 }

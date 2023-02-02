@@ -1,5 +1,8 @@
 {
   "properties": {
+    "end_date": {
+      "format": "date-time"
+    },
     "custom_insights": {
       "items": {
         "properties": {

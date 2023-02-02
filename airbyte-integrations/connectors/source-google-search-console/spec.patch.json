@@ -1,6 +1,12 @@
 {
   "required": ["site_urls", "start_date", "credentials"],
   "properties": {
+    "start_date": {
+      "format": "date"
+    },
+    "end_date": {
+      "format": "date"
+    },
     "authorization": null,
     "site_urls": {
       "description": "The URLs of the website property attached to your GSC account. See the docs for more information: https://go.estuary.dev/jp3e13"

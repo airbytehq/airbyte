@@ -83,6 +83,9 @@
     "window_in_days": {
       "title": "Data request time increment in days (Optional)",
       "description": "The time increment used by the connector when requesting data from the Google Analytics API.  We recommend setting this to 1 unless you have a hard requirement to make the sync faster at the expense of accuracy. The minimum allowed value for this field is 1, and the maximum is 364.  More info can be found in our docs: https://go.estuary.dev/C9pwjr"
+    },
+    "start_date": {
+      "format": "date"
     }
   }
 }

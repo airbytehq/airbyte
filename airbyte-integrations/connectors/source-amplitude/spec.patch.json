@@ -5,6 +5,9 @@
     },
     "secret_key": {
       "description": "Amplitude Secret Key. See the setup guide for more information on how to obtain this key: https://go.estuary.dev/CTEm20"
+    },
+    "start_date": {
+      "format": "date-time"
     }
   }
 }

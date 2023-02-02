@@ -1,5 +1,8 @@
 {
   "properties": {
+    "start_date": {
+      "format": "date"
+    },
     "credentials": {
       "title": "Authentication",
       "type": "object",
