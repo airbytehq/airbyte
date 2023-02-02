@@ -162,7 +162,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
 
-    validateSourceSchema(fullyQualifiedTableNameToInfo, catalog, database);
+    validateSourceSchema(fullyQualifiedTableNameToInfo, catalog);
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
@@ -184,8 +184,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private void validateSourceSchema(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                    ConfiguredAirbyteCatalog catalog,
-                                    Database database) {
+                                    ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -204,7 +203,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       final JsonNode catalogSchema = stream.getJsonSchema();
       if (!catalogSchema.equals(currentJsonSchema)) {
         LOGGER.warn(
-            "The underlying schema changed for the table. Please refresh your source schema! Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
+            "Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
             fullyQualifiedTableName,
             currentJsonSchema,
             catalogSchema);

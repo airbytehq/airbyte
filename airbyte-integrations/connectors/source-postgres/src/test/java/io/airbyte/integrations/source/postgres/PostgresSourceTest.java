@@ -11,7 +11,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -269,7 +268,7 @@ class PostgresSourceTest {
       db.start();
       final PostgresSource postgresSource = new PostgresSource();
       final JsonNode config = getConfig(db);
-
+      final String test_column = "test_column";
       try (final DSLContext dslContext = getDslContext(config)) {
         final Database database = getDatabase(dslContext);
         database.query(ctx -> {
@@ -283,6 +282,18 @@ class PostgresSourceTest {
       // assert read is successful if source schema was not changed
       assertEquals(2, actualMessages1read.size());
 
+      final Set<AirbyteMessage> actualMessages2read = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
+
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = getDatabase(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("INSERT INTO test_source_schema(id, test_column) VALUES (3, 10.0);");
+          return null;
+        });
+      }
+
+      final Set<AirbyteMessage> actualMessages3read = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
+
       try (final DSLContext dslContext = getDslContext(config)) {
         final Database database = getDatabase(dslContext);
         database.query(ctx -> {
@@ -291,12 +302,19 @@ class PostgresSourceTest {
         });
       }
 
-      final Set<AirbyteMessage> actualMessages2read = MoreIterators.toSet(postgresSource.read(config, CONFIGURED_CATALOG, null));
-      final List<JsonNode> values1read = actualMessages1read.stream().map(x -> x.getRecord().getData().get("test_column")).toList();
-      final List<JsonNode> values2read = actualMessages2read.stream().map(x -> x.getRecord().getData().get("test_column")).toList();
+      final Set<AirbyteMessage> actualMessages4read = MoreIterators.toSet(postgresSource.read(config, CONFIGURED_CATALOG, null));
 
+      final List<JsonNode> values1read = actualMessages1read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
+      final List<JsonNode> values2read = actualMessages2read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
+      final List<JsonNode> values3read = actualMessages3read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
+      final List<JsonNode> values4read = actualMessages4read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
+
+      values1read.forEach(x -> assertTrue(x.isInt())); // [20, 1]
+      values2read.forEach(x -> assertTrue(x.isInt())); // [20, 1]
+      assertTrue(values1read.containsAll(values2read) && values2read.containsAll(values1read));
+      values3read.forEach(x -> assertTrue(x.isInt())); // [20, 1, 10]
       // assert values are changed if the source schema was changed
-      assertNotEquals(values2read, values1read);
+      values4read.forEach(x -> assertTrue(x.isDouble())); // [20.0, 1.0, 10.0]
       db.stop();
     }
   }
