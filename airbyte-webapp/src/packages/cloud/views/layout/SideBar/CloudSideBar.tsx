@@ -22,22 +22,22 @@ import { links } from "utils/links";
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import StatusIcon from "views/layout/SideBar/components/StatusIcon";
+import { GenericSideBar, useCalculateSidebarStyles } from "views/layout/SideBar/GenericSideBar";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import { SideBar, useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
 
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from "./CloudSideBar.module.scss";
 import { LOW_BALANCE_CREDIT_TRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
-import { WorkspacePopout } from "../../workspaces/WorkspacePopout";
 
-const cloudWorkspaces = (
-  <WorkspacePopout>
-    {({ onOpen, value }) => (
-      <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
-        {value}
-      </button>
-    )}
-  </WorkspacePopout>
-);
+// const cloudWorkspaces = (
+//   <WorkspacePopout>
+//     {({ onOpen, value }) => (
+//       <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
+//         {value}
+//       </button>
+//     )}
+//   </WorkspacePopout>
+// );
 
 export const CloudSideBar: React.FC = () => {
   const workspace = useCurrentWorkspace();
@@ -139,5 +139,9 @@ export const CloudSideBar: React.FC = () => {
     </NavLink>,
   ];
 
-  return <SideBar additionalTopItems={cloudWorkspaces} bottomMenuItems={bottomMenuItems} />;
+  return (
+    <GenericSideBar
+    // additionalTopItems={cloudWorkspaces} bottomMenuItems={bottomMenuItems}
+    />
+  );
 };

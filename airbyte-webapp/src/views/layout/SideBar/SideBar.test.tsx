@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { TestWrapper } from "test-utils/testutils";
 
-import { SideBar } from "./SideBar";
+import { SideBar } from "./GenericSideBar";
 
 describe("<SideBar/>", () => {
   it("renders the main nav items", () => {
