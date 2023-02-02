@@ -298,7 +298,7 @@ class CdcAcceptanceTests {
     source.query(ctx -> ctx.execute("DELETE FROM id_and_name WHERE id=1"));
 
     final Map<String, Object> deletedRecordMap = new HashMap<>();
-    deletedRecordMap.put(COLUMN_ID, "1");
+    deletedRecordMap.put(COLUMN_ID, 1);
     deletedRecordMap.put(COLUMN_NAME, null);
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(deletedRecordMap),
