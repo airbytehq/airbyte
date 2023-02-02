@@ -16,10 +16,9 @@ export const NavDropdown: React.FC<NavDropdownProps> = ({ options, icon, label, 
   return (
     <DropdownMenu placement="right" displacement={10} options={options} onChange={onChange}>
       {({ open }) => (
-        <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
+        <button className={classNames(styles.dropdownMenuButton, styles.menuItem, { [styles.open]: open })}>
           {icon}
           {label}
-          {/* <NavItem as="div" label={label} icon={icon} to="null" /> */}
         </button>
       )}
     </DropdownMenu>

@@ -1,4 +1,4 @@
-import { faCircleQuestion, faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faQuestionCircle, faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useIntercom } from "react-use-intercom";
@@ -32,7 +32,7 @@ export const CloudSupportDropdown: React.FC = () => {
       ]}
       onChange={handleChatUs}
       label={<FormattedMessage id="sidebar.support" />}
-      icon={<FontAwesomeIcon icon={faCircleQuestion} size="2x" />}
+      icon={<FontAwesomeIcon icon={faQuestionCircle} size="2x" />}
     />
   );
 };

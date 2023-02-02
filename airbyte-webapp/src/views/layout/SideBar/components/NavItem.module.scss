@@ -3,10 +3,12 @@
 
 .menuItem {
   background-color: transparent;
+  display: block;
   appearance: none;
   border: none;
   width: 100%;
   cursor: pointer;
+  color: colors.$dark-blue-900;
   border-radius: variables.$border-radius-xl;
   height: 70px;
   text-decoration: none;
@@ -15,7 +17,7 @@
 
   &:hover,
   &:focus-visible {
-    background: colors.$grey-50;
+    background: colors.$grey-100;
   }
 
   &.active {
@@ -35,4 +37,8 @@
       background: colors.$blue-100;
     }
   }
+}
+
+.fullHeight {
+  height: 100%;
 }

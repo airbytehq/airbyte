@@ -51,7 +51,7 @@ export const NavItem: React.FC<NavItemProps> = ({
         className={classNames(styles.menuItem, className)}
         data-testid={testId}
       >
-        <FlexContainer direction="column" alignItems="center" justifyContent="space-between">
+        <FlexContainer direction="column" alignItems="center" justifyContent="center">
           {icon}
           {withNotification && (
             <React.Suspense fallback={null}>
@@ -65,7 +65,7 @@ export const NavItem: React.FC<NavItemProps> = ({
   } else if (as === "navLink") {
     return (
       <NavLink className={navLinkClassName} to={to} data-testid={testId}>
-        <FlexContainer direction="column" alignItems="center" justifyContent="space-between">
+        <FlexContainer direction="column" alignItems="center" justifyContent="center" className={styles.fullHeight}>
           {icon}
           {withNotification && (
             <React.Suspense fallback={null}>
@@ -79,7 +79,7 @@ export const NavItem: React.FC<NavItemProps> = ({
   } else if (as === "div") {
     return (
       <div className={classNames(styles.menuItem, className)} data-testid={testId}>
-        <FlexContainer direction="column" alignItems="center" justifyContent="space-between">
+        <FlexContainer direction="column" alignItems="center" justifyContent="center" className={styles.fullHeight}>
           {icon}
           {withNotification && (
             <React.Suspense fallback={null}>
