@@ -213,9 +213,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
       workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
 
-      reportJobStarting(connectionUpdaterInput.getConnectionId());
-      StandardSyncOutput standardSyncOutput = null;
-
       final int generateCheckInputVersion =
           Workflow.getVersion(GENERATE_CHECK_INPUT_TAG, Workflow.DEFAULT_VERSION, GENERATE_CHECK_INPUT_CURRENT_VERSION);
 
@@ -223,6 +220,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (generateCheckInputVersion < GENERATE_CHECK_INPUT_CURRENT_VERSION) {
         jobInputs = getJobInput();
       }
+
+      reportJobStarting(connectionUpdaterInput.getConnectionId());
+      StandardSyncOutput standardSyncOutput = null;
 
       try {
         final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(getJobRunConfig(), jobInputs);
