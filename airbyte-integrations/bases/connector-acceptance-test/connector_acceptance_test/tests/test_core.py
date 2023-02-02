@@ -852,6 +852,9 @@ class TestBasicRead(BaseTest):
 
         assert len(error_trace_messages) >= 1, "Connector should emit at least one error trace message"
 
+    def test_emitted_at_increase_on_subsequent_runs(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
+        assert False, "hahaha"
+
     @staticmethod
     def remove_extra_fields(record: Any, spec: Any) -> Any:
         """Remove keys from record that spec doesn't have, works recursively"""
