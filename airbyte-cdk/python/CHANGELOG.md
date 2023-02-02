@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.27.0
+Make HttpAvailabilityStrategy default for HttpStreams
+
 ## 0.26.0
 Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
 

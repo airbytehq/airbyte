@@ -31,7 +31,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
-import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -157,7 +156,6 @@ public class DefaultJobPersistence implements JobPersistence {
         + "jobs.created_at AS job_created_at,\n"
         + "jobs.updated_at AS job_updated_at,\n"
         + "attempts.attempt_number AS attempt_number,\n"
-        + "attempts.attempt_sync_config AS attempt_sync_config,\n"
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
@@ -490,18 +488,6 @@ public class DefaultJobPersistence implements JobPersistence {
               .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
               .execute();
         });
-  }
-
-  @Override
-  public void writeAttemptSyncConfig(final long jobId, final int attemptNumber, final AttemptSyncConfig attemptSyncConfig) throws IOException {
-    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-
-    jobDatabase.transaction(
-        ctx -> ctx.update(ATTEMPTS)
-            .set(ATTEMPTS.ATTEMPT_SYNC_CONFIG, JSONB.valueOf(Jsons.serialize(attemptSyncConfig)))
-            .set(ATTEMPTS.UPDATED_AT, now)
-            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
-            .execute());
   }
 
   @Override
@@ -945,9 +931,13 @@ public class DefaultJobPersistence implements JobPersistence {
     final JobConfig jobConfig = Jsons.deserialize(jobConfigString, JobConfig.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
     if (jobConfig.getConfigType() == ConfigType.SYNC && jobConfig.getSync() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
     } else if (jobConfig.getConfigType() == ConfigType.RESET_CONNECTION && jobConfig.getResetConnection() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
     }
     return jobConfig;
   }
@@ -958,8 +948,6 @@ public class DefaultJobPersistence implements JobPersistence {
         record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
-        record.get("attempt_sync_config", String.class) == null ? null
-            : Jsons.deserialize(record.get("attempt_sync_config", String.class), AttemptSyncConfig.class),
         attemptOutputString == null ? null : parseJobOutputFromString(attemptOutputString),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
         record.get("processing_task_queue", String.class),
@@ -976,9 +964,13 @@ public class DefaultJobPersistence implements JobPersistence {
     final JobOutput jobOutput = Jsons.deserialize(jobOutputString, JobOutput.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
     if (jobOutput.getOutputType() == OutputType.DISCOVER_CATALOG && jobOutput.getDiscoverCatalog() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
     } else if (jobOutput.getOutputType() == OutputType.SYNC && jobOutput.getSync() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
     }
     return jobOutput;
   }
