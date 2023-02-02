@@ -24,7 +24,6 @@ from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequeste
 from airbyte_cdk.sources.declarative.models import ListStreamSlicer as ListStreamSlicerModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
-from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamSlicer as SubstreamSlicerModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
@@ -51,6 +50,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import (
     CartesianProductStreamSlicer,
     DatetimeStreamSlicer,
     ListStreamSlicer,
+    SingleSlice,
     SubstreamSlicer,
 )
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -417,9 +417,7 @@ def test_datetime_based_cursor():
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {})
 
-    stream_slicer = factory.create_component(
-        model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config
-    )
+    stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
     assert isinstance(stream_slicer, DatetimeStreamSlicer)
     assert stream_slicer._timezone == datetime.timezone.utc
@@ -444,67 +442,110 @@ def test_datetime_based_cursor():
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
 
 
-def test_incremental_with_stream_slicer():
+def test_stream_with_incremental_and_retriever_with_iterable():
     content = """
-retriever:
+decoder:
+  type: JsonDecoder
+extractor:
+  type: DpathExtractor
+  decoder: "#/decoder"
+selector:
+  type: RecordSelector
+  record_filter:
+    type: RecordFilter
+    condition: "{{ record['id'] > stream_state['id'] }}"
+requester:
+  type: HttpRequester
+  name: "{{ parameters['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['apikey'] }}"
+  request_parameters:
+    unit: "day"
+list_stream:
+  type: DeclarativeStream
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime: "{{ config['start_time'] }}"
+    end_datetime: "{{ config['end_time'] }}"
+    step: "P10D"
+    cursor_field: "created"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P5D"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: created[gte]
+    end_time_option:
+      inject_into: body_json
+      field_name: end_time
+    stream_state_field_start: star
+    stream_state_field_end: en
+  retriever:
     type: SimpleRetriever
+    primary_key: "{{ parameters['primary_key'] }}"
+    name: "{{ parameters['name'] }}"
     stream_slicer:
-        type: ListStreamSlicer
-        slice_values: "{{config['repos']}}"
-        cursor_field: a_key
-        request_option:
-            inject_into: header
-            field_name: a_key
-    incremental:
-        type: DatetimeBasedCursor
-        $parameters:
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_time'] }}"
-          min_datetime: "{{ config['start_time'] + day_delta(2) }}"
-        end_datetime: "{{ config['end_time'] }}"
-        step: "P10D"
-        cursor_field: "created"
-        cursor_granularity: "PT0.000001S"
-        lookback_window: "P5D"
-        start_time_option:
-          inject_into: request_parameter
-          field_name: created[gte]
-        end_time_option:
-          inject_into: body_json
-          field_name: end_time
-        stream_state_field_start: star
-        stream_state_field_end: en
+      type: ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      cursor_field: a_key
+      request_option:
+        inject_into: header
+        field_name: a_key
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        inject_into: request_parameter
+        field_name: page_size
+      page_token_option:
+        inject_into: path
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response._metadata.next }}"
+        page_size: 10
     requester:
-        type: HttpRequester
-        path: "/v3/marketing/lists"
-        $parameters:
-            name: 'lists'
-        url_base: "https://api.sendgrid.com"
-        authenticator:
-            type: "BasicHttpAuthenticator"
-            username: "{{{{ parameters.name}}}}"
-            password: "{{{{ config.apikey }}}}"
-        request_parameters:
-            a_parameter: "something_here"
-        request_headers:
-            header: header_value
+      $ref: "#/requester"
+      path: "{{ next_page_token['next_page_url'] }}"
     record_selector:
-        extractor:
-            field_pointer: ["result"]
+      $ref: "#/selector"
+  $parameters:
+    name: "lists"
+    primary_key: "id"
+    extractor:
+      $ref: "#/extractor"
+      field_path: ["{{ parameters['name'] }}"]
     """
+
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["retriever"], {})
+    stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["list_stream"], {})
 
-    simple_retriever = factory.create_component(
-        model_type=SimpleRetrieverModel, component_definition=slicer_manifest, config=input_config
-    )
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
-    assert isinstance(simple_retriever.stream_slicer, CartesianProductStreamSlicer)
-    assert len(simple_retriever.stream_slicer.stream_slicers) == 2
-    assert set(map(lambda slicer: type(slicer), simple_retriever.stream_slicer.stream_slicers)) == {DatetimeStreamSlicer, ListStreamSlicer}
+    assert isinstance(stream, DeclarativeStream)
+    assert isinstance(stream.retriever, SimpleRetriever)
+    assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
+    assert len(stream.retriever.stream_slicer.stream_slicers) == 2
+
+    datetime_stream_slicer = stream.retriever.stream_slicer.stream_slicers[0]
+    assert isinstance(datetime_stream_slicer, DatetimeStreamSlicer)
+    assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
+    assert isinstance(datetime_stream_slicer.end_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert datetime_stream_slicer.step == "P10D"
+    assert datetime_stream_slicer.cursor_field.string == "created"
+
+    list_stream_slicer = stream.retriever.stream_slicer.stream_slicers[1]
+    assert isinstance(list_stream_slicer, ListStreamSlicer)
+    assert list_stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
+    assert list_stream_slicer.cursor_field.string == "a_key"
 
 
 @pytest.mark.parametrize(
@@ -751,10 +792,7 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel,
-        component_definition=paginator_manifest,
-        config=input_config,
-        url_base="https://airbyte.io"
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
     )
 
     assert isinstance(paginator, DefaultPaginator)
@@ -1077,3 +1115,118 @@ class TestCreateTransformations:
         )
         schema_loader = stream.schema_loader
         assert schema_loader.default_loader._get_json_filepath().split("/")[-1] == f"{stream.name}.json"
+
+
+@pytest.mark.parametrize(
+    "incremental, iterable, expected_type, expected_slicer_count",
+    [
+        pytest.param(
+            {
+                "type": "DatetimeBasedCursor",
+                "datetime_format": "%Y-%m-%dT%H:%M:%S.%f%z",
+                "start_datetime": "{{ config['start_time'] }}",
+                "end_datetime": "{{ config['end_time'] }}",
+                "step": "P10D",
+                "cursor_field": "created",
+                "cursor_granularity": "PT0.000001S",
+            },
+            None,
+            DatetimeStreamSlicer,
+            1,
+            id="test_create_simple_retriever_with_incremental",
+        ),
+        pytest.param(
+            None,
+            {
+                "type": "ListStreamSlicer",
+                "slice_values": "{{config['repos']}}",
+                "cursor_field": "a_key",
+            },
+            ListStreamSlicer,
+            1,
+            id="test_create_simple_retriever_with_iterable",
+        ),
+        pytest.param(
+            {
+                "type": "DatetimeBasedCursor",
+                "datetime_format": "%Y-%m-%dT%H:%M:%S.%f%z",
+                "start_datetime": "{{ config['start_time'] }}",
+                "end_datetime": "{{ config['end_time'] }}",
+                "step": "P10D",
+                "cursor_field": "created",
+                "cursor_granularity": "PT0.000001S",
+            },
+            {
+                "type": "ListStreamSlicer",
+                "slice_values": "{{config['repos']}}",
+                "cursor_field": "a_key",
+            },
+            CartesianProductStreamSlicer,
+            2,
+            id="test_create_simple_retriever_with_incremental_and_iterable",
+        ),
+        pytest.param(
+            {
+                "type": "DatetimeBasedCursor",
+                "datetime_format": "%Y-%m-%dT%H:%M:%S.%f%z",
+                "start_datetime": "{{ config['start_time'] }}",
+                "end_datetime": "{{ config['end_time'] }}",
+                "step": "P10D",
+                "cursor_field": "created",
+                "cursor_granularity": "PT0.000001S",
+            },
+            [
+                {
+                    "type": "ListStreamSlicer",
+                    "slice_values": "{{config['repos']}}",
+                    "cursor_field": "a_key",
+                },
+                {
+                    "type": "ListStreamSlicer",
+                    "slice_values": "{{config['repos']}}",
+                    "cursor_field": "b_key",
+                },
+            ],
+            CartesianProductStreamSlicer,
+            2,
+            id="test_create_simple_retriever_with_iterable_multiple_components",
+        ),
+        pytest.param(None, None, SingleSlice, 1, id="test_create_simple_retriever_with_no_incremental_or_iterable"),
+    ],
+)
+def test_merge_incremental_and_iterable(incremental, iterable, expected_type, expected_slicer_count):
+    stream_model = {
+        "type": "DeclarativeStream",
+        "retriever": {
+            "type": "SimpleRetriever",
+            "record_selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_path": [],
+                },
+            },
+            "requester": {
+                "type": "HttpRequester",
+                "name": "list",
+                "url_base": "orange.com",
+                "path": "/v1/api",
+            },
+        },
+    }
+
+    if incremental:
+        stream_model["incremental_sync"] = incremental
+
+    if iterable:
+        stream_model["retriever"]["stream_slicer"] = iterable
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_model, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert isinstance(stream.retriever, SimpleRetriever)
+    assert isinstance(stream.retriever.stream_slicer, expected_type)
+
+    if expected_slicer_count > 1:
+        assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
+        assert len(stream.retriever.stream_slicer.stream_slicers) == expected_slicer_count
