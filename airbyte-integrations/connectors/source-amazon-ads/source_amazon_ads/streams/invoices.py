@@ -10,7 +10,6 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from pendulum import Date
-
 from source_amazon_ads.schemas import InvoicePayload
 from source_amazon_ads.streams.common import AmazonAdsStream
 

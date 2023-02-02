@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import json
 
 import pendulum
@@ -8,7 +9,6 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from jsonschema import validate
-
 from source_amazon_ads import SourceAmazonAds
 
 
