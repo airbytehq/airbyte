@@ -91,11 +91,11 @@ class CustomErrorHandler(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class CustomIncremental(BaseModel):
+class CustomIncrementalSync(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Literal["CustomIncremental"]
+    type: Literal["CustomIncrementalSync"]
     class_name: str
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -336,17 +336,32 @@ class CursorPagination(BaseModel):
 
 class DatetimeBasedCursor(BaseModel):
     type: Literal["DatetimeBasedCursor"]
-    cursor_field: str
-    datetime_format: str
-    cursor_granularity: str
-    end_datetime: Union[str, MinMaxDatetime]
-    start_datetime: Union[str, MinMaxDatetime]
-    step: str
-    end_time_option: Optional[RequestOption] = None
-    lookback_window: Optional[str] = None
-    start_time_option: Optional[RequestOption] = None
-    stream_state_field_end: Optional[str] = None
-    stream_state_field_start: Optional[str] = None
+    cursor_field: str = Field(
+        ...,
+        description="The location of the value on a record that will be used as a bookmark during sync",
+    )
+    datetime_format: str = Field(..., description="The format of the datetime")
+    cursor_granularity: str = Field(
+        ...,
+        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one",
+    )
+    end_datetime: Union[str, MinMaxDatetime] = Field(
+        ...,
+        description="The datetime that determines the last record that should be synced",
+    )
+    start_datetime: Union[str, MinMaxDatetime] = Field(
+        ...,
+        description="The datetime that determines the earliest record that should be synced",
+    )
+    step: str = Field(..., description="The size of the time window (ISO8601 duration)")
+    end_time_option: Optional[RequestOption] = Field(None, description="Request option for end time")
+    lookback_window: Optional[str] = Field(
+        None,
+        description="How many days before start_datetime to read data for (ISO8601 duration)",
+    )
+    start_time_option: Optional[RequestOption] = Field(None, description="Request option for start time")
+    stream_state_field_end: Optional[str] = Field(None, description="Stream slice start time field")
+    stream_state_field_start: Optional[str] = Field(None, description="Stream slice end time field")
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
@@ -461,6 +476,7 @@ class DeclarativeStream(BaseModel):
 
     type: Literal["DeclarativeStream"]
     retriever: Union[CustomRetriever, SimpleRetriever]
+    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = None
     name: Optional[str] = ""
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
@@ -482,7 +498,6 @@ class SimpleRetriever(BaseModel):
     type: Literal["SimpleRetriever"]
     record_selector: RecordSelector
     requester: Union[CustomRequester, HttpRequester]
-    incremental: Optional[Union[DatetimeBasedCursor, CustomIncremental]] = None
     name: Optional[str] = ""
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
     primary_key: Optional[PrimaryKey] = None

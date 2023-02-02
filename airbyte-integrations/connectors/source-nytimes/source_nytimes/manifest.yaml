@@ -12,23 +12,23 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
   archive_stream:
+    incremental_sync:
+      type: "DatetimeBasedCursor"
+      start_datetime:
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m"
+      end_datetime:
+        datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m') }}"
+        datetime_format: "%Y-%m"
+      step: "P1M"
+      datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      cursor_granularity: "PT1S"
+      cursor_field: "{{ parameters['stream_cursor_field'] }}"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
           field_path: ["response", "docs"]
-      incremental:
-        type: "DatetimeBasedCursor"
-        start_datetime:
-          datetime: "{{ config['start_date'] }}"
-          datetime_format: "%Y-%m"
-        end_datetime:
-          datetime: "{{ config['end_date'] or today_utc().strftime('%Y-%m') }}"
-          datetime_format: "%Y-%m"
-        step: "P1M"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        cursor_granularity: "PT1S"
-        cursor_field: "{{ parameters['stream_cursor_field'] }}"
     $parameters:
       name: "archive"
       primary_key: "_id"

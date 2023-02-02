@@ -33,7 +33,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomAuthenticator as CustomAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomIncremental as CustomIncrementalModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomIncrementalSync as CustomIncrementalSyncModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
@@ -93,6 +93,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import (
     DatetimeStreamSlicer,
     ListStreamSlicer,
     SingleSlice,
+    StreamSlicer,
     SubstreamSlicer,
 )
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
@@ -127,7 +128,7 @@ class ModelToComponentFactory:
             CustomAuthenticatorModel: self.create_custom_component,
             CustomBackoffStrategyModel: self.create_custom_component,
             CustomErrorHandlerModel: self.create_custom_component,
-            CustomIncrementalModel: self.create_custom_component,
+            CustomIncrementalSyncModel: self.create_custom_component,
             CustomRecordExtractorModel: self.create_custom_component,
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
@@ -273,6 +274,11 @@ class ModelToComponentFactory:
         model_args = model.dict()
         model_args["config"] = config
 
+        # There are cases where a parent component will pass arguments to a child component via kwargs. When there are field collisions
+        # we defer to these arguments over the component's definition
+        for key, arg in kwargs.items():
+            model_args[key] = arg
+
         # Pydantic is unable to parse a custom component's fields that are subcomponents into models because their fields and types are not
         # defined in the schema. The fields and types are defined within the Python class implementation. Pydantic can only parse down to
         # the custom component and this code performs a second parse to convert the sub-fields first into models, then declarative components
@@ -394,7 +400,12 @@ class ModelToComponentFactory:
         )
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
-        retriever = self._create_component_from_model(model=model.retriever, config=config)
+        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's iterable field components
+        # if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
+        # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
+        # the factory only support passing arguments to the component constructors, whereas this performs a merge of all slicers into one.
+        combined_slicers = self._merge_stream_slicers(model=model, config=config)
+        retriever = self._create_component_from_model(model=model.retriever, config=config, stream_slicer=combined_slicers)
 
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
@@ -418,6 +429,31 @@ class ModelToComponentFactory:
             config=config,
             parameters={},
         )
+
+    def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:
+        incremental_sync = (
+            self._create_component_from_model(model=model.incremental_sync, config=config) if model.incremental_sync else None
+        )
+
+        stream_slicer = None
+        if model.retriever.stream_slicer:
+            stream_slicer_model = model.retriever.stream_slicer
+            stream_slicer = (
+                CartesianProductStreamSlicer(
+                    [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
+                )
+                if type(stream_slicer_model) == list
+                else self._create_component_from_model(model=stream_slicer_model, config=config)
+            )
+
+        if incremental_sync and stream_slicer:
+            return CartesianProductStreamSlicer(stream_slicers=[incremental_sync, stream_slicer], parameters=model.parameters)
+        elif incremental_sync:
+            return incremental_sync
+        elif stream_slicer:
+            return stream_slicer
+        else:
+            return None
 
     def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs) -> DefaultErrorHandler:
         backoff_strategies = []
@@ -644,7 +680,9 @@ class ModelToComponentFactory:
             parameters=model.parameters,
         )
 
-    def create_simple_retriever(self, model: SimpleRetrieverModel, config: Config, **kwargs) -> SimpleRetriever:
+    def create_simple_retriever(
+        self, model: SimpleRetrieverModel, config: Config, *, stream_slicer: Optional[StreamSlicer]
+    ) -> SimpleRetriever:
         requester = self._create_component_from_model(model=model.requester, config=config)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
@@ -654,18 +692,6 @@ class ModelToComponentFactory:
             else NoPagination(parameters={})
         )
 
-        stream_slicer = (
-            CartesianProductStreamSlicer(
-                [self._create_component_from_model(model=slicer, config=config) for slicer in model.stream_slicer], parameters={}
-            )
-            if type(model.stream_slicer) == list
-            else self._create_component_from_model(model=model.stream_slicer, config=config)
-        )
-
-        if model.incremental:
-            cursor_stream_slicer = self._create_component_from_model(model=model.incremental, config=config)
-            stream_slicer = CartesianProductStreamSlicer([cursor_stream_slicer, stream_slicer], parameters={})
-
         if self._limit_slices_fetched:
             return SimpleRetrieverTestReadDecorator(
                 name=model.name,
@@ -673,7 +699,7 @@ class ModelToComponentFactory:
                 primary_key=model.primary_key.__root__ if model.primary_key else None,
                 requester=requester,
                 record_selector=record_selector,
-                stream_slicer=stream_slicer,
+                stream_slicer=stream_slicer or SingleSlice(parameters={}),
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
@@ -684,7 +710,7 @@ class ModelToComponentFactory:
             primary_key=model.primary_key.__root__ if model.primary_key else None,
             requester=requester,
             record_selector=record_selector,
-            stream_slicer=stream_slicer,
+            stream_slicer=stream_slicer or SingleSlice(parameters={}),
             config=config,
             parameters=model.parameters,
         )

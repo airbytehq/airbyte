@@ -238,7 +238,7 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CustomIncremental:
+  CustomIncrementalSync:
     description: Incremental component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
@@ -248,7 +248,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [CustomIncremental]
+        enum: [CustomIncrementalSync]
       class_name:
         type: string
         additionalProperties: true
@@ -369,30 +369,41 @@ definitions:
         type: string
         enum: [DatetimeBasedCursor]
       cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
         type: string
       datetime_format:
+        description: The format of the datetime
         type: string
       cursor_granularity:
+        description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
         type: string
       end_datetime:
+        description: The datetime that determines the last record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       start_datetime:
+        description: The datetime that determines the earliest record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       step:
+        description: The size of the time window (ISO8601 duration)
         type: string
       end_time_option:
+        description: Request option for end time
         "$ref": "#/definitions/RequestOption"
       lookback_window:
+        description: How many days before start_datetime to read data for (ISO8601 duration)
         type: string
       start_time_option:
+        description: Request option for start time
         "$ref": "#/definitions/RequestOption"
       stream_state_field_end:
+        description: Stream slice start time field
         type: string
       stream_state_field_start:
+        description: Stream slice end time field
         type: string
       $parameters:
         type: object
@@ -458,6 +469,10 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
+      incremental_sync:
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
       name:
         definition: The stream name
         type: string
@@ -987,10 +1002,6 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
-      incremental:
-        anyOf:
-          - "$ref": "#/definitions/DatetimeBasedCursor"
-          - "$ref": "#/definitions/CustomIncremental"
       name:
         type: string
         default: ""
