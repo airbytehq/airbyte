@@ -12,6 +12,7 @@ import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/Ai
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { isCloudApp } from "utils/app";
 
 import ConnectorCell from "./ConnectorCell";
 import styles from "./ConnectorsView.module.scss";
@@ -128,13 +129,15 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <FlexContainer>
         {allowUploadCustomImage && <CreateConnector type={type} />}
-        <UpgradeAllButton
-          disabled={!((hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors)}
-          isLoading={loading}
-          hasError={!!error && !loading}
-          hasSuccess={isUpdateSuccess}
-          onUpdate={onUpdate}
-        />
+        {!isCloudApp() && (
+          <UpgradeAllButton
+            disabled={!((hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors)}
+            isLoading={loading}
+            hasError={!!error && !loading}
+            hasSuccess={isUpdateSuccess}
+            onUpdate={onUpdate}
+          />
+        )}
       </FlexContainer>
     );
 
