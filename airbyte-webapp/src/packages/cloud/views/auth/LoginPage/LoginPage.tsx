@@ -1,4 +1,4 @@
-import { Field, FieldProps, Formik } from "formik";
+import { Field, FieldProps, Formik, Form } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { NavigateOptions, To, useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ import { useQuery } from "hooks/useQuery";
 import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/components/FormComponents";
+import { BottomBlock, FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import { FormTitle } from "packages/cloud/views/auth/components/FormTitle";
 
 import styles from "./LoginPage.module.scss";
@@ -35,12 +35,14 @@ export const LoginPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
-    <div>
+    <div className={styles.container}>
       <HeadTitle titles={[{ id: "login.login" }]} />
       <FormTitle>
         <FormattedMessage id="login.loginTitle" />
       </FormTitle>
 
+      <OAuthLogin />
+      <Separator />
       <Formik
         initialValues={{
           email: "",
@@ -113,9 +115,6 @@ export const LoginPage: React.FC = () => {
           </Form>
         )}
       </Formik>
-
-      <Separator />
-      <OAuthLogin />
       <Disclaimer />
     </div>
   );
