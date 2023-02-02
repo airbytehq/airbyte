@@ -7,20 +7,20 @@
         "array_3": {
           "type": ["array"],
           "items": {
-            "type": "integer"
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
           }
         }
       }
     },
     "simple_string": {
-      "type": ["string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "array_1": {
       "type": ["array"],
       "items": {
         "type": ["array"],
         "items": {
-          "type": "integer"
+          "$ref": "WellKnownTypes.json#/definitions/Integer"
         }
       }
     },
@@ -31,7 +31,7 @@
         "items": {
           "type": ["array"],
           "items": {
-            "type": "integer"
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
           }
         }
       }
@@ -45,7 +45,7 @@
           "items": {
             "type": ["array"],
             "items": {
-              "type": "integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             }
           }
         }
@@ -56,8 +56,7 @@
       "items": {
         "type": ["array"],
         "items": {
-          "type": ["string"],
-          "format": "date-time"
+          "$ref" : "WellKnownTypes.json#/definitions/TimestampWithTimezone"
         }
       }
     },
@@ -68,8 +67,7 @@
         "items": {
           "type": ["array"],
           "items": {
-            "type": ["string"],
-            "format": "date-time"
+            "$ref" : "WellKnownTypes.json#/definitions/TimestampWithTimezone"
           }
         }
       }

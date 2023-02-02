@@ -36,6 +36,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -79,6 +80,10 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   protected JsonNode getFailCheckConfig() {
     ((ObjectNode) config).put(CONFIG_PROJECT_ID, "fake");
     return config;
+  }
+
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @Override

@@ -5,13 +5,13 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.createGcsConfig;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getCommonCatalog;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaTooDeepNestedDepth;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.runDestinationWrite;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import java.io.IOException;
+import org.junit.jupiter.api.Test;
 
 class BigQueryDenormalizedGcsDestinationTest extends BigQueryDenormalizedDestinationTest {
 
@@ -20,14 +20,13 @@ class BigQueryDenormalizedGcsDestinationTest extends BigQueryDenormalizedDestina
     return createGcsConfig();
   }
 
-  @Override
-  protected Schema getExpectedSchemaForWriteWithFormatTest() {
-    return Schema.of(
-        Field.of("name", StandardSQLTypeName.STRING),
-        Field.of("date_of_birth", StandardSQLTypeName.DATE),
-        Field.of("updated_at", StandardSQLTypeName.TIMESTAMP),
-        Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+  @Test
+  void testTooDeepNestedDepth() {
+    try {
+      runDestinationWrite(getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
+    } catch (Exception e) {
+      assert (e.getCause().getMessage().contains("nested too deeply"));
+    }
   }
 
 }

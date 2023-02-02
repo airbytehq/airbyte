@@ -51,9 +51,9 @@ class DefaultArrayFormatterTest {
   @Test
   void formatArrayItems_notArray() throws JsonProcessingException {
     final JsonNode objectNodeInput = mapper.readTree("""
-                                                     {"type":"object","items":{"type":"integer"}}""");
+                                                     {"type":"object","items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}""");
     final JsonNode expectedResult = mapper.readTree("""
-                                                    [{"type":"object","items":{"type":"integer"}}]""");
+                                                    [{"type":"object","items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}]""");
 
     final JsonNode result = formatter.formatArrayItems(List.of(objectNodeInput));
 
@@ -65,26 +65,26 @@ class DefaultArrayFormatterTest {
     final JsonNode schemaArrays = getSchemaArrays();
     final List<JsonNode> expectedResult = List.of(
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""),
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""),
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""),
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
         mapper.readTree(
             """
-            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""));
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""));
 
     final List<JsonNode> result = formatter.findArrays(schemaArrays);
     assertEquals(expectedResult, result);

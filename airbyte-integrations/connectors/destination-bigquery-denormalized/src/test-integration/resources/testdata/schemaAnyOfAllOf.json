@@ -2,22 +2,22 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "name": {
-      "type": ["null", "string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "type": {
-      "type": ["null", "string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "email": {
-      "type": ["null", "string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "avatar": {
       "type": ["null", "object"],
       "properties": {
         "image_url": {
-          "type": ["null", "string"]
+          "$ref": "WellKnownTypes.json#/definitions/String"
         }
       }
     },
@@ -26,7 +26,7 @@
         {
           "type": "array",
           "items": {
-            "type": "integer"
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
           }
         },
         {
@@ -39,7 +39,7 @@
         {
           "type": "array",
           "items": {
-            "type": "integer"
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
           }
         },
         {
@@ -52,28 +52,28 @@
         {
           "type": "array",
           "items": {
-            "type": "integer"
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
           }
         },
         {
-          "type": "string"
+          "$ref": "WellKnownTypes.json#/definitions/String"
         },
         {
-          "type": "integer"
+          "$ref": "WellKnownTypes.json#/definitions/Integer"
         }
       ]
     },
     "job_title": {
-      "type": ["null", "string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "has_inbox_seat": {
-      "type": ["null", "boolean"]
+      "$ref": "WellKnownTypes.json#/definitions/Boolean"
     },
     "away_mode_enabled": {
-      "type": ["null", "boolean"]
+      "$ref": "WellKnownTypes.json#/definitions/Boolean"
     },
     "away_mode_reassign": {
-      "type": ["null", "boolean"]
+      "$ref": "WellKnownTypes.json#/definitions/Boolean"
     }
   }
 }

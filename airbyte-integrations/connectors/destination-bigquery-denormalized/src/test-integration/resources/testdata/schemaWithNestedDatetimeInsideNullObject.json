@@ -2,17 +2,16 @@
   "type": ["object"],
   "properties": {
     "name": {
-      "type": ["null", "string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "appointment": {
       "type": ["null", "object"],
       "properties": {
         "street": {
-          "type": ["null", "string"]
+          "$ref": "WellKnownTypes.json#/definitions/String"
         },
         "expTime": {
-          "type": ["null", "string"],
-          "format": "date-time"
+          "$ref" : "WellKnownTypes.json#/definitions/TimestampWithTimezone"
         }
       }
     }

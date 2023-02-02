@@ -2,10 +2,9 @@
   "type": ["object"],
   "properties": {
     "accepts_marketing_updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
     },
-    "name": { "type": ["string"] },
+    "name": { "$ref": "WellKnownTypes.json#/definitions/String" },
     "permission-list": {
       "type": ["object"],
       "properties": {
@@ -14,13 +13,13 @@
           "items": {
             "type": ["object"],
             "properties": {
-              "domain": { "type": ["string"] },
+              "domain": { "$ref": "WellKnownTypes.json#/definitions/String" },
               "grants": {
                 "type": ["object"],
                 "properties": {
                   "big_query_array": {
                     "type": ["array"],
-                    "items": { "type": ["string"] }
+                    "items": { "$ref": "WellKnownTypes.json#/definitions/String" }
                   }
                 }
               }

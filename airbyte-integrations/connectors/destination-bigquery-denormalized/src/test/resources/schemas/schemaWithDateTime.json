@@ -2,15 +2,13 @@
   "type": ["object"],
   "properties": {
     "updated_at": {
-      "type": ["string"],
-      "format": "date-time"
+      "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
     },
     "items": {
       "type": ["object"],
       "properties": {
         "nested_datetime": {
-          "type": ["string"],
-          "format": "date-time"
+          "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
         }
       }
     }

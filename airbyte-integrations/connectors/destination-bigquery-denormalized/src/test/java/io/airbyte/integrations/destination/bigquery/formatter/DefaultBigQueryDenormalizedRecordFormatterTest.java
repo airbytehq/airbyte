@@ -7,14 +7,11 @@ package io.airbyte.integrations.destination.bigquery.formatter;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchema;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaArrays;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithDateTime;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithInvalidArrayType;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getExpectedSchemaWithNestedDatetimeInsideNullObject;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchema;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaArrays;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithBigInteger;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithDateTime;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithInvalidArrayType;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithNestedDatetimeInsideNullObject;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestSchemaUtils.getSchemaWithReferenceDefinition;
@@ -51,7 +48,6 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
   private static Stream<Arguments> actualAndExpectedSchemasProvider() {
     return Stream.of(
         arguments(getSchema(), getExpectedSchema()),
-        arguments(getSchemaWithFormats(), getExpectedSchemaWithFormats()),
         arguments(getSchemaWithDateTime(), getExpectedSchemaWithDateTime()),
         arguments(getSchemaWithInvalidArrayType(), getExpectedSchemaWithInvalidArrayType()),
         arguments(getSchemaWithNestedDatetimeInsideNullObject(),
@@ -74,47 +70,14 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Field subFields = Field.newBuilder("big_query_array", LegacySQLTypeName.RECORD,
-        Field.of("domain", LegacySQLTypeName.STRING),
-        Field.of("grants", LegacySQLTypeName.RECORD,
-            Field.newBuilder("big_query_array", StandardSQLTypeName.STRING).setMode(Mode.REPEATED).build()))
+        Field.newBuilder("domain", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
+        Field.newBuilder("grants", LegacySQLTypeName.RECORD,
+            Field.newBuilder("big_query_array", StandardSQLTypeName.STRING).setMode(Mode.REPEATED).build()).setMode(Mode.NULLABLE).build())
         .setMode(Mode.REPEATED).build();
     final Schema expectedResult = Schema.of(
         Field.newBuilder("accepts_marketing_updated_at", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build(),
-        Field.of("name", LegacySQLTypeName.STRING),
-        Field.of("permission_list", LegacySQLTypeName.RECORD, subFields),
-        Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
-        Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
-
-    final Schema result = rf.getBigQuerySchema(jsonNodeSchema);
-
-    assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void testSchemaWithFormats() {
-    final JsonNode jsonNodeSchema = getSchemaWithFormats();
-    DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
-        jsonNodeSchema, new BigQuerySQLNameTransformer());
-    final Schema expectedResult = Schema.of(
-        Field.of("name", LegacySQLTypeName.STRING),
-        Field.of("date_of_birth", LegacySQLTypeName.DATE),
-        Field.of("updated_at", LegacySQLTypeName.DATETIME),
-        Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
-        Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
-
-    final Schema result = rf.getBigQuerySchema(jsonNodeSchema);
-
-    assertEquals(expectedResult, result);
-  }
-
-  @Test
-  void testSchemaWithBigInteger() {
-    final JsonNode jsonNodeSchema = getSchemaWithBigInteger();
-    DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
-        jsonNodeSchema, new BigQuerySQLNameTransformer());
-    final Schema expectedResult = Schema.of(
-        Field.of("salary", LegacySQLTypeName.INTEGER),
-        Field.of("updated_at", LegacySQLTypeName.DATETIME),
+        Field.newBuilder("name", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
+        Field.newBuilder("permission_list", LegacySQLTypeName.RECORD, subFields).setMode(Mode.NULLABLE).build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 
@@ -129,8 +92,10 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
-        Field.of("updated_at", LegacySQLTypeName.DATETIME),
-        Field.of("items", LegacySQLTypeName.RECORD, Field.of("nested_datetime", LegacySQLTypeName.DATETIME)),
+        Field.newBuilder("updated_at", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build(),
+        Field.newBuilder("items", LegacySQLTypeName.RECORD,
+            Field.newBuilder("nested_datetime", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build()
+        ).setMode(Mode.NULLABLE).build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 
@@ -145,9 +110,9 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
-        Field.of("name", LegacySQLTypeName.STRING),
+        Field.newBuilder("name", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
         Field.newBuilder("permission_list", LegacySQLTypeName.RECORD,
-            Field.of("domain", LegacySQLTypeName.STRING),
+            Field.newBuilder("domain", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
             Field.newBuilder("grants", LegacySQLTypeName.STRING).setMode(Mode.REPEATED).build())
             .setMode(Mode.REPEATED).build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
@@ -164,7 +129,7 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     DefaultBigQueryDenormalizedRecordFormatter rf = new DefaultBigQueryDenormalizedRecordFormatter(
         jsonNodeSchema, new BigQuerySQLNameTransformer());
     final Schema expectedResult = Schema.of(
-        Field.of("users", LegacySQLTypeName.STRING),
+        Field.newBuilder("users", LegacySQLTypeName.STRING).setMode(Mode.NULLABLE).build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 

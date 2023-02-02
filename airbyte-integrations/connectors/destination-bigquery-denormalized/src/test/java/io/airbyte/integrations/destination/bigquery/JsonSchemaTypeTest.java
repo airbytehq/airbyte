@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -13,12 +12,13 @@ class JsonSchemaTypeTest {
 
   @Test
   void fromJsonSchemaType_notPresent() {
-    assertThrows(IllegalArgumentException.class, () -> JsonSchemaType.fromJsonSchemaType("not_existing_value"));
+    JsonSchemaType result = JsonSchemaType.fromJsonSchemaType("test_field_name", "not_existing_type");
+    assertEquals(JsonSchemaType.STRING, result);
   }
 
   @Test
   void fromJsonSchemaType_getType() {
-    JsonSchemaType result = JsonSchemaType.fromJsonSchemaType("string");
+    JsonSchemaType result = JsonSchemaType.fromJsonSchemaType("test_field_name", "WellKnownTypes.json#/definitions/String");
     assertEquals(JsonSchemaType.STRING, result);
   }
 

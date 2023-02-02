@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil;
 import java.util.Collections;
 import java.util.List;
@@ -20,12 +21,15 @@ import java.util.stream.Collectors;
 
 public class DefaultArrayFormatter implements ArrayFormatter {
 
+  /**
+   * Empty schema arrays will be populated as WellKnownTypes.json#/definitions/String type by default.
+   */
   @Override
   public void populateEmptyArrays(final JsonNode node) {
     findArrays(node).forEach(jsonNode -> {
       if (!jsonNode.has(ARRAY_ITEMS_FIELD)) {
-        final ObjectNode nodeToChange = (ObjectNode) jsonNode;
-        nodeToChange.putObject(ARRAY_ITEMS_FIELD).putArray(TYPE_FIELD).add("string");
+        final JsonNode itemsNode = FormatterUtil.getTypeSchemaNode(JsonSchemaType.STRING);
+        ((ObjectNode)jsonNode).set(ARRAY_ITEMS_FIELD, itemsNode);
       }
     });
   }
@@ -50,8 +54,10 @@ public class DefaultArrayFormatter implements ArrayFormatter {
 
   @Override
   public JsonNode formatArrayItems(List<JsonNode> arrayItems) {
-    return Jsons
-        .jsonNode(arrayItems.stream().map(node -> (node.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, node)) : node)).toList());
+    return Jsons.jsonNode(arrayItems
+        .stream()
+        .map(node -> (node.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, node)) : node))
+        .toList());
   }
 
   protected List<JsonNode> findArrays(final JsonNode node) {

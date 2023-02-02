@@ -10,7 +10,7 @@
             "big_query_array": {
               "type": ["array"],
               "items": {
-                "type": "integer"
+                "$ref": "WellKnownTypes.json#/definitions/Integer"
               }
             }
           }
@@ -18,7 +18,7 @@
       }
     },
     "simple_string": {
-      "type": ["string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "array_1": {
       "type": ["object"],
@@ -31,7 +31,7 @@
               "big_query_array": {
                 "type": ["array"],
                 "items": {
-                  "type": "integer"
+                  "$ref": "WellKnownTypes.json#/definitions/Integer"
                 }
               }
             }
@@ -55,7 +55,7 @@
                     "big_query_array": {
                       "type": ["array"],
                       "items": {
-                        "type": "integer"
+                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                       }
                     }
                   }
@@ -87,7 +87,7 @@
                           "big_query_array": {
                             "type": ["array"],
                             "items": {
-                              "type": "integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         }

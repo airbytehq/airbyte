@@ -20,7 +20,6 @@ import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormal
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataMaxNestedDepth;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataTooDeepNestedDepth;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithEmptyObjectAndArray;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithJSONDateTimeFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithJSONWithReference;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataWithNestedDatetimeInsideNullObject;
@@ -30,7 +29,6 @@ import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormal
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaMaxNestedDepth;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaTooDeepNestedDepth;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithDateTime;
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithInvalidArrayType;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithNestedDatetimeInsideNullObject;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithReferenceDefinition;
@@ -43,18 +41,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.Schema;
-import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -72,16 +64,12 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class BigQueryDenormalizedDestinationTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationTest.class);
   protected static final Instant NOW = Instant.now();
   protected static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
   protected static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
-  protected static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
   protected static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
   protected static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
   protected static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
@@ -116,7 +104,6 @@ class BigQueryDenormalizedDestinationTest {
 
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
-    MESSAGE_USERS3.getRecord().setNamespace(datasetId);
     MESSAGE_USERS4.getRecord().setNamespace(datasetId);
     MESSAGE_USERS5.getRecord().setNamespace(datasetId);
     MESSAGE_USERS6.getRecord().setNamespace(datasetId);
@@ -164,38 +151,6 @@ class BigQueryDenormalizedDestinationTest {
     final JsonNode resultJson = usersActual.get(0);
     assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
     assertEquals(extractJsonValues(resultJson, "appointment"), extractJsonValues(expectedUsersJson, "appointment"));
-  }
-
-  protected Schema getExpectedSchemaForWriteWithFormatTest() {
-    return Schema.of(
-        Field.of("name", StandardSQLTypeName.STRING),
-        Field.of("date_of_birth", StandardSQLTypeName.DATE),
-        Field.of("updated_at", StandardSQLTypeName.DATETIME),
-        Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
-  }
-
-  @Test
-  void testWriteWithFormat() throws Exception {
-    runDestinationWrite(getCommonCatalog(getSchemaWithFormats(), datasetId), config, MESSAGE_USERS3);
-
-    final List<JsonNode> usersActual = retrieveRecordsAsJson(USERS_STREAM_NAME);
-    final JsonNode expectedUsersJson = MESSAGE_USERS3.getRecord().getData();
-    assertEquals(usersActual.size(), 1);
-    final JsonNode resultJson = usersActual.get(0);
-    assertEquals(extractJsonValues(resultJson, "name"), extractJsonValues(expectedUsersJson, "name"));
-    assertEquals(extractJsonValues(resultJson, "date_of_birth"), extractJsonValues(expectedUsersJson, "date_of_birth"));
-
-    // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
-    // expect to receive the value we sent.
-    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
-        DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
-    var actualValue =
-        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(),
-            DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
-    assertEquals(expectedValue, actualValue);
-
-    assertEquals(BigQueryUtils.getTableDefinition(bigquery, datasetId, USERS_STREAM_NAME).getSchema(), getExpectedSchemaForWriteWithFormatTest());
   }
 
   @Test
@@ -277,8 +232,8 @@ class BigQueryDenormalizedDestinationTest {
         retrieveRecordsAsJson(USERS_STREAM_NAME).stream().flatMap(x -> extractJsonValues(x, "users").stream()).collect(Collectors.toSet());
 
     final Set<String> expected = Sets.set(
-        "\"{\\\"name\\\":\\\"John\\\",\\\"surname\\\":\\\"Adams\\\"}\"",
-        null // we expect one record to have not had the users field set
+        null, // we expect one record to have not had the users field set
+        "\"{\\\"name\\\":\\\"John\\\",\\\"surname\\\":\\\"Adams\\\"}\""
     );
 
     assertEquals(2, actual.size());
@@ -298,7 +253,7 @@ class BigQueryDenormalizedDestinationTest {
     try {
       runDestinationWrite(getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
     } catch (Exception e) {
-      assert (e.getCause().getMessage().contains("nested too deeply"));
+      assert e.getMessage().contains("nested too deeply");
     }
   }
 
@@ -311,7 +266,7 @@ class BigQueryDenormalizedDestinationTest {
         retrieveRecordsAsJson(USERS_STREAM_NAME).get(0).findValue("str_value").asText());
   }
 
-  private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
+  public Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
     final List<JsonNode> valuesNode = node.findValues(attributeName);
     final Set<String> resultSet = new HashSet<>();
     valuesNode.forEach(jsonNode -> {
@@ -334,7 +289,7 @@ class BigQueryDenormalizedDestinationTest {
     return record;
   }
 
-  private List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
+  public List<JsonNode> retrieveRecordsAsJson(final String tableName) throws Exception {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(

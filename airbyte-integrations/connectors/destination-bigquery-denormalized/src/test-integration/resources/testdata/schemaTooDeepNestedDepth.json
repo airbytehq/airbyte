@@ -49,9 +49,7 @@
                                                               ],
                                                               "properties": {
                                                                 "str_value": {
-                                                                  "type": [
-                                                                    "string"
-                                                                  ]
+                                                                  "$ref": "WellKnownTypes.json#/definitions/String"
                                                                 }
                                                               }
                                                             }

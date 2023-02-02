@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.formatter;
 
+import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.REF_TYPE_KEY;
 import static io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil.TYPE_FIELD;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,10 +28,10 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
-import io.airbyte.integrations.destination.bigquery.JsonSchemaFormat;
 import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.ArrayFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.arrayformater.DefaultArrayFormatter;
+import io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.Collections;
@@ -40,7 +41,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,9 +51,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   public static final String PROPERTIES_FIELD = "properties";
   private static final String ALL_OF_FIELD = "allOf";
   private static final String ANY_OF_FIELD = "anyOf";
-  private static final String FORMAT_FIELD = "format";
-  private static final String AIRBYTE_TYPE = "airbyte_type";
-  private static final String REF_DEFINITION_KEY = "$ref";
   private static final ObjectMapper mapper = new ObjectMapper();
 
   protected ArrayFormatter arrayFormatter;
@@ -225,7 +222,9 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
    */
   private Consumer<String> addToRefList(final ObjectNode properties) {
     return key -> {
-      if (properties.get(key).has(REF_DEFINITION_KEY)) {
+      boolean isNotSchemaRef = properties.get(key).has(REF_TYPE_KEY) &&
+          FormatterUtil.hasNoSchemaRef(properties.get(key).get(REF_TYPE_KEY).asText());
+      if (isNotSchemaRef) {
         fieldsContainRefDefinitionValue.add(key);
       }
     };
@@ -270,42 +269,32 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     final String fieldName = namingResolver.getIdentifier(key);
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     final JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
-    final JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
-    final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
+    // for "type":["array"] and "type":["object"]
+    JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
+    if (type == null) {
+      // if has not type try to get $ref type
+      type = updatedFileDefinition.get(REF_TYPE_KEY);
+    }
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, type);
     for (int i = 0; i < fieldTypes.size(); i++) {
-      final JsonSchemaType fieldType = fieldTypes.get(i);
-      if (fieldType == JsonSchemaType.NULL) {
-        builder.setMode(Mode.NULLABLE);
-      }
+      // all fields are NULLABLE by default
+      builder.setMode(Mode.NULLABLE);
       if (i == 0) {
         // Treat the first type in the list with the widest scope as the primary type
         final JsonSchemaType primaryType = fieldTypes.get(i);
         switch (primaryType) {
-          case NULL -> {
-            builder.setType(StandardSQLTypeName.STRING);
-          }
-          case STRING, INTEGER, BOOLEAN -> {
-            builder.setType(primaryType.getBigQueryType());
-          }
-          case NUMBER -> {
-            if (airbyteType != null
-                && StringUtils.equalsAnyIgnoreCase(airbyteType.asText(),
-                "big_integer", "integer")) {
-              builder.setType(StandardSQLTypeName.INT64);
-            } else {
-              builder.setType(primaryType.getBigQueryType());
-            }
-          }
+          case NULL -> builder.setType(StandardSQLTypeName.STRING);
+          case STRING, NUMBER, INTEGER, BOOLEAN, DATE, TIMESTAMP_WITHOUT_TIMEZONE,
+              TIMESTAMP_WITH_TIMEZONE,TIME_WITHOUT_TIMEZONE,TIME_WITH_TIMEZONE,BINARY_DATA  -> builder.setType(primaryType.getBigQueryType());
           case ARRAY -> {
-            final JsonNode items;
+            JsonNode items = Jsons.emptyObject();
             if (updatedFileDefinition.has("items")) {
               items = updatedFileDefinition.get("items");
             } else {
               LOGGER.warn("Source connector provided schema for ARRAY with missed \"items\", will assume that it's a String type");
               // this is handler for case when we get "array" without "items"
               // (https://github.com/airbytehq/airbyte/issues/5486)
-              items = getTypeStringSchema();
+              ((ObjectNode) items).put(REF_TYPE_KEY, JsonSchemaType.STRING.getJsonSchemaType());
             }
             return getField(namingResolver, fieldName, items).setMode(Mode.REPEATED);
           }
@@ -326,33 +315,12 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
               builder.setType(StandardSQLTypeName.STRING);
             }
           }
-          default -> {
-            throw new IllegalStateException(
-                String.format("Unexpected type for field %s: %s", fieldName, primaryType));
-          }
+          default -> throw new IllegalStateException(
+              String.format("Unexpected type for field %s: %s", fieldName, primaryType));
         }
       }
     }
-
-    // If a specific format is defined, use their specific type instead of the JSON's one
-    final JsonNode fieldFormat = updatedFileDefinition.get(FORMAT_FIELD);
-    if (fieldFormat != null) {
-      final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText(),
-          (airbyteType != null ? airbyteType.asText() : null));
-      if (schemaFormat != null) {
-        builder.setType(schemaFormat.getBigQueryType());
-      }
-    }
-
     return builder;
-  }
-
-  private static JsonNode getTypeStringSchema() {
-    return Jsons.deserialize("{\n"
-        + "    \"type\": [\n"
-        + "      \"string\"\n"
-        + "    ]\n"
-        + "  }");
   }
 
   private static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode type) {
@@ -361,12 +329,12 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       return List.of(JsonSchemaType.STRING);
     } else if (type.isArray()) {
       return MoreIterators.toList(type.elements()).stream()
-          .map(s -> JsonSchemaType.fromJsonSchemaType(s.asText()))
+          .map(s -> JsonSchemaType.fromJsonSchemaType(fieldName, s.asText()))
           // re-order depending to make sure wider scope types are first
           .sorted(Comparator.comparingInt(JsonSchemaType::getOrder))
           .collect(Collectors.toList());
     } else if (type.isTextual()) {
-      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(type.asText()));
+      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(fieldName, type.asText()));
     } else {
       throw new IllegalStateException("Unexpected type: " + type);
     }

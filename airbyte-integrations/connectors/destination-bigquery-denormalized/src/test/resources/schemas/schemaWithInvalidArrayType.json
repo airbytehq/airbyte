@@ -2,7 +2,7 @@
   "type": ["object"],
   "properties": {
     "name": {
-      "type": ["string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "permission-list": {
       "type": ["array"],
@@ -10,7 +10,7 @@
         "type": ["object"],
         "properties": {
           "domain": {
-            "type": ["string"]
+            "$ref": "WellKnownTypes.json#/definitions/String"
           },
           "grants": {
             "type": ["array"]

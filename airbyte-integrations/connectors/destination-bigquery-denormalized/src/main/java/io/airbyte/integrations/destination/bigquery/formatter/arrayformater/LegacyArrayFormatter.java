@@ -13,10 +13,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.bigquery.formatter.util.FormatterUtil;
-import java.util.Collections;
+import io.airbyte.integrations.destination.bigquery.JsonSchemaType;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class LegacyArrayFormatter extends DefaultArrayFormatter {
 
@@ -28,22 +26,11 @@ public class LegacyArrayFormatter extends DefaultArrayFormatter {
 
           final ObjectNode newNode = (ObjectNode) jsonNode;
           newNode.removeAll();
-          newNode.putArray(TYPE_FIELD).add("object");
+          newNode.putArray(TYPE_FIELD).add(JsonSchemaType.OBJECT.getJsonSchemaType());
           newNode.putObject(PROPERTIES_FIELD).set(NESTED_ARRAY_FIELD, arrayNode);
 
           surroundArraysByObjects(arrayNode.get(ARRAY_ITEMS_FIELD));
         });
-  }
-
-  @Override
-  protected List<JsonNode> findArrays(final JsonNode node) {
-    if (node != null) {
-      return node.findParents(TYPE_FIELD).stream()
-          .filter(FormatterUtil::isAirbyteArray)
-          .collect(Collectors.toList());
-    } else {
-      return Collections.emptyList();
-    }
   }
 
   @Override

@@ -2,11 +2,10 @@
   "type": ["object"],
   "properties": {
     "accepts_marketing_updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "$ref" : "WellKnownTypes.json#/definitions/TimestampWithTimezone"
     },
     "name": {
-      "type": ["string"]
+      "$ref": "WellKnownTypes.json#/definitions/String"
     },
     "permission-list": {
       "type": ["array"],
@@ -14,12 +13,12 @@
         "type": ["object"],
         "properties": {
           "domain": {
-            "type": ["string"]
+            "$ref": "WellKnownTypes.json#/definitions/String"
           },
           "grants": {
             "type": ["array"],
             "items": {
-              "type": ["string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         }

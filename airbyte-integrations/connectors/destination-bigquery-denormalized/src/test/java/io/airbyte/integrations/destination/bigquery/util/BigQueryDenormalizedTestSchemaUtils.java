@@ -18,16 +18,8 @@ public class BigQueryDenormalizedTestSchemaUtils {
     return getTestDataFromResourceJson("schema.json");
   }
 
-  public static JsonNode getSchemaWithFormats() {
-    return getTestDataFromResourceJson("schemaWithFormats.json");
-  }
-
   public static JsonNode getSchemaWithDateTime() {
     return getTestDataFromResourceJson("schemaWithDateTime.json");
-  }
-
-  public static JsonNode getSchemaWithBigInteger() {
-    return getTestDataFromResourceJson("schemaWithBigInteger.json");
   }
 
   public static JsonNode getSchemaWithInvalidArrayType() {
@@ -48,10 +40,6 @@ public class BigQueryDenormalizedTestSchemaUtils {
 
   public static JsonNode getExpectedSchema() {
     return getTestDataFromResourceJson("expectedSchema.json");
-  }
-
-  public static JsonNode getExpectedSchemaWithFormats() {
-    return getTestDataFromResourceJson("expectedSchemaWithFormats.json");
   }
 
   public static JsonNode getExpectedSchemaWithDateTime() {
@@ -76,10 +64,6 @@ public class BigQueryDenormalizedTestSchemaUtils {
 
   public static JsonNode getExpectedSchemaArraysLegacy() {
     return getTestDataFromResourceJson("expectedSchemaArraysLegacy.json");
-  }
-
-  public static JsonNode getSchemaWithAllOf() {
-    return getTestDataFromResourceJson("schemaAllOf.json");
   }
 
   private static JsonNode getTestDataFromResourceJson(final String fileName) {

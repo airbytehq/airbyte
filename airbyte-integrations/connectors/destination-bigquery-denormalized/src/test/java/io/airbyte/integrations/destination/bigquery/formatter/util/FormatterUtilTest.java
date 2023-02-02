@@ -29,7 +29,7 @@ class FormatterUtilTest {
   @Test
   void isAirbyteArray_typeFieldIsArray() throws JsonProcessingException {
     final JsonNode arrayNode = mapper.readTree("""
-                                               {"type":["array"],"items":{"type":"integer"}}""");
+                                               {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}""");
 
     boolean result = FormatterUtil.isAirbyteArray(arrayNode);
     assertTrue(result);

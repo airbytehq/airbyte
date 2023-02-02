@@ -34,26 +34,26 @@ public class LegacyArrayFormatterTest {
     final JsonNode schemaArrays = getSchemaArrays();
     final List<JsonNode> expectedResult = List.of(
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""),
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""),
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""),
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
         mapper.readTree(
             """
-            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}}"""),
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":"integer"}}}"""),
+                        {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
-                        {"type":["array"],"items":{"type":"integer"}}"""));
+                        {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""));
 
     final List<JsonNode> result = formatter.findArrays(schemaArrays);
 
