@@ -5,6 +5,9 @@
 import json
 import logging
 import re
+import time
+from deepdiff import DeepDiff
+
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
@@ -46,7 +49,6 @@ from connector_acceptance_test.utils.common import (
 from connector_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
-
 
 @pytest.fixture(name="connector_spec_dict")
 def connector_spec_dict_fixture(actual_connector_spec):
@@ -826,6 +828,38 @@ class TestBasicRead(BaseTest):
                 detailed_logger=detailed_logger,
             )
 
+    def test_emitted_at_increase_on_subsequent_runs(
+        self,
+        connector_config,
+        configured_catalog,
+        docker_runner: ConnectorRunner,
+    ):
+        first_read_output = docker_runner.call_read(connector_config, configured_catalog)
+        first_read_records = filter_output(first_read_output, Type.RECORD)
+        first_read_records_data = [message.record.data for message in first_read_records]
+
+        assert first_read_records_data, "At least one record should be read using provided catalog"
+
+        first_read_records_emitted_at = [message.record.emitted_at for message in first_read_records]
+        max_emitted_at = max(first_read_records_emitted_at)
+
+        # sleep for 1 second to ensure that the emitted_at timestamp is different
+        time.sleep(1)
+
+        second_read_output = docker_runner.call_read(connector_config, configured_catalog)
+        second_read_records = filter_output(second_read_output, Type.RECORD)
+        second_read_records_data = [message.record.data for message in second_read_records]
+        second_read_reords_emitted_at = [message.record.emitted_at for message in second_read_records]
+
+        min_emitted_at = min(second_read_reords_emitted_at)
+
+        assert max_emitted_at < min_emitted_at, "emitted_at should increase on subsequent runs"
+
+        # Compare two lists, ignoring order of elements.
+        diff = DeepDiff(first_read_records_data, second_read_records_data, ignore_order=True, report_repetition=True)
+
+        assert diff == {}, f"records should be the same on subsequent runs. Diff: {diff}"
+
     def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
             pytest.skip("Skipping `test_airbyte_trace_message_on_failure` because `inputs.expect_trace_message_on_failure=False`")
@@ -851,9 +885,6 @@ class TestBasicRead(BaseTest):
         error_trace_messages = list(filter(lambda m: m.trace.type == TraceType.ERROR, trace_messages))
 
         assert len(error_trace_messages) >= 1, "Connector should emit at least one error trace message"
-
-    def test_emitted_at_increase_on_subsequent_runs(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
-        assert False, "hahaha"
 
     @staticmethod
     def remove_extra_fields(record: Any, spec: Any) -> Any:
