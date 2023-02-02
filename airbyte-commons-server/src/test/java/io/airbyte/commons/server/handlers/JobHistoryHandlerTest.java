@@ -157,7 +157,7 @@ class JobHistoryHandlerTest {
   }
 
   private static Attempt createAttempt(final long jobId, final long timestamps, final AttemptStatus status) {
-    return new Attempt(ATTEMPT_NUMBER, jobId, LOG_PATH, null, status, null, null, timestamps, timestamps, timestamps);
+    return new Attempt(ATTEMPT_NUMBER, jobId, LOG_PATH, null, null, status, null, null, timestamps, timestamps, timestamps);
   }
 
   @BeforeEach
