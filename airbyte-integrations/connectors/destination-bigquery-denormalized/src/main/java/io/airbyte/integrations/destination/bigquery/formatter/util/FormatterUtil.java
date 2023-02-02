@@ -35,7 +35,7 @@ public class FormatterUtil {
   }
 
   public static JsonNode getTypeSchemaNode(JsonSchemaType type) {
-    return Jsons.deserialize("{\"$ref\" : \""+ type.getJsonSchemaType() +"\"}");
+    return Jsons.deserialize("{\"$ref\" : \"" + type.getJsonSchemaType() + "\"}");
   }
 
   public static boolean hasNoSchemaRef(String refValue) {
@@ -52,29 +52,29 @@ public class FormatterUtil {
   }
 
   /**
-   * JsonToAvroSchemaConverter.java accept $ref with type only.
-   * This method will replace any $ref which is not in WellKnownTypes with WellKnownTypes.json#/definitions/String
+   * JsonToAvroSchemaConverter.java accept $ref with type only. This method will replace any $ref
+   * which is not in WellKnownTypes with WellKnownTypes.json#/definitions/String
    */
   public static JsonNode replaceNoSchemaRef(JsonNode jsonSchema) {
     String schemaText = Jsons.serialize(jsonSchema);
     schemaText = schemaText.replaceAll("\"\\$ref\\\":"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/String\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Number\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Integer\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Boolean\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Date\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimestampWithoutTimezone\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimestampWithTimezone\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimeWithoutTimezone\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimeWithTimezone\")"
-            + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/BinaryData\").*\"",
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/String\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Number\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Integer\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Boolean\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/Date\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimestampWithoutTimezone\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimestampWithTimezone\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimeWithoutTimezone\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/TimeWithTimezone\")"
+        + "(?!.*\\s*\"WellKnownTypes\\.json#\\/definitions\\/BinaryData\").*\"",
         "\"\\$ref\":\"WellKnownTypes.json#/definitions/String\"");
     return Jsons.deserialize(schemaText);
   }
 
   /**
-   * BigQuery avro file loader doesn't support DATETIME(TimestampWithoutTimezone)
-   * should be replaced with TIMESTAMP(TimestampWithTimezone)
+   * BigQuery avro file loader doesn't support DATETIME(TimestampWithoutTimezone) should be replaced
+   * with TIMESTAMP(TimestampWithTimezone)
    * https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-avro#logical_types
    *
    * @param jsonSchema for replacement
@@ -86,4 +86,5 @@ public class FormatterUtil {
             "\"$ref\":\"WellKnownTypes.json#/definitions/TimestampWithTimezone\"");
     return Jsons.deserialize(schemaText);
   }
+
 }

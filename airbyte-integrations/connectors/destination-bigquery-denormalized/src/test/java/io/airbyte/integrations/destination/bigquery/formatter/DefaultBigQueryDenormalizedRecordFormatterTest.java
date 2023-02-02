@@ -94,8 +94,7 @@ class DefaultBigQueryDenormalizedRecordFormatterTest {
     final Schema expectedResult = Schema.of(
         Field.newBuilder("updated_at", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build(),
         Field.newBuilder("items", LegacySQLTypeName.RECORD,
-            Field.newBuilder("nested_datetime", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build()
-        ).setMode(Mode.NULLABLE).build(),
+            Field.newBuilder("nested_datetime", LegacySQLTypeName.DATETIME).setMode(Mode.NULLABLE).build()).setMode(Mode.NULLABLE).build(),
         Field.of("_airbyte_ab_id", LegacySQLTypeName.STRING),
         Field.of("_airbyte_emitted_at", LegacySQLTypeName.TIMESTAMP));
 

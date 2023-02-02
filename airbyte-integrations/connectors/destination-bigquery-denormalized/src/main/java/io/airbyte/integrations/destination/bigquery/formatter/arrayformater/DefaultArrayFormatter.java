@@ -29,7 +29,7 @@ public class DefaultArrayFormatter implements ArrayFormatter {
     findArrays(node).forEach(jsonNode -> {
       if (!jsonNode.has(ARRAY_ITEMS_FIELD)) {
         final JsonNode itemsNode = FormatterUtil.getTypeSchemaNode(JsonSchemaType.STRING);
-        ((ObjectNode)jsonNode).set(ARRAY_ITEMS_FIELD, itemsNode);
+        ((ObjectNode) jsonNode).set(ARRAY_ITEMS_FIELD, itemsNode);
       }
     });
   }

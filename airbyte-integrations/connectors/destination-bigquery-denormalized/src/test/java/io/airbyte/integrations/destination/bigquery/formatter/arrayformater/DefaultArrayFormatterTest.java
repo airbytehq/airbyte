@@ -70,8 +70,9 @@ class DefaultArrayFormatterTest {
                         {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
                         {"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}"""),
-        mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
+        mapper.readTree(
+            """
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
         mapper.readTree("""
                         {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""
@@ -79,8 +80,9 @@ class DefaultArrayFormatterTest {
         mapper.readTree(
             """
             {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}}"""),
-        mapper.readTree("""
-                        {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
+        mapper.readTree(
+            """
+            {"type":["array"],"items":{"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}}"""),
         mapper.readTree("""
                         {"type":["array"],"items":{"type":["array"],"items":{"$ref":"WellKnownTypes.json#/definitions/Integer"}}}"""),
         mapper.readTree("""

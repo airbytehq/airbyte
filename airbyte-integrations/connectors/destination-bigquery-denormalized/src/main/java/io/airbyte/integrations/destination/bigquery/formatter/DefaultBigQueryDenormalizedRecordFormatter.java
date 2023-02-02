@@ -74,7 +74,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    final var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    final var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver,
+                                                          // jsonSchema);
     getArrayFormatter().populateEmptyArrays(modifiedJsonSchema);
     getArrayFormatter().surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
@@ -284,8 +285,8 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
         final JsonSchemaType primaryType = fieldTypes.get(i);
         switch (primaryType) {
           case NULL -> builder.setType(StandardSQLTypeName.STRING);
-          case STRING, NUMBER, INTEGER, BOOLEAN, DATE, TIMESTAMP_WITHOUT_TIMEZONE,
-              TIMESTAMP_WITH_TIMEZONE,TIME_WITHOUT_TIMEZONE,TIME_WITH_TIMEZONE,BINARY_DATA  -> builder.setType(primaryType.getBigQueryType());
+          case STRING, NUMBER, INTEGER, BOOLEAN, DATE, TIMESTAMP_WITHOUT_TIMEZONE, TIMESTAMP_WITH_TIMEZONE, TIME_WITHOUT_TIMEZONE, TIME_WITH_TIMEZONE, BINARY_DATA -> builder
+              .setType(primaryType.getBigQueryType());
           case ARRAY -> {
             JsonNode items = Jsons.emptyObject();
             if (updatedFileDefinition.has("items")) {

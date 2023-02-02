@@ -233,8 +233,7 @@ class BigQueryDenormalizedDestinationTest {
 
     final Set<String> expected = Sets.set(
         null, // we expect one record to have not had the users field set
-        "\"{\\\"name\\\":\\\"John\\\",\\\"surname\\\":\\\"Adams\\\"}\""
-    );
+        "\"{\\\"name\\\":\\\"John\\\",\\\"surname\\\":\\\"Adams\\\"}\"");
 
     assertEquals(2, actual.size());
     assertEquals(expected, actual);

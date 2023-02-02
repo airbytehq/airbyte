@@ -21,7 +21,7 @@ public enum JsonSchemaType {
   NUMBER(1, "WellKnownTypes.json#/definitions/Number", StandardSQLTypeName.FLOAT64),
   INTEGER(2, "WellKnownTypes.json#/definitions/Integer", StandardSQLTypeName.INT64),
   BOOLEAN(3, "WellKnownTypes.json#/definitions/Boolean", StandardSQLTypeName.BOOL),
-  DATE(4,"WellKnownTypes.json#/definitions/Date",  StandardSQLTypeName.DATE),
+  DATE(4, "WellKnownTypes.json#/definitions/Date", StandardSQLTypeName.DATE),
   TIMESTAMP_WITHOUT_TIMEZONE(5, "WellKnownTypes.json#/definitions/TimestampWithoutTimezone", StandardSQLTypeName.DATETIME),
   TIMESTAMP_WITH_TIMEZONE(6, "WellKnownTypes.json#/definitions/TimestampWithTimezone", StandardSQLTypeName.TIMESTAMP),
   TIME_WITHOUT_TIMEZONE(7, "WellKnownTypes.json#/definitions/TimeWithoutTimezone", StandardSQLTypeName.TIME),
