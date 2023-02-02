@@ -1,4 +1,5 @@
 import { HTMLInputTypeAttribute } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { RHFDateWrapper } from "./RHFDateWrapper";
 import { RHFInputWrapper } from "./RHFInputWrapper";
@@ -31,14 +32,26 @@ export interface RHFDatePickerProps extends RHFControlBaseProps {
   format?: "date" | "date-time";
 }
 
-export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, ...props }) => {
-  if (fieldType === "input") {
-    return <RHFInputWrapper {...props} />;
+export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, name, ...props }) => {
+  const { formState, getFieldState } = useFormContext();
+  const { error, isTouched } = getFieldState(name, formState); // It is subscribed now and reactive to error state updated
+
+  function renderControl() {
+    if (fieldType === "input") {
+      return <RHFInputWrapper name={name} {...props} />;
+    }
+
+    if (fieldType === "date") {
+      return <RHFDateWrapper name={name} {...props} />;
+    }
+
+    throw new Error(`No matching form input found for type: ${fieldType}`);
   }
 
-  if (fieldType === "date") {
-    return <RHFDateWrapper {...props} />;
-  }
-
-  throw new Error(`No matching form input found for type: ${fieldType}`);
+  return (
+    <div>
+      {renderControl()}
+      {error && isTouched && <p>{error}</p>}
+    </div>
+  );
 };
