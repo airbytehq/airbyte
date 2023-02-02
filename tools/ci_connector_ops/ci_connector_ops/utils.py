@@ -12,13 +12,19 @@ import git
 import requests
 import yaml
 
+file_path = os.path.abspath(__file__)
+
+print(f"Start directory: {os.getcwd()}")
+print(f"File: {__file__}")
+print(f"File path: {file_path}")
+print(f"File directory: {os.path.dirname(file_path)}")
+
 # ensure we are at the repository root
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 # os.chdir('../../..')
 
 # print the current working directory
-print("Current working directory:")
-print(os.getcwd())
+print(f"Current working directory: {os.getcwd()}")
 
 AIRBYTE_REPO = git.Repo(".", search_parent_directories=True)
 
