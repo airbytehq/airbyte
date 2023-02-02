@@ -26,7 +26,7 @@ tests:
 
         # This points to a specific subscription's usage entries in the state,
         # and this subscription is in the integration test account.
-        subscription_usage: ["7dPPhL94WVcALxWp", "timeframe_start"]
+        subscription_usage: ["FDWRvxuBUiFfZech", "timeframe_start"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
