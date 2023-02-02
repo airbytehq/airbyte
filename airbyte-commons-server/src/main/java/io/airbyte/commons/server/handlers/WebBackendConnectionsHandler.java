@@ -209,9 +209,6 @@ public class WebBackendConnectionsHandler {
       webBackendConnectionRead.setLatestSyncJobStatus(job.getStatus());
     });
 
-    // final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent =
-    // configRepository.getMostRecentActorCatalogFetchEventForSource(connectionRead.getSourceId());
-
     final SchemaChange schemaChange = getSchemaChange(connectionRead, diff);
 
     webBackendConnectionRead.setSchemaChange(schemaChange);
