@@ -179,7 +179,7 @@ export const ConnectionStatusPage: React.FC = () => {
                         </div>
                       }
                     >
-                      <FormattedMessage id="sources.syncNow" />
+                      <FormattedMessage id="connection.startSync" />
                     </Button>
                   </>
                 )}
