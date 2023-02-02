@@ -30,6 +30,7 @@ export type BuilderView = "global" | "inputs" | number;
 
 interface FormStateContext {
   builderFormValues: BuilderFormValues;
+  formValuesValid: boolean;
   jsonManifest: ConnectorManifest;
   lastValidJsonManifest: DeclarativeComponentSchema | undefined;
   yamlManifest: string;
@@ -53,6 +54,7 @@ interface TestStateContext {
   setTestStreamIndex: (streamIndex: number) => void;
   testStreamIndex: number;
   streamRead: UseQueryResult<StreamRead, unknown>;
+  isFetchingStreamList: boolean;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -65,6 +67,8 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     DEFAULT_BUILDER_FORM_VALUES
   );
 
+  const [formValuesValid, setFormValuesValid] = useState(true);
+
   const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
   const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
 
@@ -75,6 +79,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
         lastValidBuilderFormValuesRef.current = values;
       }
       currentBuilderFormValuesRef.current = values;
+      setFormValuesValid(isValid);
       setStoredBuilderFormValues(values);
     },
     [setStoredBuilderFormValues]
@@ -141,6 +146,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
   const ctx = {
     builderFormValues,
+    formValuesValid,
     jsonManifest: derivedJsonManifest,
     lastValidJsonManifest,
     yamlManifest,
@@ -173,6 +179,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
+    isFetching: isFetchingStreamList,
   } = useListStreams({ manifest, config: testInputJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
@@ -205,6 +212,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     testStreamIndex,
     setTestStreamIndex,
     streamRead,
+    isFetchingStreamList,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;
