@@ -1471,22 +1471,24 @@ class ConnectionManagerWorkflowTest {
     static Stream<Arguments> getSetupFailingActivity() {
       return Stream.of(
           Arguments.of(new Thread(() -> when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
-              .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
+              .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))), 0),
           Arguments.of(new Thread(() -> when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
-              .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
+              .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))), 0),
           Arguments.of(new Thread(() -> Mockito.doThrow(ApplicationFailure.newNonRetryableFailure("", ""))
-              .when(mJobCreationAndStatusUpdateActivity).reportJobStart(Mockito.any()))),
+              .when(mJobCreationAndStatusUpdateActivity).reportJobStart(Mockito.any())), 0),
           Arguments.of(new Thread(
               () -> when(mGenerateInputActivityImpl.getCheckConnectionInputs(Mockito.any(SyncInputWithAttemptNumber.class)))
-                  .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))),
+                  .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))),
+              1),
           Arguments.of(new Thread(
               () -> when(mGenerateInputActivityImpl.getSyncWorkflowInputWithAttemptNumber(Mockito.any(SyncInputWithAttemptNumber.class)))
-                  .thenThrow(ApplicationFailure.newNonRetryableFailure("", "")))));
+                  .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))),
+              1));
     }
 
     @ParameterizedTest
     @MethodSource("getSetupFailingActivity")
-    void testWorkflowRestartedAfterFailedActivity(final Thread mockSetup) throws InterruptedException {
+    void testWorkflowRestartedAfterFailedActivity(final Thread mockSetup, final int expectedEventsCount) throws InterruptedException {
       returnTrueForLastJobOrAttemptFailure();
       mockSetup.run();
       when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
@@ -1517,7 +1519,7 @@ class ConnectionManagerWorkflowTest {
 
       Assertions.assertThat(events)
           .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.RUNNING && changedStateEvent.isValue())
-          .isEmpty();
+          .hasSize(expectedEventsCount);
 
       assertWorkflowWasContinuedAsNew();
     }
