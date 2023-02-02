@@ -3,7 +3,7 @@
 #
 
 from decimal import Decimal
-from typing import List, Dict
+from typing import Dict, List
 
 from .common import CatalogModel
 
