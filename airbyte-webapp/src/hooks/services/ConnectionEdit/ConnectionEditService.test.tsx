@@ -6,6 +6,7 @@ import {
   mockDestinationDefinition,
   mockDestinationDefinitionSpecification,
 } from "test-utils/mock-data/mockDestination";
+import { mockSourceDefinition, mockSourceDefinitionSpecification } from "test-utils/mock-data/mockSource";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper } from "test-utils/testutils";
 
@@ -13,6 +14,14 @@ import { WebBackendConnectionRead, WebBackendConnectionUpdate } from "core/reque
 
 import { ConnectionEditServiceProvider, useConnectionEditService } from "./ConnectionEditService";
 import { useConnectionFormService } from "../ConnectionForm/ConnectionFormService";
+
+jest.mock("services/connector/SourceDefinitionService", () => ({
+  useSourceDefinition: () => mockSourceDefinition,
+}));
+
+jest.mock("services/connector/SourceDefinitionSpecificationService", () => ({
+  useGetSourceDefinitionSpecification: () => mockSourceDefinitionSpecification,
+}));
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,
