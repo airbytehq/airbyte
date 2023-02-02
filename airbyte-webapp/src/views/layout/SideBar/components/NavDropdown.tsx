@@ -11,7 +11,6 @@ interface NavDropdownProps {
   onChange?: (data: DropdownMenuOptionType) => false | void;
 }
 
-// todo: we actually can't use as button here on navItem!
 export const NavDropdown: React.FC<NavDropdownProps> = ({ options, icon, label, onChange }) => {
   return (
     <DropdownMenu placement="right" displacement={10} options={options} onChange={onChange}>
