@@ -44,12 +44,18 @@ Explore our [demo app](https://demo.airbyte.io/).
 
 ### Run Airbyte locally
 
-You can run Airbyte locally with Docker.
+You can run Airbyte locally with Docker or Podman.
 
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 docker compose up
+```
+
+```bash
+git clone https://github.com/airbytehq/airbyte.git
+cd airbyte
+env $(cat .env.podman) podman-compose -f docker-compose.podman.yaml up
 ```
 
 Login to the web app at [http://localhost:8000](http://localhost:8000) by entering the default credentials found in your .env file.
