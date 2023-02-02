@@ -112,7 +112,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
     try {
       final Job job = jobPersistence.getJob(jobId);
-      final JobSyncConfig jobSyncConfig = getJobSyncConfig(jobId, job.getConfig());
+      final JobConfig jobConfig = job.getConfig();
+      final JobSyncConfig jobSyncConfig = getJobSyncConfig(jobId, jobConfig);
 
       final UUID connectionId = UUID.fromString(job.getScope());
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
@@ -128,6 +129,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final IntegrationLauncherConfig sourceLauncherConfig = getSourceIntegrationLauncherConfig(
           jobId,
           attemptNumber,
+          jobConfig.getConfigType(),
           jobSyncConfig,
           sourceDefinition,
           source.getConfiguration());
@@ -163,22 +165,26 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   private IntegrationLauncherConfig getSourceIntegrationLauncherConfig(final long jobId,
                                                                        final int attempt,
+                                                                       final ConfigType configType,
                                                                        final JobSyncConfig config,
                                                                        final StandardSourceDefinition sourceDefinition,
                                                                        final JsonNode sourceConfiguration)
       throws IOException {
     final ConfigReplacer configReplacer = new ConfigReplacer(LOGGER);
-    
-    // .withAllowedHosts(ConfigType.RESET_CONNECTION.equals(jobConfigType) ? null
-    //          : configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), attemptSyncConfig.getSourceConfiguration()));
 
-    return new IntegrationLauncherConfig()
+    final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage())
         .withProtocolVersion(config.getSourceProtocolVersion())
         .withIsCustomConnector(config.getIsSourceCustomConnector())
         .withAllowedHosts(configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), sourceConfiguration));
+
+    if (!ConfigType.RESET_CONNECTION.equals(configType)) {
+      sourceLauncherConfig.setAllowedHosts(configReplacer.getAllowedHosts(sourceDefinition.getAllowedHosts(), sourceConfiguration));
+    }
+
+    return sourceLauncherConfig;
   }
 
   private IntegrationLauncherConfig getDestinationIntegrationLauncherConfig(final long jobId,
@@ -258,13 +264,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
 
       final ConfigType jobConfigType = job.getConfig().getConfigType();
-
-      final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
-      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
-
       if (ConfigType.SYNC.equals(jobConfigType)) {
         final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
         attemptSyncConfig.setSourceConfiguration(source.getConfiguration());
@@ -289,6 +288,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final IntegrationLauncherConfig sourceLauncherConfig = getSourceIntegrationLauncherConfig(
           jobId,
           attempt,
+          jobConfigType,
           config,
           sourceDefinition,
           attemptSyncConfig.getSourceConfiguration());
