@@ -20,6 +20,7 @@ public final class S3DestinationConstants {
   public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
 
   // Flattening for Jsonl
+  public static final String FLATTENING_ARG_NAME = "flattening";
   public static final String FLATTENING_TYPE_ARG_NAME = "flattening";
   public static final FlatteningType DEFAULT_FLATTENING_TYPE = FlatteningType.NO;
 

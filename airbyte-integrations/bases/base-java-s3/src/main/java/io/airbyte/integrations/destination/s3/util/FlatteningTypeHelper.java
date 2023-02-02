@@ -14,7 +14,7 @@ public class FlatteningTypeHelper {
     private FlatteningTypeHelper() {}
 
     /**
-     * Sample expected input: { "compression_type": "No Compression" }
+     * Sample expected input: { "flattening": "No flattening" }
      */
     public static FlatteningType parseFlatteningType(final JsonNode flatteningConfig) {
         if (flatteningConfig == null || flatteningConfig.isNull()) {
