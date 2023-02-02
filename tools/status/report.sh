@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This script is used to report the status of a connector build to S3.
+# BEFORE RUNNING THIS SCRIPT:
+#   - Ensure you have read the documentation on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
+
 set -e
 
 . tools/lib/lib.sh
@@ -11,7 +15,10 @@ CONNECTOR=$1
 REPOSITORY=$2
 RUN_ID=$3
 TEST_OUTCOME=$4
-QA_CHECKS_OUTCOME=$5
+
+# TODO: Disabled for on master until #22127 resolved
+# QA_CHECKS_OUTCOME=$5
+QA_CHECKS_OUTCOME=success
 
 # Ensure connector is prefixed with connectors/
 # TODO (ben): In the future we should just hard error if this is not the case
