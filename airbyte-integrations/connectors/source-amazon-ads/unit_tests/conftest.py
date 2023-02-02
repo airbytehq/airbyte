@@ -584,10 +584,10 @@ def invoice_response():
                     "adjustments": [],
                     "invoiceLines": [
                         {
-                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "name": "product1",
                             "campaignId": 18577060820822,
                             "campaignAID": 200050732464681,
-                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignName": "product1",
                             "portfolioId": 249200181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -602,10 +602,10 @@ def invoice_response():
                             "fees": []
                         },
                         {
-                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "name": "product2",
                             "campaignId": 173364525457238,
                             "campaignAID": 200051432057081,
-                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignName": "product2",
                             "portfolioId": 251220181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -623,7 +623,7 @@ def invoice_response():
                     "portfolios": [
                         {
                             "id": 251420181,
-                            "name": "Deck Stain Brush",
+                            "name": "p1",
                             "totalAmount": {
                                 "amount": 0.85,
                                 "currencyCode": "USD"
@@ -635,7 +635,7 @@ def invoice_response():
                         },
                         {
                             "id": 461200181,
-                            "name": "Boat Hook",
+                            "name": "p2",
                             "totalAmount": {
                                 "amount": 40.91,
                                 "currencyCode": "USD"
@@ -791,10 +791,10 @@ def invoice_response():
                     "adjustments": [],
                     "invoiceLines": [
                         {
-                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "name": "product1",
                             "campaignId": 18577060820822,
                             "campaignAID": 200050732464681,
-                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignName": "product1",
                             "portfolioId": 249200181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -809,10 +809,10 @@ def invoice_response():
                             "fees": []
                         },
                         {
-                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "name": "product2",
                             "campaignId": 173364525457238,
                             "campaignAID": 200051432057081,
-                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignName": "product2",
                             "portfolioId": 251220181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -830,7 +830,7 @@ def invoice_response():
                     "portfolios": [
                         {
                             "id": 251420181,
-                            "name": "Deck Stain Brush",
+                            "name": "p1",
                             "totalAmount": {
                                 "amount": 0.85,
                                 "currencyCode": "USD"
@@ -842,7 +842,7 @@ def invoice_response():
                         },
                         {
                             "id": 461200181,
-                            "name": "Boat Hook",
+                            "name": "p2",
                             "totalAmount": {
                                 "amount": 40.91,
                                 "currencyCode": "USD"
@@ -998,10 +998,10 @@ def invoice_response():
                     "adjustments": [],
                     "invoiceLines": [
                         {
-                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "name": "product1",
                             "campaignId": 18577060820822,
                             "campaignAID": 200050732464681,
-                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignName": "product1",
                             "portfolioId": 249200181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -1016,10 +1016,10 @@ def invoice_response():
                             "fees": []
                         },
                         {
-                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "name": "product2",
                             "campaignId": 173364525457238,
                             "campaignAID": 200051432057081,
-                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignName": "product2",
                             "portfolioId": 251220181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -1037,7 +1037,7 @@ def invoice_response():
                     "portfolios": [
                         {
                             "id": 251420181,
-                            "name": "Deck Stain Brush",
+                            "name": "p1",
                             "totalAmount": {
                                 "amount": 0.85,
                                 "currencyCode": "USD"
@@ -1049,7 +1049,7 @@ def invoice_response():
                         },
                         {
                             "id": 461200181,
-                            "name": "Boat Hook",
+                            "name": "p2",
                             "totalAmount": {
                                 "amount": 40.91,
                                 "currencyCode": "USD"
@@ -1205,10 +1205,10 @@ def invoice_response():
                     "adjustments": [],
                     "invoiceLines": [
                         {
-                            "name": "Utility Hook-SP-Auto-Eversprout",
+                            "name": "product1",
                             "campaignId": 18577060820822,
                             "campaignAID": 200050732464681,
-                            "campaignName": "Utility Hook-SP-Auto-Eversprout",
+                            "campaignName": "product1",
                             "portfolioId": 249200181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -1223,10 +1223,10 @@ def invoice_response():
                             "fees": []
                         },
                         {
-                            "name": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "name": "product2",
                             "campaignId": 173364525457238,
                             "campaignAID": 200051432057081,
-                            "campaignName": "Cobweb Duster-Category-SP-PAT-Eversprout",
+                            "campaignName": "product2",
                             "portfolioId": 251220181,
                             "programName": "SPONSORED PRODUCTS",
                             "priceType": "CPC",
@@ -1244,7 +1244,7 @@ def invoice_response():
                     "portfolios": [
                         {
                             "id": 251420181,
-                            "name": "Deck Stain Brush",
+                            "name": "p1",
                             "totalAmount": {
                                 "amount": 0.85,
                                 "currencyCode": "USD"
@@ -1256,7 +1256,7 @@ def invoice_response():
                         },
                         {
                             "id": 461200181,
-                            "name": "Boat Hook",
+                            "name": "p2",
                             "totalAmount": {
                                 "amount": 40.91,
                                 "currencyCode": "USD"
