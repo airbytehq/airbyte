@@ -423,11 +423,7 @@ jobs:
           EOF
 
       - name: Build :airbyte-webapp
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
 
       - name: Publish Storybook to Chromatic
         uses: chromaui/action@v1
