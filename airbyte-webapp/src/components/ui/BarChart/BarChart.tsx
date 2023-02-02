@@ -71,7 +71,7 @@ export const BarChart: React.FC<BarChartProps> = React.memo(({ data, legendLabel
             // The type cast is unfortunately necessary, due to broken typing in recharts.
             // What we return is a [string, string], and the library accepts this as well, but the types
             // require the first element to be of the same type as value, which isn't what the formatter
-            // isn't supposed to do: https://github.com/recharts/recharts/issues/3008
+            // is supposed to do: https://github.com/recharts/recharts/issues/3008
             return [formatNumber(value, { maximumFractionDigits: 2, minimumFractionDigits: 2 }), yLabel] as unknown as [
               number,
               string
