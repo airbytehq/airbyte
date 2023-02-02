@@ -5,7 +5,6 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: variables.$spacing-lg;
   min-height: 0;
   width: 100%;
@@ -30,4 +29,13 @@
 
 .fetchingSpinner {
   margin: auto;
+}
+
+.listErrorDisplay {
+  padding: variables.$spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  background-color: colors.$blue-50;
+  border-radius: variables.$border-radius-sm;
 }
