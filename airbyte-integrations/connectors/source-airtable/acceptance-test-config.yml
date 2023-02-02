@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-airtable:dev
 test_strictness_level: high
@@ -19,13 +19,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
-        # the static `string` schema is replaced with casted to JSONSchema
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.2"
       - config_path: "secrets/config_oauth.json"
-        # the static `string` schema is replaced with casted to JSONSchema
-        backward_compatibility_tests_config:
-          disable_for_version: "1.0.2"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
