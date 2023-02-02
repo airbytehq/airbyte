@@ -1073,6 +1073,31 @@ class AirbyteMessageMigrationV1Test {
                   }
                 ]
               },
+              "multimultityped_field": {
+                "oneOf": [
+                  {
+                    "oneOf": [
+                      {"$ref": "WellKnownTypes.json#/definitions/String"},
+                      {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                    ]
+                  },
+                  {
+                    "oneOf": [
+                      {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "foo": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                        }
+                      },
+                      {
+                        "type": ["null", "array"],
+                        "items": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                      },
+                      {"$ref": "WellKnownTypes.json#/definitions/String"}
+                    ]
+                  }
+                ]
+              },
               "multityped_date_field": {
                 "oneOf": [
                   {"$ref": "WellKnownTypes.json#/definitions/Date"},
@@ -1118,6 +1143,14 @@ class AirbyteMessageMigrationV1Test {
                 "items": {"type": "string"},
                 "additionalItems": {"type": "string"},
                 "contains": {"type": "string"}
+              },
+              "multimultityped_field": {
+                "type": ["string", "number", "null", "object", "array"],
+                "properties": {
+                  "foo": {"type": "string"}
+                },
+                "items": {"type": "string"},
+                "airbyte_type": "integer"
               },
               "multityped_date_field": {
                 "type": ["string", "number"],
