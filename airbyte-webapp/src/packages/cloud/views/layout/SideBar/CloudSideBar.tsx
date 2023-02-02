@@ -10,6 +10,7 @@ import { CreditsIcon } from "components/icons/CreditsIcon";
 import { DocsIcon } from "components/icons/DocsIcon";
 import Indicator from "components/Indicator";
 import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
+import { FlexContainer } from "components/ui/Flex";
 import { Text } from "components/ui/Text";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
@@ -23,21 +24,25 @@ import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import StatusIcon from "views/layout/SideBar/components/StatusIcon";
 import { GenericSideBar, useCalculateSidebarStyles } from "views/layout/SideBar/GenericSideBar";
+import { MainNav } from "views/layout/SideBar/MainNav";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 
 // eslint-disable-next-line css-modules/no-unused-class
+import { TopItems } from "views/layout/SideBar/TopItems";
+
 import styles from "./CloudSideBar.module.scss";
 import { LOW_BALANCE_CREDIT_TRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
+import { WorkspacePopout } from "../../workspaces/WorkspacePopout";
 
-// const cloudWorkspaces = (
-//   <WorkspacePopout>
-//     {({ onOpen, value }) => (
-//       <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
-//         {value}
-//       </button>
-//     )}
-//   </WorkspacePopout>
-// );
+const cloudWorkspaces = (
+  <WorkspacePopout>
+    {({ onOpen, value }) => (
+      <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
+        {value}
+      </button>
+    )}
+  </WorkspacePopout>
+);
 
 export const CloudSideBar: React.FC = () => {
   const workspace = useCurrentWorkspace();
@@ -140,8 +145,20 @@ export const CloudSideBar: React.FC = () => {
   ];
 
   return (
-    <GenericSideBar
-    // additionalTopItems={cloudWorkspaces} bottomMenuItems={bottomMenuItems}
-    />
+    <GenericSideBar>
+      <FlexContainer direction="column" className={styles.menuContent}>
+        <TopItems />
+        {cloudWorkspaces}
+        <FlexContainer
+          direction="column"
+          alignItems="center"
+          justifyContent="space-between"
+          className={styles.menuContent}
+        >
+          <MainNav />
+          {/* <BottomItems /> */}
+        </FlexContainer>
+      </FlexContainer>
+    </GenericSideBar>
   );
 };

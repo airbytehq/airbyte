@@ -8,7 +8,7 @@ import { TopItems } from "../SideBar/TopItems";
 export const SideBar: React.FC = () => {
   return (
     <GenericSideBar>
-      <FlexContainer direction="column">
+      <FlexContainer direction="column" className={styles.menuContent}>
         <TopItems />
         <FlexContainer
           direction="column"
