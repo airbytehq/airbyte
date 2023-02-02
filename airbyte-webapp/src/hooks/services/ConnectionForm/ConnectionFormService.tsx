@@ -14,11 +14,15 @@ import {
   DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   OperationRead,
+  SourceDefinitionRead,
+  SourceDefinitionSpecificationRead,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 
 import { useUniqueFormId } from "../FormChangeTracker";
@@ -61,6 +65,8 @@ export const tidyConnectionFormValues = (
 interface ConnectionFormHook {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
+  sourceDefinition: SourceDefinitionRead;
+  sourceDefinitionSpecification: SourceDefinitionSpecificationRead;
   destDefinition: DestinationDefinitionRead;
   destDefinitionSpecification: DestinationDefinitionSpecificationRead;
   initialValues: FormikConnectionFormValues;
@@ -77,10 +83,16 @@ const useConnectionForm = ({
   schemaError,
   refreshSchema,
 }: ConnectionServiceProps): ConnectionFormHook => {
-  const destDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
-  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(
-    connection.destination.destinationDefinitionId
-  );
+  const {
+    source: { sourceDefinitionId },
+    destination: { destinationDefinitionId },
+  } = connection;
+
+  const sourceDefinition = useSourceDefinition(sourceDefinitionId);
+  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(sourceDefinitionId);
+  const destDefinition = useDestinationDefinition(destinationDefinitionId);
+  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(destinationDefinitionId);
+
   const initialValues = useInitialValues(connection, destDefinition, destDefinitionSpecification, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
@@ -109,6 +121,8 @@ const useConnectionForm = ({
   return {
     connection,
     mode,
+    sourceDefinition,
+    sourceDefinitionSpecification,
     destDefinition,
     destDefinitionSpecification,
     initialValues,

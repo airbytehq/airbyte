@@ -19,6 +19,7 @@ import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.api.model.generated.SourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.SourceDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
@@ -44,6 +45,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/create_custom")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
@@ -69,6 +71,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/get_for_workspace")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
@@ -104,6 +107,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/list_for_workspace")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(workspaceIdRequestBody));
