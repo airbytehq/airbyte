@@ -3,7 +3,10 @@
     "properties": {
         "start_date": {
           "description": "Enter the date in the YYYY-MM-DD format. We will replicate the data added on and after this date. If this field is blank, we will replicate all data.",
-          "format": "date-time"
+          "format": "date-time",
+          "examples": [
+            "2021-07-25T00:00:00Z"
+          ]
         },
         "credentials": {
             "required": [
