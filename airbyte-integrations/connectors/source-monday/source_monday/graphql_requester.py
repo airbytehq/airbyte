@@ -18,11 +18,11 @@ class MondayGraphqlRequester(HttpRequester):
 
     limit: Union[InterpolatedString, str, int] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        super(MondayGraphqlRequester, self).__post_init__(options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super(MondayGraphqlRequester, self).__post_init__(parameters)
 
-        self.limit = InterpolatedString.create(self.limit, options=options)
-        self.name = options.get("name", "").lower()
+        self.limit = InterpolatedString.create(self.limit, parameters=parameters)
+        self.name = parameters.get("name", "").lower()
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -32,7 +32,7 @@ class MondayGraphqlRequester(HttpRequester):
             raise TypeError(f"{type(o)} {o} is not of type {t}")
 
     def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, options={"name": self.name})
+        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
         schema = schema_loader.get_json_schema()
         return schema["properties"]
 

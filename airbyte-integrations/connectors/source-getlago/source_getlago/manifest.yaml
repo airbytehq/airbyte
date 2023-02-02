@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
   requester:
     url_base: "https://api.getlago.com/api/v1"
     http_method: "GET"

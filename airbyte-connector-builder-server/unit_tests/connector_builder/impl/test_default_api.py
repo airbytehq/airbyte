@@ -31,18 +31,18 @@ MANIFEST = {
     "version": "0.1.0",
     "type": "DeclarativeSource",
     "definitions": {
-        "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+        "selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
         "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
         "retriever": {
             "type": "DeclarativeSource",
-            "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+            "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -51,7 +51,7 @@ MANIFEST = {
         "breathing_techniques_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -63,7 +63,7 @@ MANIFEST = {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -73,7 +73,7 @@ MANIFEST = {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
@@ -126,7 +126,7 @@ def test_list_streams_with_interpolated_urls():
                 "type": "DeclarativeStream",
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                    "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
                     "requester": {
                         "url_base": "https://{{ config['rank'] }}.muzan.com/api/v1/",
@@ -159,7 +159,7 @@ def test_list_streams_with_unresolved_interpolation():
                 "type": "DeclarativeStream",
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                    "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
                     "requester": {
                         "url_base": "https://{{ config['not_in_config'] }}.muzan.com/api/v1/",
@@ -487,16 +487,16 @@ def test_invalid_manifest():
     invalid_manifest = {
         "version": "0.1.0",
         "definitions": {
-            "selector": {"extractor": {"field_pointer": ["items"]}},
+            "selector": {"extractor": {"field_path": ["items"]}},
             "requester": {"http_method": "GET"},
             "retriever": {
-                "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                "record_selector": {"extractor": {"field_path": ["items"]}},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"http_method": "GET"},
             },
             "hashiras_stream": {
                 "retriever": {
-                    "record_selector": {"extractor": {"field_pointer": ["items"]}},
+                    "record_selector": {"extractor": {"field_path": ["items"]}},
                     "paginator": {"type": "NoPagination"},
                     "requester": {"http_method": "GET"},
                 },
@@ -735,7 +735,7 @@ def test_resolve_manifest():
                     "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                     "request_parameters": {"page_size": "10"},
                 },
-                "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                "record_selector": {"extractor": {"field_path": ["result"]}},
             },
         },
         "streams": [
@@ -767,7 +767,7 @@ def test_resolve_manifest():
                     "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
                     "request_parameters": {"page_size": "10"},
                 },
-                "record_selector": {"extractor": {"field_pointer": ["result"]}},
+                "record_selector": {"extractor": {"field_path": ["result"]}},
             },
         },
         "streams": [
@@ -837,7 +837,7 @@ def test_resolve_manifest():
                         "type": "RecordSelector",
                         "extractor": {
                             "type": "DpathExtractor",
-                            "field_pointer": ["result"],
+                            "field_path": ["result"],
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,

@@ -164,7 +164,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: [ ]
+      field_path: [ ]
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"

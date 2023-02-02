@@ -6,7 +6,7 @@ definitions:
     file_path: "./source_secoda/schemas/{{ parameters.name }}.json"
   selector:
     extractor:
-      field_pointer: ["results"]
+      field_path: ["results"]
   requester:
     url_base: "https://api.secoda.co"
     http_method: "GET"

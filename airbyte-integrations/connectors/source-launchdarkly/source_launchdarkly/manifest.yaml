@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["items"]
+      field_path: ["items"]
   requester:
     url_base: "https://app.launchdarkly.com/api/v2"
     http_method: "GET"

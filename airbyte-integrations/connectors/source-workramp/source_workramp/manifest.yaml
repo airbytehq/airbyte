@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["data", "{{ parameters.name }}"]
+      field_path: ["data", "{{ parameters.name }}"]
   requester:
     url_base: "https://app.workramp.com/api/v1/academies/{{ config['academy_id'] }}"
     http_method: "GET"

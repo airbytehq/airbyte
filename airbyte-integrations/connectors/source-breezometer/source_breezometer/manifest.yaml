@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["data"]
+      field_path: ["data"]
 
   air_quality_current_stream:
     retriever:

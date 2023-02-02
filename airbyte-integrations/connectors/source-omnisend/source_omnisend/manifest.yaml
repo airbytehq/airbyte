@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
   requester:
     url_base: "https://api.omnisend.com/v3"
     http_method: "GET"
@@ -49,7 +49,7 @@ definitions:
       $ref: "#/definitions/retriever"
       record_selector:
         extractor:
-          field_pointer: ["campaign"]
+          field_path: ["campaign"]
   # API Docs: https://api-docs.omnisend.com/reference/get_carts
   carts_stream:
     $ref: "#/definitions/base_stream"

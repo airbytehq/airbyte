@@ -370,7 +370,7 @@ class DefaultPaginator(BaseModel):
 
 class DpathExtractor(BaseModel):
     type: Literal["DpathExtractor"]
-    field_pointer: List[str]
+    field_path: List[str]
     decoder: Optional[JsonDecoder] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 

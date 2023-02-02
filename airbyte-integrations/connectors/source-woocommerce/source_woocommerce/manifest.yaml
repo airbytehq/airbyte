@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   schema_loader:
     type: JsonFileSchemaLoader
     file_path: "./source_woocommerce/schemas/{{ parameters['name'] }}.json"

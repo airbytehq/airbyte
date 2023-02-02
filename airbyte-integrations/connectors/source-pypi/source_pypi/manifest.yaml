@@ -6,7 +6,7 @@ definitions:
     file_path: "./source_pypi/schemas/{{ parameters['name'] }}.json"
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     url_base: "https://pypi.org"
     http_method: "GET"

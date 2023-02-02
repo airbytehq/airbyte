@@ -139,7 +139,7 @@ def test_propagate_parameters_to_all_components():
                 "$parameters": {"name": "roasters", "primary_key": "id"},
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+                    "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
                     "requester": {
                         "type": "HttpRequester",
                         "name": '{{ parameters["name"] }}',
@@ -164,7 +164,7 @@ def test_propagate_parameters_to_all_components():
                         "type": "RecordSelector",
                         "extractor": {
                             "type": "DpathExtractor",
-                            "field_pointer": [],
+                            "field_path": [],
                             "name": "roasters",
                             "primary_key": "id",
                             "$parameters": {"name": "roasters", "primary_key": "id"},
@@ -296,7 +296,7 @@ def test_ignore_empty_parameters():
         "type": "DeclarativeStream",
         "retriever": {
             "type": "SimpleRetriever",
-            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+            "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
         },
     }
 

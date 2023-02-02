@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       # API Docs: https://developers.activecampaign.com/reference/schema
-      field_pointer: ["{{ parameters['name'] }}"]
+      field_path: ["{{ parameters['name'] }}"]
 
   requester:
     # API Docs: https://developers.activecampaign.com/reference/url

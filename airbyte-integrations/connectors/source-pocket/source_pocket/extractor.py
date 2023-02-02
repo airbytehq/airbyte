@@ -22,18 +22,18 @@ class PocketExtractor(RecordExtractor):
     Attributes:
         parameters (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping
-        field_pointer (str): The field defining record Mapping
+        field_path (str): The field defining record Mapping
     """
 
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
-    field_pointer: str = "list"
+    field_path: str = "list"
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
-        if self.field_pointer not in response_body:
+        if self.field_path not in response_body:
             return []
-        elif type(response_body[self.field_pointer]) is list:
-            return response_body[self.field_pointer]
+        elif type(response_body[self.field_path]) is list:
+            return response_body[self.field_path]
         else:
-            return [record for _, record in response_body[self.field_pointer].items()]
+            return [record for _, record in response_body[self.field_path].items()]

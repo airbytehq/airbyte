@@ -3,22 +3,22 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   selector_bounces:
     extractor:
-      field_pointer: ["Bounces"]
+      field_path: ["Bounces"]
   selector_domains:
     extractor:
-      field_pointer: ["Domains"]
+      field_path: ["Domains"]
   selector_servers:
     extractor:
-      field_pointer: ["Servers"]
+      field_path: ["Servers"]
   selector_message_streams:
     extractor:
-      field_pointer: ["MessageStreams"]
+      field_path: ["MessageStreams"]
   selector_messages:
     extractor:
-      field_pointer: ["Messages"]
+      field_path: ["Messages"]
   requester:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
