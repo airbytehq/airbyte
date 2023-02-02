@@ -1,7 +1,7 @@
 # Step 6: Testing
 
 We should make sure the connector respects the Airbyte specifications before we start using it in production.
-This can be done by executing the Source Acceptance Tests (SAT).
+This can be done by executing the Connector Acceptance Tests.
 
 These tests will assert the most basic functionalities work as expected and are configured in `acceptance-test-config.yml`.
 

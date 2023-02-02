@@ -1,4 +1,5 @@
 # Build statuses
+<!-- Docs on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports -->
 
 # Sources
 
