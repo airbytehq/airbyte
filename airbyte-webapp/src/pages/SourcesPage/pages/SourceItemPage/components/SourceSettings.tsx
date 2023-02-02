@@ -5,7 +5,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { useDeleteSource, useUpdateSource } from "hooks/services/useSourceHook";
+import { useDeleteSource, useInvalidateSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useDeleteModal } from "hooks/useDeleteModal";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
@@ -36,6 +36,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
   const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(currentSource.sourceDefinitionId);
 
   const sourceDefinition = useSourceDefinition(currentSource.sourceDefinitionId);
+  const reloadSource = useInvalidateSource(currentSource.sourceId);
 
   const onSubmit = async (values: {
     name: string;
@@ -82,6 +83,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
         selectedConnectorDefinitionId={sourceDefinitionSpecification.sourceDefinitionId}
         connector={currentSource}
+        reloadConfig={reloadSource}
         onSubmit={onSubmit}
         onDeleteClick={onDeleteClick}
       />
