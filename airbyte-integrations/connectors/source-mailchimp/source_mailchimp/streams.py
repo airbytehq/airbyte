@@ -153,7 +153,7 @@ class EmailActivity(IncrementalMailChimpStream):
             # this is a workaround to speed up SATs and enable incremental tests
             campaigns = [{"id": self.campaign_id}]
         else:
-            self.logger.info(f"Reading campaigns")
+            self.logger.info("Reading campaigns")
             campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         self.logger.info("Starting for loop to slice the stream")
         for campaign in campaigns:
@@ -196,4 +196,4 @@ class EmailActivity(IncrementalMailChimpStream):
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
-        self.logger.info(f"Parsed response")
+        self.logger.info("Parsed response")
