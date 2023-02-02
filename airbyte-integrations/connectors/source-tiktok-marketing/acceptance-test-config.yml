@@ -3,6 +3,7 @@
 
 connector_image: airbyte/source-tiktok-marketing:dev
 cache_discovered_catalog: False
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
