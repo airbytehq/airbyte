@@ -70,6 +70,7 @@ def test_discovery_filter(stream_config):
             "sobjects": [
                 {"name": "Account", "queryable": True},
                 {"name": "ActivityMetric", "queryable": True},
+                {"name": "ActivityMetricRollup", "queryable": True},
                 {"name": "Leads", "queryable": False},
             ]
         }
