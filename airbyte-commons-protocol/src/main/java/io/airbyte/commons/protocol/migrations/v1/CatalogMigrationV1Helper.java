@@ -118,4 +118,102 @@ public class CatalogMigrationV1Helper {
     return false;
   }
 
+  /**
+   * Performs an in-place migration of the schema from v1 to v0 if v1 data types are detected
+   *
+   * @param configuredAirbyteCatalog to migrate
+   */
+  public static void downgradeSchemaIfNeeded(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+    if (containsV1DataTypes(configuredAirbyteCatalog)) {
+      downgradeSchema(configuredAirbyteCatalog);
+    }
+  }
+
+  /**
+   * Performs an in-place migration of the schema from v1 to v0 if v1 data types are detected
+   *
+   * @param airbyteCatalog to migrate
+   */
+  public static void downgradeSchemaIfNeeded(final AirbyteCatalog airbyteCatalog) {
+    if (containsV1DataTypes(airbyteCatalog)) {
+      downgradeSchema(airbyteCatalog);
+    }
+  }
+
+  /**
+   * Performs an in-place migration of the schema from v1 to v0
+   *
+   * @param configuredAirbyteCatalog to migrate
+   */
+  private static void downgradeSchema(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+    for (final var stream : configuredAirbyteCatalog.getStreams()) {
+      SchemaMigrationV1.downgradeSchema(stream.getStream().getJsonSchema());
+    }
+  }
+
+  /**
+   * Performs an in-place migration of the schema from v1 to v0
+   *
+   * @param airbyteCatalog to migrate
+   */
+  private static void downgradeSchema(final AirbyteCatalog airbyteCatalog) {
+    for (final var stream : airbyteCatalog.getStreams()) {
+      SchemaMigrationV1.downgradeSchema(stream.getJsonSchema());
+    }
+  }
+
+  /**
+   * Returns true if catalog contains v1 data types
+   */
+  private static boolean containsV1DataTypes(final ConfiguredAirbyteCatalog configuredAirbyteCatalog) {
+    if (configuredAirbyteCatalog == null) {
+      return false;
+    }
+
+    return configuredAirbyteCatalog
+        .getStreams()
+        .stream().findFirst()
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(CatalogMigrationV1Helper::streamContainsV1DataTypes)
+        .orElse(false);
+  }
+
+  /**
+   * Returns true if catalog contains v1 data types
+   */
+  private static boolean containsV1DataTypes(final AirbyteCatalog airbyteCatalog) {
+    if (airbyteCatalog == null) {
+      return false;
+    }
+
+    return airbyteCatalog
+        .getStreams()
+        .stream().findFirst()
+        .map(CatalogMigrationV1Helper::streamContainsV1DataTypes)
+        .orElse(false);
+  }
+
+  private static boolean streamContainsV1DataTypes(final AirbyteStream airbyteStream) {
+    if (airbyteStream == null || airbyteStream.getJsonSchema() == null) {
+      return false;
+    }
+    return hasV1DataType(airbyteStream.getJsonSchema());
+  }
+
+  /**
+   * Performs of search of a v0 data type node, returns true at the first node found.
+   */
+  private static boolean hasV1DataType(final JsonNode schema) {
+    if (SchemaMigrationV1.isPrimitiveReferenceTypeDeclaration(schema)) {
+      return true;
+    }
+
+    for (final JsonNode subSchema : SchemaMigrations.findSubschemas(schema)) {
+      if (hasV1DataType(subSchema)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }
