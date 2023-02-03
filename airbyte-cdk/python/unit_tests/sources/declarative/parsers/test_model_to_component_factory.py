@@ -583,15 +583,16 @@ requester:
     header: header_value
   {error_handler}
     """
+    name = "name"
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
-    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config)
+    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name)
 
     assert isinstance(selector, HttpRequester)
     assert selector._method == HttpMethod.GET
-    assert selector.name == "lists"
+    assert selector.name == "name"
     assert selector.path.string == "/v3/marketing/lists"
     assert selector.url_base.string == "https://api.sendgrid.com"
 
