@@ -33,6 +33,7 @@ interface ConnectorCardBaseProps {
   jobInfo?: SynchronousJobRead | null;
   additionalSelectorComponent?: React.ReactNode;
   onSubmit: (values: ConnectorCardValues) => Promise<void> | void;
+  reloadConfig?: () => void;
   onDeleteClick?: () => void;
   onConnectorDefinitionSelect?: (id: string) => void;
   availableConnectorDefinitions: ConnectorDefinition[];
@@ -72,6 +73,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   additionalSelectorComponent,
   selectedConnectorDefinitionId,
   fetchingConnectorError,
+  reloadConfig,
   ...props
 }) => {
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
@@ -129,8 +131,9 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const testConnectorWithTracking = async (connectorCardValues?: ConnectorCardValues) => {
     trackTestConnectorStarted(selectedConnectorDefinition);
     try {
-      await testConnector(connectorCardValues);
+      const response = await testConnector(connectorCardValues);
       trackTestConnectorSuccess(selectedConnectorDefinition);
+      return response;
     } catch (e) {
       trackTestConnectorFailure(selectedConnectorDefinition);
       throw e;
@@ -161,8 +164,12 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     };
 
     try {
-      await testConnectorWithTracking(connectorCardValues);
-      onSubmit(connectorCardValues);
+      const response = await testConnectorWithTracking(connectorCardValues);
+      if (response.jobInfo.connectorConfigurationUpdated && reloadConfig) {
+        reloadConfig();
+      } else {
+        onSubmit(connectorCardValues);
+      }
     } catch (e) {
       setErrorStatusRequest(e);
       setIsFormSubmitting(false);
