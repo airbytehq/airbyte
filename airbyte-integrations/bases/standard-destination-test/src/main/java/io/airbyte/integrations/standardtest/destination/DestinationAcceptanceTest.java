@@ -639,7 +639,7 @@ public abstract class DestinationAcceptanceTest {
     }
 
     final AirbyteCatalog catalog = Jsons.deserialize(
-        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(ProtocolVersion.V0)),
+        MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
         AirbyteCatalog.class);
 
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(

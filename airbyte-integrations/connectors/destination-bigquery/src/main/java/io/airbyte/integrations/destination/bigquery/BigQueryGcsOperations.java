@@ -100,7 +100,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   @Override
   public void createTableIfNotExists(final TableId tableId, final Schema tableSchema) {
     LOGGER.info("Creating target table {}", tableId);
-    BigQueryUtils.createPartitionedTable(bigQuery, tableId, tableSchema);
+    BigQueryUtils.createPartitionedTableIfNotExists(bigQuery, tableId, tableSchema);
   }
 
   @Override

@@ -23,6 +23,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -47,6 +48,11 @@ public abstract class AbstractBigQueryDestinationAcceptanceTest extends Destinat
 
   protected JsonNode config;
   protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
+  }
 
   @Override
   protected String getImageName() {

@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,13 +16,18 @@ import static org.mockito.Mockito.spy;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TimePartitioning;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -314,6 +320,31 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
+  @Test
+  void testCreateTableSuccessWhenTableAlreadyExists() throws Exception {
+    initBigQuery(config);
+
+    // Test schema where we will try to re-create existing table
+    final String tmpTestSchemaName = "test_create_table_when_exists_schema";
+
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+    final TableId tableId = TableId.of(tmpTestSchemaName, "test_already_existing_table");
+
+    BigQueryUtils.getOrCreateDataset(bigquery, tmpTestSchemaName, BigQueryUtils.getDatasetLocation(config));
+
+    assertDoesNotThrow(() -> {
+      // Create table
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+
+      // Try to create it one more time. Shouldn't throw exception
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+    });
+  }
+
   @ParameterizedTest
   @MethodSource("failWriteTestConfigProvider")
   void testWriteFailure(final String configName, final String error) throws Exception {
@@ -430,6 +461,53 @@ class BigQueryDestinationTest {
             .build();
     final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
     bigquery.create(tableInfo);
+  }
+
+  private void createPartitionedTable(final BigQuery bigquery, final Dataset dataset, final String schemaName, final String tableName) {
+//    final TableId tableId = TableId.of(dataset.getDatasetId().getDataset(), tableName);
+//    bigquery.delete(tableId);
+//    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+//        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+//        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+//        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+//    final StandardTableDefinition tableDefinition =
+//        StandardTableDefinition.newBuilder()
+//            .setSchema(schema)
+//            .build();
+//    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+//    bigquery.create(tableInfo);
+
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+    final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
+        .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
+        .build();
+
+    final Clustering clustering = Clustering.newBuilder()
+        .setFields(ImmutableList.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+        .build();
+
+    final TableId tableId = TableId.of(schemaName, tableName);
+
+    final StandardTableDefinition tableDefinition =
+        StandardTableDefinition.newBuilder()
+            .setSchema(schema)
+            .setTimePartitioning(partitioning)
+            .setClustering(clustering)
+            .build();
+    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+
+    final Table table = bigquery.getTable(tableInfo.getTableId());
+    if (table != null && table.exists()) {
+      LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
+    } else {
+//      bigquery.
+      bigquery.create(tableInfo);
+      LOGGER.info("Partitioned table created successfully: {}", tableId);
+    }
   }
 
   private boolean isTablePartitioned(final BigQuery bigquery, final Dataset dataset, final String tableName) throws InterruptedException {
