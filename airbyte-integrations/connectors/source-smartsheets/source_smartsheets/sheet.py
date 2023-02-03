@@ -16,7 +16,8 @@ class SmartSheetAPIWrapper:
         self._metadata = config["metadata_fields"]
         api_client = smartsheet.Smartsheet(self._access_token)
         api_client.errors_as_exceptions(True)
-        # each call to `Sheets` makes a new instance, so we save it here to make no more new objects
+        # each call to `Sheets` makes a new instance
+        # so we save it here to make no more new objects
         self._get_sheet = api_client.Sheets.get_sheet
         self._data = None
 
@@ -26,8 +27,9 @@ class SmartSheetAPIWrapper:
             kwargs["page_size"] = 1
         self._data = self._get_sheet(
             self._spreadsheet_id,
-            include=["rowPermalink", "writerInfo"], 
-            **kwargs)
+            include=["rowPermalink", "writerInfo"],
+            **kwargs
+            )
 
     @staticmethod
     def _column_to_property(column_type: str) -> Dict[str, any]:
@@ -45,28 +47,27 @@ class SmartSheetAPIWrapper:
 
         if len(self._metadata):
             metadata_fields = {
-                                    "sheetcreatedAt": self.data.created_at.isoformat(),
-                                    "sheetid": self.data.id,
-                                    "sheetmodifiedAt": self.data.modified_at.isoformat(),
-                                    "sheetname": self.data.name,
-                                    "sheetpermalink": self.data.permalink,
-                                    "sheetversion": self.data.version,
-                                    "sheetaccess_level": str(self.data.access_level),
-                                    "row_id": row.id,
-                                    "row_access_level": str(row.access_level),
-                                    "row_created_at": row.created_at.isoformat(),
-                                    "row_created_by": row.created_by.name,
-                                    "row_expanded": row.expanded,
-                                    "row_id": row.id,
-                                    "row_modified_by": row.modified_by.name,
-                                    "row_parent_id": row.parent_id,
-                                    "row_permalink": row.permalink,
-                                    "row_number": row.row_number,
-                                    "row_version": row.version
+                "sheetcreatedAt": self.data.created_at.isoformat(),
+                "sheetid": self.data.id,
+                "sheetmodifiedAt": self.data.modified_at.isoformat(),
+                "sheetname": self.data.name,
+                "sheetpermalink": self.data.permalink,
+                "sheetversion": self.data.version,
+                "sheetaccess_level": str(self.data.access_level),
+                "row_id": row.id,
+                "row_access_level": str(row.access_level),
+                "row_created_at": row.created_at.isoformat(),
+                "row_created_by": row.created_by.name,
+                "row_expanded": row.expanded,
+                "row_modified_by": row.modified_by.name,
+                "row_parent_id": row.parent_id,
+                "row_permalink": row.permalink,
+                "row_number": row.row_number,
+                "row_version": row.version,
             }
             metadata_schema = {i: metadata_fields[f"{i}"] for i in self._metadata}
             record.update(metadata_schema)
-            
+
         return record
 
     @property
@@ -97,7 +98,7 @@ class SmartSheetAPIWrapper:
         if len(self._metadata):
             metadata_schema = {i: self._column_to_property(i) for i in self._metadata}
             column_info.update(metadata_schema)
-             
+
         json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
