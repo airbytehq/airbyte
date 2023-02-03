@@ -21,9 +21,9 @@ def response_mock():
 @pytest.fixture
 def config():
     return {
-        "spreadsheet_id": "id", 
-        "access_token": 
-        "token", 
+        "spreadsheet_id": "id",
+        "access_token":
+        "token",
         "metadata_fields": ["row_id"]
         }
 
