@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
-  private String airbyteEnvironment;
+  private final String airbyteEnvironment;
 
   public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
@@ -80,12 +80,12 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
     return SnowflakeDatabase.getDatabase(dataSource);
   }
 

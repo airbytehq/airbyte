@@ -92,7 +92,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
     storageClient.create(blobInfo);
 
-    try (WriteChannel writer = storageClient.writer(blobInfo)) {
+    try (final WriteChannel writer = storageClient.writer(blobInfo)) {
       // Try to write a dummy message to make sure user has all required permissions
       final byte[] content = "Hello, World!".getBytes(UTF_8);
       writer.write(ByteBuffer.wrap(content, 0, content.length));
@@ -112,12 +112,12 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
     return SnowflakeDatabase.getDatabase(dataSource);
   }
 
