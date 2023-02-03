@@ -8,11 +8,12 @@
 }
 
 .sidebar {
-  @include mixins.right-shadow;
+  @include mixins.shadow;
 
-  width: 200px;
+  width: 220px;
   flex: 0 0 auto;
   background-color: colors.$white;
+  border-left: 1px solid colors.$grey-100;
 }
 
 .form {

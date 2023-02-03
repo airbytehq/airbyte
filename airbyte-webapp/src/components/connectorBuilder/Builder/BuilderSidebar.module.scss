@@ -3,7 +3,7 @@
 @use "scss/mixins";
 
 .container {
-  padding: variables.$spacing-sm;
+  padding: variables.$spacing-lg;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -79,8 +79,8 @@
 }
 
 .selectedViewButton {
-  background-color: colors.$dark-blue;
-  color: colors.$white;
+  background-color: colors.$blue-50;
+  color: colors.$blue;
 }
 
 .globalConfigButton {
