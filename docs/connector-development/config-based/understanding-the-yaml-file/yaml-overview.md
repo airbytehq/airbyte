@@ -31,8 +31,6 @@ The stream object is represented in the YAML file as:
         "$ref": "#/definitions/PrimaryKey"
       retriever:
         "$ref": "#/definitions/Retriever"
-      stream_cursor_field:
-        type: string
       transformations:
         "$ref": "#/definitions/RecordTransformation"
       schema_loader:
