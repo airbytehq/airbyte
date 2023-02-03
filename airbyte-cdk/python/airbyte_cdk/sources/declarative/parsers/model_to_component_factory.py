@@ -5,6 +5,8 @@
 from __future__ import annotations
 
 import importlib
+import inspect
+import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -341,6 +343,14 @@ class ModelToComponentFactory:
             return False
         return cls.__module__ == "builtins"
 
+    @staticmethod
+    def _extract_missing_parameters(error: TypeError) -> List[str]:
+        parameter_search = re.search(r"keyword-only.*:\s(.*)", str(error))
+        if parameter_search:
+            return re.findall(r"\'(.+?)\'", parameter_search.group(1))
+        else:
+            return []
+
     def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config) -> Any:
         type_name = model_value.get("type", None)
         if not type_name:
@@ -350,7 +360,24 @@ class ModelToComponentFactory:
         model_type = self.TYPE_NAME_TO_MODEL.get(type_name, None)
         if model_type:
             parsed_model = model_type.parse_obj(model_value)
-            return self._create_component_from_model(model=parsed_model, config=config)
+            try:
+                # To improve usability of the language, certain fields are shared between components. One example is the DefaultPaginator
+                # referencing the HttpRequester url_base while constructing a SimpleRetriever. However, custom components don't support
+                # this behavior because they are created generically in create_custom_component(). This block allows developers to
+                # specify extra arguments in $parameters that are needed by a component and could not be shared.
+                model_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(parsed_model.__class__)
+                constructor_kwargs = inspect.getfullargspec(model_constructor).kwonlyargs
+                model_parameters = model_value.get("$parameters", {})
+                matching_parameters = {kwarg: model_parameters[kwarg] for kwarg in constructor_kwargs if kwarg in model_parameters}
+                return self._create_component_from_model(model=parsed_model, config=config, **matching_parameters)
+            except TypeError as error:
+                missing_parameters = self._extract_missing_parameters(error)
+                if missing_parameters:
+                    raise ValueError(
+                        f"Error creating component '{type_name}' with parent custom component {model.class_name}: Please provide "
+                        + ", ".join((f"{type_name}.$parameters.{parameter}" for parameter in missing_parameters))
+                    )
+                raise
         else:
             raise ValueError(
                 f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"

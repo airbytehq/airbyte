@@ -149,6 +149,8 @@ definitions:
           page_size: 100
         page_token_option:
           inject_into: "path"
+        $parameters:
+          url_base: "#/definitions/requester/url_base"
 
 streams:
   - "#/definitions/projects_stream"
