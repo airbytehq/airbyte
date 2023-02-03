@@ -1,4 +1,9 @@
 # Google Analytics (Universal Analytics)
+:::note
+
+Note that, [as per Google](https://support.google.com/analytics/answer/11583528?hl=en), Universal Analytics will stop processing data on July 1, 2023 (July 1, 2024 for Analytics 360 properties). Please consider moving to [Google Analytics v4](https://docs.airbyte.com/integrations/sources/google-analytics-v4) instead.
+
+:::
 
 This page contains the setup guide and reference information for the Google Analytics (Universal Analytics) source connector.
 
