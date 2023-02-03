@@ -7,7 +7,8 @@ import "@tanstack/react-table";
  */
 declare module "@tanstack/table-core" {
   interface ColumnMeta {
-    thClassName?: string;
+    responsive?: boolean;
     tdClassName?: string;
+    thClassName?: string;
   }
 }
