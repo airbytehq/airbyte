@@ -5,14 +5,61 @@
 import os
 from importlib.resources import files
 import json
+import logging
+
+from .constants import CONNECTOR_BUILD_OUTPUT_URL
 
 from google.oauth2 import service_account
 import requests
 import pandas as pd
+from typing import Optional
 
+from enum import Enum
+
+LOGGER = logging.getLogger(__name__)
+
+class BUILD_STATUSES(str, Enum):
+    SUCCESS = "success"
+    FAILURE = "failure"
+    NOT_FOUND = None
+
+    @classmethod
+    def from_string(cls, string_value: Optional[str]) -> "BUILD_STATUSES":
+        if string_value is None:
+            return BUILD_STATUSES.NOT_FOUND
+
+        return BUILD_STATUSES[string_value.upper()]
+
+
+
+def get_connector_build_output_url(connector_technical_name: str, connector_version: str) -> str:
+    """
+    Get the connector build output url.
+    Documentation of the larger build output system can be found here: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
+    """
+    return f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector_technical_name}/version-{connector_version}.json"
+
+def fetch_latest_build_status_for_connector_version(connector_technical_name: str, connector_version: str) ->BUILD_STATUSES:
+    """Fetch the latest build status for a given connector version."""
+    connector_build_output_url = get_connector_build_output_url(connector_technical_name, connector_version)
+    connector_build_output_response = requests.get(connector_build_output_url)
+
+    # if the connector returned successfully, return the outcome
+    if connector_build_output_response.status_code == 200:
+        connector_build_output = connector_build_output_response.json()
+        outcome = connector_build_output.get("outcome")
+
+        try:
+            return BUILD_STATUSES.from_string(outcome)
+        except KeyError:
+            LOGGER.error(f"Error: Unexpected build status value: {outcome} for connector {connector_technical_name}:{connector_version}")
+            return BUILD_STATUSES.NOT_FOUND
+
+    else:
+        return BUILD_STATUSES.NOT_FOUND
 
 def fetch_remote_catalog(catalog_url: str) -> pd.DataFrame:
-    """Fetch a combined remote catalog and return a single DataFrame 
+    """Fetch a combined remote catalog and return a single DataFrame
     with sources and destinations defined by the connector_type column.
 
     Args:
