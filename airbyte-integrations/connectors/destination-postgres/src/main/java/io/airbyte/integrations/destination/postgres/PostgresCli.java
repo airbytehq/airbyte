@@ -34,19 +34,22 @@ public class PostgresCli {
           final PostgresSqlOperations ops = new PostgresSqlOperations();
 
           // Check table existence
+          boolean allTablesExist = true;
           final DatabaseMetaData dbm = database.getMetaData();
           for (final Pair<String, String> tableIdentifier : tables) {
             final ResultSet tableList = dbm.getTables(null, tableIdentifier.getLeft(), tableIdentifier.getRight(), null);
             if (!tableList.next()) {
               System.out.println("Table does not exist: " + tableIdentifier);
-              System.exit(1);
+              allTablesExist = false;
             }
+          }
+          if (!allTablesExist) {
+            System.exit(1);
           }
 
           System.out.println("All tables found to exist; dropping them now.");
-          // If they all exist, drop them
           for (final Pair<String, String> tableIdentifier : tables) {
-            System.out.println("Attempting to drop " + tableIdentifier);
+            System.out.println("Dropping " + tableIdentifier);
             ops.dropTableIfExists(database, tableIdentifier.getLeft(), tableIdentifier.getRight());
           }
         }
