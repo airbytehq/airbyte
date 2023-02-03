@@ -166,6 +166,16 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         SQLDialect.POSTGRES);
   }
 
+  private void revokeAllPermissions() {
+    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void grantCorrectPermissions() {
+    executeQuery(
+        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
+            + container.getUsername() + "@'%';");
+  }
+
   @Test
   void testCheckWithoutPublication() throws Exception {
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));

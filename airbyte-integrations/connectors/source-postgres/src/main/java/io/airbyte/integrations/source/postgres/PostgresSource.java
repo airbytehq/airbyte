@@ -309,6 +309,24 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       checkOperations.add(database -> {
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
+
+      checkOperations.add(database -> {
+        final String userName = config.get("username").toString();
+
+        final List<JsonNode> userPrivileges = database.queryJsons(connection -> {
+          final PreparedStatement ps = connection.prepareStatement("SELECT userepl FROM pg_user WHERE usename = ?");
+          ps.setString(1, userName);
+          LOGGER.info("Verifying required privileges for user: {}", userName);
+          return ps;
+        }, sourceOperations::rowToJson);
+
+        if (!userPrivileges.get(0).get("userepl").asBoolean()) {
+          throw new RuntimeException(
+              "User " + userName + " does not have enough privileges for CDC replication." +
+                  " Please read the docs and add required privileges.");
+        }
+
+      });
     }
 
     return checkOperations;
