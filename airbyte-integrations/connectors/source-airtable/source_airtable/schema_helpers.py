@@ -2,12 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from copy import deepcopy
 from typing import Any, Dict
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+
+logger: logging.Logger = logging.getLogger("airbyte")
 
 
 class SchemaTypes:
@@ -58,6 +60,7 @@ SIMPLE_AIRTABLE_TYPES: Dict = {
     "rating": SchemaTypes.number,
     "richText": SchemaTypes.string,
     "singleLineText": SchemaTypes.string,
+    "singleSelect": SchemaTypes.string,
     "externalSyncSource": SchemaTypes.string,
     "url": SchemaTypes.string,
     # referal default type
@@ -103,7 +106,11 @@ class SchemaHelpers:
                 # Other edge cases, if `field_type` not in SIMPLE_AIRTABLE_TYPES, fall back to "simpleText" == `string`
                 # reference issue: https://github.com/airbytehq/oncall/issues/1432#issuecomment-1412743120
                 if complex_type == SchemaTypes.array_with_any:
-                    complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
+                    if field_type in SIMPLE_AIRTABLE_TYPES:
+                        complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
+                    else:
+                        complex_type["items"] = SchemaTypes.string
+                        logger.warning(f"Unknown field type: {field_type}, falling back to `simpleText` type")
                 properties.update(**{name: complex_type})
             elif original_type in SIMPLE_AIRTABLE_TYPES.keys():
                 field_type: str = exec_type if exec_type else original_type
