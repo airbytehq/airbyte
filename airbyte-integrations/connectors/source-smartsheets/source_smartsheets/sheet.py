@@ -24,7 +24,10 @@ class SmartSheetAPIWrapper:
         kwargs = {"rows_modified_since": from_dt}
         if not from_dt:
             kwargs["page_size"] = 1
-        self._data = self._get_sheet(self._spreadsheet_id, **kwargs)
+        self._data = self._get_sheet(
+            self._spreadsheet_id,
+            include=["rowPermalink", "writerInfo"], 
+            **kwargs)
 
     @staticmethod
     def _column_to_property(column_type: str) -> Dict[str, any]:
@@ -41,7 +44,27 @@ class SmartSheetAPIWrapper:
         record["modifiedAt"] = row.modified_at.isoformat()
 
         if len(self._metadata):
-            metadata_schema = {i: self._column_to_property(i) for i in self._metadata}
+            metadata_fields = {
+                                    "sheetcreatedAt": self.data.created_at.isoformat(),
+                                    "sheetid": self.data.id,
+                                    "sheetmodifiedAt": self.data.modified_at.isoformat(),
+                                    "sheetname": self.data.name,
+                                    "sheetpermalink": self.data.permalink,
+                                    "sheetversion": self.data.version,
+                                    "sheetaccess_level": str(self.data.access_level),
+                                    "row_id": row.id,
+                                    "row_access_level": str(row.access_level),
+                                    "row_created_at": row.created_at.isoformat(),
+                                    "row_created_by": row.created_by.name,
+                                    "row_expanded": row.expanded,
+                                    "row_id": row.id,
+                                    "row_modified_by": row.modified_by.name,
+                                    "row_parent_id": row.parent_id,
+                                    "row_permalink": row.permalink,
+                                    "row_number": row.row_number,
+                                    "row_version": row.version
+            }
+            metadata_schema = {i: metadata_fields[f"{i}"] for i in self._metadata}
             record.update(metadata_schema)
             
         return record

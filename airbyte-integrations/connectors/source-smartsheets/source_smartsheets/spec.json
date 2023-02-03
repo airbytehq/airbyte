@@ -4,7 +4,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Smartsheets Source Spec",
     "type": "object",
-    "required": ["access_token", "spreadsheet_id"],
+    "required": [
+      "access_token",
+      "spreadsheet_id"
+    ],
     "additionalProperties": true,
     "properties": {
       "access_token": {
@@ -23,7 +26,10 @@
       "start_datetime": {
         "title": "Start Datetime",
         "type": "string",
-        "examples": ["2000-01-01T13:00:00", "2000-01-01T13:00:00-07:00"],
+        "examples": [
+          "2000-01-01T13:00:00",
+          "2000-01-01T13:00:00-07:00"
+        ],
         "description": "Only rows modified after this date/time will be replicated. This should be an ISO 8601 string, for instance: `2000-01-01T13:00:00`",
         "format": "date-time",
         "default": "2020-01-01T00:00:00+00:00",
@@ -33,8 +39,30 @@
       "metadata_fields": {
         "title": "Metadata Fields",
         "type": "array",
-        "items": "strings",
-        "examples": ["id", "parentId", "sheetId", "rowNumber", "version", "expanded", "accessLevel", "createdAt", "modifiedAt"],
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "examples": [
+          "sheetcreatedAt",
+          "sheetid",
+          "sheetmodifiedAt",
+          "sheetname",
+          "sheetpermalink",
+          "sheetversion",
+          "sheetaccess_level",
+          "row_id",
+          "row_access_level",
+          "row_created_at",
+          "row_created_by",
+          "row_expanded",
+          "row_modified_by",
+          "row_parent_id",
+          "row_permalink",
+          "row_number",
+          "row_version"
+        ],
         "description": "Columns which metadata should be pulled from.",
         "order": 3
       }
