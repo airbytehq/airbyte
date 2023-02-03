@@ -309,6 +309,23 @@ definitions:
       primary_key: ["account_sid", "conference_sid"]
       data_field: "participants"
       subresource_uri_key: "participants"
+  # https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources
+  dependent_phone_numbers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/2010-04-01/Accounts/{{ stream_slice.record.account_sid }}/Addresses/{{ stream_slice.record.sid }}/DependentPhoneNumbers.json"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.addresses_stream)"
+            parent_key: "/"
+            stream_slice_field: "record"
+    $options:
+      name: "dependent_phone_numbers"
+      primary_key: "sid"
 
 
 streams:
@@ -333,6 +350,7 @@ streams:
   - "*ref(definitions.usage_records_stream)"
   - "*ref(definitions.usage_triggers_stream)"
   - "*ref(definitions.conference_participants_stream)"
+  - "*ref(definitions.dependent_phone_numbers_stream)"
 
 check:
   stream_names:
