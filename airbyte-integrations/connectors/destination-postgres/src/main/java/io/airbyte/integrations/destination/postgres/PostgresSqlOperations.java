@@ -58,8 +58,4 @@ public class PostgresSqlOperations extends JdbcSqlOperations {
     });
   }
 
-
-  public boolean tableExists(JdbcDatabase db, String schema, String table) {
-    db.
-  }
 }
