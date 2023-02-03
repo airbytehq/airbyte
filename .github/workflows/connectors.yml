@@ -188,6 +188,7 @@ jobs:
           docker push ghcr.io/estuary/${{ matrix.connector }}:dev
           echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:$IMAGE_VERSION"
           docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
+          docker push ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
 
       - name: Install psql
         if: ${{ github.event_name == 'push' }}
