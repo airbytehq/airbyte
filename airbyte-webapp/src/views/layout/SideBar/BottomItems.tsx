@@ -12,6 +12,11 @@ import { NavItem } from "./components/NavItem";
 import { ResourcesDropdown } from "./components/ResourcesDropdown";
 import SettingsIcon from "./components/SettingsIcon";
 
+/**
+ * Bottom items of the sidebar for OSS.
+ * Cloud maintains a separate version of this component titled "CloudBottomItems"
+ */
+
 interface BottomItemProps {
   version: string;
 }
@@ -33,7 +38,6 @@ export const BottomItems: React.FC<BottomItemProps> = ({ version }) => {
         </li>
         <li>
           <NavItem
-            as="navLink"
             label={<FormattedMessage id="sidebar.settings" />}
             icon={<SettingsIcon />}
             to={RoutePaths.Settings}

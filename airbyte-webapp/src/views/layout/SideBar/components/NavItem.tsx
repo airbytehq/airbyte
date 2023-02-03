@@ -9,8 +9,8 @@ import styles from "./NavItem.module.scss";
 import { NotificationIndicator } from "../NotificationIndicator";
 
 interface NavItemProps extends NavItemInnerProps {
-  as: "a" | "div" | "navLink";
-  to: string; // todo: make this not required for buttons
+  to: string;
+  as?: "a";
   className?: string;
   testId?: string;
 }
@@ -71,12 +71,10 @@ export const NavItem: React.FC<NavItemProps> = ({
         <NavItemInner label={label} icon={icon} withNotification={withNotification} />
       </a>
     );
-  } else if (as === "navLink") {
-    return (
-      <NavLink className={navLinkClassName} to={to} data-testid={testId}>
-        <NavItemInner label={label} icon={icon} withNotification={withNotification} />
-      </NavLink>
-    );
   }
-  return null;
+  return (
+    <NavLink className={navLinkClassName} to={to} data-testid={testId}>
+      <NavItemInner label={label} icon={icon} withNotification={withNotification} />
+    </NavLink>
+  );
 };

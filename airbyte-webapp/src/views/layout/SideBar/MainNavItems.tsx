@@ -14,7 +14,6 @@ export const MainNavItems: React.FC = () => {
       <MenuContent>
         <li>
           <NavItem
-            as="navLink"
             label={<FormattedMessage id="sidebar.connections" />}
             icon={<ConnectionsIcon />}
             to={RoutePaths.Connections}
@@ -23,7 +22,6 @@ export const MainNavItems: React.FC = () => {
         </li>
         <li>
           <NavItem
-            as="navLink"
             label={<FormattedMessage id="sidebar.sources" />}
             icon={<SourceIcon />}
             to={RoutePaths.Source}
@@ -32,7 +30,6 @@ export const MainNavItems: React.FC = () => {
         </li>
         <li>
           <NavItem
-            as="navLink"
             label={<FormattedMessage id="sidebar.destinations" />}
             icon={<DestinationIcon />}
             testId="destinationsLink"

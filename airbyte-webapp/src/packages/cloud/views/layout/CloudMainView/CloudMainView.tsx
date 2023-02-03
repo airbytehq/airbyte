@@ -16,10 +16,15 @@ import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWo
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
+import { AirbyteHomeLink } from "views/layout/SideBar/AirbyteHomeLink";
+import { MenuContent } from "views/layout/SideBar/components/MenuContent";
+import { MainNavItems } from "views/layout/SideBar/MainNavItems";
+import { SideBar } from "views/layout/SideBar/SideBar";
 
+import { CloudBottomItems } from "./CloudBottomItems";
+import styles from "./CloudMainView.module.scss";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
-import styles from "./MainView.module.scss";
-import { CloudSideBar } from "../SideBar/CloudSideBar";
+import { WorkspacePopout } from "../../workspaces/WorkspacePopout";
 
 const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   useIntercom();
@@ -78,7 +83,22 @@ const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   return (
     <div className={styles.mainContainer}>
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
-        <CloudSideBar />
+        <SideBar>
+          <MenuContent>
+            <AirbyteHomeLink />
+            <WorkspacePopout>
+              {({ onOpen, value }) => (
+                <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
+                  {value}
+                </button>
+              )}
+            </WorkspacePopout>
+            <MenuContent>
+              <MainNavItems />
+              <CloudBottomItems />
+            </MenuContent>
+          </MenuContent>
+        </SideBar>
         <div
           className={classNames(styles.content, {
             [styles.alertBanner]: !!alertToShow && !showExperimentBanner,
