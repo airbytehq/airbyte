@@ -6,10 +6,6 @@ from airbyte_cdk.sources.streams import Stream
 from .stream_events import (
   MintedEvents,
   PurchasedEvents,
-  FullfilledEvents,
-  FullfilledErrorEvents,
-  RequeuedEvents,
-  OpenedEvents,
   PackRevealEvents,
   DepositEvents,
   WithdrawEvents,
@@ -40,10 +36,6 @@ class SourceGraffle(AbstractSource):
     return [
       MintedEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Minted"),
       PurchasedEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Purchased"),
-      FullfilledEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Fulfilled"),
-      FullfilledErrorEvents(config, "A.30cf5dcf6ea8d379.AeraPack.FulfilledError"),
-      RequeuedEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Requeued"),
-      OpenedEvents(config, "A.30cf5dcf6ea8d379.AeraPack.Opened"),
       PackRevealEvents(config, "A.30cf5dcf6ea8d379.AeraPack.PackReveal"),
       DepositEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Deposit"),
       WithdrawEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Withdraw"),

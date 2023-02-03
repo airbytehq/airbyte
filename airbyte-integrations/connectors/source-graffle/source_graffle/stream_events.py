@@ -83,26 +83,6 @@ class PurchasedEvents(EventsStream):
     return f"api/company/{self.company_id}/search"
 
 
-class FullfilledEvents(EventsStream):
-  def path(self, **_) -> str:
-    return f"api/company/{self.company_id}/search"
-
-
-class FullfilledErrorEvents(EventsStream):
-  def path(self, **_) -> str:
-    return f"api/company/{self.company_id}/search"
-
-
-class RequeuedEvents(EventsStream):
-  def path(self, **_) -> str:
-    return f"api/company/{self.company_id}/search"
-
-
-class OpenedEvents(EventsStream):
-  def path(self, **_) -> str:
-    return f"api/company/{self.company_id}/search"
-
-
 class PackRevealEvents(EventsStream):
   def path(self, **_) -> str:
     return f"api/company/{self.company_id}/search"
