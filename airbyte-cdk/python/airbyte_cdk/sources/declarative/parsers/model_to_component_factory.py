@@ -116,11 +116,6 @@ class ModelToComponentFactory:
         self._limit_slices_fetched = limit_slices_fetched
 
     def _init_mappings(self):
-        self.CUSTOM_PARENT_KWARGS_MAPPING = {
-            DefaultPaginatorModel: lambda retriever_model: {
-                "url_base": retriever_model.requester.url_base if hasattr(retriever_model.requester, "url_base") else ""
-            }
-        }
         self.PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
             AddedFieldDefinitionModel: self.create_added_field_definition,
             AddFieldsModel: self.create_add_fields,
