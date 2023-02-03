@@ -190,19 +190,28 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             end_date = self._end_date
             logger.info(f"Generating slices for customer {customer.id}. Start date is {start_date}, end date is {end_date}")
 
-            for chunk in chunk_date_range(
-                start_date=start_date,
-                end_date=end_date,
-                conversion_window=self.conversion_window_days,
-                field=self.cursor_field,
-                days_of_data_storage=self.days_of_data_storage,
-                range_days=self.range_days,
-                time_zone=customer.time_zone,
-            ):
-                if chunk:
-                    chunk["customer_id"] = customer.id
-                logger.info(f"Next slice is {chunk}")
-                logger.bump()
+            if self.cursor_field is not None:
+                for chunk in chunk_date_range(
+                        start_date=start_date,
+                        end_date=end_date,
+                        conversion_window=self.conversion_window_days,
+                        field=self.cursor_field,
+                        days_of_data_storage=self.days_of_data_storage,
+                        range_days=self.range_days,
+                        time_zone=customer.time_zone,
+                ):
+                    if chunk:
+                        chunk["customer_id"] = customer.id
+                        logger.info(f"Next slice is {chunk}")
+                        logger.bump()
+                    yield chunk
+            else :
+                end_date = pendulum.parse(end_date) if end_date else pendulum.now()
+                chunk = {
+                    "start_date": start_date,
+                    "end_date": end_date.to_date_string(),
+                    "customer_id": customer.id,
+                }
                 yield chunk
 
     def read_records(
