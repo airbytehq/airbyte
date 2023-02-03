@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-ads:dev
 test_strictness_level: high
@@ -22,6 +22,8 @@ acceptance_tests:
           path: "integration_tests/expected_records.txt"
         timeout_seconds: 600
         empty_streams:
+          - name: "accounts"
+            bypass_reason: "Floating data"
           - name: "display_topics_performance_report"
             bypass_reason: "Stream not filled yet."
           - name: "click_view"
