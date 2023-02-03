@@ -48,6 +48,7 @@ definitions:
   surveys:
     $ref: "#/definitions/base_stream"
     $parameters:
+      name: "surveys"
       path: "surveys"
       data_field: "surveys"
     name: "surveys"
@@ -62,6 +63,7 @@ definitions:
   survey_groups:
     $ref: "#/definitions/base_stream"
     $parameters:
+      name: "survey_groups"
       path: "survey_groups"
       data_field: "survey_groups"
     name: "survey_groups"
@@ -94,6 +96,7 @@ definitions:
   properties:
     $ref: "#/definitions/base_stream"
     $parameters:
+      name: "properties"
       data_field: "properties"
     name: "properties"
     retriever:
@@ -106,6 +109,7 @@ definitions:
   answers:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
+      name: "answers"
       data_field: "answers"
     name: "answers"
     retriever:
@@ -121,6 +125,7 @@ definitions:
   answers_survey_group:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
+      name: "answers_survey_group"
       data_field: "answers"
     name: "answers_survey_group"
     retriever:

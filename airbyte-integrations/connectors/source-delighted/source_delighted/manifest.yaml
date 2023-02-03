@@ -77,6 +77,7 @@ definitions:
         page_token_option:
           inject_into: "path"
     $parameters:
+      name: "people"
       path: "people.json"
       cursor_field: "created_at"
   bounces:
@@ -85,6 +86,7 @@ definitions:
     primary_key: "person_id"
     $parameters:
       cursor_field: "bounced_at"
+      name: "bounces"
       path: "bounces.json"
   unsubscribes:
     $ref: "#/definitions/base_stream"
@@ -92,6 +94,7 @@ definitions:
     primary_key: "person_id"
     $parameters:
       cursor_field: "unsubscribed_at"
+      name: "unsubscribes"
       path: "unsubscribes.json"
   survey_responses:
     $ref: "#/definitions/base_stream"
@@ -108,6 +111,7 @@ definitions:
           inject_into: "request_parameter"
     $parameters:
       cursor_field: "updated_at"
+      name: "survey_responses"
       path: "survey_responses.json"
 
 streams:

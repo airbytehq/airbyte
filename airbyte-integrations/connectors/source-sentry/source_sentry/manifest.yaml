@@ -34,7 +34,9 @@ definitions:
 
 streams:
   - type: DeclarativeStream
-    # https://docs.sentry.io/api/events/list-a-projects-events/
+    $parameters:
+      # https://docs.sentry.io/api/events/list-a-projects-events/
+      name: "events"
     name: "events"
     primary_key: "id"
     schema_loader:
@@ -51,6 +53,8 @@ streams:
       paginator:
         $ref: "#/definitions/paginator"
   - type: DeclarativeStream
+    $parameters:
+      name: "issues"
     name: "issues"
     primary_key: "id"
     schema_loader:
@@ -68,6 +72,8 @@ streams:
       paginator:
         $ref: "#/definitions/paginator"
   - type: DeclarativeStream
+    $parameters:
+      name: "projects"
     name: "projects"
     primary_key: "id"
     schema_loader:
@@ -82,6 +88,8 @@ streams:
       paginator:
         $ref: "#/definitions/paginator"
   - type: DeclarativeStream
+    $parameters:
+      name: "project_detail"
     name: "project_detail"
     primary_key: "id"
     schema_loader:

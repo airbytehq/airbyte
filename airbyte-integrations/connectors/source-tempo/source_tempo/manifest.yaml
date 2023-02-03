@@ -47,11 +47,13 @@ definitions:
   accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
+      name: "accounts"
       path: "accounts"
     name: "accounts"
   customers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
+      name: "customers"
       path: "customers"
     name: "customers"
   worklogs_stream:
@@ -78,12 +80,14 @@ definitions:
           inject_into: "request_parameter"
         type: DatetimeStreamSlicer
     $parameters:
+      name: "worklogs"
       path: "worklogs"
     name: "worklogs"
     primary_key: "tempoWorklogId"
   workload_schemes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
+      name: "workload-schemes"
       path: "workload-schemes"
     name: "workload-schemes"
 
