@@ -151,10 +151,6 @@
     &:active {
       background-color: colors.$blue-600;
     }
-
-    &:focus-visible {
-      outline-offset: 1px;
-    }
   }
 
   &.typeSecondary {

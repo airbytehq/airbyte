@@ -14,8 +14,7 @@
 }
 
 @mixin focus-ring-style {
-  outline: 2px solid colors.$blue;
-  outline-offset: 1px;
+  outline: 2px solid colors.$blue-900;
 }
 
 @mixin focus-ring {
