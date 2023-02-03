@@ -65,7 +65,7 @@ public class SchemaMigrationV1 {
    * Detects any schema that looks like a reference type declaration, e.g.: { "$ref":
    * "WellKnownTypes.json...." } or { "oneOf": [{"$ref": "..."}, {"type": "object"}] }
    */
-  private static boolean isPrimitiveReferenceTypeDeclaration(final JsonNode schema) {
+  static boolean isPrimitiveReferenceTypeDeclaration(final JsonNode schema) {
     if (!schema.isObject()) {
       // Non-object schemas (i.e. true/false) never need to be modified
       return false;
