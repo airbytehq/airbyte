@@ -73,7 +73,7 @@ definitions:
       primary_key: "id"
       path: "v1/user"
 
-  page_stream_slicer:
+  page_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/status_pages_stream"
@@ -90,7 +90,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/components"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
 
   incidents_stream:
@@ -103,7 +103,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/incidents"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
     transformations:
       - class_name: "source_instatus.components.ListAddFields"
@@ -111,7 +111,7 @@ definitions:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
-  incident_updates_stream_slicer:
+  incident_updates_iterable:
     class_name: "source_instatus.components.UpdatesSubstreamSlicer"
     parent_stream_configs:
       - stream: "#/definitions/incidents_stream"
@@ -128,7 +128,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id }}/incident-updates/{{ stream_slice.incident_update_id }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/incident_updates_stream_slicer"
 
   maintenances_stream:
@@ -141,7 +141,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/maintenances"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
     transformations:
       - class_name: "source_instatus.components.ListAddFields"
@@ -149,7 +149,7 @@ definitions:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
-  maintenance_updates_stream_slicer:
+  maintenance_updates_iterable:
     class_name: "source_instatus.components.UpdatesSubstreamSlicer"
     parent_stream_configs:
       - stream: "#/definitions/maintenances_stream"
@@ -166,7 +166,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/maintenance_updates_stream_slicer"
 
   templates_stream:
@@ -179,7 +179,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/templates"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
 
   team_stream:
@@ -192,7 +192,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/team"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
 
   subscribers_stream:
@@ -205,7 +205,7 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/subscribers"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
 
   metrics_stream:
@@ -218,10 +218,10 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/metrics"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
 
-  page_url_stream_slicer:
+  page_url_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/status_pages_stream"
@@ -237,7 +237,7 @@ definitions:
       requester:
         $ref: "#/definitions/public_data_requester"
         path: "https://{{ stream_slice.url }}.instatus.com/summary.json"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_url_stream_slicer"
 
 streams:

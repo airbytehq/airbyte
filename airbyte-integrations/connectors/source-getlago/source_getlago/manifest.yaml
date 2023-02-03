@@ -69,7 +69,7 @@ definitions:
       name: "customers"
       primary_key: "lago_id"
       path: "/customers"
-  customer_stream_slicer:
+  customer_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/customers_stream"
@@ -85,7 +85,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/subscriptions?external_customer_id={{ stream_slice.customer_external_id }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/customer_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"

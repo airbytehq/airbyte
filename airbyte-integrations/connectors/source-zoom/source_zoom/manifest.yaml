@@ -63,7 +63,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/users/{{ stream_slice.parent_id }}/meetings"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/users_stream"
@@ -87,7 +87,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/meetings/{{ stream_slice.parent_id }}"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -120,7 +120,7 @@ definitions:
                 - predicate: "{{ response.code == 300 }}"
                   action: IGNORE
             - type: DefaultErrorHandler # we're adding this DefaultErrorHandler for 429, 5XX errors etc;
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -158,7 +158,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -196,7 +196,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -233,7 +233,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -271,7 +271,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/users_stream"
@@ -306,7 +306,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -339,7 +339,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -377,7 +377,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -416,7 +416,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -454,7 +454,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -490,7 +490,7 @@ definitions:
                 - http_codes: [404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -527,7 +527,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -564,7 +564,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -600,7 +600,7 @@ definitions:
                 - http_codes: [400, 404]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -637,7 +637,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -674,7 +674,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
@@ -710,7 +710,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
@@ -746,7 +746,7 @@ definitions:
                 - http_codes: [400]
                   action: IGNORE
             - type: DefaultErrorHandler
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"

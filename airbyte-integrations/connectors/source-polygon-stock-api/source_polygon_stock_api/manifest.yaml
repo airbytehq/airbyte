@@ -22,7 +22,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
-  stream_slicer:
+  iterable:
     start_datetime: "{{ config['start_date'] }}T00:00:00.000000+0000"
     end_datetime: "{{ config['start_date'] }}T00:00:00.000000+0000"
     step: "1d"

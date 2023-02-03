@@ -106,7 +106,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id'] else 'surveys/' + stream_slice.id + '/properties' }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/surveys_slicer"
   answers:
     $ref: "#/definitions/incremental_base_stream"
@@ -118,7 +118,7 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/surveys_slicer"
   answers_survey_group:
     $ref: "#/definitions/incremental_base_stream"
@@ -130,7 +130,7 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/surveys_slicer"
 
 streams:

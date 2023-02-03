@@ -38,7 +38,7 @@ definitions:
       name: "projects"
       primary_key: "_id"
       path: "/projects"
-  project_stream_slicer:
+  project_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/projects_stream"
@@ -56,7 +56,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_key }}/environments"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/project_stream_slicer"
   metrics_stream:
     $ref: "#/definitions/base_stream"
@@ -70,7 +70,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/metrics/{{ stream_slice.project_key }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/project_stream_slicer"
   members_stream:
     $ref: "#/definitions/base_stream"
@@ -96,7 +96,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/flags/{{ stream_slice.project_key }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/project_stream_slicer"
 
 streams:

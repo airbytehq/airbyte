@@ -270,7 +270,7 @@ definitions:
         http_method: "POST"
         request_body_json:
           limit: "{{ 500 }}"
-      stream_slicer:
+      iterable:
         class_name: source_square.components.SquareSubstreamSlicer
         start_datetime:
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"

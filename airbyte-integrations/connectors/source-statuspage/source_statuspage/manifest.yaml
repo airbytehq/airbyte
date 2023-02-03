@@ -47,7 +47,7 @@ definitions:
       name: "pages"
       primary_key: "id"
       path: "/pages"
-  page_stream_slicer:
+  page_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/pages_stream"
@@ -63,7 +63,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/subscribers"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"
@@ -76,7 +76,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/subscribers/histogram_by_state"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"
@@ -90,7 +90,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/incident_templates"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"
@@ -104,7 +104,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/incidents"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"
@@ -118,7 +118,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/components"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"
@@ -132,7 +132,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/metrics"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/page_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"

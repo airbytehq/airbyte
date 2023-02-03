@@ -143,7 +143,7 @@ definitions:
       $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/campaigns_stream"
@@ -166,7 +166,7 @@ definitions:
       record_selector:
         extractor:
           field_path: ["data", "stats"]
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/canvases_stream"
@@ -186,7 +186,7 @@ definitions:
       $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/cards_stream"
@@ -206,7 +206,7 @@ definitions:
       $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/segments_stream"
@@ -230,7 +230,7 @@ definitions:
         $ref: "#/definitions/non_paginated_retriever/requester"
         request_parameters:
           unit: "day"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/custom_events_stream"

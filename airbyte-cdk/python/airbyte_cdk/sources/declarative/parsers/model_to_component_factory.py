@@ -449,8 +449,8 @@ class ModelToComponentFactory:
         )
 
         stream_slicer = None
-        if hasattr(model.retriever, "stream_slicer") and model.retriever.stream_slicer:
-            stream_slicer_model = model.retriever.stream_slicer
+        if hasattr(model.retriever, "iterable") and model.retriever.iterable:
+            stream_slicer_model = model.retriever.iterable
             stream_slicer = (
                 CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}

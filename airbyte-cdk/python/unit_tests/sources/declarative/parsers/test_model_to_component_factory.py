@@ -24,7 +24,6 @@ from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequeste
 from airbyte_cdk.sources.declarative.models import ListStreamSlicer as ListStreamSlicerModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
-from airbyte_cdk.sources.declarative.models import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models import SubstreamSlicer as SubstreamSlicerModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
@@ -118,7 +117,7 @@ requester:
     unit: "day"
 retriever:
   name: "{{ parameters['name'] }}"
-  stream_slicer:
+  iterable:
     type: SingleSlice
   paginator:
     type: NoPagination
@@ -288,14 +287,14 @@ def test_interpolate_config():
 def test_list_based_stream_slicer_with_values_refd():
     content = """
     repositories: ["airbyte", "airbyte-cloud"]
-    stream_slicer:
+    iterable:
       type: ListStreamSlicer
       slice_values: "#/repositories"
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["iterable"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -305,7 +304,7 @@ def test_list_based_stream_slicer_with_values_refd():
 
 def test_list_based_stream_slicer_with_values_defined_in_config():
     content = """
-    stream_slicer:
+    iterable:
       type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: repository
@@ -315,7 +314,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["iterable"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -354,7 +353,7 @@ def test_create_substream_slicer():
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
-    stream_slicer:
+    iterable:
       type: SubstreamSlicer
       parent_stream_configs:
         - stream: "#/stream_A"
@@ -369,7 +368,7 @@ def test_create_substream_slicer():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["iterable"], {})
 
     stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -464,7 +463,7 @@ stream:
       url_base: "https://a-base-url/path"
       path: "/a-path"
       http_method: "GET"
-    stream_slicer:
+    iterable:
       type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: a_key

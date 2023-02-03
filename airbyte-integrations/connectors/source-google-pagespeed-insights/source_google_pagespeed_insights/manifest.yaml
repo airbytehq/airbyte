@@ -3,14 +3,14 @@ definitions:
   selector:
     extractor:
       field_path: []
-  url_stream_slicer:
+  url_iterable:
     type: "ListStreamSlicer"
     slice_values: "{{ config['urls'] }}"
     cursor_field: url
     request_option:
       field_name: "url"
       inject_into: "request_parameter"
-  strategy_stream_slicer:
+  strategy_iterable:
     type: "ListStreamSlicer"
     slice_values: "{{ config['strategies'] }}"
     cursor_field: strategy
@@ -30,7 +30,7 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
+    iterable:
       - "#/definitions/url_stream_slicer"
       - "#/definitions/strategy_stream_slicer"
   base_stream:

@@ -38,7 +38,7 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/emailCampaigns"
-  campaign_stream_slicer:
+  campaign_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/campaigns_stream"

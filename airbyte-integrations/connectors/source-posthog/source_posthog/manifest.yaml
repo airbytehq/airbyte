@@ -59,7 +59,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/projects_stream"

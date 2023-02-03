@@ -13,7 +13,7 @@ definitions:
       password: "{{ config['private_key'] }}"
     request_parameters:
       min_created: "{{ timestamp(config['start_date']) * 1000 }}"
-  stream_slicer:
+  iterable:
     request_cursor_field: "min_updated"
     cursor_field: "updated_at"
     class_name: source_partnerstack.components.PartnerstackSlicer
@@ -35,7 +35,7 @@ definitions:
         inject_into: "request_parameter"
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
+    iterable:
       $ref: "#/definitions/stream_slicer"
 
   # base stream

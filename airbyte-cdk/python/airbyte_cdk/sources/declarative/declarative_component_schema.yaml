@@ -1011,7 +1011,7 @@ definitions:
           - "$ref": "#/definitions/NoPagination"
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
-      stream_slicer:
+      iterable:
         default: []
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"

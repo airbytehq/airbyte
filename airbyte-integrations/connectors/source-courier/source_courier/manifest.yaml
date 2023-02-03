@@ -82,7 +82,7 @@ definitions:
     fields:
       - path: ["message_id"]
         value: "{{ stream_slice.id }}"
-  message_stream_slicer:
+  message_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/messages_stream"
@@ -100,7 +100,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/messages/{{ stream_slice.id }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/message_stream_slicer"
       record_selector:
         $ref: "#/definitions/root_selector"
@@ -119,7 +119,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/messages/{{ stream_slice.id }}/history"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/message_stream_slicer"
     transformations:
       - $ref: "#/definitions/message_id_transformer"
@@ -138,7 +138,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/messages/{{ stream_slice.id }}/output"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/message_stream_slicer"
     transformations:
       - $ref: "#/definitions/message_id_transformer"

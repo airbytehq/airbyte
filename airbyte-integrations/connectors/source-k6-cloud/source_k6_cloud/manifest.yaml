@@ -47,7 +47,7 @@ definitions:
       name: "organizations"
       primary_key: "id"
       path: "/v3/organizations"
-  organizations_stream_slicer:
+  organizations_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/organizations_stream"
@@ -63,7 +63,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/v3/organizations/{{ stream_slice.id }}/projects"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/organizations_stream_slicer"
       record_selector:
         $ref: "#/definitions/selector"

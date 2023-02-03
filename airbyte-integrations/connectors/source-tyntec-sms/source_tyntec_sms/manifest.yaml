@@ -29,7 +29,7 @@ definitions:
       name: "sms"
       primary_key: "requestId"
       path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
-  sms_stream_slicer:
+  sms_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/sms_stream"
@@ -48,7 +48,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/messaging/v1/messages/{{ stream_slice.requestId }}"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/sms_stream_slicer"
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
   contacts_stream:

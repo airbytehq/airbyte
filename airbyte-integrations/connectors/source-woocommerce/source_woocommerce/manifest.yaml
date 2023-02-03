@@ -85,7 +85,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/orders_stream"
@@ -106,7 +106,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/products_stream"
@@ -132,7 +132,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/product_attributes_stream"
@@ -181,7 +181,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
+      iterable:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/orders_stream"
@@ -203,7 +203,7 @@ definitions:
       name: "shipping_zones"
       primary_key: "id"
       path: "/shipping/zones"
-  shipping_stream_slicer:
+  shipping_iterable:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/shipping_zones_stream"
@@ -213,7 +213,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/shipping_stream_slicer"
     $parameters:
       name: "shipping_zone_locations"
@@ -223,7 +223,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
+      iterable:
         $ref: "#/definitions/shipping_stream_slicer"
     $parameters:
       name: "shipping_zone_methods"
