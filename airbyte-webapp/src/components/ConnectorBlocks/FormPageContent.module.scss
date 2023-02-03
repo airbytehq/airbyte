@@ -3,6 +3,9 @@
 .container {
   margin: 13px auto 0;
   padding-bottom: variables.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
 
   &.cloud {
     padding-bottom: variables.$spacing-page-bottom-cloud;

@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { HeadTitle } from "components/common/HeadTitle";
 import { FormPageContent } from "components/ConnectorBlocks";
+import { BuildYourConnectorPrompt } from "components/connectorBuilder/BuildYourConnectorPrompt";
+import { Card } from "components/ui/Card";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -45,6 +47,9 @@ const CreateSourcePage: React.FC = () => {
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />
+          <Card>
+            <BuildYourConnectorPrompt />
+          </Card>
           <CloudInviteUsersHint connectorType="source" />
         </FormPageContent>
       </ConnectorDocumentationWrapper>
