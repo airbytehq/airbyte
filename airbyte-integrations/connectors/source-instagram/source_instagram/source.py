@@ -28,6 +28,13 @@ class ConnectorConfig(BaseModel):
         airbyte_secret=True,
     )
 
+    ig_user_ids: str = Field(
+        None,
+        description='Comma Separated list of instagram account Ids. Each Instagram account ID must be a 15 digit number.  See the <a href="https://docs.airbyte.com/integrations/sources/instagram">docs</a> for more information.',
+        pattern="^[0-9]{17}(,[0-9]{17})*$",
+        examples=["12345678901234567,23456789012345678"],
+    )
+
 
 class SourceInstagram(AbstractSource):
     def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -42,7 +49,7 @@ class SourceInstagram(AbstractSource):
 
         try:
             config = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-            api = InstagramAPI(access_token=config.access_token)
+            api = InstagramAPI(access_token=config.access_token, ig_user_ids=config.ig_user_ids)
             logger.info(f"Available accounts: {api.accounts}")
             ok = True
         except Exception as exc:
@@ -56,7 +63,7 @@ class SourceInstagram(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config: ConnectorConfig = ConnectorConfig.parse_obj(config)  # FIXME: this will be not need after we fix CDK
-        api = InstagramAPI(access_token=config.access_token)
+        api = InstagramAPI(access_token=config.access_token, ig_user_ids=config.ig_user_ids)
 
         return [
             Media(api=api),

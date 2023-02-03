@@ -9,6 +9,7 @@ This page contains the setup guide and reference information for the Instagram s
 * [Instagram Graph API](https://developers.facebook.com/docs/instagram-api/) to your Facebook app
 * Facebook API [access token](https://developers.facebook.com/docs/facebook-login/access-tokens/#usertokens)
 * [Facebook ad account ID number](https://www.facebook.com/business/help/1492627900875762) (you'll use this to configure Instagram as a source in Airbyte)
+* [Instagram Business account ID numbers](https://developers.facebook.com/docs/instagram/business-login-for-instagram) (Optional) (you'll use this to configure Instagram as a source in Airbyte)
 
 ## Setup Guide
 

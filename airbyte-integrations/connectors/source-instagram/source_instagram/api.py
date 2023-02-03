@@ -64,10 +64,13 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
 
 class InstagramAPI:
-    def __init__(self, access_token: str):
+    def __init__(self, access_token: str, ig_user_ids: str = None):
         self._api = FacebookAdsApi.init(access_token=access_token)
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        self.ig_user_ids = []
+        if ig_user_ids is not None:
+            self.ig_user_ids = ig_user_ids.split(",")
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
@@ -81,16 +84,20 @@ class InstagramAPI:
             for account in accounts:
                 page = Page(account.get_id()).api_get(fields=["instagram_business_account"])
                 if page.get("instagram_business_account"):
-                    instagram_business_accounts.append(
-                        {
-                            "page_id": account.get_id(),
-                            "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
-                        }
-                    )
+                    if len(self.ig_user_ids) == 0 or page.get("instagram_business_account").get("id") in self.ig_user_ids:
+                        instagram_business_accounts.append(
+                            {
+                                "page_id": account.get_id(),
+                                "instagram_business_account": IGUser(page.get("instagram_business_account").get("id")),
+                            }
+                        )
         except FacebookRequestError as exc:
             raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
 
         if not instagram_business_accounts:
-            raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
+            if len(self.ig_user_ids) > 0:
+                raise InstagramAPIException(f"Couldn't find an Instagram business accounts - {self.ig_user_ids} for current Access Token")
+            else:
+                raise InstagramAPIException("Couldn't find an Instagram business accounts for current Access Token")
 
         return instagram_business_accounts

@@ -14,6 +14,11 @@ def account_id_fixture():
     return "unknown_account"
 
 
+@fixture(scope="session", name="ig_user_ids", params=[None, "test_id", "test_id,test_id2"])
+def ig_user_ids_fixture(request):
+    return request.param
+
+
 @fixture(name="config")
 def config_fixture():
     config = {
@@ -25,8 +30,8 @@ def config_fixture():
 
 
 @fixture(scope="session", name="some_config")
-def some_config_fixture(account_id):
-    return {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token"}
+def some_config_fixture(account_id, ig_user_ids):
+    return {"start_date": "2021-01-23T00:00:00Z", "access_token": "unknown_token", "ig_user_ids": ig_user_ids}
 
 
 @fixture(name="fb_account_response")
