@@ -71,6 +71,10 @@ task buildStorybook(type: NpmTask) {
     inputs.dir 'src'
 
     outputs.dir 'build/storybook'
+
+    environment = [
+        'NODE_OPTIONS': '--max_old_space_size=4096'
+    ]
 }
 
 task copyBuildOutput(type: Copy) {
