@@ -22,7 +22,7 @@
       "ig_user_ids": {
         "title": "Instagram Business Account ID(s)",
         "type": "string",
-        "description": "Comma separated list of Instagram Business Account IDs. Each account ID must be specified as a 17-digit number without dashes. See the <a href=\"https://docs.airbyte.com/integrations/sources/instagram\">docs</a> for more information",
+        "description": "Comma separated list of Instagram Business Account IDs. Each account ID must be specified as a 17-digit number without dashes. See the <a href=\"https://developers.facebook.com/docs/instagram-api/reference/ig-user\">instagram documentation</a> for more information",
         "pattern": "^[0-9]{17}(,[0-9]{17})*$",
         "examples": ["6783948572,5839201945"],
         "order": 1
