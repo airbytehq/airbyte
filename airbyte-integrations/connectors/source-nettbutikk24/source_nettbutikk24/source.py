@@ -115,6 +115,39 @@ class Customers(Nettbutikk24Stream):
         return "customers"
 
 
+class Products(Nettbutikk24Stream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        unix_time = self.initial_unix_start_time
+        return f"products/10/0/{unix_time}"
+
+    # TODO: Override the request_params method to define any query parameters to be set. Remove this method if you don't need to define request params.
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        params = {"access_token": self.access_token, "flat": 1}
+        return params
+
+    # path params
+    def path_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
+        return {}
+
+
+
 # Basic incremental stream
 class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
     """
@@ -124,6 +157,7 @@ class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
 
     # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
     state_checkpoint_interval = None
+    
 
     @property
     def cursor_field(self) -> str:
@@ -134,14 +168,32 @@ class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
 
         :return str: The name of the cursor field.
         """
-        return []
+        #return []
+        return "modified_on"
+
+
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        return {}
+        # return {}
+        print('-------------------------------------------------------------------------')
+        print('  Dette er :', current_stream_state) 
+
+        print(latest_record)
+
+        if current_stream_state is None:
+
+            return {self.cursor_field: self.initial_unix_start_time}
+        else:
+            latest_record_modified_on = latest_record.get(self.cursor_field)
+            
+            latest_record_unix = str(int(pendulum.parse(latest_record_modified_on).timestamp()))
+            print('---------------UNIX',latest_record_unix)
+            return {self.cursor_field: latest_record_unix}
+
 
 
 class Employees(IncrementalNettbutikk24Stream):
@@ -150,19 +202,50 @@ class Employees(IncrementalNettbutikk24Stream):
     """
 
     # TODO: Fill in the cursor_field. Required.
-    cursor_field = "start_date"
+    cursor_field = "modified_on"
 
     # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "employee_id"
+    primary_key = "id"
 
-    def path(self, **kwargs) -> str:
+
+
+    def path(self, stream_state: Mapping[str, Any] = None, **kwargs) -> str:
         """
         TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
         return "single". Required.
         """
-        return "employees"
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        # get current state
+        #cursor_state = self.current_stream_state.get(self.cursor_field)
+
+        ##start_unix_time = self.initial_unix_start_time
+        ##
+        ##cursor_state = self.current_stream_state.get(self.cursor_field)
+        ##
+        ##print(cursor_state)
+
+        # 1660728085
+        if stream_state is None:
+            print('jdshghgfdkhgkdfsgjkf')
+
+            from_time =  self.initial_unix_start_time
+        else:
+            print('jdshghgfdkhgkdfsgjkfsadsafERWGFREWF')
+            from_time = stream_state.get(self.cursor_field)
+            
+
+        print('current_stream_state___________________-',from_time)
+
+        #
+
+        # ,"stream_state":{"modified_on":"1665565796"}}}]]]
+        # 1665565796
+        # ,"stream_state":{"modified_on":"1668027241"}}}]]]
+    
+
+        return f"products/30/0/{from_time}"
+
+    #def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         """
         TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
 
@@ -213,4 +296,4 @@ class SourceNettbutikk24(AbstractSource):
 
         # Oauth2Authenticator is also available if you need oauth support
         #auth = TokenAuthenticator(token=token)
-        return [Customers(config=config)]
+        return [Customers(config=config), Products(config=config), Employees(config=config)]
