@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -46,8 +47,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
 
   @Test
   public void sshTimeoutExceptionMarkAsConfigErrorTest() throws Exception {
-    SshBastionContainer bastion = prepareBastionEnv();
-    bastion.stopAndClose();
+    JsonNode config = prepareBastionEnv(false);
     Source sshWrappedSource = MySqlSource.sshWrappedSource();
     Exception exception = assertThrows(ConfigErrorException.class, () -> sshWrappedSource.discover(config));
 
@@ -59,7 +59,7 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
 
   @Test
   public void sshConnectionExceptionMarkAsConfigErrorTest() throws Exception {
-    prepareBastionEnv();
+    JsonNode config = prepareBastionEnv(true);
     // set fake port
     JsonNode fakeConfig = Jsons.clone(config);
     ((ObjectNode) fakeConfig.get("tunnel_method")).put("tunnel_port", 1111);
@@ -72,12 +72,15 @@ public class SshPasswordMySqlSourceAcceptanceTest extends AbstractSshMySqlSource
     assertTrue(actualMessage.contains(expectedMessage));
   }
 
-  private SshBastionContainer prepareBastionEnv() throws IOException, InterruptedException {
+  private JsonNode prepareBastionEnv(boolean isBastionRunning) throws IOException, InterruptedException {
     SshBastionContainer bastion = new SshBastionContainer();
     final Network network = Network.newNetwork();
     MySQLContainer<?> db = startTestContainers(bastion, network);
-    config = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, bastion.getBasicDbConfigBuider(db, List.of("public")));
-    return bastion;
+    JsonNode config = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, bastion.getBasicDbConfigBuider(db, List.of("public")));
+    if(!isBastionRunning) {
+      bastion.stopAndClose();
+    }
+    return config;
   }
 
   private MySQLContainer startTestContainers(SshBastionContainer bastion, Network network) {
