@@ -190,6 +190,7 @@ definitions:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
     $options:
       name: "conferences"
+      data_field: null
       cursor_field: "date_updated"
       lower_boundary_param: "DateUpdated>"
       upper_boundary_param: "DateUpdated<"
@@ -288,6 +289,26 @@ definitions:
     $options:
       name: "usage_triggers"
       primary_key: "sid"
+  # https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources
+  # This streams has records only if there are active conference participants (participants, which are on conference call at the moment request is made).
+  conference_participants_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ stream_slice.record.subresource_uris[options.subresource_uri_key] }}"
+      stream_slicer:
+        type: SubstreamSlicer
+        parent_stream_configs:
+          - stream: "*ref(definitions.conferences_stream)"
+            parent_key: "/"
+            stream_slice_field: "record"
+    $options:
+      name: "conference_participants"
+      primary_key: ["account_sid", "conference_sid"]
+      data_field: "participants"
+      subresource_uri_key: "participants"
 
 
 streams:
@@ -311,6 +332,7 @@ streams:
   - "*ref(definitions.alerts_stream)"
   - "*ref(definitions.usage_records_stream)"
   - "*ref(definitions.usage_triggers_stream)"
+  - "*ref(definitions.conference_participants_stream)"
 
 check:
   stream_names:
