@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 
-public class PostgresCil {
+public class PostgresCli {
 
   public static void main(final String[] args) throws Exception {
     if (args.length < 3 || args.length % 2 != 1) {
@@ -20,7 +20,7 @@ public class PostgresCil {
 
     final String configStr = args[0];
     final List<Pair<String, String>> tables = new ArrayList<>();
-    for (int i = 1; i < args.length; i++){
+    for (int i = 1; i < args.length; i += 2){
       tables.add(Pair.of(args[i], args[i + 1]));
     }
 
@@ -43,13 +43,11 @@ public class PostgresCil {
             }
           }
 
+          System.out.println("All tables found to exist; dropping them now.");
           // If they all exist, drop them
           for (final Pair<String, String> tableIdentifier : tables) {
-            final ResultSet tableList = dbm.getTables(null, tableIdentifier.getLeft(), tableIdentifier.getRight(), null);
-            if (!tableList.next()) {
-              ops.dropTableIfExists(database, tableIdentifier.getLeft(), tableIdentifier.getRight());
-              System.exit(1);
-            }
+            System.out.println("Attempting to drop " + tableIdentifier);
+            ops.dropTableIfExists(database, tableIdentifier.getLeft(), tableIdentifier.getRight());
           }
         }
     );
