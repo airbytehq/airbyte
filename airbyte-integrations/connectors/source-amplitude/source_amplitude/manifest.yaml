@@ -1,0 +1,171 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer:
+        - "{{ options.get('data_field') }}"
+  requester:
+    type: HttpRequester
+    url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency Server' else '' }}amplitude.com/api"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+      password: "{{ config['secret_key'] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - http_codes: [ 400 ]
+          action: IGNORE
+          error_message: The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.
+        - http_codes: [ 404 ]
+          action: IGNORE
+          error_message: No data collected
+        - http_codes: [ 504 ]
+          action: IGNORE
+          error_message: The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  date_stream_slicer:
+    type: DatetimeStreamSlicer
+    start_datetime:
+      datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+    end_datetime:
+      datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+    datetime_format: "%Y-%m-%d"
+    cursor_granularity: P1D
+    step: P15D
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  annotations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "annotations"
+      primary_key: "id"
+      path: "/2/annotations"
+      data_field: "data"
+
+  cohorts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "cohorts"
+      primary_key: "id"
+      path: "/3/cohorts"
+      data_field: "cohorts"
+
+  base_incremental_stream:
+    checkpoint_interval: 10
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
+            end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+
+  average_session_length_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          field_pointer: [ "data" ]
+          class_name: source_amplitude.components.AverageSessionLengthRecordExtractor
+    $options:
+      name: "average_session_length"
+      primary_key: "date"
+      path: "/2/sessions/average"
+      stream_cursor_field: "date"
+
+  active_users_stream:
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_incremental_stream.retriever.requester)"
+        request_options_provider:
+          request_parameters:
+            start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
+            end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
+            m: "active"
+            i: "1"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+        step: P1M
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          field_pointer: [ "data" ]
+          class_name: source_amplitude.components.ActiveUsersRecordExtractor
+    $options:
+      name: "active_users"
+      primary_key: "date"
+      path: "/2/users"
+      stream_cursor_field: "date"
+
+  events_stream:
+    checkpoint_interval: 1000
+    $ref: "*ref(definitions.base_incremental_stream)"
+    retriever:
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            start: "{{format_datetime(stream_slice.start_time, '%Y%m%dT%H') }}"
+            end: "{{format_datetime(stream_slice.end_time, '%Y%m%dT%H') }}"
+      stream_slicer:
+        $ref: "*ref(definitions.date_stream_slicer)"
+        step: "PT{{config.get('request_time_range', 24)}}H"
+        cursor_granularity: PT1H
+        start_datetime:
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+        end_datetime:
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: CustomRecordExtractor
+          class_name: source_amplitude.components.EventsExtractor
+          field_pointer: [ "data" ]
+        record_filter:
+          condition: "{{ record['event_time'] > stream_state.get('event_time',config['start_date']) }}"
+    $options:
+      name: "events"
+      primary_key: "uuid"
+      path: "/2/export"
+      stream_cursor_field: "event_time"
+
+streams:
+  - "*ref(definitions.annotations_stream)"
+  - "*ref(definitions.cohorts_stream)"
+  - "*ref(definitions.average_session_length_stream)"
+  - "*ref(definitions.active_users_stream)"
+  - "*ref(definitions.events_stream)"
+
+check:
+  stream_names:
+    - "annotations"

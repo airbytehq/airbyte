@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 
 # Build latest connector image
-docker build . -t $(cat acceptance-test-config.yml | grep "connector_image" | head -n 1 | cut -d: -f2)
+docker build . -t $(cat acceptance-test-config.yml | grep "connector_image" | head -n 1 | cut -d: -f2-)
 
-# Pull latest acctest image
+# Pull latest acceptance test image
 docker pull airbyte/connector-acceptance-test:latest
 
 # Run
