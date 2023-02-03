@@ -582,19 +582,16 @@ function builderStreamToDeclarativeSteam(
         url_base: values.global?.urlBase,
         path: stream.urlPath,
         http_method: stream.httpMethod,
-        request_options_provider: {
-          type: "InterpolatedRequestOptionsProvider",
-          request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
-          request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
-          request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-        },
+        request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
+        request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
+        request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
         authenticator: builderAuthenticatorToManifest(values.global),
       },
       record_selector: {
         type: "RecordSelector",
         extractor: {
           type: "DpathExtractor",
-          field_pointer: stream.fieldPointer,
+          field_path: stream.fieldPointer,
         },
       },
       paginator: stream.paginator
@@ -609,7 +606,6 @@ function builderStreamToDeclarativeSteam(
             },
             page_size_option: stream.paginator.pageSizeOption,
             pagination_strategy: stream.paginator.strategy,
-            url_base: values.global?.urlBase,
           }
         : { type: "NoPagination" },
       stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
