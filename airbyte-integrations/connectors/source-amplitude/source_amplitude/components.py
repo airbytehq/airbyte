@@ -93,8 +93,7 @@ class EventsExtractor(RecordExtractor, JsonSchemaMixin):
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
         except zipfile.BadZipFile as e:
-            logger.exception(e)
-            logger.error(
+            logger.exception(
                 f"Received an invalid zip file in response to URL: {response.request.url}."
                 f"The size of the response body is: {len(response.content)}"
             )
