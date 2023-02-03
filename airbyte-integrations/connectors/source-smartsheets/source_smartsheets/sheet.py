@@ -25,11 +25,7 @@ class SmartSheetAPIWrapper:
         kwargs = {"rows_modified_since": from_dt}
         if not from_dt:
             kwargs["page_size"] = 1
-        self._data = self._get_sheet(
-            self._spreadsheet_id,
-            include=["rowPermalink", "writerInfo"],
-            **kwargs
-            )
+        self._data = self._get_sheet(self._spreadsheet_id, include=["rowPermalink", "writerInfo"], **kwargs)
 
     @staticmethod
     def _column_to_property(column_type: str) -> Dict[str, any]:
@@ -48,22 +44,22 @@ class SmartSheetAPIWrapper:
         if len(self._metadata):
             metadata_fields = {
                 "sheetcreatedAt": self.data.created_at.isoformat(),
-                "sheetid": self.data.id,
+                "sheetid": str(self.data.id),
                 "sheetmodifiedAt": self.data.modified_at.isoformat(),
                 "sheetname": self.data.name,
                 "sheetpermalink": self.data.permalink,
-                "sheetversion": self.data.version,
+                "sheetversion": str(self.data.version),
                 "sheetaccess_level": str(self.data.access_level),
-                "row_id": row.id,
+                "row_id": str(row.id),
                 "row_access_level": str(row.access_level),
                 "row_created_at": row.created_at.isoformat(),
                 "row_created_by": row.created_by.name,
-                "row_expanded": row.expanded,
+                "row_expanded": str(row.expanded),
                 "row_modified_by": row.modified_by.name,
-                "row_parent_id": row.parent_id,
+                "row_parent_id": str(row.parent_id),
                 "row_permalink": row.permalink,
-                "row_number": row.row_number,
-                "row_version": row.version,
+                "row_number": str(row.row_number),
+                "row_version": str(row.version),
             }
             metadata_schema = {i: metadata_fields[f"{i}"] for i in self._metadata}
             record.update(metadata_schema)

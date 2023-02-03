@@ -18,8 +18,8 @@ def test_fetch_sheet(config, get_sheet_mocker):
 
     sheet._fetch_sheet()
     mock.assert_called_once_with(
-        spreadsheet_id, 
-        rows_modified_since=None, 
+        spreadsheet_id,
+        rows_modified_since=None,
         page_size=1,
         include=["rowPermalink", "writerInfo"]
         )
@@ -27,7 +27,7 @@ def test_fetch_sheet(config, get_sheet_mocker):
 
     sheet._fetch_sheet(from_dt="2022-03-04T00:00:00Z")
     mock.assert_called_with(
-        spreadsheet_id, 
+        spreadsheet_id,
         rows_modified_since="2022-03-04T00:00:00Z",
         include=["rowPermalink", "writerInfo"]
         )
