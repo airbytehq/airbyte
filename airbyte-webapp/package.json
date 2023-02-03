@@ -7,14 +7,25 @@
   },
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",
+
     "prestart": "make generate-client",
     "start": "node -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
     "prestart:cloud": "make generate-client",
     "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
-    "prebuild": "npm run generate-client",
-    "build": "vite build",
+
+    "prejs:start": "npm run generate-client",
+    "js:start": "node -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
+    "prejs:start:cloud": "npm run generate-client",
+    "js:start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js -r ./scripts/dev-overwrites.js ./node_modules/.bin/vite",
+
     "pretest": "make generate-client",
     "test": "jest --watch",
+
+    "prejs:test": "npm run generate-client",
+    "js:test": "jest --watch",
+
+    "prebuild": "npm run generate-client",
+    "build": "vite build",
     "test:ci": "jest --watchAll=false --silent",
     "test:coverage": "jest --coverage --watchAll=false",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
