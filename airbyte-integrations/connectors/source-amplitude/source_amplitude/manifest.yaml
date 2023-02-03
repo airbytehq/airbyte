@@ -141,10 +141,10 @@ definitions:
         step: "PT{{config.get('request_time_range', 24)}}H"
         cursor_granularity: PT1H
         start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S%z') }}"
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%f%z') }}"
         end_datetime:
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
       record_selector:
         type: RecordSelector
         extractor:
@@ -152,12 +152,12 @@ definitions:
           class_name: source_amplitude.components.EventsExtractor
           field_pointer: [ "data" ]
         record_filter:
-          condition: "{{ record['event_time'] > stream_state.get('event_time',config['start_date']) }}"
+          condition: "{{ record[options['stream_cursor_field']] > stream_state.get(options['stream_cursor_field'],config['start_date']) }}"
     $options:
       name: "events"
       primary_key: "uuid"
       path: "/2/export"
-      stream_cursor_field: "event_time"
+      stream_cursor_field: "server_upload_time"
 
 streams:
   - "*ref(definitions.annotations_stream)"

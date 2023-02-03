@@ -15,14 +15,16 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.21
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         empty_streams:
           - name: annotations
-            bypass_reason: "can not populate"
+            bypass_reason: "can not populate; upgraded plan needed"
           - name: cohorts
-            bypass_reason: "can not populate"
+            bypass_reason: "can not populate; upgraded plan needed"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
