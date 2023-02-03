@@ -644,6 +644,7 @@ class ModelToComponentFactory:
             request_option=request_option,
             stream=declarative_stream,
             stream_slice_field=model.stream_slice_field,
+            config=config,
             parameters=model.parameters,
         )
 
@@ -737,7 +738,7 @@ class ModelToComponentFactory:
                 ]
             )
 
-        return SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters=model.parameters)
+        return SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:

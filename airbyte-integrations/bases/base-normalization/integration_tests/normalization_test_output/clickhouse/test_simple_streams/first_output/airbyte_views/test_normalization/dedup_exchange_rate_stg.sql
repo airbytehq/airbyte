@@ -1,6 +1,6 @@
 
 
-  create view _airbyte_test_normalization.dedup_exchange_rate_stg__dbt_tmp 
+  create view _airbyte_test_normalization.dedup_exchange_rate_stg 
   
   as (
     

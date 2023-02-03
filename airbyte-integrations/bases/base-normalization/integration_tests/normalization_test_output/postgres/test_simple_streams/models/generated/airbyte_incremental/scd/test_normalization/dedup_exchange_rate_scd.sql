@@ -33,12 +33,12 @@
                         from (
                                 select distinct _airbyte_unique_key as unique_key
                                 from {{ this }}
-                                where 1=1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('dedup_exchange_rate')) }}
+                                where 1=1 {{ incremental_clause('_airbyte_normalized_at', adapter.quote(this.schema) + '.' + adapter.quote('dedup_exchange_rate')) }}
                             ) recent_records
                             left join (
                                 select _airbyte_unique_key as unique_key, count(_airbyte_unique_key) as active_count
                                 from {{ this }}
-                                where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', this.schema + '.' + adapter.quote('dedup_exchange_rate')) }}
+                                where _airbyte_active_row = 1 {{ incremental_clause('_airbyte_normalized_at', adapter.quote(this.schema) + '.' + adapter.quote('dedup_exchange_rate')) }}
                                 group by _airbyte_unique_key
                             ) active_counts
                             on recent_records.unique_key = active_counts.unique_key

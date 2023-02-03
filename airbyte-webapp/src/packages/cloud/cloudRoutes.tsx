@@ -12,15 +12,14 @@ import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
-import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
+import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 import { CloudRoutes } from "./cloudRoutePaths";
 import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 
 const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
 const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));
@@ -119,7 +118,6 @@ export const Routing: React.FC = () => {
   const { search } = useLocation();
 
   useEffectOnce(() => {
-    storeUtmFromQuery(search);
     setSegmentAnonymousId(search);
   });
 
