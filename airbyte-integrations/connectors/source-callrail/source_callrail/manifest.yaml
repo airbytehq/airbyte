@@ -26,7 +26,6 @@ definitions:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     step: "#/definitions/step"
-    cursor_field: "{{ parameters.stream_cursor_field }}"
     start_time_option:
       field_name: "start_date"
       inject_into: "request_parameter"
@@ -61,7 +60,7 @@ definitions:
   calls_stream:
     $parameters:
       name: "calls"
-      stream_cursor_field: "start_time"
+      cursor_field: "start_time"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -76,7 +75,7 @@ definitions:
   conversations_stream:
     $parameters:
       name: "conversations"
-      stream_cursor_field: "last_message_at"
+      cursor_field: "last_message_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -91,7 +90,7 @@ definitions:
   users_stream:
     $parameters:
       name: "users"
-      stream_cursor_field: "created_at"
+      cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -104,7 +103,7 @@ definitions:
   companies_stream:
     $parameters:
       name: "companies"
-      stream_cursor_field: "created_at"
+      cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"

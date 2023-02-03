@@ -20,7 +20,6 @@ definitions:
         - type: WaitTimeFromHeader
           header: "Retry-After"
   stream_slicer:
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
     datetime_format: "%s"
     cursor_granularity: "PT1S"
     start_datetime:
@@ -64,7 +63,6 @@ definitions:
       $ref: "#/definitions/retriever"
   people:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "created_at"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -82,26 +80,23 @@ definitions:
     $parameters:
       name: "people"
       path: "people.json"
-      stream_cursor_field: "created_at"
+      cursor_field: "created_at"
   bounces:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
-    stream_cursor_field: "bounced_at"
     $parameters:
-      stream_cursor_field: "bounced_at"
+      cursor_field: "bounced_at"
       name: "bounces"
       path: "bounces.json"
   unsubscribes:
     $ref: "#/definitions/base_stream"
     primary_key: "person_id"
-    stream_cursor_field: "unsubscribed_at"
     $parameters:
-      stream_cursor_field: "unsubscribed_at"
+      cursor_field: "unsubscribed_at"
       name: "unsubscribes"
       path: "unsubscribes.json"
   survey_responses:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "updated_at"
     retriever:
       $ref: "#/definitions/retriever"
       stream_slicer:
@@ -113,7 +108,7 @@ definitions:
           field_name: "updated_since"
           inject_into: "request_parameter"
     $parameters:
-      stream_cursor_field: "updated_at"
+      cursor_field: "updated_at"
       name: "survey_responses"
       path: "survey_responses.json"
 

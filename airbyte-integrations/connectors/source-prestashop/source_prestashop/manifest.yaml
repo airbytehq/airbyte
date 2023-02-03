@@ -30,7 +30,6 @@ definitions:
       $ref: "#/definitions/retriever"
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "date_upd"
     retriever:
       $ref: "#/definitions/retriever"
       stream_slicer:
@@ -212,7 +211,6 @@ definitions:
       cursor_field: "date_upd"
   messages_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "date_add"
     $parameters:
       name: "messages"
       path: "/messages"
@@ -221,7 +219,6 @@ definitions:
       cursor_field: "date_add"
   order_carriers_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "date_add"
     $parameters:
       name: "order_carriers"
       path: "/order_carriers"
@@ -237,7 +234,6 @@ definitions:
       primary_key: "id"
   order_histories_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "date_add"
     $parameters:
       name: "order_histories"
       path: "/order_histories"
@@ -246,7 +242,6 @@ definitions:
       cursor_field: "date_add"
   order_invoices_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "date_add"
     $parameters:
       name: "order_invoices"
       path: "/order_invoices"
@@ -255,7 +250,6 @@ definitions:
       cursor_field: "date_add"
   order_payments_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "date_add"
     $parameters:
       name: "order_payments"
       path: "/order_payments"
@@ -401,7 +395,6 @@ definitions:
       cursor_field: "date_upd"
   stock_movements_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "date_add"
     $parameters:
       name: "stock_movements"
       path: "/stock_movements"

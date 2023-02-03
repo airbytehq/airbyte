@@ -28,12 +28,11 @@ definitions:
         step: "P1M"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
         cursor_granularity: "PT1S"
-        cursor_field: "{{ parameters['stream_cursor_field'] }}"
+        cursor_field: "pub_date"
     $parameters:
       name: "archive"
       primary_key: "_id"
       path: "/archive/v1/{{ stream_slice['start_time'].split('-')[0] | int }}/{{ stream_slice['start_time'].split('-')[1] | int }}.json"
-      stream_cursor_field: "pub_date"
   most_popular_emailed_stream:
     retriever:
       $ref: "#/definitions/retriever"

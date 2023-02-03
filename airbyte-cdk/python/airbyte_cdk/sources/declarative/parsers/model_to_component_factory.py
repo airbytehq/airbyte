@@ -406,6 +406,8 @@ class ModelToComponentFactory:
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
         retriever = self._create_component_from_model(model=model.retriever, config=config)
 
+        cursor_field = self._get_cursor_field_from_stream_slicer(model)
+
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
         else:
@@ -423,11 +425,36 @@ class ModelToComponentFactory:
             primary_key=model.primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
-            stream_cursor_field=model.stream_cursor_field or [],
+            stream_cursor_field=cursor_field or [],
             transformations=transformations,
             config=config,
             parameters={},
         )
+
+    @staticmethod
+    def _get_cursor_field_from_stream_slicer(model: DeclarativeStreamModel) -> Optional[Union[str, List[str]]]:
+        if not model.retriever or not model.retriever.stream_slicer:
+            return None
+        elif hasattr(model.retriever.stream_slicer, "cursor_field"):
+            return model.retriever.stream_slicer.cursor_field
+        elif isinstance(model.retriever.stream_slicer, CartesianProductStreamSlicerModel):
+            # TODO: Remove once we redesign stream slicers
+            # This condition is a temporary hack to derive the cursor_field for streams that use a CartesianProductStreamSlicer that
+            # contains at least one cursor_field implying that it is an incremental stream. We have an upcoming PR that aims to decouple
+            # incremental and iteration concepts and once we support that, we can remove this logic and reference the cursor field stored
+            # in model.incremental_sync.cursor_field.
+            for slicer in model.retriever.stream_slicer.stream_slicers:
+                if hasattr(slicer, "cursor_field"):
+                    return slicer.cursor_field
+        elif isinstance(model.retriever.stream_slicer, dict) and "stream_slicers" in model.retriever.stream_slicer:
+            # TODO: Remove once we redesign stream slicers
+            # Similar to the above. This covers the case for CustomStreamSlicer whose model will be in the form of dictionaries instead
+            # of Pydantic fields. Hence why we need to handle this temporary hack a little differently
+            for slicer in model.retriever.stream_slicer["stream_slicers"]:
+                if "cursor_field" in slicer:
+                    return slicer.get("cursor_field")
+        else:
+            return None
 
     def create_default_error_handler(self, model: DefaultErrorHandlerModel, config: Config, **kwargs) -> DefaultErrorHandler:
         backoff_strategies = []

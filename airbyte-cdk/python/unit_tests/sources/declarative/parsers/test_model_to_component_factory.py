@@ -119,7 +119,14 @@ requester:
 retriever:
   name: "{{ parameters['name'] }}"
   stream_slicer:
-    type: SingleSlice
+    type: DatetimeStreamSlicer
+    start_datetime: "{{ config['start_time'] }}"
+    end_datetime: "{{ config['end_time'] }}"
+    step: "P10D"
+    cursor_field: "created"
+    cursor_granularity: "PT0.000001S"
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   paginator:
     type: NoPagination
   primary_key: "{{ parameters['primary_key'] }}"
@@ -128,7 +135,6 @@ partial_stream:
   schema_loader:
     type: JsonFileSchemaLoader
     file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
-  cursor_field: [ ]
 list_stream:
   $ref: "#/partial_stream"
   $parameters:
@@ -178,12 +184,12 @@ spec:
 
     stream_manifest = manifest["list_stream"]
     assert stream_manifest["type"] == "DeclarativeStream"
-    assert stream_manifest["cursor_field"] == []
     stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
     assert isinstance(stream, DeclarativeStream)
     assert stream.primary_key == "id"
     assert stream.name == "lists"
+    assert stream.stream_cursor_field == "created"
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"

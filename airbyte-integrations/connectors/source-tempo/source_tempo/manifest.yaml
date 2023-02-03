@@ -58,7 +58,6 @@ definitions:
       path: "customers"
   worklogs_stream:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "startDate"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
