@@ -8,3 +8,20 @@ if command -v npx &> /dev/null; then
     cd airbyte-webapp && npx --no lint-staged
   fi
 fi
+
+# Ensure that every file of api client source code orval autogenerates is kept up-to-date
+# by `make generate-client` during development
+if git diff --cached --name-only | grep --quiet airbyte-webapp/orval.config.ts; then
+  # grep target orval.config.ts :: extract lines like `target: "./some/generated-file.ts",`
+  # grep -oE '".+"'             :: extract the string literals (i.e. filepaths) e.g. `"./some/generated-file.ts"`
+  # tr -d '"'                   :: delete the quotes around the filepaths, e.g. `./some/generated-file.ts`
+  # sed 's/^\.\///'             :: remove initial `./` from filepaths, e.g. `some/generated-file.ts`
+  for generated_file in $(grep target orval.config.ts | grep -oE '".+"' | tr -d '"' | sed 's/^\.\///'); do
+    # ensure the list of dependencies for `make generate-client` contains $target
+    if ! grep $generated_file Makefile | grep --quiet generate-client:; then
+      echo "ERROR:" >&2
+      echo "Makefile is not ensuring that the generated code in $generated_file is up-to-date" >&2
+      exit 1
+    fi
+  done
+fi
