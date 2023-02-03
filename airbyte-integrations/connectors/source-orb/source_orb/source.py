@@ -229,9 +229,9 @@ class SubscriptionUsage(IncrementalOrbStream):
 
     def __init__(
         self,
+        start_date: pendulum.DateTime,
         subscription_usage_grouping_key: Optional[str] = None,
         plan_id: Optional[str] = None,
-        start_date: Optional[pendulum.DateTime] = None,
         end_date: Optional[pendulum.DateTime] = None,
         **kwargs,
     ):
@@ -239,8 +239,7 @@ class SubscriptionUsage(IncrementalOrbStream):
         super().__init__(**kwargs)
         self.subscription_usage_grouping_key = subscription_usage_grouping_key
         self.plan_id = plan_id
-        # default to 30 days ago if start_date is unspecified
-        self.start_date = start_date if start_date else pendulum.now().subtract(days=30)
+        self.start_date = to_datetime(start_date)
         # default to current time if end_date is unspecified
         self.end_date = end_date if end_date else pendulum.now()
 
