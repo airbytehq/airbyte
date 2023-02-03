@@ -13,16 +13,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Delete default old docker and replace it with a new one
-      shell: bash
-      run: |
-        sudo rm /var/lib/dpkg/lock
-        sudo rm /var/lib/dpkg/lock-frontend
-        sudo apt-get remove docker.io || sudo apt-get remove docker
-        curl -fsSL https://get.docker.com | bash -
-        sudo rm -f /var/lib/dpkg/lock
-        sudo rm -f /var/lib/dpkg/lock-frontend
-
     - name: Build
       id: build
       uses: ./.github/actions/build-branch
