@@ -348,6 +348,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
                 "{\n  \"coordinates\": [\n    -122.35,\n    37.55\n  ],\n  \"type\": \"Point\"\n}",
                 "{\n  \"coordinates\": [\n    [\n      -124.2,\n      42\n    ],\n    [\n      -120.01,\n      41.99\n    ]\n  ],\n  \"type\": \"LineString\"\n}")
             .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("NUMBER")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMBER(38,0)")
+            .addInsertValues("3E+1")
+            .addExpectedValues("30")
+            .build());
   }
 
 }
