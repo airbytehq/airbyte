@@ -105,64 +105,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
         "set attempt sync config");
   }
 
-  @Override
-  public SyncJobCheckConnectionInputs getCheckConnectionInputs(final SyncInputWithAttemptNumber input) {
-    final long jobId = input.getJobId();
-    final int attemptNumber = input.getAttemptNumber();
-
-    try {
-      final Job job = jobPersistence.getJob(jobId);
-      final JobConfig jobConfig = job.getConfig();
-      final JobSyncConfig jobSyncConfig = getJobSyncConfig(jobId, jobConfig);
-
-      final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-      final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
-      final StandardDestinationDefinition destinationDefinition =
-          configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-
-      final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
-      final StandardSourceDefinition sourceDefinition =
-          configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-
-      final IntegrationLauncherConfig sourceLauncherConfig = getSourceIntegrationLauncherConfig(
-          jobId,
-          attemptNumber,
-          jobConfig.getConfigType(),
-          jobSyncConfig,
-          sourceDefinition,
-          source.getConfiguration());
-
-      final IntegrationLauncherConfig destinationLauncherConfig =
-          getDestinationIntegrationLauncherConfig(
-              jobId,
-              attemptNumber,
-              jobSyncConfig,
-              destinationDefinition,
-              destination.getConfiguration());
-
-      final StandardCheckConnectionInput sourceCheckConnectionInput = new StandardCheckConnectionInput()
-          .withActorType(ActorType.SOURCE)
-          .withActorId(source.getSourceId())
-          .withConnectionConfiguration(source.getConfiguration());
-
-      final StandardCheckConnectionInput destinationCheckConnectionInput = new StandardCheckConnectionInput()
-          .withActorType(ActorType.DESTINATION)
-          .withActorId(destination.getDestinationId())
-          .withConnectionConfiguration(destination.getConfiguration());
-
-      return new SyncJobCheckConnectionInputs(
-          sourceLauncherConfig,
-          destinationLauncherConfig,
-          sourceCheckConnectionInput,
-          destinationCheckConnectionInput);
-
-    } catch (final Exception e) {
-      throw new RetryableException(e);
-    }
-  }
-
   private IntegrationLauncherConfig getSourceIntegrationLauncherConfig(final long jobId,
                                                                        final int attempt,
                                                                        final ConfigType configType,
@@ -246,6 +188,64 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     }
   }
 
+  @Override
+  public SyncJobCheckConnectionInputs getCheckConnectionInputs(final SyncInputWithAttemptNumber input) {
+    final long jobId = input.getJobId();
+    final int attemptNumber = input.getAttemptNumber();
+
+    try {
+      final Job job = jobPersistence.getJob(jobId);
+      final JobConfig jobConfig = job.getConfig();
+      final JobSyncConfig jobSyncConfig = getJobSyncConfig(jobId, jobConfig);
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+
+      final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+      final StandardDestinationDefinition destinationDefinition =
+          configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
+
+      final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
+      final StandardSourceDefinition sourceDefinition =
+          configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+
+      final IntegrationLauncherConfig sourceLauncherConfig = getSourceIntegrationLauncherConfig(
+          jobId,
+          attemptNumber,
+          jobConfig.getConfigType(),
+          jobSyncConfig,
+          sourceDefinition,
+          source.getConfiguration());
+
+      final IntegrationLauncherConfig destinationLauncherConfig =
+          getDestinationIntegrationLauncherConfig(
+              jobId,
+              attemptNumber,
+              jobSyncConfig,
+              destinationDefinition,
+              destination.getConfiguration());
+
+      final StandardCheckConnectionInput sourceCheckConnectionInput = new StandardCheckConnectionInput()
+          .withActorType(ActorType.SOURCE)
+          .withActorId(source.getSourceId())
+          .withConnectionConfiguration(source.getConfiguration());
+
+      final StandardCheckConnectionInput destinationCheckConnectionInput = new StandardCheckConnectionInput()
+          .withActorType(ActorType.DESTINATION)
+          .withActorId(destination.getDestinationId())
+          .withConnectionConfiguration(destination.getConfiguration());
+
+      return new SyncJobCheckConnectionInputs(
+          sourceLauncherConfig,
+          destinationLauncherConfig,
+          sourceCheckConnectionInput,
+          destinationCheckConnectionInput);
+
+    } catch (final Exception e) {
+      throw new RetryableException(e);
+    }
+  }
+
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public GeneratedJobInput getSyncWorkflowInput(final SyncInput input) {
@@ -321,7 +321,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       saveAttemptSyncConfig(jobId, attempt, connectionId, attemptSyncConfig);
 
       return new GeneratedJobInput(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
-
     } catch (final Exception e) {
       throw new RetryableException(e);
     }
