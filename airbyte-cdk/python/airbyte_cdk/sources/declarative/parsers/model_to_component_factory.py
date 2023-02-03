@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import importlib
+import re
 from typing import Any, Callable, List, Literal, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
@@ -199,13 +200,6 @@ class ModelToComponentFactory:
         return self._create_component_from_model(model=declarative_component_model, config=config, **kwargs)
 
     def _create_component_from_model(self, model: BaseModel, config: Config, **kwargs) -> Any:
-        if type(model) == dict:
-            model_type = self.TYPE_NAME_TO_MODEL.get(model.get("type", None), None)
-            if model_type:
-                parsed_model = model_type.parse_obj(model)
-                kwargs = self.CUSTOM_PARENT_KWARGS_MAPPING.get(type(parsed_model), lambda _: {})(model)
-                return self._create_component_from_model(model=parsed_model, config=config, **kwargs)
-
         if model.__class__ not in self.PYDANTIC_MODEL_TO_CONSTRUCTOR:
             raise ValueError(f"{model.__class__} with attributes {model} is not a valid component type")
         component_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(model.__class__)
@@ -349,6 +343,12 @@ class ModelToComponentFactory:
             return False
         return cls.__module__ == "builtins"
 
+    @staticmethod
+    def _extract_missing_parameter(error: TypeError) -> Optional[str]:
+        parameter_search = re.search("'(.*)'", str(error))
+        if parameter_search:
+            return parameter_search.group(1)
+
     def _create_nested_component(self, model, model_field: str, model_value: Any, config: Config) -> Any:
         type_name = model_value.get("type", None)
         if not type_name:
@@ -358,8 +358,13 @@ class ModelToComponentFactory:
         model_type = self.TYPE_NAME_TO_MODEL.get(type_name, None)
         if model_type:
             parsed_model = model_type.parse_obj(model_value)
-            kwargs = self.CUSTOM_PARENT_KWARGS_MAPPING.get(type(parsed_model), lambda _: {})(model)
-            return self._create_component_from_model(model=parsed_model, config=config, **kwargs)
+            try:
+                return self._create_component_from_model(model=parsed_model, config=config, **model_value.get("kwargs", {}))
+            except TypeError as error:
+                raise ValueError(
+                    f"Error creating component '{type_name}' with parent custom component {model.class_name}:"
+                    f" Please provide `{type_name}.$parameters.kwargs.{self._extract_missing_parameter(error)}`"
+                )
         else:
             raise ValueError(
                 f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"
@@ -449,7 +454,7 @@ class ModelToComponentFactory:
         )
 
         stream_slicer = None
-        if model.retriever.stream_slicer:
+        if hasattr(model.retriever, "stream_slicer") and model.retriever.stream_slicer:
             stream_slicer_model = model.retriever.stream_slicer
             stream_slicer = (
                 CartesianProductStreamSlicer(
