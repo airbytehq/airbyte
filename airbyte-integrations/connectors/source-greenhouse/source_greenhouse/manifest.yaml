@@ -45,7 +45,6 @@ definitions:
     type: DeclarativeStream
     $parameters:
       name: "applications"
-    name: "applications"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -67,7 +66,6 @@ definitions:
     $parameters:
       name: "applications"
       path: "applications"
-    name: "applications"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
@@ -80,36 +78,30 @@ definitions:
     $parameters:
       name: "candidates"
       path: "candidates"
-    name: "candidates"
   close_reasons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "close_reasons"
       path: "close_reasons"
-    name: "close_reasons"
     primary_key: "id"
   degrees_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "degrees"
       path: "degrees"
-    name: "degrees"
   departments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "departments"
       path: "departments"
-    name: "departments"
   jobs_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "jobs"
       path: "jobs"
-    name: "jobs"
   jobs_openings_stream:
     $parameters:
       name: "jobs_openings"
-    name: "jobs_openings"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -128,7 +120,6 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "applications_demographics_answers"
-    name: "applications_demographics_answers"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -145,7 +136,6 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "applications_interviews"
-    name: "applications_interviews"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -163,13 +153,11 @@ definitions:
     $parameters:
       name: "custom_fields"
       path: "custom_fields"
-    name: "custom_fields"
   questions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "demographics_questions"
       path: "demographics/questions"
-    name: "demographics_questions"
   demographics_answers_answer_options_stream:
     $parameters:
       name: "demographics_answers_answer_options"
@@ -187,14 +175,11 @@ definitions:
             - stream: "#/definitions/questions_stream"
               parent_key: "id"
               stream_slice_field: "parent_id"
-    name: "demographics_answers_answer_options"
-    primary_key: "id"
   demographics_question_sets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "demographics_question_sets"
       path: "demographics/question_sets"
-    name: "demographics_question_sets"
   demographics_question_sets_questions_stream:
     $parameters:
       name: "demographics_question_sets_questions"
@@ -212,32 +197,26 @@ definitions:
             - stream: "#/definitions/demographics_question_sets_stream"
               parent_key: "id"
               stream_slice_field: "parent_id"
-    name: "demographics_question_sets_questions"
-    primary_key: "id"
   interviews_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "interviews"
       path: "scheduled_interviews"
-    name: "interviews"
   job_posts_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "job_posts"
       path: "job_posts"
-    name: "job_posts"
   job_stages_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "job_stages"
       path: "job_stages"
-    name: "job_stages"
   jobs_stages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "jobs_stages"
       path: "jobs/{{ stream_slice.parent_id }}/stages"
-    name: "jobs_stages"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -255,43 +234,36 @@ definitions:
     $parameters:
       name: "offers"
       path: "offers"
-    name: "offers"
   rejection_reasons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "rejection_reasons"
       path: "rejection_reasons"
-    name: "rejection_reasons"
   scorecards_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "scorecards"
       path: "scorecards"
-    name: "scorecards"
   sources_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "sources"
       path: "sources"
-    name: "sources"
   users_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "users"
       path: "users"
-    name: "users"
   demographics_answers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "demographics_answers"
       path: "demographics/answers"
-    name: "demographics_answers"
   demographics_answer_options_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "demographics_answer_options"
       path: "demographics/answer_options"
-    name: "demographics_answer_options"
 streams:
   - "#/definitions/applications_stream"
   - "#/definitions/applications_demographics_answers_stream"

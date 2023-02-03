@@ -58,7 +58,6 @@ definitions:
     $parameters:
       name: "calls"
       cursor_field: "start_time"
-    name: "calls"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -74,7 +73,6 @@ definitions:
     $parameters:
       name: "conversations"
       cursor_field: "last_message_at"
-    name: "conversations"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -90,7 +88,6 @@ definitions:
     $parameters:
       name: "users"
       cursor_field: "created_at"
-    name: "users"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -104,7 +101,6 @@ definitions:
     $parameters:
       name: "companies"
       cursor_field: "created_at"
-    name: "companies"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"

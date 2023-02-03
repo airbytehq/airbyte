@@ -32,7 +32,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "user"
-    name: "user"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -47,7 +46,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "team"
-    name: "team"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -62,7 +60,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "list"
-    name: "list"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -77,7 +74,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "space"
-    name: "space"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -92,7 +88,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "folder"
-    name: "folder"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -107,7 +102,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "task"
-    name: "task"
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:

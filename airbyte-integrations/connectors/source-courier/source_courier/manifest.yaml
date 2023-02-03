@@ -59,7 +59,6 @@ definitions:
   ## MESSAGES API ##
   messages_stream:
     $ref: "#/definitions/base_stream"
-    name: "messages"
     primary_key: id
     $parameters:
       name: "messages"
@@ -90,7 +89,6 @@ definitions:
   message_info_stream:
     $ref: "#/definitions/base_stream"
     type: DeclarativeStream
-    name: message_info
     primary_key: id
     $parameters:
       name: message_info
@@ -108,7 +106,6 @@ definitions:
     type: DeclarativeStream
     $parameters:
       name: message_history
-    name: message_history
     primary_key: message_id
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -128,7 +125,6 @@ definitions:
     type: DeclarativeStream
     $parameters:
       name: message_output
-    name: message_output
     primary_key: message_id
     schema_loader:
       $ref: "#/definitions/schema_loader"

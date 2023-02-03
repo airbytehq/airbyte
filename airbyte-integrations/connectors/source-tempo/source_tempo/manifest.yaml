@@ -49,13 +49,11 @@ definitions:
     $parameters:
       name: "accounts"
       path: "accounts"
-    name: "accounts"
   customers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "customers"
       path: "customers"
-    name: "customers"
   worklogs_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -82,14 +80,12 @@ definitions:
     $parameters:
       name: "worklogs"
       path: "worklogs"
-    name: "worklogs"
     primary_key: "tempoWorklogId"
   workload_schemes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "workload-schemes"
       path: "workload-schemes"
-    name: "workload-schemes"
 
 streams:
   - "#/definitions/accounts_stream"

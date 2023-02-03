@@ -61,7 +61,6 @@ definitions:
       $ref: "#/definitions/retriever"
   people:
     $ref: "#/definitions/base_stream"
-    name: "people"
     retriever:
       $ref: "#/definitions/retriever"
       paginator:
@@ -82,7 +81,6 @@ definitions:
       cursor_field: "created_at"
   bounces:
     $ref: "#/definitions/base_stream"
-    name: "bounces"
     primary_key: "person_id"
     $parameters:
       cursor_field: "bounced_at"
@@ -90,7 +88,6 @@ definitions:
       path: "bounces.json"
   unsubscribes:
     $ref: "#/definitions/base_stream"
-    name: "unsubscribes"
     primary_key: "person_id"
     $parameters:
       cursor_field: "unsubscribed_at"
@@ -98,7 +95,6 @@ definitions:
       path: "unsubscribes.json"
   survey_responses:
     $ref: "#/definitions/base_stream"
-    name: "survey_responses"
     retriever:
       $ref: "#/definitions/retriever"
       stream_slicer:
