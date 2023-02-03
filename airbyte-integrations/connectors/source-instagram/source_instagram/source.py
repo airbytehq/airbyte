@@ -31,7 +31,7 @@ class ConnectorConfig(BaseModel):
     ig_user_ids: str = Field(
         None,
         title="Instagram Business Account ID(s)",
-        description='Comma Separated list of instagram account Ids. Each Instagram account ID must be a 15 digit number.  See the <a href="https://docs.airbyte.com/integrations/sources/instagram">docs</a> for more information.',
+        description='Comma Separated list of instagram account Ids. Each Instagram account ID must be a 17 digit number.  See the <a href="https://docs.airbyte.com/integrations/sources/instagram">docs</a> for more information.',
         pattern="^[0-9]{17}(,[0-9]{17})*$",
         examples=["12345678901234567,23456789012345678"],
     )
