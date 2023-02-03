@@ -2,6 +2,7 @@ import classNames from "classnames";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowSize } from "react-use";
 
+import { TextWithHTML } from "components/ui/TextWithHTML";
 import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./CatalogTreeTableCell.module.scss";
@@ -15,7 +16,7 @@ interface CatalogTreeTableCellProps {
 }
 
 // This lets us avoid the eslint complaint about unused styles
-const sizeMap: Record<Sizes, string> = {
+const sizeMap: Readonly<Record<Sizes, string>> = {
   xsmall: styles.xsmall,
   small: styles.small,
   medium: styles.medium,
@@ -27,10 +28,7 @@ const TooltipText: React.FC<{ textNodes: Element[] }> = ({ textNodes }) => {
     return null;
   }
   const text = textNodes.map((t) => decodeURIComponent(t.innerHTML)).join(" | ");
-  // This is not a safe use, and need to be removed still.
-  // https://github.com/airbytehq/airbyte/issues/22196
-  // eslint-disable-next-line react/no-danger
-  return <div dangerouslySetInnerHTML={{ __html: text }} />;
+  return <TextWithHTML text={text} />;
 };
 
 export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({
@@ -52,8 +50,12 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   }, [withTooltip]);
 
   useEffect(() => {
+    if (!withTooltip) {
+      return;
+    }
+
     // windowWidth is only here so this functionality changes based on window width
-    if (textNodes.length && windowWidth) {
+    if (windowWidth && textNodes.length) {
       const [scrollWidths, clientWidths] = textNodes.reduce(
         ([scrollWidths, clientWidths], textNode) => {
           if (textNode) {
@@ -65,13 +67,9 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
         [0, 0]
       );
 
-      if (scrollWidths > clientWidths) {
-        setTooltipDisabled(false);
-      } else {
-        setTooltipDisabled(true);
-      }
+      setTooltipDisabled(scrollWidths <= clientWidths);
     }
-  }, [textNodes, windowWidth]);
+  }, [textNodes, windowWidth, withTooltip]);
 
   return (
     <div ref={cell} className={classNames(styles.tableCell, className, sizeMap[size])} onMouseEnter={getTextNodes}>
