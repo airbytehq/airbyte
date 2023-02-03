@@ -163,7 +163,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         .withEmittedAt(1602637589000L);
   }
 
-  protected DataSource getDataSource(final JsonNode config) {
+  public DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
     return DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -173,7 +173,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         getConnectionProperties(config));
   }
 
-  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+  public JdbcDatabase getDatabase(final DataSource dataSource) {
     return new DefaultJdbcDatabase(dataSource);
   }
 
