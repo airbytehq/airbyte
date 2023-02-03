@@ -14,6 +14,7 @@ import {
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { ServicesProvider } from "core/servicesProvider";
+import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { defaultOssFeatures, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { ModalServiceProvider } from "hooks/services/Modal";
@@ -55,21 +56,23 @@ export const TestWrapper: React.FC<React.PropsWithChildren<TestWrapperOptions>> 
 }) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>
-      <ConfigContext.Provider value={{ config }}>
+      <ConfigContext.Provider value={{ config: { ...config, cloudApiUrl: "/cloud_api" } }}>
         <AnalyticsProvider>
-          <NotificationService>
-            <FeatureService features={features}>
-              <ServicesProvider>
-                <ModalServiceProvider>
-                  <ConfirmationModalService>
-                    <QueryClientProvider client={new QueryClient()}>
-                      <MemoryRouter>{children}</MemoryRouter>
-                    </QueryClientProvider>
-                  </ConfirmationModalService>
-                </ModalServiceProvider>
-              </ServicesProvider>
-            </FeatureService>
-          </NotificationService>
+          <AppMonitoringServiceProvider>
+            <NotificationService>
+              <FeatureService features={features}>
+                <ServicesProvider>
+                  <ModalServiceProvider>
+                    <ConfirmationModalService>
+                      <QueryClientProvider client={new QueryClient()}>
+                        <MemoryRouter>{children}</MemoryRouter>
+                      </QueryClientProvider>
+                    </ConfirmationModalService>
+                  </ModalServiceProvider>
+                </ServicesProvider>
+              </FeatureService>
+            </NotificationService>
+          </AppMonitoringServiceProvider>
         </AnalyticsProvider>
       </ConfigContext.Provider>
     </IntlProvider>

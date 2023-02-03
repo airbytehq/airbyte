@@ -150,7 +150,7 @@
   "credits.emailVerification.resendConfirmation": "We send you a new verification link.",
   "credits.emailVerification.resend": "Send verification link again",
   "credits.lowBalance": "Your credit balance is low. You need to add more credits to prevent your syncs from being stopped.",
-  "credits.zeroBalance": "All your syncs have been stopped because your credit balance is 0. Add more credits to enable your syncs again.",
+  "credits.zeroBalance": "All your paid syncs have been stopped because your credit balance is 0. Add more credits to enable your paid syncs again.",
 
   "firebase.auth.error.invalidPassword": "Incorrect password",
   "firebase.auth.error.networkRequestFailed": "There appears to be a network issue. Please try again later.",
