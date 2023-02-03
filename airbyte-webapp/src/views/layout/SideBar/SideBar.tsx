@@ -1,7 +1,7 @@
 import { PropsWithChildren } from "react";
 
 import { MenuContent } from "./components/MenuContent";
-import styles from "./GenericSideBar.module.scss";
+import styles from "./SideBar.module.scss";
 
 export const SideBar: React.FC<PropsWithChildren<unknown>> = ({ children }) => {
   return (

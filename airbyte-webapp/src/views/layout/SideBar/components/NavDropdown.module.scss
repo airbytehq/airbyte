@@ -4,11 +4,15 @@
 
 .dropdownMenuButton {
   background: transparent;
+  width: 100%;
   border: 0;
   cursor: pointer;
   color: inherit;
   text-decoration: none;
   transition: all variables.$transition-out;
+
+  // we need to set the flex properties here because Dropdown cannot use a Functional component as a child
+  // so we cannot us our <FlexContainer> and <FlexItem> components
   display: flex;
   flex-direction: column;
   align-items: center;
