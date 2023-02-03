@@ -92,7 +92,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     if (!fieldsContainRefDefinitionValue.isEmpty()) {
       fieldsContainRefDefinitionValue.forEach(key -> {
         if (data.get(key) != null && !data.get(key).isNull()) {
-          data.put(key, data.get(key).toString());
+          data.put(key, data.get(key).asText());
         }
       });
     }
