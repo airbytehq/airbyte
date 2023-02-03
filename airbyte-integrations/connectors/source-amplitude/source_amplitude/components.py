@@ -30,7 +30,7 @@ class AverageSessionLengthRecordExtractor(RecordExtractor):
             series = response_data.get("series", [])
             if len(series) > 0:
                 series = series[0]  # get the nested list
-                return [{"date": date, "length": series[i]} for i, date in enumerate(response_data["xValues"])]
+                return [{"date": date, "length": length} for date, length in zip(response_data["xValues"], series)]
         return []
 
 
@@ -38,11 +38,11 @@ class ActiveUsersRecordExtractor(RecordExtractor):
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_data = response.json().get("data", [])
         if response_data:
-            series = list(map(list, zip(*response_data["series"])))
+            series = list(zip(*response_data["series"]))
             if series:
                 return [
-                    {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
-                    for i, date in enumerate(response_data["xValues"])
+                    {"date": date, "statistics": dict(zip(response_data["seriesLabels"], users))}
+                    for date, users in zip(response_data["xValues"], series)
                 ]
         return []
 
@@ -78,12 +78,8 @@ class EventsExtractor(RecordExtractor, JsonSchemaMixin):
         date_time_fields = self._get_date_time_items_from_schema()
         for item in record:
             if item in date_time_fields:
-                dt_value = record[item]
-                if not dt_value:
-                    # either null or empty string, leave it as it
-                    record[item] = dt_value
-                else:
-                    record[item] = pendulum.parse(dt_value).to_rfc3339_string()
+                if record[item]:
+                    record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
     def extract_records(
