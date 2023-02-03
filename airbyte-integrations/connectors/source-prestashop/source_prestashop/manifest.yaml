@@ -30,7 +30,6 @@ definitions:
       $ref: "#/definitions/retriever"
   base_incremental_stream:
     $ref: "#/definitions/base_stream"
-    checkpoint_interval: 500
     retriever:
       $ref: "#/definitions/retriever"
       stream_slicer:
