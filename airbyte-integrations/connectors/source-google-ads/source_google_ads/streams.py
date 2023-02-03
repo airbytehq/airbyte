@@ -228,7 +228,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
                         yield record
                         continue
-                    self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
+                    if self.cursor_field is not None:
+                        self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
                     self.incremental_sieve_logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
                     yield record
                     continue
