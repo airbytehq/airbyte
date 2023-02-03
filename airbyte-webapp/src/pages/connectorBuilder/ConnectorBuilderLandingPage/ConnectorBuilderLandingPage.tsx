@@ -28,10 +28,10 @@ import {
   useConnectorBuilderLocalStorage,
 } from "services/connectorBuilder/ConnectorBuilderLocalStorageService";
 
+import { ReactComponent as AirbyteLogo } from "./airbyte-logo.svg";
 import styles from "./ConnectorBuilderLandingPage.module.scss";
-import { ReactComponent as AirbyteLogo } from "../../../../public/images/airbyte/logo.svg";
-import { ReactComponent as ImportYamlImage } from "../../../../public/images/connector-builder/import-yaml.svg";
-import { ReactComponent as StartFromScratchImage } from "../../../../public/images/connector-builder/start-from-scratch.svg";
+import { ReactComponent as ImportYamlImage } from "./import-yaml.svg";
+import { ReactComponent as StartFromScratchImage } from "./start-from-scratch.svg";
 import { ConnectorBuilderRoutePaths } from "../ConnectorBuilderRoutes";
 
 const YAML_UPLOAD_ERROR_ID = "connectorBuilder.yamlUpload.error";
