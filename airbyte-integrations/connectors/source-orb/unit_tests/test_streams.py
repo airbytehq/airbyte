@@ -74,7 +74,7 @@ def test_credit_ledger_entries_schema(patch_base_class, mocker, event_properties
 
 @pytest.mark.parametrize("group_by_key", ["foo-key", None])
 def test_subscription_usage_schema(patch_base_class, mocker, group_by_key):
-    stream = SubscriptionUsage(subscription_usage_grouping_key=group_by_key)
+    stream = SubscriptionUsage(start_date="2022-01-01T00:00:00Z", subscription_usage_grouping_key=group_by_key)
     json_schema = stream.get_json_schema()
 
     if group_by_key is None:
