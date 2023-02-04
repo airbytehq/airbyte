@@ -12,7 +12,6 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
     http_method: "GET"
     authenticator:
@@ -21,8 +20,6 @@ definitions:
 
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:

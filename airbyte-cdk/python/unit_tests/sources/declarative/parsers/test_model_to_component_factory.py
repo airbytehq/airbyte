@@ -108,7 +108,6 @@ metadata_paginator:
       page_size: 10
 requester:
   type: HttpRequester
-  name: "{{ parameters['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
@@ -117,7 +116,6 @@ requester:
   request_parameters:
     unit: "day"
 retriever:
-  name: "{{ parameters['name'] }}"
   stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{ config['start_time'] }}"
@@ -129,7 +127,6 @@ retriever:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   paginator:
     type: NoPagination
-  primary_key: "{{ parameters['primary_key'] }}"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -139,10 +136,11 @@ list_stream:
   $ref: "#/partial_stream"
   $parameters:
     name: "lists"
-    primary_key: "id"
     extractor:
       $ref: "#/extractor"
       field_path: ["{{ parameters['name'] }}"]
+  name: "lists"
+  primary_key: "id"
   retriever:
     $ref: "#/retriever"
     requester:
@@ -201,8 +199,8 @@ spec:
     assert add_fields.fields[0].value.string == "{{ response.to_add }}"
 
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert stream.retriever.primary_key == "{{ parameters['primary_key'] }}"
-    assert stream.retriever.name == "lists"
+    assert stream.retriever.primary_key == stream.primary_key
+    assert stream.retriever.name == stream.name
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
 
@@ -229,6 +227,7 @@ spec:
 
     assert isinstance(stream.retriever.requester, HttpRequester)
     assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester.path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
 
@@ -338,7 +337,6 @@ def test_create_substream_slicer():
       name: "{{ parameters['stream_name'] }}"
     retriever:
       requester:
-        name: "{{ parameters['name'] }}"
         type: "HttpRequester"
         path: "kek"
       record_selector:
@@ -346,17 +344,17 @@ def test_create_substream_slicer():
           field_path: []
     stream_A:
       type: DeclarativeStream
+      name: "A"
+      primary_key: "id"
       $parameters:
-        name: "A"
-        primary_key: "id"
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
     stream_B:
       type: DeclarativeStream
+      name: "B"
+      primary_key: "id"
       $parameters:
-        name: "B"
-        primary_key: "id"
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
@@ -585,15 +583,16 @@ requester:
     header: header_value
   {error_handler}
     """
+    name = "name"
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
-    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config)
+    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name)
 
     assert isinstance(selector, HttpRequester)
     assert selector._method == HttpMethod.GET
-    assert selector.name == "lists"
+    assert selector.name == "name"
     assert selector.path.string == "/v3/marketing/lists"
     assert selector.url_base.string == "https://api.sendgrid.com"
 
@@ -651,9 +650,10 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
+      name: "lists"
+      primary_key: id
       $parameters:
         name: "lists"
-        primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
           name: "{{ parameters.stream_name }}"
@@ -694,6 +694,8 @@ def test_config_with_defaults():
     assert stream.primary_key == "id"
     assert stream.name == "lists"
     assert isinstance(stream.retriever, SimpleRetriever)
+    assert stream.retriever.name == stream.name
+    assert stream.retriever.primary_key == stream.primary_key
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader.file_path.string == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
@@ -733,10 +735,7 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel,
-        component_definition=paginator_manifest,
-        config=input_config,
-        url_base="https://airbyte.io"
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
     )
 
     assert isinstance(paginator, DefaultPaginator)
@@ -849,13 +848,11 @@ def test_custom_components_do_not_contain_extra_fields():
                     "primary_key": "id",
                     "retriever": {
                         "type": "SimpleRetriever",
-                        "name": "a_parent",
-                        "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
-                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                        "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "some"},
                     },
                     "schema_loader": {
                         "type": "JsonFileSchemaLoader",
@@ -897,13 +894,11 @@ def test_parse_custom_component_fields_if_subcomponent():
                     "primary_key": "id",
                     "retriever": {
                         "type": "SimpleRetriever",
-                        "name": "a_parent",
-                        "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
-                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                        "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "some"},
                     },
                     "schema_loader": {
                         "type": "JsonFileSchemaLoader",
@@ -1032,11 +1027,8 @@ class TestCreateTransformations:
             "primary_key": [],
             "retriever": {
                 "type": "SimpleRetriever",
-                "name": "test",
-                "primary_key": [],
                 "requester": {
                     "type": "HttpRequester",
-                    "name": "test",
                     "url_base": "http://localhost:6767/",
                     "path": "items/",
                     "request_options_provider": {
