@@ -474,7 +474,7 @@ class DeclarativeStream(BaseModel):
     type: Literal["DeclarativeStream"]
     retriever: Union[CustomRetriever, SimpleRetriever]
     name: Optional[str] = ""
-    primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
+    primary_key: Optional[PrimaryKey] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
     transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")

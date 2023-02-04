@@ -468,16 +468,7 @@ definitions:
         default: ""
       primary_key:
         definition: The primary key of the stream
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              type: string
-          - type: array
-            items:
-              type: array
-              items:
-                type: string
+        "$ref": "#/definitions/PrimaryKey"
         default: ""
       schema_loader:
         definition: The schema loader used to retrieve the schema for the current stream

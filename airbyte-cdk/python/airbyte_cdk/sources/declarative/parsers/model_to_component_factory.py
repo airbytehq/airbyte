@@ -404,7 +404,8 @@ class ModelToComponentFactory:
         )
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
-        retriever = self._create_component_from_model(model=model.retriever, config=config, name=model.name, primary_key=model.primary_key)
+        primary_key = model.primary_key.__root__ if model.primary_key else None
+        retriever = self._create_component_from_model(model=model.retriever, config=config, name=model.name, primary_key=primary_key)
 
         cursor_field = self._get_cursor_field_from_stream_slicer(model)
 
@@ -422,7 +423,7 @@ class ModelToComponentFactory:
                 transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
             name=model.name,
-            primary_key=model.primary_key,
+            primary_key=primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
             stream_cursor_field=cursor_field or [],
@@ -515,7 +516,7 @@ class ModelToComponentFactory:
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str, **kwargs) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
         authenticator = self._create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
         error_handler = (
             self._create_component_from_model(model=model.error_handler, config=config)
