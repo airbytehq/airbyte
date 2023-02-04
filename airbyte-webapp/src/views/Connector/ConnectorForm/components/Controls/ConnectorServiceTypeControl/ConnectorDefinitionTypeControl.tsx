@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListProps } from "react-select";
 
+import { BuilderPrompt } from "components/connectorBuilder/BuilderPrompt";
 import { GAIcon } from "components/icons/GAIcon";
 import { ControlLabels } from "components/LabeledControl";
 import {
@@ -41,6 +42,11 @@ const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps
   <>
     <components.MenuList {...props}>{children}</components.MenuList>
     <div className={styles.connectorListFooter}>
+      {props.selectProps.selectProps.formType === "source" && (
+        <div className={styles.builderPromptContainer}>
+          <BuilderPrompt />
+        </div>
+      )}
       <button
         className={styles.requestNewConnectorBtn}
         onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
@@ -173,6 +179,7 @@ export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeCon
             />
           ),
         }),
+      formType,
     }),
     [closeModal, formType, formatMessage, openModal, workspace.email]
   );
