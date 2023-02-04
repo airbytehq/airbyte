@@ -203,8 +203,15 @@ definitions:
   # https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources
   messages_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_nested_stream.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+        record_filter:
+          condition: "{{ not options.with_media_only or record.num_media|int() > 0 }}"
     $options:
       name: "messages"
+      data_field: null
       cursor_field: "date_sent"
       lower_boundary_param: "DateSent>"
       upper_boundary_param: "DateSent<"
