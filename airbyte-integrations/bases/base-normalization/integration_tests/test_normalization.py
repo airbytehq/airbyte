@@ -133,12 +133,13 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "first_output"))
         shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
         # Verify normalization results using the test models
+        setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 1)
         dbt_test(destination_type, test_root_dir)
 
         # Second run - emit an empty record, then run normalization
         message_file = os.path.join("resources", test_resource_name, "data_input", "messages2.txt")
         assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
-        setup_dbt_incremental_test(destination_type, test_resource_name, test_root_dir)
+        setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 2)
         dbt_test_utils.dbt_run(destination_type, test_root_dir)
         normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "second_output")
         dbt_test(destination_type, test_root_dir)
@@ -146,7 +147,7 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         # Third run - same thing. emit an empty record, then run normalization
         message_file = os.path.join("resources", test_resource_name, "data_input", "messages3.txt")
         assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
-        setup_dbt_incremental_test(destination_type, test_resource_name, test_root_dir)
+        setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 3)
         dbt_test_utils.dbt_run(destination_type, test_root_dir)
         normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "third_output")
         dbt_test(destination_type, test_root_dir)
@@ -386,6 +387,31 @@ def setup_dbt_incremental_test(destination_type: DestinationType, test_resource_
     os.makedirs(test_directory, exist_ok=True)
     copy_test_files(
         os.path.join("resources", test_resource_name, "dbt_test_config", "dbt_data_tests_incremental"),
+        test_directory,
+        destination_type,
+        replace_identifiers,
+    )
+
+
+def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str, sync_number: int):
+    """
+    Prepare the data (copy) for the models for dbt test.
+    """
+    replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
+    test_directory = os.path.join(test_root_dir, "models/dbt_data_tests")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    os.makedirs(test_directory, exist_ok=True)
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_tests_tmp"),
+        test_directory,
+        destination_type,
+        replace_identifiers,
+    )
+    test_directory = os.path.join(test_root_dir, "tests")
+    shutil.rmtree(test_directory, ignore_errors=True)
+    os.makedirs(test_directory, exist_ok=True)
+    copy_test_files(
+        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_tests"),
         test_directory,
         destination_type,
         replace_identifiers,
