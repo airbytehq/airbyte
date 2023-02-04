@@ -235,11 +235,10 @@ class SubscriptionUsage(IncrementalOrbStream):
         end_date: Optional[pendulum.DateTime] = None,
         **kwargs,
     ):
-
         super().__init__(**kwargs)
         self.subscription_usage_grouping_key = subscription_usage_grouping_key
         self.plan_id = plan_id
-        self.start_date = to_datetime(start_date)
+        self.start_date = start_date
         # default to current time if end_date is unspecified
         self.end_date = end_date if end_date else pendulum.now()
 
