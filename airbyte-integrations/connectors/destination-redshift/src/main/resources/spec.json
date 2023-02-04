@@ -207,14 +207,14 @@
                   }
                 ]
               },
-              "file_buffer_size": {
+              "file_buffer_count": {
                 "title": "File Buffer Count",
                 "type": "integer",
-                "minimum": 15,
+                "minimum": 10,
                 "maximum": 50,
-                "default": 15,
+                "default": 10,
                 "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
-                "examples": ["15"]
+                "examples": ["10"]
               }
             }
           }

@@ -17,7 +17,7 @@ interface AllConnectionStatusConnectEntity {
   name: string;
   connector: string;
   status: string;
-  lastSyncStatus: string;
+  lastSyncStatus: string | null;
 }
 
 interface AllConnectionsStatusCellProps {

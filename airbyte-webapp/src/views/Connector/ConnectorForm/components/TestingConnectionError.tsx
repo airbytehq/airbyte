@@ -1,44 +1,24 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
+import { Callout } from "components/ui/Callout";
+import { FlexContainer } from "components/ui/Flex";
 import { StatusIcon } from "components/ui/StatusIcon";
-
-const Error = styled(StatusIcon)`
-  padding-left: 1px;
-  width: 26px;
-  min-width: 26px;
-  height: 26px;
-  padding-top: 5px;
-  font-size: 17px;
-`;
-
-const ErrorBlock = styled.div`
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 18px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-`;
-
-const ErrorText = styled.div`
-  font-weight: normal;
-  color: ${({ theme }) => theme.dangerColor};
-  max-width: 400px;
-`;
+import { Text } from "components/ui/Text";
 
 const ErrorSection: React.FC<{
   errorTitle: React.ReactNode;
   errorMessage: React.ReactNode;
 }> = ({ errorMessage, errorTitle }) => (
-  <ErrorBlock>
-    <Error />
-    <div>
-      {errorTitle}
-      <ErrorText>{errorMessage}</ErrorText>
-    </div>
-  </ErrorBlock>
+  <Callout variant="error">
+    <FlexContainer alignItems="flex-start" gap="sm">
+      <StatusIcon />
+      <FlexContainer direction="column">
+        <Text size="lg">{errorTitle}</Text>
+        <Text>{errorMessage}</Text>
+      </FlexContainer>
+    </FlexContainer>
+  </Callout>
 );
 
 const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({ errorMessage }) => (
