@@ -21,7 +21,10 @@
 .adjective {
   font-weight: 700;
   background-image: linear-gradient(to right, colors.$blue-400, colors.$orange-300);
-  background-clip: text;
+
+  // disable no-vendor-prefix check, because without -webkit-background-clip, the text gradient is not properly rendered in Chrome
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
