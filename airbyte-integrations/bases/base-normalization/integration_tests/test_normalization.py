@@ -119,37 +119,31 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         # Create the test folder with dbt project and appropriate destination settings to run integration tests from
         test_root_dir = setup_test_dir(destination_type, test_resource_name)
 
-        # First run - emit the raw record, then run normalization
+        # First sync
         destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
-        # Run destination connector to populate _airbyte_raw table
         assert setup_input_raw_data(destination_type, test_resource_name, test_root_dir, destination_config)
-        # Generate models from catalog
         generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "catalog.json", dbt_test_utils)
-        # Set up test resources and models
-        setup_dbt_test(destination_type, test_resource_name, test_root_dir)
         dbt_test_utils.dbt_check(destination_type, test_root_dir)
-        # Run normalization
-        dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
-        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "first_output"))
-        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
-        # Verify normalization results using the test models
         setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 1)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
+        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "sync1_output"))
+        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
         dbt_test(destination_type, test_root_dir)
 
-        # Second run - emit an empty record, then run normalization
+        # Second sync
         message_file = os.path.join("resources", test_resource_name, "data_input", "messages2.txt")
         assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
         setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 2)
         dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "second_output")
+        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "sync2_output")
         dbt_test(destination_type, test_root_dir)
 
-        # Third run - same thing. emit an empty record, then run normalization
+        # Third sync
         message_file = os.path.join("resources", test_resource_name, "data_input", "messages3.txt")
         assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
         setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 3)
         dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "third_output")
+        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "sync3_output")
         dbt_test(destination_type, test_root_dir)
     finally:
         dbt_test_utils.set_target_schema(target_schema)
