@@ -398,7 +398,7 @@ def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test
     shutil.rmtree(test_directory, ignore_errors=True)
     os.makedirs(test_directory, exist_ok=True)
     copy_test_files(
-        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_tests_tmp"),
+        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_expectations"),
         test_directory,
         destination_type,
         replace_identifiers,
@@ -407,7 +407,7 @@ def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test
     shutil.rmtree(test_directory, ignore_errors=True)
     os.makedirs(test_directory, exist_ok=True)
     copy_test_files(
-        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_tests"),
+        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_assertions"),
         test_directory,
         destination_type,
         replace_identifiers,
