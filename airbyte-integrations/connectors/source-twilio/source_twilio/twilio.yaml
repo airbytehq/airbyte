@@ -334,6 +334,36 @@ definitions:
     $options:
       name: "dependent_phone_numbers"
       primary_key: "sid"
+  # https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources
+  message_media_stream:
+    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    retriever:
+      $ref: "*ref(definitions.base_incremental_nested_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.base_incremental_nested_stream.retriever.requester)"
+        path: "{{ stream_slice.record.subresource_uris.media }}"
+      stream_slicer:
+        type: CustomStreamSlicer
+        class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
+        stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "*ref(definitions.messages_stream)"
+                parent_key: "/"
+                stream_slice_field: "record"
+          - $ref: "*ref(definitions.datetime_slicer)"
+    $options:
+      name: "message_media"
+      primary_key: "sid"
+      data_field: "media_list"
+      lower_boundary_param: "DateCreated>"
+      upper_boundary_param: "DateCreated<"
+      cursor_field: "date_created"
+      cursor_granularity: "PT0S"
+      step_default: "P1Y"
+      boundary_format: "%Y-%m-%dT%H:%M:%SZ"
+      with_media_only: true
+    stream_cursor_field: "date_created"
 
 
 streams:
@@ -359,6 +389,7 @@ streams:
   - "*ref(definitions.usage_triggers_stream)"
   - "*ref(definitions.conference_participants_stream)"
   - "*ref(definitions.dependent_phone_numbers_stream)"
+  - "*ref(definitions.message_media_stream)"
 
 check:
   stream_names:
