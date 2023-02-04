@@ -760,6 +760,11 @@
   "connectorBuilder.loadingStreamList": "Loading",
   "connectorBuilder.noStreamSelected": "No stream selected",
   "connectorBuilder.streamListUrlError": "Could not load URL",
+  "connectorBuilder.builderPrompt.button": "Build your connector",
+  "connectorBuilder.builderPrompt.title": "Need to build your own source?",
+  "connectorBuilder.builderPrompt.description": "Build your source with our {adjective} {noun}",
+  "connectorBuilder.builderPrompt.adjective": "low-code",
+  "connectorBuilder.builderPrompt.noun": "connector builder",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

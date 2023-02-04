@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { HeadTitle } from "components/common/HeadTitle";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { BuildYourConnectorPrompt } from "components/connectorBuilder/BuildYourConnectorPrompt";
+import { BuilderPrompt } from "components/connectorBuilder/BuilderPrompt";
 import { Card } from "components/ui/Card";
 import { PageHeader } from "components/ui/PageHeader";
 
@@ -16,6 +16,7 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
 import { SourceForm } from "./components/SourceForm";
+import styles from "./CreateSourcePage.module.scss";
 
 const CreateSourcePage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_NEW);
@@ -47,8 +48,8 @@ const CreateSourcePage: React.FC = () => {
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />
-          <Card>
-            <BuildYourConnectorPrompt />
+          <Card className={styles.builderPrompt}>
+            <BuilderPrompt />
           </Card>
           <CloudInviteUsersHint connectorType="source" />
         </FormPageContent>

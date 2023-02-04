@@ -1,0 +1,31 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.title {
+  font-weight: 600;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.text {
+  flex: 1;
+  padding-right: variables.$spacing-xl;
+}
+
+.description {
+  color: colors.$grey-400;
+}
+
+.adjective {
+  font-weight: 700;
+  background-image: linear-gradient(to right, colors.$blue-400, colors.$orange-300);
+  background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.noun {
+  font-weight: 700;
+}
