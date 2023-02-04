@@ -120,16 +120,21 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <CatalogTreeTableCell size="xsmall">
         <ArrowRightIcon />
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
-        <Text size="md" className={styles.cellText}>
+      <CatalogTreeTableCell withTooltip ellipsisContent>
+        <Text as="div" size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell withTooltip>
-        <Text size="md" className={styles.cellText}>
+      <CatalogTreeTableCell withTooltip ellipsisContent>
+        <Text as="div" size="md" className={styles.cellText}>
           {destName}
         </Text>
       </CatalogTreeTableCell>
     </Row>
   );
 };
+
+// TODO:
+// * CatalogTreeTableTextCell (applies Text internally)
+// * Text has ref and using that Text inside CatalogTreeTableTextCell for width chek
+// * Optimize rendering by less useEffect and useState

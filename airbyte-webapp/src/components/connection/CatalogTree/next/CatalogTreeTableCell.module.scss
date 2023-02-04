@@ -7,12 +7,12 @@ $large: 200px;
   flex: 1 0 $medium;
   min-width: $medium;
 
-  [data-type="text"] {
-    word-break: break-word;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+  // [data-type="text"] {
+  //   word-break: break-word;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+  //   white-space: nowrap;
+  // }
 
   &.xsmall {
     flex-basis: $xsmall;
@@ -36,4 +36,11 @@ $large: 200px;
 
 .fullWidthTooltip {
   max-width: none;
+}
+
+.ellipsis {
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
