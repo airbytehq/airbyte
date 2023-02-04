@@ -11,7 +11,7 @@
 {%- macro default__incremental_clause(col_emitted_at, tablename) -%}
 {% if is_incremental() %}
 and coalesce(
-    cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >= (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ tablename }}),
+    cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) > (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ tablename }}),
     {# -- if {{ col_emitted_at }} is NULL in either table, the previous comparison would evaluate to NULL, #}
     {# -- so we coalesce and make sure the row is always returned for incremental processing instead #}
     true)
@@ -22,7 +22,7 @@ and coalesce(
 {%- macro snowflake__incremental_clause(col_emitted_at, tablename) -%}
 {% if is_incremental() %}
     {% if get_max_normalized_cursor(col_emitted_at, tablename) %}
-and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
+and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >
     cast('{{ get_max_normalized_cursor(col_emitted_at, tablename) }}' as {{ type_timestamp_with_timezone() }})
     {% endif %}
 {% endif %}
@@ -32,7 +32,7 @@ and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
 {%- macro bigquery__incremental_clause(col_emitted_at, tablename) -%}
 {% if is_incremental() %}
     {% if get_max_normalized_cursor(col_emitted_at, tablename) %}
-and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
+and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >
     cast('{{ get_max_normalized_cursor(col_emitted_at, tablename) }}' as {{ type_timestamp_with_timezone() }})
     {% endif %}
 {% endif %}
@@ -41,7 +41,7 @@ and cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
 {%- macro sqlserver__incremental_clause(col_emitted_at, tablename) -%}
 {% if is_incremental() %}
 and ((select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ tablename }}) is null
-  or cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >=
+  or cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }}) >
      (select max(cast({{ col_emitted_at }} as {{ type_timestamp_with_timezone() }})) from {{ tablename }}))
 {% endif %}
 {%- endmacro -%}
