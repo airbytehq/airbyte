@@ -23,6 +23,7 @@
   "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
   "sidebar.demo": "Explore our demo",
+  "sidebar.builder": "Builder",
 
   "form.continue": "Continue",
   "form.error": "Error: {message}",

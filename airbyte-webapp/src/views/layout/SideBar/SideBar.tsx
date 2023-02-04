@@ -14,6 +14,7 @@ import { useConfig } from "config";
 import { links } from "utils/links";
 
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
+import BuilderIcon from "./components/BuilderIcon";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import RecipesIcon from "./components/RecipesIcon";
@@ -69,6 +70,14 @@ const SideBar: React.FC = () => {
               <DestinationIcon />
               <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.destinations" />
+              </Text>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink className={navLinkClassName} to={RoutePaths.ConnectorBuilder}>
+              <BuilderIcon />
+              <Text className={styles.text} size="sm">
+                <FormattedMessage id="sidebar.builder" />
               </Text>
             </NavLink>
           </li>
