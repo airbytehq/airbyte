@@ -16,6 +16,8 @@ from source_pipedrive.streams import (
     Persons,
     PipedriveStream,
     Pipelines,
+    ProductFields,
+    Products,
     Stages,
 )
 
@@ -54,6 +56,7 @@ def test_path_refresh(config_refresh):
         (OrganizationFields, "organizationFields"),
         (PersonFields, "personFields"),
         (Leads, "leads"),
+        (ProductFields, "productFields"),
     ],
 )
 def test_streams_full_refresh(stream, endpoint, requests_mock, config_refresh):
@@ -82,6 +85,7 @@ def test_streams_full_refresh(stream, endpoint, requests_mock, config_refresh):
         Persons,
         Pipelines,
         Stages,
+        Products,
         # Users
     ],
 )

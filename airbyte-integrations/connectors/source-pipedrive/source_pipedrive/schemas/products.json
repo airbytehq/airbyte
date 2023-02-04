@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "unit": {
+      "type": ["null", "string"]
+    },
+    "tax": {
+      "type": ["null", "number"]
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "selectable": {
+      "type": ["null", "boolean"]
+    },
+    "first_char": {
+      "type": ["null", "string"]
+    },
+    "visible_to": {
+      "type": ["null", "string"]
+    },
+    "owner_id": {
+      "type": ["null", "integer"]
+    },
+    "files_count": {
+      "type": ["null", "integer"]
+    },
+    "followers_count": {
+      "type": ["null", "integer"]
+    },
+    "add_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "update_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "prices": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "product_id": {
+          "type": ["null", "integer"]
+        },
+        "price": {
+          "type": ["null", "number"]
+        },
+        "currency": {
+          "type": ["null", "string"]
+        },
+        "cost": {
+          "type": ["null", "number"]
+        },
+        "overhead_cost": {
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}

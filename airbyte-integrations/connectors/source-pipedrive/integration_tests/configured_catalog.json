@@ -137,6 +137,42 @@
       "sync_mode": "incremental",
       "cursor_field": ["update_time"],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "products",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["update_time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "product_fields",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["update_time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "deal_products",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["update_time"],
+      "destination_sync_mode": "append"
     }
   ]
 }

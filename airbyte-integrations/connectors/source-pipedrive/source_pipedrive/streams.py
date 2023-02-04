@@ -109,9 +109,102 @@ class Deals(PipedriveStream):
     retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
     """
 
+    path_param = "deal"
+
 
 class DealFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields"""
+
+
+class DealProducts(PipedriveStream):
+    """
+    https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts
+    """
+
+    extra_params = {"sort": "products_count DESC"}
+    should_continue = True
+
+    def path(self, **kwargs) -> str:
+        return "deals"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if self.should_continue:
+            return super().next_page_token(response)
+        return None
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = response.json().get(self.data_field) or []
+        for record in records:
+            record = record.get(self.data_field) or record
+            deal_id = record[self.primary_key]
+            products_count = record["products_count"]
+
+            if products_count <= 0:
+                self.logger.info(f"Deal {deal_id} has no products, stop checking.")
+                self.should_continue = False
+                break
+
+            products = self._get_products_from_deal(deal_id=deal_id)
+
+            for product in products:
+                yield product
+
+    """
+    Returns products from a deal, with a iterable
+    """
+
+    def _get_products_from_deal(self, deal_id: int) -> Iterable[Mapping[str, Any]]:
+        path = self.path(
+            stream_state={},
+            stream_slice={},
+            next_page_token=None,
+        )
+
+        path = f"{path}/{deal_id}/products"
+
+        headers = dict({}, **self.authenticator.get_auth_header())
+
+        request = self._create_prepared_request(
+            path=path,
+            headers=headers,
+            params=self.request_params(
+                stream_state={},
+                stream_slice={},
+                next_page_token=None,
+            ),
+            json=None,
+            data=None,
+        )
+
+        request_kwargs = {}
+
+        response = self._send_request(request, request_kwargs)
+
+        yield from self.parse_product_response(response, stream_state={}, stream_slice={})
+
+    def parse_product_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        records = response.json().get(self.data_field) or []
+        for record in records:
+            record = record.get(self.data_field) or record
+            if self.primary_key in record and record[self.primary_key] is None:
+                record[self.primary_key] = 0
+
+            yield record
+
+
+class Products(PipedriveStream):
+    """
+    https://developers.pipedrive.com/docs/api/v1/Products#getProducts
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+    path_param = "product"
+
+
+class ProductFields(PipedriveStream):
+    """
+    https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields
+    """
 
 
 class Leads(PipedriveStream):

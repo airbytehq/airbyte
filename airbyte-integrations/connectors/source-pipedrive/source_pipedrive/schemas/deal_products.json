@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "deal_id": {
+      "type": ["null", "integer"]
+    },
+    "order_nr": {
+      "type": ["null", "number"]
+    },
+    "product_id": {
+      "type": ["null", "integer"]
+    },
+    "product_variation_id": {
+      "type": ["null", "integer"]
+    },
+    "item_price": {
+      "type": ["null", "number"]
+    },
+    "discount_percentage": {
+      "type": ["null", "number"]
+    },
+    "duration": {
+      "type": ["null", "number"]
+    },
+    "duration_unit": {
+      "type": ["null", "string"]
+    },
+    "sum_no_discount": {
+      "type": ["null", "number"]
+    },
+    "sum": {
+      "type": ["null", "number"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "enable_flag": {
+      "type": ["null", "boolean"]
+    },
+    "add_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "last_edit": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "comments": {
+      "type": ["null", "string"]
+    },
+    "active_flag": {
+      "type": ["null", "boolean"]
+    },
+    "tax": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "sum_formatted": {
+      "type": ["null", "string"]
+    },
+    "quantity_formatted": {
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "type": ["null", "integer"]
+    }
+
+
+  }
+}
