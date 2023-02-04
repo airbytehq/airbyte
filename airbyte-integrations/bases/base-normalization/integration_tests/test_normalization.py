@@ -135,7 +135,8 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
         setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 2)
         dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "sync2_output")
+        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "sync2_output"))
+        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
         dbt_test(destination_type, test_root_dir)
 
         # Third sync
@@ -143,7 +144,8 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
         setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 3)
         dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "sync3_output")
+        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "sync3_output"))
+        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
         dbt_test(destination_type, test_root_dir)
     finally:
         dbt_test_utils.set_target_schema(target_schema)
