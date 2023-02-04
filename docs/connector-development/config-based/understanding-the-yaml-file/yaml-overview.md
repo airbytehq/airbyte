@@ -16,32 +16,79 @@ More information on how to define a stream's schema can be found [here](../../..
 The stream object is represented in the YAML file as:
 
 ```yaml
-  Stream:
+  DeclarativeStream:
+    description: A stream whose behavior is described by a set of declarative low code components
     type: object
     additionalProperties: true
     required:
-      - name
+      - type
       - retriever
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      name:
+      type:
         type: string
-      primary_key:
-        "$ref": "#/definitions/PrimaryKey"
+        enum: [DeclarativeStream]
       retriever:
-        "$ref": "#/definitions/Retriever"
-      stream_cursor_field:
+        definition: Component used to coordinate how records are extracted across stream slices and request pages
+        anyOf:
+          - "$ref": "#/definitions/CustomRetriever"
+          - "$ref": "#/definitions/SimpleRetriever"
+      incremental_sync:
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
+      name:
+        definition: The stream name
         type: string
-      transformations:
-        "$ref": "#/definitions/RecordTransformation"
+        default: ""
+      primary_key:
+        definition: The primary key of the stream
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: array
+              items:
+                type: string
+        default: ""
       schema_loader:
-        "$ref": "#/definitions/InlineSchemaLoader"
+        definition: The schema loader used to retrieve the schema for the current stream
+        anyOf:
+          - "$ref": "#/definitions/InlineSchemaLoader"
+          - "$ref": "#/definitions/JsonFileSchemaLoader"
+      stream_cursor_field:
+        definition: The field of the records being read that will be used during checkpointing
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              - type: string
+      transformations:
+        definition: A list of transformations to be applied to each output record in the
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/AddFields"
+            - "$ref": "#/definitions/CustomTransformation"
+            - "$ref": "#/definitions/RemoveFields"
+      $parameters:
+        type: object
+        additional_properties: true
 ```
 
 More details on streams and sources can be found in the [basic concepts section](../../cdk-python/basic-concepts.md).
 
-### Data retriever
+### Configuring a stream for incremental syncs
+
+If you want to allow your stream to be configured so that only data that has changed since the prior sync is replicated to a destination, you can specify a `DatetimeBasedCursor` on your `Streams`'s `incremental_sync` field.
+
+Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
+
+More information on `incremental_sync` configurations and the `DatetimeCursorBased` component can be found in the [incremental syncs](./incremental-syncs.md) section.
+
+## Data retriever
 
 The data retriever defines how to read the data for a Stream and acts as an orchestrator for the data retrieval flow.
 
@@ -50,7 +97,7 @@ It is described by:
 1. [Requester](./requester.md): Describes how to submit requests to the API source
 2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
 3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Stream slicer](./stream-slicers.md): Describes how to partition the stream, enabling incremental syncs and checkpointing
+4. [Iterable](./location-iteration.md): Describes how to retrieve data from multiple resource locations 
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
@@ -60,46 +107,77 @@ Since the `Retriever` is defined as part of the Stream configuration, different 
 The schema of a retriever object is:
 
 ```yaml
-  Retriever:
+  retriever:
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the iterator.
     type: object
-    anyOf:
-      - "$ref": "#/definitions/SimpleRetriever"
-  SimpleRetriever:
-    type: object
-    additionalProperties: true
     required:
-      - name
-      - requester
+      - type
       - record_selector
+      - requester
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      type:
+        type: string
+        enum: [SimpleRetriever]
+      record_selector:
+        "$ref": "#/definitions/RecordSelector"
+      requester:
+        anyOf:
+          - "$ref": "#/definitions/CustomRequester"
+          - "$ref": "#/definitions/HttpRequester"
       name:
         type: string
+        default: ""
+      paginator:
+        anyOf:
+          - "$ref": "#/definitions/DefaultPaginator"
+          - "$ref": "#/definitions/NoPagination"
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
-      requester:
-        "$ref": "#/definitions/Requester"
-      record_selector:
-        "$ref": "#/definitions/HttpSelector"
-      paginator:
-        "$ref": "#/definitions/Paginator"
-      stream_slicer:
-        "$ref": "#/definitions/StreamSlicer"
-  PrimaryKey:
-    type: string
+      iterator:
+        default: []
+        anyOf:
+          - "$ref": "#/definitions/CustomIterator"
+          - "$ref": "#/definitions/ListIterator"
+          - "$ref": "#/definitions/SubstreamIterator"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomIterator"
+                - "$ref": "#/definitions/ListIterator"
+                - "$ref": "#/definitions/SubstreamIterator"
+      $parameters:
+        type: object
+        additionalProperties: true
 ```
 
-## Configuring the cursor field for incremental syncs
+### Iterating over multiple locations to get data / Iterating over data partitioned in multiple locations
 
-Incremental syncs are supported by using a `DatetimeStreamSlicer` to iterate over a datetime range.
+Some sources might require specifying additional parameters that are needed to retrieve data. Using the `Iterator` component, you can specify a static or dynamic set of elements which will be iterated upon and made available for use when a connector is requesting data from a source.
 
-Given a start time, an end time, and a step function, it will partition the interval [start, end] into small windows of the size described by the step.
-Note that the `StreamSlicer`'s `cursor_field` must match the `Stream`'s `stream_cursor_field`.
+More information on how to configure the `iterable` field on a Retriever to retrieve data from multiple location can be found in the [iteration](./location.md) section.
 
-More information on `DatetimeStreamSlicer` can be found in the [stream slicers](./stream-slicers.md#datetimestreamslicer) section.
+### Combining Incremental Syncs and Iterable Locations
+
+A stream can be configured to support incrementally syncing data that is spread across multiple locations by defining `incremental_sync` on the `Stream` and `iterable` on the `Retriever`.
+
+During a sync where both are configured, the Cartesian product of these parameters will be calculated and the connector will repeat requests to the source using the different combinations of parameters to get all of the data.
+
+For example, if we had a `DatetimeBasedCursor` requesting data over a 3-day range partitioned by day and a `ListIterator` with the following locations `A`, `B`, and `C`. This would result in the following combinations that will be used to request data.
+
+| Location | Date Range                                |
+|----------|-------------------------------------------|
+| A        | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
+| B        | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
+| C        | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
+| A        | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
+| B        | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
+| C        | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
+| A        | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
+| B        | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
+| C        | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
 
 ## More readings
 
 - [Requester](./requester.md)
-- [Stream slicers](./stream-slicers.md)
+- [Incremental Syncs](./incremental-syncs.md)
+- [Iteration Over Locations](./location-iteration.md)
