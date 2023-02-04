@@ -1,0 +1,10 @@
+{
+  "bigquery": [],
+  "oracle": [],
+  "postgres": [],
+  "snowflake": [],
+  "redshift": [],
+  "mysql": [],
+  "mssql": [],
+  "tidb": []
+}

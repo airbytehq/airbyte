@@ -94,6 +94,66 @@ def test_normalization(destination_type: DestinationType, test_resource_name: st
         dbt_test_utils.set_target_schema(target_schema)
 
 
+@pytest.mark.parametrize("destination_type", list(DestinationType))
+def test_sparse_nested_fields(destination_type: DestinationType):
+    # TODO extract these conditions?
+    if destination_type.value not in dbt_test_utils.get_test_targets():
+        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+    if (destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)):
+        pytest.skip(f"Destinations {destination_type} does not support nested streams")
+    if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
+        pytest.skip(f"{destination_type} does not support incremental yet")
+
+    target_schema = dbt_test_utils.target_schema
+    if destination_type.value == DestinationType.ORACLE.value:
+        # Oracle does not allow changing to random schema
+        dbt_test_utils.set_target_schema("test_normalization")
+    elif destination_type.value == DestinationType.REDSHIFT.value:
+        # set unique schema for Redshift test
+        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
+
+    try:
+        print(f"Testing sparse nested field normalization {destination_type} in ", dbt_test_utils.target_schema)
+        test_resource_name = "test_sparse_nested_streams"
+
+        # Create the test folder with dbt project and appropriate destination settings to run integration tests from
+        test_root_dir = setup_test_dir(destination_type, test_resource_name)
+
+        # First run - emit the raw record, then run normalization
+        destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
+        # Run destination connector to populate _airbyte_raw table
+        assert setup_input_raw_data(destination_type, test_resource_name, test_root_dir, destination_config)
+        # Generate models from catalog
+        generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "catalog.json", dbt_test_utils)
+        # Set up test resources and models
+        setup_dbt_test(destination_type, test_resource_name, test_root_dir)
+        dbt_test_utils.dbt_check(destination_type, test_root_dir)
+        # Run normalization
+        dbt_test_utils.dbt_run(destination_type, test_root_dir, force_full_refresh=True)
+        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "first_output"))
+        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
+        # Verify normalization results using the test models
+        dbt_test(destination_type, test_root_dir)
+
+        # Second run - emit an empty record, then run normalization
+        message_file = os.path.join("resources", test_resource_name, "data_input", "messages2.txt")
+        assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
+        setup_dbt_incremental_test(destination_type, test_resource_name, test_root_dir)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
+        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "second_output")
+        dbt_test(destination_type, test_root_dir)
+
+        # Third run - same thing. emit an empty record, then run normalization
+        message_file = os.path.join("resources", test_resource_name, "data_input", "messages3.txt")
+        assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
+        setup_dbt_incremental_test(destination_type, test_resource_name, test_root_dir)
+        dbt_test_utils.dbt_run(destination_type, test_root_dir)
+        normalize_dbt_output(test_root_dir, "build/run/airbyte_utils/models/generated/", "third_output")
+        dbt_test(destination_type, test_root_dir)
+    finally:
+        dbt_test_utils.set_target_schema(target_schema)
+
+
 def run_test_normalization(destination_type: DestinationType, test_resource_name: str):
     print(f"Testing normalization {destination_type} for {test_resource_name} in ", dbt_test_utils.target_schema)
     # Create the test folder with dbt project and appropriate destination settings to run integration tests from
