@@ -1,15 +1,10 @@
 {
-  "bigquery": [
+  "bigquery": [],
   "oracle": [],
-  "postgres": [
-  ],
-  "snowflake": [
-  ],
+  "postgres": [],
+  "snowflake": [],
   "redshift": [],
-  "mysql": [
-  ],
-  "mssql": [
-  ],
-  "tidb": [
-  ]
+  "mysql": [],
+  "mssql": [],
+  "tidb": []
 }

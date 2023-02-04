@@ -1,4 +1,9 @@
 # This message is to verify that we don't encounter absurd duplication in deeply-nested fields with sparse data.
-# We'll emit a message in the first sync with nested fields, and the not emit any more messages in future syncs.
+# We'll emit a message in the first sync with nested fields, but future syncs won't have the nested fields.
 # Ideally, we only duplicate the message twice.
 {"type": "RECORD", "record": {"stream": "sparse_nested_stream", "data": {"id": 1, "updated_at": 100, "obj_nest1": {"obj_nest2": {"foo": "bar"}}, "arr_nest1": [{"arr_nest_2": [{"foo": "bar"}]}]}, "emitted_at": 1672567200}}
+
+# This message is to verify our behavior in the case where the stream doesn't see any new data after the first sync.
+# Our current behavior is to duplicate the first sync's data once per normalization run.
+# Of course, it would be better to halt after a constant number of duplications (ideally no duplications).
+{"type": "RECORD", "record": {"stream": "sparse_nested_stream_empty", "data": {"id": 1, "updated_at": 100, "obj_nest1": {"obj_nest2": {"foo": "bar"}}, "arr_nest1": [{"arr_nest_2": [{"foo": "bar"}]}]}, "emitted_at": 1672567200}}

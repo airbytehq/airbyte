@@ -113,7 +113,6 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
 
     try:
-        # TODO run normalization three times against the sparse catalog
         print(f"Testing sparse nested field normalization {destination_type} in ", dbt_test_utils.target_schema)
         test_resource_name = "test_sparse_nested_streams"
 
