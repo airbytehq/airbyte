@@ -3,31 +3,19 @@
 #
 
 
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 import requests
+from abc import ABC
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
-"""
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 
-# Basic full refresh stream
+def convert_date_to_epoch(date: str):
+    return int(pendulum.parse(date).timestamp())
+
+
 class Nettbutikk24Stream(HttpStream, ABC):
     """
     TODO remove this comment
@@ -60,13 +48,15 @@ class Nettbutikk24Stream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.access_token = config.get("access_token")
-        self.today = pendulum.today()
-        self.initial_unix_start_time = config.get('initial_unix_start_time')
+
+        self.uri_params = {
+            "since": convert_date_to_epoch(config.get('initial_start_date')),
+            "offset": 0,
+            "limit": 100,
+        }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        TODO: Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
         This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
         to most other methods in this class to help you form headers, request bodies, query params, etc..
 
@@ -78,203 +68,81 @@ class Nettbutikk24Stream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+        next_path = response.json().get("paging", {}).get("next")
+        if next_path:
+            offset = next_path.split("/")[7]
+            return {"offset": offset}
+
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {"access_token": self.access_token}
+        return {"access_token": self.access_token, "flat": True}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
+
         yield from response.json().get("data")
 
 
-class Customers(Nettbutikk24Stream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
-
-
-class Products(Nettbutikk24Stream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        unix_time = self.initial_unix_start_time
-        return f"products/10/0/{unix_time}"
-
-    # TODO: Override the request_params method to define any query parameters to be set. Remove this method if you don't need to define request params.
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-
-        params = {"access_token": self.access_token, "flat": 1}
-        return params
-
-    # path params
-    def path_params(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Mapping[str, Any]:
-        return {}
-
-
-
-# Basic incremental stream
 class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
-
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = None
-    
+    state_checkpoint_interval = 1
 
     @property
     def cursor_field(self) -> str:
         """
-        TODO
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
         :return str: The name of the cursor field.
         """
-        #return []
+
         return "modified_on"
-
-
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
-        # return {}
-        print('-------------------------------------------------------------------------')
-        print('  Dette er :', current_stream_state) 
+        start_ts = self.uri_params.get("since")
 
-        print(latest_record)
+        latest_record_modified_on = latest_record.get(self.cursor_field, "1970-01-01")
+        latest_record_unix = convert_date_to_epoch(latest_record_modified_on)
+        latest_record_unix = max(latest_record_unix, start_ts)
 
-        if current_stream_state is None:
-
-            return {self.cursor_field: self.initial_unix_start_time}
-        else:
-            latest_record_modified_on = latest_record.get(self.cursor_field)
-            
-            latest_record_unix = str(int(pendulum.parse(latest_record_modified_on).timestamp()))
-            print('---------------UNIX',latest_record_unix)
-            return {self.cursor_field: latest_record_unix}
+        return {self.cursor_field: latest_record_unix}
 
 
-
-class Employees(IncrementalNettbutikk24Stream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the cursor_field. Required.
-    cursor_field = "modified_on"
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+class Products(IncrementalNettbutikk24Stream):
     primary_key = "id"
 
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        offset = next_page_token.get("offset", 0) if next_page_token else 0
+        self.uri_params.update({"offset": int(offset)})
+
+        return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
 
 
-    def path(self, stream_state: Mapping[str, Any] = None, **kwargs) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/employees then this should
-        return "single". Required.
-        """
+class Orders(IncrementalNettbutikk24Stream):
+    primary_key = "id"
 
-        # get current state
-        #cursor_state = self.current_stream_state.get(self.cursor_field)
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        offset = next_page_token.get("offset", 0) if next_page_token else 0
+        self.uri_params.update({"offset": int(offset)})
 
-        ##start_unix_time = self.initial_unix_start_time
-        ##
-        ##cursor_state = self.current_stream_state.get(self.cursor_field)
-        ##
-        ##print(cursor_state)
-
-        # 1660728085
-        if stream_state is None:
-            print('jdshghgfdkhgkdfsgjkf')
-
-            from_time =  self.initial_unix_start_time
-        else:
-            print('jdshghgfdkhgkdfsgjkfsadsafERWGFREWF')
-            from_time = stream_state.get(self.cursor_field)
-            
-
-        print('current_stream_state___________________-',from_time)
-
-        #
-
-        # ,"stream_state":{"modified_on":"1665565796"}}}]]]
-        # 1665565796
-        # ,"stream_state":{"modified_on":"1668027241"}}}]]]
-    
-
-        return f"products/30/0/{from_time}"
-
-    #def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        """
-        TODO: Optionally override this method to define this stream's slices. If slicing is not needed, delete this method.
-
-        Slices control when state is saved. Specifically, state is saved after a slice has been fully read.
-        This is useful if the API offers reads by groups or filters, and can be paired with the state object to make reads efficient. See the "concepts"
-        section of the docs for more information.
-
-        The function is called before reading any records in a stream. It returns an Iterable of dicts, each containing the
-        necessary data to craft a request for a slice. The stream state is usually referenced to determine what slices need to be created.
-        This means that data in a slice is usually closely related to a stream's cursor_field and stream_state.
-
-        An HTTP request is made for each returned slice. The same slice can be accessed in the path, request_params and request_header functions to help
-        craft that specific request.
-
-        For example, if https://example-api.com/v1/employees offers a date query params that returns data for that particular day, one way to implement
-        this would be to consult the stream state object for the last synced date, then return a slice containing each date from the last synced date
-        till now. The request_params function would then grab the date from the stream_slice and make it part of the request by injecting it into
-        the date query param.
-        """
-        raise NotImplementedError(
-            "Implement stream slices or delete this method!")
+        return "orders/{limit}/{offset}/{since}".format_map(self.uri_params)
 
 
-# Source
 class SourceNettbutikk24(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
 
@@ -286,14 +154,6 @@ class SourceNettbutikk24(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        #token = config["access_token"]
-        #initial_unix_start_time = config["initial_unix_start_time"]
-
-        # Oauth2Authenticator is also available if you need oauth support
-        #auth = TokenAuthenticator(token=token)
-        return [Customers(config=config), Products(config=config), Employees(config=config)]
+        return [Orders(config=config), Products(config=config)]

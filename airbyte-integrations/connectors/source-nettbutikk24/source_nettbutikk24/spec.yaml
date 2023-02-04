@@ -5,14 +5,14 @@ connectionSpecification:
   type: object
   required:
     - access_token
-    - initial_unix_start_time
+    - initial_start_date
   properties:
     access_token:
       type: string
       description: Access token
       airbyte_secret: true
-    initial_unix_start_time:
+    initial_start_date:
       type: string
-      description: First unix timestamp we wnat to fetch data forma
+      description: First date we wnat to fetch data from
       examples: 
-       - 1657887613
+       - 2023-01-01

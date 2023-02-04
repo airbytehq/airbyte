@@ -63,6 +63,13 @@ First, make sure you build the latest Docker image:
 docker build . -t airbyte/source-nettbutikk24:dev
 ```
 
+#### Push docker image
+```shell
+docker tag airbyte/source-nettbutikk24:dev askeladden/source-nettbutikk24:dev
+docker push askeladden/source-nettbutikk24:dev
+```
+
+
 You can also build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:source-nettbutikk24:airbyteDocker
