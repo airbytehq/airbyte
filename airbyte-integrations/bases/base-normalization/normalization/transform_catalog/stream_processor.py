@@ -1358,11 +1358,11 @@ where 1 = 1
         if self.destination_type == DestinationType.BIGQUERY:
             # see https://docs.getdbt.com/reference/resource-configs/bigquery-configs
             if partition_by == PartitionScheme.UNIQUE_KEY:
-                config["cluster_by"] = f'["{self.airbyte_unique_key}","{self.airbyte_emitted_at}"]'
+                config["cluster_by"] = f'["{self.airbyte_unique_key}","{self.airbyte_normalized_at}"]'
             elif partition_by == PartitionScheme.ACTIVE_ROW:
-                config["cluster_by"] = f'["{self.airbyte_unique_key}_scd","{self.airbyte_emitted_at}"]'
+                config["cluster_by"] = f'["{self.airbyte_unique_key}_scd","{self.airbyte_normalized_at}"]'
             else:
-                config["cluster_by"] = f'"{self.airbyte_emitted_at}"'
+                config["cluster_by"] = f'"{self.airbyte_normalized_at}"'
             if partition_by == PartitionScheme.ACTIVE_ROW:
                 config["partition_by"] = (
                     '{"field": "_airbyte_active_row", "data_type": "int64", ' '"range": {"start": 0, "end": 1, "interval": 1}}'
@@ -1370,7 +1370,7 @@ where 1 = 1
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:
-                config["partition_by"] = '{"field": "' + self.airbyte_emitted_at + '", "data_type": "timestamp", "granularity": "day"}'
+                config["partition_by"] = '{"field": "' + self.airbyte_normalized_at + '", "data_type": "timestamp", "granularity": "day"}'
         elif self.destination_type == DestinationType.POSTGRES:
             # see https://docs.getdbt.com/reference/resource-configs/postgres-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
@@ -1378,35 +1378,35 @@ where 1 = 1
                     "[{'columns':['_airbyte_active_row','"
                     + self.airbyte_unique_key
                     + "_scd','"
-                    + self.airbyte_emitted_at
+                    + self.airbyte_normalized_at
                     + "'],'type': 'btree'}]"
                 )
             elif partition_by == PartitionScheme.UNIQUE_KEY:
                 config["indexes"] = "[{'columns':['" + self.airbyte_unique_key + "'],'unique':True}]"
             else:
-                config["indexes"] = "[{'columns':['" + self.airbyte_emitted_at + "'],'type':'btree'}]"
+                config["indexes"] = "[{'columns':['" + self.airbyte_normalized_at + "'],'type':'btree'}]"
         elif self.destination_type == DestinationType.REDSHIFT:
             # see https://docs.getdbt.com/reference/resource-configs/redshift-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
-                config["sort"] = f'["_airbyte_active_row", "{self.airbyte_unique_key}_scd", "{self.airbyte_emitted_at}"]'
+                config["sort"] = f'["_airbyte_active_row", "{self.airbyte_unique_key}_scd", "{self.airbyte_normalized_at}"]'
             elif partition_by == PartitionScheme.UNIQUE_KEY:
-                config["sort"] = f'["{self.airbyte_unique_key}", "{self.airbyte_emitted_at}"]'
+                config["sort"] = f'["{self.airbyte_unique_key}", "{self.airbyte_normalized_at}"]'
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:
-                config["sort"] = f'"{self.airbyte_emitted_at}"'
+                config["sort"] = f'"{self.airbyte_normalized_at}"'
         elif self.destination_type == DestinationType.SNOWFLAKE:
             # see https://docs.getdbt.com/reference/resource-configs/snowflake-configs
             if partition_by == PartitionScheme.ACTIVE_ROW:
                 config[
                     "cluster_by"
-                ] = f'["_AIRBYTE_ACTIVE_ROW", "{self.airbyte_unique_key.upper()}_SCD", "{self.airbyte_emitted_at.upper()}"]'
+                ] = f'["_AIRBYTE_ACTIVE_ROW", "{self.airbyte_unique_key.upper()}_SCD", "{self.airbyte_normalized_at.upper()}"]'
             elif partition_by == PartitionScheme.UNIQUE_KEY:
-                config["cluster_by"] = f'["{self.airbyte_unique_key.upper()}", "{self.airbyte_emitted_at.upper()}"]'
+                config["cluster_by"] = f'["{self.airbyte_unique_key.upper()}", "{self.airbyte_normalized_at.upper()}"]'
             elif partition_by == PartitionScheme.NOTHING:
                 pass
             else:
-                config["cluster_by"] = f'["{self.airbyte_emitted_at.upper()}"]'
+                config["cluster_by"] = f'["{self.airbyte_normalized_at.upper()}"]'
         if unique_key:
             config["unique_key"] = f'"{unique_key}"'
         elif not self.parent:
