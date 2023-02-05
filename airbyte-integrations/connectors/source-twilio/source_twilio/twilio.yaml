@@ -14,6 +14,12 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config.account_sid }}"
       password: "{{ config.auth_token }}"
+    error_handler:
+      type: "DefaultErrorHandler"
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          # https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting
+          header: "Retry-After"
   retriever:
     type: SimpleRetriever
     record_selector:
