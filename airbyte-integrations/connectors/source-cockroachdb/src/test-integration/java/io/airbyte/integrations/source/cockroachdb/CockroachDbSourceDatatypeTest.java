@@ -322,7 +322,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06'", null)
-            .addExpectedValues("04:05:06.000000")
+            .addExpectedValues("04:05:06")
             .addNullExpectedValue()
             .build());
 
@@ -341,7 +341,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("timestamp")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-            .addExpectedValues("2004-10-19T10:23:54.000000Z", "2004-10-19T10:23:54.123456Z", null)
+            .addExpectedValues("2004-10-19T10:23:54", "2004-10-19T10:23:54.123456", null)
             .build());
 
     addDataTypeTestData(
