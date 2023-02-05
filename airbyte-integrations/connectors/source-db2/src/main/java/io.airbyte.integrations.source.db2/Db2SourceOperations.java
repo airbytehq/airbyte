@@ -10,12 +10,12 @@ import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
@@ -82,6 +82,19 @@ public class Db2SourceOperations extends JdbcSourceOperations {
                          final int index)
       throws SQLException {
     putJavaSQLTime(node, columnName, resultSet, index);
+  }
+
+  @Override
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final Timestamp timestamp = resultSet.getTimestamp(index);
+    node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
+  }
+
+
+  @Override
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    final LocalDateTime date = LocalDateTime.parse(value);
+    preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(date));
   }
 
   @Override

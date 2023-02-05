@@ -8,12 +8,17 @@ import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
 import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
+import java.sql.*;
+import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +33,18 @@ public class RedshiftSourceOperations extends JdbcSourceOperations {
                          final int index)
       throws SQLException {
     putJavaSQLTime(node, columnName, resultSet, index);
+  }
+
+  @Override
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    final Timestamp timestamp = resultSet.getTimestamp(index);
+    node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
+  }
+
+  @Override
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    final LocalDateTime date = LocalDateTime.parse(value);
+    preparedStatement.setTimestamp(parameterIndex, Timestamp.valueOf(date));
   }
 
   @Override
