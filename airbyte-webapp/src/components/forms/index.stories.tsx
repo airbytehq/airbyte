@@ -9,10 +9,8 @@ import { RHFForm, RHFControl } from "./index";
 
 /**
  * todo:
- * - Add RHHFForm component
  * - Add Dropdown control
- * - Style errors (optional)
- * - add labels (optional)
+ * - Add TS typing (see 'any' in RHFForm's props)
  */
 
 const schema = yup.object({

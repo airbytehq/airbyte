@@ -29,6 +29,9 @@ interface RHFControlBaseProps {
   description?: string;
 }
 
+/**
+ * These properties are only relevant at the control level. They can therefore be omitted before passing along to the underlying form input.
+ */
 export type OmittableProperties = "fieldType" | "label" | "description";
 
 export interface RHFInputFieldProps extends RHFControlBaseProps {
@@ -45,6 +48,7 @@ export interface RHFDatePickerProps extends RHFControlBaseProps {
    * - **date-time**  *YYYY-MM-DDTHH:mm:ssZ*
    */
   format?: "date" | "date-time";
+  hasError?: boolean;
 }
 
 export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, label, description, name, ...props }) => {
@@ -52,13 +56,19 @@ export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, label, descri
   const { error, isTouched } = getFieldState(name, formState); // It is subscribed now and reactive to error state updated
   const showError = error && isTouched;
 
+  // Properties to pass to the underlying input
+  const inputProps = {
+    ...props,
+    hasError: showError,
+  };
+
   function renderControl() {
     if (fieldType === "input") {
-      return <RHFInputWrapper name={name} hasError={showError} {...props} />;
+      return <RHFInputWrapper name={name} {...inputProps} />;
     }
 
     if (fieldType === "date") {
-      return <RHFDateWrapper name={name} {...props} />;
+      return <RHFDateWrapper name={name} {...inputProps} />;
     }
 
     throw new Error(`No matching form input found for type: ${fieldType}`);
