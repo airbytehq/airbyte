@@ -24,7 +24,7 @@
     "stylelint": "stylelint 'src/**/*.{css,scss}'",
     "stylelint-check": "stylelint-config-prettier-scss-check",
     "license-check": "node ./scripts/license-check.js",
-    "generate-client": "orval",
+    "generate-client": "./scripts/load-declarative-schema.sh && orval",
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {

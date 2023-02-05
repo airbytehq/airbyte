@@ -6,4 +6,4 @@ paths: {}
 components:
   schemas:
     ConnectorManifest:
-      $ref: "../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml"
+      $ref: "../../../build/declarative_component_schema.yaml"
