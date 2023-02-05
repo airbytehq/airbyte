@@ -2,23 +2,28 @@ import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
 import {
+  ConnectionFormValues,
+  ConnectionValidationSchema,
+  FormikConnectionFormValues,
+  mapFormPropsToOperation,
+  useInitialValues,
+} from "components/connection/ConnectionForm/formConfig";
+
+import {
   ConnectionScheduleType,
   DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   OperationRead,
+  SourceDefinitionRead,
+  SourceDefinitionSpecificationRead,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
 import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
-import {
-  ConnectionFormValues,
-  FormikConnectionFormValues,
-  mapFormPropsToOperation,
-  useInitialValues,
-  ConnectionValidationSchema,
-} from "views/Connection/ConnectionForm/formConfig";
 
 import { useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
@@ -60,6 +65,8 @@ export const tidyConnectionFormValues = (
 interface ConnectionFormHook {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
+  sourceDefinition: SourceDefinitionRead;
+  sourceDefinitionSpecification: SourceDefinitionSpecificationRead;
   destDefinition: DestinationDefinitionRead;
   destDefinitionSpecification: DestinationDefinitionSpecificationRead;
   initialValues: FormikConnectionFormValues;
@@ -76,10 +83,16 @@ const useConnectionForm = ({
   schemaError,
   refreshSchema,
 }: ConnectionServiceProps): ConnectionFormHook => {
-  const destDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
-  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(
-    connection.destination.destinationDefinitionId
-  );
+  const {
+    source: { sourceDefinitionId },
+    destination: { destinationDefinitionId },
+  } = connection;
+
+  const sourceDefinition = useSourceDefinition(sourceDefinitionId);
+  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(sourceDefinitionId);
+  const destDefinition = useDestinationDefinition(destinationDefinitionId);
+  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(destinationDefinitionId);
+
   const initialValues = useInitialValues(connection, destDefinition, destDefinitionSpecification, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
@@ -108,6 +121,8 @@ const useConnectionForm = ({
   return {
     connection,
     mode,
+    sourceDefinition,
+    sourceDefinitionSpecification,
     destDefinition,
     destDefinitionSpecification,
     initialValues,

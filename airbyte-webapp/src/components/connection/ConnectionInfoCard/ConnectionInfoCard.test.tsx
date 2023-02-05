@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
-import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestinationDefinitionSpecification";
-import { mockSourceDefinition } from "test-utils/mock-data/mockSourceDefinition";
+import { mockDestinationDefinition } from "test-utils/mock-data/mockDestination";
+import { mockSourceDefinition } from "test-utils/mock-data/mockSource";
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
 import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
@@ -15,15 +15,14 @@ jest.doMock("hooks/services/ConnectionEdit/ConnectionEditService", () => ({
   useConnectionEditService: mockUseConnectionEditService,
 }));
 
-jest.doMock("services/connector/SourceDefinitionService", () => ({
-  useSourceDefinition: () => mockSourceDefinition,
+jest.doMock("hooks/services/ConnectionForm/ConnectionFormService.tsx", () => ({
+  useConnectionFormService: () => ({
+    sourceDefinition: mockSourceDefinition,
+    destDefinition: mockDestinationDefinition,
+  }),
 }));
 
-jest.doMock("services/connector/DestinationDefinitionService", () => ({
-  useDestinationDefinition: () => mockDestinationDefinitionSpecification,
-}));
-
-jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty", () => ({
+jest.doMock("components/connection/ConnectionForm/refreshSourceSchemaWithConfirmationOnDirty", () => ({
   useRefreshSourceSchemaWithConfirmationOnDirty: jest.fn(),
 }));
 

@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { useRefreshSourceSchemaWithConfirmationOnDirty } from "components/connection/ConnectionForm/refreshSourceSchemaWithConfirmationOnDirty";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
@@ -9,7 +10,6 @@ import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ConnectionRoutePaths } from "pages/connections/types";
-import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
 import styles from "./SchemaChangesDetected.module.scss";
 
@@ -48,7 +48,12 @@ export const SchemaChangesDetected: React.FC = () => {
       <Text size="lg">
         <FormattedMessage id={`connection.schemaChange.${hasBreakingSchemaChange ? "breaking" : "nonBreaking"}`} />
       </Text>
-      <Button variant="dark" onClick={onReviewActionButtonClick} isLoading={schemaRefreshing}>
+      <Button
+        variant="dark"
+        onClick={onReviewActionButtonClick}
+        isLoading={schemaRefreshing}
+        data-testid="schemaChangesReviewButton"
+      >
         <FormattedMessage id="connection.schemaChange.reviewAction" />
       </Button>
     </div>
