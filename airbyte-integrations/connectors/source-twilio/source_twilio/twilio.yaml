@@ -59,6 +59,7 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
+  # https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
     transformations:
@@ -95,6 +96,7 @@ definitions:
         path: "{{ stream_slice.record.subresource_uris[options.subresource_uri_key or options.name] }}"
       stream_slicer:
         $ref: "*ref(definitions.accounts_slicer)"
+  # https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources
   addresses_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     transformations:
@@ -102,6 +104,7 @@ definitions:
     $options:
       name: "addresses"
       primary_key: "sid"
+  # https://www.twilio.com/docs/usage/api/applications#read-multiple-application-resources
   applications_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     transformations:
@@ -109,6 +112,7 @@ definitions:
     $options:
       name: "applications"
       primary_key: "sid"
+  # https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources
   incoming_phone_numbers_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     transformations:
@@ -116,6 +120,7 @@ definitions:
     $options:
       name: "incoming_phone_numbers"
       primary_key: "sid"
+  # https://www.twilio.com/docs/usage/api/keys#read-a-key-resource
   keys_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     transformations:
@@ -123,6 +128,7 @@ definitions:
     $options:
       name: "keys"
       primary_key: "sid"
+  # https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource
   outgoing_caller_ids_stream:
     transformations:
       - "*ref(definitions.datetime_transformation)"
@@ -130,6 +136,7 @@ definitions:
     $options:
       name: "outgoing_caller_ids"
       primary_key: "sid"
+  # https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources
   transcriptions_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     transformations:
@@ -137,12 +144,14 @@ definitions:
     $options:
       name: "transcriptions"
       primary_key: "sid"
+  # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
   available_phone_number_countries_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     $options:
       name: "available_phone_number_countries"
       data_field: "countries"
       subresource_uri_key: "available_phone_numbers"
+  # https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources
   queues_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     transformations:
@@ -163,18 +172,21 @@ definitions:
           - stream: "*ref(definitions.available_phone_number_countries_stream)"
             parent_key: "subresource_uris/{{ options.subresource_uri_key }}"
             stream_slice_field: "path"
+  # https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources
   available_phone_numbers_local_stream:
     $ref: "*ref(definitions.base_phone_number_countries_stream)"
     $options:
       name: "available_phone_numbers_local"
       data_field: "available_phone_numbers"
       subresource_uri_key: "local"
+  # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources
   available_phone_numbers_mobile_stream:
     $ref: "*ref(definitions.base_phone_number_countries_stream)"
     $options:
       name: "available_phone_numbers_mobile"
       data_field: "available_phone_numbers"
       subresource_uri_key: "mobile"
+  # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources
   available_phone_numbers_toll_free_stream:
     $ref: "*ref(definitions.base_phone_number_countries_stream)"
     $options:
@@ -196,6 +208,7 @@ definitions:
         stream_slicers:
           - $ref: "*ref(definitions.accounts_slicer)"
           - $ref: "*ref(definitions.datetime_slicer)"
+    checkpoint_interval: 1000
   # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
   calls_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
@@ -376,7 +389,7 @@ definitions:
       primary_key: ["account_sid", "conference_sid"]
       data_field: "participants"
       subresource_uri_key: "participants"
-  # https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources
+  # https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#list-dependent-pns
   dependent_phone_numbers_stream:
     $ref: "*ref(definitions.base_stream)"
     retriever:
