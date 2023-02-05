@@ -77,9 +77,8 @@ class EventsExtractor(RecordExtractor, JsonSchemaMixin):
         """
         date_time_fields = self._get_date_time_items_from_schema()
         for item in record:
-            if item in date_time_fields:
-                if record[item]:
-                    record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+            if item in date_time_fields and record[item]:
+                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
         return record
 
     def extract_records(
@@ -88,7 +87,7 @@ class EventsExtractor(RecordExtractor, JsonSchemaMixin):
     ) -> List[Record]:
         try:
             zip_file = zipfile.ZipFile(io.BytesIO(response.content))
-        except zipfile.BadZipFile as e:
+        except zipfile.BadZipFile:
             logger.exception(
                 f"Received an invalid zip file in response to URL: {response.request.url}."
                 f"The size of the response body is: {len(response.content)}"
