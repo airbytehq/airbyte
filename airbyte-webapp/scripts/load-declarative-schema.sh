@@ -2,7 +2,7 @@ set -e
 mkdir -p build
 
 # Make sure this is aligned with the CDK version of the connector builder server
-DEFAULT_CDK_VERSION="0.26.0"
+DEFAULT_CDK_VERSION="0.25.0"
 
 if [ -z "$CDK_VERSION" ]
 then
