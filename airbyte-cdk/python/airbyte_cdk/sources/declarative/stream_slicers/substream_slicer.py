@@ -102,7 +102,7 @@ class SubstreamSlicer(StreamSlicer):
                     key = parent_config.stream_slice_field
                     value = stream_slice.get(key)
                     if value:
-                        params.update({key: value})
+                        params.update({parent_config.request_option.field_name: value})
         return params
 
     def get_stream_state(self) -> StreamState:
