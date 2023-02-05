@@ -31,6 +31,7 @@ definitions:
         field_name: "limit"
         inject_into: "request_parameter"
       page_token_option:
+        type: RequestOption
         field_name: "starting_after"
         inject_into: "request_parameter"
     requester:

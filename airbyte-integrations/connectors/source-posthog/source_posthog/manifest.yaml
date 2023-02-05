@@ -34,6 +34,7 @@ definitions:
         type: "OffsetIncrement"
         page_size: 100
       page_token_option:
+        type: RequestOption
         field_name: "offset"
         inject_into: "request_parameter"
 
@@ -148,7 +149,7 @@ definitions:
           cursor_value: "{{ response['next'] }}"
           page_size: 100
         page_token_option:
-          inject_into: "path"
+          type: RequestPath
 
 streams:
   - "#/definitions/projects_stream"

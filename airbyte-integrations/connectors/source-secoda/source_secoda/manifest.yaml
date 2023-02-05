@@ -20,7 +20,7 @@ definitions:
   cursor_paginator:
     type: DefaultPaginator
     page_token_option:
-      inject_into: path
+      type: RequestPath
     page_size_option:
       inject_into: body_data
       field_name: "page_size"

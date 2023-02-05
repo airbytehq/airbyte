@@ -27,6 +27,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: "_limit"
     page_token_option:
+      type: RequestOption
       inject_into: "request_parameter"
       field_name: "_skip"
     pagination_strategy:
@@ -36,6 +37,7 @@ definitions:
     type: DefaultPaginator
     url_base: "#/definitions/requester/url_base"
     page_token_option:
+      type: RequestOption
       inject_into: "request_parameter"
       field_name: "_cursor"
     pagination_strategy:

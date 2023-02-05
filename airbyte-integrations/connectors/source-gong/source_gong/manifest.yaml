@@ -27,6 +27,7 @@ definitions:
         field_name: "limit"
         inject_into: "request_parameter"
       page_token_option:
+        type: RequestOption
         field_name: "cursor"
         inject_into: "request_parameter"
     requester:
@@ -73,6 +74,7 @@ definitions:
           field_name: "limit"
           inject_into: "body_json"
         page_token_option:
+          type: RequestOption
           field_name: "cursor"
           inject_into: "body_json"
       requester:

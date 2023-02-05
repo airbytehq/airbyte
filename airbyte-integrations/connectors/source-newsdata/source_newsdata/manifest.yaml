@@ -27,6 +27,7 @@ definitions:
       page_size: 10
       # TODO: make page_size dynamic, depending on free or paid tier. See https://github.com/airbytehq/airbyte/issues/18783
     page_token_option:
+      type: RequestOption
       field_name: "page"
       inject_into: "request_parameter"
     page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type

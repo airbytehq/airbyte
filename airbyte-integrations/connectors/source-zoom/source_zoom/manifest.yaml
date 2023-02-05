@@ -19,6 +19,7 @@ definitions:
       field_name: "page_size"
       inject_into: "request_parameter"
     page_token_option:
+      type: RequestOption
       field_name: "next_page_token"
       inject_into: "request_parameter"
 

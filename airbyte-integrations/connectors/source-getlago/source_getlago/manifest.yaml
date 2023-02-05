@@ -13,6 +13,7 @@ definitions:
   cursor_paginator:
     type: DefaultPaginator
     page_token_option:
+      type: RequestOption
       inject_into: request_parameter
       field_name: "page"
     page_size_option:

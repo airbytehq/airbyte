@@ -24,6 +24,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: ""
     page_token_option:
+      type: RequestOption
       inject_into: "request_parameter"
       field_name: "cursor"
     pagination_strategy:

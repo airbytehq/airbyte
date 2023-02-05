@@ -58,7 +58,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                 "paginator": {
                     "type": "DefaultPaginator",
                     "page_size_option": {"type": "RequestOption"},
-                    "page_token_option": {"type": "RequestOption"},
+                    "page_token_option": {},
                 },
             },
             id="test_default_paginator",

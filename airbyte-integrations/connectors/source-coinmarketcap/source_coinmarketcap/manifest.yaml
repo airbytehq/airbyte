@@ -20,6 +20,7 @@ definitions:
       type: "OffsetIncrement"
       page_size: 1000
     page_token_option:
+      type: RequestOption
       field_name: "start"
       inject_into: "request_parameter"
   retriever:

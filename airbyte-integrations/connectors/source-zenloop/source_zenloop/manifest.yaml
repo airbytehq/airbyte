@@ -30,7 +30,7 @@ definitions:
         field_name: "per_page"
         inject_into: "request_parameter"
       page_token_option:
-        inject_into: "path"
+        type: RequestPath
   base_stream:
     type: DeclarativeStream
     retriever:

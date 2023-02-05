@@ -46,6 +46,7 @@ definitions:
         field_name: "max_results"
         inject_into: "request_parameter"
       page_token_option:
+        type: RequestOption
         field_name: "next_token"
         inject_into: "request_parameter"
     requester:

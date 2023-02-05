@@ -23,6 +23,7 @@ definitions:
         type: "PageIncrement"
         page_size: "#/definitions/page_size"
       page_token_option:
+        type: RequestOption
         inject_into: "request_parameter"
         field_name: "page"
       url_base: "#/definitions/requester/url_base"

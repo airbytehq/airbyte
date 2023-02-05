@@ -123,6 +123,7 @@ streams:
           type: "OffsetIncrement"
           page_size: 1
         page_token_option:
+          type: RequestOption
           field_name: "page"
           inject_into: "request_parameter"
 

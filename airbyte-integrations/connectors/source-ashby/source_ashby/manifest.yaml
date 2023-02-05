@@ -23,6 +23,7 @@ definitions:
         field_name: "per_page"
         inject_into: "body_json"
       page_token_option:
+        type: RequestOption
         inject_into: "body_json"
         field_name: "cursor"
     requester:

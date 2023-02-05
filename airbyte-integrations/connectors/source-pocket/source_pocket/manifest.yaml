@@ -42,6 +42,7 @@ definitions:
         type: "OffsetIncrement"
         page_size: 10
       page_token_option:
+        type: RequestOption
         inject_into: "request_parameter"
         field_name: "offset"
     requester:

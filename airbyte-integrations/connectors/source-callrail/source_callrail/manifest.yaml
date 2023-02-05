@@ -53,7 +53,7 @@ definitions:
         field_name: "per_page"
         inject_into: "request_parameter"
       page_token_option:
-        inject_into: "path"
+        type: RequestPath
     stream_slicer:
       $ref: "#/definitions/stream_slicer"
 
