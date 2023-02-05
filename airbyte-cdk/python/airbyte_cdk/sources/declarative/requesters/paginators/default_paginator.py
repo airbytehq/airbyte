@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
@@ -28,10 +29,12 @@ class DefaultPaginator(Paginator):
           paginator:
             type: "DefaultPaginator"
             page_size_option:
+              type: RequestOption
               inject_into: request_parameter
               field_name: limit
             page_token_option:
-              option_type: path
+              type: RequestPath
+              path: "location"
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
@@ -45,6 +48,7 @@ class DefaultPaginator(Paginator):
           paginator:
             type: "DefaultPaginator"
             page_size_option:
+              type: RequestOption
               inject_into: header
               field_name: page_size
             pagination_strategy:
@@ -62,18 +66,20 @@ class DefaultPaginator(Paginator):
           paginator:
             type: "DefaultPaginator"
             page_size_option:
+              type: RequestOption
               inject_into: request_parameter
               field_name: page_size
             pagination_strategy:
               type: "PageIncrement"
               page_size: 5
             page_token_option:
+              type: RequestOption
               option_type: "request_parameter"
               field_name: "page"
         ```
     Attributes:
         page_size_option (Optional[RequestOption]): the request option to set the page size. Cannot be injected in the path.
-        page_token_option (RequestOption): the request option to set the page token
+        page_token_option (Optional[RequestPath, RequestOption]): the request option to set the page token
         pagination_strategy (PaginationStrategy): Strategy defining how to get the next page token
         config (Config): connection config
         url_base (Union[InterpolatedString, str]): endpoint's base url
@@ -87,11 +93,9 @@ class DefaultPaginator(Paginator):
     decoder: Decoder = JsonDecoder(parameters={})
     _token: Optional[Any] = field(init=False, repr=False, default=None)
     page_size_option: Optional[RequestOption] = None
-    page_token_option: Optional[RequestOption] = None
+    page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        if self.page_size_option and self.page_size_option.inject_into == RequestOptionType.path:
-            raise ValueError("page_size_option cannot be set in as path")
         if self.page_size_option and not self.pagination_strategy.get_page_size():
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
         if isinstance(self.url_base, str):
@@ -105,7 +109,7 @@ class DefaultPaginator(Paginator):
             return None
 
     def path(self):
-        if self._token and self.page_token_option and self.page_token_option.inject_into == RequestOptionType.path:
+        if self._token and self.page_token_option and isinstance(self.page_token_option, RequestPath):
             # Replace url base to only return the path
             return str(self._token).replace(self.url_base.eval(self.config), "")
         else:
@@ -152,12 +156,16 @@ class DefaultPaginator(Paginator):
 
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
-        if self.page_token_option and self.page_token_option.inject_into == option_type:
-            if option_type != RequestOptionType.path and self._token:
-                options[self.page_token_option.field_name] = self._token
+
+        if (
+            self.page_token_option
+            and self._token
+            and isinstance(self.page_token_option, RequestOption)
+            and self.page_token_option.inject_into == option_type
+        ):
+            options[self.page_token_option.field_name] = self._token
         if self.page_size_option and self.pagination_strategy.get_page_size() and self.page_size_option.inject_into == option_type:
-            if option_type != RequestOptionType.path:
-                options[self.page_size_option.field_name] = self.pagination_strategy.get_page_size()
+            options[self.page_size_option.field_name] = self.pagination_strategy.get_page_size()
         return options
 
 

@@ -256,10 +256,13 @@ class RemoveFields(BaseModel):
     field_pointers: List[List[str]]
 
 
+class RequestPath(BaseModel):
+    type: Literal["RequestPath"]
+
+
 class InjectInto(Enum):
     request_parameter = "request_parameter"
     header = "header"
-    path = "path"
     body_data = "body_data"
     body_json = "body_json"
 
@@ -267,7 +270,7 @@ class InjectInto(Enum):
 class RequestOption(BaseModel):
     type: Literal["RequestOption"]
     inject_into: InjectInto
-    field_name: Optional[str] = None
+    field_name: str
 
 
 class Schemas(BaseModel):
@@ -364,7 +367,7 @@ class DefaultPaginator(BaseModel):
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement]
     decoder: Optional[JsonDecoder] = None
     page_size_option: Optional[RequestOption] = None
-    page_token_option: Optional[RequestOption] = None
+    page_token_option: Optional[Union[RequestPath, RequestOption]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 

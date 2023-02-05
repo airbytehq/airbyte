@@ -43,6 +43,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginat
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
@@ -98,10 +99,11 @@ selector:
 metadata_paginator:
     type: DefaultPaginator
     page_size_option:
+      type: RequestOption
       inject_into: request_parameter
       field_name: page_size
     page_token_option:
-      inject_into: path
+      type: RequestPath
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
@@ -217,7 +219,7 @@ spec:
     assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
     assert stream.retriever.paginator.page_size_option.field_name == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
-    assert stream.retriever.paginator.page_token_option.inject_into == RequestOptionType.path
+    assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
@@ -316,6 +318,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
       slice_values: "{{config['repos']}}"
       cursor_field: repository
       request_option:
+        type: RequestOption
         inject_into: header
         field_name: repository
     """
@@ -367,6 +370,7 @@ def test_create_substream_slicer():
           parent_key: id
           stream_slice_field: repository_id
           request_option:
+            type: RequestOption
             inject_into: request_parameter
             field_name: repository_id
         - stream: "#/stream_B"
@@ -450,9 +454,11 @@ def test_datetime_stream_slicer():
         cursor_granularity: "PT0.000001S"
         lookback_window: "P5D"
         start_time_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: created[gte]
         end_time_option:
+          type: RequestOption
           inject_into: body_json
           field_name: end_time
         stream_state_field_start: star
@@ -662,10 +668,11 @@ def test_config_with_defaults():
           paginator:
             type: "DefaultPaginator"
             page_size_option:
+              type: RequestOption
               inject_into: request_parameter
               field_name: page_size
             page_token_option:
-              inject_into: path
+              type: RequestPath
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
@@ -719,10 +726,11 @@ def test_create_default_paginator():
       paginator:
         type: "DefaultPaginator"
         page_size_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: page_size
         page_token_option:
-          inject_into: path
+          type: RequestPath
         pagination_strategy:
           type: "CursorPagination"
           page_size: 50
@@ -733,10 +741,7 @@ def test_create_default_paginator():
     paginator_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["paginator"], {})
 
     paginator = factory.create_component(
-        model_type=DefaultPaginatorModel,
-        component_definition=paginator_manifest,
-        config=input_config,
-        url_base="https://airbyte.io"
+        model_type=DefaultPaginatorModel, component_definition=paginator_manifest, config=input_config, url_base="https://airbyte.io"
     )
 
     assert isinstance(paginator, DefaultPaginator)
@@ -750,8 +755,7 @@ def test_create_default_paginator():
     assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert paginator.page_size_option.field_name == "page_size"
 
-    assert isinstance(paginator.page_token_option, RequestOption)
-    assert paginator.page_token_option.inject_into == RequestOptionType.path
+    assert isinstance(paginator.page_token_option, RequestPath)
 
 
 @pytest.mark.parametrize(
@@ -791,10 +795,10 @@ def test_create_default_paginator():
             {
                 "type": "CustomErrorHandler",
                 "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
-                "optional_subcomponent_field": {"inject_into": "path"},
+                "optional_subcomponent_field": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "destination"},
             },
             "optional_subcomponent_field",
-            RequestOption(inject_into=RequestOptionType.path, parameters={}),
+            RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", parameters={}),
             id="test_create_custom_component_with_subcomponent_wrapped_in_optional",
         ),
         pytest.param(

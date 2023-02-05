@@ -67,6 +67,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
@@ -87,6 +88,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginat
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
@@ -158,6 +160,7 @@ class ModelToComponentFactory:
             RecordFilterModel: self.create_record_filter,
             RecordSelectorModel: self.create_record_selector,
             RemoveFieldsModel: self.create_remove_fields,
+            RequestPathModel: self.create_request_path,
             RequestOptionModel: self.create_request_option,
             SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
@@ -650,6 +653,10 @@ class ModelToComponentFactory:
     @staticmethod
     def create_record_filter(model: RecordFilterModel, config: Config, **kwargs) -> RecordFilter:
         return RecordFilter(condition=model.condition, config=config, parameters=model.parameters)
+
+    @staticmethod
+    def create_request_path(model: RequestPathModel, config: Config, **kwargs) -> RequestPath:
+        return RequestPath(parameters={})
 
     @staticmethod
     def create_request_option(model: RequestOptionModel, config: Config, **kwargs) -> RequestOption:

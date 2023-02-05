@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator imp
     RequestOptionType,
 )
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
 
 @pytest.mark.parametrize(
@@ -23,7 +24,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
     [
         (
             "test_default_paginator_path",
-            RequestOption(inject_into=RequestOptionType.path, parameters={}),
+            RequestPath(parameters={}),
             None,
             "/next_url",
             {"limit": 2},
@@ -153,28 +154,6 @@ def test_default_paginator_with_cursor(
     assert actual_headers == expected_headers
     assert actual_body_data == expected_body_data
     assert actual_body_json == expected_body_json
-
-
-def test_limit_cannot_be_set_in_path():
-    page_size_request_option = RequestOption(inject_into=RequestOptionType.path, parameters={})
-    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
-    cursor_value = "{{ response.next }}"
-    url_base = "https://airbyte.io"
-    config = {}
-    parameters = {}
-    strategy = CursorPaginationStrategy(page_size=5, cursor_value=cursor_value, config=config, parameters=parameters)
-    try:
-        DefaultPaginator(
-            page_size_option=page_size_request_option,
-            page_token_option=page_token_request_option,
-            pagination_strategy=strategy,
-            config=config,
-            url_base=url_base,
-            parameters={},
-        )
-        assert False
-    except ValueError:
-        pass
 
 
 def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():

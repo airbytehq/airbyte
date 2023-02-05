@@ -4,7 +4,7 @@
 
 from dataclasses import InitVar, dataclass
 from enum import Enum
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping
 
 
 class RequestOptionType(Enum):
@@ -14,7 +14,6 @@ class RequestOptionType(Enum):
 
     request_parameter = "request_parameter"
     header = "header"
-    path = "path"
     body_data = "body_data"
     body_json = "body_json"
 
@@ -25,21 +24,10 @@ class RequestOption:
     Describes an option to set on a request
 
     Attributes:
+        field_name (str): Describes the name of the parameter to inject. None if option_type == path. Required otherwise.
         inject_into (RequestOptionType): Describes where in the HTTP request to inject the parameter
-        field_name (Optional[str]): Describes the name of the parameter to inject. None if option_type == path. Required otherwise.
     """
 
+    field_name: str
     inject_into: RequestOptionType
     parameters: InitVar[Mapping[str, Any]]
-    field_name: Optional[str] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        if self.inject_into == RequestOptionType.path:
-            if self.field_name is not None:
-                raise ValueError(f"RequestOption with path cannot have a field name. Get {self.field_name}")
-        elif self.field_name is None:
-            raise ValueError(f"RequestOption expected field name for type {self.inject_into}")
-
-    def is_path(self) -> bool:
-        """Returns true if the parameter is the path to send the request to"""
-        return self.inject_into == RequestOptionType.path

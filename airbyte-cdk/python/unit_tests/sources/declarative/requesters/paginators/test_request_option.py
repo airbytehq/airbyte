@@ -9,15 +9,9 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 @pytest.mark.parametrize(
     "test_name, option_type, field_name, should_raise",
     [
-        ("test_limit_path_no_field_name", RequestOptionType.path, None, False),
-        ("test_limit_path_with_field_name", RequestOptionType.path, "field", True),
-        ("test_limit_param_no_field_name", RequestOptionType.request_parameter, None, True),
         ("test_limit_param_with_field_name", RequestOptionType.request_parameter, "field", False),
-        ("test_limit_header_no_field_name", RequestOptionType.header, None, True),
         ("test_limit_header_with_field_name", RequestOptionType.header, "field", False),
-        ("test_limit_data_no_field_name", RequestOptionType.body_data, None, True),
         ("test_limit_data_with_field_name", RequestOptionType.body_data, "field", False),
-        ("test_limit_json_no_field_name", RequestOptionType.body_json, None, True),
         ("test_limit_json_with_field_name", RequestOptionType.body_json, "field", False),
     ],
 )

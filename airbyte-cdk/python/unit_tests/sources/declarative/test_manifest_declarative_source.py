@@ -66,8 +66,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {
                                 "type": "CursorPagination",
                                 "cursor_value": "{{ response._metadata.next }}",
@@ -93,8 +93,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {
                                 "type": "CursorPagination",
                                 "cursor_value": "{{ response._metadata.next }}",
@@ -135,8 +135,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -159,8 +159,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -214,8 +214,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -238,8 +238,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -272,8 +272,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -296,8 +296,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -327,8 +327,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -351,8 +351,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -385,8 +385,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -409,8 +409,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -463,8 +463,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -487,8 +487,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                         },
                         "requester": {
@@ -520,8 +520,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -551,8 +551,8 @@ class TestManifestDeclarativeSource:
                     "paginator": {
                         "type": "DefaultPaginator",
                         "page_size": 10,
-                        "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                        "page_token_option": {"inject_into": "path"},
+                        "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                        "page_token_option": {"type": "RequestPath"},
                         "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                     },
                     "requester": {
@@ -575,8 +575,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {
                                 "type": "CursorPagination",
                                 "cursor_value": "{{ response._metadata.next }}",
@@ -602,8 +602,8 @@ class TestManifestDeclarativeSource:
                         "paginator": {
                             "type": "DefaultPaginator",
                             "page_size": 10,
-                            "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                            "page_token_option": {"inject_into": "path"},
+                            "page_size_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "page_size"},
+                            "page_token_option": {"type": "RequestPath"},
                             "pagination_strategy": {
                                 "type": "CursorPagination",
                                 "cursor_value": "{{ response._metadata.next }}",

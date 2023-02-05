@@ -544,7 +544,9 @@ definitions:
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
-        "$ref": "#/definitions/RequestOption"
+        anyOf:
+          - "$ref": "#/definitions/RequestPath"
+          - "$ref": "#/definitions/RequestOption"
       $parameters:
         type: object
         additionalProperties: true
@@ -908,12 +910,22 @@ definitions:
         items:
           items:
             type: string
+  RequestPath:
+    description: A component that specifies where in the request path a component's value should be inserted into.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [RequestPath]
   RequestOption:
-    description: Describes an option to set on a request
+    description: A component that specifies the key field and where in the request a component's value should be inserted into.
     type: object
     required:
       - type
       - inject_into
+      - field_name
     properties:
       type:
         type: string
@@ -922,7 +934,6 @@ definitions:
         enum:
           - request_parameter
           - header
-          - path
           - body_data
           - body_json
       field_name:
