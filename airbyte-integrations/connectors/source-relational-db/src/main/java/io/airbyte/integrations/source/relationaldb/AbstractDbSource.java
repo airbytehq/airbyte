@@ -162,7 +162,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
 
-    validateSourceSchema(fullyQualifiedTableNameToInfo, catalog);
+    logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog);
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
@@ -183,8 +183,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         });
   }
 
-  private void validateSourceSchema(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                    ConfiguredAirbyteCatalog catalog) {
+  // in case of user manually modified source table schema but did not refresh it and save into the
+  // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
+  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),

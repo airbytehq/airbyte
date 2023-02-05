@@ -64,7 +64,6 @@ class PostgresSourceTest {
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE = "id_and_name_3";
   private static final String STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW = "id_and_name_3_view";
-  private static final String STREAM_NAME_CHANGED_SOURCE_SHEMA = "test_source_schema";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -94,13 +93,6 @@ class PostgresSourceTest {
           SCHEMA_NAME,
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-          .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
-      CatalogHelpers.createAirbyteStream(
-          STREAM_NAME_CHANGED_SOURCE_SHEMA,
-          SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.INTEGER),
-          Field.of("test_column", JsonSchemaType.INTEGER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
@@ -257,64 +249,6 @@ class PostgresSourceTest {
       setEmittedAtToNull(actualMessages);
 
       assertEquals(UTF8_MESSAGES, actualMessages);
-      db.stop();
-    }
-  }
-
-  @Test
-  public void testValuesChangedOnChangedSourceSchema() throws Exception {
-
-    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
-      db.start();
-      final PostgresSource postgresSource = new PostgresSource();
-      final JsonNode config = getConfig(db);
-      final String test_column = "test_column";
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = getDatabase(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("CREATE TABLE test_source_schema(id INTEGER, test_column int);");
-          ctx.fetch("INSERT INTO test_source_schema(id, test_column) VALUES (1, 20.0),  (2, 1.0);");
-          return null;
-        });
-      }
-
-      final Set<AirbyteMessage> actualMessages1read = MoreIterators.toSet(postgresSource.read(config, CONFIGURED_CATALOG, null));
-      // assert read is successful if source schema was not changed
-      assertEquals(2, actualMessages1read.size());
-
-      final Set<AirbyteMessage> actualMessages2read = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
-
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = getDatabase(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("INSERT INTO test_source_schema(id, test_column) VALUES (3, 10.0);");
-          return null;
-        });
-      }
-
-      final Set<AirbyteMessage> actualMessages3read = MoreIterators.toSet(new PostgresSource().read(config, CONFIGURED_CATALOG, null));
-
-      try (final DSLContext dslContext = getDslContext(config)) {
-        final Database database = getDatabase(dslContext);
-        database.query(ctx -> {
-          ctx.fetch("ALTER TABLE test_source_schema ALTER COLUMN test_column type float using test_column::float;;");
-          return null;
-        });
-      }
-
-      final Set<AirbyteMessage> actualMessages4read = MoreIterators.toSet(postgresSource.read(config, CONFIGURED_CATALOG, null));
-
-      final List<JsonNode> values1read = actualMessages1read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
-      final List<JsonNode> values2read = actualMessages2read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
-      final List<JsonNode> values3read = actualMessages3read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
-      final List<JsonNode> values4read = actualMessages4read.stream().map(x -> x.getRecord().getData().get(test_column)).toList();
-
-      values1read.forEach(x -> assertTrue(x.isInt())); // [20, 1]
-      values2read.forEach(x -> assertTrue(x.isInt())); // [20, 1]
-      assertTrue(values1read.containsAll(values2read) && values2read.containsAll(values1read));
-      values3read.forEach(x -> assertTrue(x.isInt())); // [20, 1, 10]
-      // assert values are changed if the source schema was changed
-      values4read.forEach(x -> assertTrue(x.isDouble())); // [20.0, 1.0, 10.0]
       db.stop();
     }
   }
