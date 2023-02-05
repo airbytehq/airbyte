@@ -48,12 +48,21 @@ definitions:
     cursor_format: "%a, %d %b %Y %H:%M:%S %z"
     step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map[options.name] else options.step_default }}"
     lookback_window: "{{ 'PT' + config.lookback_window|string() + 'M' if config.lookback_window else '' }}"
+  datetime_transformation:
+    type: AddFields
+    fields:
+      - path: ["date_created"]
+        value: "{{ format_datetime(record.date_created, '%Y-%m-%dT%H:%M:%SZ') }}"
+      - path: ["date_updated"]
+        value: "{{ format_datetime(record.date_updated, '%Y-%m-%dT%H:%M:%SZ') }}"
   base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "*ref(definitions.retriever)"
   accounts_stream:
     $ref: "*ref(definitions.base_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "accounts"
       path: "/2010-04-01/Accounts.json"
@@ -88,31 +97,43 @@ definitions:
         $ref: "*ref(definitions.accounts_slicer)"
   addresses_stream:
     $ref: "*ref(definitions.base_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "addresses"
       primary_key: "sid"
   applications_stream:
     $ref: "*ref(definitions.base_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "applications"
       primary_key: "sid"
   incoming_phone_numbers_stream:
     $ref: "*ref(definitions.base_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "incoming_phone_numbers"
       primary_key: "sid"
   keys_stream:
     $ref: "*ref(definitions.base_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "keys"
       primary_key: "sid"
   outgoing_caller_ids_stream:
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $ref: "*ref(definitions.base_nested_stream)"
     $options:
       name: "outgoing_caller_ids"
       primary_key: "sid"
   transcriptions_stream:
     $ref: "*ref(definitions.base_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "transcriptions"
       primary_key: "sid"
@@ -124,6 +145,8 @@ definitions:
       subresource_uri_key: "available_phone_numbers"
   queues_stream:
     $ref: "*ref(definitions.base_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "queues"
       primary_key: "sid"
@@ -176,6 +199,14 @@ definitions:
   # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
   calls_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
+      - type: AddFields
+        fields:
+          - path: ["start_time"]
+            value: "{{ format_datetime(record.start_time, '%Y-%m-%dT%H:%M:%SZ') }}"
+          - path: ["end_time"]
+            value: "{{ format_datetime(record.end_time, '%Y-%m-%dT%H:%M:%SZ') }}"
     $options:
       name: "calls"
       cursor_field: "end_time"
@@ -189,6 +220,8 @@ definitions:
   # https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources
   conferences_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "conferences"
       data_field: null
@@ -209,6 +242,12 @@ definitions:
         $ref: "*ref(definitions.selector)"
         record_filter:
           condition: "{{ not options.with_media_only or record.num_media|int() > 0 }}"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
+      - type: AddFields
+        fields:
+          - path: ["date_sent"]
+            value: "{{ format_datetime(record.date_sent, '%Y-%m-%dT%H:%M:%SZ') }}"
     $options:
       name: "messages"
       data_field: null
@@ -223,6 +262,12 @@ definitions:
   # https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources
   recordings_stream:
     $ref: "*ref(definitions.base_incremental_nested_stream)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
+      - type: AddFields
+        fields:
+          - path: ["start_time"]
+            value: "{{ format_datetime(record.start_time, '%Y-%m-%dT%H:%M:%SZ') }}"
     $options:
       name: "recordings"
       cursor_field: "date_created"
@@ -246,6 +291,12 @@ definitions:
           $ref: "*ref(definitions.boundary_request_parameters)"
       stream_slicer:
         $ref: "*ref(definitions.datetime_slicer)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
+      - type: AddFields
+        fields:
+          - path: ["date_generated"]
+            value: "{{ format_datetime(record.date_generated, '%Y-%m-%dT%H:%M:%SZ') }}"
     $options:
       name: "alerts"
       cursor_field: "date_generated"
@@ -294,6 +345,12 @@ definitions:
       requester:
         $ref: "*ref(definitions.base_nested_stream.retriever.requester)"
         path: "/2010-04-01/Accounts/{{ stream_slice.record.sid }}/Usage/Triggers.json"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
+      - type: AddFields
+        fields:
+          - path: ["date_fired"]
+            value: "{{ format_datetime(record.date_fired, '%Y-%m-%dT%H:%M:%SZ') if record.date_fired else record.date_fired }}"
     $options:
       name: "usage_triggers"
       primary_key: "sid"
@@ -312,6 +369,8 @@ definitions:
           - stream: "*ref(definitions.conferences_stream)"
             parent_key: "/"
             stream_slice_field: "record"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "conference_participants"
       primary_key: ["account_sid", "conference_sid"]
@@ -331,6 +390,8 @@ definitions:
           - stream: "*ref(definitions.addresses_stream)"
             parent_key: "/"
             stream_slice_field: "record"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "dependent_phone_numbers"
       primary_key: "sid"
@@ -352,6 +413,8 @@ definitions:
                 parent_key: "/"
                 stream_slice_field: "record"
           - $ref: "*ref(definitions.datetime_slicer)"
+    transformations:
+      - "*ref(definitions.datetime_transformation)"
     $options:
       name: "message_media"
       primary_key: "sid"
