@@ -20,18 +20,18 @@ class TwilioCartesianProductStreamSlicer(CartesianProductStreamSlicer):
         return self._cursor
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        accounts_slicer, datetime_slicer = self.stream_slicers
-        for account_slice in accounts_slicer.stream_slices(sync_mode, stream_state):
-            account_id = account_slice["record"]["sid"]
+        record_slicer, datetime_slicer = self.stream_slicers
+        for record_slice in record_slicer.stream_slices(sync_mode, stream_state):
+            record_id = record_slice["record"]["sid"]
             datetime_slicer._cursor = None
-            for datetime_slice in datetime_slicer.stream_slices(sync_mode, stream_state.get(account_id)):
-                yield account_slice | datetime_slice
+            for datetime_slice in datetime_slicer.stream_slices(sync_mode, stream_state.get(record_id)):
+                yield record_slice | datetime_slice
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         datetime_slicer = self.stream_slicers[1]
         datetime_slicer.update_cursor(stream_slice, last_record)
         if last_record:
-            account_id = stream_slice["record"]["sid"]
-            self._cursor.setdefault(account_id, {}).update(datetime_slicer.get_stream_state())
+            record_id = stream_slice["record"]["sid"]
+            self._cursor.setdefault(record_id, {}).update(datetime_slicer.get_stream_state())
         else:
             self._cursor = stream_slice

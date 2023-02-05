@@ -151,6 +151,8 @@ definitions:
       name: "transcriptions"
       primary_key: "sid"
   # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
+  # List of available phone number countries, as well as local, mobile and toll free numbers
+  # may be different on each request, so could not pass the full refresh tests.
   available_phone_number_countries_stream:
     $ref: "*ref(definitions.base_nested_stream)"
     $options:
