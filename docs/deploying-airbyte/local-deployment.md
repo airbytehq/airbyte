@@ -7,13 +7,19 @@ These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
 
 ## Setup & launch Airbyte
 
-- Install Docker on your workstation \(see [instructions](https://www.docker.com/products/docker-desktop)\). Make sure you're on the latest version of `docker-compose`.
+- Install `Docker Engine` and the `Docker Compose plugin` on your workstation \(see [plugin instructions](https://docs.docker.com/engine/install/)\). Alternatively you can install the `docker-compose` standalone version \(see [standalone instructions](https://docs.docker.com/compose/install/other/)\).
 - After Docker is installed, you can immediately get started locally by running:
 
 ```bash
+# clone Airbyte from GitHub
 git clone https://github.com/airbytehq/airbyte.git
+
+# switch into Airbyte directory
 cd airbyte
-docker compose up
+
+# start Airbyte
+docker compose up  # via docker compose plugin
+docker-compose up  # via docker compose standalone version
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
