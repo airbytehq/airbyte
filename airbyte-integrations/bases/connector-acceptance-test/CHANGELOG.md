@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.5.1
-Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
+Spec tests: Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
 
 ## 0.5.0
 Re-release of 0.3.0 [#21451](https://github.com/airbytehq/airbyte/pull/21451)
