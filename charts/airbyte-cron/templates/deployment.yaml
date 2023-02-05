@@ -82,7 +82,7 @@ spec:
               secretKeyRef:
                 name: {{ .Release.Name }}-airbyte-secrets
                 key: DATABASE_USER
-          - name: MICRONAUT_ENVIRONMENTS      
+          - name: MICRONAUT_ENVIRONMENTS
             valueFrom:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
@@ -111,7 +111,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
-                key: WORKSPACE_ROOT 
+                key: WORKSPACE_ROOT
           {{- end }}
 
           # Values from secret
@@ -126,7 +126,7 @@ spec:
           {{- end }}
 
           # Values from env
-          {{- if .Values.env_vars }}
+          {{- if or .Values.env_vars .Values.global.env_vars }}
           {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
           - name: {{ $k }}
             value: {{ $v | quote }}

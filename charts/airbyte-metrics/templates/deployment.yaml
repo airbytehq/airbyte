@@ -99,7 +99,7 @@ spec:
         {{- end }}
 
         # Values from env
-        {{- if .Values.env_vars }}
+        {{- if or .Values.env_vars .Values.global.env_vars }}
         {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
         - name: {{ $k }}
           value: {{ $v | quote }}
