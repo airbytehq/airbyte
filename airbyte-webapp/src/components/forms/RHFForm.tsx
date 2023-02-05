@@ -15,7 +15,7 @@ export const RHFForm: React.FC<PropsWithChildren<RHFFormProps>> = ({ children, o
   const methods = useForm({
     defaultValues: { some_input: "Default input value", some_password: "Default password value" },
     resolver: yupResolver(schema),
-    mode: "onBlur",
+    mode: "onChange",
   });
 
   return (

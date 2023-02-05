@@ -1,10 +1,10 @@
-import type { RHFDatePickerProps } from "./RHFControl";
+import type { OmittableProperties, RHFDatePickerProps } from "./RHFControl";
 
 import { Controller, useFormContext } from "react-hook-form";
 
 import DatePicker from "components/ui/DatePicker";
 
-export const RHFDateWrapper: React.FC<Omit<RHFDatePickerProps, "fieldType">> = ({ name, format = "date" }) => {
+export const RHFDateWrapper: React.FC<Omit<RHFDatePickerProps, OmittableProperties>> = ({ name, format = "date" }) => {
   const { control } = useFormContext();
 
   return (

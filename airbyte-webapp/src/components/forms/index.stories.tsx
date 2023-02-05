@@ -16,8 +16,8 @@ import { RHFForm, RHFControl } from "./index";
  */
 
 const schema = yup.object({
-  some_input: yup.string().required(),
-  some_password: yup.string().min(5, "too short!"),
+  some_input: yup.string().required("This is a required field."),
+  some_password: yup.string().min(5, "The password needs to be at least 5 characters long."),
 });
 
 export default {
@@ -35,9 +35,14 @@ Primary.args = {
   schema,
   children: (
     <Card withPadding>
-      <RHFControl fieldType="input" name="some_input" />
-      <RHFControl fieldType="input" type="password" name="some_password" />
-      <RHFControl fieldType="date" name="some_date" format="date-time" />
+      <RHFControl
+        fieldType="input"
+        name="some_input"
+        label="A default text input"
+        description="Some default message that appears under the label"
+      />
+      <RHFControl fieldType="input" type="password" name="some_password" label="Password input" />
+      <RHFControl fieldType="date" name="some_date" format="date-time" label="Date input" />
       <FlexContainer justifyContent="flex-end">
         <FlexItem>
           <Button type="submit">Submit</Button>
