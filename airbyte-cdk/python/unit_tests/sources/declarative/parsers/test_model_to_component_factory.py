@@ -383,13 +383,13 @@ def test_create_substream_slicer():
     assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
     assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
 
-    assert stream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert stream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert stream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert stream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert stream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert stream_slicer.parent_stream_configs[1].parent_key == "someid"
-    assert stream_slicer.parent_stream_configs[1].stream_slice_field == "word_id"
+    assert stream_slicer.parent_stream_configs[1].parent_key.eval({}) == "someid"
+    assert stream_slicer.parent_stream_configs[1].stream_slice_field.eval({}) == "word_id"
     assert stream_slicer.parent_stream_configs[1].request_option is None
 
 
@@ -865,8 +865,8 @@ def test_custom_components_do_not_contain_extra_fields():
     assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
-    assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
@@ -911,8 +911,8 @@ def test_parse_custom_component_fields_if_subcomponent():
     assert custom_substream_slicer.custom_field == "here"
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
-    assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
@@ -1011,3 +1011,37 @@ class TestCreateTransformations:
             )
         ]
         assert stream.transformations == expected
+
+    def test_default_schema_loader(self):
+        component_definition = {
+            "type": "DeclarativeStream",
+            "name": "test",
+            "primary_key": [],
+            "retriever": {
+                "type": "SimpleRetriever",
+                "name": "test",
+                "primary_key": [],
+                "requester": {
+                    "type": "HttpRequester",
+                    "name": "test",
+                    "url_base": "http://localhost:6767/",
+                    "path": "items/",
+                    "request_options_provider": {
+                        "request_parameters": {},
+                        "request_headers": {},
+                        "request_body_json": {},
+                        "type": "InterpolatedRequestOptionsProvider",
+                    },
+                    "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config['api_key'] }}"},
+                },
+                "record_selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": ["items"]}},
+                "paginator": {"type": "NoPagination"},
+            },
+        }
+        resolved_manifest = resolver.preprocess_manifest(component_definition)
+        propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_manifest, {})
+        stream = factory.create_component(
+            model_type=DeclarativeStreamModel, component_definition=propagated_source_config, config=input_config
+        )
+        schema_loader = stream.schema_loader
+        assert schema_loader.default_loader._get_json_filepath().split("/")[-1] == f"{stream.name}.json"

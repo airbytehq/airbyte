@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.api.model.generated.HealthCheckRead;
-import io.airbyte.server.handlers.HealthCheckHandler;
+import io.airbyte.commons.server.handlers.HealthCheckHandler;
 import org.junit.jupiter.api.Test;
 
 class HealthCheckApiTest {

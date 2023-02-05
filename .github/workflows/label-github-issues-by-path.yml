@@ -10,16 +10,8 @@ jobs:
     name: "Label PRs based on files changes"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Airbyte Repo for PAT command
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        # Cannot share PAT outside of JOB context
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
-            ${{ secrets.OCTAVIA_PAT }}
       - name: "Label PR based on changed files"
         uses: actions/labeler@v3
         with:
-          repo-token: "${{ env.PAT }}"
+          repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           sync-labels: true
