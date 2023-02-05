@@ -1,0 +1,5 @@
+connector_image: airbyte/destination-s3:dev
+tests:
+  spec:
+   - spec_path: "src/main/resources/spec.json"
+     config_path: "sample_secrets/config.json"
