@@ -435,10 +435,19 @@ class TestTransformConfig:
         assert extract_schema(actual) == "my_db"
 
     def test_transform_clickhouse(self):
-        input = {"host": "airbyte.io", "port": 9440, "database": "default", "username": "ch", "password": "password1234", "ssl": True}
+        def single_test(config, expected_output, expected_schema):
+            actual = TransformConfig().transform_clickhouse(config)
 
-        actual = TransformConfig().transform_clickhouse(input)
-        expected = {
+            assert expected_output == actual
+            assert extract_schema(actual) == expected_schema
+
+        inputs = [({
+            "host": "airbyte.io",
+            "port": 9440,
+            "database": "default",
+            "username": "ch",
+            "password": "password1234",
+            "ssl": True}, {
             "type": "clickhouse",
             "driver": "http",
             "verify": False,
@@ -448,10 +457,26 @@ class TestTransformConfig:
             "user": "ch",
             "password": "password1234",
             "secure": True,
-        }
+        }, "default"), ({
+            "host": "airbyte.io",
+            "port": 9440,
+            "database": "default",
+            "username": "ch",
+            "password": "password1234"},
+        {
+            "type": "clickhouse",
+            "driver": "http",
+            "verify": False,
+            "host": "airbyte.io",
+            "port": 9440,
+            "schema": "default",
+            "user": "ch",
+            "password": "password1234",
+            "secure": False,
+        }, "default")]
 
-        assert expected == actual
-        assert extract_schema(actual) == "default"
+        for input_tuple in inputs:
+            single_test(input_tuple[0], input_tuple[1], input_tuple[2])
 
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
