@@ -127,15 +127,6 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putDate(final ObjectNode node,
-                         final String columnName,
-                         final ResultSet resultSet,
-                         final int index)
-      throws SQLException {
-    putJavaSQLDate(node, columnName, resultSet, index);
-  }
-
-  @Override
   protected void putTime(final ObjectNode node,
                          final String columnName,
                          final ResultSet resultSet,

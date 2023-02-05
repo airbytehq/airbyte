@@ -111,11 +111,6 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     node.put(columnName, value);
   }
 
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DataTypeUtils.toISOTimeString(resultSet.getTimestamp(index).toLocalDateTime()));
-  }
-
   protected void putGeometry(final ObjectNode node,
                              final String columnName,
                              final ResultSet resultSet,
