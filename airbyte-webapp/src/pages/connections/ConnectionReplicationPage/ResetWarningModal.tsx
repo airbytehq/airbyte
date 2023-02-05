@@ -35,6 +35,7 @@ export const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, 
         <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
         <p>
           <LabeledSwitch
+            name="reset"
             checked={withReset}
             onChange={(ev) => setWithReset(ev.target.checked)}
             label={formatMessage({

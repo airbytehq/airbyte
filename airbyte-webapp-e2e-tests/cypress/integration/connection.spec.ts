@@ -29,14 +29,14 @@ import { goToSourcePage, openSourceOverview } from "pages/sourcePage";
 import { goToSettingsPage, openConnectionOverviewByDestinationName } from "pages/settingsConnectionPage";
 import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "commands/db";
 import {
-  catalogDiffModal,
+  checkCatalogDiffModal,
+  clickCatalogDiffCloseButton,
   newFieldsTable,
   newStreamsTable,
   removedFieldsTable,
   removedStreamsTable,
   toggleStreamWithChangesAccordion,
 } from "pages/modals/catalogDiffModal";
-import { updateSchemaModalConfirmBtnClick } from "pages/modals/updateSchemaModal";
 import {
   interceptGetConnectionRequest,
   interceptUpdateConnectionRequest,
@@ -367,8 +367,8 @@ describe("Connection - stream details", () => {
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
 
-    const collectionNames = ["col1", "id"];
-    const collectionTypes = ["String", "Integer"];
+    const collectionNames = ["email", "id", "name", "updated_at"];
+    const collectionTypes = ["String", "Integer", "String", "Datetime"];
 
     createTestConnection(sourceName, destName);
 
@@ -414,7 +414,7 @@ describe("Connection sync modes", () => {
 
     searchStream(streamName);
     selectSyncMode("Incremental", "Append");
-    selectCursorField(streamName, "col1");
+    selectCursorField(streamName, "updated_at");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -432,8 +432,7 @@ describe("Connection sync modes", () => {
     goToReplicationTab();
 
     searchStream("users");
-    //FIXME: rename "check" to "verify" or similar
-    checkCursorField(streamName, "col1");
+    checkCursorField(streamName, "updated_at");
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -454,7 +453,7 @@ describe("Connection sync modes", () => {
 
     searchStream(streamName);
     selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField(streamName, "col1");
+    selectCursorField(streamName, "updated_at");
     checkPreFilledPrimaryKeyField(streamName, "id");
 
     submitButtonClick();
@@ -474,7 +473,7 @@ describe("Connection sync modes", () => {
 
     searchStream(streamName);
 
-    checkCursorField(streamName, "col1");
+    checkCursorField(streamName, "updated_at");
     checkPreFilledPrimaryKeyField(streamName, "id");
 
     deleteSource(sourceName);
@@ -553,7 +552,7 @@ describe("Connection - detect source schema changes in source", () => {
     goToReplicationTab();
     refreshSourceSchemaBtnClick();
 
-    cy.get(catalogDiffModal).should("exist");
+    checkCatalogDiffModal();
 
     cy.get(removedStreamsTable).should("contain", "users");
 
@@ -563,7 +562,7 @@ describe("Connection - detect source schema changes in source", () => {
     cy.get(removedFieldsTable).should("contain", "city_code");
     cy.get(newFieldsTable).children().should("contain", "country").and("contain", "state");
 
-    updateSchemaModalConfirmBtnClick();
+    clickCatalogDiffCloseButton();
 
     toggleStreamEnabledState("cars");
 
