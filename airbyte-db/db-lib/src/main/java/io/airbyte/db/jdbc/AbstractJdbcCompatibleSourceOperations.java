@@ -4,8 +4,7 @@
 
 package io.airbyte.db.jdbc;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
+import static io.airbyte.db.DataTypeUtils.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -124,8 +123,6 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, resultSet.getString(index));
-    System.out.println("CHECK DATE >>>>> "+resultSet.getString(index));
-//    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
   }
 
   protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
@@ -182,14 +179,6 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
-    } catch (final DateTimeParseException e) {
-      setDateAsTimestamp(preparedStatement, parameterIndex, value);
-    }
-  }
-
-  private void setDateAsTimestamp(PreparedStatement preparedStatement, int parameterIndex, String value) throws SQLException {
     try {
       preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
     } catch (final DateTimeParseException e) {
@@ -256,7 +245,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
-    node.put(columnName, timetz.format(TIMETZ_FORMATTER));
+    node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
   }
 
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
