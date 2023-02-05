@@ -11,7 +11,7 @@ metadata:
 data:
   AIRBYTE_VERSION: {{ .Values.version | default .Chart.AppVersion }}
   API_URL: {{ .Values.webapp.api.url }}
-  CONNECTOR_BUILDER_API_URL: {{ .Values.webapp.connectorBuilderServer.url | quote }}
+  CONNECTOR_BUILDER_API_URL: {{ .Values.webapp.connector-builder-server.url | quote }}
   CONFIG_ROOT: /configs
   CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: "0.35.15.001"
   DATA_DOCKER_MOUNT: airbyte_data
@@ -23,7 +23,7 @@ data:
   GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
   INTERNAL_API_HOST: {{ .Release.Name }}-airbyte-server-svc:{{ .Values.server.service.port }}
-  CONNECTOR_BUILDER_API_HOST: {{ .Release.Name }}-airbyte-connector-builder-server-svc:{{ .Values.connectorBuilderServer.service.port }}
+  CONNECTOR_BUILDER_API_HOST: {{ .Release.Name }}-airbyte-connector-builder-server-svc:{{ .Values.connector-builder-server.service.port }}
 {{- if $.Values.global.jobs.kube.annotations }}
   JOB_KUBE_ANNOTATIONS: {{ $.Values.global.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
 {{- end }}

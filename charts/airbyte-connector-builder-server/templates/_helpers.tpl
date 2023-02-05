@@ -62,7 +62,7 @@ Define db secret
 Define imageTag
 */}}
 
-{{- define "connectorBuilderServer.imageTag" -}}
+{{- define "connector-builder-server.imageTag" -}}
 {{- if .Values.image.tag }}
     {{- printf "%s" .Values.image.tag }}
 {{- else if ((.Values.global.image).tag) }}

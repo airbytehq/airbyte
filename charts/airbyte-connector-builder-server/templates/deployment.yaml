@@ -43,7 +43,7 @@ spec:
       {{- end }}
       containers:
       - name: airbyte-server-container
-        image: {{ printf "%s:%s" .Values.image.repository (include "connectorBuilderServer.imageTag" .) }}
+        image: {{ printf "%s:%s" .Values.image.repository (include "connector-builder-server.imageTag" .) }}
         imagePullPolicy: "{{ .Values.image.pullPolicy }}"
         env:
         {{- if eq .Values.global.deploymentMode "oss"  }}
