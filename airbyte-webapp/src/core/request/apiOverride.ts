@@ -54,6 +54,9 @@ export const apiOverride = async <T, U = unknown>(
     ({ headers } = await middleware({ headers }));
   }
 
+  headers = new Headers(headers);
+  headers.set("X-Airbyte-Analytic-Source", "webapp");
+
   const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {
     method,
     ...(data ? { body: getRequestBody(data) } : {}),

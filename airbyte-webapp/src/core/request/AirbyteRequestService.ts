@@ -31,6 +31,7 @@ abstract class AirbyteRequestService {
         body: body ? JSON.stringify(body) : undefined,
         headers: {
           "Content-Type": "application/json",
+          "X-Airbyte-Analytic-Source": "webapp",
         },
       },
       options
