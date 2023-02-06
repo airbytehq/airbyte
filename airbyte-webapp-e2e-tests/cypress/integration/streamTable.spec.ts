@@ -30,14 +30,19 @@ import {
 } from "commands/interceptors";
 import { Connection, Destination, Source } from "commands/api/types";
 import { selectSchedule } from "pages/replicationPage";
+import { runDbQuery } from "commands/db/db";
+import { createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 
-describe.only("New stream table - new connection set up ", () => {
+// TODO: Disable before merge
+describe("New stream table - new connection set up ", () => {
   let source: Source;
   let destination: Destination;
   let connectionId: string;
 
   before(() => {
     initialSetupCompleted();
+    runDbQuery(dropUsersTableQuery);
+    runDbQuery(createUsersTableQuery);
 
     requestWorkspaceId().then(() => {
       const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Stream table Source"));
