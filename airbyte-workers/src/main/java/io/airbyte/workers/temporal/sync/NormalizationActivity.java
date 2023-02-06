@@ -20,8 +20,7 @@ public interface NormalizationActivity {
   @ActivityMethod
   NormalizationSummary normalize(JobRunConfig jobRunConfig,
                                  IntegrationLauncherConfig destinationLauncherConfig,
-                                 NormalizationInput input,
-                                 final UUID workspaceId);
+                                 NormalizationInput input);
 
   @ActivityMethod
   NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput);

@@ -71,7 +71,9 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private final ResourceRequirements normalizationResourceRequirements;
   private final AirbyteApiClient airbyteApiClient;
 
+  // This constant is not currently in use. We'll need to bump it when we try releasing v1 again.
   private static final Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
+  private static final String V1_NORMALIZATION_MINOR_VERSION = "3";
   private static final String STRICT_COMPARISON_IMAGE_TAG = "0.4.0";
   private static final String NON_STRICT_COMPARISON_IMAGE_TAG = "0.2.25";
 
@@ -109,8 +111,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   @Override
   public NormalizationSummary normalize(final JobRunConfig jobRunConfig,
                                         final IntegrationLauncherConfig destinationLauncherConfig,
-                                        final NormalizationInput input,
-                                        final UUID workspaceId) {
+                                        final NormalizationInput input) {
     ApmTraceUtils.addTagsToTrace(
         Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
             destinationLauncherConfig.getDockerImage()));
@@ -119,7 +120,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId)) {
+      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, input.getWorkspaceId())) {
         activateStrictNormalizationComparisonIfPossible(destinationLauncherConfig);
       }
 
@@ -183,14 +184,15 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     return new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withCatalog(syncOutput.getOutputCatalog())
-        .withResourceRequirements(normalizationResourceRequirements);
+        .withResourceRequirements(normalizationResourceRequirements)
+        .withWorkspaceId(syncInput.getWorkspaceId());
   }
 
   @VisibleForTesting
   static boolean normalizationSupportsV1DataTypes(final IntegrationLauncherConfig destinationLauncherConfig) {
     try {
       final Version normalizationVersion = new Version(getNormalizationImageTag(destinationLauncherConfig));
-      return normalizationVersion.greaterThanOrEqualTo(MINIMAL_VERSION_FOR_DATATYPES_V1);
+      return V1_NORMALIZATION_MINOR_VERSION.equals(normalizationVersion.getMinorVersion());
     } catch (final IllegalArgumentException e) {
       // IllegalArgument here means that the version isn't in a semver format.
       // The current behavior is to assume it supports v0 data types for dev purposes.

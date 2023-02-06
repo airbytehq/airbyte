@@ -21,3 +21,7 @@ properties:
     type: object
     description: optional resource requirements to run sync workers
     existingJavaType: io.airbyte.config.ResourceRequirements
+  workspaceId:
+    description: The id of the workspace associated with this sync
+    type: string
+    format: uuid
