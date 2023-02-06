@@ -1,9 +1,8 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+package io.airbyte.featureflag
 
-import io.airbyte.featureflag.EnvVar
-import io.airbyte.featureflag.User
 import org.junit.jupiter.api.Test
 
 class EnvVarTest {
