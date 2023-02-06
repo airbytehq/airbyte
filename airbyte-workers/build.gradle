@@ -95,6 +95,7 @@ dependencies {
 
     testImplementation project(':airbyte-commons-docker')
     testImplementation project(':airbyte-test-utils')
+    testImplementation project(':airbyte-api')
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test

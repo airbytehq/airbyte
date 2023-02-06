@@ -26,13 +26,15 @@
 }
 
 .modalPanel {
-  margin-left: auto;
-  margin-right: auto;
+  max-height: 100%;
+  display: flex;
 }
 
 .card {
   margin-left: variables.$width-size-menu;
   max-width: calc(100vw - #{variables.$width-size-menu} - #{variables.$spacing-lg} * 2);
+  display: flex;
+  flex-direction: column;
 
   &.sm {
     width: variables.$width-modal-sm;
