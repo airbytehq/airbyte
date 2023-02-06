@@ -164,11 +164,10 @@ export const ConnectionStatusPage: React.FC = () => {
             <FormattedMessage id="sources.syncHistory" />
             {connection.status === ConnectionStatus.active && !activeJob?.action && (
               <div className={styles.actions}>
-                <Button className={styles.resetButton} variant="secondary" onClick={onResetDataButtonClick}>
+                <Button variant="secondary" onClick={onResetDataButtonClick}>
                   <FormattedMessage id="connection.resetData" />
                 </Button>
                 <Button
-                  className={styles.syncButton}
                   disabled={!allowSync}
                   onClick={onSyncNowButtonClick}
                   icon={<RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />}
