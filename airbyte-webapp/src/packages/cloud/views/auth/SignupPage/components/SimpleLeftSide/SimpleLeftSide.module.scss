@@ -1,0 +1,15 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.checkIcon {
+  color: colors.$dark-blue-100;
+}
+
+.detailTextContainer {
+  min-width: fit-content;
+  color: colors.$dark-blue;
+}
+
+.detailsContainer {
+  overflow: visible;
+}

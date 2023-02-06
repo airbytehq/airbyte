@@ -1,3 +1,6 @@
+import { faCheckCircle, faXmarkCircle } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import { Field, FieldProps, Formik, Form } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -7,10 +10,13 @@ import * as yup from "yup";
 
 import { LabeledInput, Link } from "components";
 import { Button } from "components/ui/Button";
+import { FlexContainer } from "components/ui/Flex";
+import { Text } from "components/ui/Text";
 
 import { useExperiment } from "hooks/services/Experiment";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { FREE_EMAIL_SERVICE_PROVIDERS } from "packages/cloud/services/auth/freeEmailProviders";
 import { isGdprCountry } from "utils/dataPrivacy";
 import { links } from "utils/links";
 
@@ -75,19 +81,34 @@ export const CompanyNameField: React.FC = () => {
 export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => {
   const { formatMessage } = useIntl();
 
+  const isCorporateEmail = (email?: string) =>
+    !FREE_EMAIL_SERVICE_PROVIDERS.some((provider) => email?.endsWith(`@${provider}`));
+
+  const getMessage = ({ touched, error, value }: { touched: boolean; error?: string; value?: string }) => {
+    if (touched && error) {
+      return formatMessage({ id: error });
+    }
+    if (touched && !isCorporateEmail(value)) {
+      return formatMessage({ id: "form.workEmail.error" });
+    }
+    return null;
+  };
   return (
     <Field name="email">
       {({ field, meta }: FieldProps<string>) => (
-        <LabeledInput
-          {...field}
-          label={label || <FormattedMessage id="login.yourEmail" />}
-          placeholder={formatMessage({
-            id: "login.yourEmail.placeholder",
-          })}
-          type="text"
-          error={!!meta.error && meta.touched}
-          message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-        />
+        <>
+          {" "}
+          <LabeledInput
+            {...field}
+            label={label || <FormattedMessage id="login.yourEmail" />}
+            placeholder={formatMessage({
+              id: "login.yourEmail.placeholder",
+            })}
+            type="text"
+            error={(!!meta.error && meta.touched) || (meta.touched && !isCorporateEmail(field.value))}
+            message={getMessage({ touched: meta.touched, error: meta.error, value: field.value })}
+          />
+        </>
       )}
     </Field>
   );
@@ -95,20 +116,43 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
 
 export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) => {
   const { formatMessage } = useIntl();
+  const isSimpleLeftSide = useExperiment("authPage.signup.simplifyLeftSide", false);
 
   return (
     <Field name="password">
       {({ field, meta }: FieldProps<string>) => (
-        <LabeledInput
-          {...field}
-          label={label || <FormattedMessage id="login.password" />}
-          placeholder={formatMessage({
-            id: "login.password.placeholder",
-          })}
-          type="password"
-          error={!!meta.error && meta.touched}
-          message={meta.touched && meta.error && formatMessage({ id: meta.error })}
-        />
+        <>
+          <LabeledInput
+            {...field}
+            label={label || <FormattedMessage id="login.password" />}
+            placeholder={formatMessage({
+              id: "login.password.placeholder",
+            })}
+            type="password"
+            error={!!meta.error && meta.touched}
+            message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+          />
+          {isSimpleLeftSide && (
+            <FlexContainer gap="sm" alignItems="center" className={styles.passwordCheckContainer}>
+              <FontAwesomeIcon
+                icon={Boolean(meta.error) && meta.touched ? faXmarkCircle : faCheckCircle}
+                className={classNames(styles.checkIcon, {
+                  [styles.error]: Boolean(meta.error) && meta.touched,
+                  [styles.valid]: meta.touched && !meta.error,
+                })}
+              />
+
+              <Text
+                size="sm"
+                className={classNames({
+                  [styles.error]: Boolean(meta.error) && meta.touched,
+                })}
+              >
+                <FormattedMessage id="signup.password.minLength" />
+              </Text>
+            </FlexContainer>
+          )}
+        </>
       )}
     </Field>
   );
