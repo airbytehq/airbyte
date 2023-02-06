@@ -118,8 +118,10 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-      // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're trying to use a newer version of normalization
-      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId) && "0.2.25".equals(getNormalizationImageTag(destinationLauncherConfig))) {
+      // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're
+      // trying to use a newer version of normalization
+      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId)
+          && "0.2.25".equals(getNormalizationImageTag(destinationLauncherConfig))) {
         replaceNormalizationImageTag(destinationLauncherConfig, STRICT_COMPARISON_IMAGE_TAG);
       }
 
