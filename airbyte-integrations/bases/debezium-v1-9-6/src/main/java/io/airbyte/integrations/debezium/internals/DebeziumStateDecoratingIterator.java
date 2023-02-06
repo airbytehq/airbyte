@@ -135,13 +135,14 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
         final ChangeEvent<String, String> event = changeEventIterator.next();
         recordsLastSync++;
 
+
         if (checkpointOffsetToSend.size() == 0 &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
-          checkpointOffsetToSend.putAll(offsetManager.read());
-          if (!previousCheckpointOffset.isEmpty() &&
-              cdcStateHandler.isSameOffset(checkpointOffsetToSend, previousCheckpointOffset)) {
-            checkpointOffsetToSend.clear();
+          // Using temporal variable to avoid reading teh offset twice, one in the condition and another in the assignation
+          final HashMap<String, String> temporalOffset = (HashMap<String, String>) offsetManager.read();
+          if (!cdcStateHandler.isSameOffset(previousCheckpointOffset, temporalOffset)) {
+            checkpointOffsetToSend.putAll(temporalOffset);
           }
         }
 
