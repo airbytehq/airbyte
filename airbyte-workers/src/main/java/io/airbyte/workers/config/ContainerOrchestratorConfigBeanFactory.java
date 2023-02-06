@@ -104,6 +104,7 @@ public class ContainerOrchestratorConfigBeanFactory {
     final Configs configs = new EnvConfigs();
     environmentVariables.put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit());
     environmentVariables.put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest());
+    environmentVariables.put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey());
 
     if (System.getenv(DD_ENV_ENV_VAR) != null) {
       environmentVariables.put(DD_ENV_ENV_VAR, System.getenv(DD_ENV_ENV_VAR));
