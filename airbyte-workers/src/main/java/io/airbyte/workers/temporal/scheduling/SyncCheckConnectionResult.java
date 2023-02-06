@@ -17,14 +17,14 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SyncCheckConnectionFailure {
+public class SyncCheckConnectionResult {
 
   private final Long jobId;
   private final Integer attemptId;
   private ConnectorJobOutput failureOutput;
   private FailureReason.FailureOrigin origin = null;
 
-  public SyncCheckConnectionFailure(final JobRunConfig jobRunConfig) {
+  public SyncCheckConnectionResult(final JobRunConfig jobRunConfig) {
     Long jobId = 0L;
     Integer attemptId = 0;
 

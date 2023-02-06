@@ -225,9 +225,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       StandardSyncOutput standardSyncOutput = null;
 
       try {
-        final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(getJobRunConfig(), jobInputs);
-        if (syncCheckConnectionFailure.isFailed()) {
-          final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
+        final SyncCheckConnectionResult syncCheckConnectionResult = checkConnections(getJobRunConfig(), jobInputs);
+        if (syncCheckConnectionResult.isFailed()) {
+          final StandardSyncOutput checkFailureOutput = syncCheckConnectionResult.buildFailureOutput();
           workflowState.setFailed(getFailStatus(checkFailureOutput));
           reportFailure(connectionUpdaterInput, checkFailureOutput, FailureCause.CONNECTION);
         } else {
@@ -375,9 +375,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         standardCheckInputDestination);
   }
 
-  private SyncCheckConnectionFailure checkConnections(final JobRunConfig jobRunConfig,
-                                                      @Nullable final GenerateInputActivity.GeneratedJobInput jobInputs) {
-    final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+  private SyncCheckConnectionResult checkConnections(final JobRunConfig jobRunConfig,
+                                                     @Nullable final GenerateInputActivity.GeneratedJobInput jobInputs) {
+    final SyncCheckConnectionResult checkConnectionResult = new SyncCheckConnectionResult(jobRunConfig);
 
     final JobCheckFailureInput jobStateInput =
         new JobCheckFailureInput(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), connectionId);
@@ -387,7 +387,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (!isLastJobOrAttemptFailure) {
       log.info("SOURCE CHECK: Skipped, last attempt was not a failure");
       log.info("DESTINATION CHECK: Skipped, last attempt was not a failure");
-      return checkFailure;
+      return checkConnectionResult;
     }
 
     final int generateCheckInputVersion =
@@ -406,15 +406,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         sourceLauncherConfig,
         checkInputs.getSourceCheckConnectionInput());
 
-    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed()) {
+    if (isResetJob(sourceLauncherConfig) || checkConnectionResult.isFailed()) {
       // reset jobs don't need to connect to any external source, so check connection is unnecessary
       log.info("SOURCE CHECK: Skipped, reset job");
     } else {
       log.info("SOURCE CHECK: Starting");
       final ConnectorJobOutput sourceCheckResponse = getCheckResponse(checkSourceInput);
-      if (SyncCheckConnectionFailure.isOutputFailed(sourceCheckResponse)) {
-        checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
-        checkFailure.setFailureOutput(sourceCheckResponse);
+      if (SyncCheckConnectionResult.isOutputFailed(sourceCheckResponse)) {
+        checkConnectionResult.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
+        checkConnectionResult.setFailureOutput(sourceCheckResponse);
         log.info("SOURCE CHECK: Failed");
       } else {
         log.info("SOURCE CHECK: Successful");
@@ -426,21 +426,21 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         checkInputs.getDestinationLauncherConfig(),
         checkInputs.getDestinationCheckConnectionInput());
 
-    if (checkFailure.isFailed()) {
+    if (checkConnectionResult.isFailed()) {
       log.info("DESTINATION CHECK: Skipped, source check failed");
     } else {
       log.info("DESTINATION CHECK: Starting");
       final ConnectorJobOutput destinationCheckResponse = getCheckResponse(checkDestinationInput);
-      if (SyncCheckConnectionFailure.isOutputFailed(destinationCheckResponse)) {
-        checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
-        checkFailure.setFailureOutput(destinationCheckResponse);
+      if (SyncCheckConnectionResult.isOutputFailed(destinationCheckResponse)) {
+        checkConnectionResult.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
+        checkConnectionResult.setFailureOutput(destinationCheckResponse);
         log.info("DESTINATION CHECK: Failed");
       } else {
         log.info("DESTINATION CHECK: Successful");
       }
     }
 
-    return checkFailure;
+    return checkConnectionResult;
   }
 
   private boolean isResetJob(final IntegrationLauncherConfig sourceLauncherConfig) {
