@@ -224,6 +224,8 @@ public class EnvConfigs implements Configs {
   private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
   private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
+  private static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
+
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
@@ -1137,6 +1139,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getFieldSelectionWorkspaces() {
     return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "");
+  }
+
+  @Override
+  public String getStrictComparisonNormalizationWorkspaces() {
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "");
   }
 
   @Override

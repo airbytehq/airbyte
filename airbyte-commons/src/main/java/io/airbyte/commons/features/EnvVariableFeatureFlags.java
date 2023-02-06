@@ -22,8 +22,6 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
-  public static final String APPLY_STRICT_COMPARISON_NORMALIZATION = "APPLY_STRICT_COMPARISON_NORMALIZATION";
-
   public static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
 
   @Override
