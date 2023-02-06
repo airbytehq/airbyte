@@ -47,7 +47,7 @@ class FeatureFlagHelperTest {
   void isFieldSelectionEnabledForWorkspaceWithSomeIdsAndAMatch() {
     final UUID workspaceId = UUID.randomUUID();
     final UUID randomId = UUID.randomUUID();
-  when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId + "," + workspaceId);
+    when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId + "," + workspaceId);
 
     assertTrue(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId));
   }
