@@ -38,10 +38,11 @@ public interface FeatureFlags {
   String fieldSelectionWorkspaces();
 
   /**
-   * Get the workspaces allow-listed for strict incremental comparison in normalization.
-   * This takes precedence over the normalization version in destination_definitions.yaml.
+   * Get the workspaces allow-listed for strict incremental comparison in normalization. This takes
+   * precedence over the normalization version in destination_definitions.yaml.
    *
-   * @return a comma-separated list of workspace ids where strict incremental comparison should be enabled in normalization.
+   * @return a comma-separated list of workspace ids where strict incremental comparison should be
+   *         enabled in normalization.
    */
   String strictComparisonNormalizationWorkspaces();
 

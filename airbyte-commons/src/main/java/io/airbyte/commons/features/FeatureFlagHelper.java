@@ -23,7 +23,9 @@ public class FeatureFlagHelper {
   }
 
   @VisibleForTesting
-  static boolean isWorkspaceIncludedInFlag(final FeatureFlags featureFlags, final Function<FeatureFlags, String> flagRetriever, final UUID workspaceId) {
+  static boolean isWorkspaceIncludedInFlag(final FeatureFlags featureFlags,
+                                           final Function<FeatureFlags, String> flagRetriever,
+                                           final UUID workspaceId) {
     final String workspaceIdsString = flagRetriever.apply(featureFlags);
     final Set<UUID> workspaceIds = new HashSet<>();
     if (workspaceIdsString != null && !workspaceIdsString.isEmpty()) {
@@ -37,4 +39,5 @@ public class FeatureFlagHelper {
     }
     return workspaceId != null && workspaceIds.contains(workspaceId);
   }
+
 }
