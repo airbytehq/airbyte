@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "alerts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "budget": {
+      "type": ["null", "object"]
+    },
+    "campaignCriterion": {
+      "type": ["null", "object"]
+    },
+    "campaignId": {
+      "type": ["null", "string"]
+    },
+    "campaignName": {
+      "type": ["null", "string"]
+    },
+    "campaignStatus": {
+      "type": ["null", "string"]
+    },
+    "endDate": {
+      "type": ["null", "string"]
+    },
+    "fundingStrategy": {
+      "type": ["null", "object"]
+    },
+    "marketplaceId": {
+      "type": ["null", "string"]
+    },
+    "startDate": {
+      "type": ["null", "string"]
+    }
+  }
+}

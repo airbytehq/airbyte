@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "couponCode": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "endDate": {
+      "type": ["null", "string"]
+    },
+    "marketplaceId": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "priority": {
+      "type": ["null", "string"]
+    },
+    "promotionHref": {
+      "type": ["null", "string"]
+    },
+    "promotionId": {
+      "type": ["null", "string"]
+    },
+    "promotionImageUrl": {
+      "type": ["null", "string"]
+    },
+    "promotionStatus": {
+      "type": ["null", "string"]
+    },
+    "promotionType": {
+      "type": ["null", "string"]
+    },
+    "startDate": {
+      "type": ["null", "string"]
+    }
+  }
+}

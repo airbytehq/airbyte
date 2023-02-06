@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "availability": {
+      "type": ["null", "object"]
+    },
+    "condition": {
+      "type": ["null", "string"]
+    },
+    "conditionDescription": {
+      "type": ["null", "string"]
+    },
+    "groupIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "inventoryItemGroupKeys": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "locale": {
+      "type": ["null", "string"]
+    },
+    "packageWeightAndSize": {
+      "type": ["null", "object"]
+    },
+    "product": {
+      "type": ["null", "object"]
+    },
+    "sku": {
+      "type": ["null", "string"]
+    }
+  }
+}

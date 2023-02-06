@@ -1089,6 +1089,14 @@
   icon: walmart.svg
   sourceType: api
   releaseStage: alpha
+- name: Ebay
+  sourceDefinitionId: e3863dae-eed0-4886-a43c-c255cbef94a5
+  dockerRepository: yuanrui2014/source-ebay
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.daspire.com/setup-guide/sources/ebay
+  icon: ebay.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Webflow
   sourceDefinitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
   dockerRepository: airbyte/source-webflow

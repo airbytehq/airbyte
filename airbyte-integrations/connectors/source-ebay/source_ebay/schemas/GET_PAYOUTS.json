@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "transactionId": {
+      "type": ["null", "string"]
+    },
+    "payoutId": {
+      "type": ["null", "string"]
+    },
+    "salesRecordReference": {
+      "type": ["null", "string"]
+    },
+    "transactionType": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": ["null", "object"]
+    },
+    "bookingEntry": {
+      "type": ["null", "string"]
+    },
+    "transactionDate": {
+      "type": ["null", "string"]
+    },
+    "transactionStatus": {
+      "type": ["null", "string"]
+    },
+    "paymentsEntity": {
+      "type": ["null", "string"]
+    },
+    "references": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "feeJurisdiction": {
+      "type": ["null", "object"]
+    },
+    "feeType": {
+      "type": ["null", "string"]
+    },
+    "orderId": {
+      "type": ["null", "string"]
+    },
+    "buyer": {
+      "type": ["null", "object"]
+    },
+    "totalFeeBasisAmount": {
+      "type": ["null", "object"]
+    },
+    "totalFeeAmount": {
+      "type": ["null", "object"]
+    },
+    "transactionMemo": {
+      "type": ["null", "string"]
+    },
+    "orderLineItems": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "ebayCollectedTaxAmount": {
+      "type": ["null", "object"]
+    }
+  }
+}

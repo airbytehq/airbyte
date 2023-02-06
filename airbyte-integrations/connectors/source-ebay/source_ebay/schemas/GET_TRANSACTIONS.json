@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": ["null", "object"]
+    },
+    "bankReference": {
+      "type": ["null", "string"]
+    },
+    "lastAttemptedPayoutDate": {
+      "type": ["null", "string"]
+    },
+    "payoutId": {
+      "type": ["null", "string"]
+    },
+    "payoutDate": {
+      "type": ["null", "string"]
+    },
+    "payoutInstrument": {
+      "type": ["null", "object"]
+    },
+    "payoutMemo": {
+      "type": ["null", "string"]
+    },
+    "payoutStatus": {
+      "type": ["null", "string"]
+    },
+    "payoutStatusDescription": {
+      "type": ["null", "string"]
+    },
+    "totalAmount": {
+      "type": ["null", "object"]
+    },
+    "totalFee": {
+      "type": ["null", "object"]
+    },
+    "transactionCount": {
+      "type": ["null", "integer"]
+    }
+  }
+}

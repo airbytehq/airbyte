@@ -1,12 +1,13 @@
-documentationUrl: https://docs.daspire.com/setup-guide/sources/walmart-marketplace
+documentationUrl: https://docs.airbyte.io/integrations/sources/ebay
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Walmart Spec
+  title: Ebay Spec
   type: object
   required:
     - source_name
     - client_id
     - client_secret
+    - refresh_token
   additionalProperties: false
   properties:
     source_name:
@@ -17,14 +18,27 @@ connectionSpecification:
     client_id:
       title: Client Id
       type: string
-      description: Walmart client id.
+      description: eBay client id.
       order: 2
     client_secret:
       title: Client Secret
       type: string
-      description: Walmart client secret.
+      description: eBay client secret.
       order: 3
       airbyte_secret: true
+    refresh_token:
+      title: Refresh Token
+      type: string
+      description: eBay refresh token.
+      order: 4
+      airbyte_secret: true
+    marketplace_id:
+      title: Marketplace Id
+      type: string
+      description: eBay marketplace id.
+      enum: [EBAY_US,EBAY_AT,EBAY_AU,EBAY_BE,EBAY_CA,EBAY_CH,EBAY_DE,EBAY_ES,EBAY_FR,EBAY_GB,EBAY_HK,EBAY_IE,EBAY_IN,EBAY_IT,EBAY_MY,EBAY_NL,EBAY_PH,EBAY_PL,EBAY_SG,EBAY_TH,EBAY_TW,EBAY_VN,EBAY_MOTORS_US]
+      default: EBAY_US
+      order: 5
     tunnel_method:
       type: "object"
       title: "Acquisition Method"
@@ -70,3 +84,37 @@ connectionSpecification:
                 - 7
               minimum: 1
               maximum: 90
+advanced_auth:
+  auth_flow_type: "oauth2.0"
+  predicate_key:
+    - "auth_type"
+  predicate_value: "oauth2.0"
+  oauth_config_specification:
+    complete_oauth_output_specification:
+      type: "object"
+      additionalProperties: true
+      properties:
+        refresh_token:
+          type: "string"
+          path_in_connector_config:
+            - "refresh_token"
+    complete_oauth_server_input_specification:
+      type: "object"
+      additionalProperties: true
+      properties:
+        client_id:
+          type: "string"
+        client_secret:
+          type: "string"
+    complete_oauth_server_output_specification:
+      type: "object"
+      additionalProperties: true
+      properties:
+        client_id:
+          type: "string"
+          path_in_connector_config:
+            - "client_id"
+        client_secret:
+          type: "string"
+          path_in_connector_config:
+            - "client_secret"

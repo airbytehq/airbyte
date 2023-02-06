@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "buyer": {
+      "type": ["null", "object"]
+    },
+    "buyerCheckoutNotes": {
+      "type": ["null", "string"]
+    },
+    "cancelStatus": {
+      "type": ["null", "object"]
+    },
+    "creationDate": {
+      "type": ["null", "string"]
+    },
+    "ebayCollectAndRemitTax": {
+      "type": ["null", "boolean"]
+    },
+    "fulfillmentHrefs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "fulfillmentStartInstructions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "lastModifiedDate": {
+      "type": ["null", "string"]
+    },
+    "legacyOrderId": {
+      "type": ["null", "string"]
+    },
+    "lineItems": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
+    },
+    "orderFulfillmentStatus": {
+      "type": ["null", "string"]
+    },
+    "orderId": {
+      "type": ["null", "string"]
+    },
+    "orderPaymentStatus": {
+      "type": ["null", "string"]
+    },
+    "paymentSummary": {
+      "type": ["null", "object"]
+    },
+    "pricingSummary": {
+      "type": ["null", "object"]
+    },
+    "program": {
+      "type": ["null", "object"]
+    },
+    "salesRecordReference": {
+      "type": ["null", "string"]
+    },
+    "sellerId": {
+      "type": ["null", "string"]
+    },
+    "totalFeeBasisAmount": {
+      "type": ["null", "object"]
+    },
+    "totalMarketplaceFee": {
+      "type": ["null", "object"]
+    }
+  }
+}

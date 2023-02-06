@@ -11059,6 +11059,128 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "yuanrui2014/source-ebay:0.1.0"
+  spec:
+    documentationUrl: https://docs.airbyte.io/integrations/sources/ebay
+    connectionSpecification:
+      $schema: http://json-schema.org/draft-07/schema#
+      title: Ebay Spec
+      type: object
+      required:
+        - source_name
+        - client_id
+        - client_secret
+        - refresh_token
+      additionalProperties: false
+      properties:
+        source_name:
+          title: Store Name
+          type: string
+          description: Table Source Identification.
+          order: 1
+        client_id:
+          title: Client Id
+          type: string
+          description: eBay client id.
+          order: 2
+        client_secret:
+          title: Client Secret
+          type: string
+          description: eBay client secret.
+          order: 3
+          airbyte_secret: true
+        refresh_token:
+          title: Refresh Token
+          type: string
+          description: eBay refresh token.
+          order: 4
+          airbyte_secret: true
+        marketplace_id:
+          title: Marketplace Id
+          type: string
+          description: eBay marketplace id.
+          enum: [ EBAY_US,EBAY_AT,EBAY_AU,EBAY_BE,EBAY_CA,EBAY_CH,EBAY_DE,EBAY_ES,EBAY_FR,EBAY_GB,EBAY_HK,EBAY_IE,EBAY_IN,EBAY_IT,EBAY_MY,EBAY_NL,EBAY_PH,EBAY_PL,EBAY_SG,EBAY_TH,EBAY_TW,EBAY_VN,EBAY_MOTORS_US ]
+          default: EBAY_US
+          order: 5
+        tunnel_method:
+          type: "object"
+          title: "Acquisition Method"
+          oneOf:
+            - title: "Manual Acquisition"
+              required:
+                - "tunnel_method"
+                - "start_time"
+              properties:
+                tunnel_method:
+                  description: "Manually obtain time range data"
+                  type: "string"
+                  const: "MANUAL"
+                  order: 2
+                start_time:
+                  title: Start Time
+                  type: string
+                  description: Date and time in the format YYYY-MM-DD (e.g. 2022-05-25)
+                  pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$
+                  examples: [ "2022-05-25" ]
+                  order: 1
+                end_time:
+                  title: End Time
+                  type: string
+                  description: Date and time in the format YYYY-MM-DD (e.g. 2022-06-25)
+                  pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$|^$
+                  examples: [ "2022-06-25" ]
+                  order: 2
+            - title: "Periodic Acquisition"
+              required:
+                - "tunnel_method"
+                - "days"
+              properties:
+                tunnel_method:
+                  description: "Periodically obtained by day"
+                  type: "string"
+                  const: "PERIODIC"
+                  order: 1
+                days:
+                  description: "Number of days * - range 1-90 (e.g. 7)"
+                  type: "integer"
+                  examples:
+                    - 7
+                  minimum: 1
+                  maximum: 90
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+        - "auth_type"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: true
+          properties:
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+                - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: true
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: true
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+                - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+                - "client_secret"
 - dockerImage: "yuanrui2014/source-walmart:0.1.0"
   spec:
     documentationUrl: https://docs.daspire.com/setup-guide/sources/walmart-marketplace
