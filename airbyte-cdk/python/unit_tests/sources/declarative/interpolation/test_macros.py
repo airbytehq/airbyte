@@ -4,6 +4,7 @@
 
 import datetime
 
+import freezegun
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 
@@ -17,6 +18,7 @@ from airbyte_cdk.sources.declarative.interpolation.macros import macros
         ("test_max", "max", True),
         ("test_day_delta", "day_delta", True),
         ("test_format_datetime", "format_datetime", True),
+        ("test_adjust_datetime", "adjust_datetime", True),
         ("test_not_a_macro", "thisisnotavalidmacro", False),
     ],
 )
@@ -31,3 +33,12 @@ def test_format_datetime():
     format_datetime = macros["format_datetime"]
     assert format_datetime("2022-01-01T01:01:01Z", "%Y-%m-%d") == "2022-01-01"
     assert format_datetime(datetime.datetime(2022, 1, 1, 1, 1, 1), "%Y-%m-%d") == "2022-01-01"
+
+
+@freezegun.freeze_time("2022-01-20T10:00:00Z")
+def test_adjust_datetime():
+    adjust_datetime = macros["adjust_datetime"]
+    assert '2022-01-10T10:00:00Z' == adjust_datetime("2022-01-02T09:00:00Z", 'P10D', '%Y-%m-%dT%H:%M:%SZ')
+    assert '2022-01-10T10:00:00+0000' == adjust_datetime("2022-01-02T09:00:00Z", 'P10D', '%Y-%m-%dT%H:%M:%S%z')
+    assert '2022-01-02T09:00:00Z' == adjust_datetime("2022-01-02T09:00:00Z", 'P30D', '%Y-%m-%dT%H:%M:%SZ')
+    assert '2022-01-02T09:00:00+0000' == adjust_datetime("2022-01-02T09:00:00Z", 'P30D', '%Y-%m-%dT%H:%M:%S%z')

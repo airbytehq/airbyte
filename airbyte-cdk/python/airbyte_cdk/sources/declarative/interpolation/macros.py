@@ -8,6 +8,7 @@ import numbers
 from typing import Union
 
 from dateutil import parser
+from isodate import parse_duration
 
 """
 This file contains macros that can be evaluated by a `JinjaInterpolation` object
@@ -108,5 +109,22 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str):
     return parser.parse(dt).strftime(format)
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime]
+def adjust_datetime(dt: str, lower_boundary: str, format: str):
+    """
+    Increase datetime if it is the less than the lower boundary
+
+    Usage:
+    `"{{ adjust_datetime(config.start_date, 'P365D', '%Y-%m-%dT%H:%M:%SZ') }}"`
+    """
+    dt = datetime.datetime.strptime(dt, format)
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    lower_boundary = parse_duration(lower_boundary)
+    now = datetime.datetime.now(datetime.timezone.utc)
+    if now - dt > lower_boundary:
+        dt = now - lower_boundary
+    return dt.strftime(format)
+
+
+_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime, adjust_datetime]
 macros = {f.__name__: f for f in _macros_list}
