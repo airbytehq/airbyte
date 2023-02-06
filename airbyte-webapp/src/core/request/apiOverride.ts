@@ -15,7 +15,6 @@ function getRequestBody<U>(data: U) {
   if (nonJsonObject) {
     // The app tries to stringify blobs which results in broken functionality.
     // There may be some edge cases where we pass in an empty object.
-    // @ts-expect-error There may be a better way to do this, but for now it solves the problem.
     return data as BodyInit;
   }
   return stringifiedData;
