@@ -1,10 +1,10 @@
-import { Config } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
+import { AirbyteWebappConfig } from "../../config";
 
 export interface ApiOverrideRequestOptions {
-  config: Pick<Config, "apiUrl">;
+  config: Pick<AirbyteWebappConfig, "apiUrl">;
   middlewares: RequestMiddleware[];
   signal?: RequestInit["signal"];
 }
@@ -15,7 +15,6 @@ function getRequestBody<U>(data: U) {
   if (nonJsonObject) {
     // The app tries to stringify blobs which results in broken functionality.
     // There may be some edge cases where we pass in an empty object.
-    // @ts-expect-error There may be a better way to do this, but for now it solves the problem.
     return data as BodyInit;
   }
   return stringifiedData;

@@ -9,11 +9,10 @@ import { CollapsibleCardProps, CollapsibleCard } from "components/ui/Collapsible
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { generateMessageFromError } from "utils/errorStatusMessage";
 
-import EditControls from "../ConnectionForm/EditControls";
 import styles from "./ConnectionEditFormCard.module.scss";
+import EditControls from "../ConnectionForm/EditControls";
 
 interface FormCardProps<T> extends CollapsibleCardProps {
-  bottomSeparator?: boolean;
   form: FormikConfig<T>;
   submitDisabled?: boolean;
 }
@@ -21,7 +20,6 @@ interface FormCardProps<T> extends CollapsibleCardProps {
 export const ConnectionEditFormCard = <T extends object>({
   children,
   form,
-  bottomSeparator = true,
   submitDisabled,
   ...props
 }: React.PropsWithChildren<FormCardProps<T>>) => {
@@ -45,10 +43,9 @@ export const ConnectionEditFormCard = <T extends object>({
           <Form className={styles.formCard}>
             <FormChangeTracker changed={dirty} />
             {children}
-            <div>
+            <div className={styles.editControls}>
               {mode !== "readonly" && (
                 <EditControls
-                  withLine={bottomSeparator}
                   isSubmitting={isSubmitting}
                   dirty={dirty}
                   submitDisabled={!isValid || submitDisabled}

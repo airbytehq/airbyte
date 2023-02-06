@@ -11,10 +11,13 @@ import com.segment.analytics.messages.AliasMessage;
 import com.segment.analytics.messages.IdentifyMessage;
 import com.segment.analytics.messages.TrackMessage;
 import io.airbyte.config.StandardWorkspace;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.context.ServerRequestContext;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -45,10 +48,12 @@ public class SegmentTrackingClient implements TrackingClient {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SegmentTrackingClient.class);
 
+  public static final String AIRBYTE_ANALYTIC_SOURCE_HEADER = "X-Airbyte-Analytic-Source";
   public static final String CUSTOMER_ID_KEY = "user_id";
   private static final String SEGMENT_WRITE_KEY = "7UDdp5K55CyiGgsauOr2pNNujGvmhaeu";
-  private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
+  protected static final String AIRBYTE_VERSION_KEY = "airbyte_version";
   private static final String AIRBYTE_ROLE = "airbyte_role";
+  protected static final String AIRBYTE_SOURCE = "airbyte_source";
   private static final String AIRBYTE_TRACKED_AT = "tracked_at";
 
   // Analytics is threadsafe.
@@ -123,6 +128,9 @@ public class SegmentTrackingClient implements TrackingClient {
     }
     final Map<String, Object> mapCopy = new HashMap<>(metadata);
     final TrackingIdentity trackingIdentity = identityFetcher.apply(workspaceId);
+    final Optional<String> airbyteSource = getAirbyteSource();
+
+    airbyteSource.ifPresent(a -> mapCopy.put(AIRBYTE_SOURCE, a));
 
     // Always add these traits.
     mapCopy.put(AIRBYTE_VERSION_KEY, trackingIdentity.getAirbyteVersion().serialize());
@@ -136,6 +144,15 @@ public class SegmentTrackingClient implements TrackingClient {
     analytics.enqueue(TrackMessage.builder(action)
         .userId(joinKey)
         .properties(mapCopy));
+  }
+
+  private Optional<String> getAirbyteSource() {
+    final Optional<HttpRequest<Object>> currentRequest = ServerRequestContext.currentRequest();
+    if (currentRequest.isPresent()) {
+      return Optional.ofNullable(currentRequest.get().getHeaders().get(AIRBYTE_ANALYTIC_SOURCE_HEADER));
+    }
+
+    return Optional.empty();
   }
 
 }

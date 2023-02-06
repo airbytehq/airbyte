@@ -9,18 +9,20 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./StreamTestButton.module.scss";
+import { useBuilderErrors } from "../useBuilderErrors";
 
 interface StreamTestButtonProps {
   readStream: () => void;
   hasTestInputJsonErrors: boolean;
+  hasStreamListErrors: boolean;
   setTestInputOpen: (open: boolean) => void;
 }
 
 export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
   readStream,
   hasTestInputJsonErrors,
+  hasStreamListErrors,
   setTestInputOpen,
 }) => {
   const { editorView, yamlIsValid } = useConnectorBuilderFormState();
@@ -52,6 +54,9 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
   if ((editorView === "ui" && hasErrors(false)) || hasTestInputJsonErrors) {
     showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
+  } else if (hasStreamListErrors) {
+    // only disable the button on stream list errors if there are no user-fixable errors
+    buttonDisabled = true;
   }
 
   const testButton = (

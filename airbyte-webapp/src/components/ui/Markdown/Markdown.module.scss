@@ -83,4 +83,8 @@
   img {
     max-width: 100%;
   }
+
+  li:not(:last-child) {
+    margin-bottom: variables.$spacing-sm;
+  }
 }
