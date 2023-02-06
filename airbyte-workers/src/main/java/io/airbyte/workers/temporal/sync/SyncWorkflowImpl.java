@@ -140,7 +140,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           LOGGER.info("generating normalization input");
           final NormalizationInput normalizationInput = generateNormalizationInput(syncInput, syncOutput);
           final NormalizationSummary normalizationSummary =
-              normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
+              normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput, syncInput.getWorkspaceId());
           syncOutput = syncOutput.withNormalizationSummary(normalizationSummary);
         } else if (standardSyncOperation.getOperatorType() == OperatorType.DBT) {
           final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()

@@ -13,6 +13,8 @@ import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.commons.features.FeatureFlagHelper;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.protocol.migrations.v1.CatalogMigrationV1Helper;
@@ -62,13 +64,15 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final String airbyteVersion;
+  private final FeatureFlags featureFlags;
   private final Integer serverPort;
   private final AirbyteConfigValidator airbyteConfigValidator;
   private final TemporalUtils temporalUtils;
   private final ResourceRequirements normalizationResourceRequirements;
   private final AirbyteApiClient airbyteApiClient;
 
-  private final static Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
+  private static final Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
+  private static final String STRICT_COMPARISON_IMAGE_TAG = "0.4.0";
 
   public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                    @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -78,6 +82,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                    final WorkerEnvironment workerEnvironment,
                                    final LogConfigs logConfigs,
                                    @Value("${airbyte.version}") final String airbyteVersion,
+                                   final FeatureFlags featureFlags,
                                    @Value("${micronaut.server.port}") final Integer serverPort,
                                    final AirbyteConfigValidator airbyteConfigValidator,
                                    final TemporalUtils temporalUtils,
@@ -91,6 +96,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.airbyteVersion = airbyteVersion;
+    this.featureFlags = featureFlags;
     this.serverPort = serverPort;
     this.airbyteConfigValidator = airbyteConfigValidator;
     this.temporalUtils = temporalUtils;
@@ -102,7 +108,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   @Override
   public NormalizationSummary normalize(final JobRunConfig jobRunConfig,
                                         final IntegrationLauncherConfig destinationLauncherConfig,
-                                        final NormalizationInput input) {
+                                        final NormalizationInput input,
+                                        final UUID workspaceId) {
     ApmTraceUtils.addTagsToTrace(
         Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
             destinationLauncherConfig.getDockerImage()));
@@ -110,6 +117,10 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     return temporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
+
+      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId)) {
+        replaceNormalizationImageTag(destinationLauncherConfig, STRICT_COMPARISON_IMAGE_TAG);
+      }
 
       // Check the version of normalization
       // We require at least version 0.3.0 to support data types v1. Using an older version would lead to
@@ -176,6 +187,12 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       // The current behavior is to assume it supports v0 data types for dev purposes.
       return false;
     }
+  }
+
+  private static void replaceNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig, final String newTag) {
+    final String[] imageComponents = destinationLauncherConfig.getNormalizationDockerImage().split(":", 2);
+    imageComponents[1] = newTag;
+    destinationLauncherConfig.setDockerImage(String.join(":", imageComponents));
   }
 
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
