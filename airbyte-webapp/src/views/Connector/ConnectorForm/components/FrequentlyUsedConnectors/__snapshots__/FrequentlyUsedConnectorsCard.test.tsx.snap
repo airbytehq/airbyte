@@ -39,11 +39,11 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
               focusable="false"
               role="img"
               style="display: block;"
-              viewBox="0 0 320 512"
+              viewBox="0 0 384 512"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M224 480c-8.188 0-16.38-3.125-22.62-9.375l-192-192c-12.5-12.5-12.5-32.75 0-45.25l192-192c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25L77.25 256l169.4 169.4c12.5 12.5 12.5 32.75 0 45.25C240.4 476.9 232.2 480 224 480z"
+                d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 278.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"
                 fill="currentColor"
               />
             </svg>
@@ -331,11 +331,11 @@ exports[`<mockFrequentlyUsedConnectors /> should renders with mock data without 
               focusable="false"
               role="img"
               style="display: block;"
-              viewBox="0 0 320 512"
+              viewBox="0 0 384 512"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M96 480c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L242.8 256L73.38 86.63c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l192 192c12.5 12.5 12.5 32.75 0 45.25l-192 192C112.4 476.9 104.2 480 96 480z"
+                d="M342.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L274.7 256 105.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"
                 fill="currentColor"
               />
             </svg>
