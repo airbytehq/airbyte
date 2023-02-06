@@ -11,24 +11,25 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 
 import { Action, Namespace } from "core/analytics";
 import { useAnalyticsService } from "hooks/services/Analytics";
+import { ConnectorBuilderLocalStorageProvider } from "services/connectorBuilder/ConnectorBuilderLocalStorageService";
 import {
   ConnectorBuilderTestStateProvider,
   ConnectorBuilderFormStateProvider,
   useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import styles from "./ConnectorBuilderPage.module.scss";
+import styles from "./ConnectorBuilderEditPage.module.scss";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = function () {};
 
-const ConnectorBuilderPageInner: React.FC = React.memo(() => {
+const ConnectorBuilderEditPageInner: React.FC = React.memo(() => {
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderFormState();
   const analyticsService = useAnalyticsService();
 
   useEffect(() => {
-    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.CONNECTOR_BUILDER_START, {
-      actionDescription: "Connector Builder UI Opened",
+    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.CONNECTOR_BUILDER_EDIT, {
+      actionDescription: "Connector Builder UI /edit page opened",
     });
   }, [analyticsService]);
 
@@ -47,29 +48,29 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
         onSubmit={noop}
         validationSchema={builderFormValidationSchema}
       >
-        {(props) => {
-          return (
-            <Panels
-              editorView={editorView}
-              validateForm={props.validateForm}
-              switchToUI={switchToUI}
-              values={props.values}
-              switchToYaml={switchToYaml}
-            />
-          );
-        }}
+        {(props) => (
+          <Panels
+            editorView={editorView}
+            validateForm={props.validateForm}
+            switchToUI={switchToUI}
+            values={props.values}
+            switchToYaml={switchToYaml}
+          />
+        )}
       </Formik>
     ),
     [editorView, switchToUI, switchToYaml]
   );
 });
 
-export const ConnectorBuilderPage: React.FC = () => (
-  <ConnectorBuilderFormStateProvider>
-    <ConnectorBuilderTestStateProvider>
-      <ConnectorBuilderPageInner />
-    </ConnectorBuilderTestStateProvider>
-  </ConnectorBuilderFormStateProvider>
+export const ConnectorBuilderEditPage: React.FC = () => (
+  <ConnectorBuilderLocalStorageProvider>
+    <ConnectorBuilderFormStateProvider>
+      <ConnectorBuilderTestStateProvider>
+        <ConnectorBuilderEditPageInner />
+      </ConnectorBuilderTestStateProvider>
+    </ConnectorBuilderFormStateProvider>
+  </ConnectorBuilderLocalStorageProvider>
 );
 
 const Panels = React.memo(
@@ -118,5 +119,3 @@ const Panels = React.memo(
     );
   }
 );
-
-export default ConnectorBuilderPage;
