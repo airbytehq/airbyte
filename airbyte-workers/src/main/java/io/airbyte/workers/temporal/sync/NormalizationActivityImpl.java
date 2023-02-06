@@ -73,6 +73,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
   private static final Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
   private static final String STRICT_COMPARISON_IMAGE_TAG = "0.4.0";
+  private static final String NON_STRICT_COMPARISON_IMAGE_TAG = "0.2.25";
 
   public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                    @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -120,9 +121,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
       // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're
       // trying to use a newer version of normalization
-      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId)
-          && "0.2.25".equals(getNormalizationImageTag(destinationLauncherConfig))) {
-        replaceNormalizationImageTag(destinationLauncherConfig, STRICT_COMPARISON_IMAGE_TAG);
+      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId)) {
+        activateStrictNormalizationComparisonIfPossible(destinationLauncherConfig);
       }
 
       // Check the version of normalization
@@ -170,6 +170,13 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         () -> context);
   }
 
+  @VisibleForTesting
+  static void activateStrictNormalizationComparisonIfPossible(final IntegrationLauncherConfig destinationLauncherConfig) {
+    if (NON_STRICT_COMPARISON_IMAGE_TAG.equals(getNormalizationImageTag(destinationLauncherConfig))) {
+      replaceNormalizationImageTag(destinationLauncherConfig, STRICT_COMPARISON_IMAGE_TAG);
+    }
+  }
+
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput) {
@@ -195,10 +202,11 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     return destinationLauncherConfig.getNormalizationDockerImage().split(":", 2)[1];
   }
 
-  private static void replaceNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig, final String newTag) {
+  @VisibleForTesting
+  static void replaceNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig, final String newTag) {
     final String[] imageComponents = destinationLauncherConfig.getNormalizationDockerImage().split(":", 2);
     imageComponents[1] = newTag;
-    destinationLauncherConfig.setDockerImage(String.join(":", imageComponents));
+    destinationLauncherConfig.setNormalizationDockerImage(String.join(":", imageComponents));
   }
 
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
