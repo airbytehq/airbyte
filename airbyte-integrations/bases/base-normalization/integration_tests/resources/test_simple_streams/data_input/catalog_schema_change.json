@@ -7,31 +7,33 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "currency": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "new_column": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "date": {
-              "$ref": "WellKnownTypes.json#/definitions/Date"
+              "type": "string",
+              "format": "date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "NZD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "USD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "column`_'with\"_quotes": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             }
           }
         },
@@ -50,28 +52,30 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "currency": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "new_column": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "date": {
-              "$ref": "WellKnownTypes.json#/definitions/Date"
+              "type": "string",
+              "format": "date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time"
             },
             "HKD@spéçiäl & characters": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "NZD": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             },
             "USD": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             }
           }
         },
@@ -91,19 +95,19 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "name": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["string", "null"]
             },
             "_ab_cdc_lsn": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_updated_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_deleted_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             }
           }
         },
@@ -123,19 +127,19 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "name": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["string", "null"]
             },
             "_ab_cdc_lsn": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_updated_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             },
             "_ab_cdc_deleted_at": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": ["null", "number"]
             }
           }
         },
