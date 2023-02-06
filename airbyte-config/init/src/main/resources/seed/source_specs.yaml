@@ -13855,7 +13855,7 @@
     supported_destination_sync_modes: []
     advanced_auth:
       auth_flow_type: "oauth2.0"
-      predicate_key: [ ]
+      predicate_key: []
       predicate_value: ""
       oauth_config_specification:
         complete_oauth_output_specification:
@@ -13865,7 +13865,7 @@
             access_token:
               type: "string"
               path_in_connector_config:
-                - "access_token"
+              - "access_token"
         complete_oauth_server_input_specification:
           type: "object"
           additionalProperties: false
@@ -13877,7 +13877,7 @@
         complete_oauth_server_output_specification:
           type: "object"
           additionalProperties: false
-          properties: { }
+          properties: {}
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
