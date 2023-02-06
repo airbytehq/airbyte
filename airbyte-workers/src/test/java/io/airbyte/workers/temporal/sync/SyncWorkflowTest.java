@@ -231,8 +231,7 @@ class SyncWorkflowTest {
     doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput,
-        syncInput.getWorkspaceId());
+        normalizationInput);
 
     final StandardSyncOutput actualOutput = execute();
 
@@ -277,8 +276,7 @@ class SyncWorkflowTest {
     doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput,
-        syncInput.getWorkspaceId());
+        normalizationInput);
 
     final StandardSyncOutput actualOutput = execute();
 
@@ -305,8 +303,7 @@ class SyncWorkflowTest {
     doThrow(new IllegalArgumentException("induced exception")).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput,
-        syncInput.getWorkspaceId());
+        normalizationInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -353,8 +350,7 @@ class SyncWorkflowTest {
     }).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput,
-        syncInput.getWorkspaceId());
+        normalizationInput);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
@@ -461,8 +457,7 @@ class SyncWorkflowTest {
     verify(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        normalizationInput,
-        syncInput.getWorkspaceId());
+        normalizationInput);
   }
 
   private static void verifyDbtTransform(final DbtTransformationActivity dbtTransformationActivity,
