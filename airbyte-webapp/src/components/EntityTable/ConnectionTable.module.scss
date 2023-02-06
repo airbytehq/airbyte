@@ -1,10 +1,11 @@
-.tableHeaderButton {
-  background-color: inherit;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font-size: inherit;
-  font-weight: inherit;
-  text-transform: inherit;
-  white-space: nowrap;
+th.width30 {
+  width: 30%;
+}
+
+.thEnabled {
+  width: 1%;
+}
+
+.thConnectionSettings {
+  width: 1%;
 }

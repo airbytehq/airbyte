@@ -2,7 +2,9 @@
 @use "scss/variables";
 
 $cell-height: 28px;
-$cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
+$cell-padding: variables.$spacing-xl + variables.$spacing-sm;
+$cell-fixed-width: 100px;
+$arrow-cell-fixed-width: 40px;
 
 .customTableStyle {
   td {
@@ -11,27 +13,28 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
 }
 
 .headerGroupCell {
-  height: 58px;
-  background-color: colors.$white;
-  color: colors.$dark-blue;
-  font-weight: 700;
-  font-size: 16px;
-  line-height: $cell-height;
-  text-transform: capitalize;
+  &.light {
+    height: 58px;
+    color: colors.$dark-blue;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: $cell-height;
+    text-transform: capitalize;
+    background-color: colors.$white;
+  }
 
   &:first-child {
-    padding-left: $cell-left-padding;
+    padding-left: $cell-padding;
     border-radius: 0;
   }
 
-  &:last-child {
+  &:not(:first-child) {
     padding-left: 0;
   }
 }
 
 .headerCell {
   color: colors.$grey;
-  background-color: colors.$grey-50;
   height: $cell-height;
   font-weight: 400;
   font-size: 12px;
@@ -44,11 +47,11 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   }
 
   &:first-child {
-    padding-left: $cell-left-padding;
+    padding-left: $cell-padding;
     border-radius: 0;
   }
 
-  &:last-child {
+  &:not(:first-child) {
     padding-left: 0;
     border-radius: 0;
   }
@@ -56,38 +59,56 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
 
 %bodyCell {
   height: $cell-height;
-  padding: 0;
+  padding: 0 $cell-padding 0 0;
 
   &:first-child {
-    padding-left: $cell-left-padding;
+    padding-left: $cell-padding;
     border-radius: 0;
   }
+
+  &:last-child {
+    padding-right: $cell-padding;
+  }
+}
+
+.syncCell {
+  @extend %bodyCell;
+
+  min-width: 0;
 }
 
 .textCell {
   @extend %bodyCell;
 
   color: colors.$dark-blue;
+  max-width: 0;
+  min-width: 140px;
 }
 
 .dataTypeCell {
   @extend %bodyCell;
 
+  width: $cell-fixed-width;
   color: colors.$grey-400;
+}
+
+.cursorCell {
+  padding: 0;
+  width: $cell-fixed-width;
+}
+
+.pkCell {
+  @extend %bodyCell;
+
+  width: $cell-fixed-width;
 }
 
 .arrowCell {
   @extend %bodyCell;
 
+  width: $arrow-cell-fixed-width;
+
   svg {
     color: colors.$grey-200;
   }
-}
-
-.radioBtnCell {
-  display: flex;
-  align-items: center;
-  height: $cell-height;
-  overflow: unset;
-  padding-left: 0;
 }
