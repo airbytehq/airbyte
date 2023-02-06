@@ -751,6 +751,8 @@ public interface Configs {
 
   String getFieldSelectionWorkspaces();
 
+  String getStrictComparisonNormalizationWorkspaces();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
