@@ -4,6 +4,10 @@
 
 package io.airbyte.container_orchestrator.orchestrator;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
+import static io.airbyte.workers.internal.DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION;
+
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.SourceApi;
@@ -37,17 +41,12 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-
-import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
-import static io.airbyte.workers.internal.DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
 
@@ -138,7 +137,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
-    final HeartbeatMonitor heartbeatMonitor =  new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION);
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION);
 
     final var airbyteSource =
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
@@ -154,7 +153,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final var metricReporter = new WorkerMetricReporter(metricClient,
         sourceLauncherConfig.getDockerImage());
 
-    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor, HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, featureFlagClient, syncInput.getWorkspaceId());
+    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor,
+        HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, featureFlagClient, syncInput.getWorkspaceId());
 
     log.info("Setting up replication worker...");
     final var replicationWorker = new DefaultReplicationWorker(
@@ -173,7 +173,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
         FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()),
-            heartbeatTimeoutChaperone);
+        heartbeatTimeoutChaperone);
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),

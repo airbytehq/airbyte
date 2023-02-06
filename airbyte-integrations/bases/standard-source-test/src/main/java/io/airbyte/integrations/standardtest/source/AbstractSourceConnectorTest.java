@@ -7,27 +7,15 @@ package io.airbyte.integrations.standardtest.source;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.State;
-import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.config.*;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
@@ -37,17 +25,13 @@ import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
@@ -217,10 +201,15 @@ public abstract class AbstractSourceConnectorTest {
 
     final var featureFlags = new EnvVariableFeatureFlags();
 
+    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
+    when(heartbeatMonitor.isBeating())
+        .thenReturn(Optional.of(true));
+
     final AirbyteSource source = new DefaultAirbyteSource(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), null, false,
             featureFlags),
-        featureFlags);
+        featureFlags,
+        heartbeatMonitor);
     final List<AirbyteMessage> messages = new ArrayList<>();
     source.start(sourceConfig, jobRoot);
     while (!source.isFinished()) {
@@ -242,8 +231,13 @@ public abstract class AbstractSourceConnectorTest {
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
 
     final Map<String, String> mapOfResourceRequirementsParams = prepareResourceRequestMapBySystemProperties();
+
+    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
+    when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(true));
+
     final AirbyteSource source =
-        prepareAirbyteSource(!mapOfResourceRequirementsParams.isEmpty() ? prepareResourceRequirements(mapOfResourceRequirementsParams) : null);
+        prepareAirbyteSource(!mapOfResourceRequirementsParams.isEmpty() ? prepareResourceRequirements(mapOfResourceRequirementsParams) : null,
+            heartbeatMonitor);
     source.start(sourceConfig, jobRoot);
 
     while (!source.isFinished()) {
@@ -267,14 +261,14 @@ public abstract class AbstractSourceConnectorTest {
         .withMemoryLimit(mapOfResourceRequirementsParams.get(MEMORY_LIMIT_FIELD_NAME));
   }
 
-  private AirbyteSource prepareAirbyteSource(final ResourceRequirements resourceRequirements) {
+  private AirbyteSource prepareAirbyteSource(final ResourceRequirements resourceRequirements, final HeartbeatMonitor heartbeatMonitor) {
     final var workerConfigs = new WorkerConfigs(new EnvConfigs());
     final var featureFlags = new EnvVariableFeatureFlags();
     final var integrationLauncher = resourceRequirements == null
         ? new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), null, false,
             featureFlags)
         : new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, resourceRequirements, null, false, featureFlags);
-    return new DefaultAirbyteSource(integrationLauncher, featureFlags);
+    return new DefaultAirbyteSource(integrationLauncher, featureFlags, heartbeatMonitor);
   }
 
   private static Map<String, String> prepareResourceRequestMapBySystemProperties() {

@@ -17,6 +17,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.TestClient;
 import io.airbyte.metrics.lib.NotImplementedMetricClient;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -27,9 +28,7 @@ import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
-import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.NamespacingMapper;
-import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
+import io.airbyte.workers.internal.*;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
@@ -41,12 +40,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.mockito.Mockito;
-import org.openjdk.jmh.annotations.Benchmark;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
-import org.openjdk.jmh.annotations.Mode;
-import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.annotations.*;
 
 @Slf4j
 public class ReplicationWorkerPerformanceTest {
@@ -103,9 +97,13 @@ public class ReplicationWorkerPerformanceTest {
     final var versionFac =
         new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0"), Optional.empty(),
             Optional.of(RuntimeException.class));
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD);
     final var versionedAbSource =
-        new DefaultAirbyteSource(integrationLauncher, versionFac, migratorFactory.getProtocolSerializer(new Version("0.2.0")),
+        new DefaultAirbyteSource(integrationLauncher, versionFac, heartbeatMonitor, migratorFactory.getProtocolSerializer(new Version("0.2.0")),
             new EnvVariableFeatureFlags());
+
+    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor,
+        io.airbyte.workers.internal.HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, Mockito.mock(FeatureFlagClient.class), workspaceID);
 
     final var worker = new DefaultReplicationWorker("1", 0,
         versionedAbSource,
@@ -115,7 +113,8 @@ public class ReplicationWorkerPerformanceTest {
         validator,
         metricReporter,
         connectorConfigUpdater,
-        false);
+        false,
+        heartbeatTimeoutChaperone);
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {
       try {

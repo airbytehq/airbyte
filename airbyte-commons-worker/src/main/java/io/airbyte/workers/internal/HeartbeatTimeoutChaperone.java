@@ -4,20 +4,19 @@
 
 package io.airbyte.workers.internal;
 
+import static java.lang.Thread.sleep;
+
 import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.ShouldFailSyncIfHeartbeatFailure;
 import io.airbyte.featureflag.Workspace;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-
-import static java.lang.Thread.sleep;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The {@link HeartbeatTimeoutChaperone} takes in an arbitrary runnable and a heartbeat monitor. It
@@ -34,7 +33,7 @@ public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
-  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(250, ChronoUnit.MILLIS);
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
 
   private final HeartbeatMonitor heartbeatMonitor;
   private final Duration timeoutCheckDuration;

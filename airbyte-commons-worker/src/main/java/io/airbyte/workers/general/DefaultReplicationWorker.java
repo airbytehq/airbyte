@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,12 +33,6 @@ import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -46,9 +43,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
-import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
@@ -198,7 +197,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-              srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(readFromSrcAndWriteToDstRunnable(
+          srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(readFromSrcAndWriteToDstRunnable(
               source,
               destination,
               sourceConfig.getCatalog(),
@@ -212,7 +211,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               timeTracker,
               sourceConfig.getSourceId(),
               fieldSelectionEnabled),
-                      executors),
+              executors),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -622,7 +621,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record, final Set<String> fieldsInCatalog, final Set<String> unexpectedFieldNames) {
+  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record,
+                                                   final Set<String> fieldsInCatalog,
+                                                   final Set<String> unexpectedFieldNames) {
     final JsonNode data = record.getData();
     if (data.isObject()) {
       final Iterator<String> fieldNamesInRecord = data.fieldNames();
