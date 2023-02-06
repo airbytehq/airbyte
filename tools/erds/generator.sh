@@ -1,10 +1,14 @@
 #!/bin/bash
 
 USAGE="
-Usage: $(basename "$0") <source_connector_image_name> <source_config_path>
+Usage: $(basename "$0") <source_connector_dir_name> <source_config_path>
+
+Examples: 
+
+./tools/erds/generator.sh source_stripe tools/erds/secrets/stripe.json
 "
 
-set -e
+set -ex
 . tools/lib/lib.sh
 assert_root
 
@@ -28,9 +32,9 @@ function build_normalization_image(){
 
 function build_connector_image(){
   local connector_dir_name=$1
-  echo "Building $connector_dir_name image"
   cd airbyte-integrations/connectors/$connector_dir_name
   CONNECTOR_IMAGE_NAME=$(cat Dockerfile | grep io.airbyte.name | cut -d= -f2):dev
+  echo "Building $CONNECTOR_IMAGE_NAME"
   docker build . -t $CONNECTOR_IMAGE_NAME
   cd -
 }
@@ -46,6 +50,9 @@ function run() {
   build_connector_image $CONNECTOR_DIR_NAME
   cd ./tools/erds
   [ -d .venv ] || python -m venv .venv && source .venv/bin/activate && pip install .
+  # Uncomment if something goes wrong
+  docker run -v $ERD_OUTPUT_DIR:/erds $CONNECTOR_IMAGE_NAME discover --config /erds/source_config.json
+  docker run -v $ERD_OUTPUT_DIR:/erds $CONNECTOR_IMAGE_NAME discover --config /erds/source_config.json | grep 'CATALOG'
   docker run -v $ERD_OUTPUT_DIR:/erds $CONNECTOR_IMAGE_NAME discover --config /erds/source_config.json | grep 'CATALOG' | python erd_generator/configured_catalog.py > $CATALOG_PATH
   cd -
 

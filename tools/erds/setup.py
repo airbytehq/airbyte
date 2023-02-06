@@ -12,7 +12,7 @@ setuptools.setup(
     author_email="contact@airbyte.io",
     url="https://github.com/airbytehq/airbyte",
     packages=setuptools.find_packages(),
-    install_requires=["airbyte-cdk"],
+    install_requires=["airbyte-cdk==0.1.60"],
     package_data={"": ["*.yml"]},
     setup_requires=[],
     entry_points={

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 . tools/lib/lib.sh
 
@@ -23,7 +23,7 @@ function main() {
      exit 0
   fi
 
-  local connector_directory="airbyte-integrations/connectors/$connector_name/"
+  local connector_directory="airbyte-integrations/connectors/$connector_name"
   # assume config json is in secrets/config.json. If there is no config.json then error out
   local secret_path="$connector_directory/secrets/config.json"
   local image_name=$(cat "$connector_directory/Dockerfile" | grep io.airbyte.name | cut -d= -f2)
