@@ -11,9 +11,8 @@ airbytePythonDocker {
 }
 
 task generateOpenApiPythonServer(type: GenerateTask) {
-    outputs.upToDateWhen { false }
-
     def generatedCodeDir = "$buildDir/airbyte_connector_builder_server"
+    // TODO this file doesn't need to be nested in 3 empty folders
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
     outputDir = generatedCodeDir
 
