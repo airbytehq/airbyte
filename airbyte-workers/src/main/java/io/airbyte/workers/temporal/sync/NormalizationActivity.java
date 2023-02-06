@@ -12,6 +12,7 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import java.util.UUID;
 
 @ActivityInterface
 public interface NormalizationActivity {
@@ -19,7 +20,8 @@ public interface NormalizationActivity {
   @ActivityMethod
   NormalizationSummary normalize(JobRunConfig jobRunConfig,
                                  IntegrationLauncherConfig destinationLauncherConfig,
-                                 NormalizationInput input);
+                                 NormalizationInput input,
+                                 final UUID workspaceId);
 
   @ActivityMethod
   NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput);
