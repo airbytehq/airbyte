@@ -4,34 +4,17 @@
 
 package io.airbyte.workers.general;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.config.FailureReason;
-import io.airbyte.config.ReplicationAttemptSummary;
-import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.*;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.State;
-import io.airbyte.config.StreamSyncStats;
-import io.airbyte.config.SyncStats;
-import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.protocol.models.AirbyteControlMessage;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.*;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -43,20 +26,18 @@ import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,11 +46,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 /**
  * This worker is the "data shovel" of ETL. It is responsible for moving data from the Source
@@ -107,6 +86,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final WorkerMetricReporter metricReporter;
   private final ConnectorConfigUpdater connectorConfigUpdater;
   private final boolean fieldSelectionEnabled;
+  private final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -117,18 +97,20 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
                                   final ConnectorConfigUpdater connectorConfigUpdater,
-                                  final boolean fieldSelectionEnabled) {
+                                  final boolean fieldSelectionEnabled,
+                                  final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(2);
+    this.executors = Executors.newFixedThreadPool(4);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
+    this.srcHeartbeatTimeoutChaperone = srcHeartbeatTimeoutChaperone;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -216,7 +198,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-          readFromSrcAndWriteToDstRunnable(
+              srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(readFromSrcAndWriteToDstRunnable(
               source,
               destination,
               sourceConfig.getCatalog(),
@@ -230,6 +212,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               timeTracker,
               sourceConfig.getSourceId(),
               fieldSelectionEnabled),
+                      executors),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -606,8 +589,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
-                                     Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
-                                     Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
@@ -639,10 +622,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void populateUnexpectedFieldNames(AirbyteRecordMessage record, Set<String> fieldsInCatalog, Set<String> unexpectedFieldNames) {
+  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record, final Set<String> fieldsInCatalog, final Set<String> unexpectedFieldNames) {
     final JsonNode data = record.getData();
     if (data.isObject()) {
-      Iterator<String> fieldNamesInRecord = data.fieldNames();
+      final Iterator<String> fieldNamesInRecord = data.fieldNames();
       while (fieldNamesInRecord.hasNext()) {
         final String fieldName = fieldNamesInRecord.next();
         if (!fieldsInCatalog.contains(fieldName)) {

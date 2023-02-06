@@ -5,13 +5,14 @@
 package io.airbyte.workers.internal;
 
 import com.google.common.annotations.VisibleForTesting;
+import lombok.Getter;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import lombok.Getter;
 
 /**
  * Tracks heartbeats and, when asked, says if it has been too long since the last heartbeat. He's
@@ -21,7 +22,7 @@ import lombok.Getter;
  */
 public class HeartbeatMonitor {
 
-  public static final Duration DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD = Duration.of(5, ChronoUnit.MINUTES);
+  public static final Duration DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD = Duration.of(1, ChronoUnit.MILLIS);
 
   @Getter
   private final Duration heartbeatFreshnessThreshold;

@@ -4,16 +4,6 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_BYTES_SYNCED_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_RECORDS_SYNCED_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_STATUS_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
-
 import datadog.trace.api.Trace;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
@@ -27,42 +17,18 @@ import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.config.AirbyteConfigValidator;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.*;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.ReplicationAttemptSummary;
-import io.airbyte.config.ReplicationOutput;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.featureflag.FeatureFlagClient;
-import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.metrics.lib.MetricAttribute;
-import io.airbyte.metrics.lib.MetricClient;
-import io.airbyte.metrics.lib.MetricClientFactory;
-import io.airbyte.metrics.lib.MetricEmittingApps;
-import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.metrics.lib.*;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
-import io.airbyte.workers.ContainerOrchestratorConfig;
-import io.airbyte.workers.RecordSchemaValidator;
-import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerMetricReporter;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.*;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
-import io.airbyte.workers.internal.AirbyteSource;
-import io.airbyte.workers.internal.DefaultAirbyteDestination;
-import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.EmptyAirbyteSource;
-import io.airbyte.workers.internal.NamespacingMapper;
-import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
-import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
+import io.airbyte.workers.internal.*;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
@@ -76,6 +42,9 @@ import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -83,8 +52,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
+import static io.airbyte.workers.internal.DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION;
 
 @Singleton
 public class ReplicationActivityImpl implements ReplicationActivity {
@@ -301,17 +272,22 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           destinationLauncherConfig.getIsCustomConnector(),
           featureFlags);
 
+      final HeartbeatMonitor heartbeatMonitor =  new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION);
+
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource = isResetJob(sourceLauncherConfig.getDockerImage())
           ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
           : new DefaultAirbyteSource(sourceLauncher,
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
                   Optional.of(syncInput.getCatalog()), DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, Optional.of(SourceException.class)),
+              heartbeatMonitor,
               migratorFactory.getProtocolSerializer(sourceLauncherConfig.getProtocolVersion()),
               featureFlags);
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
+
+      final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor, HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, featureFlagClient, syncInput.getWorkspaceId());
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
@@ -329,7 +305,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
-          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
+          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()), heartbeatTimeoutChaperone);
     };
   }
 

@@ -4,15 +4,20 @@
 
 package io.airbyte.workers.internal;
 
-import static java.lang.Thread.sleep;
+import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.ShouldFailSyncIfHeartbeatFailure;
+import io.airbyte.featureflag.Workspace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static java.lang.Thread.sleep;
 
 /**
  * The {@link HeartbeatTimeoutChaperone} takes in an arbitrary runnable and a heartbeat monitor. It
@@ -29,17 +34,24 @@ public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
-  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(250, ChronoUnit.MILLIS);
 
   private final HeartbeatMonitor heartbeatMonitor;
   private final Duration timeoutCheckDuration;
+  private final FeatureFlagClient featureFlagClient;
+  private final UUID workspaceId;
 
-  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor, final Duration timeoutCheckDuration) {
+  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
+                                   final Duration timeoutCheckDuration,
+                                   final FeatureFlagClient featureFlagClient,
+                                   final UUID workspaceId) {
     this.timeoutCheckDuration = timeoutCheckDuration;
 
     LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
 
     this.heartbeatMonitor = heartbeatMonitor;
+    this.featureFlagClient = featureFlagClient;
+    this.workspaceId = workspaceId;
   }
 
   public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
@@ -90,10 +102,15 @@ public class HeartbeatTimeoutChaperone {
         LOGGER.info("Heartbeat thread has been interrupted (this is expected; the heartbeat was healthy the whole time).");
         return;
       }
+
       // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
       if (!heartbeatMonitor.isBeating().orElse(true)) {
         LOGGER.error("Source has stopped heart beating.");
-        return;
+        if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
+          return;
+        } else {
+          LOGGER.info("Do not return because the feature flag is disable");
+        }
       }
     }
   }
