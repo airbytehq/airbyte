@@ -4,7 +4,6 @@ import { ValidationError } from "yup";
 
 import { Heading } from "components/ui/Heading";
 import { Spinner } from "components/ui/Spinner";
-import { Text } from "components/ui/Text";
 
 import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
@@ -14,7 +13,6 @@ import {
   useConnectorBuilderTestState,
   useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
-import { links } from "utils/links";
 
 import { ConfigMenu } from "./ConfigMenu";
 import { StreamSelector } from "./StreamSelector";
@@ -43,7 +41,7 @@ function useTestInputJsonErrors(testInputJson: StreamReadRequestBodyConfig, spec
 export const StreamTestingPanel: React.FC<unknown> = () => {
   const [isTestInputOpen, setTestInputOpen] = useState(false);
   const { jsonManifest, yamlEditorIsMounted } = useConnectorBuilderFormState();
-  const { testInputJson, streamListErrorMessage } = useConnectorBuilderTestState();
+  const { testInputJson } = useConnectorBuilderTestState();
 
   const testInputJsonErrors = useTestInputJsonErrors(testInputJson, jsonManifest.spec);
 
@@ -73,30 +71,10 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           <img className={styles.logo} alt="" src="/images/octavia/pointing.svg" width={102} />
         </div>
       )}
-      {hasStreams && streamListErrorMessage === undefined && (
+      {hasStreams && (
         <div className={styles.selectAndTestContainer}>
           <StreamSelector className={styles.streamSelector} />
           <StreamTester hasTestInputJsonErrors={testInputJsonErrors > 0} setTestInputOpen={setTestInputOpen} />
-        </div>
-      )}
-      {hasStreams && streamListErrorMessage !== undefined && (
-        <div className={styles.listErrorDisplay}>
-          <Text>
-            <FormattedMessage id="connectorBuilder.couldNotDetectStreams" />
-          </Text>
-          <Text bold>{streamListErrorMessage}</Text>
-          <Text>
-            <FormattedMessage
-              id="connectorBuilder.ensureProperYaml"
-              values={{
-                a: (node: React.ReactNode) => (
-                  <a href={links.lowCodeYamlDescription} target="_blank" rel="noreferrer">
-                    {node}
-                  </a>
-                ),
-              }}
-            />
-          </Text>
         </div>
       )}
     </div>

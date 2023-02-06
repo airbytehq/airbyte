@@ -13,8 +13,8 @@ export const CheckboxCell = styled(HeaderCell)`
 `;
 
 export const ArrowCell = styled(HeaderCell)`
+  min-width: 40px;
   max-width: 40px;
-  width: 40px;
 `;
 
 export const NameContainer = styled.span`
