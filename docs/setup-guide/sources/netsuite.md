@@ -24,7 +24,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 2. Go to **Setup** » **Company** » **Company Information**
 
-3. Copy your Account ID. It will looks like **1234567** if you use regular account or **1234567\_SB2** if it is a Sandbox
+3. Copy your Account ID. Your account ID is your Realm. It will looks like **1234567** if you use regular account or **1234567\_SB2** if it is a Sandbox
 
 #### Step 1.2: Enable features
 
@@ -72,7 +72,7 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 4. Scroll down to **Access** tab at the bottom
 
-5. Select from dropdown list the role which you created in step 2.4
+5. Select from dropdown list the role which you created in step **1.4**
 
 6. Save changes
 
@@ -82,9 +82,9 @@ Daspire implements the [SuiteTalk REST Web Services](https://docs.oracle.com/en/
 
 2. Select an **Application Name**
 
-3. Under **User** select the user you assigned the _Role_ in the step **2.4**
+3. Under **User** select the user you assigned the _Role_ in the step **1.4**
 
-4. Inside **Role** select the one you gave to the user in the step **2.5**
+4. Inside **Role** select the one you gave to the user in the step **1.5**
 
 5. Under **Token Name** you can give a descriptive name to the Token you are creating
 

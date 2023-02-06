@@ -1,19 +1,19 @@
 # Amazon Seller Partner
 
-This page contains the setup guide and reference information for the Amazon Seller Partner (SP).
+This page contains the setup guide and reference information for Amazon Seller Partner (SP).
 
 ## Prerequisites
 
-* app\_id
-* lwa\_app\_id
-* lwa\_client\_secret
-* refresh\_token
-* aws\_access\_key
-* aws\_secret\_key
-* role\_arn
-* aws\_environment
-* region
-* replication\_start\_date
+* Store Name
+* App Id
+* LWA App Id
+* LWA Client Secret
+* Refresh Token
+* AWS Access Key
+* AWS Secret Access Key
+* Role ARN
+* AWS Environment
+* AWS Region
 
 ## Setup guide
 
@@ -25,11 +25,39 @@ This page contains the setup guide and reference information for the Amazon Sell
 
 1. Select **Amazon Seller Partner** from the Source list.
 
-2. Using developer application from Step 1, [generate refresh token](https://developer-docs.amazon.com/sp-api/docs/self-authorization).
+2. Enter a **Source Name**.
 
-3. Paste all data to required fields using your IAM user and developer account.
+3. Enter your **Amazon Store Name**.
 
-4. Click **Set up source**.
+4. Enter your **Amazon App ID**.
+
+5. Enter your **LWA Client ID**.
+
+6. Enter your **LWA Client Secret**.
+
+7. Enter your **Refresh Token**.
+
+8. Enter your **AWS Access Key**.
+
+9. Enter your **AWS Secret Access Key**.
+
+10. Enter your **Role ARN**.
+
+11. Select your **AWS Environment**.
+
+12. **Max wait time for reports (in seconds)** is the maximum number of minutes the connector waits for the generation of a report for streams.
+
+13. **Period In Days** will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync. 
+
+14. Select your **AWS Region**.
+
+15. **End Date (Optional)** - any data after this date will not be replicated.
+
+16. **Start Date** - Any data before this date will not be replicated.
+
+17. **Report Options** is additional information passed to reports. Must be a valid json string.
+
+18. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -74,9 +102,9 @@ Make sure to configure the [required parameters](https://developer-docs.amazon.c
 
 | Integration Type | Daspire Type |
 | --- | --- |
-| string | string |
-| int, float, number | number |
-| date | date |
-| datetime | datetime |
-| array | array |
-| object | object |
+| `string` | `string` |
+| `int`, `float`, `number` | `number` |
+| `date` | `date` |
+| `datetime` | `datetime` |
+| `array` | `array` |
+| `object` | `object` |
