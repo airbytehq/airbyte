@@ -4,6 +4,8 @@
 
 package io.airbyte.server.apis;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.server.handlers.*;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
@@ -24,16 +26,13 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.InstanceOfAssertFactory;
 import org.jooq.DSLContext;
 import org.mockito.Mockito;
-
-import javax.sql.DataSource;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
 @MicronautTest

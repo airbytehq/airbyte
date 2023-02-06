@@ -23,7 +23,7 @@ import org.mockito.Mockito;
 class MicronautHealthCheck extends BaseControllerTest {
 
   @Test
-  void testHealth()  {
+  void testHealth() {
     Mockito.when(healthCheckHandler.health())
         .thenReturn(new HealthCheckRead());
     testEndpointStatus(

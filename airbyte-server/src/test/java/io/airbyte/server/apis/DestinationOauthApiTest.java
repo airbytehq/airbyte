@@ -17,11 +17,10 @@ import io.micronaut.core.util.StringUtils;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import java.io.IOException;
 import java.util.HashMap;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
