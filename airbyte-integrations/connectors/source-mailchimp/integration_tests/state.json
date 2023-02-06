@@ -2,14 +2,14 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "create_time": "2020-11-23T05:42:11+00:00" },
+      "stream_state": { "create_time": "2220-11-23T05:42:11+00:00" },
       "stream_descriptor": { "name": "campaigns" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "date_created": "2020-09-25T04:47:31+00:00" },
+      "stream_state": { "date_created": "2220-09-25T04:47:31+00:00" },
       "stream_descriptor": { "name": "lists" }
     }
   },
@@ -17,7 +17,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "49d68626f3": { "timestamp": "2020-11-23T05:42:10+00:00" }
+        "49d68626f3": { "timestamp": "2220-11-23T05:42:10+00:00" }
       },
       "stream_descriptor": { "name": "email_activity" }
     }

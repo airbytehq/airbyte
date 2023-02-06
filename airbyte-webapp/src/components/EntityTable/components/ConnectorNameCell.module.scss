@@ -1,0 +1,13 @@
+@use "scss/variables";
+
+$status-icon-width: 25px;
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.text {
+  width: calc(100% - #{$status-icon-width});
+  margin-left: variables.$spacing-md;
+}

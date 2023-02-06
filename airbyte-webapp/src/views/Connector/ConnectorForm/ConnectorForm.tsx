@@ -1,108 +1,47 @@
-import { Formik, getIn, setIn, useFormikContext } from "formik";
-import { JSONSchema7 } from "json-schema";
-import React, { useCallback, useEffect, useMemo } from "react";
-import { useDeepCompareEffect } from "react-use";
+import { Formik } from "formik";
+import React, { useCallback, useMemo } from "react";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
-import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
-import { CheckConnectionRead } from "core/request/AirbyteClient";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { isDefined } from "utils/common";
-
-import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
-import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
-import { FormRoot } from "./FormRoot";
-import { ConnectorCardValues, ConnectorFormValues } from "./types";
 import {
-  useBuildForm,
-  useBuildInitialSchema,
-  useBuildUiWidgetsContext,
-  useConstructValidationSchema,
-  usePatchFormik,
-} from "./useBuildForm";
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
+import { FormikPatch } from "core/form/FormikPatch";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
-const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
+import { ConnectorFormContextProvider } from "./connectorFormContext";
+import { BaseFormRootProps, FormRoot } from "./FormRoot";
+import { ConnectorFormValues } from "./types";
+import { useBuildForm } from "./useBuildForm";
 
-/**
- * This function sets all initial const values in the form to current values
- * @param schema
- * @param initialValues
- * @constructor
- */
-const PatchInitialValuesWithWidgetConfig: React.FC<{
-  schema: JSONSchema7;
-  initialValues: ConnectorFormValues;
-}> = ({ schema, initialValues }) => {
-  const { widgetsInfo } = useConnectorForm();
-  const { setFieldValue } = useFormikContext<ConnectorFormValues>();
-
-  useDeepCompareEffect(() => {
-    const widgetsInfoEntries = Object.entries(widgetsInfo);
-
-    // set all const fields to form field values, so we could send form
-    const patchedConstValues = widgetsInfoEntries
-      .filter(([_, value]) => isDefined(value.const))
-      .reduce((acc, [key, value]) => setIn(acc, key, value.const), initialValues);
-
-    // set default fields as current values, so values could be populated correctly
-    // fix for https://github.com/airbytehq/airbyte/issues/6791
-    const patchedDefaultValues = widgetsInfoEntries
-      .filter(([key, value]) => isDefined(value.default) && !isDefined(getIn(patchedConstValues, key)))
-      .reduce((acc, [key, value]) => setIn(acc, key, value.default), patchedConstValues);
-
-    if (patchedDefaultValues?.connectionConfiguration) {
-      setTimeout(() => {
-        // We need to push this out one execution slot, so the form isn't still in its
-        // initialization status and won't react to this call but would just take the initialValues instead.
-        setFieldValue("connectionConfiguration", patchedDefaultValues.connectionConfiguration);
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schema]);
-
-  return null;
-};
-
-/**
- * Formik does not revalidate the form in case the validationSchema it's using changes.
- * This component just forces a revalidation of the form whenever the validation schema changes.
- */
-const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }> = ({ validationSchema }) => {
-  // The validationSchema is passed into this component instead of pulled from the FormikContext, since
-  // due to https://github.com/jaredpalmer/formik/issues/2092 the validationSchema from the formik context will
-  // always be undefined.
-  const { validateForm } = useFormikContext();
-  useEffect(() => {
-    validateForm();
-  }, [validateForm, validationSchema]);
-  return null;
-};
-
-export interface ConnectorFormProps {
+interface BaseConnectorFormProps extends Omit<BaseFormRootProps, "formFields" | "castValues"> {
   formType: "source" | "destination";
   formId?: string;
+  /**
+   * Definition of the connector might not be available if it's not released but only exists in frontend heap
+   */
   selectedConnectorDefinition?: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
-  isLoading?: boolean;
+  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
+  onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
-  hasSuccess?: boolean;
-  fetchingConnectorError?: Error | null;
-  errorMessage?: React.ReactNode;
-  successMessage?: React.ReactNode;
   connectorId?: string;
-
-  isTestConnectionInProgress?: boolean;
-  onStopTesting?: () => void;
-  testConnector?: (v?: ConnectorCardValues) => Promise<CheckConnectionRead>;
 }
+
+interface CardConnectorFormProps extends BaseConnectorFormProps {
+  renderWithCard: true;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  full?: boolean;
+}
+
+interface BareConnectorFormProps extends BaseConnectorFormProps {
+  renderWithCard?: false;
+}
+
+export type ConnectorFormProps = CardConnectorFormProps | BareConnectorFormProps;
 
 export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
   const formId = useUniqueFormId(props.formId);
@@ -112,57 +51,20 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formType,
     formValues,
     onSubmit,
-    isLoading,
     isEditMode,
-    isTestConnectionInProgress,
-    onStopTesting,
-    testConnector,
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
-    errorMessage,
     connectorId,
   } = props;
 
-  const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
-
-  const jsonSchema: JSONSchema7 = useMemo(
-    () => ({
-      type: "object",
-      properties: {
-        ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
-        ...Object.fromEntries(
-          Object.entries({
-            connectionConfiguration: isLoading ? null : specifications,
-          }).filter(([, v]) => !!v)
-        ),
-      },
-      required: ["name"],
-    }),
-    [isLoading, selectedConnectorDefinitionSpecification, specifications]
+  const { formFields, initialValues, validationSchema } = useBuildForm(
+    Boolean(isEditMode),
+    formType,
+    selectedConnectorDefinitionSpecification,
+    formValues
   );
 
-  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
-
-  // Overrides default field label(i.e "Source name", "Destination name")
-  const uiOverrides = useMemo(() => {
-    return {
-      name: {
-        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
-          <ConnectorNameControl property={property} formType={formType} {...componentProps} />
-        ),
-      },
-    };
-  }, [formType]);
-
-  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
-    formFields,
-    initialValues,
-    uiOverrides
-  );
-
-  const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
-
-  const getValues = useCallback(
+  const castValues = useCallback(
     (values: ConnectorFormValues) =>
       validationSchema.cast(values, {
         stripUnknown: true,
@@ -172,12 +74,16 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
 
   const onFormSubmit = useCallback(
     async (values: ConnectorFormValues) => {
-      const valuesToSend = getValues(values);
+      const valuesToSend = castValues(values);
       await onSubmit(valuesToSend);
-
       clearFormChange(formId);
     },
-    [clearFormChange, formId, getValues, onSubmit]
+    [clearFormChange, formId, castValues, onSubmit]
+  );
+
+  const isInitialValid = useMemo(
+    () => Boolean(validationSchema.isValidSync(initialValues)),
+    [initialValues, validationSchema]
   );
 
   return (
@@ -185,6 +91,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       validateOnBlur
       validateOnChange
       initialValues={initialValues}
+      isInitialValid={isInitialValid}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
       enableReinitialize
@@ -192,30 +99,16 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       {({ dirty }) => (
         <ConnectorFormContextProvider
           formType={formType}
-          widgetsInfo={uiWidgetsInfo}
-          getValues={getValues}
-          setUiWidgetsInfo={setUiWidgetsInfo}
-          resetUiWidgetsInfo={resetUiWidgetsInfo}
+          getValues={castValues}
           selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
-          isLoadingSchema={isLoading}
           validationSchema={validationSchema}
           connectorId={connectorId}
         >
-          <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
-          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
-          <FormRoot
-            {...props}
-            selectedConnector={selectedConnectorDefinitionSpecification}
-            formFields={formFields}
-            errorMessage={errorMessage}
-            isTestConnectionInProgress={isTestConnectionInProgress}
-            onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
-            onRetest={testConnector ? async () => await testConnector() : undefined}
-          />
+          <FormRoot {...props} formFields={formFields} castValues={castValues} />
         </ConnectorFormContextProvider>
       )}
     </Formik>

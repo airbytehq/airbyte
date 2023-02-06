@@ -1,0 +1,135 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+
+  requester_stream:
+    request_parameters:
+      query: |
+        {{
+          config['query']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      orientation: |
+        {{
+          config['orientation']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      size: |
+        {{
+          config['size']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      locale: |
+        {{
+          config['locale']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      color: |
+        {{
+          config['color']
+          if options['name'] == 'photos_search'
+          else ''
+        }}
+
+  requester:
+    url_base: "https://api.pexels.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        $ref: "*ref(definitions.requester_stream.request_parameters)"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "{{ config['api_key'] }}"
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [500]
+              action: FAIL
+
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  base_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_pexels_api/schemas/{{ options['name'] }}.json"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  page_stream:
+    schema_loader:
+      type: JsonSchema
+      file_path: "./source_pexels_api/schemas/{{ options['name'] }}.json"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      paginator:
+        type: "DefaultPaginator"
+        url_base: "*ref(definitions.requester.url_base)"
+        pagination_strategy:
+          type: "PageIncrement"
+          page_size: 1000
+        page_token_option:
+          inject_into: "request_parameter"
+          field_name: "page"
+        page_size_option:
+          inject_into: "request_parameter"
+          field_name: "per_page"
+      requester:
+        $ref: "*ref(definitions.requester)"
+
+  photos_search_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "photos_search"
+      path: "/v1/search"
+
+  photos_curated_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "photos_curated"
+      path: "/v1/curated"
+
+  videos_search_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "videos_search"
+      path: "/videos/search"
+
+  videos_popular_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "videos_popular"
+      path: "/videos/popular"
+
+  collection_featured_stream:
+    $ref: "*ref(definitions.page_stream)"
+    $options:
+      name: "collection_featured"
+      path: "/v1/collections/featured"
+
+streams:
+  - "*ref(definitions.photos_search_stream)"
+  - "*ref(definitions.photos_curated_stream)"
+  - "*ref(definitions.collection_featured_stream)"
+  - "*ref(definitions.videos_search_stream)"
+  - "*ref(definitions.videos_popular_stream)"
+
+check:
+  stream_names:
+    - "videos_popular"

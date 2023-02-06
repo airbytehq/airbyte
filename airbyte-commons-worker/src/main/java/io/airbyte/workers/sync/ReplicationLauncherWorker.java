@@ -54,7 +54,8 @@ public class ReplicationLauncherWorker extends LauncherWorker<StandardSyncInput,
         activityContext,
         serverPort,
         temporalUtils,
-        workerConfigs);
+        workerConfigs,
+        sourceLauncherConfig.getIsCustomConnector() || destinationLauncherConfig.getIsCustomConnector());
   }
 
 }

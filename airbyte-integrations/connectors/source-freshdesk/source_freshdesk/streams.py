@@ -11,6 +11,7 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -45,6 +46,10 @@ class FreshdeskStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return parse.urljoin(f"https://{self.domain.rstrip('/')}", "/api/v2/")
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == requests.codes.too_many_requests:
@@ -94,7 +99,7 @@ class FreshdeskStream(HttpStream, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
         if self.forbidden_stream:
             return []
         return response.json() or []
@@ -150,6 +155,11 @@ class Agents(FreshdeskStream):
 class BusinessHours(FreshdeskStream):
     def path(self, **kwargs) -> str:
         return "business_hours"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["working_hours"] = record.pop("business_hours", None)
+            yield record
 
 
 class CannedResponseFolders(FreshdeskStream):

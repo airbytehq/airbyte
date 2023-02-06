@@ -16,6 +16,18 @@ properties:
     type: integer
   dockerImage:
     type: string
+  normalizationDockerImage:
+    type: string
+  supportsDbt:
+    type: boolean
+    default: false
+  normalizationIntegrationType:
+    type: string
   protocolVersion:
     type: object
     existingJavaType: io.airbyte.commons.version.Version
+  isCustomConnector:
+    type: boolean
+  allowedHosts:
+    type: object
+    existingJavaType: io.airbyte.config.AllowedHosts

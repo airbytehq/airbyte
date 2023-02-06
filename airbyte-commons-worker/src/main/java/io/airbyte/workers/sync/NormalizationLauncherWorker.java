@@ -44,7 +44,10 @@ public class NormalizationLauncherWorker extends LauncherWorker<NormalizationInp
         activityContext,
         serverPort,
         temporalUtils,
-        workerConfigs);
+        workerConfigs,
+        // Normalization process will happen only on a fixed set of connectors,
+        // thus they are not going to be run under custom connectors. Setting this to false.
+        false);
 
   }
 

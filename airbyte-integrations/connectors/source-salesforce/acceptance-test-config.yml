@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-salesforce:dev
 test_strictness_level: high
@@ -21,7 +21,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
         empty_streams:
           - name: "ActiveScratchOrg"
             bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
@@ -31,6 +31,8 @@ acceptance_tests:
             bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
           - name: "ActiveScratchOrgShare"
             bypass_reason: "impossible to fill the stream with data because it is an organic traffic"
+          - name: "Describe"
+            bypass_reason: "Data is not permanent"
   incremental:
     tests:
       - config_path: "secrets/config.json"

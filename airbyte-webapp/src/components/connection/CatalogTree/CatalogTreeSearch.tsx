@@ -1,8 +1,9 @@
-import classnames from "classnames";
 import React from "react";
 import { useIntl } from "react-intl";
 
 import { Input } from "components/ui/Input";
+
+import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 
 import styles from "./CatalogTreeSearch.module.scss";
 
@@ -11,18 +12,13 @@ interface CatalogTreeSearchProps {
 }
 
 export const CatalogTreeSearch: React.FC<CatalogTreeSearchProps> = ({ onSearch }) => {
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-
   const { formatMessage } = useIntl();
-
-  const searchStyles = classnames({
-    [styles.searchContentNew]: isNewStreamsTableEnabled,
-    [styles.searchContent]: !isNewStreamsTableEnabled,
-  });
+  const { isActive } = useBulkEditService();
 
   return (
-    <div className={searchStyles}>
+    <div className={styles.searchContent}>
       <Input
+        disabled={isActive}
         className={styles.searchInput}
         placeholder={formatMessage({
           id: `form.nameSearch`,

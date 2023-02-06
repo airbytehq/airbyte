@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
-import { ConfigContext, defaultConfig } from "config";
+import { ConfigContext, config } from "config";
 import {
   ConnectionStatus,
   DestinationRead,
@@ -15,8 +15,9 @@ import {
 } from "core/request/AirbyteClient";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { defaultFeatures, FeatureItem, FeatureService } from "hooks/services/Feature";
+import { defaultOssFeatures, FeatureItem, FeatureService } from "hooks/services/Feature";
 import { ModalServiceProvider } from "hooks/services/Modal";
+import { NotificationService } from "hooks/services/Notification";
 import en from "locales/en.json";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 
@@ -50,23 +51,25 @@ interface TestWrapperOptions {
 }
 export const TestWrapper: React.FC<React.PropsWithChildren<TestWrapperOptions>> = ({
   children,
-  features = defaultFeatures,
+  features = defaultOssFeatures,
 }) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>
-      <ConfigContext.Provider value={{ config: defaultConfig }}>
+      <ConfigContext.Provider value={{ config }}>
         <AnalyticsProvider>
-          <FeatureService features={features}>
-            <ServicesProvider>
-              <ModalServiceProvider>
-                <ConfirmationModalService>
-                  <QueryClientProvider client={new QueryClient()}>
-                    <MemoryRouter>{children}</MemoryRouter>
-                  </QueryClientProvider>
-                </ConfirmationModalService>
-              </ModalServiceProvider>
-            </ServicesProvider>
-          </FeatureService>
+          <NotificationService>
+            <FeatureService features={features}>
+              <ServicesProvider>
+                <ModalServiceProvider>
+                  <ConfirmationModalService>
+                    <QueryClientProvider client={new QueryClient()}>
+                      <MemoryRouter>{children}</MemoryRouter>
+                    </QueryClientProvider>
+                  </ConfirmationModalService>
+                </ModalServiceProvider>
+              </ServicesProvider>
+            </FeatureService>
+          </NotificationService>
         </AnalyticsProvider>
       </ConfigContext.Provider>
     </IntlProvider>

@@ -57,6 +57,9 @@ create table "public"."actor_definition"(
   "normalization_repository" varchar(255) null,
   "normalization_tag" varchar(255) null,
   "supports_dbt" bool null,
+  "normalization_integration_type" varchar(255) null,
+  "allowed_hosts" jsonb null,
+  "suggested_streams" jsonb null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -112,6 +115,7 @@ create table "public"."connection"(
   "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
   "breaking_change" bool not null default false,
   "unsupported_protocol_version" bool not null default false,
+  "field_selection_data" jsonb null,
   constraint "connection_pkey"
     primary key ("id")
 );

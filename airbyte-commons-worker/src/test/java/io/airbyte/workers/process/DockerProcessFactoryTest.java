@@ -85,8 +85,8 @@ class DockerProcessFactoryTest {
 
     final DockerProcessFactory processFactory =
         new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
-    processFactory.create("tester", "job_id", 0, jobRoot, BUSYBOX, false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
-        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of(), Map.of());
+    processFactory.create("tester", "job_id", 0, jobRoot, BUSYBOX, false, false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
+        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), null, Map.of(), Map.of(), Map.of());
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),
@@ -121,9 +121,11 @@ class DockerProcessFactoryTest {
         jobRoot,
         BUSYBOX,
         false,
+        false,
         Map.of(),
         "/bin/sh",
         workerConfigs.getResourceRequirements(),
+        null,
         Map.of(),
         Map.of(),
         Map.of(),
@@ -153,9 +155,11 @@ class DockerProcessFactoryTest {
           jobRoot,
           BUSYBOX,
           false,
+          false,
           Map.of(),
           "/bin/sh",
           workerConfigs.getResourceRequirements(),
+          null,
           Map.of(),
           Map.of(),
           Map.of(),

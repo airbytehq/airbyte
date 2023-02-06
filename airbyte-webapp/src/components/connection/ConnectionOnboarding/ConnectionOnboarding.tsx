@@ -13,6 +13,7 @@ import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvai
 import { useExperiment } from "hooks/services/Experiment";
 import { useConnectorSpecifications } from "services/connector/ConnectorDefinitions";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { ConnectorIds } from "utils/connectors";
 import { getIcon } from "utils/imageUtils";
 import { links } from "utils/links";
 
@@ -25,15 +26,15 @@ interface ConnectionOnboardingProps {
 }
 
 const DEFAULT_SOURCES = [
-  "e7778cfc-e97c-4458-9ecb-b4f2bba8946c", // Facebook
-  "decd338e-5647-4c0b-adf4-da0e75f5a750", // Postgres
-  "71607ba1-c0ac-4799-8049-7f4b90dd50f7", // Google Sheets
+  ConnectorIds.Sources.FacebookMarketing,
+  ConnectorIds.Sources.Postgres,
+  ConnectorIds.Sources.GoogleSheets,
 ];
 
 const DEFAULT_DESTINATIONS = [
-  "22f6c74f-5699-40ff-833c-4a879ea40133", // BigQuery
-  "424892c4-daac-4491-b35d-c6688ba547ba", // Snowflake
-  "25c5221d-dce2-4163-ade9-739ef790f503", // Postgres
+  ConnectorIds.Destinations.BigQuery,
+  ConnectorIds.Destinations.Snowflake,
+  ConnectorIds.Destinations.Postgres,
 ];
 
 interface ConnectorSpecificationMap {

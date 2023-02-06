@@ -24,6 +24,7 @@ extend-exclude = [
     "models",
     ".eggs",
     "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
+    "airbyte-cdk/python/airbyte_cdk/sources/declarative/models/__init__.py",
     ".tox",
     "airbyte_api_client",
     "**/generated/*",
@@ -80,7 +81,7 @@ color_output = true
 error_summary = true
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "6.2.5"
 addopts ="-r a --capture=no -vv --log-level=DEBUG --color=yes"
 
 

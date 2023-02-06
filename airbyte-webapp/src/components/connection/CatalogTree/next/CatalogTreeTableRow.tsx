@@ -1,20 +1,22 @@
-import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Cell, Row } from "components/SimpleTableComponents";
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
+import { Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { StreamHeaderProps } from "../StreamHeader";
+import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableRow.module.scss";
+import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
+import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
+import { StreamHeaderProps } from "../StreamHeader";
+
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
   destName,
@@ -30,13 +32,10 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   // isRowExpanded,
   fields,
   onExpand,
-  changedSelected,
-  hasError,
   disabled,
+  configErrors,
 }) => {
   const { primaryKey, cursorField, syncMode, destinationSyncMode } = stream.config ?? {};
-  const isStreamEnabled = stream.config?.selected;
-
   const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
@@ -52,72 +51,60 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
-  const iconStyle = classnames(styles.icon, {
-    [styles.plus]: isStreamEnabled,
-    [styles.minus]: !isStreamEnabled,
-  });
-
-  const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
-    [styles.enabledChange]: changedSelected && isStreamEnabled,
-    [styles.disabledChange]: changedSelected && !isStreamEnabled,
-    [styles.selected]: isSelected,
-    [styles.error]: hasError,
-    [styles.disabled]: !changedSelected && !isStreamEnabled,
-  });
+  const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
-      {!disabled && (
-        <div className={styles.streamRowCheckboxCell}>
-          {changedSelected && (
-            <div>
-              {isStreamEnabled ? (
-                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
-              ) : (
-                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
-              )}
-            </div>
-          )}
-          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
-        </div>
-      )}
-      <Cell flex={0.5} flush>
-        <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
-      </Cell>
+      <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
+        {!disabled && (
+          <>
+            <CatalogTreeTableRowIcon stream={stream} />
+            <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+          </>
+        )}
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell size="small">
+        <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
+      </CatalogTreeTableCell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <Cell flex={1} title={stream.stream?.namespace || ""}>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
-      </Cell>
-      <Cell flex={1} title={stream.stream?.name || ""}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
-      </Cell>
-      <div className={styles.syncModeCell}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell size="large">
         {disabled ? (
-          <Cell title={syncSchema.syncMode}>
-            <Text size="md" className={styles.cellText}>
-              {syncSchema.syncMode}
-            </Text>
-          </Cell>
+          <Text size="md" className={styles.cellText}>
+            {syncSchema.syncMode}
+          </Text>
         ) : (
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
-          <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
+          <SyncModeSelect
+            options={availableSyncModes}
+            onChange={onSelectSyncMode}
+            value={syncSchema}
+            variant={pillButtonVariant}
+          />
         )}
-      </div>
-      <Cell flex={1}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
             paths={paths}
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
             onPathChange={onCursorChange}
+            variant={pillButtonVariant}
+            hasError={!!configErrors?.cursorField}
           />
         )}
-      </Cell>
-      <Cell flex={1}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip={pkType === "sourceDefined"}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -125,20 +112,24 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             path={primaryKey}
             isMulti
             onPathChange={onPrimaryKeyChange}
+            variant={pillButtonVariant}
+            hasError={!!configErrors?.primaryKey}
           />
         )}
-      </Cell>
-      <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
-      <Cell flex={1} title={destNamespace}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell size="xsmall">
+        <ArrowRightIcon />
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
-      </Cell>
-      <Cell flex={1} title={destName}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>
-      </Cell>
+      </CatalogTreeTableCell>
     </Row>
   );
 };

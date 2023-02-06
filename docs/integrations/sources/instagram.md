@@ -31,7 +31,7 @@ Generate access tokens with the following permissions:
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -44,7 +44,7 @@ Generate access tokens with the following permissions:
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Paste the access tokens from [Step 1](#step-1-set-up-instagram​).
 9. Click **Set up source**.
 <!-- /env:oss -->
@@ -91,7 +91,8 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.0.1   | 2023-01-19 | [21602](https://github.com/airbytehq/airbyte/pull/21602) | Handle abnormally large state values                                                                            |
 | 1.0.0   | 2022-09-23 | [17110](https://github.com/airbytehq/airbyte/pull/17110) | Remove custom read function and migrate to per-stream state                                                     |
 | 0.1.11  | 2022-09-08 | [16428](https://github.com/airbytehq/airbyte/pull/16428) | Fix requests metrics for Reels media product type                                                               |
 | 0.1.10  | 2022-09-05 | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                   |

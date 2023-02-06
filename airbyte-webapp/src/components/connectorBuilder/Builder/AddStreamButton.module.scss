@@ -1,0 +1,20 @@
+@use "scss/variables";
+@use "scss/colors";
+
+$buttonWidth: 26px;
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}
+
+.addButton {
+  width: $buttonWidth;
+  height: $buttonWidth !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px !important;
+}

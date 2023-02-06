@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
 import org.jooq.DSLContext;
@@ -322,14 +323,14 @@ public class V0_35_40_001__MigrateFailureReasonEnumValues extends BaseJavaMigrat
         return false;
       }
       final FailureReasonForMigration rhs = ((FailureReasonForMigration) other);
-      return (((((((((this.retryable == rhs.retryable) || ((this.retryable != null) && this.retryable.equals(rhs.retryable)))
-          && ((this.metadata == rhs.metadata) || ((this.metadata != null) && this.metadata.equals(rhs.metadata))))
-          && ((this.stacktrace == rhs.stacktrace) || ((this.stacktrace != null) && this.stacktrace.equals(rhs.stacktrace))))
-          && ((this.failureOrigin == rhs.failureOrigin) || ((this.failureOrigin != null) && this.failureOrigin.equals(rhs.failureOrigin))))
-          && ((this.failureType == rhs.failureType) || ((this.failureType != null) && this.failureType.equals(rhs.failureType))))
-          && ((this.internalMessage == rhs.internalMessage) || ((this.internalMessage != null) && this.internalMessage.equals(rhs.internalMessage))))
-          && ((this.externalMessage == rhs.externalMessage) || ((this.externalMessage != null) && this.externalMessage.equals(rhs.externalMessage))))
-          && ((this.timestamp == rhs.timestamp) || ((this.timestamp != null) && this.timestamp.equals(rhs.timestamp))));
+      return ((((((((Objects.equals(this.retryable, rhs.retryable))
+          && (Objects.equals(this.metadata, rhs.metadata)))
+          && (Objects.equals(this.stacktrace, rhs.stacktrace)))
+          && (Objects.equals(this.failureOrigin, rhs.failureOrigin)))
+          && (Objects.equals(this.failureType, rhs.failureType)))
+          && (Objects.equals(this.internalMessage, rhs.internalMessage)))
+          && (Objects.equals(this.externalMessage, rhs.externalMessage)))
+          && (Objects.equals(this.timestamp, rhs.timestamp)));
     }
 
   }

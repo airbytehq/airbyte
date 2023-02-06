@@ -1,5 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectorIds } from "utils/connectors";
 
 export const mockConnection: WebBackendConnectionRead = {
   connectionId: "a9c8e4b5-349d-4a17-bdff-5ad2f6fbd611",
@@ -305,7 +306,7 @@ export const mockConnection: WebBackendConnectionRead = {
   status: "active",
   operationIds: ["8af8ef4d-01b1-49c8-b145-23775f34a74b"],
   source: {
-    sourceDefinitionId: "6371b14b-bc68-4236-bfbd-468e8df8e968",
+    sourceDefinitionId: ConnectorIds.Sources.PokeApi,
     sourceId: "a3295ed7-4acf-4c0b-b16b-07a00e624a52",
     workspaceId: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
     connectionConfiguration: {
@@ -315,7 +316,7 @@ export const mockConnection: WebBackendConnectionRead = {
     sourceName: "PokeAPI",
   },
   destination: {
-    destinationDefinitionId: "25c5221d-dce2-4163-ade9-739ef790f503",
+    destinationDefinitionId: ConnectorIds.Destinations.Postgres,
     destinationId: "083a53bc-8bc2-4dc0-b05a-4273a96f3b93",
     workspaceId: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
     connectionConfiguration: {

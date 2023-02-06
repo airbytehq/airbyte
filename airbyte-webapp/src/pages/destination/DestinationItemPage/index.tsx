@@ -1,1 +1,1 @@
-export { DestinationItemPage } from "./DestinationItemPage";
+export { DestinationItemPage as default } from "./DestinationItemPage";

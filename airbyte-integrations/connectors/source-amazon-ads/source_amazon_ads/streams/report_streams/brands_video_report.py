@@ -68,6 +68,13 @@ METRICS_MAP = {
 }
 
 
+METRICS_TYPE_TO_ID_MAP = {
+    "keywords": "keywordBid",
+    "adGroups": "adGroupId",
+    "campaigns": "campaignId",
+}
+
+
 class SponsoredBrandsVideoReportStream(ReportStream):
     """
     https://advertising.amazon.com/API/docs/en-us/reference/sponsored-brands/2/reports
@@ -77,6 +84,7 @@ class SponsoredBrandsVideoReportStream(ReportStream):
         return f"/v2/hsa/{record_type}/report"
 
     metrics_map = METRICS_MAP
+    metrics_type_to_id_map = METRICS_TYPE_TO_ID_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         metrics_list = self.metrics_map[record_type]

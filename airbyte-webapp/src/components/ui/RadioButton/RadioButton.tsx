@@ -26,7 +26,7 @@ const RadioButtonContainer = styled.label<{ checked?: boolean; disabled?: boolea
   border-radius: 50%;
   display: inline-block;
   padding: 4px;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
 `;
 
 export const RadioButton: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => {

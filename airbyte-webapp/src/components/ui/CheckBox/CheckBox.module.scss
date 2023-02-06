@@ -1,0 +1,47 @@
+@use "scss/colors";
+@use "scss/variables";
+
+$lg-size: 18px;
+$sm-size: 14px;
+
+.container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: variables.$border-thin 0;
+  border: variables.$border-thin solid colors.$grey-100;
+  border-radius: variables.$border-radius-2xs;
+  color: colors.$white;
+  background-color: colors.$white;
+  cursor: pointer;
+
+  input {
+    display: none;
+  }
+
+  &.disabled {
+    border-color: colors.$grey-30;
+    cursor: not-allowed;
+  }
+}
+
+.checked,
+.indeterminate {
+  border: variables.$border-thin solid colors.$blue;
+  background: colors.$blue;
+
+  &.disabled {
+    background-color: colors.$blue-200;
+    border-color: colors.$blue-200;
+  }
+}
+
+.sizeLg {
+  height: $lg-size;
+  width: $lg-size;
+}
+
+.sizeSm {
+  height: $sm-size;
+  width: $sm-size;
+}

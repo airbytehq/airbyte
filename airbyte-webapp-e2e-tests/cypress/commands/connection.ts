@@ -1,5 +1,5 @@
 import { submitButtonClick } from "./common";
-import { createLocalJsonDestination } from "./destination";
+import { createLocalJsonDestination, createPostgresDestination } from "./destination";
 import { createPokeApiSource, createPostgresSource } from "./source";
 import { openAddSource } from "pages/destinationPage";
 import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage";
@@ -12,6 +12,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
     case sourceName.includes("PokeAPI"):
       createPokeApiSource(sourceName, "luxray");
       break;
+
     case sourceName.includes("Postgres"):
       createPostgresSource(sourceName);
       break;
@@ -19,7 +20,17 @@ export const createTestConnection = (sourceName: string, destinationName: string
       createPostgresSource(sourceName);
   }
 
-  createLocalJsonDestination(destinationName, "/local");
+  switch (true) {
+    case destinationName.includes("Postgres"):
+      createPostgresDestination(destinationName);
+      break;
+    case destinationName.includes("JSON"):
+      createLocalJsonDestination(destinationName);
+      break;
+    default:
+      createLocalJsonDestination(destinationName);
+  }
+
   cy.wait(5000);
 
   openAddSource();
@@ -33,5 +44,5 @@ export const createTestConnection = (sourceName: string, destinationName: string
   setupDestinationNamespaceSourceFormat();
   submitButtonClick();
 
-  cy.wait("@createConnection");
+  cy.wait("@createConnection", { requestTimeout: 10000 });
 };

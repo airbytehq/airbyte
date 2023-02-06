@@ -99,20 +99,29 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
-    def test_update_insights_streams(self, api, config):
+    def test_get_custom_insights_streams(self, api, config):
         config["custom_insights"] = [
             {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
         ]
-        streams = SourceFacebookMarketing().streams(config)
         config = ConnectorConfig.parse_obj(config)
-        insights_args = dict(
-            api=api,
-            start_date=config.start_date,
-            end_date=config.end_date,
-        )
-        assert SourceFacebookMarketing()._update_insights_streams(
-            insights=config.custom_insights, default_args=insights_args, streams=streams
-        )
+        assert SourceFacebookMarketing().get_custom_insights_streams(api, config)
+
+    def test_get_custom_insights_action_breakdowns_allow_empty(self, api, config):
+        config["custom_insights"] = [
+            {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": []},
+        ]
+
+        config["action_breakdowns_allow_empty"] = False
+        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        assert len(streams) == 1
+        assert streams[0].breakdowns == ["ad_format_asset"]
+        assert streams[0].action_breakdowns == ["action_type", "action_target_id", "action_destination"]
+
+        config["action_breakdowns_allow_empty"] = True
+        streams = SourceFacebookMarketing().get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+        assert len(streams) == 1
+        assert streams[0].breakdowns == ["ad_format_asset"]
+        assert streams[0].action_breakdowns == []
 
 
 def test_check_config(config_gen, requests_mock):

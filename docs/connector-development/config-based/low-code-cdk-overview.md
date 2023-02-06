@@ -126,7 +126,7 @@ For each stream, configure the following components:
 | Transformations        |                 | A set of transformations to be applied on the records read from the source before emitting them to the destination                                                                                                                    |
 | Checkpoint interval    |                 | Defines the interval, in number of records, at which incremental syncs should be checkpointed                                                                                                                                         |
 
-For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](./source_schema.yaml)
+For a deep dive into each of the components, refer to [Understanding the YAML file](./understanding-the-yaml-file/yaml-overview.md) or the [full YAML Schema definition](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
 ## Tutorial
 

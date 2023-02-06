@@ -1,10 +1,9 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { FormattedMessage } from "react-intl";
+import { Navigate, useNavigate } from "react-router-dom";
 
-import { EmptyResourceListView } from "components/common/EmptyResourceListView";
 import { HeadTitle } from "components/common/HeadTitle";
 import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import { Button } from "components/ui/Button";
@@ -13,12 +12,11 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
 
-import { RoutePaths } from "../../../routePaths";
 import SourcesTable from "./components/SourcesTable";
+import { RoutePaths } from "../../../routePaths";
 
 const AllSourcesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
   const onCreateSource = () => navigate(`${RoutePaths.SourceNew}`);
@@ -39,11 +37,7 @@ const AllSourcesPage: React.FC = () => {
       <SourcesTable sources={sources} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListView
-      resourceType="sources"
-      onCreateClick={onCreateSource}
-      buttonLabel={formatMessage({ id: "sources.createFirst" })}
-    />
+    <Navigate to={RoutePaths.SourceNew} />
   );
 };
 

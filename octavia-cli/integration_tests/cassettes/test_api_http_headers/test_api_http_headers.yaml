@@ -7795,7 +7795,7 @@ interactions:
           m234 17 c20 -61 36 -116 36\\n-123 0 -9 -24 -12 -86 -12 -65 0 -85 3 -81 13
           2 6 22 65 43 129 21 65 41 114\\n45 110 4 -4 23 -57 43 -117z\\\"/>\\n<path
           d=\\\"M1050 915 l0 -325 75 0 75 0 0 125 0 125 110 0 110 0 0 55 0 55 -110\\n0
-          -110 0 0 85 0 85 130 0 130 0 0 60 0 60 -205 0 -205 0 0 -325z\\\"/>\\n</g>\\n</svg>\\n\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"alpha\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"d60a46d4-709f-4092-a6b7-2457f7d455f5\",\"name\":\"Prestashop\",\"dockerRepository\":\"airbyte/source-prestashop\",\"dockerImageTag\":\"0.1.0\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/presta-shop\",\"icon\":\"<?xml
+          -110 0 0 85 0 85 130 0 130 0 0 60 0 60 -205 0 -205 0 0 -325z\\\"/>\\n</g>\\n</svg>\\n\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"alpha\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"d60a46d4-709f-4092-a6b7-2457f7d455f5\",\"name\":\"Prestashop\",\"dockerRepository\":\"airbyte/source-prestashop\",\"dockerImageTag\":\"0.1.0\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/prestashop\",\"icon\":\"<?xml
           version=\\\"1.0\\\" ?><svg id=\\\"Calque_1\\\" style=\\\"enable-background:new
           0 0 507 435;\\\" version=\\\"1.1\\\" viewBox=\\\"0 0 507 435\\\" xml:space=\\\"preserve\\\"
           xmlns=\\\"http://www.w3.org/2000/svg\\\" xmlns:xlink=\\\"http://www.w3.org/1999/xlink\\\"><style
@@ -16507,7 +16507,7 @@ interactions:
           1.307 6.443 4.51 9.16 7.123 10.302l-13.609 22.374h6.318l11.746-19.391-4.133
           19.341h5.928l4.332-23.189c8.842-4.394 16.383-15.945 16.867-16.581.597-.796.857-1.284.763-1.706z\\\"
           fill=\\\"#cd3131\\\"/><path d=\\\"M133.477 86.278c1.709.169 3.629-1.547 4.271-3.833.65-2.286-.217-4.276-1.934-4.448-1.711-.169-3.627
-          1.549-4.273 3.835s.217 4.276 1.936 4.446z\\\" fill=\\\"#cd3131\\\"/></g></svg>\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"alpha\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"f636c3c6-4077-45ac-b109-19fc62a283c1\",\"name\":\"Primetric\",\"dockerRepository\":\"airbyte/source-primetric\",\"dockerImageTag\":\"0.1.0\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/presta-shop\",\"icon\":\"<svg
+          1.549-4.273 3.835s.217 4.276 1.936 4.446z\\\" fill=\\\"#cd3131\\\"/></g></svg>\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"alpha\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"f636c3c6-4077-45ac-b109-19fc62a283c1\",\"name\":\"Primetric\",\"dockerRepository\":\"airbyte/source-primetric\",\"dockerImageTag\":\"0.1.0\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/prestashop\",\"icon\":\"<svg
           xmlns=\\\"http://www.w3.org/2000/svg\\\" viewBox=\\\"0 0 228.81 62.4\\\"><defs><style>.cls-1{fill:#16b7cb;}</style></defs><g
           id=\\\"Warstwa_2\\\" data-name=\\\"Warstwa 2\\\"><g id=\\\"Warstwa_1-2\\\"
           data-name=\\\"Warstwa 1\\\"><path d=\\\"M73.88,40h-5L69,49.9a.38.38,0,0,1-.38.38H62.77a.38.38,0,0,1-.38-.38l.21-14.4-.21-14.41a.38.38,0,0,1,.38-.38H73.93c7.14,0,11.23,3.21,11.23,9.51S80.94,40,73.88,40m.3-14.62H68.94l-.13,9.93h5.54c2.49,0,4.6-1.44,4.6-5,0-3.38-1.73-4.94-4.77-4.94\\\"/><path
@@ -17246,7 +17246,7 @@ interactions:
           v 424.34 H 712.836 Z\\\"\\n         style=\\\"fill:#34bde9;fill-opacity:1;fill-rule:nonzero;stroke:none\\\"\\n
           \        id=\\\"path32\\\" /><path\\n         d=\\\"m 1561.5,1080.49 h -424.33
           v 424.33 h 424.33 v -424.33\\\"\\n         style=\\\"fill:#457dc8;fill-opacity:1;fill-rule:nonzero;stroke:none\\\"\\n
-          \        id=\\\"path34\\\" /></g></g></svg>\\n\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"beta\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"29b409d9-30a5-4cc8-ad50-886eb846fea3\",\"name\":\"QuickBooks\",\"dockerRepository\":\"airbyte/source-quickbooks-singer\",\"dockerImageTag\":\"0.1.5\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/quickbooks\",\"icon\":\"<?xml
+          \        id=\\\"path34\\\" /></g></g></svg>\\n\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"beta\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"29b409d9-30a5-4cc8-ad50-886eb846fea3\",\"name\":\"QuickBooks\",\"dockerRepository\":\"airbyte/source-quickbooks-singer\",\"dockerImageTag\":\"0.1.5\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/quickbooks-singer\",\"icon\":\"<?xml
           version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"no\\\"?> <svg xmlns=\\\"http://www.w3.org/2000/svg\\\"
           xmlns:xlink=\\\"http://www.w3.org/1999/xlink\\\" width=\\\"620px\\\" height=\\\"120px\\\"
           viewBox=\\\"0 0 620 120\\\"><!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch

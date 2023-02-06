@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/mixins";
+@use "scss/variables";
 
 .button {
   @include mixins.shadow;
@@ -12,7 +13,7 @@
   cursor: pointer;
   width: 100%;
   background: colors.$white;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
   border: none;
 }
 

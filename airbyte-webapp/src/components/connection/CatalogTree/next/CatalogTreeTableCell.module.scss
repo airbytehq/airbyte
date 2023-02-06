@@ -1,0 +1,39 @@
+$xsmall: 20px;
+$small: 50px;
+$medium: 120px;
+$large: 200px;
+
+.tableCell {
+  flex: 1 0 $medium;
+  min-width: $medium;
+
+  [data-type="text"] {
+    word-break: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &.xsmall {
+    flex-basis: $xsmall;
+    min-width: $xsmall;
+  }
+
+  &.small {
+    flex-basis: $small;
+    min-width: $small;
+  }
+
+  &.large {
+    flex-basis: $large;
+    min-width: $large;
+  }
+}
+
+.noEllipsis > * {
+  overflow: visible;
+}
+
+.fullWidthTooltip {
+  max-width: none;
+}

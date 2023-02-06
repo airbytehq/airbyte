@@ -1,86 +1,87 @@
 import { Form, useFormikContext } from "formik";
-import React from "react";
+import React, { ReactNode } from "react";
 
-import { Spinner } from "components/ui/Spinner";
+import { Card } from "components/ui/Card";
+import { FlexContainer } from "components/ui/Flex";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
-import CreateControls from "./components/CreateControls";
-import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
-import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import { useConnectorForm } from "./connectorFormContext";
 import styles from "./FormRoot.module.scss";
 import { ConnectorFormValues } from "./types";
 
-interface FormRootProps {
+export interface BaseFormRootProps {
   formFields: FormBlock;
-  hasSuccess?: boolean;
+  connectionTestSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
-  errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error | null;
-  successMessage?: React.ReactNode;
-  onRetest?: () => void;
-  onStopTestingConnector?: () => void;
-  selectedConnector: ConnectorDefinitionSpecification | undefined;
+  bodyClassName?: string;
+  headerBlock?: ReactNode;
+  castValues: (values: ConnectorFormValues) => ConnectorFormValues;
+  renderFooter?: (formProps: {
+    dirty: boolean;
+    isSubmitting: boolean;
+    isValid: boolean;
+    resetConnectorForm: () => void;
+    isEditMode?: boolean;
+    formType: "source" | "destination";
+    getValues: () => ConnectorFormValues;
+  }) => ReactNode;
 }
 
-export const FormRoot: React.FC<FormRootProps> = ({
+interface CardFormRootProps extends BaseFormRootProps {
+  renderWithCard: true;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  full?: boolean;
+}
+
+interface BareFormRootProps extends BaseFormRootProps {
+  renderWithCard?: false;
+}
+
+export const FormRoot: React.FC<CardFormRootProps | BareFormRootProps> = ({
   isTestConnectionInProgress = false,
-  onRetest,
   formFields,
-  successMessage,
-  errorMessage,
-  fetchingConnectorError,
-  hasSuccess,
-  onStopTestingConnector,
-  selectedConnector,
+  bodyClassName,
+  headerBlock,
+  renderFooter,
+  castValues,
+  ...props
 }) => {
-  const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, selectedConnectorDefinition, isEditMode, formType } = useConnectorForm();
+  const { dirty, isSubmitting, isValid, values } = useFormikContext<ConnectorFormValues>();
+  const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
+
+  const formBody = (
+    <>
+      {headerBlock}
+      <div className={bodyClassName}>
+        <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
+      </div>
+    </>
+  );
 
   return (
     <Form>
-      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
-      {isLoadingSchema && (
-        <div className={styles.loaderContainer}>
-          <Spinner />
-          <div className={styles.loadingMessage}>
-            <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
-          </div>
-        </div>
-      )}
-
-      {isEditMode ? (
-        <EditControls
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onCancelTesting={onStopTestingConnector}
-          isSubmitting={isSubmitting || isTestConnectionInProgress}
-          errorMessage={errorMessage}
-          formType={formType}
-          onRetestClick={onRetest}
-          isValid={isValid}
-          dirty={dirty}
-          onCancelClick={() => {
-            resetConnectorForm();
-          }}
-          successMessage={successMessage}
-        />
-      ) : (
-        selectedConnector && (
-          <CreateControls
-            isTestConnectionInProgress={isTestConnectionInProgress}
-            onCancelTesting={onStopTestingConnector}
-            isSubmitting={isSubmitting || isTestConnectionInProgress}
-            errorMessage={errorMessage}
-            formType={formType}
-            isLoadSchema={isLoadingSchema}
-            fetchingConnectorError={fetchingConnectorError}
-            hasSuccess={hasSuccess}
-          />
-        )
-      )}
+      <FlexContainer direction="column" gap="xl">
+        {props.renderWithCard ? (
+          <Card title={props.title} description={props.description} fullWidth={props.full}>
+            <div className={styles.cardForm}>{formBody}</div>
+          </Card>
+        ) : (
+          formBody
+        )}
+        {renderFooter &&
+          renderFooter({
+            dirty,
+            isSubmitting,
+            isValid,
+            resetConnectorForm,
+            isEditMode,
+            formType,
+            getValues: () => castValues(values),
+          })}
+      </FlexContainer>
     </Form>
   );
 };

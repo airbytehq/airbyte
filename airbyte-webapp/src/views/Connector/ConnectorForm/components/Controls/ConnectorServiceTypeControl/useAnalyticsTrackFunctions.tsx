@@ -1,4 +1,4 @@
-import { capitalize } from "lodash";
+import capitalize from "lodash/capitalize";
 import { useCallback } from "react";
 
 import { Action, Namespace } from "core/analytics";

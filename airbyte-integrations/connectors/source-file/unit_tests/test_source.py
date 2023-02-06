@@ -160,3 +160,42 @@ def test_check_google_spreadsheets_url(source, config):
         status=Status.FAILED,
         message="Failed to load https://docs.google.com/spreadsheets/d/: please use the Official Google Sheets Source connector",
     )
+
+
+def test_pandas_header_not_none(absolute_path, test_files):
+    config = {
+        "dataset_name": "test",
+        "format": "csv",
+        "reader_options": json.dumps({}),
+        "url": f"{absolute_path}/{test_files}/test_no_header.csv",
+        "provider": {"storage": "local"},
+    }
+
+    catalog = get_catalog({"text11": {"type": ["string", "null"]}, "text12": {"type": ["string", "null"]}})
+
+    source = SourceFile()
+    records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
+    records = [r.record.data for r in records]
+    assert records == [
+        {"text11": "text21", "text12": "text22"},
+    ]
+
+
+def test_pandas_header_none(absolute_path, test_files):
+    config = {
+        "dataset_name": "test",
+        "format": "csv",
+        "reader_options": json.dumps({"header": None}),
+        "url": f"{absolute_path}/{test_files}/test_no_header.csv",
+        "provider": {"storage": "local"},
+    }
+
+    catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
+
+    source = SourceFile()
+    records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
+    records = [r.record.data for r in records]
+    assert records == [
+        {"0": "text11", "1": "text12"},
+        {"0": "text21", "1": "text22"},
+    ]

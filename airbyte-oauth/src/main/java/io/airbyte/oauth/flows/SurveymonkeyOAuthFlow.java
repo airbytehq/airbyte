@@ -50,11 +50,11 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   protected String getBaseURLByOrigin(final JsonNode inputOAuthConfiguration) throws Error {
     final String origin = getConfigValueUnsafe(inputOAuthConfiguration, "origin");
     if (EUROPE.equals(origin)) {
-      return API_ACCESS_URL_EU + AUTHORIZE_URL;
+      return API_ACCESS_URL_EU;
     } else if (CANADA.equals(origin)) {
-      return API_ACCESS_URL_CA + AUTHORIZE_URL;
+      return API_ACCESS_URL_CA;
     } else if (USA.equals(origin)) {
-      return API_ACCESS_URL_USA + AUTHORIZE_URL;
+      return API_ACCESS_URL_USA;
     } else {
       throw new Error("Unknown Origin: " + origin);
     }

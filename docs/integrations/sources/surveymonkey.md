@@ -64,8 +64,10 @@ To cover more data from this source we use caching.
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------|
-| 0.1.12  | 2022-10-13 | [17964](https://github.com/airbytehq/airbyte/pull/17964)                                                     | Add OAuth for Eu and Ca                                                |
+|:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.14  | 2023-01-27 | [22024](https://github.com/airbytehq/airbyte/pull/22024) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 0.1.13  | 2022-11-29 | [19868](https://github.com/airbytehq/airbyte/pull/19868) | Fix OAuth flow urls                                                    |
+| 0.1.12  | 2022-10-13 | [17964](https://github.com/airbytehq/airbyte/pull/17964) | Add OAuth for Eu and Ca                                                |
 | 0.1.11  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                          |
 | 0.1.10  | 2022-09-14 | [16706](https://github.com/airbytehq/airbyte/pull/16706) | Fix 404 error when handling nonexistent surveys                        |
 | 0.1.9   | 2022-07-28 | [13046](https://github.com/airbytehq/airbyte/pull/14998) | Fix state for response stream, fixed backoff behaviour, added unittest |

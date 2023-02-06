@@ -1,0 +1,21 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: colors.$yellow-50;
+  border-radius: 10px;
+  padding: variables.$spacing-md variables.$spacing-xl;
+}
+
+.breaking {
+  background: colors.$red-50;
+}
+
+.nonBreaking {
+  background: colors.$yellow-50;
+}

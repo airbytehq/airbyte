@@ -10,6 +10,7 @@ interface LabelInfoProps {
   label: React.ReactNode;
   examples?: JSONSchema7Type;
   description?: string;
+  options?: Array<{ title: string; description?: string }>;
 }
 
 const Description: React.FC<Pick<LabelInfoProps, "label" | "description">> = ({ label, description }) => {
@@ -20,8 +21,35 @@ const Description: React.FC<Pick<LabelInfoProps, "label" | "description">> = ({ 
   return (
     <div>
       {/* don't use <Text as=h4> here, because we want the default parent styling for this header */}
-      <h4 className={styles.descriptionHeader}>{label}</h4>
+      <h3 className={styles.descriptionHeader}>{label}</h3>
       <TextWithHTML className={styles.description} text={description} />
+    </div>
+  );
+};
+
+const Options: React.FC<Pick<LabelInfoProps, "options">> = ({ options }) => {
+  if (!options) {
+    return null;
+  }
+
+  return (
+    <div>
+      <h4 className={styles.optionsHeader}>
+        <FormattedMessage id="connector.optionsHeader" />
+      </h4>
+      <ul className={styles.options}>
+        {options.map((option) => (
+          <li key={option.title}>
+            <strong>{option.title}</strong>
+            {option.description && (
+              <>
+                {" "}
+                - <TextWithHTML className={styles.description} text={option.description} />
+              </>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
@@ -48,10 +76,11 @@ const Examples: React.FC<Pick<LabelInfoProps, "examples">> = ({ examples }) => {
   );
 };
 
-export const LabelInfo: React.FC<LabelInfoProps> = ({ label, examples, description }) => {
+export const LabelInfo: React.FC<LabelInfoProps> = ({ label, examples, description, options }) => {
   return (
     <div className={styles.container}>
       <Description label={label} description={description} />
+      <Options options={options} />
       <Examples examples={examples} />
     </div>
   );

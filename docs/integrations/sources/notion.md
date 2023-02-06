@@ -35,7 +35,7 @@ You must be the owner of a Notion workspace to create a new integration.
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
           * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
-6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -49,7 +49,7 @@ You must be the owner of a Notion workspace to create a new integration.
 5. Choose the method of authentication:
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
-6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
 <!-- /env:oss -->
 
@@ -83,7 +83,9 @@ The connector is restricted by Notion [request limits](https://developers.notion
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
+| 1.0.1   | 2023-01-27 | [22018](https://github.com/airbytehq/airbyte/pull/22018) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 1.0.0   | 2022-12-19 | [20639](https://github.com/airbytehq/airbyte/pull/20639) | Fix `Pages` stream schema                                       |
 | 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff                            |
 | 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                     |
 | 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example    |

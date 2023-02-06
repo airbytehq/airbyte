@@ -1,0 +1,8 @@
+{
+  "namespace": "jobs",
+  "name": "orchestrator-norm-job-824289-attempt-10",
+  "mainContainerInfo": {
+    "image": "airbyte/container-orchestrator:dev-f0bb7a0ba3",
+    "pullPolicy": "IfNotPresent"
+  }
+}

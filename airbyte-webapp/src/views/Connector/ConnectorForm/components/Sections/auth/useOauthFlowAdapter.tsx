@@ -41,7 +41,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
         values
       );
     } else {
-      newValues = merge(values, {
+      newValues = merge({}, values, {
         connectionConfiguration: completeOauthResponse,
       });
     }

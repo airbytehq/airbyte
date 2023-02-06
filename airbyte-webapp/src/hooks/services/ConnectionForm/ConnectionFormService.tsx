@@ -1,16 +1,29 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { ConnectionScheduleType, OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
-import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
-import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
   ConnectionFormValues,
-  createConnectionValidationSchema,
+  ConnectionValidationSchema,
   FormikConnectionFormValues,
   mapFormPropsToOperation,
   useInitialValues,
-} from "views/Connection/ConnectionForm/formConfig";
+} from "components/connection/ConnectionForm/formConfig";
+
+import {
+  ConnectionScheduleType,
+  DestinationDefinitionRead,
+  DestinationDefinitionSpecificationRead,
+  OperationRead,
+  SourceDefinitionRead,
+  SourceDefinitionSpecificationRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
+import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 
 import { useUniqueFormId } from "../FormChangeTracker";
 import { ValuesProps } from "../useConnectionHook";
@@ -32,15 +45,11 @@ interface ConnectionServiceProps {
 export const tidyConnectionFormValues = (
   values: FormikConnectionFormValues,
   workspaceId: string,
-  mode: ConnectionFormMode,
-  allowSubOneHourCronExpressions: boolean,
+  validationSchema: ConnectionValidationSchema,
   operations?: OperationRead[]
 ): ValuesProps => {
   // TODO (https://github.com/airbytehq/airbyte/issues/17279): We should try to fix the types so we don't need the casting.
-  const formValues: ConnectionFormValues = createConnectionValidationSchema({
-    mode,
-    allowSubOneHourCronExpressions,
-  }).cast(values, {
+  const formValues: ConnectionFormValues = validationSchema.cast(values, {
     context: { isRequest: true },
   }) as unknown as ConnectionFormValues;
 
@@ -50,31 +59,72 @@ export const tidyConnectionFormValues = (
     // Have to set this to undefined to override the existing scheduleData
     formValues.scheduleData = undefined;
   }
-
   return formValues;
 };
 
-const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: ConnectionServiceProps) => {
-  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
+interface ConnectionFormHook {
+  connection: ConnectionOrPartialConnection;
+  mode: ConnectionFormMode;
+  sourceDefinition: SourceDefinitionRead;
+  sourceDefinitionSpecification: SourceDefinitionSpecificationRead;
+  destDefinition: DestinationDefinitionRead;
+  destDefinitionSpecification: DestinationDefinitionSpecificationRead;
+  initialValues: FormikConnectionFormValues;
+  schemaError?: SchemaError;
+  formId: string;
+  setSubmitError: (submitError: FormError | null) => void;
+  getErrorMessage: (formValid: boolean, connectionDirty: boolean) => string | JSX.Element | null;
+  refreshSchema: () => Promise<void>;
+}
+
+const useConnectionForm = ({
+  connection,
+  mode,
+  schemaError,
+  refreshSchema,
+}: ConnectionServiceProps): ConnectionFormHook => {
+  const {
+    source: { sourceDefinitionId },
+    destination: { destinationDefinitionId },
+  } = connection;
+
+  const sourceDefinition = useSourceDefinition(sourceDefinitionId);
+  const sourceDefinitionSpecification = useGetSourceDefinitionSpecification(sourceDefinitionId);
+  const destDefinition = useDestinationDefinition(destinationDefinitionId);
+  const destDefinitionSpecification = useGetDestinationDefinitionSpecification(destinationDefinitionId);
+
+  const initialValues = useInitialValues(connection, destDefinition, destDefinitionSpecification, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
   const formId = useUniqueFormId();
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
 
   const getErrorMessage = useCallback(
-    (formValid: boolean, connectionDirty: boolean) =>
-      submitError
+    (formValid: boolean, connectionDirty: boolean) => {
+      if (isNewTableDesignEnabled) {
+        // There is a case when some fields could be dropped in the database. We need to validate the form without property dirty
+        return submitError
+          ? generateMessageFromError(submitError)
+          : !formValid
+          ? formatMessage({ id: "connectionForm.validation.error" })
+          : null;
+      }
+      return submitError
         ? generateMessageFromError(submitError)
         : connectionDirty && !formValid
         ? formatMessage({ id: "connectionForm.validation.error" })
-        : null,
-    [formatMessage, submitError]
+        : null;
+    },
+    [formatMessage, isNewTableDesignEnabled, submitError]
   );
 
   return {
     connection,
     mode,
+    sourceDefinition,
+    sourceDefinitionSpecification,
     destDefinition,
+    destDefinitionSpecification,
     initialValues,
     schemaError,
     formId,
@@ -84,7 +134,7 @@ const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: Con
   };
 };
 
-const ConnectionFormContext = createContext<ReturnType<typeof useConnectionForm> | null>(null);
+const ConnectionFormContext = createContext<ConnectionFormHook | null>(null);
 
 export const ConnectionFormServiceProvider: React.FC<React.PropsWithChildren<ConnectionServiceProps>> = ({
   children,

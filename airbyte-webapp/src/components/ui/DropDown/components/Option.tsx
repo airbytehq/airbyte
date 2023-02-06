@@ -1,11 +1,11 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { components, OptionProps } from "react-select";
 import styled from "styled-components";
 
 import { CheckBox } from "components/ui/CheckBox";
 
-import { OptionType } from "../DropDown";
 import { DropDownText } from "./DropDownText";
+import { OptionType } from "../DropDown";
 
 export type DropDownOptionProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & DropDownOptionDataItem;
@@ -65,6 +65,8 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
           // for cases where the Dropdown is a child of a clickable parent such as a table row.
           props.selectOption(props.data);
           event.stopPropagation();
+          // The checkbox does not work properly without this
+          event.preventDefault();
         }}
       >
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
@@ -73,7 +75,11 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
               <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />{" "}
             </>
           )}
-          {props.label}
+          {Array.isArray(props.label)
+            ? props.label
+                .map<React.ReactNode>((node, index) => <Fragment key={index}>{node}</Fragment>)
+                .reduce((prev, curr) => [prev, " | ", curr])
+            : props.label}
         </DropDownText>
         {props.data.img || null}
       </OptionView>

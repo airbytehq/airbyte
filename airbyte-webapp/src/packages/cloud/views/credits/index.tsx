@@ -1,3 +1,3 @@
 import CreditsPage from "./CreditsPage";
 
-export { CreditsPage };
+export default CreditsPage;

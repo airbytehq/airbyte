@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/mouse-events-have-key-events */
 import { autoUpdate, flip, offset, shift, useFloating, UseFloatingProps } from "@floating-ui/react-dom";
 import classNames from "classnames";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 import { tooltipContext } from "./context";
@@ -54,7 +54,7 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
     };
   }, [isMouseOver]);
 
-  const canShowTooltip = isVisible && !disabled;
+  const canShowTooltip = useMemo(() => isVisible && !disabled, [disabled, isVisible]);
 
   const onMouseOver = () => {
     setIsMouseOver(true);
@@ -66,7 +66,7 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
 
   return (
     <>
-      <div
+      <span
         ref={reference}
         className={classNames(styles.container, containerClassName)}
         style={disabled ? undefined : { cursor }}
@@ -74,13 +74,19 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
         onMouseOut={onMouseOut}
       >
         {control}
-      </div>
-      {canShowTooltip &&
-        createPortal(
+      </span>
+      {createPortal(
+        canShowTooltip ? (
           <div
             role="tooltip"
             ref={floating}
-            className={classNames(styles.tooltip, theme === "light" && styles.light, className)}
+            className={classNames(
+              styles.tooltip,
+              {
+                [styles.light]: theme === "light",
+              },
+              className
+            )}
             style={{
               position: strategy,
               top: y ?? 0,
@@ -90,9 +96,10 @@ export const Tooltip: React.FC<React.PropsWithChildren<TooltipProps>> = (props) 
             onMouseOut={onMouseOut}
           >
             <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
-          </div>,
-          document.body
-        )}
+          </div>
+        ) : null,
+        document.body
+      )}
     </>
   );
 };

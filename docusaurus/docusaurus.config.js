@@ -9,7 +9,7 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    url: 'https://airbytehq.github.io',
+    url: 'https://docs.airbyte.com',
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
@@ -40,6 +40,10 @@ const config = {
                         {
                             from: '/integrations/sources/google-analytics-data-api',
                             to: '/integrations/sources/google-analytics-v4',
+                        },
+                        {
+                            from: '/integrations/sources/appstore',
+                            to: '/integrations/sources/appstore-singer',
                         },
                         {
                             from: '/project-overview/security',
@@ -73,6 +77,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
+                    exclude: ['**/*.inapp.md'],
                 },
                 blog: false,
                 theme: {

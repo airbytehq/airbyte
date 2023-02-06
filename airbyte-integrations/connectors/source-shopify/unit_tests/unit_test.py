@@ -28,7 +28,10 @@ def test_get_next_page_token(requests_mock):
 
 
 def test_privileges_validation(requests_mock, basic_config):
-    requests_mock.get("https://test_shop.myshopify.com/admin/oauth/access_scopes.json", json={"access_scopes": [{"handle": "read_orders"}]})
+    requests_mock.get(
+        "https://test_shop.myshopify.com/admin/oauth/access_scopes.json",
+        json={"access_scopes": [{"handle": "read_orders"}]},
+    )
     source = SourceShopify()
 
     expected = [

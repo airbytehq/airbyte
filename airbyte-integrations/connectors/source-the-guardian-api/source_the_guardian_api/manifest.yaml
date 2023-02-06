@@ -1,0 +1,75 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer:
+        - response
+        - results
+  requester:
+    url_base: "https://content.guardianapis.com"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        api-key: "{{ config['api_key'] }}"
+        q: "{{ config['query'] }}"
+        tag: "{{ config['tag'] }}"
+        section: "{{ config['section'] }}"
+        order-by: "oldest"
+        # from-date: "{{ config['start_date'] }}"
+        # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P7D"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_granularity: "PT1S"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+    start_time_option:
+      field_name: "from-date"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "to-date"
+      inject_into: "request_parameter"
+
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: "DefaultPaginator"
+      url_base: "*ref(definitions.requester.url_base)"
+      pagination_strategy:
+        class_name: "source_the_guardian_api.custom_page_strategy.CustomPageIncrement"
+        page_size: 10
+      page_token_option:
+        inject_into: "request_parameter"
+        field_name: "page"
+      page_size_option:
+        inject_into: "body_data"
+        field_name: "page_size"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  content_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "content"
+      primary_key: "id"
+      path: "/search"
+      stream_cursor_field: "webPublicationDate"
+
+streams:
+  - "*ref(definitions.content_stream)"
+
+check:
+  stream_names:
+    - "content"
