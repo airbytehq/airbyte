@@ -4,17 +4,20 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Switch } from "components/ui/Switch";
 
-import { useConnectionList, useEnableConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+import { WebBackendConnectionListItem } from "core/request/AirbyteClient";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
+import { useEnableConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+import { useIsConnectionFree } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useIsConnectionFree";
 
 import styles from "./StatusCellControl.module.scss";
 
 interface StatusCellControlProps {
-  allowSync?: boolean;
   hasBreakingChange?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
   id: string;
+  connection: WebBackendConnectionListItem;
 }
 
 export const StatusCellControl: React.FC<StatusCellControlProps> = ({
@@ -22,17 +25,18 @@ export const StatusCellControl: React.FC<StatusCellControlProps> = ({
   isManual,
   id,
   isSyncing,
-  allowSync,
   hasBreakingChange,
+  connection,
 }) => {
-  const { connections } = useConnectionList();
   const { mutateAsync: enableConnection, isLoading } = useEnableConnection();
   const { mutateAsync: syncConnection, isLoading: isSyncStarting } = useSyncConnection();
+  const connectionIsFree = useIsConnectionFree(connection);
+  const allowSync = useFeature(FeatureItem.AllowSync);
+  const canSync = allowSync || connectionIsFree;
 
   const onRunManualSync = (event: React.SyntheticEvent) => {
     event.stopPropagation();
 
-    const connection = connections.find((c) => c.connectionId === id);
     if (connection) {
       syncConnection(connection);
     }
@@ -57,7 +61,7 @@ export const StatusCellControl: React.FC<StatusCellControlProps> = ({
         <Switch
           checked={enabled}
           onChange={onSwitchChange}
-          disabled={!allowSync || hasBreakingChange}
+          disabled={!canSync || hasBreakingChange}
           loading={isLoading}
           data-testid="enable-connection-switch"
         />
@@ -77,7 +81,7 @@ export const StatusCellControl: React.FC<StatusCellControlProps> = ({
     <Button
       onClick={onRunManualSync}
       isLoading={isSyncStarting}
-      disabled={!allowSync || !enabled || hasBreakingChange || isSyncStarting}
+      disabled={!canSync || !enabled || hasBreakingChange || isSyncStarting}
       data-testid="manual-sync-button"
     >
       <FormattedMessage id="connection.startSync" />
