@@ -61,7 +61,7 @@ def test_check_connection_exception(requests_mock, config_token):
 def test_streams(config_token):
     streams = SourcePipedrive().streams(config_token)
 
-    assert len(streams) == 12
+    assert len(streams) == 15
 
 
 def setup_response(status, body):
@@ -80,7 +80,7 @@ def test_read(config_token):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
-                stream=AirbyteStream(name="deals", json_schema={}),
+                stream=AirbyteStream(name="deals", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
             )
