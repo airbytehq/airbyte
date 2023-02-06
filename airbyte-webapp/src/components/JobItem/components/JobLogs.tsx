@@ -8,15 +8,15 @@ import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 import { Text } from "components/ui/Text";
 
 import { AttemptRead, AttemptStatus, SynchronousJobRead } from "core/request/AirbyteClient";
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
 
-import { parseAttemptLink } from "../attemptLinkUtils";
-import { isCancelledAttempt } from "../utils";
 import styles from "./JobLogs.module.scss";
 import Logs from "./Logs";
 import { LogsDetails } from "./LogsDetails";
 import Tabs, { TabsData } from "./Tabs";
+import { parseAttemptLink } from "../attemptLinkUtils";
+import { JobsWithJobs } from "../types";
+import { isCancelledAttempt } from "../utils";
 
 interface JobLogsProps {
   jobIsFailed?: boolean;

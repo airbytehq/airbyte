@@ -10,13 +10,16 @@ RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/s
         && chmod +x kubectl && mv kubectl /usr/local/bin/
 
 # Don't change this manually.  Bump version expects to make moves based on this string
-ARG VERSION=0.40.27
+ARG VERSION=0.40.32
 
 ENV APPLICATION airbyte-container-orchestrator
 ENV VERSION=${VERSION}
 ENV AIRBYTE_ENTRYPOINT "/app/${APPLICATION}-${VERSION}/bin/${APPLICATION}"
 
 WORKDIR /app
+
+# Grab well-known types file
+COPY WellKnownTypes.json /app
 
 # Move orchestrator app
 ADD bin/${APPLICATION}-${VERSION}.tar /app

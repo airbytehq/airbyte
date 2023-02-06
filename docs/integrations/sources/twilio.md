@@ -83,6 +83,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.1.15  | 2023-01-27 | [22025](https://github.com/airbytehq/airbyte/pull/22025) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.14  | 2022-11-16 | [19479](https://github.com/airbytehq/airbyte/pull/19479) | Fix date range slicing                                                                                  |
 | 0.1.13  | 2022-10-25 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs                                     |
 | 0.1.11  | 2022-09-30 | [17478](https://github.com/airbytehq/airbyte/pull/17478) | Add lookback_window parameters                                                                          |

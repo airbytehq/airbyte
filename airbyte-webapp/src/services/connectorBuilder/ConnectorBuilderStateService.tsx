@@ -1,14 +1,19 @@
 import { dump } from "js-yaml";
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
+import { UseQueryResult } from "react-query";
 import { useLocalStorage } from "react-use";
 
 import { BuilderFormValues, convertToManifest, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 
-import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import {
+  StreamRead,
+  StreamReadRequestBodyConfig,
+  StreamsListReadStreamsItem,
+} from "core/request/ConnectorBuilderClient";
 import { ConnectorManifest, DeclarativeComponentSchema } from "core/request/ConnectorManifest";
 
-import { useListStreams } from "./ConnectorBuilderApiService";
+import { useListStreams, useReadStream } from "./ConnectorBuilderApiService";
 
 const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   version: "0.1.0",
@@ -25,6 +30,7 @@ export type BuilderView = "global" | "inputs" | number;
 
 interface FormStateContext {
   builderFormValues: BuilderFormValues;
+  formValuesValid: boolean;
   jsonManifest: ConnectorManifest;
   lastValidJsonManifest: DeclarativeComponentSchema | undefined;
   yamlManifest: string;
@@ -47,6 +53,8 @@ interface TestStateContext {
   setTestInputJson: (value: StreamReadRequestBodyConfig) => void;
   setTestStreamIndex: (streamIndex: number) => void;
   testStreamIndex: number;
+  streamRead: UseQueryResult<StreamRead, unknown>;
+  isFetchingStreamList: boolean;
 }
 
 export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
@@ -59,6 +67,8 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     DEFAULT_BUILDER_FORM_VALUES
   );
 
+  const [formValuesValid, setFormValuesValid] = useState(true);
+
   const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
   const currentBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
 
@@ -69,6 +79,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
         lastValidBuilderFormValuesRef.current = values;
       }
       currentBuilderFormValuesRef.current = values;
+      setFormValuesValid(isValid);
       setStoredBuilderFormValues(values);
     },
     [setStoredBuilderFormValues]
@@ -108,7 +119,13 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
-  const yamlManifest = useMemo(() => dump(derivedJsonManifest), [derivedJsonManifest]);
+  const yamlManifest = useMemo(
+    () =>
+      dump(derivedJsonManifest, {
+        noRefs: true,
+      }),
+    [derivedJsonManifest]
+  );
 
   const lastValidBuilderFormValues = lastValidBuilderFormValuesRef.current;
   /**
@@ -129,6 +146,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
 
   const ctx = {
     builderFormValues,
+    formValuesValid,
     jsonManifest: derivedJsonManifest,
     lastValidJsonManifest,
     yamlManifest,
@@ -161,6 +179,7 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
+    isFetching: isFetchingStreamList,
   } = useListStreams({ manifest, config: testInputJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
@@ -179,6 +198,12 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     }
   }, [selectedView]);
 
+  const streamRead = useReadStream({
+    manifest,
+    stream: streams[testStreamIndex]?.name,
+    config: testInputJson,
+  });
+
   const ctx = {
     streams,
     streamListErrorMessage,
@@ -186,6 +211,8 @@ export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren
     setTestInputJson,
     testStreamIndex,
     setTestStreamIndex,
+    streamRead,
+    isFetchingStreamList,
   };
 
   return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;

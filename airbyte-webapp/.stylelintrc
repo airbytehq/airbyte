@@ -15,7 +15,10 @@
     "scss/dollar-variable-pattern": null,
     "scss/percent-placeholder-pattern": null,
     "value-keyword-case": null,
-    "color-no-hex": true
+    "color-no-hex": true,
+    "airbyte/no-color-variables-in-rgba": true,
+    "airbyte/no-use-renaming": true
   },
-  "ignoreFiles": ["**/build/**", "**/dist/**"]
+  "ignoreFiles": ["**/build/**", "**/dist/**"],
+  "plugins": ["./packages/stylelint-plugin/index.js"]
 }

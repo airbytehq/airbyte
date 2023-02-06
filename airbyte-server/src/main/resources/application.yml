@@ -2,23 +2,16 @@ micronaut:
   application:
     name: airbyte-server
   security:
-    intercept-url-map:
-      - pattern: /**
-        httpMethod: GET
-        access:
-          - isAnonymous()
-      - pattern: /**
-        httpMethod: POST
-        access:
-          - isAnonymous()
-      - pattern: /**
-        httpMethod: HEAD
-        access:
-          - isAnonymous()
+    authentication-provider-strategy: ALL
+    enabled: ${API_AUTHORIZATION_ENABLED:false}
   server:
     port: 8001
     cors:
       enabled: true
+      configurations:
+        web:
+          allowedOrigins:
+            - ^.*$
 airbyte:
   cloud:
     storage:
@@ -64,6 +57,9 @@ airbyte:
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
     store:
+      aws:
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
       gcp:
         credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
         project-id: ${SECRET_STORE_GCP_PROJECT_ID:}
@@ -105,10 +101,37 @@ datasources:
     maximum-pool-size: 10
     minimum-idle: 0
     idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
     url: ${DATABASE_URL}
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}
     password: ${DATABASE_PASSWORD}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
 
 flyway:
   enabled: true
@@ -130,3 +153,10 @@ jooq:
     jobs:
       jackson-converter-enabled: true
       sql-dialect: POSTGRES
+
+logger:
+  levels:
+  # Uncomment to help resolve issues with conditional beans
+  #    io.micronaut.context.condition: DEBUG
+  # Uncomment to help resolve issues with security beans
+  #    io.micronaut.security: DEBUG

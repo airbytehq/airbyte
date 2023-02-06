@@ -181,6 +181,9 @@ airbyte:
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
     store:
+      aws:
+        access-key: ${AWS_ACCESS_KEY:}
+        secret-key: ${AWS_SECRET_ACCESS_KEY:}
       gcp:
         credentials: ${SECRET_STORE_GCP_CREDENTIALS:}
         project-id: ${SECRET_STORE_GCP_PROJECT_ID:}

@@ -10,7 +10,9 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
+from airbyte_cdk.sources.declarative.requesters.paginators import PaginatorTestReadDecorator
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
@@ -176,10 +178,37 @@ MANIFEST_WITH_REFERENCES = {
     }
 }
 
+MANIFEST_WITH_PAGINATOR = {
+    "version": "0.1.0",
+    "type" : "DeclarativeSource",
+    "definitions": {
+    },
+    "streams": [
+        {
+            "type" : "DeclarativeStream",
+            "retriever": {
+                "type" : "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {
+                        "type": "OffsetIncrement",
+                        "page_size": 10
+                    },
+                    "url_base": "https://demonslayers.com/api/v1/"
+                },
+                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
+            },
+            "$options": {"name": "hashiras", "path": "/hashiras"},
+        },
+    ],
+    "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
+}
+
 def test_get_http_streams():
     expected_urls = {"https://demonslayers.com/api/v1/breathing_techniques", "https://demonslayers.com/api/v1/hashiras"}
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     actual_streams = adapter.get_http_streams(config={})
     actual_urls = {http_stream.url_base + http_stream.path() for http_stream in actual_streams}
 
@@ -187,10 +216,13 @@ def test_get_http_streams():
     assert actual_urls == expected_urls
 
 
+MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
+MAXIMUM_NUMBER_OF_SLICES = 5
+
 def test_get_http_manifest_with_references():
     expected_urls = {"https://demonslayers.com/api/v1/ranks"}
 
-    adapter = LowCodeSourceAdapter(MANIFEST_WITH_REFERENCES)
+    adapter = LowCodeSourceAdapter(MANIFEST_WITH_REFERENCES, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     actual_streams = adapter.get_http_streams(config={})
     actual_urls = {http_stream.url_base + http_stream.path() for http_stream in actual_streams}
 
@@ -204,7 +236,7 @@ def test_get_http_streams_non_declarative_streams():
     mock_source = MagicMock()
     mock_source.streams.return_value = [non_declarative_stream]
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     with pytest.raises(TypeError):
         adapter.get_http_streams(config={})
@@ -217,7 +249,7 @@ def test_get_http_streams_non_http_stream():
     mock_source = MagicMock()
     mock_source.streams.return_value = [declarative_stream_non_http_retriever]
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     with pytest.raises(TypeError):
         adapter.get_http_streams(config={})
@@ -247,7 +279,7 @@ def test_read_streams():
     mock_source = MagicMock()
     mock_source.read.return_value = expected_messages
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     actual_messages = list(adapter.read_stream("hashiras", {}))
 
@@ -272,7 +304,7 @@ def test_read_streams_with_error():
 
     mock_source.read.side_effect = return_value
 
-    adapter = LowCodeSourceAdapter(MANIFEST)
+    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
     adapter._source = mock_source
     actual_messages = list(adapter.read_stream("hashiras", {}))
 
@@ -309,4 +341,14 @@ def test_read_streams_invalid_reference():
     }
 
     with pytest.raises(UndefinedReferenceException):
-        LowCodeSourceAdapter(invalid_reference_manifest)
+        LowCodeSourceAdapter(invalid_reference_manifest, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+
+
+def test_stream_use_read_test_retriever_and_paginator():
+    adapter = LowCodeSourceAdapter(MANIFEST_WITH_PAGINATOR, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    streams = adapter.get_http_streams(config={})
+
+    assert streams
+    for stream in streams:
+        assert isinstance(stream, SimpleRetrieverTestReadDecorator)
+        assert isinstance(stream.paginator, PaginatorTestReadDecorator)

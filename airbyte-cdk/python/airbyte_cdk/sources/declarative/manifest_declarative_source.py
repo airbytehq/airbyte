@@ -50,7 +50,13 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
     VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
-    def __init__(self, source_config: ConnectionDefinition, debug: bool = False, construct_using_pydantic_models: bool = False):
+    def __init__(
+        self,
+        source_config: ConnectionDefinition,
+        debug: bool = False,
+        component_factory: ModelToComponentFactory = None,
+        construct_using_pydantic_models: bool = False,
+    ):
         """
         :param source_config(Mapping[str, Any]): The manifest of low-code components that describe the source connector
         :param debug(bool): True if debug mode is enabled
@@ -58,7 +64,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
         # Controls whether we build components using the manual handwritten schema and Pydantic models or the legacy flow
-        self.construct_using_pydantic_models = construct_using_pydantic_models
+        self.construct_using_pydantic_models = True
 
         # For ease of use we don't require the type to be specified at the top level manifest, but it should be included during processing
         manifest = dict(source_config)
@@ -71,7 +77,12 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._legacy_source_config = resolved_source_config
         self._debug = debug
         self._legacy_factory = DeclarativeComponentFactory()  # Legacy factory used to instantiate declarative components from the manifest
-        self._constructor = ModelToComponentFactory()  # New factory which converts the manifest to Pydantic models to construct components
+        if component_factory:
+            self._constructor = component_factory
+        else:
+            self._constructor = (
+                ModelToComponentFactory()
+            )  # New factory which converts the manifest to Pydantic models to construct components
 
         self._validate_source()
 
@@ -82,12 +93,20 @@ class ManifestDeclarativeSource(DeclarativeSource):
             raise InvalidConnectorDefinitionException(f"Found unknown top-level fields: {unknown_fields}")
 
     @property
+    def resolved_manifest(self) -> Mapping[str, Any]:
+        return self._new_source_config
+
+    @property
     def connection_checker(self) -> ConnectionChecker:
         check = self._new_source_config["check"] if self.construct_using_pydantic_models else self._legacy_source_config["check"]
         if "type" not in check:
             check["type"] = "CheckStream"
         if self.construct_using_pydantic_models:
-            return self._constructor.create_component(CheckStreamModel, check, dict())(source=self)
+            check_stream = self._constructor.create_component(CheckStreamModel, check, dict())
+            if isinstance(check_stream, ConnectionChecker):
+                return check_stream
+            else:
+                raise ValueError(f"Expected to generate a ConnectionChecker component, but received {check_stream.__class__}")
         else:
             return self._legacy_factory.create_component(check, dict())(source=self)
 
