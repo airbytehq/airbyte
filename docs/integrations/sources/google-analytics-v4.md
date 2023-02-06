@@ -102,7 +102,7 @@ added by default to all reports. There are 8 default reports. To add more report
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------|
-| 0.1.2   | 2023-02-06 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Improved section on service account                   |
+| 0.1.2   | 2023-02-06 | [22416](https://github.com/airbytehq/airbyte/pull/22416) | Improved section on service account                   |
 | 0.1.1   | 2023-01-10 | [21169](https://github.com/airbytehq/airbyte/pull/21169) | Slicer updated, unit tests added                   |
 | 0.1.0   | 2023-01-08 | [20889](https://github.com/airbytehq/airbyte/pull/20889) | Improved config validation, SAT                    |
 | 0.0.3   | 2022-08-15 | [15229](https://github.com/airbytehq/airbyte/pull/15229) | Source Google Analytics Data Api: code refactoring |
