@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -288,7 +289,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one replication slot but found " + matchingSlots.size()
                   + ". Please read the docs and add a replication slot to your database.");
         }
@@ -304,7 +305,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         }, sourceOperations::rowToJson);
 
         if (matchingPublications.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one publication but found " + matchingPublications.size()
                   + ". Please read the docs and add a publication to your database.");
         }
@@ -326,7 +327,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         }, sourceOperations::rowToJson);
 
         if (!userPrivileges.get(0).get("userepl").asBoolean()) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "User " + userName + " does not have enough privileges for CDC replication." +
                   " Please read the docs and add required privileges.");
         }
