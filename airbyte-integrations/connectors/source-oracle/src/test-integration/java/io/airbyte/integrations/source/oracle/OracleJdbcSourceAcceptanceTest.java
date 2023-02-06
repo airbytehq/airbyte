@@ -269,13 +269,13 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
