@@ -81,7 +81,7 @@ class DestinationAwsDatalake(Destination):
                         stream_name = message.state.stream.stream_state.stream_name
                         if stream_name in streams:
                             logger.info(f"Got state message from source: flushing records for {stream_name}")
-                            streams[stream_name].flush(force_append=True)
+                            streams[stream_name].flush(partial=True)
 
                 yield message
 
@@ -94,12 +94,12 @@ class DestinationAwsDatalake(Destination):
                 # Records will either get flushed when a state message is received or when hitting the RECORD_FLUSH_INTERVAL
                 if len(streams[stream]._messages) > RECORD_FLUSH_INTERVAL:
                     logger.debug(f"Reached size limit: flushing records for {stream}")
-                    streams[stream].flush(force_append=True)
+                    streams[stream].flush(partial=True)
 
             else:
                 logger.info(f"Unhandled message type {message.type}: {message}")
 
-        # Flush any remaining records
+        # Flush all or remaining records
         self._flush_streams(streams)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:

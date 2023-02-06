@@ -28,6 +28,7 @@ class StreamWriter:
         self._database: str = self._configured_stream.stream.namespace or self._config.lakeformation_database_name
 
         self._messages = []
+        self._partial_flush_count = 0
 
         logger.info(f"Creating StreamWriter for {self._database}:{self._table}")
 
@@ -346,7 +347,7 @@ class StreamWriter:
         if not success:
             raise Exception(f"Failed to reset table {self._database}:{self._table}")
 
-    def flush(self, force_append=False):
+    def flush(self, partial: bool = False):
         logger.debug(f"Flushing {len(self._messages)} messages to table {self._database}:{self._table}")
 
         df = pd.DataFrame(self._messages)
@@ -379,7 +380,7 @@ class StreamWriter:
             if col in df.columns:
                 df[col] = df[col].apply(json.dumps)
 
-        if self._sync_mode == DestinationSyncMode.overwrite and not force_append:
+        if self._sync_mode == DestinationSyncMode.overwrite and self._partial_flush_count < 1:
             logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.write(
                 df,
@@ -390,7 +391,7 @@ class StreamWriter:
                 partition_fields,
             )
 
-        elif self._sync_mode == DestinationSyncMode.append or force_append:
+        elif self._sync_mode == DestinationSyncMode.append or self._partial_flush_count > 0:
             logger.debug(f"Appending {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.append(
                 df,
@@ -404,6 +405,9 @@ class StreamWriter:
         else:
             self._messages = []
             raise Exception(f"Unsupported sync mode: {self._sync_mode}")
+
+        if partial:
+            self._partial_flush_count += 1
 
         del df
         self._messages.clear()
