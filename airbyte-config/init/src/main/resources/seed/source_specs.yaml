@@ -178,7 +178,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-airtable:2.0.0"
+- dockerImage: "airbyte/source-airtable:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -4034,7 +4034,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-faker:2.0.0"
+- dockerImage: "airbyte/source-faker:2.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -6881,7 +6881,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-iterable:0.1.22"
+- dockerImage: "airbyte/source-iterable:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -7895,7 +7895,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.3.2"
+- dockerImage: "airbyte/source-mailchimp:0.3.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
@@ -8141,7 +8141,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-marketo:0.1.11"
+- dockerImage: "airbyte/source-marketo:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/marketo"
     connectionSpecification:
@@ -13336,7 +13336,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.3.0"
+- dockerImage: "airbyte/source-sendgrid:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sendgrid"
     connectionSpecification:
@@ -13357,13 +13357,13 @@
         start_time:
           title: "Start time"
           type: "string"
+          format: "date-time"
+          pattern: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?Z$"
           description: "Start time in ISO8601 format. Any data before this time point\
             \ will not be replicated."
           examples:
-          - "2021-12-12"
-          - "2021-02-01 13:30:00"
-          - "2020-07-18T13:30:00.000Z"
-          - "2020-07-18 13:30:00+02:00"
+          - "2020-01-01T01:01:01Z"
+          - "2020-01-01T01:01:01.000001Z"
           order: 1
     supportsNormalization: false
     supportsDBT: false

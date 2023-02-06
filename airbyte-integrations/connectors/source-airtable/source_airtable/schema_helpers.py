@@ -2,12 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 from copy import deepcopy
 from typing import Any, Dict
 
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+
+logger: logging.Logger = logging.getLogger("airbyte")
 
 
 class SchemaTypes:
@@ -58,8 +60,11 @@ SIMPLE_AIRTABLE_TYPES: Dict = {
     "rating": SchemaTypes.number,
     "richText": SchemaTypes.string,
     "singleLineText": SchemaTypes.string,
+    "singleSelect": SchemaTypes.string,
     "externalSyncSource": SchemaTypes.string,
     "url": SchemaTypes.string,
+    # referal default type
+    "simpleText": SchemaTypes.string,
 }
 
 # returns the `array of Any` where Any is based on Simple Types.
@@ -89,17 +94,26 @@ class SchemaHelpers:
             name: str = SchemaHelpers.clean_name(field.get("name"))
             original_type: str = field.get("type")
             options: Dict = field.get("options", {})
-            exec_type: str = options.get("result", {}).get("type") if options else None
-            field_type: str = exec_type if exec_type else original_type
+            options_result: Dict = options.get("result", {})
+            exec_type: str = options_result.get("type") if options_result else None
 
             # choose the JsonSchema Type for known Airtable Types
             if original_type in COMPLEX_AIRTABLE_TYPES.keys():
                 complex_type = deepcopy(COMPLEX_AIRTABLE_TYPES.get(original_type))
                 # process arrays with values
+                field_type: str = exec_type if exec_type else "simpleText"
+                # For cases with `options.result` == None, we should apply the type `string`.
+                # Other edge cases, if `field_type` not in SIMPLE_AIRTABLE_TYPES, fall back to "simpleText" == `string`
+                # reference issue: https://github.com/airbytehq/oncall/issues/1432#issuecomment-1412743120
                 if complex_type == SchemaTypes.array_with_any:
-                    complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
+                    if field_type in SIMPLE_AIRTABLE_TYPES:
+                        complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
+                    else:
+                        complex_type["items"] = SchemaTypes.string
+                        logger.warning(f"Unknown field type: {field_type}, falling back to `simpleText` type")
                 properties.update(**{name: complex_type})
             elif original_type in SIMPLE_AIRTABLE_TYPES.keys():
+                field_type: str = exec_type if exec_type else original_type
                 properties.update(**{name: deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))})
             else:
                 # Airtable may add more field types in the future and don't consider it a breaking change

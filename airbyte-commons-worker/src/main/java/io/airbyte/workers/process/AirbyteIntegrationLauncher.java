@@ -24,6 +24,8 @@ import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -219,6 +221,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   private Map<String, String> getWorkerMetadata() {
+    final Configs configs = new EnvConfigs();
     return Map.of(
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
@@ -226,7 +229,9 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
         EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
         EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
-        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
+        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces(),
+        EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit(),
+        EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest());
   }
 
 }

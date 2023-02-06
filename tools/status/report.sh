@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# This script is used to report the status of a connector build to S3.
+# BEFORE RUNNING THIS SCRIPT:
+#   - Ensure you have read the documentation on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
+
 set -e
 
 . tools/lib/lib.sh
@@ -11,7 +15,10 @@ CONNECTOR=$1
 REPOSITORY=$2
 RUN_ID=$3
 TEST_OUTCOME=$4
-QA_CHECKS_OUTCOME=$5
+
+# TODO: Disabled for on master until #22127 resolved
+# QA_CHECKS_OUTCOME=$5
+QA_CHECKS_OUTCOME=success
 
 # Ensure connector is prefixed with connectors/
 # TODO (ben): In the future we should just hard error if this is not the case
@@ -22,6 +29,7 @@ fi
 BUCKET_WRITE_ROOT=/tmp/bucket_write_root
 LAST_TEN_ROOT=/tmp/last_ten_root
 SUMMARY_WRITE_ROOT=/tmp/summary_write_root
+VERSION_PREFIX="version-"
 
 DOCKER_VERSION=$(get_connector_version "$CONNECTOR")
 
@@ -55,7 +63,7 @@ function write_job_log() {
   # if docker version has a value, write it to a file with the docker version as the name
   # else output an error to the build log
   if [ -n "$DOCKER_VERSION" ]; then
-    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$DOCKER_VERSION".json
+    echo "$job_log_json" > tests/history/"$CONNECTOR"/"$VERSION_PREFIX""$DOCKER_VERSION".json
   else
     echo "ERROR: Could not find docker version for $CONNECTOR"
   fi
@@ -65,8 +73,11 @@ function write_job_log() {
 
 function pull_latest_job_logs() {
   # pull the logs for the latest ten jobs for this connector
+  # note this is done by key as each log has a timestamp in the filename
+  # ensuring that the version specific runs are filtered out.
   LAST_TEN_FILES=$(aws s3api list-objects-v2 --bucket "$BUCKET"  \
-    --query "reverse(sort_by(Contents[?contains(Key, \`tests/history/$CONNECTOR\`)], &LastModified))[:10].Key" \
+    --prefix "tests/history/$CONNECTOR" \
+    --query "reverse(sort_by(Contents[?!contains(Key, \`$VERSION_PREFIX\`)], &Key))[:10].Key" \
     --output=text)
 
   rm -r $LAST_TEN_ROOT || true

@@ -38,6 +38,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
@@ -99,6 +100,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final LogConfigs logConfigs;
   private final String airbyteVersion;
   private final FeatureFlags featureFlags;
+  private final FeatureFlagClient featureFlagClient;
   private final Integer serverPort;
   private final AirbyteConfigValidator airbyteConfigValidator;
   private final TemporalUtils temporalUtils;
@@ -121,7 +123,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final AirbyteApiClient airbyteApiClient,
                                  final AirbyteMessageSerDeProvider serDeProvider,
                                  final AirbyteProtocolVersionedMigratorFactory migratorFactory,
-                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs) {
+                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
+                                 final FeatureFlagClient featureFlagClient) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -137,6 +140,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
     this.workerConfigs = workerConfigs;
+    this.featureFlagClient = featureFlagClient;
   }
 
   // Marking task queue as nullable because we changed activity signature; thus runs started before
@@ -322,7 +326,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   Optional.of(syncInput.getCatalog())),
               migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(featureFlags),
-          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+          new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
           FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
