@@ -318,6 +318,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
 
+      // Verify that the db user has required privilege to perform replication.
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
 
