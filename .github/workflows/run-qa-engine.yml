@@ -28,5 +28,7 @@ jobs:
         run: pip install --quiet -e ./tools/ci_connector_ops
       - name: Run QA Engine
         env:
-          QA_ENGINE_AIRBYTE_DATA_PROD_SA: '${{ secrets.QA_ENGINE_AIRBYTE_DATA_PROD_SA }}'
+          LOGLEVEL: INFO
+          QA_ENGINE_AIRBYTE_DATA_PROD_SA: "${{ secrets.QA_ENGINE_AIRBYTE_DATA_PROD_SA }}"
+          GITHUB_API_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
         run: run-qa-engine
