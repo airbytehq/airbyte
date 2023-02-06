@@ -170,19 +170,17 @@ const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClick
         meta: {
           thClassName: styles.thEnabled,
         },
-        cell: (props) => {
-          return (
-            <StatusCell
-              schemaChange={props.row.original.schemaChange}
-              connection={props.row.original.connection}
-              enabled={props.cell.getValue()}
-              id={props.row.original.connectionId}
-              isSyncing={props.row.original.isSyncing}
-              isManual={props.row.original.scheduleType === ConnectionScheduleType.manual}
-              hasBreakingChange={allowAutoDetectSchema && props.row.original.schemaChange === SchemaChange.breaking}
-            />
-          );
-        },
+        cell: (props) => (
+          <StatusCell
+            schemaChange={props.row.original.schemaChange}
+            connection={props.row.original.connection}
+            enabled={props.cell.getValue()}
+            id={props.row.original.connectionId}
+            isSyncing={props.row.original.isSyncing}
+            isManual={props.row.original.scheduleType === ConnectionScheduleType.manual}
+            hasBreakingChange={allowAutoDetectSchema && props.row.original.schemaChange === SchemaChange.breaking}
+          />
+        ),
       }),
       columnHelper.accessor("connectionId", {
         header: "",
