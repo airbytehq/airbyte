@@ -99,7 +99,7 @@ class FreshdeskStream(HttpStream, ABC):
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         )
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
         if self.forbidden_stream:
             return []
         return response.json() or []
@@ -155,6 +155,11 @@ class Agents(FreshdeskStream):
 class BusinessHours(FreshdeskStream):
     def path(self, **kwargs) -> str:
         return "business_hours"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[MutableMapping]:
+        for record in super().parse_response(response, **kwargs):
+            record["working_hours"] = record.pop("business_hours", None)
+            yield record
 
 
 class CannedResponseFolders(FreshdeskStream):
