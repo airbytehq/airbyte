@@ -16,3 +16,7 @@ export const waitForCreateConnectionRequest = () => cy.wait("@createConnection")
 
 export const interceptGetSourcesListRequest = () => cy.intercept("/api/v1/sources/list").as("getSourcesList");
 export const waitForGetSourcesListRequest = () => cy.wait("@getSourcesList");
+
+export const interceptGetSourceDefinitionsRequest = () =>
+  cy.intercept("/api/v1/source_definitions/list_for_workspace").as("getSourceDefinitions");
+export const waitForGetSourceDefinitionsRequest = () => cy.wait("@getSourceDefinitions");

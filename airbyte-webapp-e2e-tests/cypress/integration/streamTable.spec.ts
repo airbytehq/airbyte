@@ -21,9 +21,11 @@ import {
 import {
   interceptCreateConnectionRequest,
   interceptDiscoverSchemaRequest,
+  interceptGetSourceDefinitionsRequest,
   interceptGetSourcesListRequest,
   waitForCreateConnectionRequest,
   waitForDiscoverSchemaRequest,
+  waitForGetSourceDefinitionsRequest,
   waitForGetSourcesListRequest,
 } from "commands/interceptors";
 import { Connection, Destination, Source } from "commands/api/types";
@@ -65,8 +67,11 @@ describe.only("New stream table - new connection set up ", () => {
   it("should open 'New connection' page", () => {
     visitConnectionsListPage();
     interceptGetSourcesListRequest();
+    interceptGetSourceDefinitionsRequest();
+
     clickNewConnectionButton();
     waitForGetSourcesListRequest();
+    waitForGetSourceDefinitionsRequest();
   });
 
   it("should select existing Source from dropdown and click button", () => {
