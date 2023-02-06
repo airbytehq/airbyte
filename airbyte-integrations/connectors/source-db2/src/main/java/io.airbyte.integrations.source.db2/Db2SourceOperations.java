@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -92,7 +91,6 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
-
 
   @Override
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {

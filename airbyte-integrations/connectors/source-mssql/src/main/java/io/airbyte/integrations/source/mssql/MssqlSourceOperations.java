@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
-import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;

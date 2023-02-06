@@ -248,7 +248,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
               .addInsertValues("'1999-01-08'", "'2021-01-01'", "'2022/11/12'", "'1987.12.01'")
-              .addExpectedValues("1999-01-08", "2021-01-01","2022-11-12", "1987-12-01")
+              .addExpectedValues("1999-01-08", "2021-01-01", "2022-11-12", "1987-12-01")
               .build());
     }
 

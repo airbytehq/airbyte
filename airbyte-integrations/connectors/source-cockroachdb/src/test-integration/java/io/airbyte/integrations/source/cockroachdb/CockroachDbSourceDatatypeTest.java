@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Set;
-
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;

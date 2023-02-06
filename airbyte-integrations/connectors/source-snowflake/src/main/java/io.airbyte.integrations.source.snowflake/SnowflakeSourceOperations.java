@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.snowflake;
 
-import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
 import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
