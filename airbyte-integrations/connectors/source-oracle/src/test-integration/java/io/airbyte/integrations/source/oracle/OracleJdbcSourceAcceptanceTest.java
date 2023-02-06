@@ -127,8 +127,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // standard) is concerned as it has both a date and time component.
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
+        "2005-10-18T00:00:00.000000",
+        "2006-10-19T00:00:00.000000",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -224,8 +224,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
+        "2005-10-18T00:00:00.000000",
+        "2006-10-19T00:00:00.000000",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 

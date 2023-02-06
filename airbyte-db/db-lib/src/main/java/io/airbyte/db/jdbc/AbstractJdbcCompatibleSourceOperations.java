@@ -163,29 +163,30 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     } catch (final DateTimeParseException e) {
       // This is just for backward compatibility for connectors created on versions before PR
       // https://github.com/airbytehq/airbyte/pull/15504
-//      LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way, trying the old way", e);
+      // LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way,
+      // trying the old way", e);
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
-//    try {
-//      var valueWithoutMicros = value;
-//      final StringBuilder nanos = new StringBuilder();
-//      final var dotIndex = value.indexOf(".");
-//      if (dotIndex > 0) {
-//        final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
-//        nanos.append(micro);
-//        valueWithoutMicros = value.replace("." + micro, "");
-//      }
-//      while (nanos.length() != 9) {
-//        nanos.append("0");
-//      }
-//
-//      final var timestamp = Timestamp
-//          .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
-//      timestamp.setNanos(Integer.parseInt(nanos.toString()));
-//      preparedStatement.setTimestamp(parameterIndex, timestamp);
-//    } catch (final ParseException e) {
-//      throw new RuntimeException(e);
-//    }
+    // try {
+    // var valueWithoutMicros = value;
+    // final StringBuilder nanos = new StringBuilder();
+    // final var dotIndex = value.indexOf(".");
+    // if (dotIndex > 0) {
+    // final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
+    // nanos.append(micro);
+    // valueWithoutMicros = value.replace("." + micro, "");
+    // }
+    // while (nanos.length() != 9) {
+    // nanos.append("0");
+    // }
+    //
+    // final var timestamp = Timestamp
+    // .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
+    // timestamp.setNanos(Integer.parseInt(nanos.toString()));
+    // preparedStatement.setTimestamp(parameterIndex, timestamp);
+    // } catch (final ParseException e) {
+    // throw new RuntimeException(e);
+    // }
   }
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
