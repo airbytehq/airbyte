@@ -1,13 +1,13 @@
 # Local Deployment
 
 :::info
-These instructions have been tested on MacOS, Windows 10 and Ubuntu 20.04.
+These instructions have been tested on MacOS, Windows 10 and Ubuntu 22.04.
 
 :::
 
 ## Setup & launch Airbyte
 
-- Install `Docker Engine` and the `Docker Compose plugin` on your workstation \(see [plugin instructions](https://docs.docker.com/engine/install/)\). Alternatively you can install the `docker-compose` standalone version \(see [standalone instructions](https://docs.docker.com/compose/install/other/)\).
+- Install `Docker Engine` and the `Docker Compose plugin` on your workstation \(see [instructions](https://docs.docker.com/engine/install/)\).
 - After Docker is installed, you can immediately get started locally by running:
 
 ```bash
@@ -18,8 +18,7 @@ git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 
 # start Airbyte
-docker compose up  # via docker compose plugin
-docker-compose up  # via docker compose standalone version
+docker compose up
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
@@ -51,7 +50,7 @@ Install [Docker Desktop](https://docs.docker.com/desktop/windows/install/) from 
 Make sure to select the options:
 
 1. _Enable Hyper-V Windows Features_
-2. _Install required Windows components for WSL 2_\
+2. _Install required Windows components for WSL 2_
    when prompted. After installation, it will require to reboot your computer.
 
 **3. You're done!**
