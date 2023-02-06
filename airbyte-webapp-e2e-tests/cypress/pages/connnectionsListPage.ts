@@ -4,6 +4,7 @@ import { getWorkspaceId } from "commands/api/workspace";
 const statusCell = (connectionId: string) => `[data-testId='statusCell-${connectionId}']`;
 const changesStatusIcon = (type: string) => `[data-testId='changesStatusIcon-${type}']`;
 const manualSyncButton = "button[data-testId='manual-sync-button']";
+const newConnectionButton = "button[data-testId='new-connection-button']";
 
 export const visitConnectionsListPage = () => {
   cy.intercept("**/web_backend/connections/list").as("listConnections");
@@ -16,3 +17,7 @@ export const getSchemaChangeIcon = (connection: Connection, type: "breaking" | "
 
 export const getManualSyncButton = (connection: Connection) =>
   cy.get(`${statusCell(connection.connectionId)} ${manualSyncButton}`);
+
+export const clickNewConnectionButton = () => {
+  cy.get(newConnectionButton).click();
+};
