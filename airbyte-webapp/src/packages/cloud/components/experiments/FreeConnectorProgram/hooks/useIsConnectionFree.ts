@@ -6,7 +6,7 @@ import { useFreeConnectorProgram } from "./useFreeConnectorProgram";
 import { freeReleaseStages } from "../lib/model";
 
 /**
- * Detects whether a given conneciton is free according to the terms of the free connector program.
+ * Detects whether a given connection is free according to the terms of the free connector program.
  * A connection might be disabled in the UI due to a negative credit balance, but we still want to enable it
  * if the user is enrolled in the FCP and the connection is eligible.
  */
