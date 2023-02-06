@@ -135,6 +135,7 @@ specifiers:
   timezone-mock: ^1.3.4
   tmpl: ^1.0.5
   ts-node: ^10.8.1
+  ts-pattern: ^4.0.6
   typesafe-actions: ^5.1.0
   typescript: ^4.9.5
   unified: ^10.1.2
@@ -205,6 +206,7 @@ dependencies:
   sanitize-html: 2.8.1
   sass: 1.57.1
   styled-components: 5.3.6_sfoxds7t5ydpegc3knd667wn6m
+  ts-pattern: 4.1.3
   typesafe-actions: 5.1.0
   unified: 10.1.2
   unist-util-visit: 4.1.1
@@ -14760,6 +14762,10 @@ packages:
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
     dev: true
+
+  /ts-pattern/4.1.3:
+    resolution: {integrity: sha512-8beXMWTGEv1JfDjSxfNhe4uT5jKYdhmEUKzt4gZW9dmHlquq3b+IbEyA7vX9LjBfzHmvKnM4HiomAUCyaW2Pew==}
+    dev: false
 
   /tsconfck/2.0.2_typescript@4.9.5:
     resolution: {integrity: sha512-H3DWlwKpow+GpVLm/2cpmok72pwRr1YFROV3YzAmvzfGFiC1zEM/mc9b7+1XnrxuXtEbhJ7xUSIqjPFbedp7aQ==}
