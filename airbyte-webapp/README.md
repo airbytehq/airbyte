@@ -1,31 +1,26 @@
 # airbyte-webapp
 
-This module contains the Airbyte Webapp. It is a React app written in TypeScript. It runs in a Docker container. A very lightweight nginx server runs in that Docker container and serves the webapp.
+This module contains the Airbyte Webapp. It is a React app written in TypeScript.
+The webapp compiles to static HTML, JavaScript and CSS, which is served (in OSS) via
+a nginx in the airbyte-webapp docker image. This nginx also serves as the reverse proxy
+for accessing the server APIs in other images.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Building the webapp
 
-## Available Scripts
+You can build the webapp using Gradle in the root of the repository:
 
-In the project directory, you can run:
+```sh
+# Only compile and build the docker webapp image:
+SUB_BUILD=PLATFORM ./gradlew :airbyte-webapp:assemble
+# Build the webapp and additional artifacts and run tests:
+SUB_BUILD=PLATFORM ./gradlew :airbyte-webapp:build
+```
 
-### `npm start`
+## Developing the webapp
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+For an instruction how to develop on the webapp, please refer to our [documentation](https://docs.airbyte.com/contributing-to-airbyte/developing-locally/#develop-on-airbyte-webapp).
 
-### `npm test`
+### Entrypoints
 
-Launches the test runner in the interactive watch mode.<br />
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br />
-
-### VERSION=yourtag ./gradlew :airbyte-webapp:assemble
-
-Builds the app and Docker image and tags the image with `yourtag`.
-Note: needs to be run from the root directory of the Airbyte project.
-
-## Entrypoints
 * `airbyte-webapp/src/App.tsx` is the entrypoint into the OSS version of the webapp.
 * `airbyte-webapp/src/packages/cloud/App.tsx` is the entrypoint into the Cloud version of the webapp.
