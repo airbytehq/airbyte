@@ -119,12 +119,14 @@ def test_chunk_date_range_without_end_date():
     last_period_start = last_period_end.subtract(days=1)
     assert pendulum.period(last_period_start, last_period_end) == last
 
+
 @freeze_time("2022-01-24T18:23:33Z")
 def test_chunk_date_range_same_day():
     start_date = pendulum.parse("2022-01-24")
 
     chunks = list(chunk_date_range(start_date=start_date))
     assert len(chunks) == 0
+
 
 def test_chunk_date_range():
     start_date = pendulum.parse("2022-01-24")

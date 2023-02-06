@@ -168,14 +168,14 @@ class IncrementalAssembledStream(AssembledStream, ABC):
         }
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        ## Report logic
+        # Incremental logic
         # 1. If no stream state sync all data from default start date
         # 2. If stream state and date diff > 1 -> sync `config.history_days` days of data from today (get updates of existing objects)
         # 3. If stream state and date diff < 1 -> sync 1 day of data from today (get updates of today's objects, avoids syncing 30 days of data every time on the same day)
         state_ts = pendulum.from_timestamp(stream_state.get(self.cursor_field)) if stream_state else None
 
-        current_time = pendulum.now('UTC')
-        current_date = current_time.start_of('day')
+        current_time = pendulum.now("UTC")
+        current_date = current_time.start_of("day")
 
         start_ts = self._start_ts
 
@@ -205,12 +205,12 @@ class IncrementalAssembledStream(AssembledStream, ABC):
                 "_ab_extracted_at": extract_dt,
             }
 
-        ## Note 1
+        # Note 1
         # We use the end_time from the stream_slice here to set as the new cursor value. We're syncing
         # within an interval and use that intervals end_time as a starting point for the next.
         # BUT we're using start_time as cursor field for this stream so that incremental acceptance tests pass
         # and record[cursor_field] <= state_value
-        ## Note 2
+        # Note 2
         # When retrieving events within an given interval (fe.: 2022-01-01T00:00, 2022-01-02T18:00)
         # events that have a start_time within that interval are returned, they can have an end time > interval end_time
         new_cursor = stream_slice.get("end_time")
@@ -244,7 +244,6 @@ class ReportRequestStream(IncrementalAssembledStream, ABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         yield from super().stream_slices(**kwargs)
         self._cursor_value = pendulum.now("UTC").int_timestamp
-
 
     def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
         stream_slice = stream_slice or {}
@@ -363,7 +362,6 @@ class ReportStream(HttpSubStream, AssembledStream):
 
         # Rate limit 5 request per second
         time.sleep(0.2)
-
 
 
 class AdherenceReport(ReportStream):
