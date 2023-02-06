@@ -28,18 +28,6 @@
   align-items: center;
 }
 
-.listErrorDisplay {
-  padding: variables.$spacing-lg;
-  display: flex;
-  flex-direction: column;
-  gap: variables.$spacing-md;
-  background-color: colors.$blue-50;
-  border-radius: variables.$border-radius-sm;
-
-  // leave room for config button
-  margin-top: 50px;
-}
-
 .loadingSpinner {
   height: 100%;
   width: 100%;

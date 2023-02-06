@@ -1,0 +1,13 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation 'org.apache.commons:commons-compress:1.20'
+    implementation 'com.github.docker-java:docker-java:3.2.8'
+    implementation 'com.github.docker-java:docker-java-transport-httpclient5:3.2.8'
+
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

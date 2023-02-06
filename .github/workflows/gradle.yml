@@ -528,16 +528,6 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
-          sudo rm -f /var/lib/dpkg/lock
-          sudo rm -f /var/lib/dpkg/lock-frontend
-
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -655,16 +645,6 @@ jobs:
         with:
           node-version: "lts/*"
 
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
-          sudo rm -f /var/lib/dpkg/lock
-          sudo rm -f /var/lib/dpkg/lock-frontend
-
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -708,6 +688,7 @@ jobs:
             ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-docker/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
@@ -1126,7 +1107,7 @@ jobs:
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: [ start-helm-acceptance-test-runner ] # required to start the main job when the runner is ready
+    needs: [start-helm-acceptance-test-runner] # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     # this is the label of the runner
     environment: more-secrets
