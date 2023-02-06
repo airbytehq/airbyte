@@ -32,6 +32,7 @@ export const enum Action {
 
   // Connector Builder Actions
   CONNECTOR_BUILDER_START = "ConnectorBuilderStart",
+  CONNECTOR_BUILDER_EDIT = "ConnectorBuilderEdit",
   API_URL_CREATE = "ApiUrlCreated",
   AUTHENTICATION_METHOD_SELECT = "AuthenticationMethodSelect",
   GLOBAL_CONFIGURATION_SELECT = "GlobalConfigurationSelect",
@@ -53,6 +54,10 @@ export const enum Action {
   DISCARD_YAML_CHANGES = "DiscardYamlChanges",
   OVERWRITE_SCHEMA = "OverwriteSchema",
   MERGE_SCHEMA = "MergeSchema",
+  UI_INCOMPATIBLE_YAML_IMPORTED = "UiIncompatibleYamlImported",
+  UI_COMPATIBLE_YAML_IMPORTED = "UiCompatibleYamlImported",
+  INVALID_YAML_UPLOADED = "InvalidYamlUploaded",
+  START_FROM_SCRATCH = "StartFromScratch",
 }
 
 export type EventParams = Record<string, unknown>;

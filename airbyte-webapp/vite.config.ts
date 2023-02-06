@@ -8,7 +8,7 @@ import checker from "vite-plugin-checker";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
-import { docMiddleware, patchReactVirtualized } from "./packages/vite-plugins";
+import { docMiddleware } from "./packages/vite-plugins";
 
 export default defineConfig(({ mode }) => {
   // Load variables from all .env files
@@ -51,7 +51,6 @@ export default defineConfig(({ mode }) => {
         },
         typescript: true,
       }),
-      patchReactVirtualized(),
       docMiddleware(),
     ],
     // Use `REACT_APP_` as a prefix for environment variables that should be accessible from within FE code.
