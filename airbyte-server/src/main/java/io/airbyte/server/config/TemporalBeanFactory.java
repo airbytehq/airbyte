@@ -60,11 +60,6 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
-  public RouterService routerService(final ConfigRepository configRepository, final TaskQueueMapper taskQueueMapper) {
-    return new RouterService(configRepository, taskQueueMapper);
-  }
-
-  @Singleton
   public TaskQueueMapper taskQueueMapper() {
     return new DefaultTaskQueueMapper();
   }
