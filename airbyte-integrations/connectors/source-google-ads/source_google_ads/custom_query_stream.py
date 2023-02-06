@@ -10,11 +10,12 @@ from .streams import IncrementalGoogleAdsStream
 
 
 class CustomQuery(IncrementalGoogleAdsStream):
+    use_segments_date = True
     def __init__(self, custom_query_config, **kwargs):
         self.custom_query_config = custom_query_config
         self.user_defined_query = custom_query_config["query"]
         if "use_segments_date" in self.custom_query_config and self.custom_query_config["use_segments_date"] == False:
-            self.cursor_field = None
+            self.use_segments_date = False
         super().__init__(**kwargs)
 
     @property
@@ -62,7 +63,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         }
         fields = CustomQuery.get_query_fields(self.user_defined_query)
         if "use_segments_date" in self.custom_query_config and self.custom_query_config["use_segments_date"] == False:
-            self.cursor_field = None
+            self.use_segments_date = False
         else:
             fields.append(self.cursor_field)
         google_schema = self.google_ads_client.get_fields_metadata(fields)

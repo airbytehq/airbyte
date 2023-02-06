@@ -190,7 +190,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
             end_date = self._end_date
             logger.info(f"Generating slices for customer {customer.id}. Start date is {start_date}, end date is {end_date}")
 
-            if self.cursor_field is not None:
+            if self.use_segments_date :
                 for chunk in chunk_date_range(
                         start_date=start_date,
                         end_date=end_date,
@@ -237,9 +237,9 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                         self.incremental_sieve_logger.info(f"Updated state for customer {customer_id}. Full state is {self.state}.")
                         yield record
                         continue
-                    if self.cursor_field is not None:
+                    if self.use_segments_date :
                         self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
-                    self.incremental_sieve_logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
+                        self.incremental_sieve_logger.info(f"Initialized state for customer {customer_id}. Full state is {self.state}.")
                     yield record
                     continue
             except GoogleAdsException as exception:
