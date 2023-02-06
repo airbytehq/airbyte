@@ -13,7 +13,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

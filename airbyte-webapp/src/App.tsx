@@ -14,7 +14,7 @@ import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { defaultOssFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
-import NotificationService from "hooks/services/Notification";
+import { NotificationService } from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
 import { StoreProvider } from "views/common/StoreProvider";
 

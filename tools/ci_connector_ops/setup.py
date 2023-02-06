@@ -35,9 +35,9 @@ setup(
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={
         "console_scripts": [
-            "check-test-strictness-level = ci_connector_ops.sat_config_checks:check_test_strictness_level",
-            "write-review-requirements-file = ci_connector_ops.sat_config_checks:write_review_requirements_file",
-            "print-mandatory-reviewers = ci_connector_ops.sat_config_checks:print_mandatory_reviewers",
+            "check-test-strictness-level = ci_connector_ops.acceptance_test_config_checks:check_test_strictness_level",
+            "write-review-requirements-file = ci_connector_ops.acceptance_test_config_checks:write_review_requirements_file",
+            "print-mandatory-reviewers = ci_connector_ops.acceptance_test_config_checks:print_mandatory_reviewers",
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks"
