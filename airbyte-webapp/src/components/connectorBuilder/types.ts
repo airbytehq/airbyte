@@ -636,7 +636,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
 
   const spec: Spec = {
     connection_specification: specSchema,
-    documentation_url: "https://docsurl.com",
+    documentation_url: "https://example.org",
     type: "Spec",
   };
 
