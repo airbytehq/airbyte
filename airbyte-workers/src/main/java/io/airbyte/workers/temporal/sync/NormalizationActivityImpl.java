@@ -118,7 +118,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId)) {
+      // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're trying to use a newer version of normalization
+      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, workspaceId) && "0.2.25".equals(getNormalizationImageTag(destinationLauncherConfig))) {
         replaceNormalizationImageTag(destinationLauncherConfig, STRICT_COMPARISON_IMAGE_TAG);
       }
 
@@ -179,14 +180,17 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   @VisibleForTesting
   static boolean normalizationSupportsV1DataTypes(final IntegrationLauncherConfig destinationLauncherConfig) {
     try {
-      final String[] normalizationImage = destinationLauncherConfig.getNormalizationDockerImage().split(":", 2);
-      final Version normalizationVersion = new Version(normalizationImage[1]);
+      final Version normalizationVersion = new Version(getNormalizationImageTag(destinationLauncherConfig));
       return normalizationVersion.greaterThanOrEqualTo(MINIMAL_VERSION_FOR_DATATYPES_V1);
     } catch (final IllegalArgumentException e) {
       // IllegalArgument here means that the version isn't in a semver format.
       // The current behavior is to assume it supports v0 data types for dev purposes.
       return false;
     }
+  }
+
+  private static String getNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig) {
+    return destinationLauncherConfig.getNormalizationDockerImage().split(":", 2)[1];
   }
 
   private static void replaceNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig, final String newTag) {
