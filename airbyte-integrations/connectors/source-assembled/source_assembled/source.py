@@ -54,6 +54,9 @@ class AssembledStream(HttpStream, ABC):
         for record in data:
             yield record
 
+        # Rate limit 5 requests per second
+        time.sleep(0.2)
+
 
 class ActivityTypes(AssembledStream):
     data_field = "activity_types"
@@ -164,13 +167,6 @@ class IncrementalAssembledStream(AssembledStream, ABC):
             **stream_slice,
         }
 
-    # def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-    #     stream_state = stream_state or {}
-    #     start_ts = pendulum.from_timestamp(stream_state.get(self.cursor_field, self._start_ts))
-
-    #     for period in chunk_date_range(start_date=start_ts):
-    #         yield {"start_time": period.start.int_timestamp, "end_time": period.end.int_timestamp}
-
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         ## Report logic
         # 1. If no stream state sync all data from default start date
@@ -186,9 +182,6 @@ class IncrementalAssembledStream(AssembledStream, ABC):
         if state_ts and sync_mode == SyncMode.incremental:
             days_diff = current_date.diff(state_ts).in_days()
             days = self._history_days if days_diff >= 1 else 1
-
-            logger.info(f"Syncing {days} days of data from {state_ts} to {current_time} (days_diff: {days_diff})")
-
             start_ts = current_date - pendulum.duration(days=days)
 
         # for channel in self._channels:
@@ -199,17 +192,6 @@ class IncrementalAssembledStream(AssembledStream, ABC):
                     yield {**period_unix, "channel": channel}
             else:
                 yield period_unix
-
-    # def _parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-    #     for record in super().parse_response(response, **kwargs):
-    #         yield record
-
-    # def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-    #     for record in self._parse_response(response, **kwargs):
-    #         yield record
-
-    #         new_cursor = record.get(self.cursor_field)
-    #         self._cursor_value = max(self._cursor_value or self._start_ts, new_cursor)
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         kwargs["stream_slice"] = stream_slice
@@ -259,39 +241,6 @@ class ReportRequestStream(IncrementalAssembledStream, ABC):
     def name(self) -> str:
         return self.report_name
 
-    # @property
-    # def state(self) -> str:
-    #     return {self.cursor_field: self._cursor_value}
-
-    # @state.setter
-    # def state(self, value: Mapping[str, Any]):
-    #     self._cursor_value = value[self.cursor_field]
-
-
-    # def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-    #     ## Report logic
-    #     # 1. If no stream state sync all data from default start date every sync
-    #     # 2. If stream state and date diff > 1 -> sync `config.report_days` days of data from today (helps keep metrics in reports up to date as they can retroactively change)
-    #     # 3. If stream state and date diff < 1 -> sync 1 day of data from today (updates todays ongoing metrics without loading 30 days of data every sync)
-    #     stream_state = stream_state or {}
-    #     last_sync = stream_state.get(self.cursor_field)
-
-    #     current_time = pendulum.now('UTC')
-    #     current_date = current_time.start_of('day')
-
-    #     start_ts = self._start_ts
-
-    #     if last_sync and sync_mode == SyncMode.incremental:
-    #         days_diff = current_date.diff(pendulum.from_timestamp(last_sync)).in_days()
-    #         days = self._report_days if days_diff >= 1 else 1
-    #         start_ts = current_date - pendulum.duration(days=days)
-
-    #     for channel in self._channels:
-    #         for period in chunk_date_range(start_date=start_ts, end_date=current_time):
-    #             yield {"channel": channel, "start_time": period.start.int_timestamp, "end_time": period.end.int_timestamp}
-
-    #     self._cursor_value = current_time.int_timestamp
-
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         yield from super().stream_slices(**kwargs)
         self._cursor_value = pendulum.now("UTC").int_timestamp
@@ -299,15 +248,10 @@ class ReportRequestStream(IncrementalAssembledStream, ABC):
 
     def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
         stream_slice = stream_slice or {}
-        body = {
+        return {
             "interval": "30m",
             **stream_slice,
         }
-
-        # TODO: remove this
-        logger.info(f"Requesting report {self.report_name} with body {body}")
-
-        return body
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # - One request per second to avoid rate limiting
@@ -373,7 +317,6 @@ class ReportStream(HttpSubStream, AssembledStream):
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         parent_stream_slices = self.parent.stream_slices(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state)
-
         self._cursor_value = pendulum.now("UTC").int_timestamp
 
         # iterate over all parent stream_slices
@@ -406,26 +349,10 @@ class ReportStream(HttpSubStream, AssembledStream):
         extracted_dt = pendulum.now("UTC").int_timestamp
 
         for record in data:
-            attributes = record.get("attributes", {})
-            start_time = attributes.get("start_time")
-            end_time = attributes.get("end_time")
-
-            if not attributes:
-                logger.error(f"Invalid attributes: {attributes} for record: {record}, {stream_slice}")
-
-            if not start_time or isinstance(start_time, str):
-                logger.error(f"Invalid start_time: {start_time} for record: {record}, {stream_slice}")
-
-            if not end_time or isinstance(end_time, str):
-                logger.error(f"Invalid end_time: {end_time} for record: {record}, {stream_slice}")
-
-            record = {
+            attributes = record.pop("attributes", {})
+            yield {
                 **record,
-                "attributes": {
-                    **attributes,
-                    "start_time": int(start_time) if start_time else None,
-                    "end_time": int(end_time) if end_time else None,
-                },
+                **attributes,
                 "report": self.report_name,
                 "report_id": parent_slice.get("report_id"),
                 "channel": parent_slice.get("channel"),
@@ -434,8 +361,9 @@ class ReportStream(HttpSubStream, AssembledStream):
                 "_ab_extracted_at": extracted_dt,
             }
 
-            logger.info(record)
-            yield record
+        # Rate limit 5 request per second
+        time.sleep(0.2)
+
 
 
 class AdherenceReport(ReportStream):

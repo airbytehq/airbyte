@@ -3,39 +3,34 @@
   "type": "object",
   "properties": {
     "name": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "value": {
       "type": ["number", "null"]
     },
-    "report": {
+    "agent_id": {
+      "type": "string"
+    },
+    "start_time": {
+      "type": ["integer", "null"]
+    },
+    "end_time": {
+      "type": ["integer", "null"]
+    },
+    "type": {
       "type": ["string", "null"]
+    },
+    "report": {
+      "type": "string"
     },
     "report_id": {
       "type": "string"
     },
     "channel": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "created_at": {
-      "type": ["integer", "null"]
-    },
-    "attributes": {
-      "type": ["object", "null"],
-      "properties": {
-        "agent_id": {
-          "type": ["string", "null"]
-        },
-        "start_time": {
-          "type": ["integer", "null"]
-        },
-        "end_time": {
-          "type": ["integer", "null"]
-        },
-        "type": {
-          "type": ["string", "null"]
-        }
-      }
+      "type": "integer"
     },
     "_ab_last_synced_at": {
       "type": "integer"
