@@ -7,11 +7,11 @@ package io.airbyte.integrations.source.relationaldb;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -88,7 +88,14 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
 
   private String getCursorCandidate(final AirbyteMessage message) {
     final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
-    return (cursorCandidate != null ? cursorCandidate.replaceAll("\u0000", "") : null);
+    return (cursorCandidate != null ? replaceNull(cursorCandidate) : null);
+  }
+
+  private String replaceNull(final String cursorCandidate) {
+    if (cursorCandidate.contains("\u0000")) {
+      return cursorCandidate.replaceAll("\u0000", "");
+    }
+    return cursorCandidate;
   }
 
   /**
@@ -149,7 +156,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       } catch (final Exception e) {
         emitIntermediateState = true;
         hasCaughtException = true;
-        LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
+        LOGGER.error("Message iterator failed to read next record.", e);
         optionalIntermediateMessage = getIntermediateMessage();
         return optionalIntermediateMessage.orElse(endOfData());
       }

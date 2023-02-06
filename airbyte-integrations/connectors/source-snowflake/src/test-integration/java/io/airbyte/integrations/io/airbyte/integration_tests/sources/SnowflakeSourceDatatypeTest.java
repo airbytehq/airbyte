@@ -206,7 +206,6 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .addExpectedValues("9", "990", "9990", "999000", "999000000", "999000000000")
             .build());
 
-
     // Data Types for Text Strings
     addDataTypeTestData(
         TestDataHolder.builder()

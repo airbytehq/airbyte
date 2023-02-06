@@ -9,7 +9,7 @@ import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDe
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageFormat;
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
 import io.airbyte.integrations.destination.azure_blob_storage.jsonl.AzureBlobStorageJsonlWriter;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

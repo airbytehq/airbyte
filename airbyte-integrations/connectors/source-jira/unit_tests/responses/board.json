@@ -1,0 +1,55 @@
+{
+  "values": [
+    {
+      "id": 1,
+      "self": "https://test/rest/agile/1.0/board/1",
+      "name": "IT board",
+      "type": "scrum",
+      "location": {
+        "projectId": 10000,
+        "displayName": "integration-tests (IT)",
+        "projectName": "integration-tests",
+        "projectKey": "Project1",
+        "projectTypeKey": "software",
+        "avatarURI": "test avatar",
+        "name": "integration-tests (IT)"
+      },
+      "projectId": "10000",
+      "projectKey": "Project1"
+    },
+    {
+      "id": 2,
+      "self": "https://test/rest/agile/1.0/board/17",
+      "name": "Project1 board",
+      "type": "scrum",
+      "location": {
+        "projectId": 10016,
+        "displayName": "Project1(Project1)",
+        "projectName": "Test project 13",
+        "projectKey": "Project1",
+        "projectTypeKey": "software",
+        "avatarURI": "test avatar",
+        "name": "Project1(Project1)"
+      },
+      "projectId": "10016",
+      "projectKey": "Project1"
+    },
+    {
+      "id": 3,
+      "self": "https://test/rest/agile/1.0/board/17",
+      "name": "Project1 board",
+      "type": "scrum",
+      "location": {
+        "projectId": 10016,
+        "displayName": "Project1(Project1)",
+        "projectName": "Test project 13",
+        "projectKey": "Project1",
+        "projectTypeKey": "software",
+        "avatarURI": "test avatar",
+        "name": "Project1(Project1)"
+      },
+      "projectId": "10016",
+      "projectKey": "Project1"
+    }
+  ]
+}

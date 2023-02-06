@@ -1,0 +1,13 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 4
+      },
+      "stream_descriptor": {
+        "name": "id_and_name"
+      }
+    }
+  }
+]

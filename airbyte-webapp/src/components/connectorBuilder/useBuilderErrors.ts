@@ -3,18 +3,20 @@ import { FormikErrors, useFormikContext } from "formik";
 import intersection from "lodash/intersection";
 import { useCallback } from "react";
 
-import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
+  const { setSelectedView } = useConnectorBuilderFormState();
 
   const invalidViews = useCallback(
     (ignoreUntouched: boolean, limitToViews?: BuilderView[], inputErrors?: FormikErrors<BuilderFormValues>) => {
       const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
-      const errorKeys = Object.keys(errorsToCheck);
+      const errorKeys = Object.keys(errorsToCheck).filter((errorKey) =>
+        Boolean(errorsToCheck[errorKey as keyof BuilderFormValues])
+      );
 
       const invalidViews: BuilderView[] = [];
 
@@ -33,7 +35,9 @@ export const useBuilderErrors = () => {
       }
 
       if (errorKeys.includes("streams")) {
-        const errorStreamNums = Object.keys(errorsToCheck.streams ?? {});
+        const errorStreamNums = Object.keys(errorsToCheck.streams ?? {}).filter((errorKey) =>
+          Boolean(errorsToCheck.streams?.[Number(errorKey)])
+        );
 
         if (ignoreUntouched) {
           if (errorsToCheck.streams && touched.streams) {
@@ -87,14 +91,13 @@ export const useBuilderErrors = () => {
             setSelectedView("global");
           } else {
             setSelectedView(invalidBuilderViews[0]);
-            setTestStreamIndex(invalidBuilderViews[0] as number);
           }
         } else {
           callback();
         }
       });
     },
-    [invalidViews, setFieldTouched, setSelectedView, setTestStreamIndex, validateForm]
+    [invalidViews, setFieldTouched, setSelectedView, validateForm]
   );
 
   return { hasErrors, validateAndTouch };

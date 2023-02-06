@@ -3,7 +3,6 @@
 #
 
 import json
-import logging
 from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -51,8 +50,6 @@ from source_github.utils import read_full_refresh
 from .utils import ProjectsResponsesAPI, read_incremental
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
-
-logger = logging.getLogger("source-github")
 
 
 @responses.activate
@@ -187,11 +184,29 @@ def test_stream_teams_404():
         json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/teams#list-teams"},
     )
 
-    stream_is_available, reason = stream.check_availability(logger)
-    assert not stream_is_available
-    assert "`Teams` stream isn't available for organization `org_name`." in reason
+    assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/teams?per_page=100"
+
+
+@responses.activate
+@patch("time.sleep")
+def test_stream_teams_502(sleep_mock):
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    url = "https://api.github.com/orgs/org_name/teams"
+    responses.add(
+        method="GET",
+        url=url,
+        status=requests.codes.BAD_GATEWAY,
+        json={"message": "Server Error"},
+    )
+
+    assert list(read_full_refresh(stream)) == []
+    assert len(responses.calls) == 6
+    # Check whether url is the same for all response.calls
+    assert set(call.request.url for call in responses.calls).symmetric_difference({f"{url}?per_page=100"}) == set()
 
 
 @responses.activate
@@ -242,9 +257,7 @@ def test_stream_repositories_404():
         json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/repos#list-organization-repositories"},
     )
 
-    stream_is_available, reason = stream.check_availability(logger)
-    assert not stream_is_available
-    assert "`Repositories` stream isn't available for organization `org_name`." in reason
+    assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
 
@@ -282,9 +295,7 @@ def test_stream_projects_disabled():
         json={"message": "Projects are disabled for this repository", "documentation_url": "https://docs.github.com/v3/projects"},
     )
 
-    stream_is_available, reason = stream.check_availability(logger)
-    assert not stream_is_available
-    assert "`Projects` stream isn't available for repository `test_repo`." in reason
+    assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
 

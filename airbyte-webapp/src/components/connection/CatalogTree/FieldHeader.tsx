@@ -11,13 +11,13 @@ const FieldHeaderInner: React.FC = () => {
   return (
     <>
       {isColumnSelectionEnabled && (
-        <HeaderCell lighter flex={0}>
+        <HeaderCell light flex={0}>
           <SyncHeaderContainer>
             <FormattedMessage id="form.field.sync" />
           </SyncHeaderContainer>
         </HeaderCell>
       )}
-      <HeaderCell lighter flex={1.5}>
+      <HeaderCell light flex={1.5}>
         {!isColumnSelectionEnabled && (
           <NameContainer>
             <FormattedMessage id="form.field.name" />
@@ -25,22 +25,20 @@ const FieldHeaderInner: React.FC = () => {
         )}
         {isColumnSelectionEnabled && <FormattedMessage id="form.field.name" />}
       </HeaderCell>
-      <HeaderCell lighter>
+      <HeaderCell light>
         <FormattedMessage id="form.field.dataType" />
       </HeaderCell>
-      <HeaderCell lighter>
+      <HeaderCell light>
         <FormattedMessage id="form.field.cursorField" />
       </HeaderCell>
-      <HeaderCell lighter>
+      <HeaderCell light>
         <FormattedMessage id="form.field.primaryKey" />
       </HeaderCell>
-      <HeaderCell lighter flex={1.5}>
+      <HeaderCell light flex={1.5}>
         <FormattedMessage id="form.field.destinationName" />
       </HeaderCell>
     </>
   );
 };
 
-const FieldHeader = memo(FieldHeaderInner);
-
-export { FieldHeader };
+export const FieldHeader = memo(FieldHeaderInner);

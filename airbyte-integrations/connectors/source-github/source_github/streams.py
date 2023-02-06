@@ -13,14 +13,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from requests.exceptions import HTTPError
 
-from .availability_strategies import (
-    OrganizationBasedAvailabilityStrategy,
-    ProjectsAvailabilityStrategy,
-    RepositoryBasedAvailabilityStrategy,
-    WorkflowRunsAvailabilityStrategy,
-)
-from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
+from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -47,6 +42,10 @@ class GithubStream(HttpStream, ABC):
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
         self._session.mount("http://", adapter)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
@@ -130,6 +129,62 @@ class GithubStream(HttpStream, ABC):
             return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
         return super().get_error_display_message(exception)
 
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        # get out the stream_slice parts for later use.
+        organisation = stream_slice.get("organization", "")
+        repository = stream_slice.get("repository", "")
+        # Reading records while handling the errors
+        try:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        except HTTPError as e:
+            # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
+            # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
+            # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
+            if e.response.status_code == requests.codes.NOT_FOUND:
+                # A lot of streams are not available for repositories owned by a user instead of an organization.
+                if isinstance(self, Organizations):
+                    error_msg = (
+                        f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+                    )
+                else:
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.FORBIDDEN:
+                error_msg = str(e.response.json().get("message"))
+                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
+                if isinstance(self, Repositories):
+                    raise e
+                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
+                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
+                # For all `Organisation` based streams
+                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+                    )
+                # For all other `Repository` base streams
+                else:
+                    error_msg = (
+                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+                    )
+            elif e.response.status_code == requests.codes.GONE and isinstance(self, Projects):
+                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.CONFLICT:
+                error_msg = (
+                    f"Syncing `{self.name}` stream isn't available for repository "
+                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
+                )
+            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
+                error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.BAD_GATEWAY:
+                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
+            else:
+                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
+                self.logger.error(f"Undefined error while reading records: {e.response.text}")
+                raise e
+
+            self.logger.warn(error_msg)
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -162,10 +217,6 @@ class GithubStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
         return record
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return RepositoryBasedAvailabilityStrategy()
 
 
 class SemiIncrementalMixin:
@@ -339,10 +390,6 @@ class Organizations(GithubStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
         return record
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return OrganizationBasedAvailabilityStrategy()
 
 
 class Repositories(SemiIncrementalMixin, Organizations):
@@ -551,10 +598,6 @@ class Projects(SemiIncrementalMixin, GithubStream):
         headers = {"Accept": "application/vnd.github.inertia-preview+json"}
 
         return {**base_headers, **headers}
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return ProjectsAvailabilityStrategy()
 
 
 class IssueEvents(SemiIncrementalMixin, GithubStream):
@@ -964,14 +1007,83 @@ class IssueCommentReactions(ReactionStream):
     parent_entity = Comments
 
 
-class IssueReactions(ReactionStream):
+class IssueReactions(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
+    https://docs.github.com/en/graphql/reference/objects#issue
+    https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
-    parent_entity = Issues
-    parent_key = "number"
-    copy_parent_key = "issue_number"
+    http_method = "POST"
+    cursor_field = "created_at"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_cursor = {}
+        self.reactions_cursors = {}
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "graphql"
+
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
+    def _get_reactions_from_issue(self, issue, repository_name):
+        for reaction in issue["reactions"]["nodes"]:
+            reaction["repository"] = repository_name
+            reaction["issue_number"] = issue["number"]
+            reaction["user"]["type"] = "User"
+            yield reaction
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_name(repository)
+            if "issues" in repository:
+                for issue in repository["issues"]["nodes"]:
+                    yield from self._get_reactions_from_issue(issue, repository_name)
+            elif "issue" in repository:
+                yield from self._get_reactions_from_issue(repository["issue"], repository_name)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_name(repository)
+            reactions_cursors = self.reactions_cursors.setdefault(repository_name, {})
+            if "issues" in repository:
+                if repository["issues"]["pageInfo"]["hasNextPage"]:
+                    self.issues_cursor[repository_name] = repository["issues"]["pageInfo"]["endCursor"]
+                for issue in repository["issues"]["nodes"]:
+                    if issue["reactions"]["pageInfo"]["hasNextPage"]:
+                        issue_number = issue["number"]
+                        reactions_cursors[issue_number] = issue["reactions"]["pageInfo"]["endCursor"]
+            elif "issue" in repository:
+                if repository["issue"]["reactions"]["pageInfo"]["hasNextPage"]:
+                    issue_number = repository["issue"]["number"]
+                    reactions_cursors[issue_number] = repository["issue"]["reactions"]["pageInfo"]["endCursor"]
+            if reactions_cursors:
+                number, after = reactions_cursors.popitem()
+                return {"after": after, "number": number}
+            if repository_name in self.issues_cursor:
+                return {"after": self.issues_cursor.pop(repository_name)}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if not next_page_token:
+            next_page_token = {"after": None}
+        query = get_query_issue_reactions(owner=organization, name=name, first=self.page_size, **next_page_token)
+        return {"query": query}
 
 
 class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
@@ -1320,10 +1432,6 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 yield record
             if created_at < break_point:
                 break
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return WorkflowRunsAvailabilityStrategy()
 
 
 class WorkflowJobs(SemiIncrementalMixin, GithubStream):

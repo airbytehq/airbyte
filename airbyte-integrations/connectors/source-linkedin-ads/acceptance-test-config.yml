@@ -1,25 +1,40 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/source-acceptance-tests)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/connector-acceptance-tests)
 # for more information about how to configure these tests
 connector_image: airbyte/source-linkedin-ads:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_linkedin_ads/spec.json"
+    tests:
+      - spec_path: "source_linkedin_ads/spec.json"
   connection:
-    - config_path: "secrets/config_oauth.json"
-      status: "succeed"
-      timeout_seconds: 60
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config_oauth.json"
+        status: "succeed"
+        timeout_seconds: 60
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config_oauth.json"
-      timeout_seconds: 60
+    tests:
+      - config_path: "secrets/config_oauth.json"
+        timeout_seconds: 60
   basic_read:
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config_oauth.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
   incremental:
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
+    tests:
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+          missing_streams:
+            - name: accounts
+              bypass_reason: "This stream is Full-Refresh only"
+        timeout_seconds: 3600
   full_refresh:
-    - config_path: "secrets/config_oauth.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config_oauth.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
+

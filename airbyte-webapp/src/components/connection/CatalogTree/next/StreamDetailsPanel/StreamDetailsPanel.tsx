@@ -14,19 +14,25 @@ interface StreamDetailsPanelProps extends StreamFieldsTableProps {
   onClose: () => void;
   onSelectedChange: () => void;
   stream?: AirbyteStream;
+  handleFieldToggle: (fieldPath: string[], isSelected: boolean) => void;
+  toggleAllFieldsSelected: () => void;
 }
 
 export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
+  stream,
   config,
   disabled,
+  handleFieldToggle,
   onPkSelect,
   onCursorSelect,
   onClose,
   onSelectedChange,
   shouldDefinePk,
   shouldDefineCursor,
-  stream,
+  isCursorDefinitionSupported,
+  isPKDefinitionSupported,
   syncSchemaFields,
+  toggleAllFieldsSelected,
 }) => {
   return (
     <Dialog className={styles.dialog} open onClose={onClose}>
@@ -43,10 +49,14 @@ export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
           <StreamFieldsTable
             config={config}
             syncSchemaFields={syncSchemaFields}
+            handleFieldToggle={handleFieldToggle}
             onCursorSelect={onCursorSelect}
             onPkSelect={onPkSelect}
             shouldDefinePk={shouldDefinePk}
             shouldDefineCursor={shouldDefineCursor}
+            isCursorDefinitionSupported={isCursorDefinitionSupported}
+            isPKDefinitionSupported={isPKDefinitionSupported}
+            toggleAllFieldsSelected={toggleAllFieldsSelected}
           />
         </div>
       </Dialog.Panel>

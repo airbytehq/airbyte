@@ -11,6 +11,7 @@
 import isEmpty from "lodash/isEmpty";
 import { useMutation, useQuery } from "react-query";
 
+import { MissingConfigError, useConfig } from "config";
 import {
   OperatorType,
   WebBackendConnectionRead,
@@ -28,8 +29,6 @@ import {
 } from "packages/cloud/lib/domain/dbtCloud/api";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useUpdateWorkspace } from "services/workspaces/WorkspacesService";
-
-import { useConfig } from "./config";
 
 export interface DbtCloudJob {
   accountId: number;
@@ -135,6 +134,10 @@ export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
 
 export const useAvailableDbtJobs = () => {
   const { cloudApiUrl } = useConfig();
+  if (!cloudApiUrl) {
+    throw new MissingConfigError("Missing required configuration cloudApiUrl");
+  }
+
   const config = { apiUrl: cloudApiUrl };
   const middlewares = useDefaultRequestMiddlewares();
   const requestOptions = { config, middlewares };

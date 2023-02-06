@@ -3,7 +3,7 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
-    id 'airbyte-source-acceptance-test'
+    id 'airbyte-connector-acceptance-test'
 }
 
 application {
@@ -30,7 +30,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
-    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
+    testImplementation libs.junit.jupiter.system.stubs
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

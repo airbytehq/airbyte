@@ -6,7 +6,8 @@ Airbyte allows scaling sync workloads horizontally using Kubernetes. The core co
 
 ## Quickstart
 
-If you don't want to configure your own Kubernetes cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a Kubernetes cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.<br/>
+If you don't want to configure your own Kubernetes cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a Kubernetes cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.
+
 Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to provision your Kubernetes cluster on AWS. Follow [this guide](on-restack.md) to get started.
 
 ## Getting Started
@@ -34,33 +35,39 @@ If you do not already have the CLI tool `kubectl` installed, please follow [thes
 
 Configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`.
 
-* For GKE
-  * Configure `gcloud` with `gcloud auth login`.
-  * On the Google Cloud Console, the cluster page will have a `Connect` button, which will give a command to run locally that looks like
+For GKE:
+
+1. Configure `gcloud` with `gcloud auth login`.
+2. On the Google Cloud Console, the cluster page will have a `Connect` button, which will give a command to run locally that looks like
 
     `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
 
-  * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl config use-context $GKE_CONTEXT` to access the cluster from `kubectl`.
-* For EKS
-  * [Configure your AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
-  * Install [eksctl](https://eksctl.io/introduction/)
-  * Run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>` to make the context available to `kubectl`
-  * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl config use-context <eks context>` to access the cluster with `kubectl`.
+3. Use `kubectl config get-contexts` to show the contexts available.
+4. Run `kubectl config use-context $GKE_CONTEXT` to access the cluster from `kubectl`.
+
+For EKS:
+
+1. [Configure your AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
+2. Install [eksctl](https://eksctl.io/introduction/)
+3. Run `eksctl utils write-kubeconfig --cluster=<CLUSTER NAME>` to make the context available to `kubectl`
+4. Use `kubectl config get-contexts` to show the contexts available.
+5. Run `kubectl config use-context <eks context>` to access the cluster with `kubectl`.
 
 ### Install helm
 
 To install helm simply run:
 
-* For MacOS
-  * `brew install helm`
-* For Linux
-  * Download installer script `curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3`
-  * Assign required premissions `chmod 700 get_helm.sh`
-  * Run script `./get_helm.sh`
+For MacOS:
+  
+  `brew install helm`
 
-### Adding Helm Repository
+For Linux:
+
+1. Download installer script `curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3`
+2. Assign required premissions `chmod 700 get_helm.sh`
+3. Run script `./get_helm.sh`
+
+### Add Helm Repository
 
 From now charts are stored in helm-repo thus there're no need to clone the repo each time you need to deploy the chart.
 
@@ -85,7 +92,8 @@ airbyte-oss/webapp              0.30.23         0.39.37-alpha   Helm chart to de
 airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-worker  
 ```
 
-## Deploying airbyte
+## Deploy Airbyte
+
 ### Default deployment
 
 If you don't intend to customise your deployment, you can deploy airbyte as is with default values.
@@ -95,20 +103,19 @@ In order to do so, run the command:
 helm install %release_name% airbyte/airbyte
 ```
 
-It'll deploy airbyte with default configuration
+### Custom deployment
 
-### Configuring deployment
+In order to customize your deployment, you need to create `values.yaml` file in the local folder and populate it with default configuration override values.
 
-In order to configure deployment, you need to create values.yaml file in local folder and populate it with default configuration override values.
+`values.yaml` example can be located in [charts/airbyte](https://github.com/airbytehq/airbyte/blob/master/charts/airbyte/values.yaml) folder of the Airbyte repository.
 
-values.yaml example can be located in [charts/airbyte](https://github.com/airbytehq/airbyte/blob/master/charts/airbyte/values.yaml) folder of the airbyte repository.
+After specifying your own configuration, run the following command:
 
-After specifying your own configuration, proceed with chart deployment by running 
 ```text
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-## Migration from old chart to new ones
+## Migrate from old charts to new ones
 
 Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.
 

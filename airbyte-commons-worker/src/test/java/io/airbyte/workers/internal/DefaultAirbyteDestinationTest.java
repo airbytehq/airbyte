@@ -20,6 +20,8 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
+import io.airbyte.commons.protocol.DefaultProtocolSerializer;
+import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -80,6 +82,7 @@ class DefaultAirbyteDestinationTest {
   private Process process;
   private AirbyteStreamFactory streamFactory;
   private AirbyteMessageBufferedWriterFactory messageWriterFactory;
+  private final ProtocolSerializer protocolSerializer = new DefaultProtocolSerializer();
   private ByteArrayOutputStream outputStream;
 
   @BeforeEach
@@ -122,7 +125,8 @@ class DefaultAirbyteDestinationTest {
   @SuppressWarnings("BusyWait")
   @Test
   void testSuccessfulLifecycle() throws Exception {
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory, messageWriterFactory);
+    final AirbyteDestination destination =
+        new DefaultAirbyteDestination(integrationLauncher, streamFactory, messageWriterFactory, protocolSerializer);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -161,7 +165,8 @@ class DefaultAirbyteDestinationTest {
   @Test
   void testTaggedLogs() throws Exception {
 
-    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher, streamFactory, messageWriterFactory);
+    final AirbyteDestination destination =
+        new DefaultAirbyteDestination(integrationLauncher, streamFactory, messageWriterFactory, protocolSerializer);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
     final AirbyteMessage recordMessage = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "blue");
@@ -207,6 +212,18 @@ class DefaultAirbyteDestinationTest {
     when(process.isAlive()).thenReturn(false);
     when(process.exitValue()).thenReturn(1);
     Assertions.assertThrows(WorkerException.class, destination::close);
+  }
+
+  @Test
+  void testIgnoredExitCodes() throws Exception {
+    final AirbyteDestination destination = new DefaultAirbyteDestination(integrationLauncher);
+    destination.start(DESTINATION_CONFIG, jobRoot);
+    when(process.isAlive()).thenReturn(false);
+
+    DefaultAirbyteDestination.IGNORED_EXIT_CODES.forEach(exitCode -> {
+      when(process.exitValue()).thenReturn(exitCode);
+      Assertions.assertDoesNotThrow(destination::close);
+    });
   }
 
   @Test
