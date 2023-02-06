@@ -28,6 +28,7 @@ micronaut-test = "3.8.0"
 platform-testcontainers = "1.17.3"
 postgresql = "42.3.5"
 reactor = "3.5.2"
+segment = "2.1.1"
 slf4j = "1.7.36"
 temporal = "1.17.0"
 
@@ -108,6 +109,7 @@ quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
 s3 = { module = "software.amazon.awssdk:s3", version = "2.16.84" }
+segment-java-analytics = { module = "com.segment.analytics.java:analytics", version.ref = "segment" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.7.3" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
