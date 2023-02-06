@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const stylelint = require("stylelint");
 const { ruleMessages } = stylelint.utils;
 const ruleName = "airbyte/no-color-variables-in-rgba";
