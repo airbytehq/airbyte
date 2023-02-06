@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "start_time": {
+      "type": ["integer", "null"]
+    },
+    "end_time": {
+      "type": ["integer", "null"]
+    },
+    "agent_id": {
+      "type": ["string", "null"]
+    },
+    "type_id": {
+      "type": ["string", "null"]
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}

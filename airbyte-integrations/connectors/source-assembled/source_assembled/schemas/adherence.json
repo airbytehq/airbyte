@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "report_id": {
+      "type": "string"
+    },
+    "_ab_last_synced_at": {
+      "type": "integer"
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}

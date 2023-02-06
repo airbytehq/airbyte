@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": ["string", "null"]
+    },
+    "value": {
+      "type": ["number", "null"]
+    },
+    "report": {
+      "type": ["string", "null"]
+    },
+    "report_id": {
+      "type": "string"
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "attributes": {
+      "type": ["object", "null"],
+      "properties": {
+        "agent_id": {
+          "type": ["string", "null"]
+        },
+        "start_time": {
+          "type": ["integer", "null"]
+        },
+        "end_time": {
+          "type": ["integer", "null"]
+        },
+        "type": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "_ab_last_synced_at": {
+      "type": "integer"
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}

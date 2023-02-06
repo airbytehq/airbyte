@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "modified_by": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["string", "null"]
+        },
+        "id": {
+          "type": ["string", "null"]
+        },
+        "email": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "modified_at": {
+      "type": ["integer", "null"]
+    },
+    "event_agent_name": {
+      "type": ["string", "null"]
+    },
+    "event_agent_id": {
+      "type": ["string", "null"]
+    },
+    "event_agent_email": {
+      "type": ["string", "null"]
+    },
+    "event_change_type": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "old_event_type": {
+      "type": ["string", "null"]
+    },
+    "new_event_type": {
+      "type": ["string", "null"]
+    },
+    "old_start_time": {
+      "type": ["integer", "null"]
+    },
+    "old_end_time": {
+      "type": ["integer", "null"]
+    },
+    "new_start_time": {
+      "type": ["integer", "null"]
+    },
+    "new_end_time": {
+      "type": ["integer", "null"]
+    },
+    "old_channels": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "new_channels": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "old_template_id": {
+      "type": ["string", "null"]
+    },
+    "new_template_id": {
+      "type": ["string", "null"]
+    },
+    "old_google_calendar_event_id": {
+      "type": ["string", "null"]
+    },
+    "new_google_calendar_event_id": {
+      "type": ["string", "null"]
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}

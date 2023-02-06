@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "requirement_type_id": {
+      "type": "string"
+    },
+    "required": {
+      "type": ["number", "null"]
+    },
+    "scheduled": {
+      "type": ["number", "null"]
+    },
+    "start_time": {
+      "type": ["integer", "null"]
+    },
+    "end_time": {
+      "type": ["integer", "null"]
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}

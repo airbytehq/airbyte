@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "start_time": {
+      "type": "integer"
+    },
+    "end_time": {
+      "type": "integer"
+    },
+    "channel": {
+      "type": ["string", "null"]
+    },
+    "queue": {
+      "type": ["string", "null"]
+    },
+    "value": {
+      "type": ["number", "null"]
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}

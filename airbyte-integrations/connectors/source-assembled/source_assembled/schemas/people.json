@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "agent_id": {
+      "type": ["string", "null"]
+    },
+    "first_name": {
+      "type": ["string", "null"]
+    },
+    "last_name": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "imported_id": {
+      "type": ["string", "null"]
+    },
+    "role": {
+      "type": ["string", "null"]
+    },
+    "agent_role": {
+      "type": ["string", "null"]
+    },
+    "channels": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "site": {
+      "type": ["string", "null"]
+    },
+    "teams": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "queues": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "skills": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "platforms": {
+      "type": "object",
+      "properties": {
+        "zendesk": {
+          "type": ["string", "null"]
+        },
+        "api": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "start_date": {
+      "type": ["integer", "null"]
+    },
+    "end_date": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "deleted": {
+      "type": ["boolean", "null"]
+    },
+    "staffable": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

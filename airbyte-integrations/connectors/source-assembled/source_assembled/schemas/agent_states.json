@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string"
+    },
+    "agent_name": {
+      "type": ["string", "null"]
+    },
+    "agent_email": {
+      "type": ["string", "null"]
+    },
+    "agent_platform_id": {
+      "type": ["string", "null"]
+    },
+    "platform": {
+      "type": ["string", "null"]
+    },
+    "start_time": {
+      "type": "integer"
+    },
+    "end_time": {
+      "type": ["integer", "null"]
+    },
+    "state": {
+      "type": ["string", "null"]
+    },
+    "ticket_id": {
+      "type": ["string", "null"]
+    },
+    "ticket_status": {
+      "type": ["string", "null"]
+    },
+    "modified_at": {
+      "type": ["integer", "null"]
+    },
+    "_ab_extracted_at": {
+      "type": "integer"
+    }
+  }
+}
