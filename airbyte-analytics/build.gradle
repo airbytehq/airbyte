@@ -1,6 +1,10 @@
-dependencies {
-    implementation 'com.segment.analytics.java:analytics:2.1.1'
+plugins {
+    id 'java-library'
+}
 
+dependencies {
+    api libs.segment.java.analytics
+    api libs.micronaut.http
 
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
