@@ -1016,27 +1016,27 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"
-          - "$ref": "#/definitions/SingleSlice"
+          - "$ref": "#/definitions/SinglePartitionRouter"
           - "$ref": "#/definitions/SubstreamSlicer"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomStreamSlicer"
                 - "$ref": "#/definitions/ListStreamSlicer"
-                - "$ref": "#/definitions/SingleSlice"
+                - "$ref": "#/definitions/SinglePartitionRouter"
                 - "$ref": "#/definitions/SubstreamSlicer"
       $parameters:
         type: object
         additionalProperties: true
-  SingleSlice:
-    description: Stream slicer returning only a single stream slice
+  SinglePartitionRouter:
+    description: Partition router returning only a single partition
     type: object
     required:
       - type
     properties:
       type:
         type: string
-        enum: [SingleSlice]
+        enum: [SinglePartitionRouter]
       $parameters:
         type: object
         additionalProperties: true

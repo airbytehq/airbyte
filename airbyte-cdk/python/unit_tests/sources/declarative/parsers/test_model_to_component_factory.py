@@ -118,7 +118,7 @@ requester:
 retriever:
   name: "{{ parameters['name'] }}"
   partition_router:
-    type: SingleSlice
+    type: SinglePartitionRouter
   paginator:
     type: NoPagination
   primary_key: "{{ parameters['primary_key'] }}"
