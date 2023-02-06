@@ -1,11 +1,8 @@
 /*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+package io.airbyte.featureflag
 
-import io.airbyte.featureflag.FieldSelectionWorkspaces
-import io.airbyte.featureflag.Multi
-import io.airbyte.featureflag.User
-import io.airbyte.featureflag.Workspace
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
