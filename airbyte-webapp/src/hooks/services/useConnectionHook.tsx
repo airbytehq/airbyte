@@ -12,6 +12,10 @@ import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
+import { useAnalyticsService } from "./Analytics";
+import { useAppMonitoringService } from "./AppMonitoringService";
+import { useNotificationService } from "./Notification";
+import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "../../config";
 import {
   ConnectionScheduleData,
@@ -31,10 +35,6 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useAppMonitoringService } from "./AppMonitoringService";
-import { useNotificationService } from "./Notification";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,

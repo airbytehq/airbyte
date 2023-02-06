@@ -4,9 +4,9 @@ import { useIntl } from "react-intl";
 import { StatusIcon } from "components/ui/StatusIcon";
 import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
-import { Status } from "../types";
 import styles from "./ConnectionStatusCell.module.scss";
 import { EntityNameCell } from "./EntityNameCell";
+import { Status } from "../types";
 
 interface ConnectionStatusCellProps {
   status: string | null;

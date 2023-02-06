@@ -1,7 +1,7 @@
-import { AirbyteWebappConfig } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
+import { AirbyteWebappConfig } from "../../config";
 
 export interface ApiOverrideRequestOptions {
   config: Pick<AirbyteWebappConfig, "apiUrl">;

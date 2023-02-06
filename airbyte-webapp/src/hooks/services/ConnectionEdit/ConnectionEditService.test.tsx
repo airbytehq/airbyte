@@ -12,8 +12,8 @@ import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionRead, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
 
-import { useConnectionFormService } from "../ConnectionForm/ConnectionFormService";
 import { ConnectionEditServiceProvider, useConnectionEditService } from "./ConnectionEditService";
+import { useConnectionFormService } from "../ConnectionForm/ConnectionFormService";
 
 jest.mock("services/connector/SourceDefinitionService", () => ({
   useSourceDefinition: () => mockSourceDefinition,
