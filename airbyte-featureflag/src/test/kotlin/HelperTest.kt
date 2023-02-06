@@ -25,7 +25,7 @@ internal class FeatureFlagHelperTest {
     fun beforeEach() {
         featureFlags = mockk()
         featureFlagClient = mockk()
-        log = mockk()
+        log = mockk(relaxed=true)
         every {featureFlagClient!!.enabled(ColumnSelectionExcludeForUnexpectedFields, any())} answers {false}
     }
 
