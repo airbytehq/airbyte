@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Callout } from "components/ui/Callout";
-import { FlexContainer } from "components/ui/Flex";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
 import { StatusIcon } from "components/ui/StatusIcon";
 import { Text } from "components/ui/Text";
 
@@ -12,7 +12,9 @@ const ErrorSection: React.FC<{
 }> = ({ errorMessage, errorTitle }) => (
   <Callout variant="error">
     <FlexContainer alignItems="flex-start" gap="sm">
-      <StatusIcon />
+      <FlexItem>
+        <StatusIcon />
+      </FlexItem>
       <FlexContainer direction="column">
         <Text size="lg">{errorTitle}</Text>
         <Text>{errorMessage}</Text>
