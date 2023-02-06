@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.36"
+- dockerImage: "airbyte/source-alloydb:1.0.43"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7626,7 +7626,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.13"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -7895,7 +7895,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailchimp:0.3.3"
+- dockerImage: "airbyte/source-mailchimp:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailchimp"
     connectionSpecification:
