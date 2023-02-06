@@ -12,7 +12,7 @@ if (fs.existsSync(EXPERIMENTS_FILE)) {
   if (Object.keys(overwrites).length) {
     if (isMainThread) {
       // Only print the message in the main thread, so it's not showing up in all the worker threads of vite-plugin-checker
-      console.log(chalk.bold(`🧪 Overwriting experiments via ${chalk.green("experiments.json")}`));
+      console.log(chalk.bold(`🧪 Overwriting experiments via ${chalk.green(".experiments.json")}`));
       Object.entries(overwrites).forEach(([key, value]) => {
         console.log(`   ➜ ${chalk.cyan(key)}: ${JSON.stringify(value)}`);
       });
