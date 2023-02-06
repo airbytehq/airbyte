@@ -202,7 +202,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19T00:00:00.000000Z")))),
+                        COL_UPDATED_AT, "2004-10-19T00:00:00.000000")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withNamespace(getDefaultNamespace())
@@ -210,14 +210,14 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
-                        "2005-10-19T00:00:00.000000Z")))),
+                        "2005-10-19T00:00:00.000000")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                        COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
   }
 
   @Test
