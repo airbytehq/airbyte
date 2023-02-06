@@ -26,30 +26,30 @@ class FeatureFlagHelperTest {
   void isFieldSelectionEnabledForWorkspaceWithEmptyString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn("");
 
-    assertFalse(FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, UUID.randomUUID()));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID()));
   }
 
   @Test
   void isFieldSelectionEnabledForWorkspaceWithSpaceString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(" ");
 
-    assertFalse(FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, UUID.randomUUID()));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID()));
   }
 
   @Test
   void isFieldSelectionEnabledForWorkspaceWithNullString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(null);
 
-    assertFalse(FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, UUID.randomUUID()));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID()));
   }
 
   @Test
   void isFieldSelectionEnabledForWorkspaceWithSomeIdsAndAMatch() {
     final UUID workspaceId = UUID.randomUUID();
     final UUID randomId = UUID.randomUUID();
-    when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId.toString() + "," + workspaceId.toString());
+  when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId + "," + workspaceId);
 
-    assertTrue(FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
+    assertTrue(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId));
   }
 
   @Test
@@ -57,9 +57,9 @@ class FeatureFlagHelperTest {
     final UUID workspaceId = UUID.randomUUID();
     final UUID randomId1 = UUID.randomUUID();
     final UUID randomId2 = UUID.randomUUID();
-    when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId1.toString() + "," + randomId2.toString());
+    when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId1 + "," + randomId2);
 
-    assertFalse(FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId));
   }
 
 }
