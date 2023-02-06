@@ -26,21 +26,21 @@ class FeatureFlagHelperTest {
   void isFieldSelectionEnabledForWorkspaceWithEmptyString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn("");
 
-    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID()));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID(), null));
   }
 
   @Test
   void isFieldSelectionEnabledForWorkspaceWithSpaceString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(" ");
 
-    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID()));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID(), null));
   }
 
   @Test
   void isFieldSelectionEnabledForWorkspaceWithNullString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(null);
 
-    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID()));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, UUID.randomUUID(), null));
   }
 
   @Test
@@ -49,7 +49,7 @@ class FeatureFlagHelperTest {
     final UUID randomId = UUID.randomUUID();
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId + "," + workspaceId);
 
-    assertTrue(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId));
+    assertTrue(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId, null));
   }
 
   @Test
@@ -59,7 +59,7 @@ class FeatureFlagHelperTest {
     final UUID randomId2 = UUID.randomUUID();
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(randomId1 + "," + randomId2);
 
-    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId));
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId, null));
   }
 
 }
