@@ -9,7 +9,6 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 import pendulum
 import requests
 from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -25,10 +24,6 @@ class SentryStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self._url_base
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None

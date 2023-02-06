@@ -1,4 +1,4 @@
-import { goToConnectorBuilderPage, testStream } from "pages/connectorBuilderPage";
+import { goToConnectorBuilderPage, startFromScratch, testStream } from "pages/connectorBuilderPage";
 import {
   assertTestReadItems,
   assertTestReadAuthFailure,
@@ -14,6 +14,7 @@ describe("Connector builder", () => {
   before(() => {
     initialSetupCompleted();
     goToConnectorBuilderPage();
+    startFromScratch();
   });
 
   it("Configure basic connector", () => {

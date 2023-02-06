@@ -148,6 +148,9 @@ class BasicAcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
 
   private static final String TYPE = "type";
+  private static final String REF = "$ref";
+  private static final String INTEGER_REFERENCE = "WellKnownTypes.json#/definitions/Integer";
+  private static final String STRING_REFERENCE = "WellKnownTypes.json#/definitions/String";
   private static final String PUBLIC = "public";
   private static final String E2E_TEST_SOURCE = "E2E Test Source -";
   private static final String INFINITE_FEED = "INFINITE_FEED";
