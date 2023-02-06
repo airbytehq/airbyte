@@ -56,9 +56,12 @@ class SourceExact(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         access_token = (config or {}).get("credentials", {}).get("access_token")
         refresh_token = (config or {}).get("credentials", {}).get("refresh_token")
+        divisions = (config or {}).get("divisions", [])
 
         if not access_token or not refresh_token:
             return False, "Missing access or refresh token"
+        if not divisions:
+            return False, "Missing divisions"
 
         # TODO: check with airbyte whether control messages are handled during connection check (for token refresh)
         # try:

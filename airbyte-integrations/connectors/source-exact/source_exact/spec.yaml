@@ -4,12 +4,13 @@ connectionSpecification:
   title: Exact Spec
   type: object
   required:
-    - division
+    - divisions
     - credentials
   properties:
-    division:
-      type: integer
-      description: Division code from Exact. Used to identify which administration to use.
+    divisions:
+      type: array
+      minItems: 1
+      description: List of divisions code to extract. The division code refers to the administration in Exact.
     credentials:
       title: OAuth Credentials
       type: object
