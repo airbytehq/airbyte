@@ -10,7 +10,6 @@ import { ConnectionScheduleType, SchemaChange } from "core/request/AirbyteClient
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
-import { NextTable } from "../ui/NextTable";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import { ConnectionStatusCell } from "./components/ConnectionStatusCell";
 import { ConnectorNameCell } from "./components/ConnectorNameCell";
@@ -19,6 +18,7 @@ import { LastSyncCell } from "./components/LastSyncCell";
 import { StatusCell } from "./components/StatusCell";
 import styles from "./ConnectionTable.module.scss";
 import { ConnectionTableDataItem, SortOrderEnum } from "./types";
+import { NextTable } from "../ui/NextTable";
 
 interface ConnectionTableProps {
   data: ConnectionTableDataItem[];

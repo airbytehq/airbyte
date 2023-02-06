@@ -17,12 +17,12 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { useExperiment } from "hooks/services/Experiment";
 import { getDataType } from "utils/useTranslateDataType";
 
-import { CatalogTreeTableCell } from "../../CatalogTreeTableCell";
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import { CursorCell } from "./CursorCell";
 import { PKCell } from "./PKCell";
 import styles from "./StreamFieldsTable.module.scss";
 import { SyncFieldCell } from "./SyncFieldCell";
+import { CatalogTreeTableCell } from "../../CatalogTreeTableCell";
 
 export interface TableStream {
   field: SyncSchemaField;

@@ -9,8 +9,8 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./StreamTestButton.module.scss";
+import { useBuilderErrors } from "../useBuilderErrors";
 
 interface StreamTestButtonProps {
   readStream: () => void;

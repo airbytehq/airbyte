@@ -13,9 +13,9 @@ import { FormikPatch } from "core/form/FormikPatch";
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import { useAnalyticsService } from "hooks/services/Analytics";
 
-import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsForm.module.scss";
+import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 
 const supportedTypes = ["string", "integer", "number", "array", "boolean", "enum", "unknown"] as const;
 
@@ -25,7 +25,7 @@ export interface InputInEditing {
   required: boolean;
   isNew?: boolean;
   showDefaultValueField: boolean;
-  type: typeof supportedTypes[number];
+  type: (typeof supportedTypes)[number];
   isInferredInputOverride: boolean;
 }
 

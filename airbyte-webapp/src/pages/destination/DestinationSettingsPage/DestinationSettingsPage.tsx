@@ -16,8 +16,8 @@ import { useGetDestinationDefinitionSpecification } from "services/connector/Des
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
-import { DestinationOutletContext } from "../types";
 import styles from "./DestinationSettings.module.scss";
+import { DestinationOutletContext } from "../types";
 
 export const DestinationSettingsPage: React.FC = () => {
   const { destination } = useOutletContext<DestinationOutletContext>();
