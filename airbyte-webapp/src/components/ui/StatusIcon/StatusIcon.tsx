@@ -46,6 +46,7 @@ const Container = styled.div<Pick<StatusIconProps, "big" | "value">>`
   text-align: center;
   display: inline-block;
   vertical-align: middle;
+  flex-shrink: 0;
 `;
 
 const Badge = styled(Container)<{ status: Exclude<StatusIconStatus, "loading"> }>`
