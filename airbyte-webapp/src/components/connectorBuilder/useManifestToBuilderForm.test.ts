@@ -25,7 +25,7 @@ const stream1: DeclarativeStream = {
       type: "RecordSelector",
       extractor: {
         type: "DpathExtractor",
-        field_pointer: [],
+        field_path: [],
       },
     },
     requester: {
@@ -253,12 +253,9 @@ describe("Conversion successfully results in", () => {
         merge({}, stream1, {
           retriever: {
             requester: {
-              request_options_provider: {
-                type: "InterpolatedRequestOptionsProvider",
-                request_parameters: {
-                  k1: "v1",
-                  k2: "v2",
-                },
+              request_parameters: {
+                k1: "v1",
+                k2: "v2",
               },
             },
           },

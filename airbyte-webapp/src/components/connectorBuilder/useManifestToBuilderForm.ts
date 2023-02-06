@@ -12,7 +12,6 @@ import {
   HttpRequester,
   HttpRequesterAuthenticator,
   InlineSchemaLoader,
-  InterpolatedRequestOptionsProvider,
   ListStreamSlicer,
   SimpleRetriever,
   SimpleRetrieverPaginator,
@@ -137,33 +136,21 @@ const manifestStreamToBuilder = (
 
   assertType<DpathExtractor>(retriever.record_selector.extractor, "DpathExtractor", stream.name);
 
-  if (requester.request_options_provider) {
-    assertType<InterpolatedRequestOptionsProvider>(
-      requester.request_options_provider,
-      "InterpolatedRequestOptionsProvider",
-      stream.name
-    );
-  }
-
   return {
     ...DEFAULT_BUILDER_STREAM_VALUES,
     id: index.toString(),
     name: stream.name ?? "",
     urlPath: requester.path,
     httpMethod: (requester.http_method as "GET" | "POST" | undefined) ?? "GET",
-    fieldPointer: retriever.record_selector.extractor.field_pointer as string[],
+    fieldPointer: retriever.record_selector.extractor.field_path as string[],
     requestOptions: {
-      requestParameters: Object.entries(requester.request_options_provider?.request_parameters ?? {}),
-      requestHeaders: Object.entries(requester.request_options_provider?.request_headers ?? {}),
+      requestParameters: Object.entries(requester.request_parameters ?? {}),
+      requestHeaders: Object.entries(requester.request_headers ?? {}),
       // try getting this from request_body_data first, and if not set then pull from request_body_json
-      requestBody: Object.entries(
-        requester.request_options_provider?.request_body_data ??
-          requester.request_options_provider?.request_body_json ??
-          {}
-      ),
+      requestBody: Object.entries(requester.request_body_data ?? requester.request_body_json ?? {}),
     },
     primaryKey: manifestPrimaryKeyToBuilder(stream),
-    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name, firstStreamUrlBase),
+    paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name),
     streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, serializedStreamToIndex, stream.name),
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
     unsupportedFields: {
@@ -277,8 +264,7 @@ function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): Builder
 
 function manifestPaginatorToBuilder(
   manifestPaginator: SimpleRetrieverPaginator | undefined,
-  streamName: string | undefined,
-  globalUrlBase: string
+  streamName: string | undefined
 ): BuilderPaginator | undefined {
   if (manifestPaginator === undefined || manifestPaginator.type === "NoPagination") {
     return undefined;
@@ -286,10 +272,6 @@ function manifestPaginatorToBuilder(
 
   if (manifestPaginator.page_token_option === undefined) {
     throw new ManifestCompatibilityError(streamName, "paginator does not define a page_token_option");
-  }
-
-  if (manifestPaginator.url_base !== globalUrlBase) {
-    throw new ManifestCompatibilityError(streamName, "paginator.url_base does not match the first stream's url_base");
   }
 
   if (manifestPaginator.pagination_strategy.type === "CustomPaginationStrategy") {
