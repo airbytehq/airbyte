@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.models import SyncMode
 from datetime import datetime, timedelta
+from time import sleep
 
 
 class BlingBase(HttpStream):
@@ -120,6 +121,8 @@ class BlingBase(HttpStream):
             }
 
             item_list.append(item_json)
+
+        sleep(5)
             
         return item_list
 
