@@ -166,14 +166,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         SQLDialect.POSTGRES);
   }
 
-  private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  private void revokeReplicationPermission() {
+    executeQuery("ALTER USER " + container.getUsername() + " NOREPLICATION;");
   }
 
-  private void grantCorrectPermissions() {
-    executeQuery(
-        "GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO "
-            + container.getUsername() + "@'%';");
+  @Test
+  void testCheckWithoutPrivileges() throws Exception {
+    revokeReplicationPermission();
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
   @Test
