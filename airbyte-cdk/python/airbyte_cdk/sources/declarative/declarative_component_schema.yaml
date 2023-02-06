@@ -737,7 +737,7 @@ definitions:
         type: string
         enum: [JsonDecoder]
   ListStreamSlicer:
-    description: Iterator that is used to retrieve records that have been partitioned according to a list of values
+    description: Partition router that is used to retrieve records that have been partitioned according to a list of values
     type: object
     required:
       - type
@@ -986,7 +986,7 @@ definitions:
         type: object
         additionalProperties: true
   SimpleRetriever:
-    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the iterator.
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object
     required:
       - type
@@ -1056,7 +1056,7 @@ definitions:
       documentation_url:
         type: string
   SubstreamSlicer:
-    description: Iterator that is used to retrieve records that have been partitioned according to records from the specified parent streams
+    description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
     required:
       - type

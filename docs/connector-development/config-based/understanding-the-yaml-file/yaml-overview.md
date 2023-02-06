@@ -97,7 +97,7 @@ It is described by:
 1. [Requester](./requester.md): Describes how to submit requests to the API source
 2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
 3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Iterable](./location-iteration.md): Describes how to retrieve data from multiple resource locations 
+4. [Partition router](./location-iteration.md): Describes how to retrieve data across multiple resource locations 
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
@@ -108,7 +108,7 @@ The schema of a retriever object is:
 
 ```yaml
   retriever:
-    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the iterator.
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object
     required:
       - type
@@ -150,34 +150,34 @@ The schema of a retriever object is:
         additionalProperties: true
 ```
 
-### Iterating over multiple locations to get data / Iterating over data partitioned in multiple locations
+### Routing to Data that is Partitioned in Multiple Locations
 
-Some sources might require specifying additional parameters that are needed to retrieve data. Using the `Iterator` component, you can specify a static or dynamic set of elements which will be iterated upon and made available for use when a connector is requesting data from a source.
+Some sources might require specifying additional parameters that are needed to retrieve data. Using the `PartitionRouter` component, you can specify a static or dynamic set of elements which will be iterated upon and made available for use when a connector dispatches requests to get data from a source.
 
-More information on how to configure the `iterable` field on a Retriever to retrieve data from multiple location can be found in the [iteration](./location.md) section.
+More information on how to configure the `partition_router` field on a Retriever to retrieve data from multiple location can be found in the [iteration](./location.md) section.
 
 ### Combining Incremental Syncs and Iterable Locations
 
-A stream can be configured to support incrementally syncing data that is spread across multiple locations by defining `incremental_sync` on the `Stream` and `iterable` on the `Retriever`.
+A stream can be configured to support incrementally syncing data that is spread across multiple partitions by defining `incremental_sync` on the `Stream` and `partition_router` on the `Retriever`.
 
 During a sync where both are configured, the Cartesian product of these parameters will be calculated and the connector will repeat requests to the source using the different combinations of parameters to get all of the data.
 
-For example, if we had a `DatetimeBasedCursor` requesting data over a 3-day range partitioned by day and a `ListIterator` with the following locations `A`, `B`, and `C`. This would result in the following combinations that will be used to request data.
+For example, if we had a `DatetimeBasedCursor` requesting data over a 3-day range partitioned by day and a `ListPartitionRouter` with the following locations `A`, `B`, and `C`. This would result in the following combinations that will be used to request data.
 
-| Location | Date Range                                |
-|----------|-------------------------------------------|
-| A        | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
-| B        | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
-| C        | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
-| A        | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
-| B        | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
-| C        | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
-| A        | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
-| B        | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
-| C        | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
+| Partition | Date Range                                |
+|-----------|-------------------------------------------|
+| A         | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
+| B         | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
+| C         | 2022-01-01T00:00:00 - 2022-01-01T23:59:59 |
+| A         | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
+| B         | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
+| C         | 2022-01-02T00:00:00 - 2022-01-02T23:59:59 |
+| A         | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
+| B         | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
+| C         | 2022-01-03T00:00:00 - 2022-01-03T23:59:59 |
 
 ## More readings
 
 - [Requester](./requester.md)
 - [Incremental Syncs](./incremental-syncs.md)
-- [Iteration Over Locations](./location-iteration.md)
+- [Partition Router](./partition-router.md)

@@ -6,7 +6,7 @@ Incremental syncs are usually implemented using a cursor value (like a timestamp
 
 On a retriever, `incremental_sync` defines the connector behavior to support cursor based replication.
 
-When a stream is read incrementally, a state message will be output by the connector after reading all of the records, which allows for checkpointing (link: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing). On the next incremental sync, the prior state message will be used to determine the next set of records to read.
+When a stream is read incrementally, a state message will be output by the connector after reading all the records, which allows for checkpointing (link: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing). On the next incremental sync, the prior state message will be used to determine the next set of records to read.
 
 ## DatetimeBasedCursor
 
@@ -165,3 +165,7 @@ incremental_sync:
     field_name: "created[lte]"
     inject_into: "request_parameter"
 ```
+
+## More readings
+
+- [Incremental reads](../../cdk-python/incremental-stream.md)
