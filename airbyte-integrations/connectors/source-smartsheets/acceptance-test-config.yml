@@ -13,14 +13,15 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: []
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-        extra_fields: yes
-        exact_order: yes
-        extra_records: no
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams: []
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: yes
+          exact_order: yes
+          extra_records: no
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
