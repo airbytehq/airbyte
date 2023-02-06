@@ -51,10 +51,6 @@ jobs:
           distribution: "zulu"
           java-version: "14"
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
       - name: Build
         id: run-specific-test
         run: ./gradlew allTest --tests *${{ github.event.inputs.test-name }}

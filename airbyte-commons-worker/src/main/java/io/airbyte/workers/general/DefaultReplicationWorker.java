@@ -10,7 +10,9 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
@@ -24,28 +26,37 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
+import io.airbyte.workers.internal.exception.DestinationException;
+import io.airbyte.workers.internal.exception.SourceException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,6 +105,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
+  private final ConnectorConfigUpdater connectorConfigUpdater;
+  private final boolean fieldSelectionEnabled;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -102,7 +115,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
-                                  final WorkerMetricReporter metricReporter) {
+                                  final WorkerMetricReporter metricReporter,
+                                  final ConnectorConfigUpdater connectorConfigUpdater,
+                                  final boolean fieldSelectionEnabled) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -112,6 +127,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
+    this.connectorConfigUpdater = connectorConfigUpdater;
+    this.fieldSelectionEnabled = fieldSelectionEnabled;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -151,6 +168,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           .stream()
           .collect(Collectors.toMap(s -> s.getStream().getNamespace() + "." + s.getStream().getName(),
               s -> String.format("%s - %s", s.getSyncMode(), s.getDestinationSyncMode()))));
+      LOGGER.debug("field selection enabled: {}", fieldSelectionEnabled);
       final WorkerSourceConfig sourceConfig = WorkerUtils.syncToWorkerSourceConfig(syncInput);
 
       ApmTraceUtils.addTagsToTrace(generateTraceTags(destinationConfig, jobRoot));
@@ -184,7 +202,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
+          readFromDstRunnable(destination, cancelled, messageTracker, connectorConfigUpdater, mdc, timeTracker, destinationConfig.getDestinationId()),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -198,8 +216,20 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-          readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter,
-              timeTracker),
+          readFromSrcAndWriteToDstRunnable(
+              source,
+              destination,
+              sourceConfig.getCatalog(),
+              cancelled,
+              mapper,
+              messageTracker,
+              connectorConfigUpdater,
+              mdc,
+              recordSchemaValidator,
+              metricReporter,
+              timeTracker,
+              sourceConfig.getSourceId(),
+              fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -236,8 +266,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private static Runnable readFromDstRunnable(final AirbyteDestination destination,
                                               final AtomicBoolean cancelled,
                                               final MessageTracker messageTracker,
+                                              final ConnectorConfigUpdater connectorConfigUpdater,
                                               final Map<String, String> mdc,
-                                              final ThreadedTimeTracker timeHolder) {
+                                              final ThreadedTimeTracker timeHolder,
+                                              final UUID destinationId) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -250,8 +282,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             throw new DestinationException("Destination process read attempt failed", e);
           }
           if (messageOptional.isPresent()) {
-            LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
-            messageTracker.acceptFromDestination(messageOptional.get());
+            final AirbyteMessage message = messageOptional.get();
+            LOGGER.info("State in DefaultReplicationWorker from destination: {}", message);
+
+            messageTracker.acceptFromDestination(message);
+
+            try {
+              if (message.getType() == Type.CONTROL) {
+                acceptDstControlMessage(destinationId, message.getControl(), connectorConfigUpdater);
+              }
+            } catch (final Exception e) {
+              LOGGER.error("Error updating destination configuration", e);
+            }
           }
         }
         timeHolder.trackDestinationWriteEndTime();
@@ -279,18 +321,29 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
+                                                           final ConfiguredAirbyteCatalog catalog,
                                                            final AtomicBoolean cancelled,
                                                            final AirbyteMapper mapper,
                                                            final MessageTracker messageTracker,
+                                                           final ConnectorConfigUpdater connectorConfigUpdater,
                                                            final Map<String, String> mdc,
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
-                                                           final ThreadedTimeTracker timeHolder) {
+                                                           final ThreadedTimeTracker timeHolder,
+                                                           final UUID sourceId,
+                                                           final boolean fieldSelectionEnabled) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      Long recordsRead = 0L;
+      long recordsRead = 0L;
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap<>();
+      final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap<>();
+      if (fieldSelectionEnabled) {
+        populatedStreamToSelectedFields(catalog, streamToSelectedFields);
+      }
+      populateStreamToAllFields(catalog, streamToAllFields);
       try {
         while (!cancelled.get() && !source.isFinished()) {
           final Optional<AirbyteMessage> messageOptional;
@@ -302,10 +355,21 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+            if (fieldSelectionEnabled) {
+              filterSelectedFields(streamToSelectedFields, airbyteMessage);
+            }
+            validateSchema(recordSchemaValidator, streamToAllFields, unexpectedFields, validationErrors, airbyteMessage);
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
+
+            try {
+              if (message.getType() == Type.CONTROL) {
+                acceptSrcControlMessage(sourceId, message.getControl(), connectorConfigUpdater);
+              }
+            } catch (final Exception e) {
+              LOGGER.error("Error updating source configuration", e);
+            }
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
@@ -337,6 +401,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             metricReporter.trackSchemaValidationError(stream);
           });
         }
+        unexpectedFields.forEach((stream, unexpectedFieldNames) -> {
+          if (!unexpectedFieldNames.isEmpty()) {
+            LOGGER.warn("Source {} has unexpected fields [{}] in stream {}", sourceId, String.join(", ", unexpectedFieldNames), stream);
+            // TODO(mfsiega-airbyte): publish this as a metric.
+          }
+        });
 
         try {
           destination.notifyEndOfInput();
@@ -363,6 +433,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static void acceptSrcControlMessage(final UUID sourceId,
+                                              final AirbyteControlMessage controlMessage,
+                                              final ConnectorConfigUpdater connectorConfigUpdater) {
+    if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
+      connectorConfigUpdater.updateSource(sourceId, controlMessage.getConnectorConfig().getConfig());
+    }
+  }
+
+  private static void acceptDstControlMessage(final UUID destinationId,
+                                              final AirbyteControlMessage controlMessage,
+                                              final ConnectorConfigUpdater connectorConfigUpdater) {
+    if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
+      connectorConfigUpdater.updateDestination(destinationId, controlMessage.getConnectorConfig().getConfig());
+    }
   }
 
   private ReplicationOutput getReplicationOutput(final StandardSyncInput syncInput,
@@ -520,6 +606,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
+                                     Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
+                                     Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
@@ -534,6 +622,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     if (streamHasLessThenTenErrs) {
       try {
         recordSchemaValidator.validateSchema(record, messageStream);
+        final Set<String> unexpectedFieldNames = unexpectedFields.getOrDefault(messageStream, new HashSet<>());
+        populateUnexpectedFieldNames(record, streamToAllFields.get(messageStream), unexpectedFieldNames);
+        unexpectedFields.put(messageStream, unexpectedFieldNames);
       } catch (final RecordSchemaValidationException e) {
         final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
         if (exceptionWithCount == null) {
@@ -545,7 +636,83 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
         }
       }
+    }
+  }
 
+  private static void populateUnexpectedFieldNames(AirbyteRecordMessage record, Set<String> fieldsInCatalog, Set<String> unexpectedFieldNames) {
+    final JsonNode data = record.getData();
+    if (data.isObject()) {
+      Iterator<String> fieldNamesInRecord = data.fieldNames();
+      while (fieldNamesInRecord.hasNext()) {
+        final String fieldName = fieldNamesInRecord.next();
+        if (!fieldsInCatalog.contains(fieldName)) {
+          unexpectedFieldNames.add(fieldName);
+        }
+      }
+    }
+    // If it's not an object it's malformed, but we tolerate it here - it will be logged as an error by
+    // the validation.
+  }
+
+  /**
+   * Generates a map from stream -> the explicit list of fields included for that stream, according to
+   * the configured catalog. Since the configured catalog only includes the selected fields, this lets
+   * us filter records to only the fields explicitly requested.
+   *
+   * @param catalog
+   * @param streamToSelectedFields
+   */
+  private static void populatedStreamToSelectedFields(final ConfiguredAirbyteCatalog catalog,
+                                                      final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields) {
+    for (final var s : catalog.getStreams()) {
+      final List<String> selectedFields = new ArrayList<>();
+      final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
+      if (propertiesNode.isObject()) {
+        propertiesNode.fieldNames().forEachRemaining((fieldName) -> selectedFields.add(fieldName));
+      } else {
+        throw new RuntimeException("No properties node in stream schema");
+      }
+      streamToSelectedFields.put(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(s), selectedFields);
+    }
+  }
+
+  /**
+   * Populates a map for stream -> all the top-level fields in the catalog. Used to identify any
+   * unexpected top-level fields in the records.
+   *
+   * @param catalog
+   * @param streamToAllFields
+   */
+  private static void populateStreamToAllFields(final ConfiguredAirbyteCatalog catalog,
+                                                final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields) {
+    for (final var s : catalog.getStreams()) {
+      final Set<String> fields = new HashSet<>();
+      final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
+      if (propertiesNode.isObject()) {
+        propertiesNode.fieldNames().forEachRemaining((fieldName) -> fields.add(fieldName));
+      } else {
+        throw new RuntimeException("No properties node in stream schema");
+      }
+      streamToAllFields.put(AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(s), fields);
+    }
+  }
+
+  private static void filterSelectedFields(final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields,
+                                           final AirbyteMessage airbyteMessage) {
+    final AirbyteRecordMessage record = airbyteMessage.getRecord();
+
+    if (record == null) {
+      // This isn't a record message, so we don't need to do any filtering.
+      return;
+    }
+
+    final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
+    final List<String> selectedFields = streamToSelectedFields.getOrDefault(messageStream, Collections.emptyList());
+    final JsonNode data = record.getData();
+    if (data.isObject()) {
+      ((ObjectNode) data).retain(selectedFields);
+    } else {
+      throw new RuntimeException(String.format("Unexpected data in record: %s", data.toString()));
     }
   }
 
@@ -593,30 +760,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
 
     return tags;
-  }
-
-  private static class SourceException extends RuntimeException {
-
-    SourceException(final String message) {
-      super(message);
-    }
-
-    SourceException(final String message, final Throwable cause) {
-      super(message, cause);
-    }
-
-  }
-
-  private static class DestinationException extends RuntimeException {
-
-    DestinationException(final String message) {
-      super(message);
-    }
-
-    DestinationException(final String message, final Throwable cause) {
-      super(message, cause);
-    }
-
   }
 
 }

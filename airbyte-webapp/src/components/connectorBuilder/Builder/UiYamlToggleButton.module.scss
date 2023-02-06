@@ -1,0 +1,38 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.button {
+  cursor: pointer;
+  border: variables.$border-thin solid colors.$dark-blue;
+  background-color: colors.$dark-blue;
+  border-radius: variables.$border-radius-sm;
+  padding: 0;
+  overflow: hidden;
+
+  // absolute positioning so it is in the same spot in both the ui and yaml views
+  position: absolute;
+  top: 15px;
+  left: 51px;
+  display: grid;
+  grid-template: 1fr / 1fr 1fr;
+}
+
+.text {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  padding: 4px 8px;
+}
+
+.selected {
+  background-color: transparent;
+  color: colors.$white;
+}
+
+.unselected {
+  background-color: colors.$white;
+  color: colors.$dark-blue;
+}

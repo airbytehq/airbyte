@@ -123,7 +123,7 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     switch (event.key) {
       case "Enter":
       case "Tab":
-        inputValue.trim().length > 1 && onChange([...fieldValue, inputValue.trim()]);
+        inputValue.trim().length >= 1 && onChange([...fieldValue, inputValue.trim()]);
 
         event.preventDefault();
         setInputValue("");

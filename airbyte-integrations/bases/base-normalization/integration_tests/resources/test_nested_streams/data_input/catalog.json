@@ -7,10 +7,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "date": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             },
             "partition": {
               "type": ["null", "object"],
@@ -22,7 +25,7 @@
                     "items": {
                       "properties": {
                         "id": {
-                          "type": ["null", "string"]
+                          "$ref": "WellKnownTypes.json#/definitions/String"
                         }
                       }
                     }
@@ -33,7 +36,7 @@
                   "items": {
                     "properties": {
                       "currency": {
-                        "type": ["null", "string"]
+                        "$ref": "WellKnownTypes.json#/definitions/String"
                       }
                     }
                   }
@@ -58,10 +61,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "date": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         },
@@ -80,10 +86,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "date": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         },
@@ -104,10 +113,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "date": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         },
@@ -126,7 +138,10 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "conflict_stream_name": {
               "type": ["null", "object"],
@@ -137,14 +152,14 @@
                     "type": "object",
                     "properties": {
                       "groups": {
-                        "type": "string"
+                        "$ref": "WellKnownTypes.json#/definitions/String"
                       }
                     },
                     "custom_fields": {
                       "items": {
                         "properties": {
                           "id": {
-                            "type": ["null", "integer"]
+                            "$ref": "WellKnownTypes.json#/definitions/Integer"
                           },
                           "value": {}
                         },
@@ -153,7 +168,7 @@
                       "type": ["null", "array"]
                     },
                     "conflict_stream_name": {
-                      "type": "integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 }
@@ -176,10 +191,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "conflict_stream_scalar": {
-              "type": "integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             }
           }
         },
@@ -198,7 +216,10 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "number", "string"]
+              "oneOf": [
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
+              ]
             },
             "conflict_stream_array": {
               "type": ["null", "array"],
@@ -208,7 +229,7 @@
                   "items": {
                     "properties": {
                       "id": {
-                        "type": ["null", "integer"]
+                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                       }
                     }
                   }
@@ -232,7 +253,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": "integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
             "children": {
               "type": ["null", "array"],
@@ -240,20 +261,20 @@
                 "type": "object",
                 "properties": {
                   "ab_id": {
-                    "type": ["null", "integer"]
+                    "$ref": "WellKnownTypes.json#/definitions/Integer"
                   },
                   "owner": {
                     "type": ["null", "object"],
                     "properties": {
                       "owner_id": {
-                        "type": ["null", "integer"]
+                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                       },
                       "column`_'with\"_quotes": {
                         "type": ["null", "array"],
                         "items": {
                           "properties": {
                             "currency": {
-                              "type": ["null", "string"]
+                              "$ref": "WellKnownTypes.json#/definitions/String"
                             }
                           }
                         }
@@ -282,7 +303,7 @@
             "array_of_strings": {
               "type": ["null", "array"],
               "items": {
-                "type": ["null", "string"]
+                "$ref": "WellKnownTypes.json#/definitions/String"
               }
             },
             "nested_array_parent": {
@@ -291,7 +312,7 @@
                 "nested_array": {
                   "type": ["null", "array"],
                   "items": {
-                    "type": ["null", "string"]
+                    "$ref": "WellKnownTypes.json#/definitions/String"
                   }
                 }
               }

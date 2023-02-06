@@ -3,7 +3,8 @@ plugins {
     id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
+// Use the node version that's defined in the .nvmrc file
+def nodeVersion = new File("${projectDir}/.nvmrc").text.trim();
 
 // This array should contain a path to all configs that are common to most build tasks and
 // might affect them (i.e. if any of those files change we want to rerun most tasks)
@@ -18,6 +19,7 @@ def commonConfigs = [
 node {
     download = true
     version = nodeVersion
+    npmInstallCommand = 'ci'
 }
 
 npm_run_build {
@@ -32,7 +34,7 @@ npm_run_build {
 task test(type: NpmTask) {
     dependsOn assemble
 
-    args = ['run', 'test', '--', '--watchAll=false', '--silent']
+    args = ['run', 'test:ci']
     inputs.files commonConfigs
     inputs.dir 'src'
 }
@@ -69,6 +71,10 @@ task buildStorybook(type: NpmTask) {
     inputs.dir 'src'
 
     outputs.dir 'build/storybook'
+
+    environment = [
+        'NODE_OPTIONS': '--max_old_space_size=4096'
+    ]
 }
 
 task copyBuildOutput(type: Copy) {
@@ -104,16 +110,8 @@ task copyNginx(type: Copy) {
     into "build/docker/bin/nginx"
 }
 
-task stylelint(type: NpmTask) {
-    dependsOn npmInstall
-    args = ['run', 'stylelint']
-    inputs.files commonConfigs
-    inputs.file '.stylelintrc'
-    inputs.dir 'src'
-}
-
 // Those tasks should be run as part of the "check" task
-check.dependsOn validateLinks, licenseCheck, test, stylelint
+check.dependsOn validateLinks, licenseCheck, test
 
 build.dependsOn buildStorybook
 

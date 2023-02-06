@@ -12,20 +12,44 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useAppMonitoringService, AppActionCodes } from "hooks/services/AppMonitoringService";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
-import { FeatureSet, useFeatureService } from "hooks/services/Feature";
+import { FeatureSet, FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { rejectAfter } from "utils/promises";
+
+/**
+ * This service hardcodes two conventions about the format of the LaunchDarkly feature
+ * flags we use to override feature settings:
+ * 1) each feature flag's key (a unique string which is used as the flag's field name in
+ *    LaunchDarkly's JSON payloads) is a string satisfying the LDFeatureName type.
+ * 2) for each feature flag, LaunchDarkly will return a JSON blob satisfying the
+ *    LDFeatureToggle type.
+ *
+ * The primary benefit of programmatically requiring a specific prefix is to provide a
+ * reliable search term which can be used in LaunchDarkly to filter the list of feature
+ * flags to all of, and only, the ones which can dynamically toggle features in the UI.
+ *
+ * LDFeatureToggle objects can take three forms, representing the three possible decision
+ * states LaunchDarkly can provide for a user/feature pair:
+ * |--------------------------+-----------------------------------------------|
+ * | `{}`                     | use the application's default feature setting |
+ * | `{ "enabled": true }`    | enable the feature                            |
+ * | `{ "enabled": false }`   | disable the feature                           |
+ * |--------------------------+-----------------------------------------------|
+ */
+const FEATURE_FLAG_PREFIX = "featureService";
+type LDFeatureName = `${typeof FEATURE_FLAG_PREFIX}.${FeatureItem}`;
+interface LDFeatureToggle {
+  enabled?: boolean;
+}
+type LDFeatureFlagResponse = Record<LDFeatureName, LDFeatureToggle>;
+type LDInitState = "initializing" | "failed" | "initialized";
 
 /**
  * The maximum time in milliseconds we'll wait for LaunchDarkly to finish initialization,
  * before running disabling it.
  */
 const INITIALIZATION_TIMEOUT = 5000;
-
-const FEATURE_FLAG_EXPERIMENT = "featureService.overwrites";
-
-type LDInitState = "initializing" | "failed" | "initialized";
 
 function mapUserToLDUser(user: User | null, locale: string): LDClient.LDUser {
   return user
@@ -69,18 +93,20 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
 
   /**
    * Update the feature overwrites based on the LaunchDarkly value.
-   * It's expected to be a comma separated list of features (the values
-   * of the enum) that should be enabled. Each can be prefixed with "-"
-   * to disable the feature instead.
+   * The feature flag variants which do not include a JSON `enabled` field are filtered
+   * out; then, each feature corresponding to one of the remaining feature flag overwrites
+   * is either enabled or disabled for the current user based on the boolean value of its
+   * overwrite's `enabled` field.
    */
-  const updateFeatureOverwrites = (featureOverwriteString: string) => {
-    const featureSet = featureOverwriteString.split(",").reduce((featureSet, featureString) => {
-      const [key, enabled] = featureString.startsWith("-") ? [featureString.slice(1), false] : [featureString, true];
-      return {
-        ...featureSet,
-        [key]: enabled,
-      };
-    }, {} as FeatureSet);
+  const updateFeatureOverwrites = () => {
+    const allFlags = (ldClient.current?.allFlags() ?? {}) as LDFeatureFlagResponse;
+    const featureSet: FeatureSet = Object.fromEntries(
+      Object.entries(allFlags)
+        .filter(([flagName]) => flagName.startsWith(FEATURE_FLAG_PREFIX))
+        .map(([flagName, { enabled }]) => [flagName.replace(`${FEATURE_FLAG_PREFIX}.`, ""), enabled])
+        .filter(([_, enabled]) => typeof enabled !== "undefined")
+    );
+
     setFeatureOverwrites(featureSet);
   };
 
@@ -98,7 +124,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         analyticsService.setContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
         // Check for overwritten i18n messages
         updateI18nMessages();
-        updateFeatureOverwrites(ldClient.current?.variation(FEATURE_FLAG_EXPERIMENT, ""));
+        updateFeatureOverwrites();
       })
       .catch((reason) => {
         // If the promise fails, either because LaunchDarkly service fails to initialize, or
@@ -113,19 +139,12 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   }
 
   useEffectOnce(() => {
-    const onFeatureServiceCange = (newOverwrites: string) => {
-      updateFeatureOverwrites(newOverwrites);
-    };
-    ldClient.current?.on(`change:${FEATURE_FLAG_EXPERIMENT}`, onFeatureServiceCange);
-    return () => ldClient.current?.off(`change:${FEATURE_FLAG_EXPERIMENT}`, onFeatureServiceCange);
-  });
-
-  useEffectOnce(() => {
     const onFeatureFlagsChanged = () => {
       // Update analytics context whenever a flag changes
       analyticsService.setContext({ experiments: JSON.stringify(ldClient.current?.allFlags()) });
       // Check for overwritten i18n messages
       updateI18nMessages();
+      updateFeatureOverwrites();
     };
     ldClient.current?.on("change", onFeatureFlagsChanged);
     return () => ldClient.current?.off("change", onFeatureFlagsChanged);

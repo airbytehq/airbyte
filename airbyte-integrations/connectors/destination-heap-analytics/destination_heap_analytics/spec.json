@@ -1,0 +1,142 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/heap-analytics",
+  "supported_destination_sync_modes": ["append", "append_dedup"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Heap Analytics Destination Spec",
+    "type": "object",
+    "required": ["base_url", "app_id", "api"],
+    "additionalProperties": true,
+    "properties": {
+      "app_id": {
+        "order": 0,
+        "type": "string",
+        "title": "App Id",
+        "description": "The Environment Id of your Main Profudction project, read <a href=\"https://help.heap.io/data-management/data-management-features/projects-environments/\">the doc</a> to learn more.",
+        "default": "11"
+      },
+      "base_url": {
+        "order": 1,
+        "type": "string",
+        "title": "Base URL",
+        "description": "The Base URL for Heap Analytics",
+        "default": "https://heapanalytics.com",
+        "examples": ["https://heapanalytics.com"]
+      },
+      "api": {
+        "order": 2,
+        "type": "object",
+        "title": "API Type",
+        "additionalProperties": true,
+        "oneOf": [
+          {
+            "order": 0,
+            "type": "object",
+            "title": "Track Events",
+            "required": [
+              "api_type",
+              "property_columns",
+              "event_column",
+              "identity_column"
+            ],
+            "properties": {
+              "api_type": {
+                "order": 0,
+                "type": "string",
+                "const": "track"
+              },
+              "property_columns": {
+                "order": 1,
+                "type": "string",
+                "title": "Property Columns",
+                "default": "*",
+                "description": "Please list all columns populated to the properties attribute, split by comma(,). It's case sensitive.",
+                "examples": ["subject,variation"]
+              },
+              "event_column": {
+                "order": 2,
+                "type": "string",
+                "title": "Event Column",
+                "description": "Please pick the column populated to the event attribute. It's case sensitive.",
+                "examples": ["order_name"]
+              },
+              "identity_column": {
+                "order": 3,
+                "type": "string",
+                "title": "Identity Column",
+                "description": "Please pick the column populated to the identity attribute.",
+                "examples": ["email"]
+              },
+              "timestamp_column": {
+                "order": 4,
+                "type": "string",
+                "title": "Identity Column",
+                "description": "Please pick the column populated to the (optional) timestamp attribute. time_now() will be used if missing.",
+                "examples": ["updated_at"]
+              }
+            }
+          },
+          {
+            "order": 1,
+            "type": "object",
+            "title": "Add User Properties",
+            "required": ["api_type", "property_columns", "identity_column"],
+            "properties": {
+              "api_type": {
+                "order": 0,
+                "type": "string",
+                "const": "add_user_properties"
+              },
+              "property_columns": {
+                "order": 1,
+                "type": "string",
+                "title": "Property Columns",
+                "default": "*",
+                "description": "Please list all columns populated to the properties attribute, split by comma(,). It's case sensitive.",
+                "examples": ["age,language,profession"]
+              },
+              "identity_column": {
+                "order": 3,
+                "type": "string",
+                "title": "Identity Column",
+                "description": "Please pick the column populated to the identity attribute.",
+                "examples": ["user_id"]
+              }
+            }
+          },
+          {
+            "order": 2,
+            "type": "object",
+            "title": "Add Account Properties",
+            "required": ["api_type", "property_columns", "account_id_column"],
+            "properties": {
+              "api_type": {
+                "order": 0,
+                "type": "string",
+                "const": "add_account_properties"
+              },
+              "property_columns": {
+                "order": 1,
+                "type": "string",
+                "title": "Property Columns",
+                "default": "*",
+                "description": "Please list all columns populated to the properties attribute, split by comma(,). It's case sensitive.",
+                "examples": [
+                  "is_in_good_standing,revenue_potential,account_hq,subscription"
+                ]
+              },
+              "account_id_column": {
+                "order": 3,
+                "type": "string",
+                "title": "Account ID Column",
+                "description": "Please pick the column populated to the account_id attribute.",
+                "examples": ["company_name"]
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

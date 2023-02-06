@@ -24,6 +24,10 @@ image:
 ##
 podAnnotations: {}
 
+##  metrics.podLabels [object] Add extra labels to the metrics-reporter pod
+##
+podLabels: {}
+
 ##  metrics.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:

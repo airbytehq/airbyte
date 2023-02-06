@@ -75,7 +75,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
   return (
     <ReflexContainer className={className} orientation={orientation}>
       <ReflexElement
-        className={styles.panelStyle}
+        className={classNames(styles.panelStyle, firstPanel.className, { [styles.fullWidth]: hideSecondPanel })}
         propagateDimensions
         minSize={firstPanel.minWidth}
         flex={firstPanel.flex}
@@ -83,43 +83,36 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
           firstPanel.onStopResize?.(args.component.props.flex);
         }}
       >
-        <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
-          {firstPanel.children}
-        </PanelContainer>
+        <PanelContainer overlay={firstPanel.overlay}>{firstPanel.children}</PanelContainer>
       </ReflexElement>
-      {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
-      {!hideSecondPanel && (
-        <ReflexSplitter className={styles.splitter}>
-          <div
-            className={classNames({
-              [styles.panelGrabberVertical]: orientation === "vertical",
-              [styles.panelGrabberHorizontal]: orientation === "horizontal",
-            })}
-          >
-            <div
-              className={classNames(styles.handleIcon, {
-                [styles.handleIconVertical]: orientation === "vertical",
-                [styles.handleIconHorizontal]: orientation === "horizontal",
-              })}
-            />
-          </div>
-        </ReflexSplitter>
-      )}
-      {!hideSecondPanel && (
-        <ReflexElement
-          className={styles.panelStyle}
-          propagateDimensions
-          minSize={secondPanel.minWidth}
-          flex={secondPanel.flex}
-          onStopResize={(args) => {
-            secondPanel.onStopResize?.(args.component.props.flex);
-          }}
+      <ReflexSplitter className={classNames(styles.splitter, { [styles.hidden]: hideSecondPanel })}>
+        <div
+          className={classNames({
+            [styles.panelGrabberVertical]: orientation === "vertical",
+            [styles.panelGrabberHorizontal]: orientation === "horizontal",
+          })}
         >
-          <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
-            {secondPanel.children}
-          </PanelContainer>
-        </ReflexElement>
-      )}
+          <div
+            className={classNames(styles.handleIcon, {
+              [styles.handleIconVertical]: orientation === "vertical",
+              [styles.handleIconHorizontal]: orientation === "horizontal",
+            })}
+          />
+        </div>
+      </ReflexSplitter>
+      <ReflexElement
+        className={classNames(styles.panelStyle, secondPanel.className, {
+          [styles.hidden]: hideSecondPanel,
+        })}
+        propagateDimensions
+        minSize={secondPanel.minWidth}
+        flex={secondPanel.flex}
+        onStopResize={(args) => {
+          secondPanel.onStopResize?.(args.component.props.flex);
+        }}
+      >
+        {!hideSecondPanel && <PanelContainer overlay={secondPanel.overlay}>{secondPanel.children}</PanelContainer>}
+      </ReflexElement>
     </ReflexContainer>
   );
 };

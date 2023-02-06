@@ -36,12 +36,6 @@
               "$ref": "WellKnownTypes.json#/definitions/Number"
             }
           },
-          "array_big_number": {
-            "type": ["array"],
-            "items": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
-            }
-          },
           "array_integer": {
             "type": ["array"],
             "items": {

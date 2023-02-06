@@ -1,19 +1,20 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-import { CreationFormPage } from "pages/ConnectionPage/pages/CreationFormPage/CreationFormPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
-import AllSourcesPage from "./pages/AllSourcesPage";
-import CreateSourcePage from "./pages/CreateSourcePage/CreateSourcePage";
-import SourceItemPage from "./pages/SourceItemPage";
+
+const AllSourcesPage = React.lazy(() => import("./pages/AllSourcesPage"));
+const CreateSourcePage = React.lazy(() => import("./pages/CreateSourcePage/CreateSourcePage"));
+const SourceItemPage = React.lazy(() => import("./pages/SourceItemPage"));
+const CreateConnectionPage = React.lazy(() => import("pages/connections/CreateConnectionPage"));
 
 export const SourcesPage: React.FC = () => (
   <Routes>
     <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
-    <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+    <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
     <Route
       path=":id/*"
       element={

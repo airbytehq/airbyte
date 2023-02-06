@@ -6,6 +6,7 @@ import { DefaultLogoCatalog } from "components/common/DefaultLogoCatalog";
 const IconContainer = styled.img`
   height: 100%;
   width: 100%;
+  object-fit: contain;
 `;
 
 const IconDefaultContainer = styled.div`

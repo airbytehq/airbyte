@@ -11,6 +11,19 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Represents an Airbyte type. This corresponds to the data type that is present on the various
+ * AirbyteMessages (e.g. AirbyteRecordMessage, AirbyteCatalog).
+ *
+ * This type system is realized using JSON schemas. In order to work around some of the limitations
+ * of JSON schema, the newer version of the protocol defines new types in well_known_types.yaml.
+ *
+ * Note that the legacy version of the protocol relied on an airbyte_type property in the JSON
+ * schema. This is NOT to be confused with the overall concept of an Airbyte data types, which is
+ * essentially Airbyte's notion of what a record's data type is.
+ *
+ * TODO : Rename this file to AirbyteDataType.
+ */
 public class JsonSchemaType {
 
   public static final String TYPE = "type";
@@ -26,7 +39,7 @@ public class JsonSchemaType {
   public static final String AIRYBTE_INT_TYPE = "integer";
   public static final String CONTENT_ENCODING = "contentEncoding";
   public static final String BASE_64 = "base64";
-  public static final String AIRBYTE_TYPE = "airbyte_type";
+  public static final String LEGACY_AIRBYTE_TYPE_PROPERTY = "airbyte_type";
   public static final String ITEMS = "items";
 
   public static final JsonSchemaType STRING_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING_V1).build();
@@ -43,7 +56,8 @@ public class JsonSchemaType {
 
   public static final JsonSchemaType STRING = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build();
   public static final JsonSchemaType NUMBER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).build();
-  public static final JsonSchemaType INTEGER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).withAirbyteType(AIRYBTE_INT_TYPE).build();
+  public static final JsonSchemaType INTEGER =
+      JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).withLegacyAirbyteTypeProperty(AIRYBTE_INT_TYPE).build();
   public static final JsonSchemaType BOOLEAN = JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN).build();
   public static final JsonSchemaType OBJECT = JsonSchemaType.builder(JsonSchemaPrimitive.OBJECT).build();
   public static final JsonSchemaType ARRAY = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).build();
@@ -52,26 +66,26 @@ public class JsonSchemaType {
   public static final JsonSchemaType STRING_TIME_WITH_TIMEZONE =
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withFormat(TIME)
-          .withAirbyteType(TIME_WITH_TIMEZONE).build();
+          .withLegacyAirbyteTypeProperty(TIME_WITH_TIMEZONE).build();
   public static final JsonSchemaType STRING_TIME_WITHOUT_TIMEZONE =
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withFormat(TIME)
-          .withAirbyteType(TIME_WITHOUT_TIMEZONE).build();
+          .withLegacyAirbyteTypeProperty(TIME_WITHOUT_TIMEZONE).build();
   public static final JsonSchemaType STRING_TIMESTAMP_WITH_TIMEZONE =
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withFormat(DATE_TIME)
-          .withAirbyteType(TIMESTAMP_WITH_TIMEZONE).build();
+          .withLegacyAirbyteTypeProperty(TIMESTAMP_WITH_TIMEZONE).build();
   public static final JsonSchemaType STRING_TIMESTAMP_WITHOUT_TIMEZONE =
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withFormat(DATE_TIME)
-          .withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
+          .withLegacyAirbyteTypeProperty(TIMESTAMP_WITHOUT_TIMEZONE).build();
   public static final JsonSchemaType STRING_DATE =
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withFormat(DATE)
           .build();
   public static final JsonSchemaType NUMBER_BIGINT =
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-          .withAirbyteType("big_integer")
+          .withLegacyAirbyteTypeProperty("big_integer")
           .build();
 
   private final Map<String, Object> jsonSchemaTypeMap;
@@ -111,8 +125,8 @@ public class JsonSchemaType {
       return this;
     }
 
-    public Builder withAirbyteType(final String value) {
-      typeMapBuilder.put(AIRBYTE_TYPE, value);
+    public Builder withLegacyAirbyteTypeProperty(final String value) {
+      typeMapBuilder.put(LEGACY_AIRBYTE_TYPE_PROPERTY, value);
       return this;
     }
 

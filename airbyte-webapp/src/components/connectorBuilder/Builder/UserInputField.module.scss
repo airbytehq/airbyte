@@ -1,0 +1,12 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.icon {
+  color: colors.$blue-400;
+}

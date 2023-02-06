@@ -220,6 +220,11 @@ spec:
                 secretKeyRef:
                   name: airbyte-secrets
                   key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+            - name: CONTAINER_ORCHESTRATOR_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONTAINER_ORCHESTRATOR_ENABLED
             - name: CONTAINER_ORCHESTRATOR_IMAGE
               valueFrom:
                 configMapKeyRef:

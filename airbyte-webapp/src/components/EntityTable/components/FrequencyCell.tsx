@@ -1,36 +1,34 @@
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
+
+import { Text } from "components/ui/Text";
 
 import { ConnectionScheduleData, ConnectionScheduleType } from "core/request/AirbyteClient";
 
+import styles from "./FrequencyCell.module.scss";
+
 interface FrequencyCellProps {
-  value: ConnectionScheduleData;
+  value?: ConnectionScheduleData;
   enabled?: boolean;
   scheduleType?: ConnectionScheduleType;
 }
 
-const Content = styled.div<{ enabled?: boolean }>`
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
-`;
-
-const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled, scheduleType }) => {
+export const FrequencyCell: React.FC<FrequencyCellProps> = ({ value, enabled, scheduleType }) => {
   if (scheduleType === ConnectionScheduleType.cron || scheduleType === ConnectionScheduleType.manual) {
     return (
-      <Content enabled={enabled}>
+      <Text className={classNames(styles.text, { [styles.enabled]: enabled })} size="sm">
         <FormattedMessage id={`frequency.${scheduleType}`} />
-      </Content>
+      </Text>
     );
   }
 
   return (
-    <Content enabled={enabled}>
+    <Text className={classNames(styles.text, { [styles.enabled]: enabled })} size="sm">
       <FormattedMessage
-        id={`frequency.${value ? value.basicSchedule?.timeUnit : "manual"}`}
-        values={{ value: value.basicSchedule?.units }}
+        id={`frequency.${value?.basicSchedule?.timeUnit ?? "manual"}`}
+        values={{ value: value?.basicSchedule?.units }}
       />
-    </Content>
+    </Text>
   );
 };
-
-export default FrequencyCell;
