@@ -89,7 +89,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     Common base class for report streams
     """
 
-    primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
+    primary_key = ["profileId", "recordType", "reportDate", "recordId"]
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
     REPORTING_PERIOD = 60
     # (Service limits section)
@@ -160,7 +160,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    updatedAt=pendulum.now(tz=profile.timezone).replace(microsecond=0).to_iso8601_string(),
+                    recordId=metric_object[self.metrics_type_to_id_map[report_info.record_type]],
                     metric=metric_object,
                 ).dict()
 
@@ -245,6 +245,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :return: Map record type to list of available metrics
         """
 
+    @property
+    @abstractmethod
+    def metrics_type_to_id_map(self) -> Dict[str, List]:
+        """
+        :return: Map record type to to its unique identifier in metrics
+        """
+
     def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
         """
         Check report status and return download link if report generated successfuly
@@ -290,6 +297,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
         if start_date:
             start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
+            # Taking date from state if it's not older than 60 days
             return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
             return max(self._start_date, today.subtract(days=self.REPORTING_PERIOD))
@@ -361,13 +369,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 continue
             # Some of the record types has subtypes. For example asins type
             # for  product report have keyword and targets subtypes and it
-            # repseneted as asins_keywords and asins_targets types. Those
-            # subtypes have mutualy excluded parameters so we requesting
+            # represented as asins_keywords and asins_targets types. Those
+            # subtypes have mutually excluded parameters so we requesting
             # different metric list for each record.
-            record_type = record_type.split("_")[0]
+            request_record_type = record_type.split("_")[0]
             self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
             response = self._send_http_request(
-                urljoin(self._url, self.report_init_endpoint(record_type)),
+                urljoin(self._url, self.report_init_endpoint(request_record_type)),
                 profile.profileId,
                 report_init_body,
             )
