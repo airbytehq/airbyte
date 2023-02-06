@@ -2,10 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from typing import Any, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_exact.streams import (

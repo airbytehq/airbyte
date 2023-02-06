@@ -26,14 +26,22 @@ class MySingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Auth
 
 
 class ExactStream(HttpStream, IncrementalMixin):
-    _cursor_value = None
     _single_refresh_token_authenticator = None
+    _divisions = None
+    _state_per_division = {}
 
     def __init__(self, config: Mapping[str, Any]):
-        self._url_base = f"https://start.exactonline.nl/api/v1/{config['division']}/"
+        self._divisions = config["divisions"]
+        for division in self._divisions:
+            self._state_per_division[str(division)] = {}
+
+        token_expiry_date = config["credentials"].get("token_expiry_date")
+        if token_expiry_date:
+            token_expiry_date = pendulum.parse(token_expiry_date)
 
         self._single_refresh_token_authenticator = MySingleUseRefreshTokenOauth2Authenticator(
             connector_config=config,
+            token_expiry_date=token_expiry_date,
             token_refresh_endpoint="https://start.exactonline.nl/api/oauth2/token",
         )
         self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
@@ -48,17 +56,14 @@ class ExactStream(HttpStream, IncrementalMixin):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {
-            self.cursor_field: self._cursor_value,
-        }
+        return self._state_per_division
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         if not value:
             return
 
-        if self.cursor_field in value:
-            self._cursor_value = value[self.cursor_field]
+        self._state_per_division = value
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> str:
         """
@@ -81,7 +86,9 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return {"Accept": "application/json"}
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         """
         The sync endpoints requires selection of fields to return. We use the configured catalog to make selection
         of fields we want to have.
@@ -96,16 +103,20 @@ class ExactStream(HttpStream, IncrementalMixin):
             "$select": ",".join(configured_properties),
         }
 
-        if self._cursor_value:
+        division = str(stream_slice["division"])
+        state = self._state_per_division[division]
+        cursor_value = state.get(self.cursor_field)
+
+        if cursor_value:
             if self.cursor_field == "Timestamp":
-                params["$filter"] = f"Timestamp gt {self._cursor_value}L"
+                params["$filter"] = f"Timestamp gt {cursor_value}L"
             elif self.cursor_field == "Modified":
                 # value is a timestamp stored as string in UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_item)
                 # The Exact API (OData format) doesn't accept timezone info. Instead, we parse the timestamp into
                 # the API's local timezone (CET) without timezone info.
 
                 tz_cet = pendulum.timezone("CET")
-                timestamp = pendulum.parse(self._cursor_value)
+                timestamp = pendulum.parse(cursor_value)
                 timestamp = tz_cet.convert(timestamp)
                 timestamp_str = timestamp.isoformat().split("+")[0]
 
@@ -134,17 +145,23 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return [self._parse_item(x) for x in results]
 
-    def read_records(self, *args, **kwargs) -> Iterable[StreamData]:
-        """Overridden to keep track of the cursor."""
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[StreamData]:
+        """Overridden to change the url_base based on the current division, and to keep track of the cursor."""
 
-        for record in super().read_records(*args, **kwargs):
+        division = str(stream_slice["division"])
+        self._url_base = f"https://start.exactonline.nl/api/v1/{division}/"
+
+        for record in super().read_records(stream_slice=stream_slice, **kwargs):
             # Track the largest cursor value
             if self.cursor_field:
                 cursor_value = record[self.cursor_field]
-                self._cursor_value = max(cursor_value, self._cursor_value) if self._cursor_value else cursor_value
+                current_cursor_value = self._state_per_division[division].get(self.cursor_field)
+                current_cursor_value = cursor_value if not current_cursor_value else current_cursor_value
+
+                if current_cursor_value:
+                    self._state_per_division[division].update({self.cursor_field: max(cursor_value, current_cursor_value)})
 
             yield record
-
 
     def _is_token_expired(self, response: requests.Response):
         if response.status_code == 401:
@@ -226,16 +243,23 @@ class ExactStream(HttpStream, IncrementalMixin):
                     time.sleep(2**num_retry + random.random())
                     continue
 
-                if self._is_token_expired(response):
-                    logger.info("Access token expired: will retry after refresh")
+                if not self._is_token_expired(response):
+                    raise exc
 
+                logger.info("Access token expired: will retry after refresh")
+
+                try:
                     # mark the token as expired and overwrite thea authorization header
                     self._single_refresh_token_authenticator.set_token_expiry_date(pendulum.now().subtract(minutes=1))
                     request.headers.update(self._single_refresh_token_authenticator.get_auth_header())
 
-                    continue
+                except Exception as exc:
+                    raise Exception("Failed to refresh expired access token") from exc
 
-                raise exc
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Overridden to return a list of divisions to extract endpoints for."""
+
+        return [{"division": x} for x in self._divisions]
 
 
 class ExactSyncStream(ExactStream):
