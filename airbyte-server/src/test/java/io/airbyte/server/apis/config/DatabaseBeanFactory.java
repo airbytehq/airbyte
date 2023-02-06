@@ -13,6 +13,12 @@ import jakarta.inject.Singleton;
 import org.jooq.DSLContext;
 import org.mockito.Mockito;
 
+/**
+ * In order to be able to mock the Beans that are defined in a factory, we need to create a Factory dedicated to the test.
+ * This could be removed and change to @MockBean annotation once those Beans are moved to @Singleton.
+ *
+ * If some Beans are added in a factory of the main source folder, we will need to mock it here as well.
+ */
 @Factory
 public class DatabaseBeanFactory {
 
