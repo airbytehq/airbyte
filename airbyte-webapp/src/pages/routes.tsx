@@ -5,6 +5,7 @@ import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
+import { useBuildUpdateCheck } from "hooks/services/useBuildUpdateCheck";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
@@ -92,6 +93,8 @@ const RoutingWithWorkspace: React.FC<{ element?: JSX.Element }> = ({ element }) 
 };
 
 export const Routing: React.FC = () => {
+  useBuildUpdateCheck();
+
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
     () =>

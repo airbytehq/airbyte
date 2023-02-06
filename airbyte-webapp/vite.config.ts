@@ -8,7 +8,7 @@ import checker from "vite-plugin-checker";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
-import { docMiddleware, patchReactVirtualized } from "./packages/vite-plugins";
+import { buildInfo, docMiddleware, patchReactVirtualized } from "./packages/vite-plugins";
 
 export default defineConfig(({ mode }) => {
   // Load variables from all .env files
@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       basicSsl(),
       react(),
+      buildInfo(),
       viteTsconfigPaths(),
       svgrPlugin(),
       checker({

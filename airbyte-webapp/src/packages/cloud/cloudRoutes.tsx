@@ -8,6 +8,7 @@ import LoadingPage from "components/LoadingPage";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
+import { useBuildUpdateCheck } from "hooks/services/useBuildUpdateCheck";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
@@ -116,6 +117,8 @@ export const Routing: React.FC = () => {
   const { user, inited, providers, hasCorporateEmail } = useAuthService();
 
   const { search } = useLocation();
+
+  useBuildUpdateCheck();
 
   useEffectOnce(() => {
     setSegmentAnonymousId(search);
