@@ -39,11 +39,6 @@
       "metadata_fields": {
         "title": "Metadata Fields",
         "type": "array",
-        "prefixItems": [
-          {
-            "type": "string"
-          }
-        ],
         "examples": [
           "sheetcreatedAt",
           "sheetid",
