@@ -425,6 +425,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/january_2023',
         'release_notes/december_2022',
         'release_notes/november_2022',
         'release_notes/october_2022',

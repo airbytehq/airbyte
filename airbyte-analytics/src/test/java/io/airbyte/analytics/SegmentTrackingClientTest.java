@@ -4,6 +4,9 @@
 
 package io.airbyte.analytics;
 
+import static io.airbyte.analytics.SegmentTrackingClient.AIRBYTE_ANALYTIC_SOURCE_HEADER;
+import static io.airbyte.analytics.SegmentTrackingClient.AIRBYTE_SOURCE;
+import static io.airbyte.analytics.SegmentTrackingClient.AIRBYTE_VERSION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,6 +23,9 @@ import com.segment.analytics.messages.TrackMessage;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.micronaut.http.HttpHeaders;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.context.ServerRequestContext;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -37,8 +43,8 @@ class SegmentTrackingClientTest {
   private static final TrackingIdentity IDENTITY = new TrackingIdentity(AIRBYTE_VERSION, UUID.randomUUID(), EMAIL, false, false, true);
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final Function<UUID, TrackingIdentity> MOCK_TRACKING_IDENTITY = (workspaceId) -> IDENTITY;
-  private static final String AIRBYTE_VERSION_KEY = "airbyte_version";
   private static final String JUMP = "jump";
+  private static final String EMAIL_KEY = "email";
 
   private Analytics analytics;
   private SegmentTrackingClient segmentTrackingClient;
@@ -69,7 +75,7 @@ class SegmentTrackingClientTest {
         .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
         .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
         .put("deployment_id", DEPLOYMENT.getDeploymentId())
-        .put("email", IDENTITY.getEmail().get())
+        .put(EMAIL_KEY, IDENTITY.getEmail().get())
         .put("subscribed_newsletter", IDENTITY.isNews())
         .put("subscribed_security", IDENTITY.isSecurityUpdates())
         .build();
@@ -96,7 +102,7 @@ class SegmentTrackingClientTest {
         .put("deployment_env", DEPLOYMENT.getDeploymentEnv())
         .put("deployment_mode", DEPLOYMENT.getDeploymentMode())
         .put("deployment_id", DEPLOYMENT.getDeploymentId())
-        .put("email", IDENTITY.getEmail().get())
+        .put(EMAIL_KEY, IDENTITY.getEmail().get())
         .put("subscribed_newsletter", IDENTITY.isNews())
         .put("subscribed_security", IDENTITY.isSecurityUpdates())
         .build();
@@ -124,7 +130,7 @@ class SegmentTrackingClientTest {
     final ArgumentCaptor<TrackMessage.Builder> mockBuilder = ArgumentCaptor.forClass(TrackMessage.Builder.class);
     final ImmutableMap<String, Object> metadata = ImmutableMap.of(
         AIRBYTE_VERSION_KEY, AIRBYTE_VERSION.serialize(),
-        "email", EMAIL,
+        EMAIL_KEY, EMAIL,
         "height", "80 meters",
         "user_id", IDENTITY.getCustomerId());
 
@@ -142,6 +148,30 @@ class SegmentTrackingClientTest {
     segmentTrackingClient.track(null, JUMP);
 
     verify(analytics, never()).enqueue(any());
+  }
+
+  @Test
+  void testTrackAirbyteAnalyticSource() {
+    final String analyticSource = "test";
+    final HttpHeaders httpHeaders = mock(HttpHeaders.class);
+    final HttpRequest<?> httpRequest = mock(HttpRequest.class);
+
+    when(httpHeaders.get(AIRBYTE_ANALYTIC_SOURCE_HEADER)).thenReturn(analyticSource);
+    when(httpRequest.getHeaders()).thenReturn(httpHeaders);
+    ServerRequestContext.set(httpRequest);
+
+    final ArgumentCaptor<TrackMessage.Builder> mockBuilder = ArgumentCaptor.forClass(TrackMessage.Builder.class);
+    final ImmutableMap<String, Object> metadata = ImmutableMap.of(
+        AIRBYTE_VERSION_KEY, AIRBYTE_VERSION.serialize(),
+        EMAIL_KEY, EMAIL,
+        "height", "80 meters",
+        "user_id", IDENTITY.getCustomerId());
+
+    segmentTrackingClient.track(WORKSPACE_ID, JUMP, metadata);
+
+    verify(analytics).enqueue(mockBuilder.capture());
+    final TrackMessage actual = mockBuilder.getValue().build();
+    assertEquals(analyticSource, actual.properties().get(AIRBYTE_SOURCE));
   }
 
   private static ImmutableMap<String, Object> filterTrackedAtProperty(final Map<String, ?> properties) {
