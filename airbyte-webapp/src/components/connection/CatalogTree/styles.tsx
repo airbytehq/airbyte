@@ -13,10 +13,20 @@ export const CheckboxCell = styled(HeaderCell)`
 `;
 
 export const ArrowCell = styled(HeaderCell)`
+  min-width: 40px;
   max-width: 40px;
-  width: 40px;
 `;
 
 export const NameContainer = styled.span`
   padding-left: 30px;
+`;
+
+export const SyncHeaderContainer = styled.span`
+  padding-left: 34px;
+  display: inline-block;
+  min-width: 62px;
+`;
+
+export const SyncCheckboxContainer = styled.div`
+  padding-left: 24px;
 `;

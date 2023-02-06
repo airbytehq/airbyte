@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "Global Quote": {
+        "01. symbol": {
+            "type": ["string", "null"]
+        },
+        "02. open": {
+            "type": ["string", "null"]
+        },
+        "03. high": {
+            "type": ["string", "null"]
+        },
+        "04. low": {
+            "type": ["string", "null"]
+        },
+        "05. price": {
+            "type": ["string", "null"]
+        },
+        "06. volume": {
+            "type": ["string", "null"]
+        },
+        "07. latest trading day": {
+            "type": ["string", "null"]
+        },
+        "08. previous close": {
+            "type": ["string", "null"]
+        },
+        "09. change": {
+            "type": ["string", "null"]
+        },
+        "10. change percent": {
+            "type": ["string", "null"]
+        }
+      }
+    }
+  }

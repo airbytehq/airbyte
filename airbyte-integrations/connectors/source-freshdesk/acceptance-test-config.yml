@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-freshdesk:dev
 test_strictness_level: high
@@ -17,13 +17,21 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         # please remove the backward_capability checks bypass, once updated to the newer version
         backward_compatibility_tests_config:
-          disable_for_version: "0.3.8"
+          disable_for_version: "1.0.0"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
         timeout_seconds: 600
+        empty_streams:
+          - name: skills
+            bypass_reason: "no records"
+          - name: products
+            bypass_reason: "no records"
   incremental:
     tests:
       - config_path: "secrets/config.json"

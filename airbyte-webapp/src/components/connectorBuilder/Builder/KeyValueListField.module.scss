@@ -1,0 +1,27 @@
+@use "scss/variables";
+@use "scss/colors";
+
+$removeButtonWidth: 20px;
+
+.inputContainer {
+  width: 100%;
+  display: flex;
+  gap: variables.$spacing-xl;
+  align-items: center;
+}
+
+.labeledInput {
+  flex: 1;
+  max-width: 400px;
+  display: flex;
+  gap: variables.$spacing-sm;
+  align-items: center;
+}
+
+.kvLabel {
+  color: colors.$grey-400;
+}
+
+.inputWithHelper {
+  padding-right: 55px;
+}

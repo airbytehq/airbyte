@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.postgres;
 
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

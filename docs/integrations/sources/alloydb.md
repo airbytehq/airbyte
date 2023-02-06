@@ -5,10 +5,6 @@ This page contains the setup guide and reference information for the AlloyDB for
 ## Prerequisites
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
-- Allowlist one of our IP addresses to enable access to Airbyte:
-  - 34.106.109.131
-  - 34.106.196.165
-  - 34.106.60.246
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide
@@ -331,9 +327,13 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------|
-| 1.0.17  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                           |
-| 1.0.16  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256)   | Disable allow and prefer ssl modes in CDC mode |
-|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)   | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
-| 1.0.15  | 2022-10-11 | [17782](https://github.com/airbytehq/airbyte/pull/17782)   | Align with Postgres source v.1.0.15              |
-| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776)   | Align with strict-encrypt version                |
-| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7 |
+| 1.0.43  | 2022-02-06 | [21634](https://github.com/airbytehq/airbyte/pull/21634) | Improve Standard sync performance by caching objects.|
+| 1.0.36  | 2023-01-24 | [21825](https://github.com/airbytehq/airbyte/pull/21825) | Put back the original change that will cause an incremental sync to error if table contains a NULL value in cursor column.|
+| 1.0.35  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                          |
+| 1.0.34  | 2022-12-13 | [20378](https://github.com/airbytehq/airbyte/pull/20378) | Improve descriptions                                               |
+| 1.0.17  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538) | Encode database name                           |
+| 1.0.16  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256) | Disable allow and prefer ssl modes in CDC mode |
+|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 1.0.15  | 2022-10-11 | [17782](https://github.com/airbytehq/airbyte/pull/17782) | Align with Postgres source v.1.0.15              |
+| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776) | Align with strict-encrypt version                |
+| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323) | Initial commit. Based on source-postgres v.1.0.7 |

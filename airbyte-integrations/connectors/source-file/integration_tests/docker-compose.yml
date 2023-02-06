@@ -6,4 +6,4 @@ services:
       - "2222:22"
     volumes:
       - ./sample_files:/home/user1/files
-    command: user1:pass1:1001
+    command: user1:abc123@456#:1001

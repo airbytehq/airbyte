@@ -149,11 +149,10 @@ def test_discover(source, config, client):
 
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
-    with pytest.raises(Exception):
-        source.check(logger=logger, config=config)
     assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
         status=Status.FAILED, message="reader_options is not valid JSON"
     )
+
 
 def test_check_google_spreadsheets_url(source, config):
     config["url"] = "https://docs.google.com/spreadsheets/d/"

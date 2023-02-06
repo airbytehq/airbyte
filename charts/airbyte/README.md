@@ -1,6 +1,7 @@
 # airbyte
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.25](https://img.shields.io/badge/AppVersion-0.40.25-informational?style=flat-square)
+
+![Version: 0.40.33](https://img.shields.io/badge/Version-0.40.33-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.17](https://img.shields.io/badge/AppVersion-0.40.17-informational?style=flat-square)
 
 Helm chart to deploy airbyte
 
@@ -174,8 +175,8 @@ Helm chart to deploy airbyte
 | temporal.extraVolumeMounts | list | `[]` |  |
 | temporal.extraVolumes | list | `[]` |  |
 | temporal.image.pullPolicy | string | `"IfNotPresent"` |  |
-| temporal.image.repository | string | `"temporalio/auto-setup"` |  |
-| temporal.image.tag | string | `"1.7.0"` |  |
+| temporal.image.repository | string | `"airbyte/temporal-auto-setup"` |  |
+| temporal.image.tag | string | `"1.13.0"` |  |
 | temporal.livenessProbe.enabled | bool | `true` |  |
 | temporal.livenessProbe.failureThreshold | int | `3` |  |
 | temporal.livenessProbe.initialDelaySeconds | int | `5` |  |
@@ -242,13 +243,14 @@ Helm chart to deploy airbyte
 | worker.containerOrchestrator.image | string | `""` |  |
 | worker.containerSecurityContext | object | `{}` |  |
 | worker.enabled | bool | `true` |  |
+| worker.extraContainers | list | `[]` |  |
 | worker.extraEnv | list | `[]` |  |
 | worker.extraVolumeMounts | list | `[]` |  |
 | worker.extraVolumes | list | `[]` |  |
 | worker.hpa.enabled | bool | `false` |  |
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"airbyte/worker"` |  |
-| worker.image.tag | string | `"0.40.25"` |  |
+| worker.image.tag | string | `"0.40.32"` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.failureThreshold | int | `3` |  |
 | worker.livenessProbe.initialDelaySeconds | int | `30` |  |

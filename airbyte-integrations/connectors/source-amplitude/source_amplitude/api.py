@@ -15,6 +15,7 @@ from urllib.parse import parse_qs
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .errors import HTTP_ERROR_CODES, error_msg_from_status
@@ -31,6 +32,10 @@ class AmplitudeStream(HttpStream, ABC):
     def url_base(self) -> str:
         subdomain = "analytics.eu." if self.data_region == "EU Residency Server" else ""
         return f"https://{subdomain}amplitude.com/api/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -88,14 +93,19 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
                 result.append(key)
         return result
 
-    def _date_time_to_rfc3339(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         Transform 'date-time' items to RFC3339 format
         """
         date_time_fields = self._get_date_time_items_from_schema()
         for item in record:
             if item in date_time_fields:
-                record[item] = pendulum.parse(record[item]).to_rfc3339_string()
+                dt_value = record[item]
+                if not dt_value:
+                    # either null or empty string, leave it as it
+                    record[item] = dt_value
+                else:
+                    record[item] = pendulum.parse(dt_value).to_rfc3339_string()
         return record
 
     def _get_end_date(self, current_date: pendulum, end_date: pendulum = pendulum.now()):
@@ -168,7 +178,7 @@ class Events(IncrementalAmplitudeStream):
                     if record[self.cursor_field] >= state_value:
                         yield self._date_time_to_rfc3339(record)  # transform all `date-time` to RFC3339
 
-    def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[Mapping]:
+    def _parse_zip_file(self, zip_file: IO[bytes]) -> Iterable[MutableMapping]:
         with gzip.open(zip_file) as file:
             for record in file:
                 yield json.loads(record)

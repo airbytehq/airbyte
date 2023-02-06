@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.dynamodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 
 public class DynamodbDestinationStrictEncrypt extends DynamodbDestination {
 

@@ -5,10 +5,11 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -43,15 +44,34 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
-    if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
-      database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
-      schemaSet.add(schemaName);
+    try {
+      if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
+        database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
+        schemaSet.add(schemaName);
+      }
+    } catch (Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
+  }
+
+  /**
+   * When an exception occurs, we may recognize it as an issue with the users permissions
+   * or other configuration options. In these cases, we can wrap the exception in a {@link ConfigErrorException}
+   * which will exclude the error from our on-call paging/reporting
+   * @param e the exception to check.
+   * @return A ConfigErrorException with a message with actionable feedback to the user.
+   */
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+    return Optional.empty();
   }
 
   @Override
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
-    database.execute(createTableQuery(database, schemaName, tableName));
+    try {
+      database.execute(createTableQuery(database, schemaName, tableName));
+    } catch (SQLException e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   @Override
@@ -87,7 +107,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
+  public String insertTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 
