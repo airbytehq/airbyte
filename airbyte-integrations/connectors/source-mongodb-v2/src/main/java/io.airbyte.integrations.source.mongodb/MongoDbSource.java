@@ -97,11 +97,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected Set<String> getExcludedViews() {
-    return Collections.emptySet();
-  }
-
-  @Override
   protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database)
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
