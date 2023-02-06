@@ -18,29 +18,11 @@ def convert_date_to_epoch(date: str):
 
 class Nettbutikk24Stream(HttpStream, ABC):
     """
-    TODO remove this comment
-
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
 
     Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class Nettbutikk24Stream(HttpStream, ABC)` which is the current class
-    `class Customers(Nettbutikk24Stream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(Nettbutikk24Stream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalNettbutikk24Stream((Nettbutikk24Stream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
     """
 
     url_base = "https://brewshop.no/api/v1/"
@@ -68,7 +50,12 @@ class Nettbutikk24Stream(HttpStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
-        next_path = response.json().get("paging", {}).get("next")
+
+        paging = response.json().get("paging", {})
+        if type(paging) == list:
+            return None
+
+        next_path = paging.get("next")
         if next_path:
             offset = next_path.split("/")[7]
             return {"offset": offset}
@@ -85,7 +72,17 @@ class Nettbutikk24Stream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
 
-        yield from response.json().get("data")
+        yield from response.json().get("data", [])
+
+    def update_uri_params(self, next_page_token: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None):
+        offset = next_page_token.get("offset", 0) if next_page_token else 0
+        stream_since = stream_state.get("modified_on", self.uri_params.get("since")) if stream_state else self.uri_params.get("since")
+        self.uri_params.update(
+            {
+                "offset": int(offset),
+                "since": stream_since
+            }
+        )
 
 
 class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
@@ -113,7 +110,11 @@ class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
         latest_record_unix = convert_date_to_epoch(latest_record_modified_on)
         latest_record_unix = max(latest_record_unix, start_ts)
 
-        return {self.cursor_field: latest_record_unix}
+        stream_state = current_stream_state.get(self.cursor_field, 0)
+        new_stream_state = max(stream_state, latest_record_unix)
+        new_stream_state = min(int(pendulum.now().timestamp()), new_stream_state)
+
+        return {self.cursor_field: new_stream_state}
 
 
 class Products(IncrementalNettbutikk24Stream):
@@ -122,9 +123,7 @@ class Products(IncrementalNettbutikk24Stream):
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        offset = next_page_token.get("offset", 0) if next_page_token else 0
-        self.uri_params.update({"offset": int(offset)})
-
+        self.update_uri_params(next_page_token, stream_state)
         return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
 
 
@@ -134,11 +133,8 @@ class Orders(IncrementalNettbutikk24Stream):
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        offset = next_page_token.get("offset", 0) if next_page_token else 0
-        self.uri_params.update({"offset": int(offset)})
-
+        self.update_uri_params(next_page_token, stream_state)
         return "orders/{limit}/{offset}/{since}".format_map(self.uri_params)
-
 
 class SourceNettbutikk24(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
