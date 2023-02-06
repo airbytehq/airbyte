@@ -1011,7 +1011,7 @@ definitions:
           - "$ref": "#/definitions/NoPagination"
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
-      iterable:
+      partition_router:
         default: []
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"

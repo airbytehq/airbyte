@@ -33,7 +33,7 @@ definitions:
       name: "products"
       primary_key: "productId"
       path: "/products"
-  product_iterable:
+  product_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/products_stream"
@@ -49,8 +49,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/products/{{ stream_slice.productId }}/tags"
-      iterable:
-        $ref: "#/definitions/product_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   environments_stream:
@@ -63,11 +63,11 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/products/{{ stream_slice.productId }}/environments"
-      iterable:
-        $ref: "#/definitions/product_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
-  organization_iterable:
+  organization_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/organizations_stream"
@@ -83,8 +83,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/organizations/{{ stream_slice.organizationId }}/members"
-      iterable:
-        $ref: "#/definitions/organization_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/organization_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
 

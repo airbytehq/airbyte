@@ -37,7 +37,7 @@ definitions:
       name: "issues"
       primary_key: "id"
       path: "/issues"
-  issue_iterable:
+  issue_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/issues_stream"
@@ -55,8 +55,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/issues/{{ stream_slice.id }}/occurrences"
-      iterable:
-        $ref: "#/definitions/issue_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/issue_partition_router"
   scans_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

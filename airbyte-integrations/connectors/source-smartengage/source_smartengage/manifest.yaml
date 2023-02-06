@@ -28,7 +28,7 @@ definitions:
       name: "avatars"
       primary_key: "avatar_id"
       path: "/avatars/list"
-  avatars_iterable:
+  avatars_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/avatars_stream"
@@ -47,8 +47,8 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           avatar_id: "{{ stream_slice.avatar_id }}"
-      iterable:
-        $ref: "#/definitions/avatars_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/avatars_partition_router"
   # API Docs: https://smartengage.com/docs/#list-all-custom-fields
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
@@ -62,8 +62,8 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           avatar_id: "{{ stream_slice.avatar_id }}"
-      iterable:
-        $ref: "#/definitions/avatars_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/avatars_partition_router"
   # API Docs: https://smartengage.com/docs/#list-all-sequences
   sequences_stream:
     $ref: "#/definitions/base_stream"
@@ -77,8 +77,8 @@ definitions:
         $ref: "#/definitions/requester"
         request_parameters:
           avatar_id: "{{ stream_slice.avatar_id }}"
-      iterable:
-        $ref: "#/definitions/avatars_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/avatars_partition_router"
 
 streams:
   - "#/definitions/avatars_stream"

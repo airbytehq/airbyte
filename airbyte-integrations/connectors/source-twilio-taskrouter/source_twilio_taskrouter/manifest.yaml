@@ -44,7 +44,7 @@ definitions:
       path: "/v1/Workspaces"
       primary_key: "sid"
 
-  workspace_iterable:
+  workspace_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/workspaces_stream"
@@ -63,8 +63,8 @@ definitions:
         $ref: "#/definitions/requester"
       paginator:
         $ref: "#/definitions/default_paginator"
-      iterable:
-        $ref: "#/definitions/workspace_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/workspace_partition_router"
 
 streams:
   - "#/definitions/workspaces_stream"

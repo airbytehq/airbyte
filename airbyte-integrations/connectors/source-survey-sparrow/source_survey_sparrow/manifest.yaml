@@ -56,7 +56,7 @@ definitions:
       path: "/questions"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      iterable:
+      partition_router:
         type: "ListStreamSlicer"
         slice_values: "{{ config.get('survey_id') }}"
         cursor_field: "survey_id"
@@ -71,7 +71,7 @@ definitions:
       path: "/responses"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
-      iterable:
+      partition_router:
         type: "ListStreamSlicer"
         slice_values: "{{ config.get('survey_id') }}"
         cursor_field: "survey_id"

@@ -117,7 +117,7 @@ requester:
     unit: "day"
 retriever:
   name: "{{ parameters['name'] }}"
-  iterable:
+  partition_router:
     type: SingleSlice
   paginator:
     type: NoPagination
@@ -287,14 +287,14 @@ def test_interpolate_config():
 def test_list_based_stream_slicer_with_values_refd():
     content = """
     repositories: ["airbyte", "airbyte-cloud"]
-    iterable:
+    partition_router:
       type: ListStreamSlicer
       slice_values: "#/repositories"
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["iterable"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -304,7 +304,7 @@ def test_list_based_stream_slicer_with_values_refd():
 
 def test_list_based_stream_slicer_with_values_defined_in_config():
     content = """
-    iterable:
+    partition_router:
       type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: repository
@@ -314,7 +314,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["iterable"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -353,7 +353,7 @@ def test_create_substream_slicer():
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
-    iterable:
+    partition_router:
       type: SubstreamSlicer
       parent_stream_configs:
         - stream: "#/stream_A"
@@ -368,7 +368,7 @@ def test_create_substream_slicer():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["iterable"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
 
@@ -463,7 +463,7 @@ stream:
       url_base: "https://a-base-url/path"
       path: "/a-path"
       http_method: "GET"
-    iterable:
+    partition_router:
       type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: a_key

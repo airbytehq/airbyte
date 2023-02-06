@@ -59,7 +59,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
-      iterable:
+      partition_router:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/projects_stream"
@@ -105,7 +105,7 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_posthog.components.EventsCartesianProductStreamSlicer
-      stream_slicers:
+      partition_routers:
         - type: SubstreamSlicer
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"

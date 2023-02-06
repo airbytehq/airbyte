@@ -38,7 +38,7 @@ definitions:
       name: "campaigns"
       primary_key: "id"
       path: "/emailCampaigns"
-  campaign_iterable:
+  campaign_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/campaigns_stream"

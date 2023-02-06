@@ -14,6 +14,7 @@ for directory in $CONNECTORS_DIR/source-* ; do
   if test -f $FILEPATH; then
     echo "Migrating manifest located at $FILEPATH"
 
-    sed -i '' -E 's/\stream_slicer:/\iterable:/' $FILEPATH
+    sed -i '' -E 's/\stream_slicer/\partition_router/' $FILEPATH
+    sed -i '' -E 's/\iterable/\partition_router/' $FILEPATH
   fi
 done

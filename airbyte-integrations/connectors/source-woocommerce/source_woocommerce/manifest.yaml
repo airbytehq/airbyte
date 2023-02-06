@@ -85,7 +85,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      iterable:
+      partition_router:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/orders_stream"
@@ -106,7 +106,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      iterable:
+      partition_router:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/products_stream"
@@ -132,7 +132,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      iterable:
+      partition_router:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/product_attributes_stream"
@@ -181,7 +181,7 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      iterable:
+      partition_router:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/orders_stream"
@@ -203,7 +203,7 @@ definitions:
       name: "shipping_zones"
       primary_key: "id"
       path: "/shipping/zones"
-  shipping_iterable:
+  shipping_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/shipping_zones_stream"
@@ -213,8 +213,8 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      iterable:
-        $ref: "#/definitions/shipping_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/shipping_partition_router"
     $parameters:
       name: "shipping_zone_locations"
       primary_key: ["code", "type"]
@@ -223,8 +223,8 @@ definitions:
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      iterable:
-        $ref: "#/definitions/shipping_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/shipping_partition_router"
     $parameters:
       name: "shipping_zone_methods"
       primary_key: "instance_id"

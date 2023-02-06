@@ -413,8 +413,8 @@ class ModelToComponentFactory:
         )
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
-        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's iterable field components
-        # if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
+        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
+        # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
         # the factory only support passing arguments to the component constructors, whereas this performs a merge of all slicers into one.
         combined_slicers = self._merge_stream_slicers(model=model, config=config)
@@ -449,8 +449,8 @@ class ModelToComponentFactory:
         )
 
         stream_slicer = None
-        if hasattr(model.retriever, "iterable") and model.retriever.iterable:
-            stream_slicer_model = model.retriever.iterable
+        if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
+            stream_slicer_model = model.retriever.partition_router
             stream_slicer = (
                 CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}

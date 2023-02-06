@@ -501,7 +501,7 @@ class SimpleRetriever(BaseModel):
     name: Optional[str] = ""
     paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
     primary_key: Optional[PrimaryKey] = None
-    iterable: Optional[
+    partition_router: Optional[
         Union[
             CustomStreamSlicer,
             ListStreamSlicer,

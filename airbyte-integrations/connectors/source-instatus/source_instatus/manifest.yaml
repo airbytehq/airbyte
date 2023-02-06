@@ -73,7 +73,7 @@ definitions:
       primary_key: "id"
       path: "v1/user"
 
-  page_iterable:
+  page_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/status_pages_stream"
@@ -90,8 +90,8 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/components"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
 
   incidents_stream:
     $ref: "#/definitions/base_stream"
@@ -103,15 +103,15 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/incidents"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
     transformations:
       - class_name: "source_instatus.components.ListAddFields"
         fields:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
-  incident_updates_iterable:
+  incident_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamSlicer"
     parent_stream_configs:
       - stream: "#/definitions/incidents_stream"
@@ -128,8 +128,8 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.parent_slice.page_id }}/incidents/{{ stream_slice.updates_object_id }}/incident-updates/{{ stream_slice.incident_update_id }}"
-      iterable:
-        $ref: "#/definitions/incident_updates_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/incident_updates_partition_router"
 
   maintenances_stream:
     $ref: "#/definitions/base_stream"
@@ -141,15 +141,15 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/maintenances"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
     transformations:
       - class_name: "source_instatus.components.ListAddFields"
         fields:
           - path: ["updates_ids"]
             value: "{{ record['updates'] }}"
 
-  maintenance_updates_iterable:
+  maintenance_updates_partition_router:
     class_name: "source_instatus.components.UpdatesSubstreamSlicer"
     parent_stream_configs:
       - stream: "#/definitions/maintenances_stream"
@@ -166,8 +166,8 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.parent_slice.page_id }}/maintenances/{{ stream_slice.updates_object_id }}/maintenance-updates/{{ stream_slice.maintenance_update_id }}"
-      iterable:
-        $ref: "#/definitions/maintenance_updates_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/maintenance_updates_partition_router"
 
   templates_stream:
     $ref: "#/definitions/base_stream"
@@ -179,8 +179,8 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/templates"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
 
   team_stream:
     $ref: "#/definitions/base_stream"
@@ -192,8 +192,8 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/team"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
 
   subscribers_stream:
     $ref: "#/definitions/base_stream"
@@ -205,8 +205,8 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/subscribers"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
 
   metrics_stream:
     $ref: "#/definitions/base_stream"
@@ -218,10 +218,10 @@ definitions:
       requester:
         $ref: "#/definitions/api_error_handler_requester"
         path: "v1/{{ stream_slice.page_id }}/metrics"
-      iterable:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
 
-  page_url_iterable:
+  page_url_partition_router:
     type: SubstreamSlicer
     parent_stream_configs:
       - stream: "#/definitions/status_pages_stream"
@@ -237,8 +237,8 @@ definitions:
       requester:
         $ref: "#/definitions/public_data_requester"
         path: "https://{{ stream_slice.url }}.instatus.com/summary.json"
-      iterable:
-        $ref: "#/definitions/page_url_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_url_partition_router"
 
 streams:
   - "#/definitions/status_pages_stream"
