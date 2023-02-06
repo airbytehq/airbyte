@@ -12,6 +12,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.SourceCoreConfig;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
@@ -47,6 +48,7 @@ public class SchedulerApiController implements SchedulerApi {
 
   @Post("/sources/discover_schema")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCoreConfig) {
     return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig));

@@ -22,7 +22,7 @@ class MigratorsMicronautTest {
 
   // This should contain the list of all the supported majors of the airbyte protocol except the most
   // recent one since the migrations themselves are keyed on the lower version.
-  final Set<String> SUPPORTED_VERSIONS = Set.of("0");
+  final Set<String> SUPPORTED_VERSIONS = Set.of();
 
   @Test
   void testAirbyteMessageMigrationInjection() {
