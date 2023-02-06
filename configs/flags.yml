@@ -1,3 +1,0 @@
-flags:
-  - name: performance.backgroundJsonSchemaValidation
-    enabled: true

@@ -15,7 +15,7 @@ interface EntityTableDataItem {
   connectorIcon?: string;
 }
 
-interface ITableDataItem {
+interface ConnectionTableDataItem {
   connectionId: string;
   name: string;
   entityName: string;
@@ -46,5 +46,5 @@ enum SortOrderEnum {
   ASC = "asc",
 }
 
-export type { ITableDataItem, EntityTableDataItem };
+export type { ConnectionTableDataItem, EntityTableDataItem };
 export { Status, SortOrderEnum };

@@ -1206,8 +1206,10 @@ public class ConfigRepository {
 
     final Map<UUID, AirbyteCatalog> result = new HashMap<>();
     for (final Record record : records) {
-      final AirbyteCatalog catalog = Jsons.deserialize(
-          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      // We do not apply the on-the-fly migration here because the only caller is getOrInsertActorCatalog
+      // which is using this to figure out if the catalog has already been inserted. Migrating on the fly
+      // here will cause us to add a duplicate each time we check for existence of a catalog.
+      final AirbyteCatalog catalog = Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;
@@ -1560,6 +1562,30 @@ public class ConfigRepository {
         .join(ACTOR_DEFINITION).on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
         .and(ACTOR.TOMBSTONE.notEqual(true))
+        .and(releaseStageAlphaOrBeta))
+        .fetchOneInto(Integer.class);
+
+    return countResult > 0;
+  }
+
+  /**
+   * Specialized query for efficiently determining a connection's eligibility for the Free Connector
+   * Program. If a connection has at least one Alpha or Beta connector, it will be free to use as long
+   * as the workspace is enrolled in the Free Connector Program. This check is used to allow free
+   * connections to continue running even when a workspace runs out of credits.
+   *
+   * @param connectionId ID of the connection to check connectors for
+   * @return boolean indicating if an alpha or beta connector is used by the connection
+   */
+  public boolean getConnectionHasAlphaOrBetaConnector(final UUID connectionId) throws IOException {
+    final Condition releaseStageAlphaOrBeta = ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.alpha)
+        .or(ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.beta));
+
+    final Integer countResult = database.query(ctx -> ctx.selectCount()
+        .from(CONNECTION)
+        .join(ACTOR).on(ACTOR.ID.eq(CONNECTION.SOURCE_ID).or(ACTOR.ID.eq(CONNECTION.DESTINATION_ID)))
+        .join(ACTOR_DEFINITION).on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(CONNECTION.ID.eq(connectionId))
         .and(releaseStageAlphaOrBeta))
         .fetchOneInto(Integer.class);
 

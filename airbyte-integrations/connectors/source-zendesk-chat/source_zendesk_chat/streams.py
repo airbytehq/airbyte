@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlparse
 
 import pendulum
 import requests
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -19,6 +20,10 @@ class Stream(HttpStream, ABC):
     data_field = None
 
     limit = 100
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def request_kwargs(
         self,

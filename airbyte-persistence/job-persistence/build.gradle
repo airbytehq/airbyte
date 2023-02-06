@@ -5,6 +5,7 @@ plugins {
 dependencies {
     implementation project(':airbyte-commons')
     implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-oauth')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-db:jooq')

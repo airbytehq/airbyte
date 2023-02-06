@@ -44,7 +44,7 @@ export const StepsIndicator: React.FC<StepsIndicatorProps> = ({ className, steps
   return (
     <div className={classNames(className, styles.steps)}>
       {steps.map((step, index) => (
-        <StepIndicator step={step} isCurrent={activeStep === step.id} isCompleted={index < activeIndex} />
+        <StepIndicator key={step.id} step={step} isCurrent={activeStep === step.id} isCompleted={index < activeIndex} />
       ))}
     </div>
   );
