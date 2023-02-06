@@ -37,4 +37,9 @@ public class RouterService {
     return taskQueueMapper.getTaskQueue(geography, jobType);
   }
 
+  public String getTaskQueueForWorkspace(final UUID workspaceId, final TemporalJobType jobType) throws IOException {
+    final Geography geography = configRepository.getGeographyForWorkspace(workspaceId);
+    return taskQueueMapper.getTaskQueue(geography, jobType);
+  }
+
 }
