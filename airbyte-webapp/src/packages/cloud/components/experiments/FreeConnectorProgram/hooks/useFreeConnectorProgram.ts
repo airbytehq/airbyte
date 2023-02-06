@@ -27,7 +27,7 @@ export const useFreeConnectorProgram = () => {
   const requestOptions = { config, middlewares };
   const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [, setUserDidEnroll] = useState(false);
+  const [userDidEnroll, setUserDidEnroll] = useState(false);
   const { formatMessage } = useIntl();
   const { registerNotification } = useNotificationService();
 
@@ -59,6 +59,6 @@ export const useFreeConnectorProgram = () => {
 
   return {
     enrollmentStatusQuery,
-    userDidEnroll: true,
+    userDidEnroll,
   };
 };
