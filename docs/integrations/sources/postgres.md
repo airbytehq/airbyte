@@ -48,7 +48,7 @@ To replicate data from multiple Postgres schemas, re-run the command to grant ac
 Grant the user read-only access to the relevant tables:
 
 ```
-GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ```
 
 Allow user to see tables created in the future:
