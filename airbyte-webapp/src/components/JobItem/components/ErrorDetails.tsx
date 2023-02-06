@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { AttemptRead } from "core/request/AirbyteClient";
 
+import { getFailureFromAttempt, isCancelledAttempt } from "../utils";
+
 interface IProps {
   attempts?: AttemptRead[];
 }
@@ -19,10 +21,6 @@ const ExpandedFailureContainer = styled.div`
 const FailureDateDisplay = styled.span`
   font-style: italic;
 `;
-
-const getFailureFromAttempt = (attempt: AttemptRead) => {
-  return attempt.failureSummary?.failures[0];
-};
 
 const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
   const { formatMessage } = useIntl();
@@ -42,8 +40,9 @@ const ErrorDetails: React.FC<IProps> = ({ attempts }) => {
 
   const attempt = attempts[attempts.length - 1];
   const failure = getFailureFromAttempt(attempt);
+  const isCancelled = isCancelledAttempt(attempt);
 
-  if (!failure) {
+  if (!failure || isCancelled) {
     return null;
   }
 

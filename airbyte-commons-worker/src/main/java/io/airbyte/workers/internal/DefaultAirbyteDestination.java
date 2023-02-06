@@ -15,6 +15,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
+import io.airbyte.commons.protocol.DefaultProtocolSerializer;
+import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -27,7 +29,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -39,10 +43,15 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("destination")
       .setPrefixColor(Color.YELLOW_BACKGROUND);
+  static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
+      0, // Normal exit
+      143 // SIGTERM
+  );
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final AirbyteMessageBufferedWriterFactory messageWriterFactory;
+  private final ProtocolSerializer protocolSerializer;
 
   private final AtomicBoolean inputHasEnded = new AtomicBoolean(false);
 
@@ -52,16 +61,19 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory(),
+        new DefaultProtocolSerializer());
 
   }
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
                                    final AirbyteStreamFactory streamFactory,
-                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory) {
+                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory,
+                                   final ProtocolSerializer protocolSerializer) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.messageWriterFactory = messageWriterFactory;
+    this.protocolSerializer = protocolSerializer;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -75,14 +87,15 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-        Jsons.serialize(destinationConfig.getCatalog()));
+        protocolSerializer.serialize(destinationConfig.getCatalog()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 
     writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
 
+    final List<Type> acceptedMessageTypes = List.of(Type.STATE, Type.TRACE, Type.CONTROL);
     messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
-        .filter(message -> message.getType() == Type.STATE || message.getType() == Type.TRACE)
+        .filter(message -> acceptedMessageTypes.contains(message.getType()))
         .iterator();
   }
 
@@ -118,7 +131,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
-    if (destinationProcess.isAlive() || getExitValue() != 0) {
+    if (destinationProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
       final String message =
           destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");

@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_ofmapstring import AnyOfmapstring
 from connector_builder.generated.models.interpolated_request_options_provider_all_of import InterpolatedRequestOptionsProviderAllOf
 
@@ -25,10 +25,10 @@ class InterpolatedRequestOptionsProvider(BaseModel):
         request_body_json: The request_body_json of this InterpolatedRequestOptionsProvider [Optional].
     """
 
-    config: Optional[Dict[str, Any]] = None
-    request_parameters: Optional[AnyOfmapstring] = None
-    request_headers: Optional[AnyOfmapstring] = None
-    request_body_data: Optional[AnyOfmapstring] = None
-    request_body_json: Optional[AnyOfmapstring] = None
+    config: Optional[Dict[str, Any]] = Field(alias="config", default=None)
+    request_parameters: Optional[AnyOfmapstring] = Field(alias="request_parameters", default=None)
+    request_headers: Optional[AnyOfmapstring] = Field(alias="request_headers", default=None)
+    request_body_data: Optional[AnyOfmapstring] = Field(alias="request_body_data", default=None)
+    request_body_json: Optional[AnyOfmapstring] = Field(alias="request_body_json", default=None)
 
 InterpolatedRequestOptionsProvider.update_forward_refs()

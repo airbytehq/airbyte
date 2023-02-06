@@ -6,11 +6,10 @@ import { LabeledSwitch } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
-import { useConnectorForm } from "../../connectorFormContext";
+import styles from "./PropertySection.module.scss";
 import { Control } from "../Property/Control";
 import { PropertyError } from "../Property/PropertyError";
 import { PropertyLabel } from "../Property/PropertyLabel";
-import styles from "./PropertySection.module.scss";
 
 interface PropertySectionProps {
   property: FormBaseItem;
@@ -18,16 +17,10 @@ interface PropertySectionProps {
   disabled?: boolean;
 }
 
-const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disabled }) => {
+export const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disabled }) => {
   const propertyPath = path ?? property.path;
   const formikBag = useField(propertyPath);
   const [field, meta] = formikBag;
-  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows, widgetsInfo } = useConnectorForm();
-
-  const overriddenComponent = widgetsInfo[propertyPath]?.component;
-  if (overriddenComponent) {
-    return <>{overriddenComponent(property, { disabled })}</>;
-  }
 
   const labelText = property.title || property.fieldKey;
 
@@ -59,18 +52,8 @@ const PropertySection: React.FC<PropertySectionProps> = ({ property, path, disab
 
   return (
     <PropertyLabel className={styles.defaultLabel} property={property} label={labelText}>
-      <Control
-        property={property}
-        name={propertyPath}
-        addUnfinishedFlow={addUnfinishedFlow}
-        removeUnfinishedFlow={removeUnfinishedFlow}
-        unfinishedFlows={unfinishedFlows}
-        disabled={disabled}
-        error={hasError}
-      />
+      <Control property={property} name={propertyPath} disabled={disabled} error={hasError} />
       {hasError && <PropertyError>{errorMessage}</PropertyError>}
     </PropertyLabel>
   );
 };
-
-export { PropertySection };

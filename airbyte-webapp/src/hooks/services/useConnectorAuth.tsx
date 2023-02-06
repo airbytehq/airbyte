@@ -2,6 +2,8 @@ import { useCallback, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
+import { ToastType } from "components/ui/Toast";
+
 import { useConfig } from "config";
 import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
@@ -11,11 +13,11 @@ import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/
 import { isCommonRequestError } from "core/request/CommonRequestError";
 import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 
-import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useQuery } from "../useQuery";
 import { useAppMonitoringService } from "./AppMonitoringService";
 import { useNotificationService } from "./Notification";
 import { useCurrentWorkspace } from "./useWorkspace";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useQuery } from "../useQuery";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -107,7 +109,7 @@ export function useConnectorAuth(): {
             notificationService.registerNotification({
               id: "oauthConnector.credentialsMissing",
               // Since it's dev only we don't need i18n on this string
-              title: "OAuth is not enabled for this connector on this environment.",
+              text: "OAuth is not enabled for this connector on this environment.",
             });
           } else {
             // Log error to our monitoring, this should never happen and means OAuth credentials
@@ -119,8 +121,8 @@ export function useConnectorAuth(): {
             });
             notificationService.registerNotification({
               id: "oauthConnector.credentialsMissing",
-              title: formatMessage({ id: "connector.oauthCredentialsMissing" }),
-              isError: true,
+              text: formatMessage({ id: "connector.oauthCredentialsMissing" }),
+              type: ToastType.ERROR,
             });
           }
         }
@@ -195,7 +197,13 @@ export function useRunOauthFlow(
     [completeOauth]
   );
 
+  const onCloseWindow = useCallback(() => {
+    windowObjectReference?.close();
+  }, []);
+
   useEvent("message", onOathGranted);
+  // Close popup oauth window when we close the original tab
+  useEvent("beforeunload", onCloseWindow);
 
   return {
     loading: loadingCompleteOauth || loading,
@@ -208,7 +216,7 @@ export function useResolveNavigate(): void {
   const query = useQuery();
 
   useEffectOnce(() => {
-    window.opener.postMessage(query);
+    window.opener?.postMessage(query);
     window.close();
   });
 }

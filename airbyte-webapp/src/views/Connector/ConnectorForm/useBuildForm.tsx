@@ -1,114 +1,156 @@
-import flatten from "flat";
-import { useFormikContext } from "formik";
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
-import merge from "lodash/merge";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
+import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
-import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
-import { buildPathInitialState } from "core/form/uiWidget";
-import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
-import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
+import {
+  ConnectorDefinitionSpecification,
+  ConnectorSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
+import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/source";
+import { FormBuildError, isFormBuildError } from "core/form/FormBuildError";
+import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
+import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
+import { FormBlock, FormGroupItem } from "core/form/types";
 
 import { ConnectorFormValues } from "./types";
 
-export function useBuildInitialSchema(
-  connectorSpecification?: ConnectorDefinitionSpecification
-): JSONSchema7Definition | undefined {
-  return useMemo(() => {
-    return connectorSpecification?.connectionSpecification as JSONSchema7Definition | undefined;
-  }, [connectorSpecification]);
-}
-
-// useBuildForm hook
 export interface BuildFormHook {
   initialValues: ConnectorFormValues;
   formFields: FormBlock;
+  validationSchema: AnySchema;
 }
 
-export function useBuildForm(jsonSchema: JSONSchema7, initialValues?: Partial<ConnectorFormValues>): BuildFormHook {
-  const startValues = useMemo<ConnectorFormValues>(
-    () => ({
-      name: "",
-      connectionConfiguration: {},
-      ...initialValues,
-    }),
-    [initialValues]
-  );
-
-  const formFields = useMemo<FormBlock>(() => jsonSchemaToUiWidget(jsonSchema), [jsonSchema]);
-
-  return {
-    initialValues: startValues,
-    formFields,
-  };
-}
-
-// useBuildUiWidgetsContext hook
-interface BuildUiWidgetsContextHook {
-  uiWidgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
-  resetUiWidgetsInfo: () => void;
-}
-
-export const useBuildUiWidgetsContext = (
-  formFields: FormBlock[] | FormBlock,
-  formValues: ConnectorFormValues,
-  uiOverrides?: WidgetConfigMap
-): BuildUiWidgetsContextHook => {
-  const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>(uiOverrides ?? {});
-
-  // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
-  const mergedState = useMemo(
-    () =>
-      merge(
-        buildPathInitialState(Array.isArray(formFields) ? formFields : [formFields], formValues),
-        merge(overriddenWidgetState, uiOverrides)
-      ),
-    [formFields, formValues, overriddenWidgetState, uiOverrides]
-  );
-
-  const setUiWidgetsInfoSubState = useCallback(
-    (widgetId: string, updatedValues: WidgetConfig) => setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
-    [mergedState, setUiWidgetsInfo]
-  );
-
-  const resetUiWidgetsInfo = useCallback(() => {
-    setUiWidgetsInfo(uiOverrides ?? {});
-  }, [uiOverrides]);
-
-  return {
-    uiWidgetsInfo: mergedState,
-    setUiWidgetsInfo: setUiWidgetsInfoSubState,
-    resetUiWidgetsInfo,
-  };
-};
-
-// As validation schema depends on what path of oneOf is currently selected in jsonschema
-export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
-  useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
-
-export const usePatchFormik = (): void => {
-  const { setFieldTouched, isSubmitting, isValidating, errors } = useFormikContext();
-
-  /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
-     Problem described here https://github.com/formium/formik/issues/445
-     The problem is next:
-
-     When we touch the field, it would be set as touched field correctly.
-     If validation fails on submit - Formik detects touched object mapping based
-     either on initialValues passed to Formik or on current value set.
-     So in case of creation, if we touch an input, don't change value and
-     press submit - our touched map will be cleared.
-
-     This hack just touches all fields on submit.
-   */
-  useEffect(() => {
-    if (isSubmitting && !isValidating) {
-      for (const path of Object.keys(flatten(errors))) {
-        setFieldTouched(path, true, false);
-      }
+export function setDefaultValues(
+  formGroup: FormGroupItem,
+  values: Record<string, unknown>,
+  options: { respectExistingValues: boolean } = { respectExistingValues: false }
+) {
+  formGroup.properties.forEach((property) => {
+    if (property.const && (!options.respectExistingValues || !values[property.fieldKey])) {
+      values[property.fieldKey] = property.const;
     }
-  }, [errors, isSubmitting, isValidating, setFieldTouched]);
-};
+    if (property.default && (!options.respectExistingValues || !values[property.fieldKey])) {
+      values[property.fieldKey] = property.default;
+    }
+    switch (property._type) {
+      case "formGroup":
+        values[property.fieldKey] =
+          options.respectExistingValues && values[property.fieldKey] ? values[property.fieldKey] : {};
+        setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>, options);
+        break;
+      case "formCondition":
+        values[property.fieldKey] = {};
+        let chosenCondition = property.conditions[0];
+        // if default is set, try to find it in the list of possible selection const values.
+        // if there is a match, default to this condition.
+        // In all other cases, go with the first one.
+        if (property.default) {
+          const matchingConditionIndex = property.selectionConstValues.indexOf(property.default);
+          if (matchingConditionIndex !== -1) {
+            chosenCondition = property.conditions[matchingConditionIndex];
+          }
+        }
+
+        setDefaultValues(chosenCondition, values[property.fieldKey] as Record<string, unknown>);
+    }
+  });
+}
+
+export function useBuildForm(
+  isEditMode: boolean,
+  formType: "source" | "destination",
+  selectedConnectorDefinitionSpecification:
+    | ConnectorDefinitionSpecification
+    | SourceDefinitionSpecificationDraft
+    | undefined,
+  initialValues?: Partial<ConnectorFormValues>
+): BuildFormHook {
+  const { formatMessage } = useIntl();
+
+  const isDraft =
+    selectedConnectorDefinitionSpecification &&
+    isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification);
+
+  try {
+    const jsonSchema: JSONSchema7 = useMemo(() => {
+      if (!selectedConnectorDefinitionSpecification) {
+        return {
+          type: "object",
+          properties: {},
+        };
+      }
+      const schema: JSONSchema7 = {
+        type: "object",
+        properties: {
+          connectionConfiguration:
+            selectedConnectorDefinitionSpecification.connectionSpecification as JSONSchema7Definition,
+        },
+      };
+      if (isDraft) {
+        return schema;
+      }
+      schema.properties = {
+        name: {
+          type: "string",
+          title: formatMessage({ id: `form.${formType}Name` }),
+          description: formatMessage({ id: `form.${formType}Name.message` }),
+        },
+        ...schema.properties,
+      };
+      schema.required = ["name"];
+      return schema;
+    }, [formType, formatMessage, isDraft, selectedConnectorDefinitionSpecification]);
+
+    const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
+
+    if (formFields._type !== "formGroup") {
+      throw new FormBuildError("connectorForm.error.topLevelNonObject");
+    }
+
+    const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
+
+    const startValues = useMemo<ConnectorFormValues>(() => {
+      let baseValues = {
+        name: "",
+        connectionConfiguration: {},
+        ...initialValues,
+      };
+
+      if (isDraft) {
+        try {
+          baseValues = validationSchema.cast(baseValues, { stripUnknown: true });
+        } catch {
+          // cast did not work which can happen if there are unexpected values in the form. Reset form in this case
+          baseValues.connectionConfiguration = {};
+        }
+      }
+
+      if (isEditMode) {
+        return baseValues;
+      }
+
+      setDefaultValues(formFields, baseValues as Record<string, unknown>, { respectExistingValues: Boolean(isDraft) });
+
+      return baseValues;
+    }, [formFields, initialValues, isDraft, isEditMode, validationSchema]);
+
+    return {
+      initialValues: startValues,
+      formFields,
+      validationSchema,
+    };
+  } catch (e) {
+    // catch and re-throw form-build errors to enrich them with the connector id
+    if (isFormBuildError(e)) {
+      throw new FormBuildError(
+        e.message,
+        isDraft || !selectedConnectorDefinitionSpecification
+          ? undefined
+          : ConnectorSpecification.id(selectedConnectorDefinitionSpecification)
+      );
+    }
+    throw e;
+  }
+}

@@ -13,13 +13,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease-in;
+  white-space: nowrap;
 
   &.full {
     width: 100%;
-  }
-
-  &:disabled {
-    opacity: 0.25;
   }
 
   &:disabled,
@@ -35,6 +32,10 @@
 
   &:focus-visible {
     outline: 3px solid colors.$blue-50;
+  }
+
+  &:disabled:not(.isLoading) {
+    opacity: 0.25;
   }
 
   .buttonIcon {
@@ -105,7 +106,7 @@
   }
 
   &.sizeXS {
-    height: 32px;
+    height: variables.$button-height-xs;
     font-size: 12px;
     line-height: 15px;
     padding: 10px;
@@ -116,7 +117,7 @@
   }
 
   &.sizeS {
-    height: 36px;
+    height: variables.$button-height-sm;
     font-size: 12px;
     line-height: 15px;
     padding: 10px 14px;
@@ -127,7 +128,7 @@
   }
 
   &.sizeL {
-    height: 44px;
+    height: variables.$button-height-lg;
     font-size: 16px;
     line-height: 19px;
     padding: 10px 14px;

@@ -6,9 +6,9 @@ package io.airbyte.integrations.source.relationaldb.state;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;

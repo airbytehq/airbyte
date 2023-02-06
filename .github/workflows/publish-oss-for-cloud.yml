@@ -1,6 +1,9 @@
 name: Publish OSS Artifacts for Cloud
-concurrency:
-  group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
+
+env:
+  # enable gradle remote build cache
+  S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+  S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 on:
   workflow_dispatch:
@@ -22,10 +25,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -64,6 +65,12 @@ jobs:
           cat $GITHUB_OUTPUT || true # for the sake of investigation
 
   oss-branch-build:
+    concurrency:
+      # only allow one workflow run at a time for a given SHA
+      # to prevent multiple runs from pushing artifacts for the same SHA at the same time
+      # note: using inputs in the group expression only works when specifying concurrency at the job level
+      group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
+      cancel-in-progress: false
     name: "Gradle Build and Publish"
     needs:
       - start-runner
@@ -80,6 +87,7 @@ jobs:
         uses: ./.github/actions/build-branch
         with:
           branch_version_tag: ${{ needs.generate-tags.outputs.dev_tag }}
+          build_docker_images: 'false'
 
       - name: Publish Dev Jars
         env:
@@ -97,6 +105,12 @@ jobs:
         shell: bash
 
   docker-push:
+    concurrency:
+      # only allow one workflow run at a time for a given SHA
+      # to prevent multiple runs from pushing artifacts for the same SHA at the same time
+      # note: using inputs in the group expression only works when specifying concurrency at the job level
+      group: ${{ github.workflow }}-${{ inputs.oss_ref || github.sha }}
+      cancel-in-progress: false
     name: "Push Docker Images"
     needs:
       - start-runner
@@ -123,6 +137,15 @@ jobs:
           echo "GIT_REVISION=${GIT_REVISION}" >> $GITHUB_ENV
         shell: bash
 
+      - name: Prepare Runner for Building
+        uses: ./.github/actions/runner-prepare-for-build
+
+        # Put tars/artifacts in the correct build directories so docker buildx can find the artifacts it needs when building docker images
+      - name: Prepare Docker context
+        run: VERSION=${{ needs.generate-tags.outputs.dev_tag }} SUB_BUILD=PLATFORM ./gradlew copyGeneratedTar airbyte-db:db-lib:copyInitSql
+        shell: bash
+
+        # Build docker images using docker buildx (for multi platform)
       - name: Push Docker Images
         env:
           VERSION: ${{ needs.generate-tags.outputs.dev_tag }}
@@ -133,3 +156,35 @@ jobs:
       - name: Cleanup Docker buildx
         run: docker buildx rm oss-buildx
         shell: bash
+
+  stop-runner:
+    name: "Stop Build EC2 Runner"
+    timeout-minutes: 10
+    needs:
+      - start-runner # required to get output from the start-runner job
+      - docker-push # wait until all publish steps are done
+    runs-on: ubuntu-latest
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-runner.result != 'skipped'}}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: airbytehq/ec2-github-runner@base64v1.1.0
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

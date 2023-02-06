@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 
 /**
  * Formatter for GCS Avro uploader. Contains specific filling of default Airbyte attributes.

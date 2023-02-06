@@ -6,7 +6,7 @@ import { Link, Outlet } from "react-router-dom";
 import { LoadingPage } from "components";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { SpeedyConnectionBanner } from "packages/cloud/components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";

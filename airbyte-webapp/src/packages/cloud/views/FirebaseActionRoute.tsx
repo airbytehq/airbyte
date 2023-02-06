@@ -3,16 +3,18 @@ import { useIntl } from "react-intl";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
-import LoadingPage from "components/LoadingPage";
+import { ToastType } from "components/ui/Toast";
 
-import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import { CloudRoutes } from "../cloudRoutes";
-import { AcceptEmailInvite } from "./AcceptEmailInvite";
-import { ResetPasswordConfirmPage } from "./auth/ConfirmPasswordResetPage";
+import { CloudRoutes } from "../cloudRoutePaths";
+
+const AcceptEmailInvite = React.lazy(() => import("./AcceptEmailInvite"));
+const ResetPasswordConfirmPage = React.lazy(() => import("./auth/ConfirmPasswordResetPage"));
+const LoadingPage = React.lazy(() => import("components/LoadingPage"));
 
 export enum FirebaseActionMode {
   VERIFY_EMAIL = "verifyEmail",
@@ -38,8 +40,8 @@ export const VerifyEmailAction: React.FC = () => {
       // Show a notification that the mail got verified successfully
       registerNotification({
         id: "auth/email-verified",
-        title: formatMessage({ id: "verifyEmail.notification" }),
-        isError: false,
+        text: formatMessage({ id: "verifyEmail.notification" }),
+        type: ToastType.SUCCESS,
       });
       // Navigate the user to the homepage
       navigate("/");
@@ -52,7 +54,7 @@ export const VerifyEmailAction: React.FC = () => {
 };
 
 export const FirebaseActionRoute: React.FC = () => {
-  const { mode } = useQuery();
+  const { mode } = useQuery<{ mode: FirebaseActionMode }>();
 
   switch (mode) {
     case FirebaseActionMode.VERIFY_EMAIL:

@@ -5,9 +5,9 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: variables.$spacing-lg;
   min-height: 0;
+  width: 100%;
 }
 
 .resizablePanelsContainer {
@@ -16,18 +16,6 @@
 
   // required to hide the connector logs splitter underneath the resizable panel overlay
   z-index: 0;
-}
-
-.testButton {
-  width: 100%;
-}
-
-.testButtonTooltipContainer {
-  width: 100%;
-}
-
-.testButtonText {
-  color: colors.$white;
 }
 
 .url {
@@ -41,4 +29,13 @@
 
 .fetchingSpinner {
   margin: auto;
+}
+
+.listErrorDisplay {
+  padding: variables.$spacing-lg;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  background-color: colors.$blue-50;
+  border-radius: variables.$border-radius-sm;
 }

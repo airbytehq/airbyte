@@ -1,0 +1,58 @@
+[
+  {
+    "key": "jira-software",
+    "groups": [
+      "jira-software-users",
+      "atlassian-addons-admin",
+      "system-administrators",
+      "site-admins",
+      "administrators"
+    ],
+    "groupDetails": [
+      {
+        "name": "test",
+        "groupId": "test",
+        "self": "test"
+      },
+      {
+        "name": "administrators",
+        "groupId": "test",
+        "self": "test"
+      },
+      {
+        "name": "atlassian-addons-admin",
+        "groupId": "test",
+        "self": "test"
+      },
+      {
+        "name": "system-administrators",
+        "groupId": "test",
+        "self": "test"
+      },
+      {
+        "name": "site-admins",
+        "groupId": "test",
+        "self": "test"
+      }
+    ],
+    "name": "Jira Software",
+    "defaultGroups": [
+      "jira-software-users"
+    ],
+    "defaultGroupsDetails": [
+      {
+        "name": "jira-software-users",
+        "groupId": "test",
+        "self": "test"
+      }
+    ],
+    "selectedByDefault": false,
+    "defined": true,
+    "numberOfSeats": 100,
+    "remainingSeats": 61,
+    "userCount": 14,
+    "userCountDescription": "users",
+    "hasUnlimitedSeats": false,
+    "platform": false
+  }
+]

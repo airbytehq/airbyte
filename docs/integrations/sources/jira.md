@@ -1,31 +1,59 @@
 # Jira
 
-## Features
+This page contains the setup guide and reference information for the Jira source connector.
 
-| Feature | Supported? |  |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Issues, BoardIssues, Epics, IssueComments, IssueWorklogs, PullRequests, SprintIssues |
-| Replicate Incremental Deletes | Coming soon |  |
-| SSL connection | Yes |  |
+## Prerequisites
+
+- API Token
+- Domain
+- Email
+
+## Setup guide
+
+### Step 1: Set up Jira
+
+1. To get access to the Jira API you need to create an API token, please follow the instructions in this [documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+### Step 2: Set up the Jira connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
+4. Enter the **API Token** that you have created.
+5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
+6. Enter the **Email** for your Jira account.
+7. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
+8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated. Note that it will be used only in the following streams: BoardIssues, IssueComments, IssueProperties, IssueRemoteLinks, IssueVotes, IssueWatchers, IssueWorklogs, Issues, PullRequests, SprintIssues.
+9. Toggle **Expand Issue Changelog** allows you to get a list of recent updates to every issue in the Issues stream.
+10. Toggle **Render Issue Fields** allows returning field values rendered in HTML format in the Issues stream.
+11. Toggle **Enable Experimental Streams** enables experimental PullRequests stream.
+
+## Supported sync modes
+
+The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Troubleshooting
 
 Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
 
-## Supported Tables
+## Supported Streams
 
-This source is capable of syncing the following tables and their data:
+This connector outputs the following full refresh streams:
 
 * [Application roles](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get)
 * [Avatars](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get)
+* [Boards](https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get)
 * [Dashboards](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get)
 * [Filters](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get)
-* [Filters](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get)
 * [Filter sharing](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filter-sharing/#api-rest-api-3-filter-id-permission-get)
 * [Groups](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-groups-picker-get)
-* [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
-* [Issue comments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get)
 * [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
 * [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 * [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
@@ -35,13 +63,12 @@ This source is capable of syncing the following tables and their data:
 * [Issue priorities](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get)
 * [Issue properties](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get)
 * [Issue remote links](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get)
-* [Issue resolutions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-get)
+* [Issue resolutions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-resolutions/#api-rest-api-3-resolution-search-get)
 * [Issue security schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get)
 * [Issue type schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get)
 * [Issue type screen schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-rest-api-3-issuetypescreenscheme-get)
 * [Issue votes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-group-issue-votes)
 * [Issue watchers](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get)
-* [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
 * [Jira settings](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get)
 * [Labels](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get)
 * [Permissions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-mypermissions-get)
@@ -55,16 +82,25 @@ This source is capable of syncing the following tables and their data:
 * [Project types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get)
 * [Project versions](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get)
 * [Screens](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get)
-* [Screen tabs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/)
+* [Screen tabs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tabs/#api-rest-api-3-screens-screenid-tabs-get)
 * [Screen tab fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-tab-fields/#api-rest-api-3-screens-screenid-tabs-tabid-fields-get)
 * [Screen schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get)
+* [Sprints](https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-sprint-get)
 * [Time tracking](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get)
 * [Users](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-user-search/#api-rest-api-3-user-search-get)
-* [UsersGroupsDetailed](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-groups-get)
+* [UsersGroupsDetailed](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-users/#api-rest-api-3-user-get)
 * [Workflows](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get)
 * [Workflow schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get)
 * [Workflow statuses](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-statuses/#api-rest-api-3-status-get)
 * [Workflow status categories](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-status-categories/#api-rest-api-3-statuscategory-get)
+
+This connector outputs the following incremental streams:
+
+* [Board issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get)
+* [Issue comments](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get)
+* [Issue worklogs](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get)
+* [Issues](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get)
+* [Sprint issues](https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -78,15 +114,9 @@ or disallow these tables to be selected when configuring a connection.
 
 * Pull Requests (currently only GitHub PRs are supported)
 
-## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
+## Troubleshooting
 
-### Requirements
-
-* Jira API Token
-* Jira Email
-* Jira Domain
-
-Please follow the [Jira confluence for generating an API token](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
 
 ## Rate Limiting & Performance
 
@@ -96,10 +126,13 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.3.0   | 2022-11-03 | [\#18901](hhttps://github.com/airbytehq/airbyte/pull/18901) | Adds UserGroupsDetailed schema, fix Incremental normalization, add Incremental support for IssueComments, IssueWorklogs |
-| 0.2.23  | 2022-10-28 | [\#18505](hhttps://github.com/airbytehq/airbyte/pull/18505) | Correcting `max_results` bug introduced in connector stream                                                             |
-| 0.2.22  | 2022-10-03 | [\#16944](hhttps://github.com/airbytehq/airbyte/pull/16944) | Adds support for `max_results` to `users` stream                                                                        |
-| 0.2.21  | 2022-07-28 | [\#15135](hhttps://github.com/airbytehq/airbyte/pull/15135) | Adds components to `fields` object on `issues` stream                                                                   |
+| 0.3.3   | 2023-01-04 | [\#20739](https://github.com/airbytehq/airbyte/pull/20739)  | fix: check_connection fails if no projects are defined                                                                  |
+| 0.3.2   | 2022-12-23 | [\#20859](https://github.com/airbytehq/airbyte/pull/20859)  | Fixed pagination for streams `issue_remote_links`, `sprints`                                                            |
+| 0.3.1   | 2022-12-14 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128)  | Improved code to become beta                                                                                            |
+| 0.3.0   | 2022-11-03 | [\#18901](https://github.com/airbytehq/airbyte/pull/18901)  | Adds UserGroupsDetailed schema, fix Incremental normalization, add Incremental support for IssueComments, IssueWorklogs |
+| 0.2.23  | 2022-10-28 | [\#18505](https://github.com/airbytehq/airbyte/pull/18505)  | Correcting `max_results` bug introduced in connector stream                                                             |
+| 0.2.22  | 2022-10-03 | [\#16944](https://github.com/airbytehq/airbyte/pull/16944)  | Adds support for `max_results` to `users` stream                                                                        |
+| 0.2.21  | 2022-07-28 | [\#15135](https://github.com/airbytehq/airbyte/pull/15135)  | Adds components to `fields` object on `issues` stream                                                                   |
 | 0.2.20  | 2022-05-25 | [\#13202](https://github.com/airbytehq/airbyte/pull/13202)  | Adds resolutiondate to `fields` object on `issues` stream                                                               |
 | 0.2.19  | 2022-05-04 | [\#10835](https://github.com/airbytehq/airbyte/pull/10835)  | Change description for array fields                                                                                     |
 | 0.2.18  | 2021-12-23 | [\#7378](https://github.com/airbytehq/airbyte/pull/7378)    | Adds experimental endpoint Pull Request                                                                                 |

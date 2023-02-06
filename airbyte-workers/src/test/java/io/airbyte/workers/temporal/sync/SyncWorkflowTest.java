@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
@@ -26,7 +27,6 @@ import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.OperatorWebhookInput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -34,11 +34,9 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -55,7 +53,6 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -119,6 +116,8 @@ class SyncWorkflowTest {
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
+
+  private ActivityOptions discoveryActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
@@ -162,7 +161,7 @@ class SyncWorkflowTest {
 
     when(configFetchActivity.getSourceId(sync.getConnectionId())).thenReturn(Optional.of(SOURCE_ID));
     when(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID)).thenReturn(true);
-    when(configFetchActivity.getStatus(sync.getConnectionId())).thenReturn(Optional.of(Status.ACTIVE));
+    when(configFetchActivity.getStatus(sync.getConnectionId())).thenReturn(Optional.of(ConnectionStatus.ACTIVE));
 
     longActivityOptions = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
@@ -180,6 +179,9 @@ class SyncWorkflowTest {
             .setMaximumInterval(Duration.ofSeconds(600))
             .build())
         .build();
+    discoveryActivityOptions = ActivityOptions.newBuilder()
+        .setStartToCloseTimeout(Duration.ofSeconds(360))
+        .build();
 
     final BeanIdentifier longActivitiesBeanIdentifier = mock(BeanIdentifier.class);
     final BeanRegistration longActivityOptionsBeanRegistration = mock(BeanRegistration.class);
@@ -191,7 +193,13 @@ class SyncWorkflowTest {
     when(shortActivitiesBeanIdentifier.getName()).thenReturn("shortActivityOptions");
     when(shortActivityOptionsBeanRegistration.getIdentifier()).thenReturn(shortActivitiesBeanIdentifier);
     when(shortActivityOptionsBeanRegistration.getBean()).thenReturn(shortActivityOptions);
-    temporalProxyHelper = new TemporalProxyHelper(List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration));
+    final BeanIdentifier discoveryActivityBeanIdentifier = mock(BeanIdentifier.class);
+    final BeanRegistration discoveryActivityOptionsBeanRegistration = mock(BeanRegistration.class);
+    when(discoveryActivityBeanIdentifier.getName()).thenReturn("discoveryActivityOptions");
+    when(discoveryActivityOptionsBeanRegistration.getIdentifier()).thenReturn(discoveryActivityBeanIdentifier);
+    when(discoveryActivityOptionsBeanRegistration.getBean()).thenReturn(discoveryActivityOptions);
+    temporalProxyHelper = new TemporalProxyHelper(
+        List.of(longActivityOptionsBeanRegistration, shortActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
 
     syncWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
   }
@@ -400,9 +408,9 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
-    StandardSyncOutput output = execute();
+  void testSkipReplicationAfterRefreshSchema() {
+    when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(ConnectionStatus.INACTIVE));
+    final StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
     verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyNoInteractions(replicationActivity);

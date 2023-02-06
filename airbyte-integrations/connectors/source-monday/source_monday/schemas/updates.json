@@ -10,9 +10,9 @@
     },
     "body": { "type": ["null", "string"] },
     "created_at": { "type": ["null", "string"], "format": "date-time" },
-    "creator_id": { "type": ["null", "integer"] },
-    "id": { "type": ["null", "integer"] },
-    "item_id": { "type": ["null", "integer"] },
+    "creator_id": { "type": ["null", "string"] },
+    "id": { "type": ["null", "string"] },
+    "item_id": { "type": ["null", "string"] },
     "replies": {
       "type": ["null", "array"],
       "properties": {

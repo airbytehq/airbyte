@@ -187,6 +187,7 @@ public class StandardSyncPersistence {
           .set(CONNECTION.DESTINATION_ID, standardSync.getDestinationId())
           .set(CONNECTION.NAME, standardSync.getName())
           .set(CONNECTION.CATALOG, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
+          .set(CONNECTION.FIELD_SELECTION_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getFieldSelectionData())))
           .set(CONNECTION.STATUS, standardSync.getStatus() == null ? null
               : Enums.toEnum(standardSync.getStatus().value(),
                   io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
@@ -233,6 +234,7 @@ public class StandardSyncPersistence {
           .set(CONNECTION.DESTINATION_ID, standardSync.getDestinationId())
           .set(CONNECTION.NAME, standardSync.getName())
           .set(CONNECTION.CATALOG, JSONB.valueOf(Jsons.serialize(standardSync.getCatalog())))
+          .set(CONNECTION.FIELD_SELECTION_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getFieldSelectionData())))
           .set(CONNECTION.STATUS, standardSync.getStatus() == null ? null
               : Enums.toEnum(standardSync.getStatus().value(),
                   io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
@@ -287,7 +289,8 @@ public class StandardSyncPersistence {
         .where(
             CONNECTION.UNSUPPORTED_PROTOCOL_VERSION.eq(true).and(
                 (actorType == ActorType.DESTINATION ? destDef : sourceDef).ID.eq(actorDefId)))
-        .fetchStream()
+        .fetch()
+        .stream()
         .map(r -> new StandardSyncIdsWithProtocolVersions(
             r.get(CONNECTION.ID),
             r.get(sourceDef.ID),

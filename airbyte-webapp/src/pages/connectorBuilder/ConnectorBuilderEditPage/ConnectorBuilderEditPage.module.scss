@@ -1,0 +1,23 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/mixins";
+
+.leftPanel {
+  overflow: hidden;
+}
+
+.rightPanel {
+  @include mixins.left-shadow;
+
+  border-top-left-radius: variables.$border-radius-lg;
+  border-bottom-left-radius: variables.$border-radius-lg;
+  background-color: colors.$white;
+}
+
+.gradientBg {
+  background-image: linear-gradient(colors.$grey-50, colors.$grey-100);
+}
+
+.solidBg {
+  background-color: colors.$grey-50;
+}
