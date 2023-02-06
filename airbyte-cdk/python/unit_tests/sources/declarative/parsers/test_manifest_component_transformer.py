@@ -35,7 +35,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                     "paginator": {"type": "NoPagination"},
                     "record_selector": {"type": "RecordSelector"},
                     "requester": {"type": "HttpRequester"},
-                    "partition_router": {"type": "SingleSlice"},
+                    "partition_router": {"type": "SinglePartitionRouter"},
                 },
             },
             id="test_simple_retriever",

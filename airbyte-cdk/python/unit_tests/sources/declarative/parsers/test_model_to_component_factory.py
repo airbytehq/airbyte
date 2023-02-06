@@ -29,6 +29,7 @@ from airbyte_cdk.sources.declarative.models import SubstreamSlicer as SubstreamS
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -51,7 +52,6 @@ from airbyte_cdk.sources.declarative.stream_slicers import (
     CartesianProductStreamSlicer,
     DatetimeStreamSlicer,
     ListStreamSlicer,
-    SingleSlice,
     SubstreamSlicer,
 )
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
@@ -119,7 +119,7 @@ requester:
     unit: "day"
 retriever:
   partition_router:
-    type: SingleSlice
+    type: SinglePartitionRouter
   paginator:
     type: NoPagination
 partial_stream:
@@ -1213,7 +1213,7 @@ class TestCreateTransformations:
             2,
             id="test_create_simple_retriever_with_partition_routers_multiple_components",
         ),
-        pytest.param(None, None, SingleSlice, 1, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
+        pytest.param(None, None, SinglePartitionRouter, 1, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
     ],
 )
 def test_merge_incremental_and_partition_router(incremental, partition_router, expected_type, expected_slicer_count):
