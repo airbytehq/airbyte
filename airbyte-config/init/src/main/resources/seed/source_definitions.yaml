@@ -801,6 +801,9 @@
   icon: hubspot.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.hubapi.com
 - name: IP2Whois
   sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
   dockerRepository: airbyte/source-ip2whois
