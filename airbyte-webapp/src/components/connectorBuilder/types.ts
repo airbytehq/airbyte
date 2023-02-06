@@ -549,7 +549,7 @@ function builderStreamSlicerToManifest(
   };
 }
 
-const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
+const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} } as const;
 
 function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
   if (!schema) {
