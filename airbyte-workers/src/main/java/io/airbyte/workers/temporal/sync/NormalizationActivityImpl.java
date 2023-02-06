@@ -74,7 +74,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   // This constant is not currently in use. We'll need to bump it when we try releasing v1 again.
   private static final Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
   private static final String V1_NORMALIZATION_MINOR_VERSION = "3";
-  private static final String STRICT_COMPARISON_IMAGE_TAG = "0.4.0";
+  private static final String STRICT_COMPARISON_IMAGE_TAG = "strict_comparison";
   private static final String NON_STRICT_COMPARISON_IMAGE_TAG = "0.2.25";
 
   public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
