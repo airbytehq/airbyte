@@ -1,6 +1,3 @@
-import logging
-from typing import Dict, Optional
-
 import requests
 
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
@@ -12,7 +9,7 @@ class FreshdeskAvailabilityStrategy(HttpAvailabilityStrategy):
         unauthorized_error_message += "This is most likely due to wrong credentials. "
         unauthorized_error_message += self._visit_docs_message(logger, source)
 
-        reasons: Dict[int, str] = super(FreshdeskAvailabilityStrategy, self).reasons_for_unavailable_status_codes(stream, logger, source, error)
+        reasons = super(FreshdeskAvailabilityStrategy, self).reasons_for_unavailable_status_codes(stream, logger, source, error)
         reasons[requests.codes.UNAUTHORIZED] = unauthorized_error_message
 
         return reasons
