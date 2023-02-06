@@ -14,11 +14,11 @@ import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import styles from "./YamlEditor.module.scss";
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "../DownloadYamlButton";
 import { convertToManifest } from "../types";
 import { useManifestToBuilderForm } from "../useManifestToBuilderForm";
-import styles from "./YamlEditor.module.scss";
 
 interface YamlEditorProps {
   toggleYamlEditor: () => void;

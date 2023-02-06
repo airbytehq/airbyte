@@ -4,8 +4,8 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 
-import useLoadingState from "../../../hooks/useLoadingState";
 import styles from "./ConfirmationModal.module.scss";
+import useLoadingState from "../../../hooks/useLoadingState";
 
 export interface ConfirmationModalProps {
   onClose: () => void;
