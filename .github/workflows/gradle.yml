@@ -85,6 +85,8 @@ jobs:
               - 'airbyte-db/**'
             frontend:
               - 'airbyte-api/src/main/openapi/config.yaml'
+              - 'airbyte-connector-builder-server/CDK_VERSION'
+              - 'airbyte-connector-builder-server/src/main/openapi/openapi.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
 
