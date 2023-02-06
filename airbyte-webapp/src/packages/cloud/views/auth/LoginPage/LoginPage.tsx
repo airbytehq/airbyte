@@ -7,6 +7,7 @@ import * as yup from "yup";
 import { LabeledInput, Link } from "components";
 import { HeadTitle } from "components/common/HeadTitle";
 import { Button } from "components/ui/Button";
+import { FlexContainer } from "components/ui/Flex";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useQuery } from "hooks/useQuery";
@@ -35,7 +36,7 @@ export const LoginPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.LOGIN);
 
   return (
-    <div className={styles.container}>
+    <FlexContainer direction="column" gap="xl">
       <HeadTitle titles={[{ id: "login.login" }]} />
       <FormTitle>
         <FormattedMessage id="login.loginTitle" />
@@ -116,6 +117,6 @@ export const LoginPage: React.FC = () => {
         )}
       </Formik>
       <Disclaimer />
-    </div>
+    </FlexContainer>
   );
 };

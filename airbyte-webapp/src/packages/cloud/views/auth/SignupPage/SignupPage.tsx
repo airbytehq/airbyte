@@ -2,6 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { HeadTitle } from "components/common/HeadTitle";
+import { FlexContainer } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
@@ -20,7 +21,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
   useTrackPage(PageTrackingCodes.SIGNUP);
 
   return (
-    <div className={styles.container}>
+    <FlexContainer direction="column" gap="xl">
       <HeadTitle titles={[{ id: "login.signup" }]} />
       <Heading as="h1" size="xl" className={styles.title}>
         <FormattedMessage
@@ -40,7 +41,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
       <Separator />
       <SignupForm />
       <Disclaimer />
-    </div>
+    </FlexContainer>
   );
 };
 
