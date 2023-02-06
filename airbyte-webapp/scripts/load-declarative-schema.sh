@@ -1,7 +1,7 @@
 set -e
 mkdir -p build
 
-DEFAULT_CDK_VERSION=`cat ../../airbyte-connector-builder-server/CDK_VERSION`
+DEFAULT_CDK_VERSION=`cat ../airbyte-connector-builder-server/CDK_VERSION`
 
 if [ -z "$CDK_VERSION" ]
 then
