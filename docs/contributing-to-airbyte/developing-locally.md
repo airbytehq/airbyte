@@ -174,15 +174,38 @@ BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
 
 Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
 
-- Start up the react app.
+- Install [`nvm`](https://github.com/nvm-sh/nvm) (Node Version Manager) if not installed
+- Use `nvm` to install the required node version:
 
 ```bash
 cd airbyte-webapp
-npm install
-npm start
+nvm install
+```
+
+- Install the `pnpm` package manager in the required version:
+
+```bash
+# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
+npm install -g pnpm@<version>
+```
+
+- Start up the react app.
+
+```bash
+pnpm install
+pnpm start
 ```
 
 - Happy Hacking!
+
+#### Using a custom version of the CDK declarative manifest schema for the connector builder UI
+
+When working on the connector builder UI and doing changes to the CDK and the webapp at the same time, you can start the dev server with `CDK_MANIFEST_PATH` or `CDK_VERSION` environment variables set to have the correct Typescript types built. If `CDK_VERSION` is set, it's loading the specified version of the CDK from pypi instead of the default one, if `CDK_MANIFEST_PATH` is set, it's copying the schema file locally.
+
+For example:
+```
+CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_componenpnt_schema.yaml pnpm start
+```
 
 ### Connector Specification Caching
 
