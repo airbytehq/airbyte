@@ -1649,6 +1649,10 @@
   icon: smartsheet.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - app.smartsheet.com
+      - api.smartsheet.com
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
