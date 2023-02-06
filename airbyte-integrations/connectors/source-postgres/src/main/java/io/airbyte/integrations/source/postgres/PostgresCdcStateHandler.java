@@ -64,41 +64,41 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public boolean isSnapshotEvent(ChangeEvent<String, String> event){
+  public boolean isSnapshotEvent(final ChangeEvent<String, String> event){
     JsonNode isSnapshotEvent = Jsons.deserialize(event.value()).get("source").get("snapshot");
     return isSnapshotEvent != null && isSnapshotEvent.asBoolean();
   }
 
   @Override
-  public boolean isRecordBehindOffset(Map<String, String> offset, ChangeEvent<String, String> event) {
+  public boolean isRecordBehindOffset(final Map<String, String> offset, final ChangeEvent<String, String> event) {
     if (offset.size() != 1) {
       return false;
     }
 
-    JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
+    final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
 
-    String offset_lsn = offsetJson.get("lsn_commit") != null ?
+    final String offset_lsn = offsetJson.get("lsn_commit") != null ?
         String.valueOf(offsetJson.get("lsn_commit")) :
         String.valueOf(offsetJson.get("lsn"));
-    String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
+    final String event_lsn = String.valueOf(Jsons.deserialize(event.value()).get("source").get("lsn"));
     return Integer.parseInt(event_lsn) > Integer.parseInt(offset_lsn);
   }
 
   @Override
-  public boolean isSameOffset(Map<String, String> offsetA, Map<String, String> offsetB) {
+  public boolean isSameOffset(final Map<String, String> offsetA, final Map<String, String> offsetB) {
     if (offsetA == null || offsetA.size() != 1){
       return false;
     }
     if (offsetB == null || offsetB.size() != 1){
       return false;
     }
-    JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
-    JsonNode offsetJsonB = Jsons.deserialize((String) offsetB.values().toArray()[0]);
+    final JsonNode offsetJsonA = Jsons.deserialize((String) offsetA.values().toArray()[0]);
+    final JsonNode offsetJsonB = Jsons.deserialize((String) offsetB.values().toArray()[0]);
 
-    String lsnA = offsetJsonA.get("lsn_commit") != null ?
+    final String lsnA = offsetJsonA.get("lsn_commit") != null ?
         String.valueOf(offsetJsonA.get("lsn_commit")) :
         String.valueOf(offsetJsonA.get("lsn"));
-    String lsnB = offsetJsonB.get("lsn_commit") != null ?
+    final String lsnB = offsetJsonB.get("lsn_commit") != null ?
         String.valueOf(offsetJsonB.get("lsn_commit")) :
         String.valueOf(offsetJsonB.get("lsn"));
 

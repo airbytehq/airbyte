@@ -106,9 +106,9 @@ public class AirbyteDebeziumHandler {
         publisher::close,
         firstRecordWaitTime);
 
-    Integer sync_checkpoint_seconds = config.get("sync_checkpoint_seconds") != null ? config.get("sync_checkpoint_seconds").asInt()
+    final Duration syncCheckpointSeconds = config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
         : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_SECONDS;
-    Integer sync_checkpoint_records = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asInt()
+    final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
         : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(
         eventIterator,
@@ -118,8 +118,8 @@ public class AirbyteDebeziumHandler {
         offsetManager,
         trackSchemaHistory,
         schemaHistoryManager.orElse(null),
-        sync_checkpoint_seconds,
-        sync_checkpoint_records));
+        syncCheckpointSeconds,
+        syncCheckpointRecords));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {

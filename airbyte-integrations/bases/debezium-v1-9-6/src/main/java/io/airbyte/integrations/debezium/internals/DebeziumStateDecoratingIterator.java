@@ -18,13 +18,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulates an iterator and adds the required functionality to create checkpoints for
- * CDC replications. That way, if the process fails in the middle of a long sync, the process is
- * able to recover for any acknowledged checkpoint in the following syncs.
+ * This class encapsulates CDC change events and adds the required functionality to create checkpoints
+ * for CDC replications. That way, if the process fails in the middle of a long sync, it will be able
+ * to recover for any acknowledged checkpoint in the next syncs.
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
-  public static final Integer SYNC_CHECKPOINT_SECONDS = 15 * 60;
+  public static final Duration SYNC_CHECKPOINT_SECONDS = Duration.ofMinutes(15);
   public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
@@ -51,9 +51,9 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * <p/>
    */
   private final Duration syncCheckpointDuration;
-  private final Integer syncCheckpointRecords;
+  private final Long syncCheckpointRecords;
   private OffsetDateTime dateTimeLastSync;
-  private Integer recordsLastSync;
+  private Long recordsLastSync;
   private boolean sendCheckpointMessage = false;
 
   /** `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as message.
@@ -78,7 +78,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    * @param trackSchemaHistory Set true if the schema needs to be tracked
    * @param schemaHistoryManager Handler to write schema. Needs to be initialized if
    *        trackSchemaHistory is set to true
-   * @param checkpointSeconds Seconds between syncs
+   * @param checkpointDuration Duration object with time between syncs
    * @param checkpointRecords Number of records between syncs
    */
   public DebeziumStateDecoratingIterator(final Iterator<ChangeEvent<String, String>> changeEventIterator,
@@ -88,8 +88,8 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
                                          final AirbyteFileOffsetBackingStore offsetManager,
                                          final boolean trackSchemaHistory,
                                          final AirbyteSchemaHistoryStorage schemaHistoryManager,
-                                         final Integer checkpointSeconds,
-                                         final Integer checkpointRecords) {
+                                         final Duration checkpointDuration,
+                                         final Long checkpointRecords) {
     this.changeEventIterator = changeEventIterator;
     this.cdcStateHandler = cdcStateHandler;
     this.cdcMetadataInjector = cdcMetadataInjector;
@@ -98,7 +98,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
     this.trackSchemaHistory = trackSchemaHistory;
     this.schemaHistoryManager = schemaHistoryManager;
 
-    this.syncCheckpointDuration = Duration.ofSeconds(checkpointSeconds);
+    this.syncCheckpointDuration = checkpointDuration;
     this.syncCheckpointRecords = checkpointRecords;
     this.previousCheckpointOffset = (HashMap<String, String>) offsetManager.read();
     resetCheckpointValues();
@@ -123,7 +123,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
     }
 
     if (sendCheckpointMessage) {
-      AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
+      final AirbyteMessage stateMessage = createStateMessage(checkpointOffsetToSend);
       previousCheckpointOffset.clear();
       previousCheckpointOffset.putAll(checkpointOffsetToSend);
       resetCheckpointValues();
@@ -168,7 +168,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private void resetCheckpointValues() {
     sendCheckpointMessage = false;
     checkpointOffsetToSend.clear();
-    recordsLastSync = 0;
+    recordsLastSync = 0L;
     dateTimeLastSync = OffsetDateTime.now();
   }
 
@@ -178,7 +178,7 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
    *
    * @return {@link AirbyteStateMessage} which includes offset and schema history if used.
    */
-  private AirbyteMessage createStateMessage(Map<String, String> offset) {
+  private AirbyteMessage createStateMessage(final Map<String, String> offset) {
     if (trackSchemaHistory && schemaHistoryManager == null) {
       throw new RuntimeException("Schema History Tracking is true but manager is not initialised");
     }
