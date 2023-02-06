@@ -7,8 +7,6 @@ import { useEffectOnce } from "react-use";
 import { ToastType } from "components/ui/Toast";
 
 import { MissingConfigError, useConfig } from "config";
-import { pollUntil } from "core/request/pollUntil";
-import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { useExperiment } from "hooks/services/Experiment";
 import { useNotificationService } from "hooks/services/Notification";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
@@ -29,35 +27,19 @@ export const useFreeConnectorProgram = () => {
   const requestOptions = { config, middlewares };
   const freeConnectorProgramEnabled = useExperiment("workspace.freeConnectorsProgram.visible", false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [userDidEnroll, setUserDidEnroll] = useState(false);
+  const [, setUserDidEnroll] = useState(false);
   const { formatMessage } = useIntl();
   const { registerNotification } = useNotificationService();
-  const { trackError } = useAppMonitoringService();
 
   useEffectOnce(() => {
     if (searchParams.has(STRIPE_SUCCESS_QUERY)) {
       // Remove the stripe parameter from the URL
-      pollUntil(
-        () => webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions),
-        ({ hasPaymentAccountSaved }) => hasPaymentAccountSaved,
-        { interval: 1000, maxTimeout: 10000 }
-      ).then((maybeFcpInfo) => {
-        if (maybeFcpInfo) {
-          setSearchParams({}, { replace: true });
-          setUserDidEnroll(true);
-          registerNotification({
-            id: "fcp/enrollment-success",
-            text: formatMessage({ id: "freeConnectorProgram.enroll.success" }),
-            type: ToastType.SUCCESS,
-          });
-        } else {
-          trackError(new Error("Unable to confirm Free Connector Program enrollment before timeout"), { workspaceId });
-          registerNotification({
-            id: "fcp/enrollment-failure",
-            text: formatMessage({ id: "freeConnectorProgram.enroll.failure" }),
-            type: ToastType.ERROR,
-          });
-        }
+      setSearchParams({}, { replace: true });
+      setUserDidEnroll(true);
+      registerNotification({
+        id: "fcp/enrolled",
+        text: formatMessage({ id: "freeConnectorProgram.enroll.success" }),
+        type: ToastType.SUCCESS,
       });
     }
   });
@@ -77,6 +59,6 @@ export const useFreeConnectorProgram = () => {
 
   return {
     enrollmentStatusQuery,
-    userDidEnroll,
+    userDidEnroll: true,
   };
 };
