@@ -10,4 +10,9 @@
   &:not(:last-child) {
     box-shadow: 0 1px 0 rgba(139, 139, 160, 25%);
   }
+
+  &.flush {
+    padding: 0;
+    gap: 0;
+  }
 }

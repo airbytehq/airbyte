@@ -6,6 +6,7 @@ dependencies {
     testImplementation libs.bundles.micronaut.test
 
     implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-json-validation')
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

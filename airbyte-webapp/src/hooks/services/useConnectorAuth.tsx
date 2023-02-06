@@ -13,11 +13,11 @@ import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/
 import { isCommonRequestError } from "core/request/CommonRequestError";
 import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 
-import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useQuery } from "../useQuery";
 import { useAppMonitoringService } from "./AppMonitoringService";
 import { useNotificationService } from "./Notification";
 import { useCurrentWorkspace } from "./useWorkspace";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useQuery } from "../useQuery";
 
 let windowObjectReference: Window | null = null; // global variable
 
@@ -197,7 +197,13 @@ export function useRunOauthFlow(
     [completeOauth]
   );
 
+  const onCloseWindow = useCallback(() => {
+    windowObjectReference?.close();
+  }, []);
+
   useEvent("message", onOathGranted);
+  // Close popup oauth window when we close the original tab
+  useEvent("beforeunload", onCloseWindow);
 
   return {
     loading: loadingCompleteOauth || loading,
@@ -210,7 +216,7 @@ export function useResolveNavigate(): void {
   const query = useQuery();
 
   useEffectOnce(() => {
-    window.opener.postMessage(query);
+    window.opener?.postMessage(query);
     window.close();
   });
 }

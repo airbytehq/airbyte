@@ -13,7 +13,7 @@ TEST_REQUIREMENTS = [
     "freezegun",
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

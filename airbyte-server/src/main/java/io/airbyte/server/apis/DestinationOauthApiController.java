@@ -12,7 +12,8 @@ import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
 import io.airbyte.api.model.generated.DestinationOauthConsentRequest;
 import io.airbyte.api.model.generated.OAuthConsentRead;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
-import io.airbyte.server.handlers.OAuthHandler;
+import io.airbyte.commons.auth.SecuredWorkspace;
+import io.airbyte.commons.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
@@ -36,6 +37,7 @@ public class DestinationOauthApiController implements DestinationOauthApi {
 
   @Post("/complete_oauth")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeDestinationOAuth(completeDestinationOAuthRequest));
@@ -43,6 +45,7 @@ public class DestinationOauthApiController implements DestinationOauthApi {
 
   @Post("/get_consent_url")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));

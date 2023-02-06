@@ -22,8 +22,9 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.server.handlers.SchedulerHandler;
-import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.commons.auth.SecuredWorkspace;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.SourceHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
@@ -48,6 +49,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/check_connection")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public CheckConnectionRead checkConnectionToSource(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceId(sourceIdRequestBody));
@@ -55,6 +57,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/check_connection_for_update")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public CheckConnectionRead checkConnectionToSourceForUpdate(final SourceUpdate sourceUpdate) {
     return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceIdForUpdate(sourceUpdate));
@@ -68,6 +71,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/create")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public SourceRead createSource(final SourceCreate sourceCreate) {
     return ApiHelper.execute(() -> sourceHandler.createSource(sourceCreate));
@@ -75,6 +79,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/delete")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   @Status(HttpStatus.NO_CONTENT)
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
@@ -86,6 +91,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/discover_schema")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody sourceDiscoverSchemaRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchemaRequestBody));
@@ -93,6 +99,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/get")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.getSource(sourceIdRequestBody));
@@ -100,6 +107,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/most_recent_source_actor_catalog")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalog(final SourceIdRequestBody sourceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(sourceIdRequestBody));
@@ -107,6 +115,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/list")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> sourceHandler.listSourcesForWorkspace(workspaceIdRequestBody));
@@ -120,6 +129,7 @@ public class SourceApiController implements SourceApi {
 
   @Post("/update")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public SourceRead updateSource(final SourceUpdate sourceUpdate) {
     return ApiHelper.execute(() -> sourceHandler.updateSource(sourceUpdate));
