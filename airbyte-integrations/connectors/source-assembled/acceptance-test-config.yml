@@ -1,0 +1,31 @@
+connector_image: airbyte/source-assembled:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: source_assembled/spec.yaml
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          activities: [_ab_extracted_at]
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        # Data is retrieved within a time window. The stream slice's end_date is what
+        # is stored as state. That means state date can be older than the records retrieved.
+        threshold_days: 1

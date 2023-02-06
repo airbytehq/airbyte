@@ -1,0 +1,13 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "activities"
+      },
+      "stream_state": {
+        "start_time": 12
+      }
+    }
+  }
+]
