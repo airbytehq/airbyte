@@ -106,8 +106,9 @@ public class AirbyteDebeziumHandler {
         publisher::close,
         firstRecordWaitTime);
 
-    final Duration syncCheckpointSeconds = config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
-        : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_SECONDS;
+    final Duration syncCheckpointSeconds =
+        config.get("sync_checkpoint_seconds") != null ? Duration.ofSeconds(config.get("sync_checkpoint_seconds").asLong())
+            : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_SECONDS;
     final Long syncCheckpointRecords = config.get("sync_checkpoint_records") != null ? config.get("sync_checkpoint_records").asLong()
         : DebeziumStateDecoratingIterator.SYNC_CHECKPOINT_RECORDS;
     return AutoCloseableIterators.fromIterator(new DebeziumStateDecoratingIterator(

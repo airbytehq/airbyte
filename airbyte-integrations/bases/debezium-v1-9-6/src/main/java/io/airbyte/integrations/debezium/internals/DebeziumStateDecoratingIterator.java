@@ -18,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class encapsulates CDC change events and adds the required functionality to create checkpoints
- * for CDC replications. That way, if the process fails in the middle of a long sync, it will be able
- * to recover for any acknowledged checkpoint in the next syncs.
+ * This class encapsulates CDC change events and adds the required functionality to create
+ * checkpoints for CDC replications. That way, if the process fails in the middle of a long sync, it
+ * will be able to recover for any acknowledged checkpoint in the next syncs.
  */
 public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
@@ -56,18 +56,21 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
   private Long recordsLastSync;
   private boolean sendCheckpointMessage = false;
 
-  /** `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as message.
-   * As Debezium is reading records faster that we process them, if we try to send `offsetManger.read()`
-   * offset, it is possible that the state is behind the record we are currently propagating. To avoid that,
-   * we store the offset as soon as we reach the checkpoint threshold (time or records) and we wait to send
-   * it until we are sure that the record we are processing is behind the offset to be sent.
+  /**
+   * `checkpointOffsetToSend` is used as temporal storage for the offset that we want to send as
+   * message. As Debezium is reading records faster that we process them, if we try to send
+   * `offsetManger.read()` offset, it is possible that the state is behind the record we are currently
+   * propagating. To avoid that, we store the offset as soon as we reach the checkpoint threshold
+   * (time or records) and we wait to send it until we are sure that the record we are processing is
+   * behind the offset to be sent.
    */
   private final HashMap<String, String> checkpointOffsetToSend = new HashMap<>();
 
-  /** `previousCheckpointOffset` is used to make sure we don't send duplicated states with the same offset.
-   * Is it possible that the offset Debezium report doesn't move for a period of time, and if we just rely on
-   * the `offsetManger.read()`, there is a chance to sent duplicate states, generating an unneeded usage of
-   * networking and processing.
+  /**
+   * `previousCheckpointOffset` is used to make sure we don't send duplicated states with the same
+   * offset. Is it possible that the offset Debezium report doesn't move for a period of time, and if
+   * we just rely on the `offsetManger.read()`, there is a chance to sent duplicate states, generating
+   * an unneeded usage of networking and processing.
    */
   private final HashMap<String, String> previousCheckpointOffset;
 
@@ -135,11 +138,11 @@ public class DebeziumStateDecoratingIterator extends AbstractIterator<AirbyteMes
         final ChangeEvent<String, String> event = changeEventIterator.next();
         recordsLastSync++;
 
-
         if (checkpointOffsetToSend.size() == 0 &&
             (recordsLastSync >= syncCheckpointRecords ||
                 Duration.between(dateTimeLastSync, OffsetDateTime.now()).compareTo(syncCheckpointDuration) > 0)) {
-          // Using temporal variable to avoid reading teh offset twice, one in the condition and another in the assignation
+          // Using temporal variable to avoid reading teh offset twice, one in the condition and another in
+          // the assignation
           final HashMap<String, String> temporalOffset = (HashMap<String, String>) offsetManager.read();
           if (!cdcStateHandler.isSameOffset(previousCheckpointOffset, temporalOffset)) {
             checkpointOffsetToSend.putAll(temporalOffset);
