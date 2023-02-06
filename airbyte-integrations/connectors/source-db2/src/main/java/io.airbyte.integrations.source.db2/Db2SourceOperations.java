@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.db2;
 
-import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
 import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,7 +12,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 
-import java.sql.*;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;

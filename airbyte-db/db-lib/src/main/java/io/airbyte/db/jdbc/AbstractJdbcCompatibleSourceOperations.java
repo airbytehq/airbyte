@@ -4,7 +4,7 @@
 
 package io.airbyte.db.jdbc;
 
-import static io.airbyte.db.DataTypeUtils.*;
+import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -131,10 +131,6 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DateTimeConverter.convertToTimestamp(getObject(resultSet, index, LocalDateTime.class)));
-//
-//    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-//    final Instant instant = resultSet.getTimestamp(index).toInstant();
-//    node.put(columnName, DataTypeUtils.toISO8601StringWithMicroseconds(instant));
   }
 
   protected void putBinary(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
@@ -154,38 +150,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    // parse time, and timestamp the same way. this seems to not cause an problems and allows us
-    // to treat them all as ISO8601. if this causes any problems down the line, we can adjust.
-    // Parsing TIME as a TIMESTAMP might potentially break for ClickHouse cause it doesn't expect TIME
-    // value in the following format
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR
-      // https://github.com/airbytehq/airbyte/pull/15504
-//      LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
-//    try {
-//      var valueWithoutMicros = value;
-//      final StringBuilder nanos = new StringBuilder();
-//      final var dotIndex = value.indexOf(".");
-//      if (dotIndex > 0) {
-//        final var micro = value.substring(value.lastIndexOf('.') + 1, value.length() - 1);
-//        nanos.append(micro);
-//        valueWithoutMicros = value.replace("." + micro, "");
-//      }
-//      while (nanos.length() != 9) {
-//        nanos.append("0");
-//      }
-//
-//      final var timestamp = Timestamp
-//          .from(DataTypeUtils.getDateFormat().parse(valueWithoutMicros).toInstant());
-//      timestamp.setNanos(Integer.parseInt(nanos.toString()));
-//      preparedStatement.setTimestamp(parameterIndex, timestamp);
-//    } catch (final ParseException e) {
-//      throw new RuntimeException(e);
-//    }
   }
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
