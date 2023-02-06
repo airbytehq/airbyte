@@ -10,10 +10,15 @@ This page guides you through the process of setting up the [Assembled](https://w
 4. Enter a name for your source.
 5. For **API token**, enter the API token for your Assembled account.
 6. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
-7. (Optional) Configure **History Days**. This connector will backfill incremental streams from the configured start date. After the initial backfill, the connector will sync x days of data every day to keep the changing report data up to date. Every subsequent sync for a specific day will only sync the latest data for that day. This configuration configures how many days of data to sync per day. The default is 30 days. If you always want to latest data only, it is advised to do a full resync for incremental streams.
+7. (Optional) Configure **History Days**. This connector will backfill incremental streams from the configured start date. After the initial backfill, the connector will sync x days of data every day to keep the changing data up to date since assembled does not have a way to fetch updated data only. Every subsequent sync for a specific day will only sync the latest data for the previous day. This configuration configures how many days of data to sync per day. The default is 30 days. If you always want to latest data only, it is advised to do a full resync for incremental streams.
 8. (Optional) Configure **Report Channels**. Configure what channels to sync reports for. The default are "email" and "phone".
 9. (Optional) Configure **Forecast Channels**. Configure what channels to sync forecasts for. The default are "email" and "phone".
 10. Click **Set up source**.
+
+## Notes
+
+* This connector only sync completed days. That means it will sync all data up to today.
+* The Assembled API doesn't have a great way to sync data incrementally and data can retroactively be changed/updated. For example, activities (shifts) can be updated retroactively and that may change the `start_time/end_time` interval it now falls into or require a resync of that interval. This connector mediates this by providing a **History Days** configuration. Each incremental sync after the backfill will sync `history_days` of history. That assumes that you don't care about anything being retroactively updated outside of that window. If you always want to latest data consider doing a full sync for incremental streams every time.
 
 ## Supported sync modes
 
