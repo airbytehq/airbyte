@@ -93,6 +93,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
+  public static final String REPLICATION_PRIVILEGE_ERROR_MESSAGE =
+      "User '%s' does not have enough privileges for CDC replication. Please read the docs and add required privileges.";
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String PARAM_SSL = "ssl";
@@ -317,7 +319,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       });
 
       checkOperations.add(database -> {
-        final String userName = config.get("username").toString();
+        final String userName = config.get("username").asText();
 
         final List<JsonNode> userPrivileges = database.queryJsons(connection -> {
           final PreparedStatement ps = connection.prepareStatement("SELECT userepl FROM pg_user WHERE usename = ?");
@@ -327,9 +329,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         }, sourceOperations::rowToJson);
 
         if (!userPrivileges.get(0).get("userepl").asBoolean()) {
-          throw new ConfigErrorException(
-              "User " + userName + " does not have enough privileges for CDC replication." +
-                  " Please read the docs and add required privileges.");
+          throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
         }
 
       });
