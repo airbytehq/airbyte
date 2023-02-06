@@ -1,11 +1,13 @@
+import { createColumnHelper } from "@tanstack/react-table";
+import classNames from "classnames";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useNavigate } from "react-router-dom";
-import { CellProps } from "react-table";
 
 import { SortOrderEnum } from "components/EntityTable/types";
-import { Table, SortableTableHeader } from "components/ui/Table";
+import { NextTable } from "components/ui/NextTable";
+import { SortableTableHeader } from "components/ui/Table";
 import { Text } from "components/ui/Text";
 
 import { useQuery } from "hooks/useQuery";
@@ -23,8 +25,8 @@ interface UsagePerConnectionTableProps {
 
 type FullTableProps = CreditConsumptionByConnector & {
   creditsConsumedPercent: number;
-  sourceIcon: string;
-  destinationIcon: string;
+  sourceIcon?: string;
+  destinationIcon?: string;
 };
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
@@ -33,7 +35,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const creditConsumptionWithPercent = React.useMemo(() => {
+  const creditConsumptionWithPercent = React.useMemo<FullTableProps[]>(() => {
     const sumCreditsConsumed = creditConsumption.reduce((a, b) => a + b.creditsConsumed, 0);
     return creditConsumption.map((item) => {
       const currentSourceDefinition = sourceDefinitions.find(
@@ -42,13 +44,14 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
       const currentDestinationDefinition = destinationDefinitions.find(
         (def) => def.destinationDefinitionId === item.destinationDefinitionId
       );
-
-      return {
+      const newItem: FullTableProps = {
         ...item,
         sourceIcon: currentSourceDefinition?.icon,
         destinationIcon: currentDestinationDefinition?.icon,
         creditsConsumedPercent: sumCreditsConsumed ? (item.creditsConsumed / sumCreditsConsumed) * 100 : 0,
       };
+
+      return newItem;
     });
   }, [creditConsumption, sourceDefinitions, destinationDefinitions]);
 
@@ -91,14 +94,21 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
   );
 
   const sortingData = React.useMemo(
-    () => creditConsumptionWithPercent.sort(sortData),
+    // This is temporary solution, since there is an issue with array that
+    // creditConsumptionWithPercent.sort(sortData) returns; when passed into useReactTable
+    // the reference to this array stays the same, so useReactTable is not updating the table,
+    // therefore sorting not working; after implementing native react table sorting mechanism
+    // this problem should be solved
+    () => [...creditConsumptionWithPercent.sort(sortData)],
     [sortData, creditConsumptionWithPercent]
   );
 
+  const columnHelper = createColumnHelper<FullTableProps>();
+
   const columns = React.useMemo(
     () => [
-      {
-        Header: (
+      columnHelper.accessor("sourceDefinitionName", {
+        header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("connection")}
             isActive={sortBy === "connection"}
@@ -107,19 +117,20 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             <FormattedMessage id="credits.connection" />
           </SortableTableHeader>
         ),
-        customWidth: 30,
-        accessor: "sourceDefinitionName",
-        Cell: ({ cell, row }: CellProps<FullTableProps>) => (
+        meta: {
+          thClassName: classNames(styles.thConnection, styles.light),
+        },
+        cell: (props) => (
           <ConnectionCell
-            sourceDefinitionName={cell.value}
-            destinationDefinitionName={row.original.destinationDefinitionName}
-            sourceIcon={row.original.sourceIcon}
-            destinationIcon={row.original.destinationIcon}
+            sourceDefinitionName={props.cell.getValue()}
+            destinationDefinitionName={props.row.original.destinationDefinitionName}
+            sourceIcon={props.row.original.sourceIcon}
+            destinationIcon={props.row.original.destinationIcon}
           />
         ),
-      },
-      {
-        Header: (
+      }),
+      columnHelper.accessor("creditsConsumed", {
+        header: () => (
           <SortableTableHeader
             onClick={() => onSortClick("usage")}
             isActive={sortBy === "usage"}
@@ -128,35 +139,36 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
             <FormattedMessage id="credits.usage" />
           </SortableTableHeader>
         ),
-        accessor: "creditsConsumed",
-        collapse: true,
-        customPadding: { right: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => (
+        meta: {
+          thClassName: classNames(styles.thCreditsConsumed, styles.light),
+        },
+        cell: (props) => (
           <Text className={styles.usageValue} size="lg">
-            <FormattedNumber value={cell.value} maximumFractionDigits={2} minimumFractionDigits={2} />
+            <FormattedNumber value={props.cell.getValue()} maximumFractionDigits={2} minimumFractionDigits={2} />
           </Text>
         ),
-      },
-      {
-        Header: "",
-        accessor: "creditsConsumedPercent",
-        customPadding: { left: 0 },
-        Cell: ({ cell }: CellProps<FullTableProps>) => <UsageCell percent={cell.value} />,
-      },
-      // TODO: Replace to Grow column
-      {
-        Header: "",
-        accessor: "connectionId",
-        Cell: <div />,
-        customWidth: 20,
-      },
+      }),
+      columnHelper.accessor("creditsConsumedPercent", {
+        header: "",
+        meta: {
+          thClassName: classNames(styles.thCreditsConsumedPercent, styles.light),
+        },
+        cell: (props) => <UsageCell percent={props.cell.getValue()} />,
+      }),
+      columnHelper.accessor("connectionId", {
+        header: "",
+        cell: () => <div />,
+        meta: {
+          thClassName: classNames(styles.thConnectionId, styles.light),
+        },
+      }),
     ],
-    [onSortClick, sortBy, sortOrder]
+    [columnHelper, onSortClick, sortBy, sortOrder]
   );
 
   return (
     <div className={styles.content}>
-      <Table columns={columns} data={sortingData} light />
+      <NextTable columns={columns} data={sortingData} light />
     </div>
   );
 };
