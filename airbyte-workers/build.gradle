@@ -94,6 +94,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.bouncycastle:bcprov-jdk15on:1.66'
     testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
+    testImplementation project(':airbyte-api')
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test

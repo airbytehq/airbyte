@@ -126,6 +126,7 @@ definitions:
       - stream_slicers
     properties:
       type:
+        type: string
         enum: [CartesianProductStreamSlicer]
       stream_slicers:
         type: array
@@ -746,6 +747,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [JsonFileSchemaLoader, JsonSchema] # TODO As part of Beta, remove JsonSchema and update connectors to use JsonFileSchemaLoader
       file_path:
         type: string

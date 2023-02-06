@@ -528,16 +528,6 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
-          sudo rm -f /var/lib/dpkg/lock
-          sudo rm -f /var/lib/dpkg/lock-frontend
-
       - name: Set up CI Gradle Properties
         run: |
           mkdir -p ~/.gradle/
@@ -654,16 +644,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
-
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
-          sudo rm -f /var/lib/dpkg/lock
-          sudo rm -f /var/lib/dpkg/lock-frontend
 
       - name: Set up CI Gradle Properties
         run: |
