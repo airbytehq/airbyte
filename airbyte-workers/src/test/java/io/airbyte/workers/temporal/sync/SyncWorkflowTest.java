@@ -53,16 +53,15 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.time.Duration;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.UnusedPrivateMethod"})
 class SyncWorkflowTest {
@@ -182,7 +181,7 @@ class SyncWorkflowTest {
         .build();
     discoveryActivityOptions = ActivityOptions.newBuilder()
         .setStartToCloseTimeout(Duration.ofSeconds(360))
-            .setRetryOptions(TemporalUtils.NO_RETRY)
+        .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
 
     final BeanIdentifier longActivitiesBeanIdentifier = mock(BeanIdentifier.class);
@@ -424,7 +423,7 @@ class SyncWorkflowTest {
   void testGetProperFailureIfRefreshFails() {
     when(refreshSchemaActivity.shouldRefreshSchema(any())).thenReturn(true);
     doThrow(new RuntimeException())
-            .when(refreshSchemaActivity).refreshSchema(any(), any());
+        .when(refreshSchemaActivity).refreshSchema(any(), any());
     final StandardSyncOutput output = execute();
     assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.FAILED);
     assertEquals(output.getFailures().size(), 1);

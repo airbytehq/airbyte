@@ -4,19 +4,17 @@
 
 package io.airbyte.workers.temporal.scheduling;
 
+import static io.airbyte.workers.temporal.sync.SyncOutputProvider.EMPTY_FAILED_SYNC;
+
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-
-import static io.airbyte.workers.temporal.sync.SyncOutputProvider.EMPTY_FAILED_SYNC;
 
 @Slf4j
 public class SyncCheckConnectionFailure {
