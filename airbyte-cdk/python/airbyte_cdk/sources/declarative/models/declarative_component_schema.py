@@ -97,6 +97,10 @@ class CustomIncrementalSync(BaseModel):
 
     type: Literal["CustomIncrementalSync"]
     class_name: str
+    cursor_field: str = Field(
+        ...,
+        description="The location of the value on a record that will be used as a bookmark during sync",
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
