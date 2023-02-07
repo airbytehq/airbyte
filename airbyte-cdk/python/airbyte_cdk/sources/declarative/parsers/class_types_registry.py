@@ -20,6 +20,7 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
@@ -47,7 +48,6 @@ from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonF
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
@@ -80,7 +80,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "InterpolatedRequestOptionsProvider": InterpolatedRequestOptionsProvider,
     "InterpolatedString": InterpolatedString,
     "JsonFileSchemaLoader": JsonFileSchemaLoader,
-    "ListStreamSlicer": ListStreamSlicer,
+    "ListPartitionRouter": ListPartitionRouter,
     "MinMaxDatetime": MinMaxDatetime,
     "NoAuth": NoAuth,
     "NoPagination": NoPagination,

@@ -4,16 +4,16 @@
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 
-slice_values = ["customer", "store", "subscription"]
+partition_values = ["customer", "store", "subscription"]
 cursor_field = "owner_resource"
 parameters = {"cursor_field": "owner_resource"}
 
 
 @pytest.mark.parametrize(
-    "test_name, slice_values, cursor_field, expected_slices",
+    "test_name, partition_values, cursor_field, expected_slices",
     [
         (
             "test_single_element",
@@ -35,8 +35,8 @@ parameters = {"cursor_field": "owner_resource"}
         ),
     ],
 )
-def test_list_stream_slicer(test_name, slice_values, cursor_field, expected_slices):
-    slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, parameters=parameters)
+def test_list_partition_router(test_name, partition_values, cursor_field, expected_slices):
+    slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
 
@@ -50,7 +50,7 @@ def test_list_stream_slicer(test_name, slice_values, cursor_field, expected_slic
     ],
 )
 def test_update_cursor(test_name, stream_slice, last_record, expected_state):
-    slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, parameters={})
+    slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters={})
     if expected_state:
         slicer.update_cursor(stream_slice, last_record)
         updated_state = slicer.get_stream_state()
@@ -108,31 +108,31 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
 def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
     if request_option.inject_into == RequestOptionType.path:
         try:
-            ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
+            ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
             assert False
         except ValueError:
             return
-    slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
+    partition_router = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
     stream_slice = {cursor_field: "customer"}
 
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert expected_req_params == partition_router.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)
 
 
 def test_request_option_before_updating_cursor():
     request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner_resource")
     if request_option.inject_into == RequestOptionType.path:
         try:
-            ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
+            ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
             assert False
         except ValueError:
             return
-    slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
+    partition_router = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
     stream_slice = {cursor_field: "customer"}
 
-    assert {} == slicer.get_request_params(stream_slice)
-    assert {} == slicer.get_request_headers()
-    assert {} == slicer.get_request_body_json()
-    assert {} == slicer.get_request_body_data()
+    assert {} == partition_router.get_request_params(stream_slice)
+    assert {} == partition_router.get_request_headers()
+    assert {} == partition_router.get_request_body_json()
+    assert {} == partition_router.get_request_body_data()

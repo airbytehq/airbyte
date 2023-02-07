@@ -7,11 +7,11 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from source_posthog.components import EventsCartesianProductStreamSlicer
 
 stream_slicers = [
-    ListStreamSlicer(slice_values=[2331], cursor_field="project_id", config={}, parameters={}),
+    ListPartitionRouter(values=[2331], cursor_field="project_id", config={}, parameters={}),
     DatetimeStreamSlicer(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-02-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", parameters={}),

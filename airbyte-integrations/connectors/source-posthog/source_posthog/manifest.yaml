@@ -105,7 +105,7 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_posthog.components.EventsCartesianProductStreamSlicer
-      partition_routers:
+      stream_slicers:
         - type: SubstreamSlicer
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"

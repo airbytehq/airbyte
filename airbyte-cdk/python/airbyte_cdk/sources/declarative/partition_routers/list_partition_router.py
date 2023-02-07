@@ -13,27 +13,27 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 
 @dataclass
-class ListStreamSlicer(StreamSlicer):
+class ListPartitionRouter(StreamSlicer):
     """
-    Stream slicer that iterates over the values of a list
-    If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list
+    Partition router that iterates over the values of a list
+    If values is a string, then evaluate it as literal and assert the resulting literal is a list
 
     Attributes:
-        slice_values (Union[str, List[str]]): The values to iterate over
+        values (Union[str, List[str]]): The values to iterate over
         cursor_field (Union[InterpolatedString, str]): The name of the cursor field
         config (Config): The user-provided configuration as specified by the source's spec
         request_option (Optional[RequestOption]): The request option to configure the HTTP request
     """
 
-    slice_values: Union[str, List[str]]
+    values: Union[str, List[str]]
     cursor_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        if isinstance(self.slice_values, str):
-            self.slice_values = InterpolatedString.create(self.slice_values, parameters=parameters).eval(self.config)
+        if isinstance(self.values, str):
+            self.values = InterpolatedString.create(self.values, parameters=parameters).eval(self.config)
         if isinstance(self.cursor_field, str):
             self.cursor_field = InterpolatedString(string=self.cursor_field, parameters=parameters)
 
@@ -44,7 +44,7 @@ class ListStreamSlicer(StreamSlicer):
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         # This method is called after the records are processed.
         slice_value = stream_slice.get(self.cursor_field.eval(self.config))
-        if slice_value and slice_value in self.slice_values:
+        if slice_value and slice_value in self.values:
             self._cursor = slice_value
         else:
             raise ValueError(f"Unexpected stream slice: {slice_value}")
@@ -89,7 +89,7 @@ class ListStreamSlicer(StreamSlicer):
         return self._get_request_option(RequestOptionType.body_json, stream_slice)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.slice_values]
+        return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.values]
 
     def _get_request_option(self, request_option_type: RequestOptionType, stream_slice: StreamSlice):
         if self.request_option and self.request_option.inject_into == request_option_type and stream_slice:

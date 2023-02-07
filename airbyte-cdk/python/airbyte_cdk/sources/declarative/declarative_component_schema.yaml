@@ -736,20 +736,20 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
-  ListStreamSlicer:
-    description: Stream slicer that iterates over the values of a list
+  ListPartitionRouter:
+    description: Partition router that iterates over the values of a list
     type: object
     required:
       - type
       - cursor_field
-      - slice_values
+      - values
     properties:
       type:
         type: string
-        enum: [ListStreamSlicer]
+        enum: [ListPartitionRouter]
       cursor_field:
         type: string
-      slice_values:
+      values:
         anyOf:
           - type: string
           - type: array
@@ -1015,14 +1015,14 @@ definitions:
         default: []
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"
-          - "$ref": "#/definitions/ListStreamSlicer"
+          - "$ref": "#/definitions/ListPartitionRouter"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomStreamSlicer"
-                - "$ref": "#/definitions/ListStreamSlicer"
+                - "$ref": "#/definitions/ListPartitionRouter"
                 - "$ref": "#/definitions/SingleSlice"
                 - "$ref": "#/definitions/SubstreamSlicer"
       $parameters:

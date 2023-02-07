@@ -57,8 +57,8 @@ definitions:
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       partition_router:
-        type: "ListStreamSlicer"
-        slice_values: "{{ config.get('survey_id') }}"
+        type: "ListPartitionRouter"
+        values: "{{ config.get('survey_id') }}"
         cursor_field: "survey_id"
         request_option:
           field_name: "survey_id"
@@ -72,8 +72,8 @@ definitions:
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       partition_router:
-        type: "ListStreamSlicer"
-        slice_values: "{{ config.get('survey_id') }}"
+        type: "ListPartitionRouter"
+        values: "{{ config.get('survey_id') }}"
         cursor_field: "survey_id"
         request_option:
           field_name: "survey_id"

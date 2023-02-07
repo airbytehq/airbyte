@@ -41,8 +41,8 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DpathExtractor.decoder": "JsonDecoder",
     # HttpRequester
     "HttpRequester.error_handler": "DefaultErrorHandler",
-    # ListStreamSlicer
-    "ListStreamSlicer.request_option": "RequestOption",
+    # ListPartitionRouter
+    "ListPartitionRouter.request_option": "RequestOption",
     # ParentStreamConfig
     "ParentStreamConfig.request_option": "RequestOption",
     "ParentStreamConfig.stream": "DeclarativeStream",
