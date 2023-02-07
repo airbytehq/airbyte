@@ -28,6 +28,7 @@ NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
+NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH = "NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH"
 
 
 class DbtIntegrationTest(object):
@@ -58,6 +59,8 @@ class DbtIntegrationTest(object):
             self.setup_clickhouse_db()
         if DestinationType.TIDB.value in destinations_to_test:
             self.setup_tidb_db()
+        if DestinationType.DUCKDB.value in destinations_to_test:
+            self.setup_duckdb_db()
 
     def setup_postgres_db(self):
         start_db = True

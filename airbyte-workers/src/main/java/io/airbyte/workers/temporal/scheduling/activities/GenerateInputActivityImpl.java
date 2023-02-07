@@ -9,7 +9,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -107,8 +106,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
       final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
-          ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
-              destinationDefinition.getNormalizationConfig().getNormalizationTag())
+          ? destinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":" +
+              destinationDefinition.getNormalizationConfig().getNormalizationTag()
           : null;
       final String normalizationIntegrationType =
           destinationDefinition.getNormalizationConfig() != null ? destinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()

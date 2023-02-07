@@ -43,7 +43,7 @@ To install and start Airbyte :
 
 ```bash
   mkdir airbyte && cd airbyte
-  wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+  wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}
   docker compose up -d
 ```
 
