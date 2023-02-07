@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.scheduling;
+package io.airbyte.commons.temporal.scheduling;
 
-import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.config.Geography;
 import io.airbyte.config.persistence.ConfigRepository;
 import jakarta.inject.Singleton;
@@ -32,9 +32,14 @@ public class RouterService {
    * Given a connectionId, look up the connection's configured {@link Geography} in the config DB and
    * use it to determine which Task Queue should be used for this connection's sync.
    */
-  public String getTaskQueue(final UUID connectionId) throws IOException {
+  public String getTaskQueue(final UUID connectionId, final TemporalJobType jobType) throws IOException {
     final Geography geography = configRepository.getGeographyForConnection(connectionId);
-    return taskQueueMapper.getTaskQueue(geography);
+    return taskQueueMapper.getTaskQueue(geography, jobType);
+  }
+
+  public String getTaskQueueForWorkspace(final UUID workspaceId, final TemporalJobType jobType) throws IOException {
+    final Geography geography = configRepository.getGeographyForWorkspace(workspaceId);
+    return taskQueueMapper.getTaskQueue(geography, jobType);
   }
 
 }
