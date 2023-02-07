@@ -106,6 +106,12 @@ class AmazonSellerPartnerConfig(BaseModel):
         order=12,
     )
 
+    advanced_report_options: str = Field(
+        None,
+        description="Additional information to configure report options. This varies by report type, not every report implement this kind of feature. Must be a valid json string.",
+        examples=['{"GET_SALES_AND_TRAFFIC_REPORT": {"availability_sla_days": 3}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
+    )
+
     aws_environment: AWSEnvironment = Field(
         description="Select the AWS Environment.",
         title="AWS Environment",

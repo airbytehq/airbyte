@@ -44,6 +44,7 @@ class AmazonSPStream(HttpStream, ABC):
         marketplace_id: str,
         period_in_days: Optional[int],
         report_options: Optional[str],
+        advanced_report_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
         *args,
@@ -173,6 +174,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         report_options: Optional[str],
         max_wait_seconds: Optional[int],
         replication_end_date: Optional[str],
+        advanced_report_options: Optional[str],
         authenticator: HttpAuthenticator = None,
     ):
         self._authenticator = authenticator
@@ -185,6 +187,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
         self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
+        self._advanced_report_options = advanced_report_options or "{}"
 
     @property
     def url_base(self) -> str:
@@ -951,6 +954,10 @@ class SellerAnalyticsSalesAndTrafficReports(IncrementalAnalyticsStream):
     result_key = "salesAndTrafficByAsin"
     cursor_field = "queryEndDate"
     fixed_period_in_days = 1
+
+    # Because it is possible to encounter delays in data update here we can set a different 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return super().get_updated_state(current_stream_state, latest_record)
 
 
 class VendorSalesReports(IncrementalAnalyticsStream):
