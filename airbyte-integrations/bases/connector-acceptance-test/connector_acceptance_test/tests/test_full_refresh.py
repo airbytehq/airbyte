@@ -6,12 +6,13 @@ from collections import defaultdict
 from functools import partial
 from logging import Logger
 from typing import List, Mapping
+import time
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import ConnectionTestConfig
-from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
+from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, full_refresh_only_catalog, make_hashable
 from connector_acceptance_test.utils.json_schema_helper import CatalogField
 
 
@@ -36,24 +37,24 @@ def primary_keys_only(record, pks):
 
 @pytest.mark.default_timeout(20 * 60)
 class TestFullRefresh(BaseTest):
-    def test_sequential_reads(
-        self,
-        inputs: ConnectionTestConfig,
-        connector_config: SecretDict,
-        configured_catalog: ConfiguredAirbyteCatalog,
-        docker_runner: ConnectorRunner,
-        detailed_logger: Logger,
-    ):
-        ignored_fields = getattr(inputs, "ignored_fields") or {}
-        configured_catalog = full_refresh_only_catalog(configured_catalog)
-        output = docker_runner.call_read(connector_config, configured_catalog)
-        records_1 = [message.record for message in output if message.type == Type.RECORD]
+    def assert_emitted_at_increase_on_subsequent_runs(self, first_read_records, second_read_records):
+        first_read_records_data = [record.data for record in first_read_records]
+        assert first_read_records_data, "At least one record should be read using provided catalog"
+
+        first_read_records_emitted_at = [record.emitted_at for record in first_read_records]
+        max_emitted_at = max(first_read_records_emitted_at)
+
+        second_read_reords_emitted_at = [record.emitted_at for record in second_read_records]
+
+        min_emitted_at = min(second_read_reords_emitted_at)
+
+        assert max_emitted_at < min_emitted_at, "emitted_at should increase on subsequent runs"
+
+    def assert_two_sequential_reads_produce_same_or_subset_records(self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger):
         records_by_stream_1 = defaultdict(list)
         for record in records_1:
             records_by_stream_1[record.stream].append(record.data)
 
-        output = docker_runner.call_read(connector_config, configured_catalog)
-        records_2 = [message.record for message in output if message.type == Type.RECORD]
         records_by_stream_2 = defaultdict(list)
         for record in records_2:
             records_by_stream_2[record.stream].append(record.data)
@@ -78,3 +79,25 @@ class TestFullRefresh(BaseTest):
                 detailed_logger.info("Missing records")
                 detailed_logger.log_json_list(missing_records)
                 pytest.fail(msg)
+
+    def test_sequential_reads(
+        self,
+        inputs: ConnectionTestConfig,
+        connector_config: SecretDict,
+        configured_catalog: ConfiguredAirbyteCatalog,
+        docker_runner: ConnectorRunner,
+        detailed_logger: Logger,
+    ):
+        ignored_fields = getattr(inputs, "ignored_fields") or {}
+        configured_catalog = full_refresh_only_catalog(configured_catalog)
+        output_1 = docker_runner.call_read(connector_config, configured_catalog)
+        records_1 = [message.record for message in output_1 if message.type == Type.RECORD]
+
+        # sleep for 1 second to ensure that the emitted_at timestamp is different
+        time.sleep(1)
+
+        output_2 = docker_runner.call_read(connector_config, configured_catalog)
+        records_2 = [message.record for message in output_2 if message.type == Type.RECORD]
+
+        self.assert_emitted_at_increase_on_subsequent_runs(records_1, records_2)
+        self.assert_two_sequential_reads_produce_same_or_subset_records(records_1, records_2, configured_catalog, ignored_fields, detailed_logger)
