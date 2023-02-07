@@ -33,11 +33,12 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.temporal.workflow.Workflow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class SyncWorkflowImpl implements SyncWorkflow {
@@ -92,7 +93,11 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
       if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
         LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+        try {
+          refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+        } catch (final Exception e) {
+          return SyncOutputProvider.getRefreshSchemaFailure(e);
+        }
       }
 
       final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);

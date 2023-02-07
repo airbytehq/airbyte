@@ -26,6 +26,7 @@ properties:
       - config_error
       - system_error
       - manual_cancellation
+      - refresh_schema
   internalMessage:
     description: Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
     type: string
