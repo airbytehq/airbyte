@@ -688,7 +688,6 @@ jobs:
             ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
-            ${{ github.workspace }}/airbyte-commons-docker/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
@@ -1107,7 +1106,7 @@ jobs:
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: [start-helm-acceptance-test-runner] # required to start the main job when the runner is ready
+    needs: [ start-helm-acceptance-test-runner ] # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     # this is the label of the runner
     environment: more-secrets

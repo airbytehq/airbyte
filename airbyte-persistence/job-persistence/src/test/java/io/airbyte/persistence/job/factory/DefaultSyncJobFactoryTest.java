@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.DestinationConnection;
@@ -67,12 +66,12 @@ class DefaultSyncJobFactoryTest {
 
     final String srcDockerRepo = "srcrepo";
     final String srcDockerTag = "tag";
-    final String srcDockerImage = DockerUtils.getTaggedImageName(srcDockerRepo, srcDockerTag);
+    final String srcDockerImage = srcDockerRepo + ":" + srcDockerTag;
     final Version srcProtocolVersion = new Version("0.3.1");
 
     final String dstDockerRepo = "dstrepo";
     final String dstDockerTag = "tag";
-    final String dstDockerImage = DockerUtils.getTaggedImageName(dstDockerRepo, dstDockerTag);
+    final String dstDockerImage = dstDockerRepo + ":" + dstDockerTag;
     final Version dstProtocolVersion = new Version("0.3.2");
     final StandardSourceDefinition standardSourceDefinition =
         new StandardSourceDefinition().withSourceDefinitionId(sourceDefinitionId).withDockerRepository(srcDockerRepo)
