@@ -1,0 +1,89 @@
+@use "scss/variables";
+
+.container {
+  display: flex;
+}
+
+.directionRow {
+  flex-direction: row;
+}
+
+.directionColumn {
+  flex-direction: column;
+}
+
+.directionColumnReverse {
+  flex-direction: column-reverse;
+}
+
+.directionRowReverse {
+  flex-direction: row-reverse;
+}
+
+.gapXs {
+  gap: variables.$spacing-xs;
+}
+
+.gapSm {
+  gap: variables.$spacing-sm;
+}
+
+.gapMd {
+  gap: variables.$spacing-md;
+}
+
+.gapLg {
+  gap: variables.$spacing-lg;
+}
+
+.gapXl {
+  gap: variables.$spacing-xl;
+}
+
+.gap2xl {
+  gap: variables.$spacing-2xl;
+}
+
+.alignItemsStart {
+  align-items: flex-start;
+}
+
+.alignItemsEnd {
+  align-items: flex-end;
+}
+
+.alignItemsCenter {
+  align-items: center;
+}
+
+.alignItemsBaseline {
+  align-items: baseline;
+}
+
+.alignItemsStretch {
+  align-items: stretch;
+}
+
+.justifyContentStart {
+  justify-content: flex-start;
+}
+
+.justifyContentEnd {
+  justify-content: flex-end;
+}
+
+.justifyContentCenter {
+  justify-content: center;
+}
+
+.justifyContentBetween {
+  justify-content: space-between;
+}
+
+.justifyContentAround {
+  justify-content: space-around;
+}
+
+.justifyContentEvenly {
+  justify-content: space-evenly;
+}

@@ -40,41 +40,32 @@ class MockHttpStream(HttpStream):
         return 0.01
 
 
-def test_default_http_availability_strategy(mocker):
+@pytest.mark.parametrize(
+    ("status_code", "json_contents", "expected_is_available", "expected_messages"),
+    [
+        (403, {"error": "Something went wrong"}, False, [
+            "This is most likely due to insufficient permissions on the credentials in use.",
+            "Something went wrong",
+        ]),
+        (200, {}, True, [])
+    ]
+)
+@pytest.mark.parametrize(
+    ("include_source", "expected_docs_url_messages"), [
+        (True, ["Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."]),
+        (False, ["Please visit the connector's documentation to learn more."]),
+    ]
+)
+def test_default_http_availability_strategy(mocker, status_code, json_contents, expected_is_available, expected_messages, include_source, expected_docs_url_messages):
     http_stream = MockHttpStream()
     assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
-    class MockResponse(requests.Response, mocker.MagicMock):
+    class MockResponseWithJsonContents(requests.Response, mocker.MagicMock):
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)
             requests.Response.__init__(self, **kvargs)
             self.json = mocker.MagicMock()
 
-    response = MockResponse()
-    response.status_code = 403
-    response.json.return_value = {"error": "Oh no!"}
-    mocker.patch.object(requests.Session, "send", return_value=response)
-
-    stream_is_available, reason = http_stream.check_availability(logger)
-    assert not stream_is_available
-
-    expected_messages = [
-        "This is most likely due to insufficient permissions on the credentials in use.",
-        "Please visit the connector's documentation to learn more.",
-        "Oh no!",
-    ]
-    for message in expected_messages:
-        assert message in reason
-
-    req = requests.Response()
-    req.status_code = 200
-    mocker.patch.object(requests.Session, "send", return_value=req)
-
-    stream_is_available, _ = http_stream.check_availability(logger)
-    assert stream_is_available
-
-
-def test_http_availability_connector_specific_docs(mocker):
     class MockSource(AbstractSource):
         def __init__(self, streams: List[Stream] = None):
             self._streams = streams
@@ -87,25 +78,24 @@ def test_http_availability_connector_specific_docs(mocker):
                 raise Exception("Stream is not set")
             return self._streams
 
-    http_stream = MockHttpStream()
-    source = MockSource(streams=[http_stream])
-    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
+    response = MockResponseWithJsonContents()
+    response.status_code = status_code
+    response.json.return_value = json_contents
+    mocker.patch.object(requests.Session, "send", return_value=response)
 
-    req = requests.Response()
-    req.status_code = 403
-    mocker.patch.object(requests.Session, "send", return_value=req, json={"error": "Oh no!"})
+    if include_source:
+        source = MockSource(streams=[http_stream])
+        actual_is_available, reason = http_stream.check_availability(logger, source)
+    else:
+        actual_is_available, reason = http_stream.check_availability(logger)
 
-    stream_is_available, reason = http_stream.check_availability(logger, source)
-    assert not stream_is_available
-
-    expected_messages = [
-        f"The endpoint to access stream '{http_stream.name}' returned 403: Forbidden.",
-        "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
-        # "Oh no!",
-    ]
-    for message in expected_messages:
-        assert message in reason
+    assert expected_is_available == actual_is_available
+    if expected_is_available:
+        assert reason is None
+    else:
+        all_expected_messages = expected_messages + expected_docs_url_messages
+        for message in all_expected_messages:
+            assert message in reason
 
 
 def test_http_availability_raises_unhandled_error(mocker):
@@ -139,3 +129,25 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
     assert mock_send.call_count == 3
     for message in ["Caught retryable error", "Response Code: 429", "Response Code: 503"]:
         assert message in caplog.text
+
+
+def test_http_availability_strategy_on_empty_stream(mocker):
+
+    class MockEmptyHttpStream(mocker.MagicMock, MockHttpStream):
+        def __init__(self, *args, **kvargs):
+            mocker.MagicMock.__init__(self)
+            self.read_records = mocker.MagicMock()
+
+    empty_stream = MockEmptyHttpStream()
+    assert isinstance(empty_stream, HttpStream)
+
+    assert isinstance(empty_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    # Generator should have no values to generate
+    empty_stream.read_records.return_value = iter([])
+
+    logger = logging.getLogger("airbyte.test-source")
+    stream_is_available, _ = empty_stream.check_availability(logger)
+
+    assert stream_is_available
+    assert empty_stream.read_records.called

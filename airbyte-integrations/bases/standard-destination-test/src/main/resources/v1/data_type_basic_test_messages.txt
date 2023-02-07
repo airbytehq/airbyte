@@ -5,7 +5,6 @@
 {"type": "RECORD", "record": {"stream": "date_test_1", "emitted_at": 1602637589200, "data": { "data" : "1504-02-29" }}}
 {"type": "RECORD", "record": {"stream": "date_test_1", "emitted_at": 1602637589300, "data": { "data" : "9999-12-23" }}}
 {"type": "RECORD", "record": {"stream": "datetime_test_1", "emitted_at": 1602637589100, "data": { "data" : "2022-01-23T01:23:45Z" }}}
-{"type": "RECORD", "record": {"stream": "datetime_test_1", "emitted_at": 1602637589200, "data": { "data" : 2022-01-23T01:23:45.678-11:30 BC }}}
 {"type": "RECORD", "record": {"stream": "datetime_test_1", "emitted_at": 1602637589300, "data": { "data" : "9999-12-23T01:23:45Z" }}}
 {"type": "RECORD", "record": {"stream": "datetime_test_2", "emitted_at": 1602637589100, "data": { "data" : "2022-11-22T01:23:45" }}}
 {"type": "RECORD", "record": {"stream": "datetime_test_2", "emitted_at": 1602637589200, "data": { "data" : "1504-02-29T01:23:45" }}}
@@ -17,9 +16,6 @@
 {"type": "RECORD", "record": {"stream": "number_test_1", "emitted_at": 1602637589200, "data": { "data" : "56.78" }}}
 {"type": "RECORD", "record": {"stream": "number_test_1", "emitted_at": 1602637589300, "data": { "data" : "0" }}}
 {"type": "RECORD", "record": {"stream": "number_test_1", "emitted_at": 1602637589100, "data": { "data" : "-12345.678" }}}
-{"type": "RECORD", "record": {"stream": "bignumber_test_1", "emitted_at": 1602637589200, "data": { "data" : "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.1234" }}}
-{"type": "RECORD", "record": {"stream": "bignumber_test_1", "emitted_at": 1602637589300, "data": { "data" : "0" }}}
-{"type": "RECORD", "record": {"stream": "bignumber_test_1", "emitted_at": 1602637589100, "data": { "data" : "-12345.678" }}}
 {"type": "RECORD", "record": {"stream": "integer_test_1", "emitted_at": 1602637589200, "data": { "data" : "42" }}}
 {"type": "RECORD", "record": {"stream": "integer_test_1", "emitted_at": 1602637589300, "data": { "data" : "0" }}}
 {"type": "RECORD", "record": {"stream": "integer_test_1", "emitted_at": 1602637589100, "data": { "data" : "-12345" }}}

@@ -8,6 +8,7 @@ import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChange
 import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.ChangedStateEvent;
 import io.airbyte.commons.temporal.scheduling.state.listener.WorkflowStateChangedListener.StateField;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,13 +30,18 @@ public class WorkflowState {
   private boolean cancelled = false;
   private boolean failed = false;
   @Deprecated
+  @Getter(AccessLevel.NONE)
   private final boolean resetConnection = false;
   @Deprecated
+  @Getter(AccessLevel.NONE)
   private final boolean continueAsReset = false;
+  @Deprecated
+  @Getter(AccessLevel.NONE)
   private boolean quarantined = false;
   private boolean success = true;
   private boolean cancelledForReset = false;
   @Deprecated
+  @Getter(AccessLevel.NONE)
   private final boolean resetWithScheduling = false;
   private boolean doneWaiting = false;
   private boolean skipSchedulingNextWorkflow = false;
@@ -88,14 +94,6 @@ public class WorkflowState {
     this.failed = failed;
   }
 
-  public void setQuarantined(final boolean quarantined) {
-    final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.QUARANTINED,
-        quarantined);
-    stateChangedListener.addEvent(id, event);
-    this.quarantined = quarantined;
-  }
-
   public void setSuccess(final boolean success) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.SUCCESS,
@@ -138,7 +136,6 @@ public class WorkflowState {
     this.setCancelled(false);
     this.setFailed(false);
     this.setSuccess(false);
-    this.setQuarantined(false);
     this.setDoneWaiting(false);
     this.setSkipSchedulingNextWorkflow(false);
   }

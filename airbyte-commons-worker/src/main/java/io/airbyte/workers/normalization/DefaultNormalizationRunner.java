@@ -4,8 +4,12 @@
 
 package io.airbyte.workers.normalization;
 
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
+import static io.airbyte.workers.process.Metadata.NORMALIZE_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
@@ -26,7 +30,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -46,7 +49,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
 
-  private final DestinationType destinationType;
+  private final String normalizationIntegrationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
   private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
@@ -55,31 +58,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private Process process = null;
 
-  public enum DestinationType {
-    BIGQUERY,
-    MSSQL,
-    MYSQL,
-    ORACLE,
-    POSTGRES,
-    REDSHIFT,
-    SNOWFLAKE,
-    CLICKHOUSE,
-    TIDB
-  }
-
-  public DefaultNormalizationRunner(final DestinationType destinationType,
-                                    final ProcessFactory processFactory,
-                                    final String normalizationImageName) {
-    this.destinationType = destinationType;
-    this.processFactory = processFactory;
-    this.normalizationImageName = normalizationImageName;
-  }
-
   public DefaultNormalizationRunner(final ProcessFactory processFactory,
-                                    final String normalizationImage) {
+                                    final String normalizationImage,
+                                    final String normalizationIntegrationType) {
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImage;
-    this.destinationType = null;
+    this.normalizationIntegrationType = normalizationIntegrationType;
   }
 
   @Override
@@ -99,12 +83,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
+          "--integration-type", normalizationIntegrationType.toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl);
     } else {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
+          "--integration-type", normalizationIntegrationType.toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl,
           "--git-branch", gitRepoBranch);
@@ -124,7 +108,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
-        "--integration-type", destinationType.toString().toLowerCase(),
+        "--integration-type", normalizationIntegrationType.toLowerCase(),
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
@@ -140,7 +124,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
       process = processFactory.create(
-          AirbyteIntegrationLauncher.NORMALIZE_STEP,
+          NORMALIZE_STEP,
           jobId,
           attempt,
           jobRoot,
@@ -150,8 +134,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
-          Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
-              AirbyteIntegrationLauncher.NORMALIZE_STEP),
+          null,
+          Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),
           args);
@@ -231,11 +215,6 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private String buildInternalErrorMessageFromDbtStackTrace() {
     final Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
     return errorMap.get(SentryExceptionHelper.ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY);
-  }
-
-  @VisibleForTesting
-  DestinationType getDestinationType() {
-    return destinationType;
   }
 
 }

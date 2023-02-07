@@ -19,11 +19,8 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.SourceType;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jooq.DSLContext;
@@ -71,7 +68,8 @@ public class ConfigWriter {
     return ctx.select(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.DOCKER_REPOSITORY, ACTOR_DEFINITION.ACTOR_TYPE, ACTOR_DEFINITION.PROTOCOL_VERSION)
         .from(ACTOR_DEFINITION)
         .join(ACTOR).on(ACTOR.ACTOR_DEFINITION_ID.equal(ACTOR_DEFINITION.ID))
-        .fetchStream();
+        .fetch()
+        .stream();
   }
 
   static void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {
@@ -107,6 +105,10 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardSourceDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
+            .set(Tables.ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
+            .set(ACTOR_DEFINITION.SUGGESTED_STREAMS, standardSourceDefinition.getSuggestedStreams() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSuggestedStreams())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
@@ -138,6 +140,10 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardSourceDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
+            .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
+            .set(ACTOR_DEFINITION.SUGGESTED_STREAMS, standardSourceDefinition.getSuggestedStreams() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSuggestedStreams())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();
@@ -174,10 +180,22 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
-            .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY,
+                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
+                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository()
+                    : null)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG,
+                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
+                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()
+                    : null)
             .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE,
+                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
+                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
+                    : null)
+            .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardDestinationDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getAllowedHosts())))
+            .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -205,11 +223,23 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.RESOURCE_REQUIREMENTS,
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY,
+                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
+                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository()
+                    : null)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG,
+                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
+                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()
+                    : null)
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE,
+                Objects.nonNull(standardDestinationDefinition.getNormalizationConfig())
+                    ? standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
+                    : null)
+            .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardDestinationDefinition.getAllowedHosts() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getAllowedHosts())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
-            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
-            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .execute();
       }
     });

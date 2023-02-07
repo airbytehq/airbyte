@@ -22,7 +22,12 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.micronaut.core.util.StringUtils;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -58,6 +63,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   private final String secretName;
   private final String secretMountPath;
   private final String googleApplicationCredentials;
+  private final String dataPlaneCredsSecretName;
+  private final String dataPlaneCredsSecretMountPath;
   private final AtomicReference<Optional<Integer>> cachedExitValue;
   private final Map<String, String> environmentVariables;
   private final Integer serverPort;
@@ -68,6 +75,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
                                      final KubernetesClient kubernetesClient,
                                      final String secretName,
                                      final String secretMountPath,
+                                     final String dataPlaneCredsSecretName,
+                                     final String dataPlaneCredsSecretMountPath,
                                      final String googleApplicationCredentials,
                                      final Map<String, String> environmentVariables,
                                      final Integer serverPort) {
@@ -76,6 +85,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     this.kubernetesClient = kubernetesClient;
     this.secretName = secretName;
     this.secretMountPath = secretMountPath;
+    this.dataPlaneCredsSecretName = dataPlaneCredsSecretName;
+    this.dataPlaneCredsSecretMountPath = dataPlaneCredsSecretMountPath;
     this.googleApplicationCredentials = googleApplicationCredentials;
     this.cachedExitValue = new AtomicReference<>(Optional.empty());
     this.environmentVariables = environmentVariables;
@@ -186,7 +197,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
   }
 
-  @Override
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
@@ -227,6 +237,56 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   @Override
   public KubePodInfo getInfo() {
     return kubePodInfo;
+  }
+
+  @Override
+  public Process toProcess() {
+    return new Process() {
+
+      @Override
+      public OutputStream getOutputStream() {
+        try {
+          final String output = AsyncOrchestratorPodProcess.this.getOutput().orElse("");
+          final OutputStream os = new BufferedOutputStream(new ByteArrayOutputStream());
+          os.write(output.getBytes(Charset.defaultCharset()));
+          return os;
+        } catch (final Exception e) {
+          log.warn("Unable to write output to stream.", e);
+          return OutputStream.nullOutputStream();
+        }
+      }
+
+      @Override
+      public InputStream getInputStream() {
+        return InputStream.nullInputStream();
+      }
+
+      @Override
+      public InputStream getErrorStream() {
+        return InputStream.nullInputStream();
+      }
+
+      @Override
+      public int waitFor() throws InterruptedException {
+        return AsyncOrchestratorPodProcess.this.waitFor();
+      }
+
+      @Override
+      public int exitValue() {
+        return AsyncOrchestratorPodProcess.this.exitValue();
+      }
+
+      @Override
+      public void destroy() {
+        AsyncOrchestratorPodProcess.this.destroy();
+      }
+
+      @Override
+      public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
+        return AsyncOrchestratorPodProcess.this.waitFor(timeout, unit);
+      }
+
+    };
   }
 
   private Optional<String> getDocument(final String key) {
@@ -294,6 +354,21 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
       envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
 
+    }
+
+    if (StringUtils.isNotEmpty(dataPlaneCredsSecretName) && StringUtils.isNotEmpty(dataPlaneCredsSecretMountPath)) {
+      volumes.add(new VolumeBuilder()
+          .withName("airbyte-dataplane-creds")
+          .withSecret(new SecretVolumeSourceBuilder()
+              .withSecretName(dataPlaneCredsSecretName)
+              .withDefaultMode(420)
+              .build())
+          .build());
+
+      volumeMounts.add(new VolumeMountBuilder()
+          .withName("airbyte-dataplane-creds")
+          .withMountPath(dataPlaneCredsSecretMountPath)
+          .build());
     }
 
     // Copy all additionally provided environment variables

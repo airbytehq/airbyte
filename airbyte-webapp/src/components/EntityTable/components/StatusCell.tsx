@@ -14,7 +14,6 @@ interface StatusCellProps {
   isSyncing?: boolean;
   isManual?: boolean;
   id: string;
-  onSync: (id: string) => void;
   schemaChange?: SchemaChange;
 }
 
@@ -23,25 +22,23 @@ export const StatusCell: React.FC<StatusCellProps> = ({
   isManual,
   id,
   isSyncing,
-  onSync,
   allowSync,
   schemaChange,
   hasBreakingChange,
 }) => {
-  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid={`statusCell-${id}`}>
       <StatusCellControl
         enabled={enabled}
         id={id}
         isSyncing={isSyncing}
         isManual={isManual}
-        onSync={onSync}
         hasBreakingChange={hasBreakingChange}
         allowSync={allowSync}
       />
-      {allowAutoDetectSchemaChanges && <ChangesStatusIcon schemaChange={schemaChange} />}
+      {allowAutoDetectSchema && <ChangesStatusIcon schemaChange={schemaChange} />}
     </div>
   );
 };

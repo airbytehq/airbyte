@@ -10,13 +10,18 @@ on:
     inputs:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
-        default: 'false'
+        type: choice
+        default: "false"
+        options:
+          - "true"
+          - "false"
         required: false
   schedule:
     - cron: "0 */1 * * *"
   push:
-    branches-ignore:
-      - "gitbook/v1"
+    branches:
+      - master
+  pull_request:
 
 permissions: write-all
 
@@ -67,6 +72,7 @@ jobs:
               - 'buildSrc/**'
               - 'tools/**'
               - '*.gradle'
+              - 'deps.toml'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
@@ -184,10 +190,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -279,7 +283,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: connectors_base_results.json
           json_test_case_results: true
           check_name: "Connectors Base Test Results"
@@ -300,7 +304,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')
           echo "$filename"
           gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -312,6 +316,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
@@ -336,10 +341,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -369,10 +372,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -388,8 +389,10 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        # We need to fetch at least one more commmit for the Chromatic action not to fail
+        # but since we don't do screenshot comparison we don't need to fetch the full history.
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -436,11 +439,75 @@ jobs:
           autoAcceptChanges: true
           exitOnceUploaded: true
 
-  frontend-test:
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-frontend-runner:
+    name: "Frontend: Stop Runner"
+    timeout-minutes: 10
+    needs:
+      - start-frontend-runner # required to get output from the start-runner job
+      - frontend-build # required to wait when then build job is done
+    runs-on: ubuntu-latest
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-frontend-runner.result != 'skipped'}}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-frontend-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
+
+  ## Frontend Test
+  # In case of self-hosted EC2 errors, remove this block.
+  start-frontend-e2e-runner:
+    name: "Frontend E2E Tests: Start EC2 Runner"
+    needs:
+      - changes
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: |
+      needs.changes.outputs.frontend == 'true' || needs.changes.outputs.build == 'true' || github.ref == 'refs/heads/master'
+      || (always() && needs.changes.outputs.backend == 'true')
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+
+  frontend-e2e-test:
     name: "Frontend: Run End-to-End Tests"
     needs:
-      - start-frontend-runner # required to have runner started
-    runs-on: ${{ needs.start-frontend-runner.outputs.label }} # run the job on the newly created runner
+      - start-frontend-e2e-runner # required to have runner started
+    runs-on: ${{ needs.start-frontend-e2e-runner.outputs.label }} # run the job on the newly created runner
     timeout-minutes: 120
     steps:
       - name: Checkout Airbyte
@@ -475,11 +542,7 @@ jobs:
           EOF
 
       - name: Build Platform Docker Images
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
+        run: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
 
       - name: Run End-to-End Frontend Tests
         env:
@@ -489,18 +552,18 @@ jobs:
           command: ./tools/bin/e2e_test.sh
           attempt_limit: 3
           attempt_delay: 5000 # in ms
+
   # In case of self-hosted EC2 errors, remove this block.
-  stop-frontend-runner:
-    name: "Frontend: Stop Runner"
+  stop-frontend-e2e-runner:
+    name: "Frontend E2E Tests: Stop Runner"
     timeout-minutes: 10
     needs:
-      - start-frontend-runner # required to get output from the start-runner job
-      - frontend-test # required to wait when the e2e-test job is done
-      - frontend-build # required to wait when then build job is done
+      - start-frontend-e2e-runner # required to get output from the start-runner job
+      - frontend-e2e-test # required to wait when the e2e-test job is done
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-frontend-runner.result != 'skipped'}}
+    if: ${{ always() && needs.start-frontend-e2e-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -513,17 +576,15 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
           mode: stop
           github-token: ${{ env.PAT }}
-          label: ${{ needs.start-frontend-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-frontend-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-frontend-e2e-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-frontend-e2e-runner.outputs.ec2-instance-id }}
 
   ## FOLLOWING BUILDS ARE ALL PLATFORM BUILDS.
 
@@ -546,10 +607,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -617,6 +676,44 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+      - name: Add coverage to PR
+        if: github.event_name == 'pull_request'
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          # todo(mfsiega-airbyte): when v1.4 is released, use wildcards per https://github.com/Madrapps/jacoco-report/issues/20.
+          paths: |
+            ${{ github.workspace }}/airbyte-analytics/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-api/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/init/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/specs/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/config-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-config/config-models/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-container-orchestrator/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-db/db-lib/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-json-validation/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-metrics/reporter/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-metrics/metrics-lib/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-notification/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-oauth/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-persistence/job-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-protocol/protocol-models/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-server/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
+            ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 25
+          min-coverage-changed-files: 60
+          title: Airbyte Code Coverage
+          update-comment: true
+          debug-mode: false
+
       - name: Integration test
         uses: Wandalen/wretry.action@master
         with:
@@ -673,7 +770,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: platform_results.json
           json_test_case_results: true
           check_name: "Platform Test Results"
@@ -694,7 +791,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          filename=$(echo "${{ fromJSON( steps.platform-results.outputs.json ).check_url }}" | sed 's@.*/@@')
           echo "$filename"
           gsutil -h "Cache-Control:public" cp platform_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -706,6 +803,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -740,10 +838,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -751,7 +847,7 @@ jobs:
           github-token: ${{ env.PAT }}
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
-  
+
   ## Kube Acceptance Tests
   # Docker acceptance tests run as part of the build job.
   # In case of self-hosted EC2 errors, remove this block.
@@ -772,10 +868,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -810,6 +904,16 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
+      - name: Install unzip
+        shell: bash
+        run: sudo apt-get update && sudo apt-get install -y unzip
+
+      - uses: azure/setup-helm@v3
+        with:
+          version: "latest"
+          token: ${{ secrets.GITHUB_TOKEN }}
+        id: install
 
       - name: Fix EC-2 Runner
         run: |
@@ -862,6 +966,8 @@ jobs:
           HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         uses: Wandalen/wretry.action@master
@@ -881,7 +987,7 @@ jobs:
         if: always()
         with:
           junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: off
+          comment_mode: failures
           json_file: kube_results.json
           json_test_case_results: true
           check_name: "Kube Test Results"
@@ -902,7 +1008,7 @@ jobs:
         if: always()
         run: |
           gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')  
+          filename=$(echo "${{ fromJSON( steps.kube-results.outputs.json ).check_url }}" | sed 's@.*/@@')
           echo "$filename"
           gsutil -h "Cache-Control:public" cp kube_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
 
@@ -913,6 +1019,7 @@ jobs:
           name: Platform Kubernetes E2E Test Report
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
@@ -953,10 +1060,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -985,10 +1090,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -998,11 +1101,12 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
+          iam-role-name: ${{ secrets.AWS_ASSUME_ROLE_NAME }}
 
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: [start-helm-acceptance-test-runner] # required to start the main job when the runner is ready
+    needs: [ start-helm-acceptance-test-runner ] # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     # this is the label of the runner
     environment: more-secrets
@@ -1018,7 +1122,7 @@ jobs:
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /actions-runner/_work/airbyte/airbyte && mkdir -p /actions-runner/_work/airbyte/airbyte/.kube
-        
+
       - name: Checkout Airbyte
         uses: actions/checkout@v2
         with:
@@ -1028,12 +1132,8 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get remove docker.io || sudo apt-get remove docker
             curl -fsSL https://get.docker.com | bash -
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
 
@@ -1045,7 +1145,7 @@ jobs:
 
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.9' 
+          python-version: "3.9"
 
       - uses: actions/setup-java@v1
         with:
@@ -1057,31 +1157,27 @@ jobs:
 
       - uses: azure/setup-helm@v3
         with:
-          version: 'latest'
+          version: "latest"
           token: ${{ secrets.GITHUB_TOKEN }}
         id: install
 
       - uses: azure/setup-kubectl@v3
         with:
-          version: 'v1.21.2' # default is latest stable
+          version: "v1.21.2" # default is latest stable
 
       - name: Install tmate and it's dependencies
         if: inputs.debug_mode == 'true'
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get -y install tmate
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
-      
+
       - name: Start tmate session in background
         if: inputs.debug_mode == 'true'
         shell: bash
-        run: |  
+        run: |
           tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
           tmate -S /tmp/tmate.sock wait tmate-ready             # Blocks until the SSH connection is established
           tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'    # Prints the SSH connection string
@@ -1129,6 +1225,8 @@ jobs:
           # HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         timeout-minutes: 20
@@ -1140,18 +1238,19 @@ jobs:
 
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
-        if: always()    # run this step even if previous step failed
+        if: always() # run this step even if previous step failed
         with:
           name: Platform Helm E2E Test Report
-          path: './*/build/test-results/*/*.xml'
+          path: "./*/build/test-results/*/*.xml"
           reporter: java-junit
+          fail-on-error: 'false'
 
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
-      
+
       - name: Upload test results to BuildPulse for flaky test detection
         if: "!cancelled()" # Run this step even when the tests fail. Skip if the workflow is cancelled.
         uses: Workshop64/buildpulse-action@main
@@ -1161,13 +1260,12 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
-      
+
       - name: "Display logs of k3s"
         if: failure()
         shell: bash
         run: |
           journalctl -xeu k3s.service
-    
 
   # # In case of self-hosted EC2 errors, remove this block.
   stop-helm-acceptance-test-runner:
@@ -1192,10 +1290,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -1203,8 +1299,6 @@ jobs:
           github-token: ${{ env.PAT }}
           label: ${{ needs.start-helm-acceptance-test-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-helm-acceptance-test-runner.outputs.ec2-instance-id }}
-
-
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
@@ -1219,6 +1313,14 @@ jobs:
       # - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Publish to OSS Build Failure Slack Channel
         uses: abinoda/slack-action@master
         env:
@@ -1229,6 +1331,7 @@ jobs:
             {\"type\":\"divider\"},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" Merge to OSS Master failed! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
 

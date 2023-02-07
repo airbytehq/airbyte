@@ -1,6 +1,8 @@
+import { DestinationDefinitionSpecificationRead, SourceDefinitionSpecificationRead } from "core/request/AirbyteClient";
+
 import { DEV_IMAGE_TAG } from "./constants";
 import { isSource, isSourceDefinition, isSourceDefinitionSpecification } from "./source";
-import { ConnectorDefinition, ConnectorDefinitionSpecification, ConnectorT } from "./types";
+import { ConnectorDefinition, ConnectorT } from "./types";
 
 export class Connector {
   static id(connector: ConnectorDefinition): string {
@@ -26,7 +28,7 @@ export class ConnectorHelper {
 }
 
 export class ConnectorSpecification {
-  static id(connector: ConnectorDefinitionSpecification): string {
+  static id(connector: DestinationDefinitionSpecificationRead | SourceDefinitionSpecificationRead): string {
     return isSourceDefinitionSpecification(connector)
       ? connector.sourceDefinitionId
       : connector.destinationDefinitionId;

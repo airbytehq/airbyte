@@ -1,10 +1,11 @@
 import { renderHook } from "@testing-library/react-hooks";
 import * as formik from "formik";
 
+import { FormikConnectionFormValues } from "components/connection/ConnectionForm/formConfig";
+
 import { AirbyteStreamAndConfiguration } from "core/request/AirbyteClient";
 import * as bulkEditService from "hooks/services/BulkEdit/BulkEditService";
 import * as connectionFormService from "hooks/services/ConnectionForm/ConnectionFormService";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 // eslint-disable-next-line css-modules/no-unused-class
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
@@ -142,12 +143,5 @@ describe("useCatalogTreeTableRowProps", () => {
     );
     expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent changed");
     expect(result.current.pillButtonVariant).toEqual("blue");
-  });
-  it("should return error styles for a row that has an error", () => {
-    testSetup(mockInitialValues, false, "error");
-
-    const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
-
-    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent error");
   });
 });

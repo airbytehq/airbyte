@@ -55,24 +55,18 @@ public class JobErrorReporter {
   private final ConfigRepository configRepository;
   private final DeploymentMode deploymentMode;
   private final String airbyteVersion;
-  private final String normalizationImage;
-  private final String normalizationVersion;
   private final WebUrlHelper webUrlHelper;
   private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
                           final DeploymentMode deploymentMode,
                           final String airbyteVersion,
-                          final String normalizationImage,
-                          final String normalizationVersion,
                           final WebUrlHelper webUrlHelper,
                           final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
     this.airbyteVersion = airbyteVersion;
-    this.normalizationImage = normalizationImage;
-    this.normalizationVersion = normalizationVersion;
     this.webUrlHelper = webUrlHelper;
     this.jobErrorReportingClient = jobErrorReportingClient;
   }
@@ -119,10 +113,12 @@ public class JobErrorReporter {
           // the destination)
           final Map<String, String> metadata = MoreMaps.merge(
               commonMetadata,
-              getNormalizationMetadata(),
+              getNormalizationMetadata(destinationDefinition.getNormalizationConfig().getNormalizationRepository()),
               prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
               getDestinationMetadata(destinationDefinition));
-          final String dockerImage = String.format("%s:%s", normalizationImage, normalizationVersion);
+          final String dockerImage =
+              destinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":" +
+                  destinationDefinition.getNormalizationConfig().getNormalizationTag();
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }
@@ -229,7 +225,7 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
   }
 
-  private Map<String, String> getNormalizationMetadata() {
+  private Map<String, String> getNormalizationMetadata(final String normalizationImage) {
     return Map.ofEntries(
         Map.entry(NORMALIZATION_REPOSITORY_META_KEY, normalizationImage));
   }

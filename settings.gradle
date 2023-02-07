@@ -82,7 +82,6 @@ include ':airbyte-commons'
 // shared by CONNECTORS_BASE and PLATFORM sub builds
 include ':airbyte-api'
 include ':airbyte-commons-cli'
-include ':airbyte-commons-docker'
 include ':airbyte-commons-protocol'
 include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
@@ -98,14 +97,16 @@ include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
+include ':airbyte-featureflag'
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
+include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 include ':airbyte-worker-models'
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
+    include ':airbyte-commons-server'
     include ':airbyte-config:specs'
     include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
@@ -128,7 +129,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:base-java-s3'
     include ':airbyte-integrations:bases:base-normalization'
     include ':airbyte-integrations:bases:base-standard-source-test-file'
-    include ':airbyte-integrations:bases:source-acceptance-test'
+    include ':airbyte-integrations:bases:connector-acceptance-test'
     include ':airbyte-integrations:bases:standard-destination-test'
     include ':airbyte-integrations:bases:s3-destination-base-integration-test'
     include ':airbyte-integrations:bases:standard-source-test'
@@ -146,6 +147,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
     include ':airbyte-integrations:connectors:destination-tidb'
+    include ':airbyte-integrations:connectors:destination-duckdb'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
@@ -171,3 +173,5 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
+
+

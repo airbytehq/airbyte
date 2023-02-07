@@ -13,12 +13,10 @@
   }
 
   &.error {
-    background-color: colors.$grey-100;
-    border-color: colors.$red;
+    border-color: colors.$red-100;
   }
 
   &:not(.disabled, .focused):hover {
-    background-color: colors.$grey-100;
     border-color: colors.$grey-100;
 
     &.light {
@@ -31,7 +29,6 @@
   }
 
   &.focused {
-    background-color: colors.$primaryColor12;
     border-color: colors.$blue;
 
     &.light {

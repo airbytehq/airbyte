@@ -1,5 +1,6 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
+import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
@@ -38,16 +39,18 @@ const propTwoFormBlock: FormBlock = {
 };
 
 const conditionFormField: FormConditionItem = {
-  conditions: {
-    ChoiceOne: {
+  conditions: [
+    {
       isRequired: true,
       _type: "formGroup",
       fieldKey: "choice_one_key",
       path: "section.conditional.choice_one",
-      jsonSchema: {},
       properties: [propOneFormBlock, propTwoFormBlock],
     },
-  },
+  ],
+  selectionPath: "section.conditional.choice_one.type",
+  selectionKey: "type",
+  selectionConstValues: ["one"],
   isRequired: true,
   _type: "formCondition",
   fieldKey: "field_key",
@@ -64,6 +67,24 @@ Empty.args = {
 export const WithContent = Template.bind({});
 WithContent.args = {
   label,
+  children: (
+    <>
+      <SectionContainer>Content part 1</SectionContainer>
+      <SectionContainer>Content part 2</SectionContainer>
+    </>
+  ),
+};
+
+export const EmptyWithControl = Template.bind({});
+EmptyWithControl.args = {
+  label,
+  control: <Button variant="secondary">Control</Button>,
+};
+
+export const ControlAndContent = Template.bind({});
+ControlAndContent.args = {
+  label,
+  control: <Button variant="secondary">Control</Button>,
   children: (
     <>
       <SectionContainer>Content part 1</SectionContainer>

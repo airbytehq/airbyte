@@ -5,9 +5,9 @@
 package io.airbyte.integrations.source.relationaldb.state;
 
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;

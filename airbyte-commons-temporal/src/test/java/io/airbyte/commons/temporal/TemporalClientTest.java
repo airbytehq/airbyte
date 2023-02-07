@@ -78,6 +78,9 @@ public class TemporalClientTest {
   private static final UUID JOB_UUID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
+
+  private static final String CHECK_TASK_QUEUE = "CHECK_CONNECTION";
+  private static final String DISCOVER_TASK_QUEUE = "DISCOVER_SCHEMA";
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID);
@@ -240,7 +243,7 @@ public class TemporalClientTest {
       final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
           .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-      temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+      temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, CHECK_TASK_QUEUE, checkConnectionConfig);
       checkConnectionWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
       verify(workflowClient).newWorkflowStub(CheckConnectionWorkflow.class,
           TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.CHECK_CONNECTION));
@@ -257,7 +260,7 @@ public class TemporalClientTest {
       final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
           .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-      temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+      temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, DISCOVER_TASK_QUEUE, checkConnectionConfig);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
       verify(workflowClient).newWorkflowStub(DiscoverCatalogWorkflow.class,
           TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.DISCOVER_SCHEMA));
@@ -735,53 +738,11 @@ public class TemporalClientTest {
   }
 
   @Test
-  @DisplayName("Test manual operation on quarantined workflow causes a restart")
-  void testManualOperationOnQuarantinedWorkflow() {
-    final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-    final WorkflowState mWorkflowState = mock(WorkflowState.class);
-    when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
-    when(mWorkflowState.isQuarantined()).thenReturn(true);
-
-    final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-    final WorkflowState mNewWorkflowState = mock(WorkflowState.class);
-    when(mNewConnectionManagerWorkflow.getState()).thenReturn(mNewWorkflowState);
-    when(mNewWorkflowState.isRunning()).thenReturn(false).thenReturn(true);
-    when(mNewConnectionManagerWorkflow.getJobInformation()).thenReturn(new JobInformation(JOB_ID, ATTEMPT_ID));
-    when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
-    final BatchRequest mBatchRequest = mock(BatchRequest.class);
-    when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
-
-    when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow, mConnectionManagerWorkflow,
-        mNewConnectionManagerWorkflow);
-
-    final WorkflowStub mWorkflowStub = mock(WorkflowStub.class);
-    when(workflowClient.newUntypedWorkflowStub(anyString())).thenReturn(mWorkflowStub);
-
-    final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
-
-    assertTrue(result.getJobId().isPresent());
-    assertEquals(JOB_ID, result.getJobId().get());
-    assertFalse(result.getFailingReason().isPresent());
-    verify(workflowClient).signalWithStart(mBatchRequest);
-    verify(mWorkflowStub).terminate(anyString());
-
-    // Verify that the submitManualSync signal was passed to the batch request by capturing the
-    // argument,
-    // executing the signal, and verifying that the desired signal was executed
-    final ArgumentCaptor<Proc> batchRequestAddArgCaptor = ArgumentCaptor.forClass(Proc.class);
-    verify(mBatchRequest).add(batchRequestAddArgCaptor.capture());
-    final Proc signal = batchRequestAddArgCaptor.getValue();
-    signal.apply();
-    verify(mNewConnectionManagerWorkflow).submitManualSync();
-  }
-
-  @Test
   @DisplayName("Test manual operation on completed workflow causes a restart")
   void testManualOperationOnCompletedWorkflow() {
     final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
     final WorkflowState mWorkflowState = mock(WorkflowState.class);
     when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
-    when(mWorkflowState.isQuarantined()).thenReturn(false);
     when(mWorkflowState.isDeleted()).thenReturn(false);
     when(workflowServiceBlockingStub.describeWorkflowExecution(any()))
         .thenReturn(DescribeWorkflowExecutionResponse.newBuilder().setWorkflowExecutionInfo(
