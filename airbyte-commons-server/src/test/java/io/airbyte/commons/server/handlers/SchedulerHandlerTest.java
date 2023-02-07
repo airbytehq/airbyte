@@ -265,7 +265,8 @@ class SchedulerHandlerTest {
     final SourceConnection submittedSource = new SourceConnection()
         .withSourceId(source.getSourceId())
         .withSourceDefinitionId(source.getSourceDefinitionId())
-        .withConfiguration(source.getConfiguration());
+        .withConfiguration(source.getConfiguration())
+        .withWorkspaceId(source.getWorkspaceId());
     when(synchronousSchedulerClient.createSourceCheckConnectionJob(submittedSource, DESTINATION_DOCKER_IMAGE, protocolVersion, false))
         .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
     when(secretsRepositoryWriter.statefulSplitEphemeralSecrets(
