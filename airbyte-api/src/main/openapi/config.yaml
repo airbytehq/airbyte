@@ -4167,6 +4167,7 @@ components:
         - config_error
         - system_error
         - manual_cancellation
+        - refresh_schema
     AttemptStatus:
       type: string
       enum:
