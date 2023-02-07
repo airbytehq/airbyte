@@ -129,6 +129,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <FlexContainer>
         {allowUploadCustomImage && <CreateConnector type={type} />}
+        {/* Connectors are automatically kept up-to-date on Cloud */}
         {!isCloudApp() && (
           <UpgradeAllButton
             disabled={!((hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors)}
