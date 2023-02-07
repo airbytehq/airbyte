@@ -1,8 +1,6 @@
 @use "scss/variables";
 @use "scss/colors";
 
-$buttonHeight: 36px;
-
 .container {
   padding: variables.$spacing-lg;
   height: 100%;
@@ -19,7 +17,7 @@ $buttonHeight: 36px;
 
 .streamSelector {
   flex: 0 0 auto;
-  height: $buttonHeight;
+  height: variables.$button-height-sm;
 }
 
 .selectAndTestContainer {
@@ -28,18 +26,6 @@ $buttonHeight: 36px;
   flex-direction: column;
   gap: variables.$spacing-lg;
   align-items: center;
-}
-
-.listErrorDisplay {
-  padding: variables.$spacing-lg;
-  display: flex;
-  flex-direction: column;
-  gap: variables.$spacing-md;
-  background-color: colors.$blue-50;
-  border-radius: variables.$border-radius-sm;
-
-  // leave room for config button
-  margin-top: 50px;
 }
 
 .loadingSpinner {

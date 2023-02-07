@@ -12,8 +12,8 @@ Steps:
 4) When running the connector builder tests, start the dummy API server: `npm run createdummyapi`
 5) Start the OSS backend: `BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" VERSION=dev docker compose --file ../docker-compose.yaml up`. If you want, follow this with `docker compose stop webapp` to turn off the dockerized frontend build; interactive cypress sessions don't use it.
 6) The following two commands will start a separate long-running server, so open another terminal window. In it, `cd` into the `airbyte-webapp/` directory.
-7) If you have not already done so, run `npm install` to install the frontend app's dependencies.
-8) Start the frontend development server with `npm start`.
+7) If you have not already done so, run `pnpm install` to install the frontend app's dependencies.
+8) Start the frontend development server with `pnpm start`.
 9) Back in the `airbyte-webapp-e2e-tests/` directory, start the cypress test runner with `npm run cypress:open`.
 
 ## Reproducing CI test results with `npm run cypress:ci` or `npm run cypress:ci:record`

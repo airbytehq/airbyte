@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffectOnce } from "react-use";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
@@ -8,16 +7,15 @@ import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/serv
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
-import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { WorkspaceRead } from "../core/request/AirbyteClient";
 import { RoutePaths, DestinationPaths } from "./routePaths";
+import { WorkspaceRead } from "../core/request/AirbyteClient";
 
 const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
 const CreateConnectionPage = React.lazy(() => import("./connections/CreateConnectionPage"));
-const ConnectorBuilderPage = React.lazy(() => import("./ConnectorBuilderPage/ConnectorBuilderPage"));
+const ConnectorBuilderRoutes = React.lazy(() => import("./connectorBuilder/ConnectorBuilderRoutes"));
 
 const AllDestinationsPage = React.lazy(() => import("./destination/AllDestinationsPage"));
 const CreateDestinationPage = React.lazy(() => import("./destination/CreateDestinationPage"));
@@ -85,21 +83,15 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
   );
 };
 
-const RoutingWithWorkspace: React.FC = () => {
+const RoutingWithWorkspace: React.FC<{ element?: JSX.Element }> = ({ element }) => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
 
-  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
+  return workspace.initialSetupComplete ? element ?? <MainViewRoutes /> : <PreferencesRoutes />;
 };
 
 export const Routing: React.FC = () => {
-  const { search } = useLocation();
-
-  useEffectOnce(() => {
-    storeUtmFromQuery(search);
-  });
-
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
     () =>
@@ -110,7 +102,11 @@ export const Routing: React.FC = () => {
   );
   return (
     <Routes>
-      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
+      <Route
+        path={`${RoutePaths.Workspaces}/:workspaceId/${RoutePaths.ConnectorBuilder}/*`}
+        element={<RoutingWithWorkspace element={<ConnectorBuilderRoutes />} />}
+      />
+      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<AutoSelectFirstWorkspace includePath />} />
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />

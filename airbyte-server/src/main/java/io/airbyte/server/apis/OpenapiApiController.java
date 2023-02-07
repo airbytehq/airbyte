@@ -7,7 +7,7 @@ package io.airbyte.server.apis;
 import static io.airbyte.commons.auth.AuthRoleConstants.AUTHENTICATED_USER;
 
 import io.airbyte.api.generated.OpenapiApi;
-import io.airbyte.server.handlers.OpenApiConfigHandler;
+import io.airbyte.commons.server.handlers.OpenApiConfigHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;

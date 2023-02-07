@@ -86,8 +86,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "2.0";
   private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
-  private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
-  private static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
+  public static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
+  public static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -218,6 +218,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("0.3.0");
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN = new Version("0.0.0");
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
   private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
   private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
@@ -279,17 +281,17 @@ public class EnvConfigs implements Configs {
   }
 
   private Optional<CloudStorageConfigs> getStateStorageConfiguration() {
-    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
+    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null && !getEnv(STATE_STORAGE_GCS_BUCKET_NAME).isBlank()) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
-    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
+    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null && !getEnv(STATE_STORAGE_MINIO_ENDPOINT).isBlank()) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
-    } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
+    } else if (getEnv(STATE_STORAGE_S3_REGION) != null && !getEnv(STATE_STORAGE_S3_REGION).isBlank()) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
@@ -314,12 +316,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Version getAirbyteProtocolVersionMax() {
-    return new Version("0.3.0");
+    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX;
   }
 
   @Override
   public Version getAirbyteProtocolVersionMin() {
-    return new Version("0.0.0");
+    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN;
   }
 
   @Override
@@ -756,13 +758,13 @@ public class EnvConfigs implements Configs {
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
    * injected in the KubePodProcess class and used in the job pod templates.
-   *
+   * <p>
    * Can provide multiple strings seperated by comma(,) to indicate pulling from different
    * repositories. The empty string is a no-op value.
    */
   @Override
   public List<String> getJobKubeMainContainerImagePullSecrets() {
-    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    final String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
     return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
   }
 
@@ -1124,7 +1126,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean getAutoDetectSchema() {
-    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, true);
   }
 
   @Override

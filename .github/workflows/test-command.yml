@@ -25,8 +25,6 @@ jobs:
     name: "Custom UUID of workflow run"
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
     steps:
       - name: UUID ${{ github.event.inputs.uuid }}
         run: true
@@ -47,10 +45,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -146,7 +142,6 @@ jobs:
             **/normalization_test_output/**/build/compiled/airbyte_utils/**
             **/normalization_test_output/**/build/run/airbyte_utils/**
             **/normalization_test_output/**/models/generated/**
-
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
         uses: actions/upload-artifact@v3
@@ -155,10 +150,15 @@ jobs:
           path: |
             **/${{ github.event.inputs.connector }}/htmlcov/**
           retention-days: 3
-
+      - name: Run QA checks for ${{ github.event.inputs.connector }}
+        id: qa_checks
+        # TODO: Disabled for on master until #22127 resolved
+        if: contains(github.ref, 'feat-qa-engine')
+        run: |
+          run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
         if: github.ref == 'refs/heads/master' && always()
-        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
+        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
@@ -203,10 +203,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:

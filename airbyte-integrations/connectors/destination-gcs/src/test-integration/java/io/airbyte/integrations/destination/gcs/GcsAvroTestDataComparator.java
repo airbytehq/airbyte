@@ -37,7 +37,7 @@ public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
   }
 
   @Override
-  protected boolean compareTime(final String airbyteMessageValue, final String destinationValue) {
+  protected boolean compareTimeWithoutTimeZone(final String airbyteMessageValue, final String destinationValue) {
     LocalTime destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     LocalTime expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
     return expectedDate.equals(destinationDate);
