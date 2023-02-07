@@ -15,7 +15,7 @@ import { WorkspaceRead } from "../core/request/AirbyteClient";
 
 const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
 const CreateConnectionPage = React.lazy(() => import("./connections/CreateConnectionPage"));
-const ConnectorBuilderPage = React.lazy(() => import("./ConnectorBuilderPage/ConnectorBuilderPage"));
+const ConnectorBuilderRoutes = React.lazy(() => import("./connectorBuilder/ConnectorBuilderRoutes"));
 
 const AllDestinationsPage = React.lazy(() => import("./destination/AllDestinationsPage"));
 const CreateDestinationPage = React.lazy(() => import("./destination/CreateDestinationPage"));
@@ -103,8 +103,8 @@ export const Routing: React.FC = () => {
   return (
     <Routes>
       <Route
-        path={`${RoutePaths.Workspaces}/:workspaceId/${RoutePaths.ConnectorBuilder}`}
-        element={<RoutingWithWorkspace element={<ConnectorBuilderPage />} />}
+        path={`${RoutePaths.Workspaces}/:workspaceId/${RoutePaths.ConnectorBuilder}/*`}
+        element={<RoutingWithWorkspace element={<ConnectorBuilderRoutes />} />}
       />
       <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<AutoSelectFirstWorkspace includePath />} />
       {OldRoutes}

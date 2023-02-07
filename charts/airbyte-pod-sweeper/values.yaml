@@ -225,3 +225,7 @@ timeToDeletePods:
   error: 1440
 
 replicaCount: 1
+
+
+## namespace [string] namespace to deploy pod-sweeper at
+namespace: ""

@@ -931,9 +931,13 @@ public class DefaultJobPersistence implements JobPersistence {
     final JobConfig jobConfig = Jsons.deserialize(jobConfigString, JobConfig.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
     if (jobConfig.getConfigType() == ConfigType.SYNC && jobConfig.getSync() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
     } else if (jobConfig.getConfigType() == ConfigType.RESET_CONNECTION && jobConfig.getResetConnection() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
     }
     return jobConfig;
   }
@@ -960,9 +964,13 @@ public class DefaultJobPersistence implements JobPersistence {
     final JobOutput jobOutput = Jsons.deserialize(jobOutputString, JobOutput.class);
     // On-the-fly migration of persisted data types related objects (protocol v0->v1)
     if (jobOutput.getOutputType() == OutputType.DISCOVER_CATALOG && jobOutput.getDiscoverCatalog() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
     } else if (jobOutput.getOutputType() == OutputType.SYNC && jobOutput.getSync() != null) {
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
     }
     return jobOutput;
   }
