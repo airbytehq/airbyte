@@ -12,7 +12,6 @@ import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
-import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
 import { CloudRoutes } from "./cloudRoutePaths";
@@ -119,7 +118,6 @@ export const Routing: React.FC = () => {
   const { search } = useLocation();
 
   useEffectOnce(() => {
-    storeUtmFromQuery(search);
     setSegmentAnonymousId(search);
   });
 

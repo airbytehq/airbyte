@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 
@@ -17,6 +18,11 @@ public class S3ParquetDestinationAcceptanceTest extends S3BaseParquetDestination
   @Override
   protected TestDataComparator getTestDataComparator() {
     return new S3AvroParquetTestDataComparator();
+  }
+
+  @Override
+  protected JsonNode getBaseConfigJson() {
+    return S3DestinationTestUtils.getBaseConfigJsonFilePath();
   }
 
 }

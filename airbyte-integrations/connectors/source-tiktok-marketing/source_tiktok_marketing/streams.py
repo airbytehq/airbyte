@@ -278,7 +278,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     def convert_array_param(arr: List[Union[str, int]]) -> str:
         return json.dumps(arr)
 
-    def get_advertiser_ids(self) -> Iterable[int]:
+    def get_advertiser_ids(self) -> List[int]:
         if self.is_sandbox:
             # for sandbox: just return advertiser_id provided in spec
             ids = [self._advertiser_id]
@@ -306,9 +306,8 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     def request_params(
         self,
         stream_state: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
-        **kwargs,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {"page_size": self.page_size}
         if self.fields:
@@ -412,17 +411,23 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
 class Advertisers(FullRefreshTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1708503202263042"""
 
-    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params["advertiser_ids"] = self.convert_array_param(self.get_advertiser_ids())
-        return params
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        stream_slice = stream_slice or {}
+        return {key: self.convert_array_param(value) for key, value in stream_slice.items()}
 
     def path(self, *args, **kwargs) -> str:
         return "advertiser/info/"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        """this stream must work with the default slice logic"""
-        yield None
+        ids = self.get_advertiser_ids()
+        start, end, step = 0, len(ids), 100
+        for i in range(start, end, step):
+            yield {"advertiser_ids": ids[i: min(end, i + step)]}
 
 
 class Campaigns(IncrementalTiktokStream):

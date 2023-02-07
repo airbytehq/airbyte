@@ -11,9 +11,9 @@ import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import jakarta.inject.Singleton;
 
-@Singleton
+// Disable V1 Migration, uncomment to re-enable
+// @Singleton
 public class ConfiguredAirbyteCatalogMigrationV1
     implements ConfiguredAirbyteCatalogMigration<io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog, ConfiguredAirbyteCatalog> {
 

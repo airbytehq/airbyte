@@ -15,6 +15,7 @@ import com.launchdarkly.sdk.server.LDClient
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import org.slf4j.LoggerFactory
 import java.lang.Thread.MIN_PRIORITY
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
@@ -24,6 +25,7 @@ import kotlin.concurrent.read
 import kotlin.concurrent.thread
 import kotlin.concurrent.write
 import kotlin.io.path.isRegularFile
+import kotlin.io.path.notExists
 
 /**
  * Feature-Flag Client interface.
@@ -60,19 +62,22 @@ internal const val CONFIG_FF_PATH = "airbyte.feature-flag.path"
 @Requires(property = CONFIG_FF_CLIENT, notEquals = CONFIG_FF_CLIENT_VAL_LAUNCHDARKLY)
 class ConfigFileClient(@Property(name = CONFIG_FF_PATH) config: Path?) : FeatureFlagClient {
     /** [flags] holds the mappings of the flag-name to the flag properties */
-    private var flags: Map<String, ConfigFileFlag> = config?.let { readConfig(it) } ?: mapOf()
+    private var flags: Map<String, ConfigFileFlag> = mapOf()
 
     /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
     private val lock = ReentrantReadWriteLock()
 
     init {
-        config?.also {
-            if (!it.isRegularFile()) {
-                throw IllegalArgumentException("config must reference a file")
-            }
-
-            it.onChange {
-                lock.write { flags = readConfig(config) }
+        config?.also { path ->
+            when {
+                path.notExists() -> log.info("path $path does not exist, will return default flag values")
+                !path.isRegularFile() -> log.info("path $path does not reference a file, will return default values")
+                else -> {
+                    flags = readConfig(path)
+                    path.onChange {
+                        lock.write { flags = readConfig(config) }
+                    }
+                }
             }
         }
     }
@@ -82,6 +87,10 @@ class ConfigFileClient(@Property(name = CONFIG_FF_PATH) config: Path?) : Feature
             is EnvVar -> flag.enabled(ctx)
             else -> lock.read { flags[flag.key]?.enabled ?: flag.default }
         }
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(ConfigFileClient::class.java)
     }
 }
 

@@ -113,19 +113,19 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
       // Check the version of normalization
       // We require at least version 0.3.0 to support data types v1. Using an older version would lead to
-      // all columns being typed as JSONB. We should fail before coercing the types into an unexpected
-      // form.
+      // all columns being typed as JSONB. If normalization is using an older version, fallback to using
+      // v0 data types.
       if (!normalizationSupportsV1DataTypes(destinationLauncherConfig)) {
-        throw new IllegalStateException("Normalization is too old, a version >=\"0.3.0\" is required but got \""
-            + destinationLauncherConfig.getNormalizationDockerImage() + "\" instead");
-      }
+        CatalogMigrationV1Helper.downgradeSchemaIfNeeded(fullInput.getCatalog());
+      } else {
 
-      // This should only be useful for syncs that started before the release that contained v1 migration.
-      // However, we lack the effective way to detect those syncs so this code should remain until we
-      // phase v0 out.
-      // Performance impact should be low considering the nature of the check compared to the time to run
-      // normalization.
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
+        // This should only be useful for syncs that started before the release that contained v1 migration.
+        // However, we lack the effective way to detect those syncs so this code should remain until we
+        // phase v0 out.
+        // Performance impact should be low considering the nature of the check compared to the time to run
+        // normalization.
+        CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
+      }
 
       final Supplier<NormalizationInput> inputSupplier = () -> {
         airbyteConfigValidator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
@@ -173,8 +173,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       return normalizationVersion.greaterThanOrEqualTo(MINIMAL_VERSION_FOR_DATATYPES_V1);
     } catch (final IllegalArgumentException e) {
       // IllegalArgument here means that the version isn't in a semver format.
-      // The current behavior is to assume it supports v1 data types for dev purposes.
-      return true;
+      // The current behavior is to assume it supports v0 data types for dev purposes.
+      return false;
     }
   }
 

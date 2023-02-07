@@ -70,12 +70,12 @@ public class RecordSchemaValidator {
 
     if (workspaceId != null) {
       if (featureFlagClient.enabled(PerfBackgroundJsonValidation.INSTANCE, new Workspace(workspaceId))) {
-        log.info("feature flag enabled for workspace {}", workspaceId);
+        log.debug("feature flag enabled for workspace {}", workspaceId);
       } else {
-        log.info("feature flag disabled for workspace {}", workspaceId);
+        log.debug("feature flag disabled for workspace {}", workspaceId);
       }
     } else {
-      log.info("workspace id is null");
+      log.debug("workspace id is null");
     }
 
     try {

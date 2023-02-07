@@ -9,10 +9,9 @@ import { ConnectorCard } from "components";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import styles from "./ConnectionInfoCard.module.scss";
 import { EnabledControl } from "./EnabledControl";
@@ -24,8 +23,7 @@ export const ConnectionInfoCard: React.FC = () => {
     schemaHasBeenRefreshed,
   } = useConnectionEditService();
   const { hasSchemaChanges, hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
-  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
-  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
+  const { sourceDefinition, destDefinition } = useConnectionFormService();
 
   const hasAllowSyncFeature = useFeature(FeatureItem.AllowSync);
 
@@ -52,7 +50,7 @@ export const ConnectionInfoCard: React.FC = () => {
         >
           <ConnectorCard
             connectionName={source.sourceName}
-            icon={sourceDefinition?.icon}
+            icon={source?.icon}
             connectorName={source.name}
             releaseStage={sourceDefinition?.releaseStage}
           />
@@ -65,9 +63,9 @@ export const ConnectionInfoCard: React.FC = () => {
         >
           <ConnectorCard
             connectionName={destination.destinationName}
-            icon={destinationDefinition?.icon}
+            icon={destination?.icon}
             connectorName={destination.name}
-            releaseStage={destinationDefinition?.releaseStage}
+            releaseStage={destDefinition?.releaseStage}
           />
         </Link>
       </div>
