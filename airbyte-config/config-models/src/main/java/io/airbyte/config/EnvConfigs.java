@@ -226,7 +226,6 @@ public class EnvConfigs implements Configs {
 
   private static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
   private static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
-  private static final String NON_STRICT_COMPARISON_NORMALIZATION_TAG = "NON_STRICT_COMPARISON_NORMALIZATION_TAG";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -1151,11 +1150,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getStrictComparisonNormalizationTag() {
     return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison");
-  }
-
-  @Override
-  public String getNonStrictComparisonNormalizationTag() {
-    return getEnvOrDefault(NON_STRICT_COMPARISON_NORMALIZATION_TAG, "0.2.25");
   }
 
   @Override

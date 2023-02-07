@@ -74,6 +74,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   // This constant is not currently in use. We'll need to bump it when we try releasing v1 again.
   private static final Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
   private static final String V1_NORMALIZATION_MINOR_VERSION = "3";
+  private static final String NON_STRICT_COMPARISON_IMAGE_TAG = "0.2.25";
 
   public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                    @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -172,7 +173,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                                               final FeatureFlags featureFlags) {
     // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're
     // trying to use a newer version of normalization
-    if (featureFlags.nonStrictComparisonNormalizationTag().equals(getNormalizationImageTag(destinationLauncherConfig))) {
+    if (NON_STRICT_COMPARISON_IMAGE_TAG.equals(getNormalizationImageTag(destinationLauncherConfig))) {
       replaceNormalizationImageTag(destinationLauncherConfig, featureFlags.strictComparisonNormalizationTag());
     }
   }

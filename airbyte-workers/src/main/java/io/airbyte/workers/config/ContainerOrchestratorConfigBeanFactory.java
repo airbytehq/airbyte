@@ -99,7 +99,6 @@ public class ContainerOrchestratorConfigBeanFactory {
     environmentVariables.put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES,
         featureFlags.strictComparisonNormalizationWorkspaces());
     environmentVariables.put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.strictComparisonNormalizationTag());
-    environmentVariables.put(EnvVariableFeatureFlags.NON_STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.nonStrictComparisonNormalizationTag());
     environmentVariables.put(JAVA_OPTS_ENV_VAR, containerOrchestratorJavaOpts);
     environmentVariables.put(CONTROL_PLANE_AUTH_ENDPOINT_ENV_VAR, controlPlaneAuthEndpoint);
     environmentVariables.put(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH_ENV_VAR, dataPlaneServiceAccountCredentialsPath);
