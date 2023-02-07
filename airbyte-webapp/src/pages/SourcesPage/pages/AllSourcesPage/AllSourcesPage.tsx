@@ -22,6 +22,7 @@ const AllSourcesPage: React.FC = () => {
   const onCreateSource = () => navigate(`${RoutePaths.SourceNew}`);
   return sources.length ? (
     <MainPageWithScroll
+      softScrollEdge={false}
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
         <PageHeader

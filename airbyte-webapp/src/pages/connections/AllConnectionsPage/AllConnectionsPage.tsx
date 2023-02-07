@@ -29,6 +29,7 @@ export const AllConnectionsPage: React.FC = () => {
     <Suspense fallback={<LoadingPage />}>
       {connections.length ? (
         <MainPageWithScroll
+          softScrollEdge={false}
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
             <PageHeader
