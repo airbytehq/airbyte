@@ -56,6 +56,8 @@ class DestinationRabbitmq(Destination):
                         # Message contains record from a stream that is not in the catalog. Skip it!
                         continue
                     headers = {"stream": record.stream, "emitted_at": record.emitted_at, "namespace": record.namespace}
+                    if config.get("additional_headers"):
+                        headers.update(json.loads(config.get("additional_headers")))
                     properties = BasicProperties(content_type="application/json", headers=headers)
                     channel.basic_publish(
                         exchange=exchange or "", routing_key=routing_key, properties=properties, body=json.dumps(record.data)

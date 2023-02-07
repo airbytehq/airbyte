@@ -43,6 +43,12 @@
       "routing_key": {
         "type": "string",
         "description": "The routing key."
+      },
+      "additional_headers": {
+        "type": "string",
+        "title": "Additional headers",
+        "description": "Json object that is appended to existing headers. Be careful it can override default headers.",
+        "examples": ["{\"__Type__\":\"doe.John\",\"x-tenant-id\":\"prod\"}"]
       }
     }
   }

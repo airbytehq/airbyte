@@ -28,6 +28,7 @@ config = {
     "password": "secret",
     "exchange": "test_exchange",
     "routing_key": "test_routing_key",
+    "additional_headers": "{\"__Type__\":\"doe.John\",\"x-tenant-id\":\"prod\"}",
 }
 
 
@@ -99,6 +100,8 @@ def test_write_succeeds(connection_init):
     assert args["routing_key"] == "test_routing_key"
     assert args["properties"].content_type == "application/json"
     assert args["properties"].headers["stream"] == stream
+    assert args["properties"].headers["__Type__"] == "doe.John"
+    assert args["properties"].headers["x-tenant-id"] == "prod"
     assert json.loads(args["body"]) == data
 
 
