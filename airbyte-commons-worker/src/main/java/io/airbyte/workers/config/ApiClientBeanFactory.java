@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.security.interfaces.RSAPrivateKey;
+import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +54,8 @@ public class ApiClientBeanFactory {
         .setPort(parsePort(airbyteApiHost))
         .setBasePath("/api")
         .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
+        .setConnectTimeout(Duration.ofSeconds(30))
+        .setReadTimeout(Duration.ofSeconds(30))
         .setRequestInterceptor(builder -> {
           builder.setHeader("User-Agent", "WorkerApp");
           // internalApiAuthToken is in BeanProvider because we want to create a new token each
