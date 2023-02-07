@@ -1,6 +1,11 @@
 {
   "title": "Google Analytics Data API Spec",
   "properties": {
+    "required": [
+      "property_id",
+      "date_ranges_start_date",
+      "credentials"
+    ],
     "credentials": {
       "order": 0,
       "type": "object",
