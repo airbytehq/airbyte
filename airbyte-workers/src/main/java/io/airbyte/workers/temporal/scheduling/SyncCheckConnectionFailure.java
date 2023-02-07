@@ -16,6 +16,8 @@ import io.airbyte.workers.helper.FailureHelper;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
+import static io.airbyte.workers.temporal.sync.SyncOutputProvider.EMPTY_FAILED_SYNC;
+
 @Slf4j
 public class SyncCheckConnectionFailure {
 
@@ -58,19 +60,7 @@ public class SyncCheckConnectionFailure {
     }
 
     final StandardSyncOutput syncOutput = new StandardSyncOutput()
-        .withStandardSyncSummary(
-            new StandardSyncSummary()
-                .withStatus(StandardSyncSummary.ReplicationStatus.FAILED)
-                .withStartTime(System.currentTimeMillis())
-                .withEndTime(System.currentTimeMillis())
-                .withRecordsSynced(0L)
-                .withBytesSynced(0L)
-                .withTotalStats(new SyncStats()
-                    .withRecordsEmitted(0L)
-                    .withBytesEmitted(0L)
-                    .withSourceStateMessagesEmitted(0L)
-                    .withDestinationStateMessagesEmitted(0L)
-                    .withRecordsCommitted(0L)));
+        .withStandardSyncSummary(EMPTY_FAILED_SYNC);
 
     if (failureOutput.getFailureReason() != null) {
       syncOutput.setFailures(List.of(failureOutput.getFailureReason().withFailureOrigin(origin)));
