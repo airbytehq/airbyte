@@ -48,11 +48,11 @@ definitions:
       primary_key: "id"
       path: "/pages"
   page_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/pages_stream"
         parent_key: id
-        stream_slice_field: page_id
+        partition_field: page_id
   subscribers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

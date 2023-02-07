@@ -19,22 +19,22 @@ class ParentStreamConfig:
 
     stream: The stream to read records from
     parent_key: The key of the parent stream's records that will be the stream slice key
-    stream_slice_field: The stream slice key
+    partition_field: The partition key
     request_option: How to inject the slice value on an outgoing HTTP request
     """
 
     stream: Stream
     parent_key: str
-    stream_slice_field: str
+    partition_field: str
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
 
 @dataclass
-class SubstreamSlicer(StreamSlicer):
+class SubstreamPartitionRouter(StreamSlicer):
     """
-    Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
-    Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
+    Partition router that iterates over the parent's stream records and emits slices
+    Will populate the state with `stream_state_field` and `parent_slice` so they can be accessed by other components
 
     Attributes:
         parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
@@ -45,7 +45,7 @@ class SubstreamSlicer(StreamSlicer):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
-            raise ValueError("SubstreamSlicer needs at least 1 parent stream")
+            raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._cursor = None
         self._parameters = parameters
 
@@ -53,9 +53,9 @@ class SubstreamSlicer(StreamSlicer):
         # This method is called after the records are processed.
         cursor = {}
         for parent_stream_config in self.parent_stream_configs:
-            slice_value = stream_slice.get(parent_stream_config.stream_slice_field)
+            slice_value = stream_slice.get(parent_stream_config.partition_field)
             if slice_value:
-                cursor.update({parent_stream_config.stream_slice_field: slice_value})
+                cursor.update({parent_stream_config.partition_field: slice_value})
         self._cursor = cursor
 
     def get_request_params(
@@ -99,7 +99,7 @@ class SubstreamSlicer(StreamSlicer):
         if stream_slice:
             for parent_config in self.parent_stream_configs:
                 if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                    key = parent_config.stream_slice_field
+                    key = parent_config.partition_field
                     value = stream_slice.get(key)
                     if value:
                         params.update({key: value})
@@ -129,7 +129,6 @@ class SubstreamSlicer(StreamSlicer):
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key
-                stream_state_field = parent_stream_config.stream_slice_field
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
@@ -145,7 +144,7 @@ class SubstreamSlicer(StreamSlicer):
                                 continue
                         empty_parent_slice = False
                         stream_state_value = parent_record.get(parent_field)
-                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                        yield {parent_stream_config.partition_field: stream_state_value, "parent_slice": parent_slice}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
                         yield from []

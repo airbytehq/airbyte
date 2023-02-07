@@ -60,11 +60,11 @@ definitions:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/projects_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
 
   cohorts_stream:
     $ref: "#/definitions/base_slicing_stream"
@@ -106,11 +106,11 @@ definitions:
       type: CustomIncrementalSync
       class_name: source_posthog.components.EventsCartesianProductStreamSlicer
       partition_routers:
-        - type: SubstreamSlicer
+        - type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"
               parent_key: "id"
-              stream_slice_field: "project_id"
+              partition_field: "project_id"
         - type: DatetimeBasedCursor
           start_datetime:
             datetime: "{{ config['start_date'] }}"

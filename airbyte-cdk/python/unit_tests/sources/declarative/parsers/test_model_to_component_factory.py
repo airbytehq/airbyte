@@ -25,10 +25,11 @@ from airbyte_cdk.sources.declarative.models import ListStreamSlicer as ListStrea
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
-from airbyte_cdk.sources.declarative.models import SubstreamSlicer as SubstreamSlicerModel
+from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -46,16 +47,11 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import (
-    CartesianProductStreamSlicer,
-    DatetimeStreamSlicer,
-    ListStreamSlicer,
-    SubstreamSlicer,
-)
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer, ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamSlicer, TestingSomeComponent
+from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
 
@@ -324,7 +320,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     assert stream_slicer.request_option.field_name == "repository"
 
 
-def test_create_substream_slicer():
+def test_create_substream_partition_router():
     content = """
     schema_loader:
       file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml"
@@ -354,38 +350,42 @@ def test_create_substream_slicer():
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
     partition_router:
-      type: SubstreamSlicer
+      type: SubstreamPartitionRouter
       parent_stream_configs:
         - stream: "#/stream_A"
           parent_key: id
-          stream_slice_field: repository_id
+          partition_field: repository_id
           request_option:
             inject_into: request_parameter
             field_name: repository_id
         - stream: "#/stream_B"
           parent_key: someid
-          stream_slice_field: word_id
+          partition_field: word_id
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
+    partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
-    stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
+    partition_router = factory.create_component(
+        model_type=SubstreamPartitionRouterModel,
+        component_definition=partition_router_manifest,
+        config=input_config
+    )
 
-    assert isinstance(stream_slicer, SubstreamSlicer)
-    parent_stream_configs = stream_slicer.parent_stream_configs
+    assert isinstance(partition_router, SubstreamPartitionRouter)
+    parent_stream_configs = partition_router.parent_stream_configs
     assert len(parent_stream_configs) == 2
     assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
     assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
 
-    assert stream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert stream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
-    assert stream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert partition_router.parent_stream_configs[0].parent_key == "id"
+    assert partition_router.parent_stream_configs[0].partition_field == "repository_id"
+    assert partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert stream_slicer.parent_stream_configs[1].parent_key == "someid"
-    assert stream_slicer.parent_stream_configs[1].stream_slice_field == "word_id"
-    assert stream_slicer.parent_stream_configs[1].request_option is None
+    assert partition_router.parent_stream_configs[1].parent_key == "someid"
+    assert partition_router.parent_stream_configs[1].partition_field == "word_id"
+    assert partition_router.parent_stream_configs[1].request_option is None
 
 
 def test_datetime_based_cursor():
@@ -833,7 +833,7 @@ def test_create_custom_components(manifest, field_name, expected_value):
 def test_custom_components_do_not_contain_extra_fields():
     custom_substream_slicer_manifest = {
         "type": "CustomStreamSlicer",
-        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
+        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamPartitionRouter",
         "custom_field": "here",
         "extra_field_to_exclude": "should_not_pass_as_parameter",
         "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
@@ -860,18 +860,18 @@ def test_custom_components_do_not_contain_extra_fields():
                     },
                 },
                 "parent_key": "id",
-                "stream_slice_field": "repository_id",
+                "partition_field": "repository_id",
                 "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
             }
         ],
     }
 
     custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
-    assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
+    assert isinstance(custom_substream_slicer, TestingCustomSubstreamPartitionRouter)
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
     assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].partition_field == "repository_id"
     assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
@@ -882,7 +882,7 @@ def test_custom_components_do_not_contain_extra_fields():
 def test_parse_custom_component_fields_if_subcomponent():
     custom_substream_slicer_manifest = {
         "type": "CustomStreamSlicer",
-        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
+        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamPartitionRouter",
         "custom_field": "here",
         "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
         "parent_stream_configs": [
@@ -908,19 +908,19 @@ def test_parse_custom_component_fields_if_subcomponent():
                     },
                 },
                 "parent_key": "id",
-                "stream_slice_field": "repository_id",
+                "partition_field": "repository_id",
                 "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
             }
         ],
     }
 
     custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
-    assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
+    assert isinstance(custom_substream_slicer, TestingCustomSubstreamPartitionRouter)
     assert custom_substream_slicer.custom_field == "here"
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
     assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].partition_field == "repository_id"
     assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 

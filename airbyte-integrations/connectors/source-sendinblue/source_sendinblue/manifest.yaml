@@ -39,11 +39,11 @@ definitions:
       primary_key: "id"
       path: "/emailCampaigns"
   campaign_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/campaigns_stream"
         parent_key: id
-        stream_slice_field: campaign_id
+        partition_field: campaign_id
   templates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

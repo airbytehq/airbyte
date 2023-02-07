@@ -847,7 +847,7 @@ definitions:
       - type
       - parent_key
       - stream
-      - stream_slice_field
+      - partition_field
     properties:
       type:
         type: string
@@ -856,7 +856,7 @@ definitions:
         type: string
       stream:
         "$ref": "#/definitions/DeclarativeStream"
-      stream_slice_field:
+      partition_field:
         type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
@@ -1017,14 +1017,14 @@ definitions:
           - "$ref": "#/definitions/CustomStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
-          - "$ref": "#/definitions/SubstreamSlicer"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomStreamSlicer"
                 - "$ref": "#/definitions/ListStreamSlicer"
                 - "$ref": "#/definitions/SingleSlice"
-                - "$ref": "#/definitions/SubstreamSlicer"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
       $parameters:
         type: object
         additionalProperties: true
@@ -1055,8 +1055,8 @@ definitions:
         additionalProperties: true
       documentation_url:
         type: string
-  SubstreamSlicer:
-    description: Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
+  SubstreamPartitionRouter:
+    description: Partition router that iterates over the parent's stream records and emits slices
     type: object
     required:
       - type
@@ -1064,7 +1064,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SubstreamSlicer]
+        enum: [SubstreamPartitionRouter]
       parent_stream_configs:
         type: array
         items:

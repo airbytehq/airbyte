@@ -64,11 +64,11 @@ definitions:
         $ref: "#/definitions/requester"
         path: "/users/{{ stream_slice.parent_id }}/meetings"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/users_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   meetings_stream:
     schema_loader:
@@ -88,11 +88,11 @@ definitions:
         $ref: "#/definitions/requester"
         path: "/meetings/{{ stream_slice.parent_id }}"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   meeting_registrants_stream:
     schema_loader:
@@ -121,11 +121,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler # we're adding this DefaultErrorHandler for 429, 5XX errors etc;
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -159,11 +159,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -197,11 +197,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -234,11 +234,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -272,11 +272,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/users_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   webinars_stream:
     schema_loader:
@@ -307,11 +307,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
 
   webinar_panelists_stream:
     schema_loader:
@@ -340,11 +340,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -378,11 +378,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -417,11 +417,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_uuid"
+            partition_field: "parent_uuid"
     transformations:
       - type: AddFields
         fields:
@@ -455,11 +455,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -491,11 +491,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -528,11 +528,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -565,11 +565,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -601,11 +601,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -638,11 +638,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -675,11 +675,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/meetings_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -711,11 +711,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:
@@ -747,11 +747,11 @@ definitions:
                   action: IGNORE
             - type: DefaultErrorHandler
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/webinars_list_tmp_stream"
             parent_key: "uuid"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
     transformations:
       - type: AddFields
         fields:

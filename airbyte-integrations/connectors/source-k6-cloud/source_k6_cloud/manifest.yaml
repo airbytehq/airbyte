@@ -48,11 +48,11 @@ definitions:
       primary_key: "id"
       path: "/v3/organizations"
   organizations_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/organizations_stream"
         parent_key: id
-        stream_slice_field: id
+        partition_field: id
   projects_stream:
     $ref: "#/definitions/base_stream"
     type: DeclarativeStream

@@ -6,8 +6,8 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]
@@ -63,7 +63,7 @@ class MockStream(Stream):
             "test_single_parent_slices_no_records",
             [
                 ParentStreamConfig(
-                    stream=MockStream([{}], [], "first_stream"), parent_key="id", stream_slice_field="first_stream_id", parameters={}
+                    stream=MockStream([{}], [], "first_stream"), parent_key="id", partition_field="first_stream_id", parameters={}
                 )
             ],
             [],
@@ -74,7 +74,7 @@ class MockStream(Stream):
                 ParentStreamConfig(
                     stream=MockStream([{}], parent_records, "first_stream"),
                     parent_key="id",
-                    stream_slice_field="first_stream_id",
+                    partition_field="first_stream_id",
                     parameters={},
                 )
             ],
@@ -86,7 +86,7 @@ class MockStream(Stream):
                 ParentStreamConfig(
                     stream=MockStream(parent_slices, all_parent_data, "first_stream"),
                     parent_key="id",
-                    stream_slice_field="first_stream_id",
+                    partition_field="first_stream_id",
                     parameters={},
                 )
             ],
@@ -102,13 +102,13 @@ class MockStream(Stream):
                 ParentStreamConfig(
                     stream=MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
                     parent_key="id",
-                    stream_slice_field="first_stream_id",
+                    partition_field="first_stream_id",
                     parameters={},
                 ),
                 ParentStreamConfig(
                     stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
                     parent_key="id",
-                    stream_slice_field="second_stream_id",
+                    partition_field="second_stream_id",
                     parameters={},
                 ),
             ],
@@ -125,12 +125,12 @@ class MockStream(Stream):
 def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
     if expected_slices is None:
         try:
-            SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters={})
+            SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={})
             assert False
         except ValueError:
             return
-    slicer = SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters={})
-    slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
+    partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters={})
+    slices = [s for s in partition_router.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
 
 
@@ -152,20 +152,20 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ParentStreamConfig(
             stream=MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
             parent_key="id",
-            stream_slice_field="first_stream_id",
+            partition_field="first_stream_id",
             parameters={},
         ),
         ParentStreamConfig(
             stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
             parent_key="id",
-            stream_slice_field="second_stream_id",
+            partition_field="second_stream_id",
             parameters={},
         ),
     ]
 
-    slicer = SubstreamSlicer(parent_stream_configs=parent_stream_name_to_config, parameters={})
-    slicer.update_cursor(stream_slice, None)
-    updated_state = slicer.get_stream_state()
+    partition_router = SubstreamPartitionRouter(parent_stream_configs=parent_stream_name_to_config, parameters={})
+    partition_router.update_cursor(stream_slice, None)
+    updated_state = partition_router.get_stream_state()
     assert expected_state == updated_state
 
 
@@ -237,19 +237,19 @@ def test_request_option(
     expected_body_json,
     expected_body_data,
 ):
-    slicer = SubstreamSlicer(
+    partition_router = SubstreamPartitionRouter(
         parent_stream_configs=[
             ParentStreamConfig(
                 stream=MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
                 parent_key="id",
-                stream_slice_field="first_stream_id",
+                partition_field="first_stream_id",
                 parameters={},
                 request_option=parent_stream_request_parameters[0],
             ),
             ParentStreamConfig(
                 stream=MockStream(second_parent_stream_slice, more_records, "second_stream"),
                 parent_key="id",
-                stream_slice_field="second_stream_id",
+                partition_field="second_stream_id",
                 parameters={},
                 request_option=parent_stream_request_parameters[1],
             ),
@@ -258,7 +258,7 @@ def test_request_option(
     )
     stream_slice = {"first_stream_id": "1234", "second_stream_id": "4567"}
 
-    assert expected_req_params == slicer.get_request_params(stream_slice=stream_slice)
-    assert expected_headers == slicer.get_request_headers(stream_slice=stream_slice)
-    assert expected_body_json == slicer.get_request_body_json(stream_slice=stream_slice)
-    assert expected_body_data == slicer.get_request_body_data(stream_slice=stream_slice)
+    assert expected_req_params == partition_router.get_request_params(stream_slice=stream_slice)
+    assert expected_headers == partition_router.get_request_headers(stream_slice=stream_slice)
+    assert expected_body_json == partition_router.get_request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == partition_router.get_request_body_data(stream_slice=stream_slice)

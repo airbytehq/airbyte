@@ -116,11 +116,11 @@ definitions:
         $ref: "#/definitions/requester"
         path: "jobs/{{ stream_slice.parent_id }}/openings"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/jobs_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
   applications_demographics_answers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -177,11 +177,11 @@ definitions:
           $ref: "#/definitions/requester"
           path: "demographics/questions/{{ stream_slice.parent_id }}/answer_options"
         partition_router:
-          type: SubstreamSlicer
+          type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/questions_stream"
               parent_key: "id"
-              stream_slice_field: "parent_id"
+              partition_field: "parent_id"
   demographics_question_sets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -199,11 +199,11 @@ definitions:
           $ref: "#/definitions/requester"
           path: "demographics/question_sets/{{ stream_slice.parent_id }}/questions"
         partition_router:
-          type: SubstreamSlicer
+          type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/demographics_question_sets_stream"
               parent_key: "id"
-              stream_slice_field: "parent_id"
+              partition_field: "parent_id"
   interviews_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:

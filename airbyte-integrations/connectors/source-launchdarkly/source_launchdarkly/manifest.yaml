@@ -39,11 +39,11 @@ definitions:
       primary_key: "_id"
       path: "/projects"
   project_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/projects_stream"
         parent_key: key
-        stream_slice_field: project_key
+        partition_field: project_key
   environments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

@@ -83,11 +83,11 @@ definitions:
       - path: ["message_id"]
         value: "{{ stream_slice.id }}"
   message_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/messages_stream"
         parent_key: id
-        stream_slice_field: id
+        partition_field: id
 
   message_info_stream:
     $ref: "#/definitions/base_stream"

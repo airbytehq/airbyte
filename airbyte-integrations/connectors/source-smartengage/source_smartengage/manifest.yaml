@@ -29,11 +29,11 @@ definitions:
       primary_key: "avatar_id"
       path: "/avatars/list"
   avatars_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/avatars_stream"
         parent_key: "avatar_id"
-        stream_slice_field: "avatar_id"
+        partition_field: "avatar_id"
   # API Docs: https://smartengage.com/docs/#list-all-tags
   tags_stream:
     $ref: "#/definitions/base_stream"

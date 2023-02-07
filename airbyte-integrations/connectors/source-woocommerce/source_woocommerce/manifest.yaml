@@ -86,11 +86,11 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/orders_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "order_notes"
       primary_key: "id"
@@ -107,11 +107,11 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/products_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "product_variations"
       primary_key: "id"
@@ -133,11 +133,11 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/product_attributes_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "product_attribute_terms"
       primary_key: "id"
@@ -182,11 +182,11 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/orders_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "refunds"
       primary_key: "id"
@@ -204,11 +204,11 @@ definitions:
       primary_key: "id"
       path: "/shipping/zones"
   shipping_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/shipping_zones_stream"
         parent_key: id
-        stream_slice_field: id
+        partition_field: id
   shipping_zone_locations_stream:
     $ref: "#/definitions/base_stream"
     retriever:

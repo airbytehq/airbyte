@@ -64,11 +64,11 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
             id="test_default_paginator",
         ),
         pytest.param(
-            {"type": "SimpleRetriever", "stream_slicer": {"type": "SubstreamSlicer", "parent_stream_configs": [{}, {}, {}]}},
+            {"type": "SimpleRetriever", "stream_slicer": {"type": "SubstreamPartitionRouter", "parent_stream_configs": [{}, {}, {}]}},
             {
                 "type": "SimpleRetriever",
                 "stream_slicer": {
-                    "type": "SubstreamSlicer",
+                    "type": "SubstreamPartitionRouter",
                     "parent_stream_configs": [
                         {"type": "ParentStreamConfig"},
                         {"type": "ParentStreamConfig"},

@@ -75,8 +75,8 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
         self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
         self.lookback_window = InterpolatedString.create(self.lookback_window, parameters=parameters)
-        self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", parameters=parameters)
-        self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", parameters=parameters)
+        self.partition_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", parameters=parameters)
+        self.partition_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", parameters=parameters)
         self._parser = DatetimeParser()
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
@@ -103,7 +103,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         :return: None
         """
         stream_slice_value = stream_slice.get(self.cursor_field.eval(self.config))
-        stream_slice_value_end = stream_slice.get(self.stream_slice_field_end.eval(self.config))
+        stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
         cursor = None
         if stream_slice_value and last_record_value:
@@ -116,7 +116,7 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._cursor = max(cursor, self._cursor)
         elif cursor:
             self._cursor = cursor
-        if self.stream_slice_field_end:
+        if self.partition_field_end:
             self._cursor_end = stream_slice_value_end
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
@@ -150,8 +150,8 @@ class DatetimeStreamSlicer(StreamSlicer):
         return self._parser.format(dt, self.datetime_format)
 
     def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
-        start_field = self.stream_slice_field_start.eval(self.config)
-        end_field = self.stream_slice_field_end.eval(self.config)
+        start_field = self.partition_field_start.eval(self.config)
+        end_field = self.partition_field_end.eval(self.config)
         dates = []
         while start <= end:
             end_date = self._get_date(start + step - self._cursor_granularity, end, min)
@@ -218,7 +218,7 @@ class DatetimeStreamSlicer(StreamSlicer):
     def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         options = {}
         if self.start_time_option and self.start_time_option.inject_into == option_type:
-            options[self.start_time_option.field_name] = stream_slice.get(self.stream_slice_field_start.eval(self.config))
+            options[self.start_time_option.field_name] = stream_slice.get(self.partition_field_start.eval(self.config))
         if self.end_time_option and self.end_time_option.inject_into == option_type:
-            options[self.end_time_option.field_name] = stream_slice.get(self.stream_slice_field_end.eval(self.config))
+            options[self.end_time_option.field_name] = stream_slice.get(self.partition_field_end.eval(self.config))
         return options
