@@ -17,12 +17,12 @@
       "start_time": {
         "title": "Start time",
         "type": "string",
+        "format": "date-time",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(.\\d+)?Z$",
         "description": "Start time in ISO8601 format. Any data before this time point will not be replicated.",
         "examples": [
-          "2021-12-12",
-          "2021-02-01 13:30:00",
-          "2020-07-18T13:30:00.000Z",
-          "2020-07-18 13:30:00+02:00"
+          "2020-01-01T01:01:01Z",
+          "2020-01-01T01:01:01.000001Z"
         ],
         "order": 1
       }

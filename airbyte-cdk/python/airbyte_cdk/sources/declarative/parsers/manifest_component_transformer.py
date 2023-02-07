@@ -69,7 +69,6 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "CartesianProductStreamSlicer.stream_slicers": "CustomStreamSlicer",
     "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DeclarativeStream.retriever": "CustomRetriever",
     "DeclarativeStream.transformations": "CustomTransformation",
@@ -78,7 +77,7 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "HttpRequester.authenticator": "CustomAuthenticator",
     "HttpRequester.error_handler": "CustomErrorHandler",
     "RecordSelector.extractor": "CustomRecordExtractor",
-    "SimpleRetriever.stream_slicer": "CustomStreamSlicer",
+    "SimpleRetriever.partition_router": "CustomStreamSlicer",
 }
 
 

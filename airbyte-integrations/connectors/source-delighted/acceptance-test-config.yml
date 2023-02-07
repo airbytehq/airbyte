@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/source-acceptance-tests.md)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/connector-acceptance-tests.md)
 # for more information about how to configure these tests
 connector_image: airbyte/source-delighted:dev
 test_strictness_level: high

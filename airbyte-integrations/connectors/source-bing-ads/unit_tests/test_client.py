@@ -4,6 +4,7 @@
 
 from datetime import datetime, timedelta
 from unittest import mock
+from unittest.mock import patch
 
 import source_bing_ads.client
 from bingads.authorization import OAuthTokens
@@ -86,3 +87,10 @@ def test_is_expired_false():
     with mock.patch.object(source_bing_ads.client.Client, "__init__", fake__init__):
         client = source_bing_ads.client.Client()
         assert client.is_token_expiring() is False
+
+
+@patch("bingads.authorization.OAuthWebAuthCodeGrant.request_oauth_tokens_by_refresh_token")
+def test_get_auth_client(patched_request_tokens):
+    client = source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
+    client._get_auth_client("client_id", "tenant_id")
+    patched_request_tokens.assert_called_once_with("refresh_token")

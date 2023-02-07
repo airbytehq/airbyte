@@ -5,10 +5,19 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import java.sql.SQLException;
 import java.util.List;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 
 class SnowflakeInternalStagingSqlOperationsTest {
 
@@ -64,6 +73,26 @@ class SnowflakeInternalStagingSqlOperationsTest {
     final String expectedQuery = "REMOVE @" + STAGE_NAME + ";";
     final String actualRemoveQuery = snowflakeStagingSqlOperations.getRemoveQuery(STAGE_NAME);
     assertEquals(expectedQuery, actualRemoveQuery);
+  }
+
+  @ParameterizedTest
+  @CsvSource({"TEST,false", "but current role has no privileges on it,true"})
+  public void testCreateStageIfNotExists(final String message, final boolean shouldCapture) {
+    final JdbcDatabase db = Mockito.mock(JdbcDatabase.class);
+    final String stageName = "foo";
+    try {
+      Mockito.doThrow(new SnowflakeSQLException(message)).when(db).execute(Mockito.anyString());
+    } catch (SQLException e) {
+      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      assert false;
+    }
+    final Exception exception = Assertions.assertThrows(Exception.class, () -> snowflakeStagingSqlOperations.createStageIfNotExists(db, stageName));
+    if (shouldCapture) {
+      assertInstanceOf(ConfigErrorException.class, exception);
+    } else {
+      assertInstanceOf(SnowflakeSQLException.class, exception);
+      assertEquals(exception.getMessage(), message);
+    }
   }
 
 }

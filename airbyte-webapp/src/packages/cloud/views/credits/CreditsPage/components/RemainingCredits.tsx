@@ -137,7 +137,11 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         <CreditView>
           <FormattedMessage id="credits.remainingCredits" />
           <Count>
-            <FormattedNumber value={cloudWorkspace.remainingCredits} />
+            <FormattedNumber
+              value={cloudWorkspace.remainingCredits}
+              maximumFractionDigits={2}
+              minimumFractionDigits={2}
+            />
           </Count>
         </CreditView>
         <Actions>

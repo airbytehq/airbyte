@@ -4,6 +4,7 @@ import { SyncSchemaField } from "./models";
 
 type AirbyteJsonSchema = JSONSchema7Definition & {
   airbyte_type?: string;
+  $ref?: string;
 };
 
 export const traverseSchemaToField = (
@@ -40,6 +41,7 @@ const traverseJsonSchemaProperties = (
         (Array.isArray(jsonSchema?.type)
           ? jsonSchema?.type.find((t) => t !== "null") ?? jsonSchema?.type[0]
           : jsonSchema?.type) ?? "null",
+      $ref: jsonSchema?.$ref,
       airbyte_type: jsonSchema?.airbyte_type,
       format: jsonSchema?.format,
     },

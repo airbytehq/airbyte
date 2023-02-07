@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 
 class ExchangeRates(HttpStream):
-    url_base = "http://api.exchangeratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
     cursor_field = "date"
     primary_key = "date"
 
@@ -34,14 +34,20 @@ class ExchangeRates(HttpStream):
     ) -> str:
         return stream_slice["date"]
 
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        # The api requires that we include apikey as a header so we do that in this method
+        return {'apikey': self.apikey}
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The api requires that we include access_key as a query param so we do that in this method
-        return {"access_key": self.access_key}
+        # The api requires that we include the base currency as a query param so we do that in this method
+        return {'base': self.base}
 
     def parse_response(
         self,

@@ -117,6 +117,7 @@ const InnerBuilderField: React.FC<BuilderFieldProps & FastFieldProps<unknown>> =
           readOnly={readOnly}
           adornment={adornment}
           onBlur={(e) => {
+            field.onBlur(e);
             props.onBlur?.(e.target.value);
           }}
         />

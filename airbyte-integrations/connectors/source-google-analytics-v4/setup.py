@@ -12,7 +12,7 @@ TEST_REQUIREMENTS = [
     "requests-mock",
     "pytest-mock",
     "freezegun",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

@@ -204,11 +204,7 @@
     "jsonFieldSchema": {
       "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
     },
-    "avroFieldType": [
-      "null",
-      { "type": "long", "logicalType": "time-micros" },
-      "string"
-    ]
+    "avroFieldType": ["null", "string"]
   },
   {
     "fieldName": "array_field_without_items",

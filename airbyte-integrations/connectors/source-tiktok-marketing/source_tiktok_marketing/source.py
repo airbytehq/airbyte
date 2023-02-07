@@ -88,7 +88,9 @@ class SourceTiktokMarketing(AbstractSource):
         Tests if the input configuration can be used to successfully connect to the integration
         """
         try:
-            next(Advertisers(**self._prepare_stream_args(config)).read_records(SyncMode.full_refresh))
+            advertisers = Advertisers(**self._prepare_stream_args(config))
+            for slice_ in advertisers.stream_slices():
+                next(advertisers.read_records(SyncMode.full_refresh, stream_slice=slice_))
         except Exception as err:
             return False, err
         return True, None

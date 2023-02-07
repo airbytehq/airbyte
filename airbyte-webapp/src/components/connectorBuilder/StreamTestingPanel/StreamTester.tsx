@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { Action, Namespace } from "core/analytics";
+import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectorBuilderTestState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { links } from "utils/links";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
@@ -22,6 +24,8 @@ export const StreamTester: React.FC<{
   const {
     streams,
     testStreamIndex,
+    isFetchingStreamList,
+    streamListErrorMessage,
     streamRead: {
       data: streamReadData,
       refetch: readStream,
@@ -78,11 +82,24 @@ export const StreamTester: React.FC<{
     }
   }, [analyticsService, errorMessage, isFetchedAfterMount, streamName, dataUpdatedAt, errorUpdatedAt]);
 
+  const currentStream = streams[testStreamIndex] as StreamsListReadStreamsItem | undefined;
   return (
     <div className={styles.container}>
-      <Text className={styles.url} size="lg">
-        {streams[testStreamIndex]?.url}
-      </Text>
+      {currentStream && (
+        <Text className={styles.url} centered size="lg">
+          {currentStream.url}
+        </Text>
+      )}
+      {!currentStream && isFetchingStreamList && (
+        <Text size="lg" centered>
+          <FormattedMessage id="connectorBuilder.loadingStreamList" />
+        </Text>
+      )}
+      {!currentStream && streamListErrorMessage && (
+        <Text size="lg" centered>
+          <FormattedMessage id="connectorBuilder.streamListUrlError" />
+        </Text>
+      )}
 
       <StreamTestButton
         readStream={() => {
@@ -93,9 +110,30 @@ export const StreamTester: React.FC<{
           });
         }}
         hasTestInputJsonErrors={hasTestInputJsonErrors}
+        hasStreamListErrors={Boolean(streamListErrorMessage)}
         setTestInputOpen={setTestInputOpen}
       />
 
+      {streamListErrorMessage !== undefined && (
+        <div className={styles.listErrorDisplay}>
+          <Text>
+            <FormattedMessage id="connectorBuilder.couldNotDetectStreams" />
+          </Text>
+          <Text bold>{streamListErrorMessage}</Text>
+          <Text>
+            <FormattedMessage
+              id="connectorBuilder.ensureProperYaml"
+              values={{
+                a: (node: React.ReactNode) => (
+                  <a href={links.lowCodeYamlDescription} target="_blank" rel="noreferrer">
+                    {node}
+                  </a>
+                ),
+              }}
+            />
+          </Text>
+        </div>
+      )}
       {isFetching && (
         <div className={styles.fetchingSpinner}>
           <Spinner />

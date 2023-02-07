@@ -12,7 +12,6 @@ definitions:
         - "{{ parameters['name'] }}"
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -25,8 +24,6 @@ definitions:
     type: SimpleRetriever
     $parameters:
       url_base: "{{ 'https://api.gocardless.com' if config['gocardless_environment'] == 'live' else 'https://api-sandbox.gocardless.com' }}"
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
@@ -49,7 +46,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "payments"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -61,7 +57,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "refunds"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -73,7 +68,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "mandates"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
@@ -85,7 +79,6 @@ streams:
   - type: DeclarativeStream
     $parameters:
       name: "payouts"
-      stream_cursor_field: "created_at"
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"

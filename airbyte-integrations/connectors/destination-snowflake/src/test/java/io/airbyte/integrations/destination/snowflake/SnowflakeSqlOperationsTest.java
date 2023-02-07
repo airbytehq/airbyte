@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -20,7 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -70,12 +71,34 @@ class SnowflakeSqlOperationsTest {
       // This would not be expected, but the `execute` method above will flag as an unhandled exception
       assert false;
     }
-    Exception exception = Assertions.assertThrows(Exception.class, () -> snowflakeSqlOperations.createSchemaIfNotExists(db, schemaName));
+    Exception exception = assertThrows(Exception.class, () -> snowflakeSqlOperations.createSchemaIfNotExists(db, schemaName));
     if (shouldCapture) {
-      Assertions.assertInstanceOf(ConfigErrorException.class, exception);
+      assertInstanceOf(ConfigErrorException.class, exception);
     } else {
-      Assertions.assertInstanceOf(SnowflakeSQLException.class, exception);
-      Assertions.assertEquals(exception.getMessage(), message);
+      assertInstanceOf(SnowflakeSQLException.class, exception);
+      assertEquals(exception.getMessage(), message);
+    }
+  }
+
+  @ParameterizedTest
+  @CsvSource({"TEST,false", "but current role has no privileges on it,true"})
+  public void testCreateTableIfNotExists(final String message, final boolean shouldCapture) {
+    final JdbcDatabase db = Mockito.mock(JdbcDatabase.class);
+    final String schemaName = "foo";
+    final String tableName = "bar";
+    try {
+      Mockito.doThrow(new SnowflakeSQLException(message)).when(db).execute(Mockito.anyString());
+    } catch (SQLException e) {
+      // This would not be expected, but the `execute` method above will flag as an unhandled exception
+      assert false;
+    }
+    final Exception exception =
+        assertThrows(Exception.class, () -> snowflakeSqlOperations.createTableIfNotExists(db, schemaName, tableName));
+    if (shouldCapture) {
+      assertInstanceOf(ConfigErrorException.class, exception);
+    } else {
+      assertInstanceOf(SnowflakeSQLException.class, exception);
+      assertEquals(exception.getMessage(), message);
     }
   }
 

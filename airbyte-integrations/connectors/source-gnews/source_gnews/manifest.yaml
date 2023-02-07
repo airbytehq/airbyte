@@ -37,7 +37,7 @@ definitions:
     step: "P1W"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_granularity: "PT1S"
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: "publishedAt"
   common_parameters:
     token: "{{ config['api_key'] }}"
     lang: "{{ config['language'] }}"
@@ -55,9 +55,9 @@ definitions:
       name: "search"
       primary_key: "url"
       path: "/search"
-      stream_cursor_field: "publishedAt"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+      cursor_field: "publishedAt"
     retriever:
       $ref: "#/definitions/base_retriever"
       requester:
@@ -75,7 +75,6 @@ definitions:
       name: "top_headlines"
       primary_key: "url"
       path: "/top-headlines"
-      stream_cursor_field: "publishedAt"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
     retriever:
