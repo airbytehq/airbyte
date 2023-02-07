@@ -1,0 +1,10 @@
+.connectorItem {
+  width: calc(100% - 30px / 2);
+}
+
+.arrowItem {
+  flex: 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
