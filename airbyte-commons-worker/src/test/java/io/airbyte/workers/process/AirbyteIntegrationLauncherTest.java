@@ -70,8 +70,7 @@ class AirbyteIntegrationLauncherTest {
           .put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, CONFIGS.getSocatSidecarKubeCpuRequest())
           .put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, CONFIGS.getSocatSidecarKubeCpuLimit())
           .put(EnvConfigs.LAUNCHDARKLY_KEY, CONFIGS.getLaunchDarklyKey())
-          .build()
-  );
+          .build());
 
   private WorkerConfigs workerConfigs;
   @Mock
