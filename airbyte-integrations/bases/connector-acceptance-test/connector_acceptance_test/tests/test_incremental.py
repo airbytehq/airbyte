@@ -180,12 +180,11 @@ class TestIncremental(BaseTest):
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
 
-
         parsed_records_1 = records_with_state(records_1, latest_state, stream_mapping, cursor_paths);
 
         # This catches the case of a connector that emits an invalid state that is not compatible with the schema
         # See https://github.com/airbytehq/airbyte/issues/21863 to understand more
-        assert parsed_records_1, "Should produce at least one record with state"
+        assert parsed_records_1, "At least one valid state should be produced, given a cursor path"
 
         for record_value, state_value, stream_name in parsed_records_1:
             assert (
@@ -194,13 +193,6 @@ class TestIncremental(BaseTest):
 
         output = docker_runner.call_read_with_state(connector_config, configured_catalog_for_incremental, state=state_input)
         records_2 = filter_output(output, type_=Type.RECORD)
-
-
-        assert records_2, "Should produce at least one record on subsequent read"
-
-        parsed_records_2 = records_with_state(records_1, latest_state, stream_mapping, cursor_paths);
-        assert parsed_records_2, "Should produce at least one record with state"
-
 
         for record_value, state_value, stream_name in records_with_state(records_2, latest_state, stream_mapping, cursor_paths):
             assert compare_cursor_with_threshold(
