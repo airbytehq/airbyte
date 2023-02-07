@@ -102,6 +102,16 @@
         "order": 12,
         "type": "integer"
       },
+      "advanced_stream_options": {
+        "title": "Advanced Stream Options",
+        "description": "Additional information to configure report options. This varies by report type, not every report implement this kind of feature. Must be a valid json string.",
+        "examples": [
+          "{\"GET_SALES_AND_TRAFFIC_REPORT\": {\"availability_sla_days\": 3}}",
+          "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
+        ],
+        "order": 13,
+        "type": "string"
+      },
       "aws_environment": {
         "title": "AWSEnvironment",
         "description": "An enumeration.",
