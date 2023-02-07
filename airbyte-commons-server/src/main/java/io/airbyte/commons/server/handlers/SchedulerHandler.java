@@ -438,7 +438,7 @@ public class SchedulerHandler {
       }
       updateObject.status(connectionStatus);
       connectionsHandler.updateConnection(updateObject);
-      if (!diff.getTransforms().isEmpty() && connectionRead.getNotifySchemaChanges()) {
+      if (shouldNotifySchemaChange(diff, connectionRead, discoverSchemaRequestBody)) {
         final String url = webUrlHelper.getConnectionUrl(workspaceId, connectionRead.getConnectionId());
         try {
           notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId(), url);
@@ -450,6 +450,13 @@ public class SchedulerHandler {
         discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
       }
     }
+  }
+
+  private boolean shouldNotifySchemaChange(final CatalogDiff diff,
+                                           final ConnectionRead connectionRead,
+                                           final SourceDiscoverSchemaRequestBody requestBody) {
+    return !diff.getTransforms().isEmpty() && connectionRead.getNotifySchemaChanges() && requestBody.getNotifySchemaChange() != null
+        && requestBody.getNotifySchemaChange();
   }
 
   private boolean shouldDisableConnection(final boolean containsBreakingChange,
