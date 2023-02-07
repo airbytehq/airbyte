@@ -14,6 +14,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -182,6 +183,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
     def response_root_name(self):
         """Using the class name in lower to set the root node for response parsing"""
         return self.name
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @property
     def response_item_name(self):

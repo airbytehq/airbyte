@@ -49,7 +49,10 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
   }
 
   /**
-   * Wraps actual processing of each {@link AirbyteMessage}
+   * Processing of AirbyteMessages with general functionality of storing STATE messages, serializing
+   * RECORD messages and storage within a buffer
+   *
+   * NOTE: Not all the functionality mentioned above is always true but generally applies
    *
    * @param msg {@link AirbyteMessage} to be processed
    * @throws Exception

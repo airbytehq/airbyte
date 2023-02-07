@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, 
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
@@ -39,6 +40,10 @@ class FBMarketingStream(Stream, ABC):
     enable_deleted = True
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
         super().__init__(**kwargs)

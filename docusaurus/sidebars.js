@@ -301,7 +301,7 @@ module.exports = {
         'connector-development/cdk-faros-js',
         'connector-development/airbyte101',
         'connector-development/testing-connectors/README',
-        'connector-development/testing-connectors/source-acceptance-tests-reference',
+        'connector-development/testing-connectors/connector-acceptance-tests-reference',
         'connector-development/connector-specification-reference',
         'connector-development/best-practices',
         'connector-development/ux-handbook',

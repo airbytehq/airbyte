@@ -9,7 +9,7 @@ import shutil
 
 import pytest
 
-pytest_plugins = ("source_acceptance_test.plugin",)
+pytest_plugins = ("connector_acceptance_test.plugin",)
 
 
 @pytest.fixture(scope="session", autouse=True)

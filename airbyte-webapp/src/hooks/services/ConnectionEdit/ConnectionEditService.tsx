@@ -1,5 +1,6 @@
 import pick from "lodash/pick";
 import { useContext, useState, createContext, useCallback } from "react";
+import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
 import {
@@ -10,6 +11,7 @@ import {
 } from "core/request/AirbyteClient";
 
 import { ConnectionFormServiceProvider } from "../ConnectionForm/ConnectionFormService";
+import { useNotificationService } from "../Notification/NotificationService";
 import { useGetConnection, useUpdateConnection, useWebConnectionService } from "../useConnectionHook";
 import { SchemaError } from "../useSourceHook";
 
@@ -37,16 +39,30 @@ const getConnectionCatalog = (connection: WebBackendConnectionRead): ConnectionC
   pick(connection, ["syncCatalog", "catalogId"]);
 
 const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEditHook => {
+  const { formatMessage } = useIntl();
+  const { registerNotification, unregisterNotificationById } = useNotificationService();
   const connectionService = useWebConnectionService();
   const [connection, setConnection] = useState(useGetConnection(connectionId));
   const [catalog, setCatalog] = useState<ConnectionCatalog>(() => getConnectionCatalog(connection));
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
   const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
+    unregisterNotificationById("connection.noDiff");
+
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
     if (refreshedConnection.catalogDiff && refreshedConnection.catalogDiff.transforms?.length > 0) {
       setConnection(refreshedConnection);
       setSchemaHasBeenRefreshed(true);
+    } else {
+      setConnection((connection) => ({
+        ...connection,
+        schemaChange: refreshedConnection.schemaChange,
+      }));
+
+      registerNotification({
+        id: "connection.noDiff",
+        text: formatMessage({ id: "connection.updateSchema.noDiff" }),
+      });
     }
   }, [connectionId]);
 

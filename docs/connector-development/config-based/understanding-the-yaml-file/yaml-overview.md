@@ -28,31 +28,9 @@ The stream object is represented in the YAML file as:
         type: string
         enum: [DeclarativeStream]
       retriever:
-        definition: Component used to coordinate how records are extracted across stream slices and request pages
-        anyOf:
-          - "$ref": "#/definitions/CustomRetriever"
-          - "$ref": "#/definitions/SimpleRetriever"
-      incremental_sync:
-        anyOf:
-          - "$ref": "#/definitions/CustomIncrementalSync"
-          - "$ref": "#/definitions/DatetimeBasedCursor"
-      name:
-        definition: The stream name
-        type: string
-        default: ""
-      primary_key:
-        definition: The primary key of the stream
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              type: string
-          - type: array
-            items:
-              type: array
-              items:
-                type: string
-        default: ""
+        "$ref": "#/definitions/Retriever"
+      transformations:
+        "$ref": "#/definitions/RecordTransformation"
       schema_loader:
         definition: The schema loader used to retrieve the schema for the current stream
         anyOf:
@@ -111,43 +89,22 @@ The schema of a retriever object is:
     description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object
     required:
-      - type
+      - requester
       - record_selector
       - requester
     properties:
-      type:
-        type: string
-        enum: [SimpleRetriever]
-      record_selector:
-        "$ref": "#/definitions/RecordSelector"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       requester:
-        anyOf:
-          - "$ref": "#/definitions/CustomRequester"
-          - "$ref": "#/definitions/HttpRequester"
-      name:
-        type: string
-        default: ""
+        "$ref": "#/definitions/Requester"
+      record_selector:
+        "$ref": "#/definitions/HttpSelector"
       paginator:
-        anyOf:
-          - "$ref": "#/definitions/DefaultPaginator"
-          - "$ref": "#/definitions/NoPagination"
-      primary_key:
-        "$ref": "#/definitions/PrimaryKey"
-      iterator:
-        default: []
-        anyOf:
-          - "$ref": "#/definitions/CustomIterator"
-          - "$ref": "#/definitions/ListIterator"
-          - "$ref": "#/definitions/SubstreamIterator"
-          - type: array
-            items:
-              anyOf:
-                - "$ref": "#/definitions/CustomIterator"
-                - "$ref": "#/definitions/ListIterator"
-                - "$ref": "#/definitions/SubstreamIterator"
-      $parameters:
-        type: object
-        additionalProperties: true
+        "$ref": "#/definitions/Paginator"
+      stream_slicer:
+        "$ref": "#/definitions/StreamSlicer"
+  PrimaryKey:
+    type: string
 ```
 
 ### Routing to Data that is Partitioned in Multiple Locations

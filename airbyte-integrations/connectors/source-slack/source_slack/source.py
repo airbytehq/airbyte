@@ -12,6 +12,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from pendulum import DateTime, Period
@@ -26,6 +27,10 @@ class SlackStream(HttpStream, ABC):
     def max_retries(self) -> int:
         # Slack's rate limiting can be unpredictable so we increase the max number of retries by a lot before failing
         return 20
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
@@ -318,6 +323,10 @@ class JoinChannelsStream(HttpStream):
     http_method = "POST"
     primary_key = "id"
 
+    def __init__(self, channel_filter: List[str] = None, **kwargs):
+        self.channel_filter = channel_filter or []
+        super().__init__(**kwargs)
+
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         return [{"message": f"Successfully joined channel: {stream_slice['channel_name']}"}]
 
@@ -328,7 +337,7 @@ class JoinChannelsStream(HttpStream):
         return "conversations.join"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        channels_stream = Channels(authenticator=self._session.auth)
+        channels_stream = Channels(authenticator=self._session.auth, channel_filter=self.channel_filter)
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield {"channel": channel["id"], "channel_name": channel["name"]}
 
@@ -398,7 +407,7 @@ class SourceSlack(AbstractSource):
         if config["join_channels"]:
             logger = AirbyteLogger()
             logger.info("joining Slack channels")
-            join_channels_stream = JoinChannelsStream(authenticator=authenticator)
+            join_channels_stream = JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
             for stream_slice in join_channels_stream.stream_slices():
                 for message in join_channels_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                     logger.info(message["message"])

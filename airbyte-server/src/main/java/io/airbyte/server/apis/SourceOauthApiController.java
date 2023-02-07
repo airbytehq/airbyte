@@ -12,6 +12,7 @@ import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
 import io.airbyte.api.model.generated.OAuthConsentRead;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
@@ -35,6 +36,7 @@ public class SourceOauthApiController implements SourceOauthApi {
 
   @Post("/complete_oauth")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
@@ -42,6 +44,7 @@ public class SourceOauthApiController implements SourceOauthApi {
 
   @Post("/get_consent_url")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public OAuthConsentRead getSourceOAuthConsent(@Body final SourceOauthConsentRequest sourceOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));

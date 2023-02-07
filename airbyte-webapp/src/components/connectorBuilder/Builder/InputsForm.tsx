@@ -25,7 +25,7 @@ export interface InputInEditing {
   required: boolean;
   isNew?: boolean;
   showDefaultValueField: boolean;
-  type: typeof supportedTypes[number];
+  type: (typeof supportedTypes)[number];
   isInferredInputOverride: boolean;
 }
 

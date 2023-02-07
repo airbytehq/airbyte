@@ -8,12 +8,21 @@ import {
   mockDestinationDefinition,
   mockDestinationDefinitionSpecification,
 } from "test-utils/mock-data/mockDestination";
+import { mockSourceDefinition, mockSourceDefinitionSpecification } from "test-utils/mock-data/mockSource";
 import { TestWrapper } from "test-utils/testutils";
 
 import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
 
 import { CreateConnectionForm } from "./CreateConnectionForm";
+
+jest.mock("services/connector/SourceDefinitionService", () => ({
+  useSourceDefinition: () => mockSourceDefinition,
+}));
+
+jest.mock("services/connector/SourceDefinitionSpecificationService", () => ({
+  useGetSourceDefinitionSpecification: () => mockSourceDefinitionSpecification,
+}));
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,

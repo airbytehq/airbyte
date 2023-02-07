@@ -50,7 +50,6 @@ definitions:
       name: "customers"
       primary_key: "key"
       path: "/customers"
-      stream_cursor_field: "updated_at"
   deals_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

@@ -36,7 +36,7 @@ definitions:
     end_time_option:
       field_name: modified_before
       inject_into: request_parameter
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: "date_modified_gmt"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -71,14 +71,12 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "coupons"
-      stream_cursor_field: "date_modified_gmt"
       primary_key: "id"
       path: "/coupons"
   orders_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "orders"
-      stream_cursor_field: "date_modified_gmt"
       primary_key: "id"
       path: "/orders"
   order_notes_stream:
@@ -99,7 +97,6 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       name: "products"
-      stream_cursor_field: "date_modified_gmt"
       primary_key: "id"
       path: "/products"
   product_variations_stream:
@@ -162,7 +159,6 @@ definitions:
           inject_into: request_parameter
     $parameters:
       name: "product_reviews"
-      stream_cursor_field: "date_created_gmt"
       primary_key: "id"
       path: "/products/reviews"
   product_shipping_classes_stream:
