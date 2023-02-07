@@ -1846,6 +1846,11 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.twilio.com
+      - monitor.twilio.com
+      - studio.twilio.com
 - name: Twilio Taskrouter
   sourceDefinitionId: 2446953b-b794-429b-a9b3-c821ba992a48
   dockerRepository: airbyte/source-twilio-taskrouter
