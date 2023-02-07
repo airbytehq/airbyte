@@ -174,8 +174,8 @@
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{remainingDays, plural, one {# day} other {# days}}</b>.",
-
+  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{value, plural, one {# day} other {# days}}</b>.",
+  "trial.preTrialAlertMessage": "Your 14-day trial of Airbyte will start once your first sync has completed.",
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
   "webapp.cannotReachServer": "Cannot reach server.",
