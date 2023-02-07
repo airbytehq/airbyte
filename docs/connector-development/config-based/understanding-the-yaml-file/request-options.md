@@ -71,23 +71,43 @@ Schema:
 
 ```yaml
   RequestOption:
+    description: A component that specifies the key field and where in the request a component's value should be inserted into.
     type: object
-    additionalProperties: true
     required:
+      - type
+      - field_name
       - inject_into
     properties:
-      inject_into:
-        "$ref": "#/definitions/RequestOptionType"
+      type:
+        type: string
+        enum: [RequestOption]
       field_name:
         type: string
-  RequestOptionType:
-    type: string
-    enum:
-      - request_parameter
-      - header
-      - path
-      - body_data
-      - body_json
+      inject_into:
+        enum:
+          - request_parameter
+          - header
+          - body_data
+          - body_json
+```
+
+### Request Path
+
+As an alternative to adding various options to the request being sent, some components can be configured to
+modify the HTTP path of the API endpoint being accessed.
+
+Schema:
+
+```yaml
+  RequestPath:
+    description: A component that specifies where in the request path a component's value should be inserted into.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        type: string
+        enum: [RequestPath]
 ```
 
 ## Authenticators
@@ -108,12 +128,14 @@ The following example will set the "page" request parameter value to the page to
 paginator:
   type: "DefaultPaginator"
   page_size_option:
+    type: "RequestOption"
     inject_into: request_parameter
     field_name: page_size
   pagination_strategy:
     type: "PageIncrement"
     page_size: 5
   page_token:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page"
 ```
@@ -133,9 +155,11 @@ stream_slicer:
   end_datetime: "2021-03-01T00:00:00.000000+0000",
   step: "P1D"
   start_time_option:
+    type: "RequestOption"
     field_name: "created[gte]"
     inject_into: "request_parameter"
   end_time_option:
+    type: "RequestOption"
     field_name: "created[lte]"
     inject_into: "request_parameter"
 ```

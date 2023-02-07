@@ -44,7 +44,9 @@ Schema:
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
-        "$ref": "#/definitions/RequestOption"
+        anyOf:
+          - "$ref": "#/definitions/RequestOption"
+          - "$ref": "#/definitions/RequestPath"
       pagination_strategy:
         "$ref": "#/definitions/PaginationStrategy"
 ```
@@ -95,12 +97,14 @@ Example:
 paginator:
   type: "DefaultPaginator"
   page_size_option:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "PageIncrement"
     page_size: 5
   page_token_option:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page"
 ```
@@ -139,12 +143,14 @@ Example:
 paginator:
   type: "DefaultPaginator"
   page_size_option:
+    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "OffsetIncrement"
     page_size: 5
   page_token_option:
+    type: "RequestOption"
     field_name: "offset"
     inject_into: "request_parameter"
 ```
@@ -194,6 +200,7 @@ paginator:
     type: "CursorPagination"
     cursor_value: "{{ last_records[-1]['id'] }}"
   page_token_option:
+    type: "RequestPath"
     field_name: "from"
     inject_into: "request_parameter"
 ```
@@ -215,7 +222,7 @@ paginator:
     type: "CursorPagination"
     cursor_value: "{{ headers['urls']['next'] }}"
   page_token_option:
-    inject_into: "path"
+    type: "RequestPath"
 ```
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,

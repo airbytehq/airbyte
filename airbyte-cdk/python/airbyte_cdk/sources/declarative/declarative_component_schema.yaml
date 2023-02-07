@@ -545,8 +545,8 @@ definitions:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
         anyOf:
-          - "$ref": "#/definitions/RequestPath"
           - "$ref": "#/definitions/RequestOption"
+          - "$ref": "#/definitions/RequestPath"
       $parameters:
         type: object
         additionalProperties: true
@@ -924,20 +924,20 @@ definitions:
     type: object
     required:
       - type
-      - inject_into
       - field_name
+      - inject_into
     properties:
       type:
         type: string
         enum: [RequestOption]
+      field_name:
+        type: string
       inject_into:
         enum:
           - request_parameter
           - header
           - body_data
           - body_json
-      field_name:
-        type: string
   Schemas:
     description: The stream schemas representing the shape of the data emitted by the stream
     type: object
