@@ -102,11 +102,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  protected Set<String> getExcludedViews() {
-    return Collections.emptySet();
-  }
-
-  @Override
   protected List<TableInfo<CommonField<StandardSQLTypeName>>> discoverInternal(final BigQueryDatabase database) throws Exception {
     return discoverInternal(database, null);
   }
