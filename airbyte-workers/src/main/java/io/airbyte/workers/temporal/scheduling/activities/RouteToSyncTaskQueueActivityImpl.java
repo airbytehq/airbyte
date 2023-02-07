@@ -8,9 +8,10 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.exception.RetryableException;
+import io.airbyte.commons.temporal.scheduling.RouterService;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.workers.temporal.scheduling.RouterService;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueAct
     ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
 
     try {
-      final String taskQueueForConnectionId = routerService.getTaskQueue(input.getConnectionId());
+      final String taskQueueForConnectionId = routerService.getTaskQueue(input.getConnectionId(), TemporalJobType.SYNC);
 
       return new RouteToSyncTaskQueueOutput(taskQueueForConnectionId);
     } catch (final IOException e) {

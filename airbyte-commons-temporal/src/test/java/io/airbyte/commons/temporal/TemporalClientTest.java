@@ -78,6 +78,9 @@ public class TemporalClientTest {
   private static final UUID JOB_UUID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
+
+  private static final String CHECK_TASK_QUEUE = "CHECK_CONNECTION";
+  private static final String DISCOVER_TASK_QUEUE = "DISCOVER_SCHEMA";
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID);
@@ -240,7 +243,7 @@ public class TemporalClientTest {
       final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
           .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-      temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+      temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, CHECK_TASK_QUEUE, checkConnectionConfig);
       checkConnectionWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
       verify(workflowClient).newWorkflowStub(CheckConnectionWorkflow.class,
           TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.CHECK_CONNECTION));
@@ -257,7 +260,7 @@ public class TemporalClientTest {
       final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
           .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-      temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+      temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, DISCOVER_TASK_QUEUE, checkConnectionConfig);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
       verify(workflowClient).newWorkflowStub(DiscoverCatalogWorkflow.class,
           TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.DISCOVER_SCHEMA));

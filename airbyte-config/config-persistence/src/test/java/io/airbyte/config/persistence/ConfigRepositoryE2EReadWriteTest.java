@@ -574,6 +574,15 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     assertEquals(expected, actual);
   }
 
+  @Test
+  void testGetGeographyForWorkspace() throws IOException {
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
+    final Geography expected = workspace.getDefaultGeography();
+    final Geography actual = configRepository.getGeographyForWorkspace(workspace.getWorkspaceId());
+
+    assertEquals(expected, actual);
+  }
+
   @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Test
   void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException {
