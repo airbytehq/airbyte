@@ -475,7 +475,7 @@ class Stream(HttpStream, ABC):
         try:
             casted_value = target_type(field_value)
         except ValueError:
-            logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
+            logger.info(f"Could not cast `{field_value}` to `{target_type}` for `{field_name}`")
             #If I return the uncasted value, the stream will fail. Better to remove that value and still get the data.
             return None
 
