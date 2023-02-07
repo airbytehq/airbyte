@@ -2,17 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
 from collections import defaultdict
 from functools import partial
 from logging import Logger
 from typing import List, Mapping
-import time
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import ConnectionTestConfig
-from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, full_refresh_only_catalog, make_hashable
+from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
 from connector_acceptance_test.utils.json_schema_helper import CatalogField
 
 
@@ -50,7 +50,9 @@ class TestFullRefresh(BaseTest):
 
         assert max_emitted_at < min_emitted_at, "emitted_at should increase on subsequent runs"
 
-    def assert_two_sequential_reads_produce_same_or_subset_records(self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger):
+    def assert_two_sequential_reads_produce_same_or_subset_records(
+        self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger
+    ):
         records_by_stream_1 = defaultdict(list)
         for record in records_1:
             records_by_stream_1[record.stream].append(record.data)
@@ -100,4 +102,6 @@ class TestFullRefresh(BaseTest):
         records_2 = [message.record for message in output_2 if message.type == Type.RECORD]
 
         self.assert_emitted_at_increase_on_subsequent_runs(records_1, records_2)
-        self.assert_two_sequential_reads_produce_same_or_subset_records(records_1, records_2, configured_catalog, ignored_fields, detailed_logger)
+        self.assert_two_sequential_reads_produce_same_or_subset_records(
+            records_1, records_2, configured_catalog, ignored_fields, detailed_logger
+        )
