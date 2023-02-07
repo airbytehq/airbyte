@@ -1,8 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
-
 from abc import ABC
 from typing import (
     Any,
@@ -28,7 +26,6 @@ from source_adaptive_insights.serializers import (
     handle_export_data, handle_export_headcount
 )
 from datetime import datetime
-
 
 # Basic full refresh stream
 class AdaptiveInsightsStream(HttpStream, ABC):

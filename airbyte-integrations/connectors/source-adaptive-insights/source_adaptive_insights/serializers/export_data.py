@@ -37,6 +37,8 @@ class Data:
     def parse_amount(amount: Optional[Union[str, float]]) -> float:
         if not amount:
             return 0.0
+        if isinstance(amount, str) and "=NA()*" in amount:
+            amount = amount.replace("=NA()*", "")
         try:
             return round(float(amount), 5)
         except ValueError as e:
