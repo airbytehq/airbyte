@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/z-indices";
 
 $blur-height: 15px;
 $spacing: variables.$spacing-xl;
@@ -33,10 +34,6 @@ $spacing: variables.$spacing-xl;
 }
 
 .content {
-  .softScrollEdge & {
-    margin-top: $blur-height;
-  }
-
   padding: 0 $spacing $spacing;
   min-width: variables.$main-page-content-min-width;
 
@@ -45,10 +42,11 @@ $spacing: variables.$spacing-xl;
   }
 }
 
-.blur {
-  position: absolute;
+.edge {
+  position: sticky;
   width: calc(100% - 30px);
-  top: $spacing - $blur-height;
+  top: 0;
+  z-index: z-indices.$mainPageWithScrollEdge;
   left: 15px;
   min-height: $blur-height;
   background: linear-gradient(180deg, colors.$grey-50, rgba(248, 248, 250, 0%) 15px);

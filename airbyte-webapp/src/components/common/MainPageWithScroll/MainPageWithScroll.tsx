@@ -33,6 +33,7 @@ export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({
           })}
         >
           <div className={styles.contentScroll}>
+            {softScrollEdge && <div className={styles.edge} aria-hidden="true" />}
             <div
               className={classNames(styles.content, {
                 [styles.cloud]: isCloudApp(),
@@ -41,7 +42,6 @@ export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({
               {children}
             </div>
           </div>
-          {softScrollEdge && <div className={styles.blur} aria-hidden="true" />}
         </div>
       </div>
     </>
