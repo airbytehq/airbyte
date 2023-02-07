@@ -31,13 +31,9 @@ class NormalizationActivityImplTest {
     final FeatureFlags featureFlags = mock(FeatureFlags.class);
     when(featureFlags.strictComparisonNormalizationTag()).thenReturn("strict_comparison");
 
-    final IntegrationLauncherConfig config1 = withNormalizationVersion("0.2.25");
-    NormalizationActivityImpl.activateStrictNormalizationComparisonIfPossible(config1, featureFlags);
-    assertEquals("normalization:strict_comparison", config1.getNormalizationDockerImage());
-
-    final IntegrationLauncherConfig config2 = withNormalizationVersion("0.2.26");
-    NormalizationActivityImpl.activateStrictNormalizationComparisonIfPossible(config2, featureFlags);
-    assertEquals("normalization:0.2.26", config2.getNormalizationDockerImage());
+    final IntegrationLauncherConfig config = withNormalizationVersion("0.2.25");
+    NormalizationActivityImpl.replaceNormalizationImageTag(config, "strict_comparison");
+    assertEquals("normalization:strict_comparison", config.getNormalizationDockerImage());
   }
 
   private IntegrationLauncherConfig withNormalizationVersion(final String version) {

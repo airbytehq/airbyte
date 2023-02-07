@@ -120,7 +120,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
       if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, input.getWorkspaceId())) {
-        activateStrictNormalizationComparisonIfPossible(destinationLauncherConfig, featureFlags);
+        replaceNormalizationImageTag(destinationLauncherConfig, featureFlags.strictComparisonNormalizationTag());
       }
 
       // Check the version of normalization
@@ -166,16 +166,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       return temporalAttemptExecution.get();
     },
         () -> context);
-  }
-
-  @VisibleForTesting
-  static void activateStrictNormalizationComparisonIfPossible(final IntegrationLauncherConfig destinationLauncherConfig,
-                                                              final FeatureFlags featureFlags) {
-    // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're
-    // trying to use a newer version of normalization
-    if (NON_STRICT_COMPARISON_IMAGE_TAG.equals(getNormalizationImageTag(destinationLauncherConfig))) {
-      replaceNormalizationImageTag(destinationLauncherConfig, featureFlags.strictComparisonNormalizationTag());
-    }
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
