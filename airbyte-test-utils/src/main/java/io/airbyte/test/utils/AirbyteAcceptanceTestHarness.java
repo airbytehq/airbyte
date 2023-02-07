@@ -68,7 +68,7 @@ import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
+import io.airbyte.test.container.AirbyteTestContainer;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.temporal.client.WorkflowClient;

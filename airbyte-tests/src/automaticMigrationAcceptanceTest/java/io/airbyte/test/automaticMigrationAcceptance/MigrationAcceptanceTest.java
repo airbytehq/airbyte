@@ -21,7 +21,7 @@ import io.airbyte.api.client.model.generated.WorkspaceRead;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
-import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
+import io.airbyte.test.container.AirbyteTestContainer;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
