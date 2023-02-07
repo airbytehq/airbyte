@@ -119,27 +119,28 @@ jobs:
       fail-fast: false
       matrix:
         connector:
-          - source-facebook-marketing
-          - source-hubspot
-          - source-google-sheets
-          - source-exchange-rates
-          - source-google-analytics-v4
-          - source-mailchimp
-          - source-zendesk-support
-          - source-stripe
-          - source-amplitude
-          - source-intercom
-          - source-google-ads
-          - source-salesforce
-          - source-google-analytics-data-api
-          - source-linkedin-ads
-          - source-bing-ads
-          - source-github
-          - source-amazon-ads
-          - source-notion
-          - source-tiktok-marketing
-          - source-google-search-console
-          - source-surveymonkey
+          - name: source-facebook-marketing
+          - name: source-hubspot
+          - name: source-google-sheets
+          - name: source-exchange-rates
+          - name: source-google-analytics-v4
+            alias: source-google-analytics-ua
+          - name: source-mailchimp
+          - name: source-zendesk-support
+          - name: source-stripe
+          - name: source-amplitude
+          - name: source-intercom
+          - name: source-google-ads
+          - name: source-salesforce
+          - name: source-google-analytics-data-api
+          - name: source-linkedin-ads
+          - name: source-bing-ads
+          - name: source-github
+          - name: source-amazon-ads
+          - name: source-notion
+          - name: source-tiktok-marketing
+          - name: source-google-search-console
+          - name: source-surveymonkey
 
     steps:
       - uses: actions/checkout@v2
@@ -171,30 +172,46 @@ jobs:
       - name: Build ${{ matrix.connector }}
         id: build
         run: |
-          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
-          docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-          docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build
+          connector_name=${{ matrix.connector.name }}
+          docker tag docker.io/airbyte/${{ matrix.connector.name }}:dev ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
+          docker push ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
 
-      - name: Push ${{ matrix.connector }} image with 'dev' and version tags
+      - name: Push ${{ matrix.connector.name }} image with 'dev' and version tags
         if: ${{ github.event_name == 'push' }}
         id: push-dev
         run: |
           source tools/lib/lib.sh
-          export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector }}/Dockerfile)
+          export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
           
-          docker pull ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-          echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:dev"
-          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:dev
-          docker push ghcr.io/estuary/${{ matrix.connector }}:dev
-          echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:$IMAGE_VERSION"
-          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
-          docker push ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
+          docker pull ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector.name }}:dev"
+          docker tag ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector.name }}:dev
+          docker push ghcr.io/estuary/${{ matrix.connector.name }}:dev
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector.name }}:$IMAGE_VERSION"
+          docker tag ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector.name }}:$IMAGE_VERSION
+          docker push ghcr.io/estuary/${{ matrix.connector.name }}:$IMAGE_VERSION
+
+      - name: Push ${{ matrix.connector.alias }} image with 'dev' and version tags
+        if: github.event_name == 'push' && matrix.connector.alias
+        id: push-dev-alias
+        run: |
+          source tools/lib/lib.sh
+          export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
+          
+          docker pull ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector.alias }}:dev"
+          docker tag ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector.alias }}:dev
+          docker push ghcr.io/estuary/${{ matrix.connector.alias }}:dev
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector.alias }}:$IMAGE_VERSION"
+          docker tag ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector.alias }}:$IMAGE_VERSION
+          docker push ghcr.io/estuary/${{ matrix.connector.alias }}:$IMAGE_VERSION
 
       - name: Install psql
         if: ${{ github.event_name == 'push' }}
         run: sudo apt install postgresql-client
 
-      - name: Refresh connector tags for ${{ matrix.connector }}
+      - name: Refresh connector tags for ${{ matrix.connector.name }}
         if: ${{ github.event_name == 'push' }}
         env:
           PGHOST: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_HOST }}
@@ -207,6 +224,23 @@ jobs:
           echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
                   WHERE connector_id IN (
                     SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector }}'
+                  )
+                  AND
+                  image_tag IN (':$VERSION', ':dev');" | psql
+
+      - name: Refresh connector tags for ${{ matrix.connector.alias }}
+        if: github.event_name == 'push' && matrix.connector.alias
+        env:
+          PGHOST: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_HOST }}
+          PGUSER: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_USER }}
+          PGPASSWORD: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_PASSWORD }}
+          PGDATABASE: ${{ secrets.POSTGRES_CONNECTOR_REFRESH_DATABASE }}
+        run: |
+          source tools/lib/lib.sh
+          export VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile)
+          echo "UPDATE connector_tags SET job_status='{\"type\": \"queued\"}'
+                  WHERE connector_id IN (
+                    SELECT id FROM connectors WHERE image_name='ghcr.io/estuary/${{ matrix.connector.alias }}'
                   )
                   AND
                   image_tag IN (':$VERSION', ':dev');" | psql
