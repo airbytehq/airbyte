@@ -19,7 +19,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
@@ -89,7 +88,7 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     when(processFactory.create(NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
-        DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), false, false, files, null,
+        getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), false, false, files, null,
         workerConfigs.getResourceRequirements(),
         null,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
@@ -117,7 +116,7 @@ class DefaultNormalizationRunnerTest {
   @Test
   void test() throws Exception {
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+        new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
 
     when(process.exitValue()).thenReturn(0);
 
@@ -128,7 +127,7 @@ class DefaultNormalizationRunnerTest {
   void testLog() throws Exception {
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+        new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
 
     when(process.exitValue()).thenReturn(0);
 
@@ -150,7 +149,7 @@ class DefaultNormalizationRunnerTest {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+        new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
     runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements());
     runner.close();
 
@@ -162,7 +161,7 @@ class DefaultNormalizationRunnerTest {
     when(process.exitValue()).thenReturn(1);
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+        new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     verify(process).waitFor();
@@ -182,8 +181,8 @@ class DefaultNormalizationRunnerTest {
                                     """.replace("\n", "");
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(errorTraceString.getBytes(StandardCharsets.UTF_8)));
 
-    final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG),
+        INTEGRATION_TYPE);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
@@ -209,7 +208,7 @@ class DefaultNormalizationRunnerTest {
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+        new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
@@ -230,7 +229,7 @@ class DefaultNormalizationRunnerTest {
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
 
     final NormalizationRunner runner =
-        new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
+        new DefaultNormalizationRunner(processFactory, getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), INTEGRATION_TYPE);
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
@@ -238,6 +237,10 @@ class DefaultNormalizationRunnerTest {
     verify(process).waitFor();
 
     assertThrows(WorkerException.class, runner::close);
+  }
+
+  static String getTaggedImageName(final String repository, final String tag) {
+    return repository + ":" + tag;
   }
 
 }

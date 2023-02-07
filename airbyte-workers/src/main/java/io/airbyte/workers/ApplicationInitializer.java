@@ -142,6 +142,12 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private String workspaceRoot;
   @Value("${airbyte.data.sync.task-queue}")
   private String syncTaskQueue;
+
+  @Value("${airbyte.data.check.task-queue}")
+  private String checkTaskQueue;
+
+  @Value("${airbyte.data.discover.task-queue}")
+  private String discoverTaskQueue;
   @Inject
   private Environment environment;
 
@@ -247,17 +253,20 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
   private void registerCheckConnection(final WorkerFactory factory,
                                        final MaxWorkersConfig maxWorkersConfig) {
-    final Worker checkConnectionWorker =
-        factory.newWorker(TemporalJobType.CHECK_CONNECTION.name(),
-            getWorkerOptions(maxWorkersConfig.getMaxCheckWorkers()));
-    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
-        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
-    checkConnectionWorker
-        .registerWorkflowImplementationTypes(options,
-            temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
-    checkConnectionWorker.registerActivitiesImplementations(
-        checkConnectionActivities.orElseThrow().toArray(new Object[] {}));
-    log.info("Check Connection Workflow registered.");
+    final Set<String> taskQueues = getCheckTaskQueue();
+    for (final String taskQueue : taskQueues) {
+      final Worker checkConnectionWorker =
+          factory.newWorker(taskQueue,
+              getWorkerOptions(maxWorkersConfig.getMaxCheckWorkers()));
+      final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+          .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+      checkConnectionWorker
+          .registerWorkflowImplementationTypes(options,
+              temporalProxyHelper.proxyWorkflowClass(CheckConnectionWorkflowImpl.class));
+      checkConnectionWorker.registerActivitiesImplementations(
+          checkConnectionActivities.orElseThrow().toArray(new Object[] {}));
+      log.info("Check Connection Workflow registered.");
+    }
   }
 
   private void registerConnectionManager(final WorkerFactory factory,
@@ -277,17 +286,20 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
   private void registerDiscover(final WorkerFactory factory,
                                 final MaxWorkersConfig maxWorkersConfig) {
-    final Worker discoverWorker =
-        factory.newWorker(TemporalJobType.DISCOVER_SCHEMA.name(),
-            getWorkerOptions(maxWorkersConfig.getMaxDiscoverWorkers()));
-    final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
-        .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
-    discoverWorker
-        .registerWorkflowImplementationTypes(options,
-            temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
-    discoverWorker.registerActivitiesImplementations(
-        discoverActivities.orElseThrow().toArray(new Object[] {}));
-    log.info("Discover Workflow registered.");
+    final Set<String> taskQueues = getDiscoverTaskQueue();
+    for (final String taskQueue : taskQueues) {
+      final Worker discoverWorker =
+          factory.newWorker(taskQueue,
+              getWorkerOptions(maxWorkersConfig.getMaxDiscoverWorkers()));
+      final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+          .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+      discoverWorker
+          .registerWorkflowImplementationTypes(options,
+              temporalProxyHelper.proxyWorkflowClass(DiscoverCatalogWorkflowImpl.class));
+      discoverWorker.registerActivitiesImplementations(
+          discoverActivities.orElseThrow().toArray(new Object[] {}));
+      log.info("Discover Workflow registered.");
+    }
   }
 
   private void registerGetSpec(final WorkerFactory factory,
@@ -364,6 +376,30 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       return Set.of();
     }
     return Arrays.stream(syncTaskQueue.split(",")).collect(Collectors.toSet());
+  }
+
+  /**
+   * Retrieve and parse the sync workflow task queue configuration.
+   *
+   * @return A set of Temporal task queues for the sync workflow.
+   */
+  private Set<String> getCheckTaskQueue() {
+    if (StringUtils.isEmpty(checkTaskQueue)) {
+      return Set.of();
+    }
+    return Arrays.stream(checkTaskQueue.split(",")).collect(Collectors.toSet());
+  }
+
+  /**
+   * Retrieve and parse the sync workflow task queue configuration.
+   *
+   * @return A set of Temporal task queues for the sync workflow.
+   */
+  private Set<String> getDiscoverTaskQueue() {
+    if (StringUtils.isEmpty(discoverTaskQueue)) {
+      return Set.of();
+    }
+    return Arrays.stream(discoverTaskQueue.split(",")).collect(Collectors.toSet());
   }
 
 }

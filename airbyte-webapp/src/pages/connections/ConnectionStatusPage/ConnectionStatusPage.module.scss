@@ -1,4 +1,3 @@
-@use "scss/colors";
 @use "scss/variables";
 
 .title {
@@ -6,29 +5,12 @@
   justify-content: space-between;
   flex-direction: row;
   align-items: center;
+  min-height: 32px;
 }
 
 .actions {
   display: flex;
-
-  .resetButton,
-  .syncButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .resetButton {
-    margin-right: variables.$spacing-md;
-  }
-
-  .syncButton {
-    .iconRotate {
-      display: flex;
-      margin-right: 12px;
-      align-items: center;
-    }
-  }
+  gap: variables.$spacing-md;
 }
 
 .footer {
