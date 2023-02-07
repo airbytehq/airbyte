@@ -22,6 +22,7 @@ export interface ToastProps {
   onAction?: () => void;
   actionBtnText?: string;
   onClose?: () => void;
+  "data-testid"?: string;
 }
 
 const ICON_MAPPING = {
@@ -38,9 +39,16 @@ const STYLES_BY_TYPE: Readonly<Record<ToastType, string>> = {
   [ToastType.INFO]: styles.info,
 };
 
-export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, actionBtnText, onClose, text }) => {
+export const Toast: React.FC<ToastProps> = ({
+  type = ToastType.INFO,
+  onAction,
+  actionBtnText,
+  onClose,
+  text,
+  "data-testid": testId,
+}) => {
   return (
-    <div className={classNames(styles.toastContainer, STYLES_BY_TYPE[type])}>
+    <div className={classNames(styles.toastContainer, STYLES_BY_TYPE[type])} data-testid={testId}>
       <div className={classNames(styles.iconContainer)}>
         <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
       </div>
