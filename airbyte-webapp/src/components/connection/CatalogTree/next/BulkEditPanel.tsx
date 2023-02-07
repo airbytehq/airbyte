@@ -66,7 +66,7 @@ export const getAvailableSyncModesOptions = (
   syncModes?: DestinationSyncMode[]
 ): SyncModeOption[] =>
   SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
-    const supportableModes = intersection(nodes.flatMap((n) => n.stream?.supportedSyncModes));
+    const supportableModes = intersection(...nodes.map((n) => n.stream?.supportedSyncModes));
     return supportableModes.includes(syncMode) && syncModes?.includes(destinationSyncMode);
   }).map(([syncMode, destinationSyncMode]) => ({
     value: { syncMode, destinationSyncMode },

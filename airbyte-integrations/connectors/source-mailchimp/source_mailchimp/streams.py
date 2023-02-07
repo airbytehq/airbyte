@@ -55,7 +55,6 @@ class MailChimpStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info(f"Parsing response for stream {self.name}")
         response_json = response.json()
         yield from response_json[self.data_field]
 
@@ -98,13 +97,11 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        self.logger.info(f"Slicing stream: {self.name}")
         slice_ = {}
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
         if cursor_value:
             slice_[self.filter_field] = cursor_value
-        self.logger.info(f"Yielding slice {slice_}")
         yield slice_
 
     def request_params(self, stream_state=None, stream_slice=None, **kwargs):
@@ -113,7 +110,6 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
-        self.logger.info(f"Request params are {params}")
         return params
 
 
@@ -148,20 +144,16 @@ class EmailActivity(IncrementalMailChimpStream):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         stream_state = stream_state or {}
-        self.logger.info(f"Slicing the stream: {self.name}")
         if self.campaign_id:
             # this is a workaround to speed up SATs and enable incremental tests
             campaigns = [{"id": self.campaign_id}]
         else:
-            self.logger.info("Reading campaigns")
             campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
-        self.logger.info("Starting for loop to slice the stream")
         for campaign in campaigns:
             slice_ = {"campaign_id": campaign["id"]}
             cursor_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
             if cursor_value:
                 slice_[self.filter_field] = cursor_value
-            self.logger.info(f"Yielding slice {slice_}")
             yield slice_
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -187,7 +179,6 @@ class EmailActivity(IncrementalMailChimpStream):
         return current_stream_state
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.logger.info(f"Parsing response for stream {self.name}")
         response_json = response.json()
         # transform before save
         # [{'campaign_id', 'list_id', 'list_is_active', 'email_id', 'email_address', 'activity[array[object]]', '_links'}] ->
@@ -196,4 +187,3 @@ class EmailActivity(IncrementalMailChimpStream):
         for item in data:
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
-        self.logger.info("Parsed response")

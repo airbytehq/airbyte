@@ -69,7 +69,11 @@ class CatalogProcessor:
             )
         for stream_processor in stream_processors:
             # MySQL table names need to be manually truncated, because it does not do it automatically
-            truncate = self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB
+            truncate = (
+                self.destination_type == DestinationType.MYSQL
+                or self.destination_type == DestinationType.TIDB
+                or self.destination_type == DestinationType.DUCKDB
+            )
             raw_table_name = self.name_transformer.normalize_table_name(f"_airbyte_raw_{stream_processor.stream_name}", truncate=truncate)
             add_table_to_sources(schema_to_source_tables, stream_processor.schema, raw_table_name)
 
@@ -116,7 +120,11 @@ class CatalogProcessor:
 
             stream_name = get_field(stream_config, "name", f"Invalid Stream: 'name' is not defined in stream: {str(stream_config)}")
             # MySQL table names need to be manually truncated, because it does not do it automatically
-            truncate = destination_type == DestinationType.MYSQL or destination_type == DestinationType.TIDB
+            truncate = (
+                destination_type == DestinationType.MYSQL
+                or destination_type == DestinationType.TIDB
+                or destination_type == DestinationType.DUCKDB
+            )
             raw_table_name = name_transformer.normalize_table_name(f"_airbyte_raw_{stream_name}", truncate=truncate)
 
             source_sync_mode = get_source_sync_mode(configured_stream, stream_name)
@@ -135,17 +143,7 @@ class CatalogProcessor:
                 primary_key = get_field(configured_stream, "primary_key", f"Undefined primary key for stream {stream_name}")
 
             message = f"'json_schema'.'properties' are not defined for stream {stream_name}"
-            stream_schema = get_field(stream_config, "json_schema", f"'json_schema' is not defined for stream {stream_name}")
-            if "properties" in stream_schema:
-                properties = get_field(stream_schema, "properties", message)
-            elif "oneOf" in stream_schema:
-                options = list(filter(lambda option: "properties" in option, stream_schema["oneOf"]))
-                if len(options) == 0:
-                    raise KeyError(f"Stream {stream_name} does not have any properties")
-                # If there are multiple oneOf options, just pick the first one - we don't really support oneOf to begin with
-                properties = options[0]["properties"]
-            else:
-                raise KeyError(f"Stream {stream_name} does not have any properties and no oneOf option with properties")
+            properties = get_field(get_field(stream_config, "json_schema", message), "properties", message)
 
             from_table = dbt_macro.Source(schema_name, raw_table_name)
 

@@ -443,3 +443,15 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
+- name: DuckDB
+  destinationDefinitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
+  dockerRepository: airbyte/destination-duckdb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/duckdb
+  icon: duckdb.svg
+  normalizationConfig:
+    normalizationRepository: airbyte/normalization-duckdb
+    normalizationTag: 0.2.25
+    normalizationIntegrationType: duckdb
+  supportsDbt: true
+  releaseStage: alpha
