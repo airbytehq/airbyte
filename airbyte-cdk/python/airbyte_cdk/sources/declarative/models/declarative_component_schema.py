@@ -422,9 +422,8 @@ class CompositeErrorHandler(BaseModel):
 
 class HttpRequester(BaseModel):
     type: Literal["HttpRequester"]
-    name: str
-    path: str
-    url_base: str
+    path: str = Field(..., description="The specific endpoint to fetch data from for a resource.")
+    url_base: str = Field(..., description="The root of the API source.")
     authenticator: Optional[
         Union[
             ApiKeyAuthenticator,
@@ -435,9 +434,17 @@ class HttpRequester(BaseModel):
             NoAuth,
             SessionTokenAuthenticator,
         ]
-    ] = None
-    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = None
-    http_method: Optional[Union[str, HttpMethodEnum]] = "GET"
+    ] = Field(
+        None,
+        description="Authenticator component that defines how to authenticate to the source.",
+    )
+    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = Field(
+        None, description="Error handler component that defines how to handle errors."
+    )
+    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
+        "GET",
+        description="The HTTP method used to fetch data from the source (can be GET or POST).",
+    )
     request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
         None,
         description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
@@ -478,9 +485,8 @@ class DeclarativeStream(BaseModel):
     retriever: Union[CustomRetriever, SimpleRetriever]
     incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = None
     name: Optional[str] = ""
-    primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
+    primary_key: Optional[PrimaryKey] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
-    stream_cursor_field: Optional[Union[str, List[str]]] = None
     transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -496,10 +502,18 @@ class ParentStreamConfig(BaseModel):
 
 class SimpleRetriever(BaseModel):
     type: Literal["SimpleRetriever"]
-    record_selector: RecordSelector
-    requester: Union[CustomRequester, HttpRequester]
-    name: Optional[str] = ""
-    paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
+    record_selector: RecordSelector = Field(
+        ...,
+        description="Component that describes how to extract records from a HTTP response.",
+    )
+    requester: Union[CustomRequester, HttpRequester] = Field(
+        ...,
+        description="Requester component that describes how to prepare HTTP requests to send to the source API.",
+    )
+    paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
+        None,
+        description="Paginator component that describes how to navigate through the API's pages.",
+    )
     primary_key: Optional[PrimaryKey] = None
     partition_router: Optional[
         Union[
@@ -509,7 +523,10 @@ class SimpleRetriever(BaseModel):
             SubstreamSlicer,
             List[Union[CustomStreamSlicer, ListStreamSlicer, SingleSlice, SubstreamSlicer]],
         ]
-    ] = []
+    ] = Field(
+        [],
+        description="StreamSlicer component that describes how to partition the stream allowing for querying data from multiple locations",
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 

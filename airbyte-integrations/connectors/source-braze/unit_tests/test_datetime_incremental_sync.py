@@ -24,11 +24,11 @@ def test_datetime_slicer():
         cursor_granularity="P1D",
         config={},
         parameters={},
-        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, parameters={})
+        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, parameters={}),
     )
     expected_slices = [
-        {'start_time': '2022-12-01', 'end_time': '2022-12-03', 'step': 2},
-        {'start_time': '2022-12-04', 'end_time': '2022-12-06', 'step': 3},
-        {'start_time': '2022-12-07', 'end_time': '2022-12-08', 'step': 2}
+        {"start_time": "2022-12-01", "end_time": "2022-12-03", "step": 2},
+        {"start_time": "2022-12-04", "end_time": "2022-12-06", "step": 3},
+        {"start_time": "2022-12-07", "end_time": "2022-12-08", "step": 2},
     ]
     assert slicer.stream_slices(SyncMode.incremental, stream_state={}) == expected_slices

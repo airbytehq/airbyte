@@ -114,7 +114,6 @@ definitions:
       $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
-    stream_cursor_field: "time"
     $parameters:
       name: "kpi_daily_new_users"
       path: "/kpi/new_users/data_series"
@@ -123,7 +122,6 @@ definitions:
       $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
-    stream_cursor_field: "time"
     $parameters:
       name: "kpi_daily_active_users"
       path: "/kpi/dau/data_series"
@@ -132,7 +130,6 @@ definitions:
       $ref: "#/definitions/datetime_100d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
-    stream_cursor_field: "time"
     $parameters:
       name: "kpi_daily_app_uninstalls"
       path: "/kpi/uninstalls/data_series"
@@ -157,7 +154,6 @@ definitions:
         fields:
           - path: ["campaign_id"]
             value: "{{ stream_slice.campaign_id }}"
-    stream_cursor_field: "time"
   canvases_analytics_substream_config:
     incremental_sync:
       $ref: "#/definitions/datetime_14d_incremental_sync"
@@ -180,7 +176,6 @@ definitions:
         fields:
           - path: ["canvas_id"]
             value: "{{ stream_slice.canvas_id }}"
-    stream_cursor_field: "time"
   cards_analytics_substream_config:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -200,7 +195,6 @@ definitions:
         fields:
           - path: ["card_id"]
             value: "{{ stream_slice.card_id }}"
-    stream_cursor_field: "time"
   segments_analytics_substream_config:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -220,7 +214,6 @@ definitions:
         fields:
           - path: ["segment_id"]
             value: "{{ stream_slice.segment_id }}"
-    stream_cursor_field: "time"
   events_analytics_substream_config:
     incremental_sync:
       $ref: "#/definitions/datetime_100d_incremental_sync"
@@ -244,7 +237,6 @@ definitions:
         fields:
           - path: ["event_id"]
             value: "{{ stream_slice.event }}"
-    stream_cursor_field: "time"
 
   campaigns_analytics_stream:
     $ref: "#/definitions/campaigns_analytics_substream_config"

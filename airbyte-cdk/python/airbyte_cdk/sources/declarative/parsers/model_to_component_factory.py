@@ -418,7 +418,13 @@ class ModelToComponentFactory:
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
         # the factory only support passing arguments to the component constructors, whereas this performs a merge of all slicers into one.
         combined_slicers = self._merge_stream_slicers(model=model, config=config)
-        retriever = self._create_component_from_model(model=model.retriever, config=config, stream_slicer=combined_slicers)
+
+        primary_key = model.primary_key.__root__ if model.primary_key else None
+        retriever = self._create_component_from_model(
+            model=model.retriever, config=config, name=model.name, primary_key=primary_key, stream_slicer=combined_slicers
+        )
+
+        cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
@@ -434,10 +440,10 @@ class ModelToComponentFactory:
                 transformations.append(self._create_component_from_model(model=transformation_model, config=config))
         return DeclarativeStream(
             name=model.name,
-            primary_key=model.primary_key,
+            primary_key=primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
-            stream_cursor_field=model.stream_cursor_field or [],
+            stream_cursor_field=cursor_field or [],
             transformations=transformations,
             config=config,
             parameters={},
@@ -527,7 +533,7 @@ class ModelToComponentFactory:
     def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
         return ExponentialBackoffStrategy(factor=model.factor, parameters=model.parameters, config=config)
 
-    def create_http_requester(self, model: HttpRequesterModel, config: Config, **kwargs) -> HttpRequester:
+    def create_http_requester(self, model: HttpRequesterModel, config: Config, *, name: str) -> HttpRequester:
         authenticator = self._create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
         error_handler = (
             self._create_component_from_model(model=model.error_handler, config=config)
@@ -545,7 +551,7 @@ class ModelToComponentFactory:
         )
 
         return HttpRequester(
-            name=model.name,
+            name=name,
             url_base=model.url_base,
             path=model.path,
             authenticator=authenticator,
@@ -656,6 +662,7 @@ class ModelToComponentFactory:
             request_option=request_option,
             stream=declarative_stream,
             stream_slice_field=model.stream_slice_field,
+            config=config,
             parameters=model.parameters,
         )
 
@@ -694,9 +701,15 @@ class ModelToComponentFactory:
         )
 
     def create_simple_retriever(
-        self, model: SimpleRetrieverModel, config: Config, *, stream_slicer: Optional[StreamSlicer]
+        self,
+        model: SimpleRetrieverModel,
+        config: Config,
+        *,
+        name: str,
+        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        stream_slicer: Optional[StreamSlicer],
     ) -> SimpleRetriever:
-        requester = self._create_component_from_model(model=model.requester, config=config)
+        requester = self._create_component_from_model(model=model.requester, config=config, name=name)
         record_selector = self._create_component_from_model(model=model.record_selector, config=config)
         url_base = model.requester.url_base if hasattr(model.requester, "url_base") else requester.get_url_base()
         paginator = (
@@ -707,9 +720,9 @@ class ModelToComponentFactory:
 
         if self._limit_slices_fetched:
             return SimpleRetrieverTestReadDecorator(
-                name=model.name,
+                name=name,
                 paginator=paginator,
-                primary_key=model.primary_key.__root__ if model.primary_key else None,
+                primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
                 stream_slicer=stream_slicer or SingleSlice(parameters={}),
@@ -718,9 +731,9 @@ class ModelToComponentFactory:
                 parameters=model.parameters,
             )
         return SimpleRetriever(
-            name=model.name,
+            name=name,
             paginator=paginator,
-            primary_key=model.primary_key.__root__ if model.primary_key else None,
+            primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
             stream_slicer=stream_slicer or SingleSlice(parameters={}),
@@ -746,7 +759,7 @@ class ModelToComponentFactory:
                 ]
             )
 
-        return SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters=model.parameters)
+        return SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:

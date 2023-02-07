@@ -8,7 +8,6 @@ definitions:
       field_path: ["{{ parameters['data_field'] }}"]
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
@@ -17,7 +16,6 @@ definitions:
     type: SimpleRetriever
     $parameters:
       url_base: "https://api.zenloop.com/v1/"
-    name: "{{ parameters['name'] }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
@@ -39,7 +37,6 @@ definitions:
         $ref: "#/definitions/requester"
   incremental_base_stream:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "inserted_at"
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
     retriever:

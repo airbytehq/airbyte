@@ -55,8 +55,6 @@ definitions:
           field_name: "cursor"
 
   base_incremental_stream:
-    $parameters:
-      stream_cursor_field: "created_at"
     incremental_sync:
       type: DatetimeBasedCursor
       start_datetime:
@@ -94,7 +92,6 @@ definitions:
           inject_into: "body_json"
   base_catalog_objects_stream:
     $ref: "#/definitions/base_incremental_stream"
-    stream_cursor_field: "updated_at"
     $parameters:
       primary_key: "id"
       path: "/catalog/search"
@@ -271,6 +268,7 @@ definitions:
         request_body_json:
           limit: "{{ 500 }}"
       partition_router:
+        type: CustomStreamSlicer
         class_name: source_square.components.SquareSubstreamSlicer
         start_datetime:
           datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"

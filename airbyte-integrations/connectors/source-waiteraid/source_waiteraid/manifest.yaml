@@ -26,7 +26,6 @@ definitions:
     $parameters:
       name: "booking"
       path: "/wa-api/searchBooking"
-      stream_cursor_field: "date"
 
 streams:
   - "#/definitions/booking_stream"

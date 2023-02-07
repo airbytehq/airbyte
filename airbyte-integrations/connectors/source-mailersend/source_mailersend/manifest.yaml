@@ -21,7 +21,7 @@ definitions:
       datetime: "{{ now_utc().strftime('%s') }}"
       datetime_format: "%s"
     step: "P1D"
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: "created_at"
     start_time_option:
       field_name: "date_from"
       inject_into: "request_parameter"
@@ -56,7 +56,6 @@ definitions:
       name: "activity"
       primary_key: "id"
       path: "/activity/{{ config['domain_id'] }}"
-      stream_cursor_field: "created_at"
 
 streams:
   - "#/definitions/activity_stream"

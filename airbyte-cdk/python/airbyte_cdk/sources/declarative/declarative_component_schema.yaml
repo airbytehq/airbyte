@@ -245,6 +245,7 @@ definitions:
     required:
       - type
       - class_name
+      - cursor_field
     properties:
       type:
         type: string
@@ -252,6 +253,9 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
+      cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
+        type: string
       $parameters:
         type: object
         additionalProperties: true
@@ -479,29 +483,13 @@ definitions:
         default: ""
       primary_key:
         definition: The primary key of the stream
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              type: string
-          - type: array
-            items:
-              type: array
-              items:
-                type: string
+        "$ref": "#/definitions/PrimaryKey"
         default: ""
       schema_loader:
         definition: The schema loader used to retrieve the schema for the current stream
         anyOf:
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
-      stream_cursor_field:
-        definition: The field of the records being read that will be used during checkpointing
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              - type: string
       transformations:
         definition: A list of transformations to be applied to each output record in the
         type: array
@@ -607,20 +595,20 @@ definitions:
     type: object
     required:
       - type
-      - name
       - path
       - url_base
     properties:
       type:
         type: string
         enum: [HttpRequester]
-      name:
-        type: string
       path:
+        description: The specific endpoint to fetch data from for a resource.
         type: string
       url_base:
+        description: The root of the API source.
         type: string
       authenticator:
+        description: Authenticator component that defines how to authenticate to the source.
         anyOf:
           - "$ref": "#/definitions/ApiKeyAuthenticator"
           - "$ref": "#/definitions/BasicHttpAuthenticator"
@@ -630,11 +618,13 @@ definitions:
           - "$ref": "#/definitions/NoAuth"
           - "$ref": "#/definitions/SessionTokenAuthenticator"
       error_handler:
+        description: Error handler component that defines how to handle errors.
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
           - "$ref": "#/definitions/CustomErrorHandler"
           - "$ref": "#/definitions/CompositeErrorHandler"
       http_method:
+        description: The HTTP method used to fetch data from the source (can be GET or POST).
         anyOf:
           - type: string
           - type: string
@@ -997,15 +987,15 @@ definitions:
         type: string
         enum: [SimpleRetriever]
       record_selector:
+        description: Component that describes how to extract records from a HTTP response.
         "$ref": "#/definitions/RecordSelector"
       requester:
+        description: Requester component that describes how to prepare HTTP requests to send to the source API.
         anyOf:
           - "$ref": "#/definitions/CustomRequester"
           - "$ref": "#/definitions/HttpRequester"
-      name:
-        type: string
-        default: ""
       paginator:
+        description: Paginator component that describes how to navigate through the API's pages.
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
@@ -1013,6 +1003,7 @@ definitions:
         "$ref": "#/definitions/PrimaryKey"
       partition_router:
         default: []
+        description: StreamSlicer component that describes how to partition the stream allowing for querying data from multiple locations
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"

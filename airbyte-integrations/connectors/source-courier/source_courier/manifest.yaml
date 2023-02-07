@@ -20,7 +20,6 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "https://api.courier.com"
     http_method: "GET"
     authenticator:
@@ -42,8 +41,6 @@ definitions:
 
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "#/definitions/results_selector"
 

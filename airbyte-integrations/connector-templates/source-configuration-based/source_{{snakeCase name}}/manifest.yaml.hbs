@@ -27,9 +27,9 @@ definitions:
       $ref: "#/definitions/retriever"
   customers_stream:
     $ref: "#/definitions/base_stream"
+    name: "customers"
+    primary_key: "id"
     $parameters:
-      name: "customers"
-      primary_key: "id"
       path: "/example"
 
 streams:
