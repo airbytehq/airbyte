@@ -12,7 +12,7 @@ import java.util.List;
 
 public class SyncOutputProvider {
 
-  public static StandardSyncSummary EMPTY_FAILED_SYNC = new StandardSyncSummary()
+  public final static StandardSyncSummary EMPTY_FAILED_SYNC = new StandardSyncSummary()
       .withStatus(StandardSyncSummary.ReplicationStatus.FAILED)
       .withStartTime(System.currentTimeMillis())
       .withEndTime(System.currentTimeMillis())
