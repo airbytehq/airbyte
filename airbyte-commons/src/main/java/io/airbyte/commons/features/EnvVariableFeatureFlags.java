@@ -23,6 +23,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   public static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
+  public static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
 
   @Override
   public boolean autoDisablesFailingConnections() {
@@ -69,6 +70,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public String strictComparisonNormalizationWorkspaces() {
     return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "", (arg) -> arg);
+  }
+
+  @Override
+  public String strictComparisonNormalizationTag() {
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
