@@ -30,6 +30,13 @@ class FeatureFlagHelperTest {
   }
 
   @Test
+  void isFieldSelectionEnabledForNullWorkspaceWithEmptyString() {
+    when(featureFlags.fieldSelectionWorkspaces()).thenReturn("");
+
+    assertFalse(FeatureFlagHelper.isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, null, null));
+  }
+
+  @Test
   void isFieldSelectionEnabledForWorkspaceWithSpaceString() {
     when(featureFlags.fieldSelectionWorkspaces()).thenReturn(" ");
 
