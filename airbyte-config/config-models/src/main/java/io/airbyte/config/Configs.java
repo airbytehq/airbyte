@@ -335,6 +335,13 @@ public interface Configs {
   String getOtelCollectorEndpoint();
 
   /**
+   * If using a LaunchDarkly feature flag client, this API key will be used.
+   *
+   * @return LaunchDarkly API key as a string.
+   */
+  String getLaunchDarklyKey();
+
+  /**
    * Defines a default map of environment variables to use for any launched job containers. The
    * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
    * an empty map.

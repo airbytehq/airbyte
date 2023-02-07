@@ -30,9 +30,15 @@ The connector builder UI is bundled as part of the Airbyte webapp. To run it, fo
 
 ### Visit the connector builder
 
-Once your Airbyte instance has started and you've moved past the initial setup screen, visit `http://localhost:8000/connector-builder`. On this page you will find the connector builder UI. It should look like this:
+Once your Airbyte instance has started and you've moved past the initial setup screen, visit `http://localhost:8000/connector-builder`. You will be redirected to a URL of the form `localhost:8000/workspaces/<UUID>/connector-builder` where `<UUID>` is the ID automatically generated for your workspace by Airbyte
 
-![The Connector Builder home page](./assets/lowcode_landing_screen.png)
+On this page you will find the Connector Builder landing page. It should look like this:
+
+![The Connector Builder landing page](./assets/connector_builder_landing_page.png)
+
+Here you can either upload an existing low-code YAML manifest, or start building a brand new connector in the UI. If you click `Start from scratch`, you will be redirected to `localhost:8000/workspaces/<UUID>/connector-builder/edit`, where you will see the following screen:
+
+![The Connector Builder blank form](./assets/connector_builder_blank_form.png)
 
 You can now use this UI to build your connector. See the [Testing Panel](#connector-builder-testing-panel) section for more information on how to use the UI to iterate on your connector.
 
