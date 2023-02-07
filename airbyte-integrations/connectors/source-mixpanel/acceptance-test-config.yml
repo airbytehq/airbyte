@@ -26,9 +26,16 @@ acceptance_tests:
         timeout_seconds: 9000
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
+          extra_fields: yes
+          exact_order: yes
+          extra_records: no
+        empty_streams:
+          - name: engage
+            bypass_reason: "floating data"
+          - name: cohort_members
+            bypass_reason: "floating data"
+          - name: revenue
+            bypass_reason: "floating data"
   full_refresh:
     tests:
       - config_path: "secrets/config_old.json"
