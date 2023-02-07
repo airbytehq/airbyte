@@ -16,7 +16,7 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
     "jsonschema~=3.2.0",
     "responses~=0.13.3",
 ]

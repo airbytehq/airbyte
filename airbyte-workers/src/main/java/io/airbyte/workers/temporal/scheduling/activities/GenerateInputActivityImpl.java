@@ -165,8 +165,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final StandardDestinationDefinition destinationDefinition =
           configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
       final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
-          ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
-              destinationDefinition.getNormalizationConfig().getNormalizationTag())
+          ? destinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":" +
+              destinationDefinition.getNormalizationConfig().getNormalizationTag()
           : null;
       final String normalizationIntegrationType =
           destinationDefinition.getNormalizationConfig() != null ? destinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()

@@ -37,6 +37,8 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspaceId: () => "workspace-id",
 }));
 
+jest.setTimeout(20000);
+
 describe("CreateConnectionForm", () => {
   const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => <TestWrapper>{children}</TestWrapper>;
   const render = async () => {

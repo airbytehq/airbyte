@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk", "bigquery_schema_generator~=1.5", "gbqschema
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(

@@ -218,7 +218,7 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
-  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("1.0.0");
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("0.3.0");
   private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN = new Version("0.0.0");
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
   private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
@@ -234,6 +234,7 @@ public class EnvConfigs implements Configs {
 
   public static final int DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = 100;
   public static final int DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = 14;
+  public static final String LAUNCHDARKLY_KEY = "LAUNCHDARKLY_KEY";
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -281,17 +282,17 @@ public class EnvConfigs implements Configs {
   }
 
   private Optional<CloudStorageConfigs> getStateStorageConfiguration() {
-    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null) {
+    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null && !getEnv(STATE_STORAGE_GCS_BUCKET_NAME).isBlank()) {
       return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
           getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
-    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null) {
+    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null && !getEnv(STATE_STORAGE_MINIO_ENDPOINT).isBlank()) {
       return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
           getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
           getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
-    } else if (getEnv(STATE_STORAGE_S3_REGION) != null) {
+    } else if (getEnv(STATE_STORAGE_S3_REGION) != null && !getEnv(STATE_STORAGE_S3_REGION).isBlank()) {
       return Optional.of(CloudStorageConfigs.s3(new S3Config(
           getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
           getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
@@ -846,6 +847,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getOtelCollectorEndpoint() {
     return getEnvOrDefault(OTEL_COLLECTOR_ENDPOINT, "");
+  }
+
+  @Override
+  public String getLaunchDarklyKey() {
+    return getEnvOrDefault(LAUNCHDARKLY_KEY, "");
   }
 
   /**

@@ -5,7 +5,7 @@
 package io.airbyte.commons.protocol.serde;
 
 import io.airbyte.commons.version.AirbyteProtocolVersion;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 import jakarta.inject.Singleton;
 
 @Singleton
