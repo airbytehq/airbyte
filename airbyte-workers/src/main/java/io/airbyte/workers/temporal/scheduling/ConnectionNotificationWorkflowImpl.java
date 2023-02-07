@@ -33,7 +33,7 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
   private ConfigFetchActivity configFetchActivity;
 
   @Override
-  public boolean sendSchemaChangeNotification(final UUID connectionId)
+  public boolean sendSchemaChangeNotification(final UUID connectionId, final String url)
       throws IOException, InterruptedException, ApiException, ConfigNotFoundException, JsonValidationException {
     final int getBreakingChangeVersion =
         Workflow.getVersion(GET_BREAKING_CHANGE_TAG, Workflow.DEFAULT_VERSION, GET_BREAKING_CHANGE_VERSION);
@@ -41,7 +41,7 @@ public class ConnectionNotificationWorkflowImpl implements ConnectionNotificatio
       final Optional<Boolean> breakingChange = configFetchActivity.getBreakingChange(connectionId);
       final Optional<SlackNotificationConfiguration> slackConfig = slackConfigActivity.fetchSlackConfiguration(connectionId);
       if (slackConfig.isPresent() && breakingChange.isPresent()) {
-        return notifySchemaChangeActivity.notifySchemaChange(connectionId, breakingChange.get(), slackConfig.get());
+        return notifySchemaChangeActivity.notifySchemaChange(connectionId, breakingChange.get(), slackConfig.get(), url);
       } else {
         return false;
       }

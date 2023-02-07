@@ -66,8 +66,9 @@ class ConnectionNotificationWorkflowTest {
         .build();
 
     mNotifySchemaChangeActivity = mock(NotifySchemaChangeActivityImpl.class);
-    when(mNotifySchemaChangeActivity.notifySchemaChange(any(UUID.class), any(boolean.class), any(SlackNotificationConfiguration.class)))
-        .thenReturn(true);
+    when(mNotifySchemaChangeActivity.notifySchemaChange(any(UUID.class), any(boolean.class), any(SlackNotificationConfiguration.class),
+        any(String.class)))
+            .thenReturn(true);
 
     mSlackConfigActivity = mock(SlackConfigActivityImpl.class);
     when(mSlackConfigActivity.fetchSlackConfiguration(any(UUID.class))).thenReturn(
@@ -100,12 +101,13 @@ class ConnectionNotificationWorkflowTest {
         client.newWorkflowStub(ConnectionNotificationWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(NOTIFICATIONS_QUEUE).build());
 
     final UUID connectionId = UUID.randomUUID();
+    final String connectionUrl = "connection_url";
 
     when(mConfigFetchActivity.getBreakingChange(connectionId)).thenReturn(Optional.of(false));
-    workflow.sendSchemaChangeNotification(connectionId);
+    workflow.sendSchemaChangeNotification(connectionId, connectionUrl);
 
     verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(UUID.class), any(boolean.class),
-        any(SlackNotificationConfiguration.class));
+        any(SlackNotificationConfiguration.class), any(String.class));
   }
 
 }

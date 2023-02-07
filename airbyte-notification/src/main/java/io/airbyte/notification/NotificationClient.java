@@ -56,7 +56,10 @@ public abstract class NotificationClient {
 
   public abstract boolean notifyFailure(String message) throws IOException, InterruptedException;
 
-  public abstract boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration config)
+  public abstract boolean notifySchemaChange(final UUID connectionId,
+                                             final boolean isBreaking,
+                                             final SlackNotificationConfiguration config,
+                                             final String url)
       throws IOException, InterruptedException;
 
   public static NotificationClient createNotificationClient(final Notification notification) {

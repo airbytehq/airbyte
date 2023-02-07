@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface NotifySchemaChangeActivity {
 
   @ActivityMethod
-  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration config)
+  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration config, String url)
       throws IOException, InterruptedException;
 
 }

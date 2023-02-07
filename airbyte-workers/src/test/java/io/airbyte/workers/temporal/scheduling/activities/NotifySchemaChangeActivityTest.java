@@ -29,10 +29,11 @@ class NotifySchemaChangeActivityTest {
   @Test
   void testNotifySchemaChange() throws IOException, InterruptedException {
     UUID connectionId = UUID.randomUUID();
+    String connectionUrl = "connection_url";
     boolean isBreaking = false;
     SlackNotificationConfiguration config = new SlackNotificationConfiguration();
-    notifySchemaChangeActivity.notifySchemaChange(connectionId, isBreaking, config);
-    verify(mNotificationClient, times(1)).notifySchemaChange(connectionId, isBreaking, config);
+    notifySchemaChangeActivity.notifySchemaChange(connectionId, isBreaking, config, connectionUrl);
+    verify(mNotificationClient, times(1)).notifySchemaChange(connectionId, isBreaking, config, connectionUrl);
   }
 
 }

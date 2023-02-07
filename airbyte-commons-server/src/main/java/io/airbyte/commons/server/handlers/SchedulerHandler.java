@@ -74,6 +74,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -108,6 +109,7 @@ public class SchedulerHandler {
   private final EventRunner eventRunner;
   private final FeatureFlags envVariableFeatureFlags;
   private final WorkflowClient workflowClient;
+  private final WebUrlHelper webUrlHelper;
 
   // TODO: Convert to be fully using micronaut
   public SchedulerHandler(final ConfigRepository configRepository,
@@ -120,7 +122,8 @@ public class SchedulerHandler {
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
                           final FeatureFlags envVariableFeatureFlags,
-                          final WorkflowClient workflowClient) {
+                          final WorkflowClient workflowClient,
+                          final WebUrlHelper webUrlHelper) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -132,7 +135,8 @@ public class SchedulerHandler {
         new JobConverter(workerEnvironment, logConfigs),
         connectionsHandler,
         envVariableFeatureFlags,
-        workflowClient);
+        workflowClient,
+        webUrlHelper);
   }
 
   @VisibleForTesting
@@ -146,7 +150,8 @@ public class SchedulerHandler {
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
                    final FeatureFlags envVariableFeatureFlags,
-                   final WorkflowClient workflowClient) {
+                   final WorkflowClient workflowClient,
+                   final WebUrlHelper webUrlHelper) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -158,6 +163,7 @@ public class SchedulerHandler {
     this.connectionsHandler = connectionsHandler;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
     this.workflowClient = workflowClient;
+    this.webUrlHelper = webUrlHelper;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -283,7 +289,7 @@ public class SchedulerHandler {
 
       if (persistedCatalogId.isSuccess() && discoverSchemaRequestBody.getConnectionId() != null) {
         // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
-        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
+        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody, source.getWorkspaceId());
       }
 
       return discoveredSchema;
@@ -407,7 +413,8 @@ public class SchedulerHandler {
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
   // containsBreakingChange parameter, and connectionStatus parameter.
   private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
-                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody,
+                                                                 final UUID workspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionNotificationWorkflow notificationWorkflow =
         workflowClient.newWorkflowStub(ConnectionNotificationWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.NOTIFY));
@@ -432,8 +439,9 @@ public class SchedulerHandler {
       updateObject.status(connectionStatus);
       connectionsHandler.updateConnection(updateObject);
       if (!diff.getTransforms().isEmpty() && connectionRead.getNotifySchemaChanges()) {
+        final String url = webUrlHelper.getConnectionUrl(workspaceId, connectionRead.getConnectionId());
         try {
-          notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId());
+          notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId(), url);
         } catch (ApiException | InterruptedException e) {
           log.error("There was an error while sending a Schema Change Notification", e);
         }

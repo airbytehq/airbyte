@@ -267,7 +267,7 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner,
         connectionsHandler,
-        envVariableFeatureFlags, workflowClient);
+        envVariableFeatureFlags, workflowClient, webUrlHelper);
 
     final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
         configs.getAirbyteProtocolVersionMax());

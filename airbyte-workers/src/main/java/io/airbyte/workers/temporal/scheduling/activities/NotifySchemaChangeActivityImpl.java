@@ -16,13 +16,13 @@ import java.util.UUID;
 public class NotifySchemaChangeActivityImpl implements NotifySchemaChangeActivity {
 
   @Override
-  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration slackConfig)
+  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration slackConfig, String url)
       throws IOException, InterruptedException {
     final Notification notification =
         new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
             .withSlackConfiguration(slackConfig);
     final SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
-    return notificationClient.notifySchemaChange(connectionId, isBreaking, slackConfig);
+    return notificationClient.notifySchemaChange(connectionId, isBreaking, slackConfig, url);
   }
 
 }

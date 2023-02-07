@@ -123,7 +123,10 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifySchemaChange(final UUID connectionId, final boolean isBreaking, final SlackNotificationConfiguration config) {
+  public boolean notifySchemaChange(final UUID connectionId,
+                                    final boolean isBreaking,
+                                    final SlackNotificationConfiguration config,
+                                    final String url) {
     throw new NotImplementedException();
   }
 
