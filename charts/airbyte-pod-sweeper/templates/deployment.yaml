@@ -5,6 +5,7 @@ metadata:
   name: {{ include "common.names.fullname" . }}-pod-sweeper
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
+    namespace: {{ .Values.namespace | default .Release.Namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
