@@ -55,6 +55,7 @@ export default defineConfig(({ mode }) => {
     ],
     // Use `REACT_APP_` as a prefix for environment variables that should be accessible from within FE code.
     envPrefix: ["REACT_APP_"],
+    clearScreen: false,
     build: {
       outDir: "build/app",
     },
