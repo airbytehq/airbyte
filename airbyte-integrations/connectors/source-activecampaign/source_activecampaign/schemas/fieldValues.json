@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "contact": {
+      "type": "string"
+    },
+    "field": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "string"
+    },
+    "udate": {
+      "type": "string"
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        }
+      }
+    },
+    "id": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    }
+  }
+}

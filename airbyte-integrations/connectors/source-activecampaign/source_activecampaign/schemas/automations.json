@@ -1,0 +1,64 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "string"
+    },
+    "mdate": {
+      "type": "string"
+    },
+    "userid": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "entered": {
+      "type": "string"
+    },
+    "exited": {
+      "type": "string"
+    },
+    "hidden": {
+      "type": "string"
+    },
+    "defaultscreenshot": {
+      "type": "string"
+    },
+    "screenshot": {
+      "type": "string"
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "campaigns": {
+          "type": "string"
+        },
+        "contactGoals": {
+          "type": "string"
+        },
+        "contactAutomations": {
+          "type": "string"
+        },
+        "blocks": {
+          "type": "string"
+        },
+        "goals": {
+          "type": "string"
+        },
+        "sms": {
+          "type": "string"
+        },
+        "sitemessages": {
+          "type": "string"
+        }
+      }
+    },
+    "id": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "properties": {
+    "contact": {
+      "type": "string"
+    },
+    "seriesid": {
+      "type": "string"
+    },
+    "startid": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "batchid": {
+      "type": "string"
+    },
+    "adddate": {
+      "type": "string"
+    },
+    "remdate": {
+      "type": "string"
+    },
+    "timespan": {
+      "type": "string"
+    },
+    "lastblock": {
+      "type": "string"
+    },
+    "lastlogid": {
+      "type": "string"
+    },
+    "lastdate": {
+      "type": "string"
+    },
+    "completedElements": {
+      "type": "string"
+    },
+    "totalElements": {
+      "type": "string"
+    },
+    "completed": {
+      "type": "integer"
+    },
+    "completeValue": {
+      "type": "integer"
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "automation": {
+          "type": "string"
+        },
+        "contact": {
+          "type": "string"
+        },
+        "contactGoals": {
+          "type": "string"
+        }
+      }
+    },
+    "id": {
+      "type": "string"
+    },
+    "automation": {
+      "type": "string"
+    }
+  }
+}

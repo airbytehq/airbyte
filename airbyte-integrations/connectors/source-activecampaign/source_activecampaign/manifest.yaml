@@ -88,6 +88,38 @@ definitions:
       primary_key: "id"
       path: "/forms"
 
+  # API Docs: https://developers.activecampaign.com/reference/list-all-automations
+  automations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "automations"
+      primary_key: "id"
+      path: "/automations"
+
+  # API Docs: https://developers.activecampaign.com/reference/list-all-contact-automations
+  contactAutomations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "contactAutomations"
+      primary_key: "id"
+      path: "/contactAutomations"
+
+  # API Docs: https://developers.activecampaign.com/reference/retrieve-fields
+  fields_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "fields"
+      primary_key: "id"
+      path: "/fields"
+
+  # API Docs: https://developers.activecampaign.com/reference/list-all-custom-field-values
+  fieldValues_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "fieldValues"
+      primary_key: "id"
+      path: "/fieldValues"
+
 streams:
   - "*ref(definitions.campaigns_stream)"
   - "*ref(definitions.contacts_stream)"
@@ -95,6 +127,10 @@ streams:
   - "*ref(definitions.deals_stream)"
   - "*ref(definitions.segments_stream)"
   - "*ref(definitions.forms_stream)"
+  - "*ref(definitions.automations_stream)"
+  - "*ref(definitions.contactAutomations_stream)"
+  - "*ref(definitions.fields_stream)"
+  - "*ref(definitions.fieldValues_stream)"
 
 check:
   stream_names: ["campaigns"]
