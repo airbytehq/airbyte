@@ -1,33 +1,15 @@
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 
 import { BarChart } from "components/ui/BarChart";
 import { Card } from "components/ui/Card";
+import { FlexContainer } from "components/ui/Flex";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetCloudWorkspaceUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
+import styles from "./CreditsUsage.module.scss";
 import UsagePerConnectionTable from "./UsagePerConnectionTable";
-
-export const ChartWrapper = styled.div`
-  width: 100%;
-  height: 260px;
-  padding: 0 50px 24px 0;
-`;
-
-const CardBlock = styled(Card)`
-  margin: 10px 0 20px;
-`;
-
-const Empty = styled.div`
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 600;
-  padding-bottom: 20px;
-`;
 
 const LegendLabels = ["value"];
 
@@ -52,7 +34,7 @@ const CreditsUsage: React.FC = () => {
   return (
     <>
       <Card title={<FormattedMessage id="credits.totalUsage" />} lightPadding>
-        <ChartWrapper>
+        <div className={styles.chartWrapper}>
           {data?.creditConsumptionByDay?.length ? (
             <BarChart
               data={chartData}
@@ -65,22 +47,22 @@ const CreditsUsage: React.FC = () => {
               })}
             />
           ) : (
-            <Empty>
+            <FlexContainer alignItems="center" justifyContent="center" className={styles.empty}>
               <FormattedMessage id="credits.noData" />
-            </Empty>
+            </FlexContainer>
           )}
-        </ChartWrapper>
+        </div>
       </Card>
 
-      <CardBlock title={<FormattedMessage id="credits.usagePerConnection" />} lightPadding>
+      <Card title={<FormattedMessage id="credits.usagePerConnection" />} lightPadding className={styles.cardBlock}>
         {data?.creditConsumptionByConnector?.length ? (
           <UsagePerConnectionTable creditConsumption={data.creditConsumptionByConnector} />
         ) : (
-          <Empty>
+          <FlexContainer alignItems="center" justifyContent="center" className={styles.empty}>
             <FormattedMessage id="credits.noData" />
-          </Empty>
+          </FlexContainer>
         )}
-      </CardBlock>
+      </Card>
     </>
   );
 };
