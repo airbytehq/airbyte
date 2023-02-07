@@ -204,7 +204,7 @@ When working on the connector builder UI and doing changes to the CDK and the we
 
 For example:
 ```
-CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_componenpnt_schema.yaml pnpm start
+CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml pnpm start
 ```
 
 ### Connector Specification Caching
