@@ -2,14 +2,18 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
+import pandas as pd
 import pendulum
 import pytest
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+from numpy import nan
+from requests import codes
 from source_sendgrid.source import SourceSendgrid
 from source_sendgrid.streams import (
     Blocks,
@@ -17,7 +21,6 @@ from source_sendgrid.streams import (
     Contacts,
     GlobalSuppressions,
     Lists,
-    Messages,
     Segments,
     SendgridStream,
     SendgridStreamIncrementalMixin,
@@ -59,21 +62,10 @@ def test_source_wrong_credentials():
     assert not status
 
 
-def test_messages_stream_request_params(mock_pendulum_now):
-    start_time = "2019-05-20T13:43:50.000Z"
-    stream = Messages(start_time)
-    state = {"last_event_time": 1558359000}
-    request_params = stream.request_params(state)
-    assert (
-        request_params
-        == "query=last_event_time%20BETWEEN%20TIMESTAMP%20%222019-05-20T13%3A30%3A00Z%22%20AND%20TIMESTAMP%20%222022-01-01T00%3A00%3A00Z%22&limit=1000"
-    )
-
-
 def test_streams():
     streams = SourceSendgrid().streams(config={"apikey": "wrong.api.key123", "start_time": FAKE_NOW_ISO_STRING})
 
-    assert len(streams) == 15
+    assert len(streams) == 14
 
 
 @patch.multiple(SendgridStreamOffsetPagination, __abstractmethods__=set())
@@ -102,7 +94,6 @@ def test_stream_state():
         [Templates, "https://api.sendgrid.com/v3/templates", []],
         [Lists, "https://api.sendgrid.com/v3/marketing/lists", []],
         [Campaigns, "https://api.sendgrid.com/v3/marketing/campaigns", []],
-        [Contacts, "https://api.sendgrid.com/v3/marketing/contacts", []],
         [Segments, "https://api.sendgrid.com/v3/marketing/segments", []],
         [Blocks, "https://api.sendgrid.com/v3/suppression/blocks", ["name", "id", "contact_count", "_metadata"]],
         [SuppressionGroupMembers, "https://api.sendgrid.com/v3/asm/suppressions", ["name", "id", "contact_count", "_metadata"]],
@@ -133,7 +124,7 @@ def test_read_records(
         [Templates, "templates"],
         [Lists, "marketing/lists"],
         [Campaigns, "marketing/campaigns"],
-        [Contacts, "marketing/contacts"],
+        [Contacts, "marketing/contacts/exports"],
         [Segments, "marketing/segments"],
         [Blocks, "suppression/blocks"],
         [SuppressionGroupMembers, "asm/suppressions"],
@@ -149,7 +140,7 @@ def test_path(stream_class, expected):
 @pytest.mark.parametrize(
     "stream_class, status, expected",
     (
-        (Messages, 400, False),
+        (Blocks, 400, False),
         (SuppressionGroupMembers, 401, False),
     ),
 )
@@ -158,3 +149,43 @@ def test_should_retry_on_permission_error(requests_mock, stream_class, status, e
     response_mock = MagicMock()
     response_mock.status_code = status
     assert stream.should_retry(response_mock) == expected
+
+
+def test_compressed_contact_response(requests_mock):
+    stream = Contacts()
+    with open(os.path.dirname(__file__)+"/compressed_response", "rb") as compressed_response:
+        url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
+        requests_mock.register_uri("POST", url, [{"json": {"id": "random_id"}, "status_code": 202}])
+        url = "https://api.sendgrid.com/v3/marketing/contacts/exports/random_id"
+        resp_bodies = [
+            {"json": {"status": "pending", "id": "random_id", "urls": []}, "status_code": 202},
+            {"json": {"status": "ready", "urls": ["https://sample_url/sample_csv.csv.gzip"]}, "status_code": 202}
+        ]
+        requests_mock.register_uri("GET", url, resp_bodies)
+        requests_mock.register_uri("GET", "https://sample_url/sample_csv.csv.gzip",
+                                   [{"body": compressed_response, "status_code": 202}])
+        recs = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        decompressed_response = pd.read_csv(os.path.dirname(__file__)+"/decompressed_response.csv", dtype=str)
+        expected_records = [{k.lower(): v for k, v in x.items()} for x in
+                            decompressed_response.replace({nan: None}).to_dict(orient="records")]
+
+        assert recs == expected_records
+
+
+def test_bad_job_response(requests_mock):
+    stream = Contacts()
+    url = "https://api.sendgrid.com/v3/marketing/contacts/exports"
+
+    requests_mock.register_uri("POST", url, [{"json": {"errors": [{"field": "field_name","message": "error message"}]},
+                                              "status_code": codes.BAD_REQUEST}])
+    with pytest.raises(Exception):
+        list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+
+def test_read_chunks_pd():
+    stream = Contacts()
+    with open("file_not_exist.csv", "w"):
+        pass
+    list(stream.read_with_chunks(path="file_not_exist.csv", file_encoding="utf-8"))
+    with pytest.raises(FileNotFoundError):
+        list(stream.read_with_chunks(path="file_not_exist.csv", file_encoding="utf-8"))

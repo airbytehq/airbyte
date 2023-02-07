@@ -14,6 +14,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -41,6 +42,10 @@ class LinkedinAdsStream(HttpStream, ABC):
     def accounts(self):
         """Property to return the list of the user Account Ids from input"""
         return ",".join(map(str, self.config.get("account_ids")))
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, **kwargs) -> str:
         """Returns the API endpoint path for stream, from `endpoint` class attribute."""

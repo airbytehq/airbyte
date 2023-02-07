@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffectOnce } from "react-use";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
@@ -8,12 +7,11 @@ import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/serv
 import { useApiHealthPoll } from "hooks/services/Health";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
-import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { RoutePaths, DestinationPaths } from "./routePaths";
 import { WorkspaceRead } from "../core/request/AirbyteClient";
+import { RoutePaths, DestinationPaths } from "./routePaths";
 
 const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
 const CreateConnectionPage = React.lazy(() => import("./connections/CreateConnectionPage"));
@@ -94,12 +92,6 @@ const RoutingWithWorkspace: React.FC<{ element?: JSX.Element }> = ({ element }) 
 };
 
 export const Routing: React.FC = () => {
-  const { search } = useLocation();
-
-  useEffectOnce(() => {
-    storeUtmFromQuery(search);
-  });
-
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
     () =>

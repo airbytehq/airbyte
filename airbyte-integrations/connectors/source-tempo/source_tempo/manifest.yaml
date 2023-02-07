@@ -8,7 +8,6 @@ definitions:
       field_path: ["results"]
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "https://api.tempo.io/4/"
     http_method: "GET"
     error_handler:
@@ -25,7 +24,6 @@ definitions:
       api_token: "{{ config['api_token'] }}"
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
@@ -58,7 +56,6 @@ definitions:
       path: "customers"
   worklogs_stream:
     $ref: "#/definitions/base_stream"
-    stream_cursor_field: "startDate"
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"

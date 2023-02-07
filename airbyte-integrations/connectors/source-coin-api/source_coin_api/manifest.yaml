@@ -33,14 +33,12 @@ definitions:
       name: "ohlcv_historical_data"
       primary_key: "time_period_start"
       path: "/ohlcv/{{ config['symbol_id'] }}/history"
-      stream_cursor_field: "time_period_start"
   trades_historical_data_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "trades_historical_data"
       primary_key: "uuid"
       path: "/trades/{{ config['symbol_id'] }}/history"
-      stream_cursor_field: "time_exchange"
   quotes_historical_data_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

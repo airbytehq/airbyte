@@ -12,35 +12,37 @@ from source_instatus.components import ListAddFields, UpdatesSubstreamPartitionR
 
 @pytest.mark.parametrize(
     ["records", "stream_slices", "expected"],
-    [pytest.param(
-        [{'id': 'some id', 'updates_ids': ['some updates_id 1', 'some updates_id 2', 'some updates_id 3']}],
-        [{'page_id': 'some page_id 1', 'parent_slice': {}}],
-        [
-            {
-                'parent_stream_update_id': 'some updates_id 1', 'updates_object_id': 'some id',
-                'parent_slice': {'page_id': 'some page_id 1', 'parent_slice': {}}
-            },
-            {
-                'parent_stream_update_id': 'some updates_id 2', 'updates_object_id': 'some id',
-                'parent_slice': {'page_id': 'some page_id 1', 'parent_slice': {}}
-            },
-            {
-                'parent_stream_update_id': 'some updates_id 3', 'updates_object_id': 'some id',
-                'parent_slice': {'page_id': 'some page_id 1', 'parent_slice': {}}
-            }
-        ]
-    )]
+    [
+        pytest.param(
+            [{"id": "some id", "updates_ids": ["some updates_id 1", "some updates_id 2", "some updates_id 3"]}],
+            [{"page_id": "some page_id 1", "parent_slice": {}}],
+            [
+                {
+                    "parent_stream_update_id": "some updates_id 1",
+                    "updates_object_id": "some id",
+                    "parent_slice": {"page_id": "some page_id 1", "parent_slice": {}},
+                },
+                {
+                    "parent_stream_update_id": "some updates_id 2",
+                    "updates_object_id": "some id",
+                    "parent_slice": {"page_id": "some page_id 1", "parent_slice": {}},
+                },
+                {
+                    "parent_stream_update_id": "some updates_id 3",
+                    "updates_object_id": "some id",
+                    "parent_slice": {"page_id": "some page_id 1", "parent_slice": {}},
+                },
+            ],
+        )
+    ],
 )
 def test_updates_substream_partition_router(records, stream_slices, expected):
     parent_stream = MagicMock()
     parent_stream.stream.read_records = MagicMock(return_value=records)
     parent_stream.stream.stream_slices = MagicMock(return_value=stream_slices)
-    parent_stream.parent_key = 'updates_ids'
+    parent_stream.parent_key = "updates_ids"
     parent_stream.partition_field = "parent_stream_update_id"
-    slicer = UpdatesSubstreamPartitionRouter(
-        parent_stream_configs=[parent_stream],
-        parameters={}
-    )
+    slicer = UpdatesSubstreamPartitionRouter(parent_stream_configs=[parent_stream], parameters={})
 
     for stream_slice, expected_slice in zip(slicer.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}), expected):
         assert stream_slice == expected_slice
@@ -48,13 +50,18 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
 
 @pytest.mark.parametrize(
     ["input_record", "field", "kwargs", "expected"],
-    [pytest.param(
-        {'id': 'some id', 'updates': [{'id': 'some update id'}, {'id': 'some update id 2'}]},
-        [(['updates_ids'], "{{ record['updates'] }}")],
-        {},
-        {'id': 'some id', 'updates': [{'id': 'some update id'}, {'id': 'some update id 2'}],
-         'updates_ids': ['some update id', 'some update id 2']}
-    )]
+    [
+        pytest.param(
+            {"id": "some id", "updates": [{"id": "some update id"}, {"id": "some update id 2"}]},
+            [(["updates_ids"], "{{ record['updates'] }}")],
+            {},
+            {
+                "id": "some id",
+                "updates": [{"id": "some update id"}, {"id": "some update id 2"}],
+                "updates_ids": ["some update id", "some update id 2"],
+            },
+        )
+    ],
 )
 def test_list_add_fields_transformer(input_record, field, kwargs, expected):
     inputs = [AddedFieldDefinition(path=v[0], value=v[1], parameters={}) for v in field]

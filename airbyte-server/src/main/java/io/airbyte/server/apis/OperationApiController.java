@@ -17,6 +17,7 @@ import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.OperatorConfiguration;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.OperationsHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
@@ -49,12 +50,14 @@ public class OperationApiController implements OperationApi {
   @Post("/create")
   @Override
   @Secured({EDITOR})
+  @SecuredWorkspace
   public OperationRead createOperation(@Body final OperationCreate operationCreate) {
     return ApiHelper.execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
   @Post("/delete")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   @Status(HttpStatus.NO_CONTENT)
   public void deleteOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
@@ -66,6 +69,7 @@ public class OperationApiController implements OperationApi {
 
   @Post("/get")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public OperationRead getOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
     return ApiHelper.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
@@ -73,6 +77,7 @@ public class OperationApiController implements OperationApi {
 
   @Post("/list")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public OperationReadList listOperationsForConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
@@ -80,6 +85,7 @@ public class OperationApiController implements OperationApi {
 
   @Post("/update")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public OperationRead updateOperation(@Body final OperationUpdate operationUpdate) {
     return ApiHelper.execute(() -> operationsHandler.updateOperation(operationUpdate));

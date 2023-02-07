@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 
 HERE = Path(__file__).parent.absolute()
-pytest_plugins = ("source_acceptance_test.plugin",)
+pytest_plugins = ("connector_acceptance_test.plugin",)
 
 
 @pytest.fixture(name="create_config", scope="session")

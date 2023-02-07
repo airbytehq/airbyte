@@ -18,9 +18,14 @@ export const EnrollLink: React.FC<PropsWithChildren<unknown>> = ({ children }) =
   );
 };
 export const InlineEnrollmentCallout: React.FC = () => {
-  const { userDidEnroll } = useFreeConnectorProgram();
+  const { userDidEnroll, enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
 
-  return userDidEnroll ? null : (
+  if (userDidEnroll || !showEnrollmentUi) {
+    return null;
+  }
+
+  return (
     <Callout variant="info" className={styles.container}>
       <Text size="sm">
         <FormattedMessage

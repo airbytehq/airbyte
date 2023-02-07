@@ -31,8 +31,6 @@ The stream object is represented in the YAML file as:
         "$ref": "#/definitions/PrimaryKey"
       retriever:
         "$ref": "#/definitions/Retriever"
-      stream_cursor_field:
-        type: string
       transformations:
         "$ref": "#/definitions/RecordTransformation"
       schema_loader:
@@ -68,16 +66,11 @@ The schema of a retriever object is:
     type: object
     additionalProperties: true
     required:
-      - name
       - requester
       - record_selector
     properties:
       "$parameters":
         "$ref": "#/definitions/$parameters"
-      name:
-        type: string
-      primary_key:
-        "$ref": "#/definitions/PrimaryKey"
       requester:
         "$ref": "#/definitions/Requester"
       record_selector:

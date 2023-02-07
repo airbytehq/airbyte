@@ -12,7 +12,7 @@ dependencies {
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'com.auth0:java-jwt:3.19.2'
     implementation libs.guava
-    implementation (libs.temporal.sdk) {
+    implementation(libs.temporal.sdk) {
         exclude module: 'guava'
     }
     implementation 'org.apache.ant:ant:1.10.10'
@@ -24,6 +24,7 @@ dependencies {
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-featureflag')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-persistence:job-persistence')

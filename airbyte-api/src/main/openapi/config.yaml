@@ -1240,7 +1240,7 @@ paths:
       description: |
         Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
         Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
-        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog
         containing the updated stream needs to be sent.
       operationId: updateConnection
       requestBody:
@@ -1883,7 +1883,7 @@ paths:
         connection along with the rest of the operationIds in the request body.
         Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
         Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
-        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog
         containing the updated stream needs to be sent.
       operationId: webBackendUpdateConnection
       requestBody:
@@ -1952,9 +1952,9 @@ paths:
         - web_backend
       description: Returns all available geographies in which a data sync can run.
       summary: |
-        Returns available geographies can be selected to run data syncs in a particular geography. 
-        The 'auto' entry indicates that the sync will be automatically assigned to a geography according 
-        to the platform default behavior. Entries other than 'auto' are two-letter country codes that 
+        Returns available geographies can be selected to run data syncs in a particular geography.
+        The 'auto' entry indicates that the sync will be automatically assigned to a geography according
+        to the platform default behavior. Entries other than 'auto' are two-letter country codes that
         follow the ISO 3166-1 alpha-2 standard.
       operationId: webBackendListGeographies
       responses:
@@ -3879,7 +3879,10 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
-          description: If this is true, the stream is selected with all of its properties.
+          description: If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not
+          type: boolean
+        suggested:
+          description: Does the connector suggest that this stream be enabled by default?
           type: boolean
         fieldSelectionEnabled:
           description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.
