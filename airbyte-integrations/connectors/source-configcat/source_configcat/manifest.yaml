@@ -34,11 +34,11 @@ definitions:
       primary_key: "productId"
       path: "/products"
   product_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/products_stream"
         parent_key: productId
-        stream_slice_field: productId
+        partition_field: productId
   tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -68,11 +68,11 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
   organization_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/organizations_stream"
         parent_key: organizationId
-        stream_slice_field: organizationId
+        partition_field: organizationId
   organization_members_stream:
     $ref: "#/definitions/base_stream"
     $parameters:

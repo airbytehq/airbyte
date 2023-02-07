@@ -70,9 +70,11 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -96,9 +98,7 @@ from airbyte_cdk.sources.declarative.stream_slicers import (
     ListStreamSlicer,
     SingleSlice,
     StreamSlicer,
-    SubstreamSlicer,
 )
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
@@ -165,7 +165,7 @@ class ModelToComponentFactory:
             SimpleRetrieverModel: self.create_simple_retriever,
             SingleSliceModel: self.create_single_slice,
             SpecModel: self.create_spec,
-            SubstreamSlicerModel: self.create_substream_slicer,
+            SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
         }
@@ -651,7 +651,7 @@ class ModelToComponentFactory:
             parent_key=model.parent_key,
             request_option=request_option,
             stream=declarative_stream,
-            stream_slice_field=model.stream_slice_field,
+            partition_field=model.partition_field,
             config=config,
             parameters=model.parameters,
         )
@@ -743,7 +743,7 @@ class ModelToComponentFactory:
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
         return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, parameters={})
 
-    def create_substream_slicer(self, model: SubstreamSlicerModel, config: Config, **kwargs) -> SubstreamSlicer:
+    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs) -> SubstreamPartitionRouter:
         parent_stream_configs = []
         if model.parent_stream_configs:
             parent_stream_configs.extend(
@@ -753,7 +753,7 @@ class ModelToComponentFactory:
                 ]
             )
 
-        return SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
+        return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:

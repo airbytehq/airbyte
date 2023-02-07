@@ -53,8 +53,8 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SimpleRetriever.record_selector": "RecordSelector",
     "SimpleRetriever.requester": "HttpRequester",
     "SimpleRetriever.partition_router": "SingleSlice",
-    # SubstreamSlicer
-    "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    # SubstreamPartitionRouter
+    "SubstreamPartitionRouter.parent_stream_configs": "ParentStreamConfig",
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
     # CustomStreamSlicer
