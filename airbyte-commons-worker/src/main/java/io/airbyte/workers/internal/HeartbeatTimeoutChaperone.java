@@ -9,12 +9,17 @@ import static java.lang.Thread.sleep;
 import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.ShouldFailSyncIfHeartbeatFailure;
 import io.airbyte.featureflag.Workspace;
+import io.airbyte.metrics.lib.MetricAttribute;
+import io.airbyte.metrics.lib.MetricClient;
+import io.airbyte.metrics.lib.MetricTags;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +44,17 @@ public class HeartbeatTimeoutChaperone {
   private final Duration timeoutCheckDuration;
   private final FeatureFlagClient featureFlagClient;
   private final UUID workspaceId;
+  private final UUID connectionId;
+  private final MetricClient metricClient;
+
+  private final AtomicBoolean hasReportToDataDog = new AtomicBoolean(false);
 
   public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
                                    final Duration timeoutCheckDuration,
                                    final FeatureFlagClient featureFlagClient,
-                                   final UUID workspaceId) {
+                                   final UUID workspaceId,
+                                   final UUID connectionId,
+                                   final MetricClient metricClient) {
     this.timeoutCheckDuration = timeoutCheckDuration;
 
     LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
@@ -51,6 +62,8 @@ public class HeartbeatTimeoutChaperone {
     this.heartbeatMonitor = heartbeatMonitor;
     this.featureFlagClient = featureFlagClient;
     this.workspaceId = workspaceId;
+    this.connectionId = connectionId;
+    this.metricClient = metricClient;
   }
 
   public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
@@ -104,6 +117,9 @@ public class HeartbeatTimeoutChaperone {
 
       // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
       if (!heartbeatMonitor.isBeating().orElse(true)) {
+        if (!hasReportToDataDog.get()) {
+          metricClient.count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1, new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
+        }
         LOGGER.error("Source has stopped heart beating.");
         if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
           return;
