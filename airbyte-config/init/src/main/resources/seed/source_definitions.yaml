@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 1.0.36
+  dockerImageTag: 1.0.43
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -61,7 +61,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.29
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -194,6 +194,14 @@
   icon: bingads.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - bingads.microsoft.com
+      - login.microsoftonline.com
+      - login.live.com
+      - login.windows-ppe.net
+      - ads.microsoft.com
+      - api.ads.microsoft.com
 - name: Braintree
   sourceDefinitionId: 63cea06f-1c75-458d-88fe-ad48c7cb27fd
   dockerRepository: airbyte/source-braintree
@@ -560,11 +568,14 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 2.0.1
+  dockerImageTag: 3.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.freshdesk.com"
 - name: Freshsales
   sourceDefinitionId: eca08d79-7b92-4065-b7f3-79c14836ebe7
   dockerRepository: airbyte/source-freshsales
@@ -709,7 +720,7 @@
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   icon: googlesearchconsole.svg
   sourceType: api
@@ -793,6 +804,9 @@
   icon: hubspot.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.hubapi.com
 - name: IP2Whois
   sourceDefinitionId: f23b7b7c-d705-49a3-9042-09add3b104a5
   dockerRepository: airbyte/source-ip2whois
@@ -900,7 +914,7 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
@@ -939,7 +953,7 @@
 - name: LinkedIn Ads
   sourceDefinitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerRepository: airbyte/source-linkedin-ads
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   icon: linkedin.svg
   sourceType: api
@@ -979,7 +993,7 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
@@ -1362,7 +1376,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.42
+  dockerImageTag: 1.0.43
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -2051,7 +2065,7 @@
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/sentry
   icon: sentry.svg
   sourceType: api
