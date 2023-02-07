@@ -28,7 +28,7 @@ In order to capture data that has been updated after creation, please run a peri
 ### Features
 
 | Feature | Supported? |
-| :--- | :--- |`
+| :--- | :--- |
 | Full Refresh Sync | Yes |
 | Incremental - Append Sync | Yes |
 | Incremental - Dedupe Sync | Yes |
