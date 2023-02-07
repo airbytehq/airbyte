@@ -76,7 +76,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
           })}
         >
           {showExperimentBanner && <SpeedyConnectionBanner />}
-          {/* todo: passing this setter feels like a weird pattern, re-evaluate */}
+          {/* todo: passing this setter feels like a weird pattern, re-evaluate... is this causing an odd render loop? */}
           <WorkspaceCreditsBanner setHasWorkspaceCreditsBanner={setHasCreditsBanner} />
           <div className={styles.dataBlock}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
