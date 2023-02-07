@@ -48,7 +48,7 @@ const CreateSourcePage: React.FC = () => {
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />
-          <Card className={styles.builderPrompt}>
+          <Card fullWidth className={styles.builderPrompt}>
             <BuilderPrompt />
           </Card>
           <CloudInviteUsersHint connectorType="source" />
