@@ -70,6 +70,10 @@
     },
     "id": {
       "type": "integer"
+    },
+    "lastModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   },
   "required": ["com.linkedin.ads.SponsoredUpdateCreativeVariables", "id"]

@@ -340,7 +340,7 @@ class AdCreativeName(Creatives):
 
     search_param = "projection"
     search_param_value = "(variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title))))))))"
-    parent_values_map = {"creative_id": "id"}
+    parent_values_map = {"creative_id": "id", "lastModified": "lastModified"}
     parent_stream = Creatives
 
     sync_mode = SyncMode.full_refresh
@@ -364,7 +364,7 @@ class AdCreativeName(Creatives):
     ) -> Iterable[Optional[Mapping[str, any]]]:
         parent = self.parent_stream(config=self.config)
         for record in parent.read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
-            return {"creative_id": record["id"]}
+            return {"creative_id": record["id"], "lastModified": record["lastModified"]}
 
     def parse_response(
         self,
@@ -375,7 +375,7 @@ class AdCreativeName(Creatives):
     ) -> Iterable[Mapping]:
         if response.json():
             result = response.json().get("variables").get("data")
-            result.update({"id": stream_slice["creative_id"]})
+            result.update({"id": stream_slice["creative_id"], "lastModified": stream_slice["lastModified"]})
             yield result
 
     def path(
