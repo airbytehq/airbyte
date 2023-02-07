@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
     "appstoreconnect==0.9.0",
-    "pyjwt==1.6.4",
+    "pyjwt==2.4.0",
     "tap-appstore @ https://github.com/airbytehq/tap-appstore/tarball/v0.2.1-airbyte",
 ]
 
