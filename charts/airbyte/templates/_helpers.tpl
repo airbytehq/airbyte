@@ -177,10 +177,14 @@ Add environment variables to configure database values
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.url" -}}
+{{- if .Values.externalDatabase.jdbcUrl -}}
+{{- .Values.externalDatabase.jdbcUrl -}}
+{{- else -}}
 {{- $host := (include "airbyte.database.host" .) -}}
 {{- $dbName := (include "airbyte.database.name" .) -}}
 {{- $port := (include "airbyte.database.port" . ) -}}
 {{- printf "jdbc:postgresql://%s:%s/%s" $host $port $dbName -}}
+{{- end -}}
 {{- end -}}
 
 {{/*
