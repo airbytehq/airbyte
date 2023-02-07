@@ -6,11 +6,14 @@ package io.airbyte.integrations.standardtest.source;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
@@ -21,7 +24,6 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -112,7 +114,10 @@ public abstract class AbstractSourceConnectorTest {
 
   private WorkerConfigs workerConfigs;
 
-  private ConfigRepository mConfigRepository;
+  private AirbyteApiClient mAirbyteApiClient;
+
+  private SourceApi mSourceApi;
+
   private ConnectorConfigUpdater mConnectorConfigUpdater;
 
   // This has to be using the protocol version of the platform in order to capture the arg
@@ -122,6 +127,9 @@ public abstract class AbstractSourceConnectorTest {
   protected AirbyteCatalog getLastPersistedCatalog() {
     return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
   }
+
+  private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
+      ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
 
   @BeforeEach
   public void setUpInternal() throws Exception {
@@ -133,7 +141,9 @@ public abstract class AbstractSourceConnectorTest {
     environment = new TestDestinationEnv(localRoot);
     setupEnvironment(environment);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    mConfigRepository = mock(ConfigRepository.class);
+    mAirbyteApiClient = mock(AirbyteApiClient.class);
+    mSourceApi = mock(SourceApi.class);
+    when(mAirbyteApiClient.getSourceApi()).thenReturn(mSourceApi);
     mConnectorConfigUpdater = mock(ConnectorConfigUpdater.class);
     processFactory = new DockerProcessFactory(
         workerConfigs,
@@ -182,13 +192,13 @@ public abstract class AbstractSourceConnectorTest {
 
   protected UUID runDiscover() throws Exception {
     final UUID toReturn = new DefaultDiscoverCatalogWorker(
-        mConfigRepository,
+        mAirbyteApiClient,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), null, false,
             new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
-    verify(mConfigRepository).writeActorCatalogFetchEvent(lastPersistedCatalog.capture(), any(), any(), any());
+    verify(mSourceApi).writeDiscoverCatalogResult(discoverWriteRequest.capture());
     return toReturn;
   }
 
