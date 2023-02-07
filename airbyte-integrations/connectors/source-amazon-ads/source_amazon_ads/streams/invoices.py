@@ -10,6 +10,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from pendulum import Date
+
 from source_amazon_ads.schemas import InvoicePayload
 from source_amazon_ads.streams.common import AmazonAdsStream
 
@@ -89,9 +90,7 @@ class Invoices(AmazonAdsStream):
         return {"count": self.page_size}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        """
-        return an object representing single record in the response
-        """
+        self._got_all_invoices = False
         invoice_summaries = response.json().get(self._invoices_payload, {}).get(self._invoice_summaries_field, [])
         if response.status_code == HTTPStatus.OK:
             invoice_list = []
