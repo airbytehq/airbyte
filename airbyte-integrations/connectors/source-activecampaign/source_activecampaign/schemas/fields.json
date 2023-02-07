@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "descript": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": "string"
+    },
+    "isrequired": {
+      "type": "string"
+    },
+    "perstag": {
+      "type": "string"
+    },
+    "defval": {
+      "type": ["null", "string"]
+    },
+    "show_in_list": {
+      "type": "string"
+    },
+    "rows": {
+      "type": "string"
+    },
+    "cols": {
+      "type": "string"
+    },
+    "visible": {
+      "type": "string"
+    },
+    "service": {
+      "type": "string"
+    },
+    "ordernum": {
+      "type": "string"
+    },
+    "cdate": {
+      "type": "string"
+    },
+    "udate": {
+      "type": "string"
+    },
+    "options": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "relations": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": "string"
+        },
+        "relations": {
+          "type": "string"
+        }
+      }
+    },
+    "id": {
+      "type": "string"
+    }
+  }
+}
