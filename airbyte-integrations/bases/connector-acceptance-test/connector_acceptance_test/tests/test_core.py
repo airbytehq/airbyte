@@ -5,8 +5,6 @@
 import json
 import logging
 import re
-
-
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
@@ -827,8 +825,6 @@ class TestBasicRead(BaseTest):
                 flags=expect_records_config,
                 detailed_logger=detailed_logger,
             )
-
-
 
     def test_airbyte_trace_message_on_failure(self, connector_config, inputs: BasicReadTestConfig, docker_runner: ConnectorRunner):
         if not inputs.expect_trace_message_on_failure:
