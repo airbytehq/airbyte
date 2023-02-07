@@ -80,7 +80,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
-      final Database database = createDatabaseInternal(config);
+      final Database database = createDatabase(config);
       for (final CheckedConsumer<Database, Exception> checkOperation : getCheckOperations(config)) {
         checkOperation.accept(database);
       }
@@ -106,7 +106,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     try {
-      final Database database = createDatabaseInternal(config);
+      final Database database = createDatabase(config);
       final List<AirbyteStream> streams = getTables(database).stream()
           .map(tableInfo -> {
             final var primaryKeys = tableInfo.getPrimaryKeys().stream()
@@ -150,7 +150,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             deserializeInitialState(state, config), catalog);
     final Instant emittedAt = Instant.now();
 
-    final Database database = createDatabaseInternal(config);
+    final Database database = createDatabase(config);
 
     final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo =
         discoverWithoutSystemTables(database)
@@ -724,13 +724,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of fields that could be used as cursors
    */
   protected abstract boolean isCursorType(DataType type);
-
-  private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
-    final Database database = createDatabase(sourceConfig);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
-    return database;
-  }
 
   /**
    * Deserializes the state represented as JSON into an object representation.
