@@ -430,6 +430,32 @@ def test_id_with_text_string(config: Mapping, client: Client):
     assert actual.get("id")
 
 
+def test_array_no_item_type(config: Mapping, client: Client):
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "arr": {"type": "array", "items": {}},
+    }}
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"arr": {"test1": "test"}}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    class_name = stream_to_class_name(stream_name)
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+    actual = get_objects(client, class_name)[0]
+    assert actual["properties"].get("arr") == json.dumps(data["arr"])
+
+
 def test_id_custom_field_name(config: Mapping, client: Client):
     # This is common scenario from mongoDB
     stream_name = "article"

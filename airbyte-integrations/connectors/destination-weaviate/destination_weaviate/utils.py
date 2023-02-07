@@ -67,7 +67,9 @@ def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Map
         for k, v in stream.stream.json_schema.get("properties").items():
             stream_schema[k] = "default"
             if "array" in v.get("type", []) and (
-                "object" in v.get("items", {}).get("type", []) or "array" in v.get("items", {}).get("type", [])
+                "object" in v.get("items", {}).get("type", []) or
+                "array" in v.get("items", {}).get("type", []) or
+                v.get("items", {}) == {}
             ):
                 stream_schema[k] = "jsonify"
             if "object" in v.get("type", []):

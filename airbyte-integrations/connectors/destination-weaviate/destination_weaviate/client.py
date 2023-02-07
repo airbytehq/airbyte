@@ -77,7 +77,7 @@ class Client:
 
     def flush(self, retries: int = 3):
         if len(self.objects_with_error) > 0 and retries == 0:
-            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys}"
+            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys()}"
             raise WeaviatePartialBatchError(error_msg)
 
         results = self.client.batch.create_objects()
