@@ -1,14 +1,11 @@
-FROM python:3.9-slim
-
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
-
+FROM airbyte/integration-base-python:dev AS builder
 WORKDIR /airbyte/integration_code
-COPY source_github ./source_github
-COPY main.py ./
+
 COPY setup.py ./
 RUN pip install .
+
+COPY main.py ./
+COPY source_github ./source_github
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
