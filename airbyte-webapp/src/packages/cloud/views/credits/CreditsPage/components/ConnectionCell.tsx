@@ -23,7 +23,7 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
   return (
     <FlexContainer justifyContent="space-between">
       <FlexItem className={styles.connectorItem}>
-        <FlexContainer direction="row">
+        <FlexContainer direction="row" alignItems="center">
           <ConnectorIcon icon={sourceIcon} />
           <Text size="lg">{sourceDefinitionName}</Text>
         </FlexContainer>
@@ -32,7 +32,7 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
         <ArrowRightIcon />
       </FlexItem>
       <FlexItem className={styles.connectorItem}>
-        <FlexContainer direction="row">
+        <FlexContainer direction="row" alignItems="center">
           <ConnectorIcon icon={destinationIcon} />
           <Text size="lg">{destinationDefinitionName}</Text>
         </FlexContainer>
