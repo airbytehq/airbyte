@@ -26,6 +26,7 @@ from connector_acceptance_test.utils import (
     filter_output,
     load_config,
     load_yaml_or_json_path,
+    make_hashable,
 )
 from docker import errors
 
@@ -259,7 +260,10 @@ def discovered_catalog_fixture(
     connector_config, docker_runner: ConnectorRunner, cached_schemas, cache_discovered_catalog: bool
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
-    if not cached_schemas or not cache_discovered_catalog:
+    cached_schemas = cached_schemas.setdefault(make_hashable(connector_config), {})
+    if not cache_discovered_catalog:
+        cached_schemas.clear()
+    if not cached_schemas:
         output = docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
         for stream in catalogs[-1].streams:
@@ -269,7 +273,7 @@ def discovered_catalog_fixture(
 
 @pytest.fixture(name="previous_discovered_catalog")
 def previous_discovered_catalog_fixture(
-    connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas
+    connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas, cache_discovered_catalog: bool
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
     if previous_connector_docker_runner is None:
@@ -277,6 +281,9 @@ def previous_discovered_catalog_fixture(
             "\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version could not be instantiated."
         )
         return None
+    previous_cached_schemas = previous_cached_schemas.setdefault(make_hashable(connector_config), {})
+    if not cache_discovered_catalog:
+        previous_cached_schemas.clear()
     if not previous_cached_schemas:
         output = previous_connector_docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
