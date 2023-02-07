@@ -286,6 +286,7 @@ cmd_publish() {
       echo "building base images for $arch"
       docker buildx build -t airbyte/integration-base:dev --platform $arch --load airbyte-integrations/bases/base
       docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
+      docker buildx build -t airbyte/integration-base-python:dev --platform $arch --load airbyte-integrations/bases/base-python
 
       local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
       echo "Publishing new version ($arch_versioned_image) from $path"

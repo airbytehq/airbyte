@@ -249,6 +249,7 @@ subprojects { subproj ->
         tasks.register("buildDockerImage", DockerBuildImage) {
             // This is currently only used for connectors.
             def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.4'
+            def pythonVersion = System.getenv('PYTHON_VERSION') ?: '3.9.13-alpine3.15'
 
             def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
             def isArm64 = arch == "aarch64" || arch == "arm64"
@@ -263,6 +264,7 @@ subprojects { subproj ->
             platform = buildPlatform
             images.add("airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag")
             buildArgs.put('JDK_VERSION', jdkVersion)
+            buildArgs.put('PYTHON_VERSION', pythonVersion)
             buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
             buildArgs.put('ALPINE_IMAGE', alpineImage)
             buildArgs.put('NGINX_IMAGE', nginxImage)

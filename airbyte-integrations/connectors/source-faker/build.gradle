@@ -7,3 +7,8 @@ plugins {
 airbytePython {
     moduleDirectory 'source_faker'
 }
+
+dependencies {
+    implementation project(':airbyte-integrations:bases:base-python')
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
+}

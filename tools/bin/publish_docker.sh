@@ -20,6 +20,7 @@ projectDir=(
 # Set default values to required vars. If set in env, values will be taken from there.
 # Primarily for testing.
 JDK_VERSION=${JDK_VERSION:-17.0.4}
+PYTHON_VERSION=${PYTHON_VERSION:3.9.13-alpine3.15}
 ALPINE_IMAGE=${ALPINE_IMAGE:-alpine:3.14}
 POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:13-alpine}
 
@@ -55,6 +56,7 @@ for workdir in "${projectDir[@]}"
       --build-arg ALPINE_IMAGE=$ALPINE_IMAGE                \
       --build-arg POSTGRES_IMAGE=$POSTGRES_IMAGE            \
       --build-arg JDK_VERSION=$JDK_VERSION                  \
+      --build-arg PYTHON_VERSION=$PYTHON_VERSION            \
       --push                                                \
       airbyte-$workdir/build/docker
     docker buildx rm $artifactName
