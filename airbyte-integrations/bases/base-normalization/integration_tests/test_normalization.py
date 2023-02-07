@@ -401,7 +401,6 @@ def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test
     """
     Prepare the data (copy) for the models for dbt test.
     """
-    replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
     test_directory = os.path.join(test_root_dir, "models/dbt_data_tests")
     shutil.rmtree(test_directory, ignore_errors=True)
     os.makedirs(test_directory, exist_ok=True)
@@ -409,7 +408,7 @@ def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test
         os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_expectations"),
         test_directory,
         destination_type,
-        replace_identifiers,
+        '',
     )
     test_directory = os.path.join(test_root_dir, "tests")
     shutil.rmtree(test_directory, ignore_errors=True)
@@ -418,7 +417,7 @@ def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test
         os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_assertions"),
         test_directory,
         destination_type,
-        replace_identifiers,
+        '',
     )
 
 
