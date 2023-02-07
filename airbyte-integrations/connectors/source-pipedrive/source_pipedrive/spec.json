@@ -10,6 +10,7 @@
       "authorization" : {
         "type" : "object",
         "title" : "API Key Authentication",
+        "order": 1,
         "required" : [
           "auth_type",
           "api_token"
@@ -28,6 +29,7 @@
         }
       },
       "replication_start_date" : {
+        "order": 0,
         "title" : "Start Date",
         "pattern" : "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples" : [
