@@ -23,6 +23,18 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        empty_streams:
+          - name: ticket_comments
+            bypass_reason: "unable to test due to fast-changing data"
+#          - name: ticket_metric_events
+#            bypass_reason: "unable to test due to fast-changing data"
+#          - name: tickets
+#            bypass_reason: "unable to test due to fast-changing data"
+#          - name: users
+#            bypass_reason: "unable to test due to fast-changing data"
   incremental:
     tests:
       - config_path: "secrets/config.json"
