@@ -9,5 +9,6 @@ airbytePython {
 }
 
 dependencies {
-    implementation files(project(':airbyte-integrations:bases:connector-acceptance-test').airbyteDocker.outputs)
+    implementation project(':airbyte-integrations:bases:base-python')
+    implementation files(project(':airbyte-integrations:bases:base-python').airbyteDocker.outputs)
 }
