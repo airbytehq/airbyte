@@ -12,7 +12,6 @@ import io.airbyte.api.model.generated.NotificationRead;
 import io.airbyte.api.model.generated.NotificationRead.StatusEnum;
 import io.airbyte.commons.server.converters.NotificationConverter;
 import io.airbyte.commons.server.errors.IdNotFoundKnownException;
-import io.airbyte.commons.server.handlers.WorkspacesHandler;
 import io.airbyte.notification.NotificationClient;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
@@ -28,11 +27,7 @@ import java.io.IOException;
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class NotificationsApiController implements NotificationsApi {
 
-  private final WorkspacesHandler workspacesHandler;
-
-  public NotificationsApiController(final WorkspacesHandler workspacesHandler) {
-    this.workspacesHandler = workspacesHandler;
-  }
+  public NotificationsApiController() {}
 
   @Post
   @Secured({AUTHENTICATED_USER})
