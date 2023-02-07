@@ -1,17 +1,20 @@
 plugins {
     id "base"
-    id "com.github.node-gradle.node" version "3.3.0"
+    id "com.github.node-gradle.node" version "3.4.0"
 }
 
 // Use the node version that's defined in the .nvmrc file
 def nodeVersion = new File("${projectDir}/.nvmrc").text.trim();
+
+// Read pnpm version to use from package.json engines.pnpm entry
+def pnpmVer = new groovy.json.JsonSlurper().parse(new File("${projectDir}/package.json")).engines.pnpm.trim();
 
 // This array should contain a path to all configs that are common to most build tasks and
 // might affect them (i.e. if any of those files change we want to rerun most tasks)
 def commonConfigs = [
     '.env',
     'package.json',
-    'package-lock.json',
+    'pnpm-lock.yaml',
     'tsconfig.json',
     '.prettierrc.js'
 ]
@@ -19,10 +22,28 @@ def commonConfigs = [
 node {
     download = true
     version = nodeVersion
-    npmInstallCommand = 'ci'
+    pnpmVersion = pnpmVer
 }
 
-npm_run_build {
+task validateLockFiles {
+    description "Validate only a pnpm-lock.yaml lock file exists"
+    doLast {
+        assert file("pnpm-lock.yaml").exists()
+        assert !file("package-lock.json").exists()
+        assert !file("yarn.lock").exists()
+    }
+}
+
+pnpmInstall.dependsOn validateLockFiles
+// Make sure `pnpmInstall` always runs, since it's better at determining
+// whether it's needs to do anything than Gradle can
+pnpmInstall.outputs.upToDateWhen { false }
+
+task pnpmBuild(type: PnpmTask) {
+    dependsOn pnpmInstall
+
+    args = ['build']
+
     inputs.files commonConfigs
     inputs.file '.eslintrc.js'
     inputs.dir 'public'
@@ -31,7 +52,7 @@ npm_run_build {
     outputs.dir 'build/app'
 }
 
-task test(type: NpmTask) {
+task test(type: PnpmTask) {
     dependsOn assemble
 
     args = ['run', 'test:ci']
@@ -39,8 +60,8 @@ task test(type: NpmTask) {
     inputs.dir 'src'
 }
 
-task licenseCheck(type: NpmTask) {
-    dependsOn npmInstall
+task licenseCheck(type: PnpmTask) {
+    dependsOn pnpmInstall
 
     args = ['run', 'license-check']
     inputs.files commonConfigs
@@ -51,8 +72,8 @@ task licenseCheck(type: NpmTask) {
     outputs.upToDateWhen { true }
 }
 
-task validateLinks(type: NpmTask) {
-    dependsOn npmInstall
+task validateLinks(type: PnpmTask) {
+    dependsOn pnpmInstall
 
     args = ['run', 'validate-links']
 
@@ -61,8 +82,8 @@ task validateLinks(type: NpmTask) {
     outputs.upToDateWhen { false }
 }
 
-task buildStorybook(type: NpmTask) {
-    dependsOn npmInstall
+task buildStorybook(type: PnpmTask) {
+    dependsOn pnpmInstall
     args = ['run', 'build:storybook']
 
     inputs.files commonConfigs
@@ -78,7 +99,7 @@ task buildStorybook(type: NpmTask) {
 }
 
 task copyBuildOutput(type: Copy) {
-    dependsOn copyDocker, npm_run_build
+    dependsOn copyDocker, pnpmBuild
 
     from "${project.projectDir}/build/app"
     into 'build/docker/bin/build'

@@ -61,6 +61,8 @@
 
   "connection.dbtCloudJobs.cardTitle": "Transformations",
   "connection.dbtCloudJobs.addJob": "Add transformation",
+  "connection.dbtCloudJobs.dbtError": "There was an error communicating with dbt Cloud: {displayMessage}",
+  "connection.dbtCloudJobs.genericError": "There was an error communicating with dbt Cloud.",
   "connection.dbtCloudJobs.explanation": "After an Airbyte sync job has completed, the following jobs will run",
   "connection.dbtCloudJobs.noJobs": "No transformations",
   "connection.dbtCloudJobs.job.title": "dbt Cloud transform",
