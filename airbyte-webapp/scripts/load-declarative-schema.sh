@@ -1,3 +1,6 @@
+# This script makes sure the json schema for the low code connector manifest is provided for orval to build the Typescript types
+# used by the connector builder UI. It either downloads a released version from PyPI or copies it over from a specified file path.
+
 set -e
 mkdir -p build
 
