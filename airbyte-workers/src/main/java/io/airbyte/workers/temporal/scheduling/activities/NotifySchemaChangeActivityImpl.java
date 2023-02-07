@@ -18,11 +18,18 @@ public class NotifySchemaChangeActivityImpl implements NotifySchemaChangeActivit
   @Override
   public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration slackConfig, String url)
       throws IOException, InterruptedException {
-    final Notification notification =
-        new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
-            .withSlackConfiguration(slackConfig);
-    final SlackNotificationClient notificationClient = new SlackNotificationClient(notification);
+    final Notification notification = createNotification(slackConfig);
+    final SlackNotificationClient notificationClient = createNotificationClient(notification);
     return notificationClient.notifySchemaChange(connectionId, isBreaking, slackConfig, url);
+  }
+
+  Notification createNotification(SlackNotificationConfiguration slackConfig) {
+    return new Notification().withNotificationType(NotificationType.SLACK).withSendOnFailure(false).withSendOnSuccess(false)
+        .withSlackConfiguration(slackConfig);
+  }
+
+  SlackNotificationClient createNotificationClient(Notification notification) {
+    return new SlackNotificationClient(notification);
   }
 
 }
