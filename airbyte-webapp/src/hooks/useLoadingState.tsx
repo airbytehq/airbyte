@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
-import { Notification, useNotificationService } from "./services/Notification";
 import { ToastType } from "../components/ui/Toast";
+import { Notification, useNotificationService } from "./services/Notification";
 
 const useLoadingState = (): {
   isLoading: boolean;

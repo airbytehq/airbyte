@@ -11,8 +11,8 @@ import {
 } from "core/request/AirbyteClient";
 import { ModalServiceProvider } from "hooks/services/Modal";
 
-import { CatalogDiffModal } from "./CatalogDiffModal";
 import messages from "../../../locales/en.json";
+import { CatalogDiffModal } from "./CatalogDiffModal";
 
 const mockCatalogDiff: CatalogDiff = {
   transforms: [],

@@ -1,8 +1,8 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import React from "react";
 
-import { Popout } from "./Popout";
 import { Button } from "../Button";
+import { Popout } from "./Popout";
 
 export default {
   title: "Ui/Popout",

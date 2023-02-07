@@ -4,8 +4,8 @@ import styled from "styled-components";
 
 import { CheckBox } from "components/ui/CheckBox";
 
-import { DropDownText } from "./DropDownText";
 import { OptionType } from "../DropDown";
+import { DropDownText } from "./DropDownText";
 
 export type DropDownOptionProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & DropDownOptionDataItem;
