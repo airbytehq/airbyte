@@ -37,6 +37,7 @@ select
     json_value(_airbyte_data, ''$."datetime_no_tz"'') as datetime_no_tz,
     json_value(_airbyte_data, ''$."time_tz"'') as time_tz,
     json_value(_airbyte_data, ''$."time_no_tz"'') as time_no_tz,
+    json_value(_airbyte_data, ''$."property_binary_data"'') as property_binary_data,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -74,6 +75,7 @@ select
     cast(nullif(time_no_tz, '''') as 
     time
 ) as time_no_tz,
+    CAST(property_binary_data as XML ).value(''.'',''binary'') as property_binary_data,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -102,6 +104,7 @@ select
     NVARCHAR(max)), ''''), ''-'', coalesce(cast(datetime_no_tz as 
     NVARCHAR(max)), ''''), ''-'', coalesce(cast(time_tz as 
     NVARCHAR(max)), ''''), ''-'', coalesce(cast(time_no_tz as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(property_binary_data as 
     NVARCHAR(max)), ''''),''''), '''') as 
     NVARCHAR(max)), '''')), 2) as _airbyte_exchange_rate_hashid,
     tmp.*
@@ -124,6 +127,7 @@ select
     datetime_no_tz,
     time_tz,
     time_no_tz,
+    property_binary_data,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at,

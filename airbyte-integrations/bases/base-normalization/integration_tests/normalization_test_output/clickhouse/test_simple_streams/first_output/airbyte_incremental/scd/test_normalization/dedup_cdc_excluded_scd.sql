@@ -1,5 +1,7 @@
 
-      
+        
+  
+    
     
         
         insert into test_normalization.dedup_cdc_excluded_scd ("_airbyte_unique_key", "_airbyte_unique_key_scd", "id", "name", "_ab_cdc_lsn", "_ab_cdc_updated_at", "_ab_cdc_deleted_at", "_airbyte_start_at", "_airbyte_end_at", "_airbyte_active_row", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_normalized_at", "_airbyte_dedup_cdc_excluded_hashid")
@@ -101,4 +103,4 @@ select
     _airbyte_dedup_cdc_excluded_hashid
 from dedup_data where _airbyte_row_num = 1
   
-  
+    

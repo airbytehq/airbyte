@@ -2,6 +2,22 @@
     cluster_by = ["_AIRBYTE_EMITTED_AT"],
     unique_key = '_AIRBYTE_AB_ID',
     schema = "TEST_NORMALIZATION",
+    post_hook = ["
+                    {%
+                        set scd_table_relation = adapter.get_relation(
+                            database=this.database,
+                            schema=this.schema,
+                            identifier='EXCHANGE_RATE_SCD'
+                        )
+                    %}
+                    {%
+                        if scd_table_relation is not none
+                    %}
+                    {%
+                            do adapter.drop_relation(scd_table_relation)
+                    %}
+                    {% endif %}
+                        "],
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
@@ -20,6 +36,7 @@ select
     DATETIME_NO_TZ,
     TIME_TZ,
     TIME_NO_TZ,
+    PROPERTY_BINARY_DATA,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     {{ current_timestamp() }} as _AIRBYTE_NORMALIZED_AT,
