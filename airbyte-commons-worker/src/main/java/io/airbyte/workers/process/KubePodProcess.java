@@ -227,7 +227,7 @@ public class KubePodProcess implements KubePod {
         "-XX:+ExitOnOutOfMemoryError -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
 
     if (image.contains("source-postgres")) {
-      envVars.add(new EnvVar("DD_CONNECTOR_JAVA_OPTS", ddEnvVar, null));
+      envVars.add(new EnvVar("JAVA_OPTS", ddEnvVar, null));
     }
 
       envVars.forEach(envVar -> LOGGER.error("Env var with name - {}, value - {}, and valueFrom - {}", envVar.getName(), envVar.getValue(), envVar.getValueFrom()));
