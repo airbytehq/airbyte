@@ -56,7 +56,7 @@ export const TestWrapper: React.FC<React.PropsWithChildren<TestWrapperOptions>> 
 }) => (
   <ThemeProvider theme={{}}>
     <IntlProvider locale="en" messages={en} onError={() => null}>
-      <ConfigContext.Provider value={{ config: { ...config, cloudApiUrl: "/cloud_api" } }}>
+      <ConfigContext.Provider value={{ config }}>
         <AnalyticsProvider>
           <AppMonitoringServiceProvider>
             <NotificationService>
