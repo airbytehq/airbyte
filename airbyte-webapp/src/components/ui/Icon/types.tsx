@@ -34,8 +34,6 @@ export type IconType =
 export interface IconProps {
   type: IconType;
   className?: string;
-  height?: number | string;
-  width?: number | string;
   // We need to consider the implementation of a mechanism with predefined colors and sizes
   // https://github.com/airbytehq/airbyte/issues/20133
 }
