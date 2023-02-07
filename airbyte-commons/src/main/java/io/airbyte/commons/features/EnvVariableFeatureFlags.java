@@ -24,7 +24,6 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
   public static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
-  public static final String NON_STRICT_COMPARISON_NORMALIZATION_TAG = "NON_STRICT_COMPARISON_NORMALIZATION_TAG";
 
   @Override
   public boolean autoDisablesFailingConnections() {
@@ -76,11 +75,6 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public String strictComparisonNormalizationTag() {
     return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison", (arg) -> arg);
-  }
-
-  @Override
-  public String nonStrictComparisonNormalizationTag() {
-    return getEnvOrDefault(NON_STRICT_COMPARISON_NORMALIZATION_TAG, "0.2.25", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

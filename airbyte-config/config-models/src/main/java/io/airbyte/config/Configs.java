@@ -755,8 +755,6 @@ public interface Configs {
 
   String getStrictComparisonNormalizationTag();
 
-  String getNonStrictComparisonNormalizationTag();
-
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
