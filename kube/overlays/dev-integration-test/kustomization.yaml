@@ -4,22 +4,22 @@ kind: Kustomization
 namespace: default
 
 bases:
-  - ../../resources
+  - ../../resources-dev
 
 images:
-  - name: airbyte/db
+  - name: yuanrui2014/db
     newTag: dev
-  - name: airbyte/bootloader
+  - name: yuanrui2014/bootloader
     newTag: dev
-  - name: airbyte/server
+  - name: yuanrui2014/server
     newTag: dev
-  - name: airbyte/webapp
+  - name: yuanrui2014/webapp
     newTag: dev
-  - name: airbyte/worker
+  - name: yuanrui2014/worker
     newTag: dev
   - name: temporalio/auto-setup
     newTag: 1.7.0
-  - name: airbyte/cron
+  - name: yuanrui2014/cron
     newTag: dev
 
 configMapGenerator:
@@ -32,3 +32,4 @@ secretGenerator:
 
 patchesStrategicMerge:
   - parallelize-worker.yaml
+

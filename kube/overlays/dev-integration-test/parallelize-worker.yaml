@@ -3,4 +3,4 @@ kind: Deployment
 metadata:
   name: airbyte-worker
 spec:
-  replicas: 2
+  replicas: 3
