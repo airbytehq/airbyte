@@ -116,7 +116,8 @@ class DefaultReplicationWorkerTest {
 
     final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
     when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(true));
-    heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor, Duration.ofMinutes(5), null, null);
+
+    heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor, Duration.ofMinutes(5), null, null, null, metricClient);
 
     when(source.isFinished()).thenReturn(false, false, false, true);
     when(destination.isFinished()).thenReturn(false, false, false, true);

@@ -103,7 +103,8 @@ public class ReplicationWorkerPerformanceTest {
             new EnvVariableFeatureFlags());
 
     final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor,
-        io.airbyte.workers.internal.HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, Mockito.mock(FeatureFlagClient.class), workspaceID);
+        io.airbyte.workers.internal.HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, Mockito.mock(FeatureFlagClient.class), workspaceID,
+        UUID.randomUUID(), new NotImplementedMetricClient());
 
     final var worker = new DefaultReplicationWorker("1", 0,
         versionedAbSource,
