@@ -17,9 +17,7 @@ import { ConnectionStatus, JobStatus, JobWithAttemptsRead } from "core/request/A
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
-import { useIsConnectionFree } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useIsConnectionFree";
 import { useCancelJob, useListJobs } from "services/job/JobService";
 
 import styles from "./ConnectionStatusPage.module.scss";
@@ -88,9 +86,6 @@ export const ConnectionStatusPage: React.FC = () => {
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
-  const isConnectionFree = useIsConnectionFree(connection);
-  const allowSync = useFeature(FeatureItem.AllowSync);
-  const canSync = allowSync || isConnectionFree;
   const cancelJob = useCancelJob();
 
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -174,7 +169,6 @@ export const ConnectionStatusPage: React.FC = () => {
                     </Button>
                     <Button
                       className={styles.syncButton}
-                      disabled={!canSync}
                       onClick={onSyncNowButtonClick}
                       icon={
                         <div className={styles.iconRotate}>
