@@ -60,7 +60,7 @@ export const Toast: React.FC<ToastProps> = ({
         )}
       </div>
       {onAction && (
-        <Button variant="dark" className={styles.actionButton} onClick={onAction}>
+        <Button variant="dark" onClick={onAction}>
           {actionBtnText}
         </Button>
       )}

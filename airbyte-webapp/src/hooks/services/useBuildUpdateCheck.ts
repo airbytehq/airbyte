@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useIntl } from "react-intl";
 import { fromEvent, interval, merge, throttleTime } from "rxjs";
 
+import { useAppMonitoringService } from "./AppMonitoringService";
 import { useNotificationService } from "./Notification";
 
 interface BuildInfo {
@@ -18,6 +19,8 @@ const INTERVAL = 60_000;
 export const useBuildUpdateCheck = () => {
   const { formatMessage } = useIntl();
   const { registerNotification } = useNotificationService();
+  const { trackError } = useAppMonitoringService();
+
   useEffect(() => {
     // Trigger the check every ${INTERVAL} milliseconds or whenever the window regains focus again
     const subscription = merge(interval(INTERVAL), fromEvent(window, "focus"))
@@ -41,11 +44,12 @@ export const useBuildUpdateCheck = () => {
         } catch (e) {
           // We ignore all errors from the build update check, since it's an optional check to
           // inform the user. We don't want to treat failed requests here as errors.
+          trackError(e);
         }
       });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [formatMessage, registerNotification]);
+  }, [formatMessage, registerNotification, trackError]);
 };
