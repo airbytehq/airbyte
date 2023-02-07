@@ -754,6 +754,8 @@ public interface Configs {
   String getStrictComparisonNormalizationWorkspaces();
 
   String getStrictComparisonNormalizationTag();
+  String getNonStrictComparisonNormalizationTag();
+
 
   enum TrackingStrategy {
     SEGMENT,
