@@ -9,35 +9,35 @@ const fourZerosAndThenSeven = () => {
 const truthyResponse = (x: any) => !!x;
 
 describe("pollUntil", () => {
-  describe("when maxTimeout is not provided", () => {
+  describe("when maxTimeoutMs is not provided", () => {
     it("calls the provided apiFn until condition returns true and resolves to its final return value", () => {
       const pollableFn = fourZerosAndThenSeven();
 
-      return expect(pollUntil(pollableFn, truthyResponse, { interval: 1 })).resolves.toBe(7);
+      return expect(pollUntil(pollableFn, truthyResponse, { intervalMs: 1 })).resolves.toBe(7);
     });
   });
 
-  describe("when condition returns true before maxTimeout is reached", () => {
+  describe("when condition returns true before maxTimeoutMs is reached", () => {
     it("calls the provided apiFn until condition returns true and resolves to its final return value", () => {
       const pollableFn = fourZerosAndThenSeven();
 
-      return expect(pollUntil(pollableFn, truthyResponse, { interval: 1, maxTimeout: 100 })).resolves.toBe(7);
+      return expect(pollUntil(pollableFn, truthyResponse, { intervalMs: 1, maxTimeoutMs: 100 })).resolves.toBe(7);
     });
   });
 
-  describe("when maxTimeout is reached before condition returns true", () => {
+  describe("when maxTimeoutMs is reached before condition returns true", () => {
     it("resolves to false", () => {
       const pollableFn = fourZerosAndThenSeven();
 
-      return expect(pollUntil(pollableFn, truthyResponse, { interval: 100, maxTimeout: 1 })).resolves.toBe(false);
+      return expect(pollUntil(pollableFn, truthyResponse, { intervalMs: 100, maxTimeoutMs: 1 })).resolves.toBe(false);
     });
 
-    // Because the timing of the polling depends on both the provided `interval` and the
+    // Because the timing of the polling depends on both the provided `intervalMs` and the
     // execution time of `apiFn`, the timing of polling iterations isn't entirely
     // deterministic; it's precise enough for its job, but it's difficult to make precise
-    // test assertions about polling behavior without long interval/maxTimeout bogging
+    // test assertions about polling behavior without long intervalMs/maxTimeoutMs bogging
     // down the test suite.
-    it("calls its apiFn arg no more than (maxTimeout / interval) times", async () => {
+    it("calls its apiFn arg no more than (maxTimeoutMs / intervalMs) times", async () => {
       let _callCount = 0;
       let lastCalledValue = 999;
       const pollableFn = () =>
@@ -46,7 +46,7 @@ describe("pollUntil", () => {
           return val;
         });
 
-      await pollUntil(pollableFn, (_) => false, { interval: 20, maxTimeout: 78 });
+      await pollUntil(pollableFn, (_) => false, { intervalMs: 20, maxTimeoutMs: 78 });
 
       // In theory, this is what just happened:
       // | time elapsed | value (source)  |
@@ -57,9 +57,9 @@ describe("pollUntil", () => {
       // |         60ms | 4 (poll)        |
       // |         78ms | false (timeout) |
       //
-      // In practice, since the polling interval isn't started until after `apiFn`
+      // In practice, since the polling intervalMs isn't started until after `apiFn`
       // resolves to a value, the actual call counts are slightly nondeterministic. We
-      // could ignore that fact with a slow enough interval, but who wants slow tests?
+      // could ignore that fact with a slow enough intervalMs, but who wants slow tests?
       expect(lastCalledValue > 2).toBe(true);
       expect(lastCalledValue <= 4).toBe(true);
     });
