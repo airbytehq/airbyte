@@ -1,0 +1,16 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/postgres",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "5GB Benchmark Source",
+    "type": "object",
+    "properties": {
+      "favorite_color": {
+        "title": "What's your favorite color?",
+        "description": "This won't be used",
+        "type": "string",
+        "order": 0
+      }
+    }
+  }
+}
