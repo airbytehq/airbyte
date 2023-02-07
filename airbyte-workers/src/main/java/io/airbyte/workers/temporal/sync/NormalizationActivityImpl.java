@@ -52,8 +52,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class NormalizationActivityImpl implements NormalizationActivity {
 
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
@@ -120,6 +122,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
       if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, input.getWorkspaceId())) {
+        log.info("Using strict comparison normalization");
         replaceNormalizationImageTag(destinationLauncherConfig, featureFlags.strictComparisonNormalizationTag());
       }
 
@@ -128,6 +131,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       // all columns being typed as JSONB. If normalization is using an older version, fallback to using
       // v0 data types.
       if (!normalizationSupportsV1DataTypes(destinationLauncherConfig)) {
+        log.info("Using protocol v0");
         CatalogMigrationV1Helper.downgradeSchemaIfNeeded(fullInput.getCatalog());
       } else {
 
@@ -136,6 +140,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         // phase v0 out.
         // Performance impact should be low considering the nature of the check compared to the time to run
         // normalization.
+        log.info("Using protocol v1");
         CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
       }
 
@@ -146,6 +151,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
       final CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> workerFactory;
 
+      log.info("Using normalization: " + destinationLauncherConfig.getNormalizationDockerImage());
       if (containerOrchestratorConfig.isPresent()) {
         workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
             () -> context);
