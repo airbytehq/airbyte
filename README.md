@@ -47,7 +47,7 @@ Explore our [demo app](https://demo.airbyte.io/).
 You can run Airbyte locally with Docker.
 
 ```bash
-git clone https://github.com/airbytehq/airbyte.git
+git clone --depth 1 https://github.com/airbytehq/airbyte.git
 cd airbyte
 docker compose up
 ```
