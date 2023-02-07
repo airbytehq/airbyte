@@ -1216,7 +1216,7 @@
 - name: Orb
   sourceDefinitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
   dockerRepository: airbyte/source-orb
-  dockerImageTag: 0.1.4
+  dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/orb
   icon: orb.svg
   sourceType: api
