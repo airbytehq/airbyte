@@ -61,6 +61,7 @@ specifiers:
   '@vitejs/plugin-basic-ssl': ^1.0.1
   '@vitejs/plugin-react': ^3.0.1
   babel-jest: ^29.3.1
+  chalk: ^4.1.2
   classnames: ^2.3.1
   date-fns: ^2.29.3
   dayjs: ^1.11.3
@@ -252,6 +253,7 @@ devDependencies:
   '@vitejs/plugin-basic-ssl': 1.0.1_vite@4.0.4
   '@vitejs/plugin-react': 3.0.1_vite@4.0.4
   babel-jest: 29.3.1_@babel+core@7.20.12
+  chalk: 4.1.2
   dotenv: 16.0.3
   eslint: 8.32.0
   eslint-config-prettier: 8.6.0_eslint@8.32.0
