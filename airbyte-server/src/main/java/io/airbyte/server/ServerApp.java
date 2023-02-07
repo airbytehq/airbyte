@@ -22,6 +22,8 @@ import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.RouterService;
+import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -152,7 +154,8 @@ public class ServerApp implements ServerRunnable {
                                          final DSLContext configsDslContext,
                                          final Flyway configsFlyway,
                                          final DSLContext jobsDslContext,
-                                         final Flyway jobsFlyway)
+                                         final Flyway jobsFlyway,
+                                         final TaskQueueMapper taskQueueMapper)
       throws Exception {
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
@@ -221,8 +224,9 @@ public class ServerApp implements ServerRunnable {
         streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
+    RouterService routerService = new RouterService(configRepository, taskQueueMapper);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
-        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 
