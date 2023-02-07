@@ -168,7 +168,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   }
 
   @VisibleForTesting
-  static void activateStrictNormalizationComparisonIfPossible(final IntegrationLauncherConfig destinationLauncherConfig, final FeatureFlags featureFlags) {
+  static void activateStrictNormalizationComparisonIfPossible(final IntegrationLauncherConfig destinationLauncherConfig,
+                                                              final FeatureFlags featureFlags) {
     // Strict comparison was branched from normalization 0.2.25, so we shouldn't apply it if we're
     // trying to use a newer version of normalization
     if (featureFlags.nonStrictComparisonNormalizationTag().equals(getNormalizationImageTag(destinationLauncherConfig))) {

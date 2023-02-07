@@ -223,7 +223,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   private Map<String, String> getWorkerMetadata() {
     final Configs configs = new EnvConfigs();
-    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert back to hashmap
+    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert
+    // back to hashmap
     return Maps.newHashMap(
         ImmutableMap.<String, String>builder()
             .put(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName)

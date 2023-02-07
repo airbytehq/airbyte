@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.version.Version;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -52,8 +52,8 @@ public interface FeatureFlags {
   String strictComparisonNormalizationTag();
 
   /**
-   * @return The Docker image tag representing the normalization version which {@link #strictComparisonNormalizationTag()}
-   * was branched from
+   * @return The Docker image tag representing the normalization version which
+   *         {@link #strictComparisonNormalizationTag()} was branched from
    */
   String nonStrictComparisonNormalizationTag();
 
