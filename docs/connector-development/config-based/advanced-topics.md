@@ -284,6 +284,25 @@ pagination_strategy:
   my_field: "hello world"
 ```
 
+### Custom Components that pass fields to child components
+
+There are certain scenarios where a child subcomponent might rely on a field defined on a parent component. For regular components, we perform this propagation of fields from the parent component to the child automatically.
+However, custom components do not support this behavior. If you have a child subcomponent of your custom component that falls under this use case, you will see an error message like:
+
+```
+Error creating component 'DefaultPaginator' with parent custom component source_example.components.CustomRetriever: Please provide DefaultPaginator.$parameters.url_base
+```
+
+When you receive this error, you can address this by defining the missing field within the `$parameters` block of the child component.
+
+```yaml
+  paginator:
+    type: "DefaultPaginator"
+    <...>
+    $parameters:
+      url_base: "https://example.com"
+```
+
 ## How the framework works
 
 1. Given the connection config and an optional stream state, the `StreamSlicer` computes the stream slices to read.

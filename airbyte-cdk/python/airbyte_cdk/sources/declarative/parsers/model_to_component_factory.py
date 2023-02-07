@@ -361,10 +361,12 @@ class ModelToComponentFactory:
         if model_type:
             parsed_model = model_type.parse_obj(model_value)
             try:
-                # To improve usability of the language, certain fields are shared between components. One example is the DefaultPaginator
-                # referencing the HttpRequester url_base while constructing a SimpleRetriever. However, custom components don't support
-                # this behavior because they are created generically in create_custom_component(). This block allows developers to
-                # specify extra arguments in $parameters that are needed by a component and could not be shared.
+                # To improve usability of the language, certain fields are shared between components. This can come in the form of
+                # a parent component passing some of its fields to a child component or the parent extracting fields from other child
+                # components and passing it to others. One example is the DefaultPaginator referencing the HttpRequester url_base
+                # while constructing a SimpleRetriever. However, custom components don't support this behavior because they are created
+                # generically in create_custom_component(). This block allows developers to specify extra arguments in $parameters that
+                # are needed by a component and could not be shared.
                 model_constructor = self.PYDANTIC_MODEL_TO_CONSTRUCTOR.get(parsed_model.__class__)
                 constructor_kwargs = inspect.getfullargspec(model_constructor).kwonlyargs
                 model_parameters = model_value.get("$parameters", {})
