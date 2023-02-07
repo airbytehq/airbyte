@@ -95,7 +95,7 @@ def setup_teardown(config: Mapping):
         pass
 
     docker_client.containers.run(
-        "semitechnologies/weaviate:1.16.1", detach=True, environment=env_vars, name=name,
+        "semitechnologies/weaviate:1.17.3", detach=True, environment=env_vars, name=name,
         ports={8080: ('127.0.0.1', 8081)}
     )
     time.sleep(0.5)
@@ -401,6 +401,33 @@ def test_id_starting_with_underscore(config: Mapping, client: Client):
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual.get("id") == str(uuid.UUID(int=int(data.get("_id"), 16))), "UUID should be created for _id field"
+
+
+def test_id_with_text_string(config: Mapping, client: Client):
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "id": {"type": "string"}
+    }}
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"title": "test1", "id": "not a real id"}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    class_name = stream_to_class_name(stream_name)
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+    actual = get_objects(client, class_name)[0]
+    assert actual.get("id")
 
 
 def test_id_custom_field_name(config: Mapping, client: Client):

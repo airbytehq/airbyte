@@ -4,6 +4,7 @@
 
 import re
 import uuid
+import hashlib
 from typing import Any, Mapping
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -40,16 +41,23 @@ def hex_to_int(hex_str: str) -> int:
         return 0
 
 
+def is_uuid_string(uuid_string):
+    uuid_pattern = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    return re.match(uuid_pattern, uuid_string)
+
+
 def generate_id(record_id: Any) -> uuid.UUID:
     if isinstance(record_id, int):
         return uuid.UUID(int=record_id)
 
     if isinstance(record_id, str):
+        if is_uuid_string(record_id):
+            return uuid.UUID(record_id)
         id_int = hex_to_int(record_id)
-        if hex_to_int(record_id) > 0:
+        if id_int > 0:
             return uuid.UUID(int=id_int)
-
-    return uuid.UUID(record_id)
+        hex_string = hashlib.md5(record_id.encode("UTF-8")).hexdigest()
+        return uuid.UUID(hex=hex_string)
 
 
 def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, Mapping[str, str]]:
