@@ -110,10 +110,11 @@ class AddFields(RecordTransformation, JsonSchemaMixin):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
-        kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
-        for parsed_field in self._parsed_fields:
-            value = parsed_field.value.eval(config, **kwargs)
-            dpath.util.new(record, parsed_field.path, value)
+        if isinstance(record, Mapping):
+            kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
+            for parsed_field in self._parsed_fields:
+                value = parsed_field.value.eval(config, **kwargs)
+                dpath.util.new(record, parsed_field.path, value)
 
         return record
 
