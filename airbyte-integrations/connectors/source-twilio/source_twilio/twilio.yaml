@@ -47,7 +47,8 @@ definitions:
     stream_state_field_start: "lower_boundary"
     stream_state_field_end: "upper_boundary"
     start_datetime:
-      datetime: "{{ adjust_datetime(config.start_date, options.retention_window_limit, '%Y-%m-%dT%H:%M:%SZ') if options.retention_window_limit else config.start_date }}"
+      datetime: "{{ config.start_date }}"
+      min_datetime: "{{ day_delta(-options.retention_window_limit, '%Y-%m-%dT%H:%M:%SZ') if options.retention_window_limit }}"
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
@@ -279,7 +280,7 @@ definitions:
       cursor_granularity: "PT0S"
       step_default: "P1D"
       primary_key: "sid"
-      retention_window_limit: "P399D"
+      retention_window_limit: 399
     stream_cursor_field: "date_sent"
   # https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources
   recordings_stream:
@@ -448,7 +449,7 @@ definitions:
       step_default: "P1Y"
       boundary_format: "%Y-%m-%dT%H:%M:%SZ"
       with_media_only: true
-      retention_window_limit: "P399D"
+      retention_window_limit: 399
     stream_cursor_field: "date_created"
 
 
