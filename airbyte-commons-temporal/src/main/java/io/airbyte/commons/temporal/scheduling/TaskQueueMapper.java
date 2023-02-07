@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.temporal.scheduling;
 
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.config.Geography;
 
 /**
@@ -12,6 +13,6 @@ import io.airbyte.config.Geography;
  */
 public interface TaskQueueMapper {
 
-  String getTaskQueue(Geography geography);
+  String getTaskQueue(Geography geography, TemporalJobType jobType);
 
 }

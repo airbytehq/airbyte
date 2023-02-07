@@ -10,7 +10,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
@@ -125,7 +124,7 @@ class JobCreationAndStatusUpdateActivityTest {
   private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
   private static final String DOCKER_REPOSITORY = "docker-repo";
   private static final String DOCKER_IMAGE_TAG = "0.0.1";
-  private static final String DOCKER_IMAGE_NAME = DockerUtils.getTaggedImageName(DOCKER_REPOSITORY, DOCKER_IMAGE_TAG);
+  private static final String DOCKER_IMAGE_NAME = DOCKER_REPOSITORY + ":" + DOCKER_IMAGE_TAG;
   private static final Version DESTINATION_PROTOCOL_VERSION = new Version("0.4.0");
   private static final long JOB_ID = 123L;
   private static final long PREVIOUS_JOB_ID = 120L;
