@@ -1,5 +1,8 @@
-import requests
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
+import requests
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
