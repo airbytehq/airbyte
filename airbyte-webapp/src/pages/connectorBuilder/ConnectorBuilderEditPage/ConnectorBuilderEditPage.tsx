@@ -28,8 +28,8 @@ const ConnectorBuilderEditPageInner: React.FC = React.memo(() => {
   const analyticsService = useAnalyticsService();
 
   useEffect(() => {
-    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.CONNECTOR_BUILDER_START, {
-      actionDescription: "Connector Builder UI Opened",
+    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.CONNECTOR_BUILDER_EDIT, {
+      actionDescription: "Connector Builder UI /edit page opened",
     });
   }, [analyticsService]);
 

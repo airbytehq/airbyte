@@ -21,7 +21,9 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 import { ToastType } from "components/ui/Toast";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
 import {
   ConnectorBuilderLocalStorageProvider,
@@ -37,6 +39,7 @@ import { ConnectorBuilderRoutePaths } from "../ConnectorBuilderRoutes";
 const YAML_UPLOAD_ERROR_ID = "connectorBuilder.yamlUpload.error";
 
 const ConnectorBuilderLandingPageInner: React.FC = () => {
+  const analyticsService = useAnalyticsService();
   const { storedFormValues, setStoredFormValues, storedManifest, setStoredManifest, setStoredEditorView } =
     useConnectorBuilderLocalStorage();
   const navigate = useNavigate();
@@ -58,6 +61,12 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
   const { registerNotification, unregisterNotificationById } = useNotificationService();
   const { convertToBuilderFormValues } = useManifestToBuilderForm();
   const [importYamlLoading, setImportYamlLoading] = useState(false);
+
+  useEffect(() => {
+    analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.CONNECTOR_BUILDER_START, {
+      actionDescription: "Connector Builder UI landing page opened",
+    });
+  }, [analyticsService]);
 
   const handleYamlUpload = useCallback(
     async (uploadEvent: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +96,10 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
                 ),
                 type: ToastType.ERROR,
               });
+              analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.INVALID_YAML_UPLOADED, {
+                actionDescription: "A file with invalid YAML syntax was uploaded to the Connector Builder landing page",
+                error_message: e.reason,
+              });
             }
             return;
           }
@@ -98,6 +111,10 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
             setStoredEditorView("yaml");
             setStoredManifest(json);
             navigate(ConnectorBuilderRoutePaths.Edit);
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.UI_INCOMPATIBLE_YAML_IMPORTED, {
+              actionDescription: "A YAML manifest that's incompatible with the Builder UI was imported",
+              error_message: e.message,
+            });
             return;
           }
 
@@ -116,6 +133,9 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
           setStoredEditorView("ui");
           setStoredFormValues(convertedFormValues);
           navigate(ConnectorBuilderRoutePaths.Edit);
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.UI_COMPATIBLE_YAML_IMPORTED, {
+            actionDescription: "A YAML manifest that's compatible with the Builder UI was imported",
+          });
         } finally {
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -129,6 +149,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
       }
     },
     [
+      analyticsService,
       convertToBuilderFormValues,
       navigate,
       registerNotification,
@@ -176,6 +197,9 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
           onClick={() => {
             setStoredEditorView("ui");
             navigate(ConnectorBuilderRoutePaths.Edit);
+            analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.START_FROM_SCRATCH, {
+              actionDescription: "User selected Start From Scratch on the Connector Builder landing page",
+            });
           }}
           dataTestId="start-from-scratch"
         />

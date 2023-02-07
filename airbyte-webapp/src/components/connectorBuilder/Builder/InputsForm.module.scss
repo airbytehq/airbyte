@@ -1,7 +1,7 @@
 @use "scss/variables";
 @use "scss/colors";
 
-.inputForm {
+.inputFormBody {
   gap: variables.$spacing-lg;
   display: flex;
   flex-direction: column;

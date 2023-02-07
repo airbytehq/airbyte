@@ -6,15 +6,12 @@ import { ResolveManifest } from "core/request/ConnectorBuilderClient";
 import {
   CartesianProductStreamSlicer,
   ConnectorManifest,
-  DatetimeStreamSlicer,
   DeclarativeStream,
   DeclarativeStreamSchemaLoader,
   DpathExtractor,
   HttpRequester,
   HttpRequesterAuthenticator,
-  InlineSchemaLoader,
   InterpolatedRequestOptionsProvider,
-  ListStreamSlicer,
   SimpleRetriever,
   SimpleRetrieverPaginator,
   SimpleRetrieverStreamSlicer,
@@ -204,18 +201,18 @@ function manifestStreamSlicerToBuilder(
   }
 
   if (manifestStreamSlicer.type === "DatetimeStreamSlicer") {
-    const datetimeStreamSlicer = manifestStreamSlicer as DatetimeStreamSlicer;
+    const datetimeStreamSlicer = manifestStreamSlicer;
     if (
       typeof datetimeStreamSlicer.start_datetime !== "string" ||
       typeof datetimeStreamSlicer.end_datetime !== "string"
     ) {
       throw new ManifestCompatibilityError(streamName, "start_datetime or end_datetime are not set to a string value");
     }
-    return manifestStreamSlicer as DatetimeStreamSlicer;
+    return manifestStreamSlicer;
   }
 
   if (manifestStreamSlicer.type === "ListStreamSlicer") {
-    return manifestStreamSlicer as ListStreamSlicer;
+    return manifestStreamSlicer;
   }
 
   if (manifestStreamSlicer.type === "CartesianProductStreamSlicer") {
@@ -230,7 +227,7 @@ function manifestStreamSlicerToBuilder(
   }
 
   if (manifestStreamSlicer.type === "SubstreamSlicer") {
-    const manifestSubstreamSlicer = manifestStreamSlicer as SubstreamSlicer;
+    const manifestSubstreamSlicer = manifestStreamSlicer;
 
     if (manifestSubstreamSlicer.parent_stream_configs.length > 1) {
       throw new ManifestCompatibilityError(streamName, "SubstreamSlicer has more than one parent stream");
@@ -312,7 +309,7 @@ function manifestSchemaLoaderToBuilderSchema(
   }
 
   if (manifestSchemaLoader.type === "InlineSchemaLoader") {
-    const inlineSchemaLoader = manifestSchemaLoader as InlineSchemaLoader;
+    const inlineSchemaLoader = manifestSchemaLoader;
     return inlineSchemaLoader.schema ? formatJson(inlineSchemaLoader.schema) : undefined;
   }
 

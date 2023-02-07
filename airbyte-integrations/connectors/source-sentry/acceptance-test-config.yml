@@ -21,6 +21,9 @@ acceptance_tests:
     tests:
     - config_path: secrets/config.json
       configured_catalog_path: integration_tests/configured_catalog.json
+    # test 403 exception is not breaking the sync
+    - config_path: secrets/config_limited_scopes.json
+      configured_catalog_path: integration_tests/configured_catalog.json
   incremental:
     tests:
     - config_path: secrets/config.json

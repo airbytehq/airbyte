@@ -551,7 +551,7 @@ function builderStreamSlicerToManifest(
   };
 }
 
-const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} };
+const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} } as const;
 
 function parseSchemaString(schema?: string): DeclarativeStreamSchemaLoader {
   if (!schema) {
@@ -638,7 +638,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
 
   const spec: Spec = {
     connection_specification: specSchema,
-    documentation_url: "",
+    documentation_url: "https://example.org",
     type: "Spec",
   };
 
