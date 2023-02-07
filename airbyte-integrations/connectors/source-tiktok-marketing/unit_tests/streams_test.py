@@ -78,9 +78,10 @@ def test_get_time_interval_past(pendulum_now_mock_past):
     assert len(list(intervals)) == 1
 
 
+@patch("source_tiktok_marketing.streams.AdvertiserIds.read_records", MagicMock(return_value=[{"advertiser_id": i} for i in range(354)]))
 def test_stream_slices_advertisers():
     slices = Advertisers(**CONFIG).stream_slices()
-    assert list(slices) == [None]
+    assert len(list(slices)) == 4  # math.ceil(354 / 100)
 
 
 @pytest.mark.parametrize(

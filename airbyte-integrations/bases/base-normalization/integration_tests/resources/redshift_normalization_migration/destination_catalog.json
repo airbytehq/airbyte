@@ -8,22 +8,22 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": ["null", "integer"]
             },
             "name": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": ["null", "string"]
             },
             "is_default": {
-              "$ref": "WellKnownTypes.json#/definitions/Boolean"
+              "type": ["null", "boolean"]
             },
             "species": {
               "type": ["null", "object"],
               "properties": {
                 "name": {
-                  "$ref": "WellKnownTypes.json#/definitions/String"
+                  "type": ["null", "string"]
                 },
                 "url": {
-                  "$ref": "WellKnownTypes.json#/definitions/String"
+                  "type": ["null", "string"]
                 }
               }
             },
@@ -33,10 +33,10 @@
                 "type": ["null", "object"],
                 "properties": {
                   "name": {
-                    "$ref": "WellKnownTypes.json#/definitions/String"
+                    "type": ["null", "string"]
                   },
                   "url": {
-                    "$ref": "WellKnownTypes.json#/definitions/String"
+                    "type": ["null", "string"]
                   }
                 }
               }
