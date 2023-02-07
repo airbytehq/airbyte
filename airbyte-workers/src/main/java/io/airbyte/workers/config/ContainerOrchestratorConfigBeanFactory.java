@@ -102,9 +102,9 @@ public class ContainerOrchestratorConfigBeanFactory {
     environmentVariables.put(DATA_PLANE_SERVICE_ACCOUNT_EMAIL_ENV_VAR, dataPlaneServiceAccountEmail);
 
     final Configs configs = new EnvConfigs();
+    environmentVariables.put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey());
     environmentVariables.put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit());
     environmentVariables.put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest());
-    environmentVariables.put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey());
 
     if (System.getenv(DD_ENV_ENV_VAR) != null) {
       environmentVariables.put(DD_ENV_ENV_VAR, System.getenv(DD_ENV_ENV_VAR));
