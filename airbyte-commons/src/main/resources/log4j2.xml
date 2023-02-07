@@ -5,7 +5,7 @@
         <!-- Mask the string apikey=<string> to apikey=***** to prevent secrets leaking. -->
         <Property name="default-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0} %highlight{%p} %C{1.}(%M):%L - %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
         <!--Logs the timestamp and log_source/application name in the beginning of the line if it exists with a > separator, and then always the rest of the line.-->
-        <Property name="simple-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0}%replace{ %X{log_source}}{^ -}{} > %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
+        <Property name="simple-pattern">%d{yyyy-MM-dd HH:mm:ss}{GMT+0}%replace{ %X{log_source}}{^ -}{} > %C{1.} %replace{%m}{apikey=[\w\-]*}{apikey=*****}%n</Property>
 
         <!-- Always log INFO by default. -->
         <Property name="log-level">${sys:LOG_LEVEL:-${env:LOG_LEVEL:-INFO}}</Property>
