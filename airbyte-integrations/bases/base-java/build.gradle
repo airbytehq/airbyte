@@ -6,7 +6,6 @@ plugins {
 dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
 
     implementation 'commons-cli:commons-cli:1.4'
