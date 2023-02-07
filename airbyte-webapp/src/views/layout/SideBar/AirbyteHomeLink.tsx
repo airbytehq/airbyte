@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 
 import { RoutePaths } from "pages/routePaths";
 
+import styles from "./AirbyteHomeLink.module.scss";
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 
 export const AirbyteHomeLink: React.FC<PropsWithChildren<unknown>> = () => {
@@ -11,7 +12,7 @@ export const AirbyteHomeLink: React.FC<PropsWithChildren<unknown>> = () => {
 
   return (
     <Link to={RoutePaths.Connections} aria-label={formatMessage({ id: "sidebar.homepage" })}>
-      <AirbyteLogo height={33} width={33} />
+      <AirbyteLogo height={33} width={33} className={styles.logo} />
     </Link>
   );
 };
