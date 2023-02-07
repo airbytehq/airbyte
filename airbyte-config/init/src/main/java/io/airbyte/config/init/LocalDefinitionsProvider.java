@@ -11,7 +11,6 @@ import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneFi
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Resources;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
@@ -131,9 +130,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
    * @return JSON of connector definition including the connector spec
    */
   private static JsonNode mergeSpecIntoDefinition(final JsonNode definitionJson, final Map<String, JsonNode> specConfigs) {
-    final String dockerImage = DockerUtils.getTaggedImageName(
-        definitionJson.get("dockerRepository").asText(),
-        definitionJson.get("dockerImageTag").asText());
+    final String dockerImage = definitionJson.get("dockerRepository").asText() + ":" + definitionJson.get("dockerImageTag").asText();
     final JsonNode specConfigJson = specConfigs.get(dockerImage);
     if (specConfigJson == null || specConfigJson.get(SPEC) == null) {
       throw new UnsupportedOperationException(String.format("There is no seed spec for docker image %s", dockerImage));
