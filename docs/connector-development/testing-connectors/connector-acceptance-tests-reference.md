@@ -171,7 +171,7 @@ Set `validate_data_points=True` if possible. This validation is going to be enab
 
 ### Schema format checking
 
-If some field has [format](https://json-schema.org/understanding-json-schema/reference/string.html#format) attribute specified on its catalog json schema, Source Acceptance Testing framework performs checking against format. It support checking of all [builtin](https://json-schema.org/understanding-json-schema/reference/string.html#built-in-formats) jsonschema formats for draft 7 specification: email, hostnames, ip addresses, time, date and date-time formats.
+If some field has [format](https://json-schema.org/understanding-json-schema/reference/string.html#format) attribute specified on its catalog json schema, Connector Acceptance Testing framework performs checking against format. It support checking of all [builtin](https://json-schema.org/understanding-json-schema/reference/string.html#built-in-formats) jsonschema formats for draft 7 specification: email, hostnames, ip addresses, time, date and date-time formats.
 
 Note: For date-time we are not checking against compliance against ISO8601 \(and RFC3339 as subset of it\). Since we are using specified format to set database column type on db normalization stage, value should be compliant to bigquery [timestamp](https://cloud.google.com/bigquery/docs/reference/standard-sql/data-types#timestamp_type) and SQL "timestamp with timezone" formats.
 
@@ -238,7 +238,7 @@ This test verifies that sync produces no records when run with the STATE with ab
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                         |     |
 | `future_state_path`       | string | None                                        | Path to the state file with abnormally large cursor values         |     |
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                  |     |
-| `bypass_reason`           | string | None                                        | Explain why this test is bypassed                                 |     |
+| `bypass_reason`           | string | None                                        | Explain why this test is bypassed                                  |     |
 
 ## Strictness level
 
@@ -362,3 +362,40 @@ acceptance_tests:
 
 We cache discovered catalogs by default for performance and reuse the same discovered catalog through all tests.
 You can disable this behavior by setting `cached_discovered_catalog: False` at the root of the configuration.
+
+## Additional Checks
+
+While not necessarily related to Connector Acceptance Testing, Airbyte employs a number of additional checks which run on connector Pull Requests which check the following items:
+
+### Strictness Level
+
+Generally Available Connectors must enable high-strictness testing for the Connector Acceptance Test suite. This ensures that these connectors have implemented the most robust collection of tests.
+
+### Allowed Hosts
+
+GA and Beta connectors are required to provide an entry for Allowed Hosts in the Actor Definition for the connector. Actor Definitions are stored in either [source_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/source_definitions.yaml) or [destination_definitions.yaml](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/init/src/main/resources/seed/destination_definitions.yaml) in the codebase. You can provide:
+
+A list of static hostnames or IP addresses. Wildcards are valid.
+
+```yaml
+allowedHosts:
+  hosts:
+    - "api.github.com"
+    - "*.hubspot.com"
+```
+
+A list of dynamic hostnames or IP addresses which reference values from the connector's configuration. The variable names need to match the connector's config exactly. In this example, `subdomain` is a required option defined by the connector's SPEC response. It is also possible to refrence sub-fields with dot-notation, e.g. `networking_options.tunnel_host`.
+
+```yaml
+allowedHosts:
+  hosts:
+    - "${subdomain}.vendor.com"
+    - "${networking_options.tunnel_host}"
+```
+
+or prevent network access for this connector entirely
+
+```yaml
+allowedHosts:
+  hosts: []
+```
