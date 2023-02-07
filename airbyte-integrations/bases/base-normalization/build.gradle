@@ -81,6 +81,10 @@ task airbyteDockerTiDB(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('tidb')
     dependsOn assemble
 }
+task airbyteDockerDuckDB(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('duckdb')
+    dependsOn assemble
+}
 
 airbyteDocker.dependsOn(airbyteDockerMSSql)
 airbyteDocker.dependsOn(airbyteDockerMySql)
@@ -89,6 +93,7 @@ airbyteDocker.dependsOn(airbyteDockerClickhouse)
 airbyteDocker.dependsOn(airbyteDockerSnowflake)
 airbyteDocker.dependsOn(airbyteDockerRedshift)
 airbyteDocker.dependsOn(airbyteDockerTiDB)
+airbyteDocker.dependsOn(airbyteDockerDuckDB)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
     module = "pytest"
@@ -104,6 +109,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
 }
 
 // not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
@@ -118,6 +124,7 @@ project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-
 project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
 project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
 project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
 
 // DATs have some additional tests that exercise normalization code paths,
 // so we want to run these in addition to the base-normalization integration tests.
