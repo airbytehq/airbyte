@@ -96,10 +96,10 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
           options={[
             {
               as: "a",
-              href: `../${RoutePaths.ConnectorBuilder}`,
+              href: `../../${RoutePaths.ConnectorBuilder}`,
               icon: <BuilderIcon />,
               displayName: formatMessage({ id: "admin.newConnector.build" }),
-              openInNewTab: false,
+              internal: true,
             },
             {
               as: "button",
