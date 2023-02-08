@@ -72,6 +72,7 @@ class ExactStream(HttpStream, IncrementalMixin):
         if next_page_token:
             return next_page_token["next_url"]
 
+        self.logger.info(f"Syncing endpoint {self.endpoint}...")
         return self.endpoint
 
     def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
@@ -145,6 +146,8 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         division = str(stream_slice["division"])
         self._url_base = f"https://start.exactonline.nl/api/v1/{division}/"
+
+        self.logger.info(f"Syncing division {division}...")
 
         for record in super().read_records(stream_slice=stream_slice, **kwargs):
             # Track the largest cursor value
