@@ -13,7 +13,7 @@ interface FieldRowProps {
 }
 
 export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
-  const fieldName = transform.fieldName[transform.fieldName.length - 1];
+  const fieldName = transform.fieldName.join(".");
   const diffType = transform.transformType.includes("add")
     ? "add"
     : transform.transformType.includes("remove")
