@@ -19,7 +19,7 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
                         '-w', "$targetMountDirectory",
                         '-e', "AIRBYTE_SAT_CONNECTOR_DIR=${project.projectDir.absolutePath}",
                         'airbyte/connector-acceptance-test:dev',
-                        '-p', 'integration_tests.acceptance',
+                        '--acceptance-test-config', targetMountDirectory,
                     ]
                     commandLine args
                 }
