@@ -38,7 +38,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -135,7 +135,7 @@ class ModelToComponentFactory:
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
-            CustomStreamSlicerModel: self.create_custom_component,
+            CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
             DatetimeBasedCursorModel: self.create_datetime_stream_slicer,
             DeclarativeStreamModel: self.create_declarative_stream,

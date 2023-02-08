@@ -137,7 +137,7 @@ definitions:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
       partition_router:
-        type: CustomStreamSlicer
+        type: CustomPartitionRouter
         class_name: source_posthog.components.EventsCartesianProductStreamSlicer
         partition_routers:
           - type: SubstreamSlicer

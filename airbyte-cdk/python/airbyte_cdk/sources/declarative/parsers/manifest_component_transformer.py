@@ -57,18 +57,18 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
-    # CustomStreamSlicer
-    "CustomStreamSlicer.end_datetime": "MinMaxDatetime",
-    "CustomStreamSlicer.end_time_option": "RequestOption",
-    "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
-    "CustomStreamSlicer.start_datetime": "MinMaxDatetime",
-    "CustomStreamSlicer.start_time_option": "RequestOption",
+    # CustomPartitionRouter
+    "CustomPartitionRouter.end_datetime": "MinMaxDatetime",
+    "CustomPartitionRouter.end_time_option": "RequestOption",
+    "CustomPartitionRouter.parent_stream_configs": "ParentStreamConfig",
+    "CustomPartitionRouter.start_datetime": "MinMaxDatetime",
+    "CustomPartitionRouter.start_time_option": "RequestOption",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "CartesianProductStreamSlicer.stream_slicers": "CustomStreamSlicer",
+    "CartesianProductStreamSlicer.stream_slicers": "CustomPartitionRouter",
     "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DeclarativeStream.retriever": "CustomRetriever",
     "DeclarativeStream.transformations": "CustomTransformation",
@@ -77,7 +77,7 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "HttpRequester.authenticator": "CustomAuthenticator",
     "HttpRequester.error_handler": "CustomErrorHandler",
     "RecordSelector.extractor": "CustomRecordExtractor",
-    "SimpleRetriever.partition_router": "CustomStreamSlicer",
+    "SimpleRetriever.partition_router": "CustomPartitionRouter",
 }
 
 
