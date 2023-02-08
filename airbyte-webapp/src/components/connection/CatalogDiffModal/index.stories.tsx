@@ -63,11 +63,19 @@ const fullCatalogDiff: CatalogDiff = {
   transforms: [
     {
       transformType: "update_stream",
-      streamDescriptor: { namespace: "apple", name: "harissa_paste" },
+      streamDescriptor: { namespace: "too_long_of_a_namespace", name: "too_long_of_a_name_for_this" },
       updateStream: [
         { transformType: "add_field", fieldName: ["users", "phone"], breaking: false },
         { transformType: "add_field", fieldName: ["users", "email"], breaking: false },
         { transformType: "remove_field", fieldName: ["users", "lastName"], breaking: false },
+        {
+          transformType: "remove_field",
+          fieldName:
+            "universe.milky_way_galaxy.earth.land.north_america.alaska.yukon.businesses.stores.names.created_at".split(
+              "."
+            ),
+          breaking: false,
+        },
         {
           transformType: "update_field_schema",
           breaking: false,
@@ -77,7 +85,7 @@ const fullCatalogDiff: CatalogDiff = {
         {
           transformType: "update_field_schema",
           breaking: false,
-          fieldName: ["users", "updated_at"],
+          fieldName: ["package_dimensions", "size", "width", "updated_at"],
           updateFieldSchema: { oldSchema: { type: "string" }, newSchema: { type: "DateTime" } },
         },
       ],
@@ -88,7 +96,10 @@ const fullCatalogDiff: CatalogDiff = {
     },
     {
       transformType: "add_stream",
-      streamDescriptor: { namespace: "apple", name: "carrot" },
+      streamDescriptor: {
+        namespace: "too_long_of_a_namespace",
+        name: "too_long_of_a_name_for_this_too_long_of_a_name_for_this_too_long_of_a_name_for_this",
+      },
     },
     {
       transformType: "remove_stream",

@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/mixins";
 
 .row {
   display: flex;
@@ -63,10 +64,17 @@
 .nameCell,
 %nameCell {
   width: 150px;
-  text-align: left;
+
+  &.lg {
+    width: 385px;
+  }
 
   & .row {
     display: flex;
     flex-direction: row;
   }
+}
+
+.text {
+  @include mixins.overflow-ellipsis;
 }

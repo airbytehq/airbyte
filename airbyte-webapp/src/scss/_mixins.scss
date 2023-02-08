@@ -1,5 +1,11 @@
 @use "./variables";
 
+@mixin overflow-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 @mixin shadow {
   box-shadow: variables.$box-shadow;
 }

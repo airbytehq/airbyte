@@ -37,9 +37,14 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
   });
 
   const updateCellStyle = classnames(styles.cell, styles.update);
+  const hasTypeChange = oldType && newType;
 
   return (
-    <tr className={styles.row}>
+    <tr
+      className={classnames(styles.row, {
+        [styles.withType]: hasTypeChange,
+      })}
+    >
       <td className={contentStyle}>
         <div className={styles.iconContainer}>
           {diffType === "add" ? (
@@ -52,9 +57,11 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
             </div>
           )}
         </div>
-        {fieldName}
+        <div title={fieldName} className={styles.fieldName}>
+          {fieldName}
+        </div>
       </td>
-      {oldType && newType && (
+      {hasTypeChange && (
         <td className={contentStyle}>
           <div className={updateCellStyle}>
             <span className={styles.dataType}>
