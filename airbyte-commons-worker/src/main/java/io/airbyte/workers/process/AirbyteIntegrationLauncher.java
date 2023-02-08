@@ -20,10 +20,13 @@ import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -219,14 +222,25 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   private Map<String, String> getWorkerMetadata() {
-    return Map.of(
-        WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
-        WorkerEnvConstants.WORKER_JOB_ID, jobId,
-        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
-        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
-        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
-        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
-        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
+    final Configs configs = new EnvConfigs();
+    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert
+    // back to hashmap
+    return Maps.newHashMap(
+        ImmutableMap.<String, String>builder()
+            .put(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName)
+            .put(WorkerEnvConstants.WORKER_JOB_ID, jobId)
+            .put(WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt))
+            .put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()))
+            .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()))
+            .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()))
+            .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())
+            .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES, featureFlags.strictComparisonNormalizationWorkspaces())
+            .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.strictComparisonNormalizationTag())
+            .put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit())
+            .put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest())
+            .put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey())
+            .put(EnvConfigs.FEATURE_FLAG_CLIENT, configs.getFeatureFlagClient())
+            .build());
   }
 
 }

@@ -2,7 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-source-acceptance-test'
+    id 'airbyte-connector-acceptance-test'
     id "java-library"
     // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
     id "java-test-fixtures"

@@ -9,7 +9,6 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
@@ -119,11 +118,6 @@ def test_check_http_stream_via_availability_strategy(mocker, test_name, response
             self.resp_counter += 1
             yield stub_resp
         pass
-
-        # TODO (Ella): Remove explicit definition when turning on default
-        @property
-        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-            return HttpAvailabilityStrategy()
 
     http_stream = MockHttpStream()
     assert isinstance(http_stream, HttpStream)

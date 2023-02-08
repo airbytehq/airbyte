@@ -24,13 +24,13 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import jakarta.inject.Singleton;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 
-@Singleton
+// Disable V1 Migration, uncomment to re-enable
+// @Singleton
 public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
   private final JsonSchemaValidator validator;

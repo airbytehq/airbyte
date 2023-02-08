@@ -13,6 +13,8 @@ import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.commons.features.FeatureFlagHelper;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.protocol.migrations.v1.CatalogMigrationV1Helper;
@@ -50,8 +52,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class NormalizationActivityImpl implements NormalizationActivity {
 
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
@@ -62,13 +66,17 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
   private final String airbyteVersion;
+  private final FeatureFlags featureFlags;
   private final Integer serverPort;
   private final AirbyteConfigValidator airbyteConfigValidator;
   private final TemporalUtils temporalUtils;
   private final ResourceRequirements normalizationResourceRequirements;
   private final AirbyteApiClient airbyteApiClient;
 
-  private final static Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
+  // This constant is not currently in use. We'll need to bump it when we try releasing v1 again.
+  private static final Version MINIMAL_VERSION_FOR_DATATYPES_V1 = new Version("0.3.0");
+  private static final String V1_NORMALIZATION_MINOR_VERSION = "3";
+  private static final String NON_STRICT_COMPARISON_IMAGE_TAG = "0.2.25";
 
   public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
                                    @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
@@ -78,6 +86,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                    final WorkerEnvironment workerEnvironment,
                                    final LogConfigs logConfigs,
                                    @Value("${airbyte.version}") final String airbyteVersion,
+                                   final FeatureFlags featureFlags,
                                    @Value("${micronaut.server.port}") final Integer serverPort,
                                    final AirbyteConfigValidator airbyteConfigValidator,
                                    final TemporalUtils temporalUtils,
@@ -91,6 +100,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.airbyteVersion = airbyteVersion;
+    this.featureFlags = featureFlags;
     this.serverPort = serverPort;
     this.airbyteConfigValidator = airbyteConfigValidator;
     this.temporalUtils = temporalUtils;
@@ -111,21 +121,28 @@ public class NormalizationActivityImpl implements NormalizationActivity {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
-      // Check the version of normalization
-      // We require at least version 0.3.0 to support data types v1. Using an older version would lead to
-      // all columns being typed as JSONB. We should fail before coercing the types into an unexpected
-      // form.
-      if (!normalizationSupportsV1DataTypes(destinationLauncherConfig)) {
-        throw new IllegalStateException("Normalization is too old, a version >=\"0.3.0\" is required but got \""
-            + destinationLauncherConfig.getNormalizationDockerImage() + "\" instead");
+      if (FeatureFlagHelper.isStrictComparisonNormalizationEnabledForWorkspace(featureFlags, input.getWorkspaceId())) {
+        log.info("Using strict comparison normalization");
+        replaceNormalizationImageTag(destinationLauncherConfig, featureFlags.strictComparisonNormalizationTag());
       }
 
-      // This should only be useful for syncs that started before the release that contained v1 migration.
-      // However, we lack the effective way to detect those syncs so this code should remain until we
-      // phase v0 out.
-      // Performance impact should be low considering the nature of the check compared to the time to run
-      // normalization.
-      CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
+      // Check the version of normalization
+      // We require at least version 0.3.0 to support data types v1. Using an older version would lead to
+      // all columns being typed as JSONB. If normalization is using an older version, fallback to using
+      // v0 data types.
+      if (!normalizationSupportsV1DataTypes(destinationLauncherConfig)) {
+        log.info("Using protocol v0");
+        CatalogMigrationV1Helper.downgradeSchemaIfNeeded(fullInput.getCatalog());
+      } else {
+
+        // This should only be useful for syncs that started before the release that contained v1 migration.
+        // However, we lack the effective way to detect those syncs so this code should remain until we
+        // phase v0 out.
+        // Performance impact should be low considering the nature of the check compared to the time to run
+        // normalization.
+        log.info("Using protocol v1");
+        CatalogMigrationV1Helper.upgradeSchemaIfNeeded(fullInput.getCatalog());
+      }
 
       final Supplier<NormalizationInput> inputSupplier = () -> {
         airbyteConfigValidator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
@@ -134,6 +151,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
       final CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> workerFactory;
 
+      log.info("Using normalization: " + destinationLauncherConfig.getNormalizationDockerImage());
       if (containerOrchestratorConfig.isPresent()) {
         workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
             () -> context);
@@ -162,20 +180,31 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     return new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withCatalog(syncOutput.getOutputCatalog())
-        .withResourceRequirements(normalizationResourceRequirements);
+        .withResourceRequirements(normalizationResourceRequirements)
+        .withWorkspaceId(syncInput.getWorkspaceId());
   }
 
   @VisibleForTesting
   static boolean normalizationSupportsV1DataTypes(final IntegrationLauncherConfig destinationLauncherConfig) {
     try {
-      final String[] normalizationImage = destinationLauncherConfig.getNormalizationDockerImage().split(":", 2);
-      final Version normalizationVersion = new Version(normalizationImage[1]);
-      return normalizationVersion.greaterThanOrEqualTo(MINIMAL_VERSION_FOR_DATATYPES_V1);
+      final Version normalizationVersion = new Version(getNormalizationImageTag(destinationLauncherConfig));
+      return V1_NORMALIZATION_MINOR_VERSION.equals(normalizationVersion.getMinorVersion());
     } catch (final IllegalArgumentException e) {
       // IllegalArgument here means that the version isn't in a semver format.
-      // The current behavior is to assume it supports v1 data types for dev purposes.
-      return true;
+      // The current behavior is to assume it supports v0 data types for dev purposes.
+      return false;
     }
+  }
+
+  private static String getNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig) {
+    return destinationLauncherConfig.getNormalizationDockerImage().split(":", 2)[1];
+  }
+
+  @VisibleForTesting
+  static void replaceNormalizationImageTag(final IntegrationLauncherConfig destinationLauncherConfig, final String newTag) {
+    final String[] imageComponents = destinationLauncherConfig.getNormalizationDockerImage().split(":", 2);
+    imageComponents[1] = newTag;
+    destinationLauncherConfig.setNormalizationDockerImage(String.join(":", imageComponents));
   }
 
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
