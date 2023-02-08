@@ -34,7 +34,7 @@ import {
   waitForGetSourcesListRequest,
 } from "commands/interceptors";
 import { Connection, Destination, Source } from "commands/api/types";
-import { selectSchedule } from "pages/replicationPage";
+import { clearStreamSearch, searchStream, selectSchedule } from "pages/replicationPage";
 import { runDbQuery } from "commands/db/db";
 import {
   createUsersTableQuery,
@@ -135,6 +135,16 @@ describe("New stream table - new connection set up ", () => {
 
     scrollTableToStream(desiredStreamTableRow);
     isStreamTableRowVisible(desiredStreamTableRow);
+  });
+
+  it("should filter table by stream name", () => {
+    searchStream("dummy_table_10");
+    checkAmountOfStreamTableRows(1);
+  });
+
+  it("should clear stream search input field and show all available streams", () => {
+    clearStreamSearch();
+    checkAmountOfStreamTableRows(21);
   });
 
   /*
