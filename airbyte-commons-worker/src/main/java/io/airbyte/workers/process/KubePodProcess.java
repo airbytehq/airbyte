@@ -64,6 +64,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import static io.airbyte.config.EnvConfigs.DD_AGENT_HOST;
+
 /**
  * A Process abstraction backed by a Kube Pod running in a Kubernetes cluster 'somewhere'. The
  * parent process starting a Kube Pod Process needs to exist within the Kube networking space. This
@@ -217,7 +219,7 @@ public class KubePodProcess implements KubePod {
 
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
-    final List<EnvVar> envVars = envMap.entrySet().stream()
+    List<EnvVar> envVars = envMap.entrySet().stream()
         // .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
@@ -225,12 +227,19 @@ public class KubePodProcess implements KubePod {
     String ddEnvVar =
 //        "-XX:+ExitOnOutOfMemoryError -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
         "-XX:+ExitOnOutOfMemoryError -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
-
     if (image.contains("source-postgres")) {
       envVars.add(new EnvVar("JAVA_OPTS", ddEnvVar, null));
+
+      if(System.getenv("DD_AGENT_HOST") != null) {
+        envVars.add(new EnvVar("DD_AGENT_HOST", System.getenv("DD_AGENT_HOST"), null));
+      }
+      if(System.getenv("DD_DOGSTATSD_PORT") != null) {
+        envVars.add(new EnvVar("DD_DOGSTATSD_PORT", System.getenv("DD_DOGSTATSD_PORT"), null));
+      }
+      envVars = envVars.stream().filter(KubePodProcess::filterDdService).toList();
     }
 
-      envVars.forEach(envVar -> LOGGER.error("Env var with name - {}, value - {}, and valueFrom - {}", envVar.getName(), envVar.getValue(), envVar.getValueFrom()));
+    envVars.forEach(envVar -> LOGGER.error("****Env var with name - {}, value - {}, and valueFrom - {}", envVar.getName(), envVar.getValue(), envVar.getValueFrom()));
 
     final ContainerBuilder containerBuilder = new ContainerBuilder()
         .withName(MAIN_CONTAINER_NAME)
@@ -247,6 +256,10 @@ public class KubePodProcess implements KubePod {
       containerBuilder.withResources(resourceRequirementsBuilder.build());
     }
     return containerBuilder.build();
+  }
+
+  private static boolean filterDdService(EnvVar envVar) {
+    return !envVar.getName().equals("DD_SERVICE");
   }
 
   // private static boolean isConnectorNeedDatadogSupport(String image, Map.Entry<String, String>

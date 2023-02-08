@@ -112,10 +112,6 @@ public class ContainerOrchestratorConfigBeanFactory {
       environmentVariables.put(DD_VERSION_ENV_VAR, System.getenv(DD_VERSION_ENV_VAR));
     }
 
-    if (System.getenv(DD_AGENT_HOST) != null) {
-      environmentVariables.put(DD_AGENT_HOST, System.getenv(DD_AGENT_HOST));
-    }
-
     // if (System.getenv(DD_CONNECTOR_JAVA_OPTS_ENV_VAR) != null) {
     // environmentVariables.put(DD_CONNECTOR_JAVA_OPTS_ENV_VAR,
     // System.getenv(containerConnectorJavaOpts));
