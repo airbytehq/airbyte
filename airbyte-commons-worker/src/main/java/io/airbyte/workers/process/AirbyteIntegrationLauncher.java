@@ -223,6 +223,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   private Map<String, String> getWorkerMetadata() {
     final Configs configs = new EnvConfigs();
+    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert
+    // back to hashmap
     return Maps.newHashMap(
         ImmutableMap.<String, String>builder()
             .put(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName)
@@ -232,6 +234,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
             .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()))
             .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()))
             .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())
+            .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES, featureFlags.strictComparisonNormalizationWorkspaces())
+            .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.strictComparisonNormalizationTag())
             .put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit())
             .put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest())
             .put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey())
