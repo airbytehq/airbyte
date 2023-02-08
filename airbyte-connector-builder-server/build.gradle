@@ -39,6 +39,10 @@ task generateOpenApiPythonServer(type: GenerateTask) {
     }
 }
 
+// it's important to explicitly say that the AirbyteDocker task (which takes as input all files in this directory)
+// dependsOn any task which manipulates files in this directory, or else Gradle will disable incremental builds on those
+// tasks to preserve build correctness. More info at https://docs.gradle.org/7.6/userguide/validation_problems.html#implicit_dependency
+airbyteDocker.dependsOn(generateOpenApiPythonServer)
 project.build.dependsOn(generateOpenApiPythonServer)
 
 // java modules such as airbyte-server can use copyGeneratedTar to copy the files to the docker image
