@@ -239,6 +239,8 @@ public class EnvConfigs implements Configs {
   public static final int DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = 14;
   public static final String LAUNCHDARKLY_KEY = "LAUNCHDARKLY_KEY";
 
+  public static final String FEATURE_FLAG_CLIENT = "FEATURE_FLAG_CLIENT";
+
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
   private final LogConfigs logConfigs;
@@ -855,6 +857,11 @@ public class EnvConfigs implements Configs {
   @Override
   public String getLaunchDarklyKey() {
     return getEnvOrDefault(LAUNCHDARKLY_KEY, "");
+  }
+
+  @Override
+  public String getFeatureFlagClient() {
+    return getEnvOrDefault(FEATURE_FLAG_CLIENT, "");
   }
 
   /**
