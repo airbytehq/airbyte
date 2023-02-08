@@ -1,2 +1,2 @@
-select * from {{ ref('sync2_row_counts') }}
+select * from {{ ref('SYNC2_ROW_COUNTS') }}
 where row_count != expected_count
