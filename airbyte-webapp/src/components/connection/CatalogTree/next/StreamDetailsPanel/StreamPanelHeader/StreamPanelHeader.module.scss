@@ -5,20 +5,19 @@
   border-radius: variables.$spacing-md;
   margin: variables.$spacing-md variables.$spacing-lg;
   background-color: colors.$grey-50;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
 
   & > :not(button) {
     padding: variables.$spacing-md;
   }
 }
 
+.leftActions,
+.rightActions {
+  flex: 1 1 130px;
+}
+
 .properties {
-  display: flex;
-  flex-direction: row;
-  gap: variables.$spacing-xl;
+  flex: 1 0 auto;
 }
 
 .streamPropLabel {

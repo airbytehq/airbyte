@@ -29,4 +29,5 @@ export const SyncHeaderContainer = styled.span`
 
 export const SyncCheckboxContainer = styled.div`
   padding-left: 24px;
+  width: 72px;
 `;

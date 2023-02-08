@@ -1,7 +1,9 @@
 import { useCallback } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { CheckBox } from "components/ui/CheckBox";
+import { FlexContainer } from "components/ui/Flex";
+import { Switch } from "components/ui/Switch";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
@@ -58,20 +60,20 @@ export const SyncFieldCell: React.FC<SyncFieldCellProps> = ({
   }, [isCursor, isChildFieldCursor, isPrimaryKey, isChildFieldPrimaryKey, isNestedField, field.path]);
 
   return (
-    <>
+    <FlexContainer alignItems="center">
       {!showTooltip && (
-        <CheckBox
-          checkboxSize="sm"
+        <Switch
+          size="xs"
           checked={isFieldSelected}
           disabled={isDisabled}
           onChange={() => handleFieldToggle(field.path, !isFieldSelected)}
         />
       )}
       {showTooltip && (
-        <Tooltip control={<CheckBox checkboxSize="sm" disabled checked={isFieldSelected} readOnly />}>
+        <Tooltip control={<Switch size="xs" disabled checked={isFieldSelected} readOnly />}>
           {renderDisabledReasonMessage()}
         </Tooltip>
       )}
-    </>
+    </FlexContainer>
   );
 };

@@ -6,9 +6,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
-import { CheckBox } from "components/ui/CheckBox";
 import { FlexContainer } from "components/ui/Flex";
 import { NextTable } from "components/ui/NextTable";
+import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
@@ -118,26 +118,29 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
 
   const sourceColumns = useMemo(
     () => [
-      ...(isColumnSelectionEnabled
-        ? [
-            columnHelper.display({
-              id: "sourceSyncField",
-              header: () => (
-                <FlexContainer gap="md">
-                  <CheckBox
-                    checkboxSize="sm"
-                    indeterminate={config?.fieldSelectionEnabled && !!config?.selectedFields?.length}
-                    checked={!config?.fieldSelectionEnabled}
-                    onChange={toggleAllFieldsSelected}
-                    disabled={mode === "readonly"}
-                  />
-                  <FormattedMessage id="form.field.sync" />
-                </FlexContainer>
-              ),
-              cell: (props) => (
+      columnHelper.accessor("path", {
+        id: "sourcePath",
+        header: () => (
+          <FlexContainer alignItems="center">
+            {isColumnSelectionEnabled && (
+              <Switch
+                size="xs"
+                indeterminate={config?.fieldSelectionEnabled && !!config?.selectedFields?.length}
+                checked={!config?.fieldSelectionEnabled}
+                onChange={toggleAllFieldsSelected}
+                disabled={mode === "readonly"}
+              />
+            )}
+            <FormattedMessage id="form.field.name" />
+          </FlexContainer>
+        ),
+        cell: ({ getValue, row }) => (
+          <CatalogTreeTableCell size="small" withTooltip>
+            <FlexContainer alignItems="center">
+              {isColumnSelectionEnabled && (
                 <SyncFieldCell
-                  field={props.row.original.field}
-                  isFieldSelected={props.row.original.isFieldSelected}
+                  field={row.original.field}
+                  isFieldSelected={row.original.isFieldSelected}
                   handleFieldToggle={handleFieldToggle}
                   checkIsCursor={checkIsCursor}
                   checkIsChildFieldCursor={checkIsChildFieldCursor}
@@ -146,20 +149,9 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
                   syncMode={config?.syncMode}
                   destinationSyncMode={config?.destinationSyncMode}
                 />
-              ),
-              meta: {
-                thClassName: classNames(styles.headerCell, styles["headerCell--syncCell"]),
-                tdClassName: styles.syncCell,
-              },
-            }),
-          ]
-        : []),
-      columnHelper.accessor("path", {
-        id: "sourcePath",
-        header: () => <FormattedMessage id="form.field.name" />,
-        cell: ({ getValue }) => (
-          <CatalogTreeTableCell size="small" withTooltip>
-            <Text size="sm">{pathDisplayName(getValue())}</Text>
+              )}
+              <Text size="sm">{pathDisplayName(getValue())}</Text>
+            </FlexContainer>
           </CatalogTreeTableCell>
         ),
         meta: {
@@ -212,6 +204,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         },
       }),
     ],
+    // eslint-disable-next-line
     [
       columnHelper,
       config?.fieldSelectionEnabled,

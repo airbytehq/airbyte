@@ -41,11 +41,6 @@ $arrow-cell-fixed-width: 40px;
   line-height: 15px;
   text-transform: capitalize;
 
-  &--syncCell {
-    width: 0; /** Collapses the th to the exact size of its content **/
-    padding-right: variables.$spacing-lg;
-  }
-
   &:first-child {
     padding-left: $cell-padding;
     border-radius: 0;
@@ -69,12 +64,6 @@ $arrow-cell-fixed-width: 40px;
   &:last-child {
     padding-right: $cell-padding;
   }
-}
-
-.syncCell {
-  @extend %bodyCell;
-
-  min-width: 0;
 }
 
 .textCell {

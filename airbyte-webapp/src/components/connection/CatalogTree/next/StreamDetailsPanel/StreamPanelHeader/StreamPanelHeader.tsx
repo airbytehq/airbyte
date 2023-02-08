@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import { CrossIcon } from "components/icons/CrossIcon";
 import { Button } from "components/ui/Button";
+import { FlexContainer } from "components/ui/Flex";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
 
@@ -49,19 +50,24 @@ export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
     </>
   );
   return (
-    <div className={styles.container}>
-      <div>
+    <FlexContainer className={styles.container} justifyContent="space-between" alignItems="center">
+      <FlexContainer gap="md" alignItems="center" className={styles.leftActions}>
         <Switch size="sm" checked={config?.selected} onChange={onSelectedChange} disabled={disabled} />
-      </div>
-      <div className={styles.properties}>
+        <Text color="grey-300" size="xs">
+          <FormattedMessage id="form.stream.sync" />
+        </Text>
+      </FlexContainer>
+      <FlexContainer className={styles.properties} justifyContent="center" gap="xl">
         <StreamProperty
           messageId="form.namespace"
           value={stream?.namespace ?? <FormattedMessage id="form.noNamespace" />}
         />
         <StreamProperty messageId="form.streamName" value={stream?.name} />
         <StreamProperty messageId="form.syncMode" value={syncMode} />
-      </div>
-      <Button variant="clear" onClick={onClose} className={styles.crossIcon} icon={<CrossIcon />} />
-    </div>
+      </FlexContainer>
+      <FlexContainer className={styles.rightActions} justifyContent="flex-end">
+        <Button variant="clear" onClick={onClose} className={styles.crossIcon} icon={<CrossIcon />} />
+      </FlexContainer>
+    </FlexContainer>
   );
 };
