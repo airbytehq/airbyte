@@ -364,8 +364,8 @@ class DatetimeBasedCursor(BaseModel):
         description="How many days before start_datetime to read data for (ISO8601 duration)",
     )
     start_time_option: Optional[RequestOption] = Field(None, description="Request option for start time")
-    stream_state_field_end: Optional[str] = Field(None, description="Stream slice start time field")
-    stream_state_field_start: Optional[str] = Field(None, description="Stream slice end time field")
+    partition_field_end: Optional[str] = Field(None, description="Partition start time field")
+    partition_field_start: Optional[str] = Field(None, description="Partition end time field")
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
