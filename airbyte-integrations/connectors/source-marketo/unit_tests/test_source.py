@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -8,9 +8,10 @@ import tracemalloc
 from functools import partial
 from unittest.mock import ANY, Mock, patch
 
+import pendulum
 import pytest
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from source_marketo.source import Activities, Campaigns, MarketoStream, Programs, SourceMarketo
+from source_marketo.source import Activities, Campaigns, Leads, MarketoStream, Programs, SourceMarketo
 
 
 def test_create_export_job(mocker, send_email_stream, caplog):
@@ -53,7 +54,7 @@ def test_create_export_job(mocker, send_email_stream, caplog):
                     "activityTypeId": {"type": ["null", "integer"]},
                     "campaignId": {"type": ["null", "integer"]},
                     "costperperson": {"type": ["number", "null"]},
-                    "date": {"format": "date-time", "type": ["string", "null"]},
+                    "date": {"format": "date", "type": ["string", "null"]},
                     "ismandatory": {"type": ["boolean", "null"]},
                     "leadId": {"type": ["null", "integer"]},
                     "marketoGUID": {"type": ["null", "string"]},
@@ -286,3 +287,30 @@ def test_check_connection(config, requests_mock, status_code, response, is_conne
 def test_normalize_datetime(config, input, format, expected_result):
     stream = Programs(config)
     assert stream.normalize_datetime(input, format) == expected_result
+
+
+today = pendulum.now()
+yesterday = pendulum.now().subtract(days=1).strftime("%Y-%m-%dT%H:%M:%SZ")
+today = today.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+@pytest.mark.parametrize(
+    "latest_record, current_state, expected_state",
+    (
+        ({}, {}, "start_date"),
+        ({"updatedAt": None}, {"updatedAt": None}, "start_date"),
+        ({}, {"updatedAt": None}, "start_date"),
+        ({"updatedAt": None}, {}, "start_date"),
+        ({}, {"updatedAt": today}, {"updatedAt": today}),
+        ({"updatedAt": None}, {"updatedAt": today}, {"updatedAt": today}),
+        ({"updatedAt": today}, {"updatedAt": None}, {"updatedAt": today}),
+        ({"updatedAt": today}, {}, {"updatedAt": today}),
+        ({"updatedAt": yesterday}, {"updatedAt": today}, {"updatedAt": today}),
+        ({"updatedAt": today}, {"updatedAt": yesterday}, {"updatedAt": today})
+    )
+)
+def test_get_updated_state(config, latest_record, current_state, expected_state):
+    stream = Leads(config)
+    if expected_state == "start_date":
+        expected_state = {"updatedAt": config["start_date"]}
+    assert stream.get_updated_state(latest_record, current_state) == expected_state

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.temporal;
@@ -50,8 +50,12 @@ public class TemporalWorkflowUtils {
   }
 
   public static WorkflowOptions buildWorkflowOptions(final TemporalJobType jobType) {
+    return buildWorkflowOptionsWithTaskQueue(jobType.name());
+  }
+
+  public static WorkflowOptions buildWorkflowOptionsWithTaskQueue(final String taskQueue) {
     return WorkflowOptions.newBuilder()
-        .setTaskQueue(jobType.name())
+        .setTaskQueue(taskQueue)
         .setWorkflowTaskTimeout(Duration.ofSeconds(27)) // TODO parker - temporarily increasing this to a recognizable number to see if it changes
         // error I'm seeing
         // todo (cgardens) we do not leverage Temporal retries.

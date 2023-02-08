@@ -71,8 +71,17 @@
   height: 3px;
 }
 
+.fullWidth {
+  // Overwrite the flex-grow set by the react-reflex to stretch a container to full width
+  flex-grow: 1 !important;
+}
+
 .splitter {
   // !important is necessary to override the default reflex styles
   border: 0 !important;
   background-color: transparent !important;
+}
+
+.hidden {
+  display: none;
 }

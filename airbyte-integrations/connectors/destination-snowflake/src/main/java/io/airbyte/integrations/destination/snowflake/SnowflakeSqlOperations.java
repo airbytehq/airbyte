@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
@@ -13,8 +14,10 @@ import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +25,10 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
   private static final int MAX_FILES_IN_LOADING_QUERY_LIMIT = 1000;
+
+  // This is an unfortunately fragile way to capture this, but Snowflake doesn't
+  // provide a more specific permission exception error code
+  private static final String NO_PRIVILEGES_ERROR_MESSAGE = "but current role has no privileges on it";
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
@@ -71,6 +78,16 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     } else {
       return "";
     }
+  }
+
+  @Override
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+    if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
+      return Optional.of(new ConfigErrorException(
+          "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",
+          e));
+    }
+    return Optional.empty();
   }
 
 }

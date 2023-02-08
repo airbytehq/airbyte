@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -54,7 +54,6 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -554,7 +553,7 @@ class PostgresSourceTest {
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
             "test_table",
-            "public",
+            SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
@@ -579,7 +578,6 @@ class PostgresSourceTest {
   }
 
   @Test
-  @Disabled("See https://github.com/airbytehq/airbyte/issues/17150#issuecomment-1342898439, enable once communication is out")
   public void tableWithNullValueCursorShouldThrowException() throws SQLException {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
       db.start();
@@ -613,7 +611,7 @@ class PostgresSourceTest {
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
             "test_table_null_cursor",
-            "12345public",
+            SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
@@ -621,7 +619,6 @@ class PostgresSourceTest {
   }
 
   @Test
-  @Disabled("See https://github.com/airbytehq/airbyte/issues/17150#issuecomment-1342898439, enable once communication is out")
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
       db.start();
@@ -660,7 +657,7 @@ class PostgresSourceTest {
         .withSyncMode(SyncMode.INCREMENTAL)
         .withStream(CatalogHelpers.createAirbyteStream(
             "test_view_null_cursor",
-            "public",
+            SCHEMA_NAME,
             Field.of("id", JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));

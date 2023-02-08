@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -20,9 +20,13 @@ import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -50,12 +54,14 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
    * At this moment, we put custom connector jobs into an isolated pool.
    */
   private final boolean useIsolatedPool;
+  private final AllowedHosts allowedHosts;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
+                                    final AllowedHosts allowedHosts,
                                     final boolean useIsolatedPool,
                                     final FeatureFlags featureFlags) {
     this.jobId = jobId;
@@ -63,6 +69,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
+    this.allowedHosts = allowedHosts;
     this.featureFlags = featureFlags;
     this.useIsolatedPool = useIsolatedPool;
   }
@@ -82,6 +89,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -103,6 +111,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -125,6 +134,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -171,6 +181,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -201,6 +212,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
+        allowedHosts,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
@@ -210,14 +222,25 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   private Map<String, String> getWorkerMetadata() {
-    return Map.of(
-        WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
-        WorkerEnvConstants.WORKER_JOB_ID, jobId,
-        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
-        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
-        EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
-        EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
-        EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
+    final Configs configs = new EnvConfigs();
+    // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert
+    // back to hashmap
+    return Maps.newHashMap(
+        ImmutableMap.<String, String>builder()
+            .put(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName)
+            .put(WorkerEnvConstants.WORKER_JOB_ID, jobId)
+            .put(WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt))
+            .put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()))
+            .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()))
+            .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()))
+            .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())
+            .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES, featureFlags.strictComparisonNormalizationWorkspaces())
+            .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.strictComparisonNormalizationTag())
+            .put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit())
+            .put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest())
+            .put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey())
+            .put(EnvConfigs.FEATURE_FLAG_CLIENT, configs.getFeatureFlagClient())
+            .build());
   }
 
 }

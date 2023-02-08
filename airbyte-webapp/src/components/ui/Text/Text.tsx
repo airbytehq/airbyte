@@ -13,6 +13,7 @@ interface TextProps {
   size?: TextSize;
   bold?: boolean;
   inverseColor?: boolean;
+  title?: string;
 }
 
 const getTextClassNames = ({
@@ -50,6 +51,7 @@ export const Text: React.FC<React.PropsWithChildren<TextProps>> = React.memo(
 
     return React.createElement(as, {
       ...remainingProps,
+      "data-type": "text",
       className,
       children,
     });
