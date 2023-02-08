@@ -235,7 +235,7 @@ def test_incremental_two_sequential_reads(
 @pytest.mark.parametrize(
     "run_per_stream_test",
     [
-        # pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
+        pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
@@ -247,7 +247,7 @@ def test_incremental_two_sequential_reads_state_invalid(
         streams=[
             ConfiguredAirbyteStream(
                 stream=AirbyteStream(
-                    name="test_stream",
+                    name=stream_name,
                     json_schema={"type": "object", "properties": cursor_type},
                     supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
                 ),
@@ -262,16 +262,18 @@ def test_incremental_two_sequential_reads_state_invalid(
     if run_per_stream_test:
         call_read_output_messages = [
             *build_messages_from_record_data(stream_name, records1),
-            build_per_stream_state_message(descriptor=StreamDescriptor(name="test_stream"), stream_state=latest_state),
+            build_per_stream_state_message(descriptor=StreamDescriptor(name=stream_name), stream_state=latest_state),
         ]
     else:
+        stream_state = dict()
+        stream_state[stream_name] = latest_state
         call_read_output_messages = [
-            *build_messages_from_record_data("test_stream", records1),
-            build_state_message({"test_stream": latest_state}),
+            *build_messages_from_record_data(stream_name, records1),
+            build_state_message(stream_state),
         ]
 
 
-    call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
+    call_read_with_state_output_messages = build_messages_from_record_data(stream_name, records2)
 
     print("call_read_output_messages[1]")
     print(call_read_output_messages[1])
