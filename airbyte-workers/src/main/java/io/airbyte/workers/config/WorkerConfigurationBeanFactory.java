@@ -217,7 +217,6 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkWorkerConfigs")
   public WorkerConfigs checkWorkerConfigs(
                                           final WorkerEnvironment workerEnvironment,
@@ -286,7 +285,6 @@ public class WorkerConfigurationBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("discoverWorkerConfigs")
   public WorkerConfigs discoverWorkerConfigs(
                                              final WorkerEnvironment workerEnvironment,
