@@ -34,39 +34,6 @@
                 "order": 1
               }
             }
-          },
-          {
-            "type": "object",
-            "title": "OAuth2.0",
-            "required": ["auth_method"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "oauth2.0",
-                "order": 0
-              },
-              "client_id": {
-                "type": "string",
-                "title": "Client ID",
-                "description": "The Client ID of the Shopify developer application.",
-                "airbyte_secret": true,
-                "order": 1
-              },
-              "client_secret": {
-                "type": "string",
-                "title": "Client Secret",
-                "description": "The Client Secret of the Shopify developer application.",
-                "airbyte_secret": true,
-                "order": 2
-              },
-              "access_token": {
-                "type": "string",
-                "title": "Access Token",
-                "description": "The Access Token for making authenticated requests.",
-                "airbyte_secret": true,
-                "order": 3
-              }
-            }
           }
         ]
       },
@@ -84,6 +51,13 @@
     "predicate_key": ["credentials", "auth_method"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shop": { "type": "string", "path_in_connector_config": ["shop"] }
+        }
+      },
       "complete_oauth_output_specification": {
         "type": "object",
         "additionalProperties": false,
@@ -98,12 +72,8 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "client_id": {
-            "type": "string"
-          },
-          "client_secret": {
-            "type": "string"
-          }
+          "client_id": { "type": "string" },
+          "client_secret": { "type": "string" }
         }
       },
       "complete_oauth_server_output_specification": {
@@ -117,16 +87,6 @@
           "client_secret": {
             "type": "string",
             "path_in_connector_config": ["credentials", "client_secret"]
-          }
-        }
-      },
-      "oauth_user_input_from_connector_config_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "shop": {
-            "type": "string",
-            "path_in_connector_config": ["shop"]
           }
         }
       }
