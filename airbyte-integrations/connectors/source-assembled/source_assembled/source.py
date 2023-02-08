@@ -182,6 +182,7 @@ class IncrementalAssembledStream(AssembledStream, ABC):
         if state_ts and sync_mode == SyncMode.incremental:
             days_diff = current_date.diff(state_ts).in_days()
             days = self._history_days if days_diff >= 1 else 1
+            logger.info(f"Syncing {days} for stream {self.name}")
             start_ts = current_date - pendulum.duration(days=days)
 
         # for channel in self._channels:
