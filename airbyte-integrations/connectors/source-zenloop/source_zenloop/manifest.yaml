@@ -128,7 +128,7 @@ definitions:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
       partition_router:
-        $ref: "#/definitions/surveys_slicer"
+        $ref: "#/definitions/survey_groups_slicer"
 
 streams:
   - "#/definitions/surveys"
