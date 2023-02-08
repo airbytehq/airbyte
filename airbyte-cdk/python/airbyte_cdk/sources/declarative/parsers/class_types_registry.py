@@ -48,7 +48,6 @@ from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonF
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition, AddFields
@@ -93,7 +92,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "RequestOption": RequestOption,
     "RemoveFields": RemoveFields,
     "SimpleRetriever": SimpleRetriever,
-    "SingleSlice": SingleSlice,
     "Spec": Spec,
     "SubstreamSlicer": SubstreamSlicer,
     "SessionTokenAuthenticator": SessionTokenAuthenticator,

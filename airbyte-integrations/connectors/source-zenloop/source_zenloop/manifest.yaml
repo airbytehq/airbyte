@@ -132,7 +132,7 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/incremental_sync"
       partition_router:
-        $ref: "#/definitions/surveys_slicer"
+        $ref: "#/definitions/survey_groups_slicer"
 
 streams:
   - "#/definitions/surveys"

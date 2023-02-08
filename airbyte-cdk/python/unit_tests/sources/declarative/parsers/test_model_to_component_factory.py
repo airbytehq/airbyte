@@ -30,6 +30,7 @@ from airbyte_cdk.sources.declarative.models import SubstreamSlicer as SubstreamS
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -48,7 +49,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, ListStreamSlicer, SingleSlice, SubstreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, ListStreamSlicer, SubstreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -113,8 +114,6 @@ requester:
   request_parameters:
     unit: "day"
 retriever:
-  partition_router:
-    type: SingleSlice
   paginator:
     type: NoPagination
 partial_stream:
@@ -302,9 +301,7 @@ def test_list_based_stream_slicer_with_values_refd():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(
-        model_type=ListStreamSlicerModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=ListStreamSlicerModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, ListStreamSlicer)
@@ -327,9 +324,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(
-        model_type=ListStreamSlicerModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=ListStreamSlicerModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, ListStreamSlicer)
@@ -385,9 +380,7 @@ def test_create_substream_slicer():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(
-        model_type=SubstreamSlicerModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=SubstreamSlicerModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, SubstreamSlicer)
@@ -668,7 +661,9 @@ requester:
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
-    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name)
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
 
     assert isinstance(selector, HttpRequester)
     assert selector._method == HttpMethod.GET
@@ -1208,7 +1203,7 @@ class TestCreateTransformations:
             2,
             id="test_create_simple_retriever_with_partition_routers_multiple_components",
         ),
-        pytest.param(None, None, SingleSlice, 1, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
+        pytest.param(None, None, SinglePartitionRouter, 1, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
     ],
 )
 def test_merge_incremental_and_partition_router(incremental, partition_router, expected_type, expected_slicer_count):

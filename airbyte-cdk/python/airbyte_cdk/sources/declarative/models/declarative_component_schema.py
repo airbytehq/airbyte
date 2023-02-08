@@ -303,11 +303,6 @@ class SessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SingleSlice(BaseModel):
-    type: Literal["SingleSlice"]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class Spec(BaseModel):
     type: Literal["Spec"]
     connection_specification: Dict[str, Any]
@@ -522,16 +517,8 @@ class SimpleRetriever(BaseModel):
         Union[
             CustomPartitionRouter,
             ListStreamSlicer,
-            SingleSlice,
             SubstreamSlicer,
-            List[
-                Union[
-                    CustomPartitionRouter,
-                    ListStreamSlicer,
-                    SingleSlice,
-                    SubstreamSlicer,
-                ]
-            ],
+            List[Union[CustomPartitionRouter, ListStreamSlicer, SubstreamSlicer]],
         ]
     ] = Field(
         [],
