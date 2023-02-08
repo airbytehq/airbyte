@@ -92,7 +92,11 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
       if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
         LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+        try {
+          refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+        } catch (final Exception e) {
+          return SyncOutputProvider.getRefreshSchemaFailure(e);
+        }
       }
 
       final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
