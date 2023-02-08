@@ -18,7 +18,6 @@ import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.server.handlers.helpers.CatalogConverter;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.ResourceRequirements;
@@ -38,6 +37,7 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.helper.CatalogClientConverters;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -128,7 +128,7 @@ public abstract class AbstractSourceConnectorTest {
   // This has to be using the protocol version of the platform in order to capture the arg
   protected AirbyteCatalog getLastPersistedCatalog() {
     return convertProtocolObject(
-        CatalogConverter.toProtocol(discoverWriteRequest.getValue().getCatalog()), AirbyteCatalog.class);
+        CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.getValue().getCatalog()), AirbyteCatalog.class);
   }
 
   private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
