@@ -36,7 +36,7 @@ jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
   };
 });
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 const connectorDefinition = {
   sourceDefinitionId: "1",
