@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "components/ui/Button";
 import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
+import { useExperiment } from "hooks/services/Experiment";
 import { RoutePaths, DestinationPaths } from "pages/routePaths";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -36,6 +37,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setIsModalOpen(!isModalOpen);
     setErrorMessage("");
   };
+  const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
 
   const { formatMessage } = useIntl();
 
@@ -78,19 +80,9 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
   const onSubmit = (values: ICreateProps) =>
     type === "sources" ? onSubmitSource(values) : onSubmitDestination(values);
 
-  const button = (
-    <Button
-      size="xs"
-      icon={<FontAwesomeIcon icon={faPlus} />}
-      onClick={type === "sources" ? undefined : onChangeModalState}
-    >
-      <FormattedMessage id="admin.newConnector" />
-    </Button>
-  );
-
   return (
     <>
-      {type === "sources" ? (
+      {type === "sources" && showBuilderNavigationLinks ? (
         <DropdownMenu
           placement="bottom"
           options={[
@@ -110,16 +102,28 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
           ]}
           onChange={(data: DropdownMenuOptionType) => data.value === "docker" && onChangeModalState()}
         >
-          {() => button}
+          {() => <NewConnectorButton />}
         </DropdownMenu>
       ) : (
-        button
+        <NewConnectorButton onClick={onChangeModalState} />
       )}
 
       {isModalOpen && (
         <CreateConnectorModal onClose={onChangeModalState} onSubmit={onSubmit} errorMessage={errorMessage} />
       )}
     </>
+  );
+};
+
+interface NewConnectorButtonProps {
+  onClick?: () => void;
+}
+
+const NewConnectorButton: React.FC<NewConnectorButtonProps> = ({ onClick }) => {
+  return (
+    <Button size="xs" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onClick}>
+      <FormattedMessage id="admin.newConnector" />
+    </Button>
   );
 };
 

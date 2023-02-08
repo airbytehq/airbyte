@@ -39,25 +39,29 @@ import { WarningMessage } from "../../WarningMessage";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
 
-const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
-  <>
-    <components.MenuList {...props}>{children}</components.MenuList>
-    <div className={styles.connectorListFooter}>
-      {props.selectProps.selectProps.formType === "source" && (
-        <div className={styles.builderPromptContainer}>
-          <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
-        </div>
-      )}
-      <button
-        className={styles.requestNewConnectorBtn}
-        onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
-      >
-        <FontAwesomeIcon icon={faPlus} />
-        <FormattedMessage id="connector.requestConnectorBlock" />
-      </button>
-    </div>
-  </>
-);
+const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => {
+  const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
+
+  return (
+    <>
+      <components.MenuList {...props}>{children}</components.MenuList>
+      <div className={styles.connectorListFooter}>
+        {props.selectProps.selectProps.formType === "source" && showBuilderNavigationLinks && (
+          <div className={styles.builderPromptContainer}>
+            <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
+          </div>
+        )}
+        <button
+          className={styles.requestNewConnectorBtn}
+          onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
+        >
+          <FontAwesomeIcon icon={faPlus} />
+          <FormattedMessage id="connector.requestConnectorBlock" />
+        </button>
+      </div>
+    </>
+  );
+};
 
 const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) => {
   const fcpEnabled = useFeature(FeatureItem.FreeConnectorProgram);

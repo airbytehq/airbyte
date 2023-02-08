@@ -5,19 +5,15 @@ import { useNavigate } from "react-router-dom";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { HeadTitle } from "components/common/HeadTitle";
 import { FormPageContent } from "components/ConnectorBlocks";
-import { BuilderPrompt } from "components/connectorBuilder/BuilderPrompt";
-import { Card } from "components/ui/Card";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import { RoutePaths } from "pages/routePaths";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
 import { SourceForm } from "./components/SourceForm";
-import styles from "./CreateSourcePage.module.scss";
 
 const CreateSourcePage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_NEW);
@@ -49,9 +45,6 @@ const CreateSourcePage: React.FC = () => {
         <PageHeader title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />
-          <Card fullWidth className={styles.builderPrompt}>
-            <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
-          </Card>
           <CloudInviteUsersHint connectorType="source" />
         </FormPageContent>
       </ConnectorDocumentationWrapper>
