@@ -527,7 +527,7 @@ class SourceShopify(AbstractSource):
             OrderRisks(config),
             TenderTransactions(config),
             Transactions(config),
-            BalanceTransactions(config),
+            # BalanceTransactions(config),
             Pages(config),
             PriceRules(config),
             DiscountCodes(config),
