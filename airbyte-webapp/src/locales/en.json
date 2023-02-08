@@ -761,6 +761,7 @@
   "connectorBuilder.loadingStreamList": "Loading",
   "connectorBuilder.noStreamSelected": "No stream selected",
   "connectorBuilder.streamListUrlError": "Could not load URL",
+  "connectorBuilder.streamTestLimitReached": "Stream testing limit reached. During testing only at max 5 stream slices with 5 pages each will be returned",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
