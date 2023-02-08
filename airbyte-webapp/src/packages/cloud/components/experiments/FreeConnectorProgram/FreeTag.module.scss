@@ -1,0 +1,13 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.freeTag {
+  background-color: colors.$green-300;
+  color: colors.$white;
+  border-radius: variables.$border-radius-pill;
+  padding: 2px 5px;
+
+  // margin: 0 2px;
+  margin-left: 2px;
+  margin-right: -4px;
+}

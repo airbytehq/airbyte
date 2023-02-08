@@ -59,12 +59,30 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   }
 
   @Override
+  public void clearCommitted() {
+    lastCommittedState = null;
+  }
+
+  @Override
+  public void markPendingAsCommitted() {
+    if (lastPendingState != null) {
+      lastCommittedState = lastPendingState;
+      lastPendingState = null;
+    }
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return stateMessageToQueue(lastCommittedState);
   }
 
   private static Queue<AirbyteMessage> stateMessageToQueue(final AirbyteMessage stateMessage) {
     return new LinkedList<>(stateMessage == null ? Collections.emptyList() : List.of(stateMessage));
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return false;
   }
 
 }

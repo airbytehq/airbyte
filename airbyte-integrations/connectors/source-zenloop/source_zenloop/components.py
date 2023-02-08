@@ -25,7 +25,7 @@ class ZenloopSubstreamSlicer(SubstreamSlicer):
         create stream_slices according SubstreamSlicer logic.
 
         """
-        parent_field = self._options.get("config_parent_field")
+        parent_field = self._parameters.get("config_parent_field")
         custom_stream_state_value = self.config.get(parent_field)
 
         if not custom_stream_state_value:

@@ -197,7 +197,13 @@ export function useRunOauthFlow(
     [completeOauth]
   );
 
+  const onCloseWindow = useCallback(() => {
+    windowObjectReference?.close();
+  }, []);
+
   useEvent("message", onOathGranted);
+  // Close popup oauth window when we close the original tab
+  useEvent("beforeunload", onCloseWindow);
 
   return {
     loading: loadingCompleteOauth || loading,
@@ -210,7 +216,7 @@ export function useResolveNavigate(): void {
   const query = useQuery();
 
   useEffectOnce(() => {
-    window.opener.postMessage(query);
+    window.opener?.postMessage(query);
     window.close();
   });
 }

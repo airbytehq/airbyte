@@ -33,7 +33,7 @@ definitions:
     step: "P100D" #TODO: Add {{ config['slice_range'] ~ d }} here, once it's possible to use config-values for step definition
     datetime_format: "%s"
     cursor_granularity: "PT1S"
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: "airbyte_cursor"
 
   retriever:
     record_selector:
@@ -64,7 +64,6 @@ definitions:
       primary_key:
         - "id"
       path: "/api/dataset/execute/{{ config['dataset_id']}}"
-      stream_cursor_field: "airbyte_cursor"
     transformations:
       - type: AddFields
         fields:

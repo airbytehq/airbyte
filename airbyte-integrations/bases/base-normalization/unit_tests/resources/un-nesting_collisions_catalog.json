@@ -8,7 +8,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         },
@@ -28,13 +28,13 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             },
             "stream_name": {
               "type": ["null", "object"],
               "properties": {
                 "id": {
-                  "type": ["null", "string"]
+                  "$ref": "WellKnownTypes.json#/definitions/String"
                 }
               }
             }
@@ -56,7 +56,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         },
@@ -76,7 +76,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "type": ["null", "string"]
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           }
         },

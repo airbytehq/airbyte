@@ -27,7 +27,14 @@ export const ChangesStatusIcon: React.FC<ChangesStatusIconProps> = ({ schemaChan
     <Tooltip
       placement="left"
       containerClassName={styles.tooltipContainer}
-      control={<FontAwesomeIcon className={iconStyle} icon={faExclamationCircle} size="2x" />}
+      control={
+        <FontAwesomeIcon
+          className={iconStyle}
+          icon={faExclamationCircle}
+          size="2x"
+          data-testid={`changesStatusIcon-${schemaChange}`}
+        />
+      }
     >
       <FormattedMessage id={`connection.schemaChange.${convertSnakeToCamel(schemaChange)}`} />
     </Tooltip>

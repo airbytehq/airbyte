@@ -250,7 +250,7 @@ Helm chart to deploy airbyte
 | worker.hpa.enabled | bool | `false` |  |
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"airbyte/worker"` |  |
-| worker.image.tag | string | `"0.40.29"` |  |
+| worker.image.tag | string | `"0.40.32"` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.failureThreshold | int | `3` |  |
 | worker.livenessProbe.initialDelaySeconds | int | `30` |  |

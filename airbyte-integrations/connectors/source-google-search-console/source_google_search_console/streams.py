@@ -9,6 +9,7 @@ from urllib.parse import quote_plus, unquote_plus
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
@@ -32,6 +33,10 @@ class GoogleSearchConsole(HttpStream, ABC):
         self._site_urls = self.sanitize_urls_list(site_urls)
         self._start_date = start_date
         self._end_date = end_date
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @staticmethod
     def sanitize_urls_list(site_urls: list) -> List[str]:

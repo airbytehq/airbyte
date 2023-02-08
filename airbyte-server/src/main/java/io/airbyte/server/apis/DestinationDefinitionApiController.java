@@ -19,6 +19,7 @@ import io.airbyte.api.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.DestinationDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
@@ -44,6 +45,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Post(uri = "/create_custom")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
@@ -69,6 +71,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Post(uri = "/get_for_workspace")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
@@ -91,6 +94,7 @@ public class DestinationDefinitionApiController implements DestinationDefinition
 
   @Post(uri = "/list_for_workspace")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));

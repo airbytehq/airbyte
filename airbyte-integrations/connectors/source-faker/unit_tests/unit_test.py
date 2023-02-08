@@ -19,6 +19,9 @@ class MockLogger:
         print(b)
         return None
 
+    def isEnabledFor(a, b, **kwargs):
+        return False
+
 
 logger = MockLogger()
 

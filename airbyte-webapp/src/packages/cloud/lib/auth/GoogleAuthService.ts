@@ -24,12 +24,11 @@ import {
   reload,
 } from "firebase/auth";
 
-import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
 export class GoogleAuthService {
-  constructor(private firebaseAuthProvider: Provider<Auth>) {}
+  constructor(private firebaseAuthProvider: () => Auth) {}
 
   get auth(): Auth {
     return this.firebaseAuthProvider();

@@ -7,7 +7,6 @@ airbyte:
   acceptance:
     test:
       enabled: ${ACCEPTANCE_TEST_ENABLED:false}
-  config-dir: /config
   control:
     plane:
       auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}
@@ -16,6 +15,10 @@ airbyte:
       service-account:
         credentials-path: ${DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH:}
         email: ${DATA_PLANE_SERVICE_ACCOUNT_EMAIL:}
+  feature-flag:
+    client: ${FEATURE_FLAG_CLIENT:config}
+    path: ${FEATURE_FLAG_PATH:/flags}
+    api-key: ${LAUNCHDARKLY_KEY:}
   internal:
     api:
       auth-header:

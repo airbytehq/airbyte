@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { FormattedNumber } from "react-intl";
 import {
   Bar,
   BarChart as BasicBarChart,
@@ -63,7 +64,12 @@ export const BarChart: React.FC<BarChartProps> = React.memo(({ data, legendLabel
         >
           <Label value={yLabel} fontSize={11} fill={chartTicksColor} fontWeight={600} position="top" offset={10} />
         </YAxis>
-        <Tooltip cursor={{ fill: chartHoverFill }} />
+        <Tooltip
+          cursor={{ fill: chartHoverFill }}
+          formatter={(value: number) => {
+            return [<FormattedNumber value={value} maximumFractionDigits={2} minimumFractionDigits={2} />, yLabel];
+          }}
+        />
         {legendLabels.map((barName, key) => (
           <Bar key={barName} dataKey={barName} fill={barChartColors[key]} />
         ))}

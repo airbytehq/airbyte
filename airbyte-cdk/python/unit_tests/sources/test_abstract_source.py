@@ -3,6 +3,7 @@
 #
 
 import copy
+import datetime
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -331,11 +332,17 @@ def test_valid_full_refresh_read_with_slices(mocker):
     assert expected == messages
 
 
-def test_read_full_refresh_with_slices_sends_slice_messages(mocker):
+@pytest.mark.parametrize(
+    "slices",
+    [
+        [{"1": "1"}, {"2": "2"}],
+        [{"date": datetime.date(year=2023, month=1, day=1)}, {"date": datetime.date(year=2023, month=1, day=1)}]
+    ]
+)
+def test_read_full_refresh_with_slices_sends_slice_messages(mocker, slices):
     """Given the logger is debug and a full refresh, AirbyteMessages are sent for slices"""
     debug_logger = logging.getLogger("airbyte.debug")
     debug_logger.setLevel(logging.DEBUG)
-    slices = [{"1": "1"}, {"2": "2"}]
     stream = MockStream(
         [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
         name="s1",

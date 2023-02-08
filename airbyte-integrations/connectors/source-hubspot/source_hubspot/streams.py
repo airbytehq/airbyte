@@ -15,6 +15,7 @@ import pendulum as pendulum
 import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -208,6 +209,10 @@ class Stream(HttpStream, ABC):
     raise_on_http_errors: bool = True
     granted_scopes: Set = None
     properties_scopes: Set = None
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     @property
     @abstractmethod
