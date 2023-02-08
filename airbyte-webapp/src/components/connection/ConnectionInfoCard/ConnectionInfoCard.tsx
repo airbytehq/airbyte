@@ -17,8 +17,10 @@ import { EnabledControl } from "./EnabledControl";
 import { SchemaChangesDetected } from "./SchemaChangesDetected";
 
 export const ConnectionInfoCard: React.FC = () => {
-  const { connection, schemaHasBeenRefreshed } = useConnectionEditService();
-  const { source, destination, status, schemaChange } = connection;
+  const {
+    connection: { source, destination, status, schemaChange },
+    schemaHasBeenRefreshed,
+  } = useConnectionEditService();
   const { hasSchemaChanges, hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
   const { sourceDefinition, destDefinition } = useConnectionFormService();
 
