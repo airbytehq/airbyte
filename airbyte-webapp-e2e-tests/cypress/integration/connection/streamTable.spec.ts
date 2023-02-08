@@ -125,7 +125,7 @@ describe.skip("New stream table - new connection set up ", () => {
     checkColumnNames();
   });
 
-  it("should check table stream amount ", () => {
+  it("should check total amount of table streams", () => {
     // dummy tables amount + users table
     checkAmountOfStreamTableRows(21);
   });
