@@ -68,7 +68,6 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import SinglePartitionRouter as SinglePartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
@@ -163,7 +162,6 @@ class ModelToComponentFactory:
             RequestOptionModel: self.create_request_option,
             SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
-            SinglePartitionRouterModel: self.create_single_slice,
             SpecModel: self.create_spec,
             SubstreamSlicerModel: self.create_substream_slicer,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
@@ -734,10 +732,6 @@ class ModelToComponentFactory:
             config=config,
             parameters=model.parameters,
         )
-
-    @staticmethod
-    def create_single_slice(model: SinglePartitionRouterModel, config: Config, **kwargs) -> SinglePartitionRouter:
-        return SinglePartitionRouter(parameters={})
 
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:

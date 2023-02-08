@@ -20,7 +20,6 @@ from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtr
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
@@ -93,7 +92,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "RequestOption": RequestOption,
     "RemoveFields": RemoveFields,
     "SimpleRetriever": SimpleRetriever,
-    "SinglePartitionRouter": SinglePartitionRouter,
     "Spec": Spec,
     "SubstreamSlicer": SubstreamSlicer,
     "SessionTokenAuthenticator": SessionTokenAuthenticator,

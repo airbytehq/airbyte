@@ -26,7 +26,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
         pytest.param(
             {
                 "type": "DeclarativeStream",
-                "retriever": {"type": "SimpleRetriever", "paginator": {}, "record_selector": {}, "requester": {}, "partition_router": {}},
+                "retriever": {"type": "SimpleRetriever", "paginator": {}, "record_selector": {}, "requester": {}},
             },
             {
                 "type": "DeclarativeStream",
@@ -35,7 +35,6 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                     "paginator": {"type": "NoPagination"},
                     "record_selector": {"type": "RecordSelector"},
                     "requester": {"type": "HttpRequester"},
-                    "partition_router": {"type": "SinglePartitionRouter"},
                 },
             },
             id="test_simple_retriever",

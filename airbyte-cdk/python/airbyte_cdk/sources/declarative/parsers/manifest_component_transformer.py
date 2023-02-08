@@ -52,7 +52,6 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SimpleRetriever.paginator": "NoPagination",
     "SimpleRetriever.record_selector": "RecordSelector",
     "SimpleRetriever.requester": "HttpRequester",
-    "SimpleRetriever.partition_router": "SinglePartitionRouter",
     # SubstreamSlicer
     "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
     # AddFields

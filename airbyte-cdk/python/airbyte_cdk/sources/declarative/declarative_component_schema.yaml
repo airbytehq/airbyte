@@ -1012,27 +1012,13 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"
-          - "$ref": "#/definitions/SinglePartitionRouter"
           - "$ref": "#/definitions/SubstreamSlicer"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomStreamSlicer"
                 - "$ref": "#/definitions/ListStreamSlicer"
-                - "$ref": "#/definitions/SinglePartitionRouter"
                 - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
-  SinglePartitionRouter:
-    description: Partition router returning only a single partition
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [SinglePartitionRouter]
       $parameters:
         type: object
         additionalProperties: true

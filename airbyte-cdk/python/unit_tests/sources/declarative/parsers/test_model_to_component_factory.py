@@ -118,8 +118,6 @@ requester:
   request_parameters:
     unit: "day"
 retriever:
-  partition_router:
-    type: SinglePartitionRouter
   paginator:
     type: NoPagination
 partial_stream:
@@ -307,9 +305,7 @@ def test_list_based_stream_slicer_with_values_refd():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(
-        model_type=ListStreamSlicerModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=ListStreamSlicerModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, ListStreamSlicer)
@@ -332,9 +328,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(
-        model_type=ListStreamSlicerModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=ListStreamSlicerModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, ListStreamSlicer)
@@ -390,9 +384,7 @@ def test_create_substream_slicer():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     stream_slicer = factory.create_component(
-        model_type=SubstreamSlicerModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=SubstreamSlicerModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(stream_slicer, SubstreamSlicer)
@@ -673,7 +665,9 @@ requester:
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
-    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name)
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
 
     assert isinstance(selector, HttpRequester)
     assert selector._method == HttpMethod.GET
