@@ -35,13 +35,8 @@ class ExactStream(HttpStream, IncrementalMixin):
         for division in self._divisions:
             self._state_per_division[str(division)] = {}
 
-        token_expiry_date = config["credentials"].get("token_expiry_date")
-        if token_expiry_date:
-            token_expiry_date = pendulum.parse(token_expiry_date)
-
         self._single_refresh_token_authenticator = MySingleUseRefreshTokenOauth2Authenticator(
             connector_config=config,
-            token_expiry_date=token_expiry_date,
             token_refresh_endpoint="https://start.exactonline.nl/api/oauth2/token",
         )
         self._single_refresh_token_authenticator.access_token = config["credentials"]["access_token"]
