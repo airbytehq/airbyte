@@ -241,7 +241,7 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
         </div>
       </div>
       <div className={styles.footer}>
-        <Button onClick={() => onCreate()} size="lg" data-id="new-connection">
+        <Button onClick={() => onCreate()} size="lg" data-testid="new-connection-button">
           <FormattedMessage id="connection.onboarding.createFirst" />
         </Button>
         <FormattedMessage
