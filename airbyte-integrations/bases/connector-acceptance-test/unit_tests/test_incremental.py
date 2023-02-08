@@ -275,10 +275,6 @@ def test_incremental_two_sequential_reads_state_invalid(
 
     call_read_with_state_output_messages = build_messages_from_record_data(stream_name, records2)
 
-    print("call_read_output_messages[1]")
-    print(call_read_output_messages[1])
-    # assert False
-
     docker_runner_mock = MagicMock()
     docker_runner_mock.call_read.return_value = call_read_output_messages
     docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
