@@ -59,12 +59,12 @@ tr:last-child .content {
   margin: 0 variables.$spacing-md;
 }
 
-.cell {
-  &.update {
-    span {
-      background-color: rgba(98, 94, 255, 10%);
-      padding: variables.$spacing-sm;
-      border-radius: variables.$border-radius-xs;
-    }
-  }
+.cell.update .dataType {
+  background-color: rgba(98, 94, 255, 10%);
+  padding: variables.$spacing-sm;
+  border-radius: variables.$border-radius-xs;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: variables.$spacing-sm;
 }

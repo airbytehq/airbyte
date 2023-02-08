@@ -1,7 +1,8 @@
-import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { ModificationIcon } from "components/icons/ModificationIcon";
 
 import { FieldTransform } from "core/request/AirbyteClient";
@@ -56,8 +57,8 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
       {oldType && newType && (
         <td className={contentStyle}>
           <div className={updateCellStyle}>
-            <span>
-              {oldType} <FontAwesomeIcon icon={faArrowRight} /> {newType}
+            <span className={styles.dataType}>
+              {oldType} <ArrowRightIcon /> {newType}
             </span>
           </div>
         </td>
