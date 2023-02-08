@@ -37,7 +37,8 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> 
     return {
       target: item.internal ? undefined : "_blank",
       rel: item.internal ? undefined : "noreferrer",
-      to: item.internal ? item.href : { pathname: item.href },
+      to: item.href,
+      href: item.href,
     };
   };
 
@@ -73,7 +74,7 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> 
                 {({ active }) =>
                   item.as === "a"
                     ? React.createElement(
-                        Link,
+                        item.internal ? Link : "a",
                         { ...elementProps(item, active), ...anchorProps(item) },
                         <MenuItemContent data={item} />
                       )
