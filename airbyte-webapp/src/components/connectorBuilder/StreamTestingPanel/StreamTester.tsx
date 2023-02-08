@@ -146,22 +146,20 @@ export const StreamTester: React.FC<{
           <Spinner />
         </div>
       )}
-      {!isFetching && streamReadData && streamReadData.test_read_limit_reached && (
+      {!isFetching && streamReadData && streamReadData.test_read_limit_reached && showLimitWarning && (
         <Callout>
           <FlexItem grow>
             <FlexContainer alignItems="center">
               <FlexItem grow>
                 <FormattedMessage id="connectorBuilder.streamTestLimitReached" />
               </FlexItem>
-              {showLimitWarning && (
-                <Button
-                  onClick={() => {
-                    setShowLimitWarning(false);
-                  }}
-                  variant="clear"
-                  icon={<FontAwesomeIcon icon={faClose} />}
-                />
-              )}
+              <Button
+                onClick={() => {
+                  setShowLimitWarning(false);
+                }}
+                variant="clear"
+                icon={<FontAwesomeIcon icon={faClose} />}
+              />
             </FlexContainer>
           </FlexItem>
         </Callout>
