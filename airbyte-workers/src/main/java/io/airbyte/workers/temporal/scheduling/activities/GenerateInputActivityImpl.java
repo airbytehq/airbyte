@@ -264,6 +264,13 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
 
       final ConfigType jobConfigType = job.getConfig().getConfigType();
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+
+      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
+      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
+
       if (ConfigType.SYNC.equals(jobConfigType)) {
         final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
         attemptSyncConfig.setSourceConfiguration(source.getConfiguration());

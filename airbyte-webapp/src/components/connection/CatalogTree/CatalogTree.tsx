@@ -30,6 +30,12 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
 
   const [searchString, setSearchString] = useState("");
 
+  const onBatchStreamsChanged = useCallback(
+    (newStreams: SyncSchemaStream[]) =>
+      onStreamsChanged(streams.map((str) => newStreams.find((newStr) => newStr.id === str.id) ?? str)),
+    [streams, onStreamsChanged]
+  );
+
   const onSingleStreamChanged = useCallback(
     (newValue: SyncSchemaStream) => onStreamsChanged(streams.map((str) => (str.id === newValue.id ? newValue : str))),
     [streams, onStreamsChanged]
@@ -70,7 +76,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   );
 
   return (
-    <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
+    <BulkEditServiceProvider nodes={filteredStreams} update={onBatchStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
         <div className={classNames(styles.catalogTreeTable, { [styles.newCatalogTreeTable]: isNewTableDesignEnabled })}>

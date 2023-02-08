@@ -16,7 +16,9 @@ public class MigrationContainer<T extends Migration> {
 
   private final List<T> migrationsToRegister;
   private final SortedMap<String, T> migrations = new TreeMap<>();
-  private String mostRecentMajorVersion = "";
+
+  // mostRecentMajorVersion defaults to v0 as no migration is required
+  private String mostRecentMajorVersion = "0";
 
   public MigrationContainer(final List<T> migrations) {
     this.migrationsToRegister = migrations;

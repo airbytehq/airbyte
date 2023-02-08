@@ -12,8 +12,6 @@ import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.protocol.ConfiguredAirbyteCatalogMigrator;
-import io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1;
-import io.airbyte.commons.protocol.migrations.v1.ConfiguredAirbyteCatalogMigrationV1;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV1Deserializer;
@@ -45,10 +43,12 @@ class VersionedAirbyteStreamFactoryTest {
         List.of(new AirbyteMessageV0Serializer(), new AirbyteMessageV1Serializer())));
     serDeProvider.initialize();
     final AirbyteMessageMigrator airbyteMessageMigrator = new AirbyteMessageMigrator(
-        List.of(new AirbyteMessageMigrationV1()));
+        // TODO once data types v1 is re-enabled, this test should contain the migration
+        List.of(/* new AirbyteMessageMigrationV1() */));
     airbyteMessageMigrator.initialize();
     final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator = new ConfiguredAirbyteCatalogMigrator(
-        List.of(new ConfiguredAirbyteCatalogMigrationV1()));
+        // TODO once data types v1 is re-enabled, this test should contain the migration
+        List.of(/* new ConfiguredAirbyteCatalogMigrationV1() */));
     configuredAirbyteCatalogMigrator.initialize();
     migratorFactory = spy(new AirbyteProtocolVersionedMigratorFactory(airbyteMessageMigrator, configuredAirbyteCatalogMigrator));
   }
