@@ -16,6 +16,7 @@ import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from numpy import nan
@@ -59,6 +60,10 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.sf_api.instance_url
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:

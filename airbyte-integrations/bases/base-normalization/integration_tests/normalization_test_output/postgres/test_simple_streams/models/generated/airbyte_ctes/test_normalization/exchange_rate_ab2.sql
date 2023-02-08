@@ -20,6 +20,7 @@ select
     cast({{ empty_string_to_null('datetime_no_tz') }} as {{ type_timestamp_without_timezone() }}) as datetime_no_tz,
     cast({{ empty_string_to_null('time_tz') }} as {{ type_time_with_timezone() }}) as time_tz,
     cast({{ empty_string_to_null('time_no_tz') }} as {{ type_time_without_timezone() }}) as time_no_tz,
+    cast(decode(property_binary_data, 'base64') as {{ type_binary() }}) as property_binary_data,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at

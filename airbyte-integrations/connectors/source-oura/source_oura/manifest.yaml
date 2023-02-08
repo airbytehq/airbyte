@@ -27,6 +27,7 @@ definitions:
       cursor_value: "{{ response['next_token'] }}"
       page_size: 100 # Not used, but check fails without it
     page_token_option:
+      type: RequestOption
       field_name: "next_token"
       inject_into: "request_parameter"
     page_size_option: # Not used, but check fails without it

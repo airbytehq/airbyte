@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.featureflag.TestClient;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
@@ -34,13 +35,17 @@ class RecordSchemaValidatorTest {
 
   @Test
   void testValidateValidSchema() throws Exception {
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput));
+    final var featureFlagClient = new TestClient();
+    final var recordSchemaValidator = new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(),
+        WorkerUtils.mapStreamNamesToSchemas(syncInput));
     recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()));
   }
 
   @Test
   void testValidateInvalidSchema() throws Exception {
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput));
+    final var featureFlagClient = new TestClient();
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(),
+        WorkerUtils.mapStreamNamesToSchemas(syncInput));
     assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(),
         AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));
   }

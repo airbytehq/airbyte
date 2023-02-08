@@ -170,7 +170,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
    */
   @VisibleForTesting
   public int getNumberOfFileBuffers(final JsonNode config) {
-    int numOfFileBuffers = 1;
+    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
     if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
       numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
     }

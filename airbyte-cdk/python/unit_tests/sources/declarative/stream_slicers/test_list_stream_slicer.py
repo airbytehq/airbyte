@@ -95,23 +95,9 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
             {},
             {"owner_resource": "customer"},
         ),
-        (
-            "test_inject_into_path",
-            RequestOption(RequestOptionType.path, {}),
-            {},
-            {},
-            {},
-            {"owner_resource": "customer"},
-        ),
     ],
 )
 def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
-    if request_option.inject_into == RequestOptionType.path:
-        try:
-            ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
-            assert False
-        except ValueError:
-            return
     slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
     stream_slice = {cursor_field: "customer"}
 
@@ -123,12 +109,6 @@ def test_request_option(test_name, request_option, expected_req_params, expected
 
 def test_request_option_before_updating_cursor():
     request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner_resource")
-    if request_option.inject_into == RequestOptionType.path:
-        try:
-            ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
-            assert False
-        except ValueError:
-            return
     slicer = ListStreamSlicer(slice_values=slice_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
     stream_slice = {cursor_field: "customer"}
 

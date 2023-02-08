@@ -77,7 +77,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="large" withTooltip>
+      <CatalogTreeTableCell size="large">
         {disabled ? (
           <Text size="md" className={styles.cellText}>
             {syncSchema.syncMode}

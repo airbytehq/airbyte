@@ -27,6 +27,7 @@ definitions:
         type: PageIncrement
         page_size: 2
       page_token_option:
+        type: RequestOption
         inject_into: "request_parameter"
         field_name: "page"
     requester:

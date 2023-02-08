@@ -599,6 +599,19 @@ public class MockData {
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
   }
 
+  public static ConfiguredAirbyteCatalog getConfiguredCatalogWithV1DataTypes() {
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            "models",
+            "models_schema",
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER_V1),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER_V1),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING_V1))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+    return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+  }
+
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)

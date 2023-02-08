@@ -6,11 +6,15 @@
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Dict, Optional, Set, Tuple
-
+from typing import Dict, Optional, Set, Tuple, List
+import os
 import git
 import requests
 import yaml
+
+# ensure we are at the repository root
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+os.chdir('../../..')
 
 AIRBYTE_REPO = git.Repo(".")
 DIFFED_BRANCH = "origin/master"
@@ -30,9 +34,6 @@ def download_catalog(catalog_url):
 
 
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
-
-
-
 
 
 class ConnectorInvalidNameError(Exception):
@@ -104,7 +105,7 @@ class Connector:
     @property
     def code_directory(self) -> Path:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
-    
+
     @property
     def version(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
@@ -112,7 +113,7 @@ class Connector:
                 if "io.airbyte.version" in line:
                     return line.split("=")[1].strip()
         raise ConnectorVersionNotFound("""
-            Could not find the connector version from its Dockerfile. 
+            Could not find the connector version from its Dockerfile.
             The io.airbyte.version tag is missing.
             """)
 
@@ -134,7 +135,15 @@ class Connector:
 
     @property
     def release_stage(self) -> Optional[str]:
-        return self.definition["releaseStage"] if self.definition else None
+        return self.definition.get("releaseStage") if self.definition else None
+
+    @property
+    def allowed_hosts(self) -> Optional[List[str]]:
+        return self.definition.get("allowedHosts") if self.definition else None
+
+    @property
+    def suggested_streams(self) -> Optional[List[str]]:
+        return self.definition.get("suggestedStreams") if self.definition else None
 
     @property
     def acceptance_test_config_path(self) -> Path:

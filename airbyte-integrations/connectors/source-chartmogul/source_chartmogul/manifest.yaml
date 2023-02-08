@@ -28,6 +28,7 @@ definitions:
           inject_into: request_parameter
           field_name: per_page
         page_token_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: page
     $parameters:
@@ -52,6 +53,7 @@ definitions:
           inject_into: request_parameter
           field_name: per_page
         page_token_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: start-after
     $parameters:

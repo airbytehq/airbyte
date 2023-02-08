@@ -20,6 +20,7 @@ select
     {{ json_extract_scalar('_airbyte_data', ['datetime_no_tz'], ['datetime_no_tz']) }} as datetime_no_tz,
     {{ json_extract_scalar('_airbyte_data', ['time_tz'], ['time_tz']) }} as time_tz,
     {{ json_extract_scalar('_airbyte_data', ['time_no_tz'], ['time_no_tz']) }} as time_no_tz,
+    {{ json_extract_scalar('_airbyte_data', ['property_binary_data'], ['property_binary_data']) }} as property_binary_data,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at

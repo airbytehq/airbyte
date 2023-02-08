@@ -20,7 +20,6 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "https://api.courier.com"
     http_method: "GET"
     authenticator:
@@ -30,6 +29,7 @@ definitions:
   cursor_paginator:
     type: DefaultPaginator
     page_token_option:
+      type: RequestOption
       field_name: cursor
       inject_into: request_parameter
     page_size_option:
@@ -42,8 +42,6 @@ definitions:
 
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "#/definitions/results_selector"
 

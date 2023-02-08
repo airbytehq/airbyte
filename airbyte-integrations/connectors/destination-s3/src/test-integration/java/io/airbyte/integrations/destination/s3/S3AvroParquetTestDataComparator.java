@@ -41,7 +41,7 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
   }
 
   @Override
-  protected boolean compareTime(final String airbyteMessageValue, final String destinationValue) {
+  protected boolean compareTimeWithoutTimeZone(final String airbyteMessageValue, final String destinationValue) {
     var destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     var expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
     return expectedDate.equals(destinationDate);

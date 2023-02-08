@@ -237,8 +237,10 @@ class TestEventsStream:
         [
             ({}, {}),
             ({"event_time": "2021-05-27 11:59:53.710000"}, {"event_time": "2021-05-27T11:59:53.710000+00:00"}),
+            ({"event_time": None}, {"event_time": None}),
+            ({"event_time": ""}, {"event_time": ""}),
         ],
-        ids=["empty_record", "transformed_record"],
+        ids=["empty_record", "transformed_record", "null_value", "empty_value"],
     )
     def test_date_time_to_rfc3339(self, record, expected):
         stream = Events(pendulum.now().isoformat(), data_region="Standard Server")

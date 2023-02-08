@@ -10,7 +10,6 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
@@ -36,8 +35,6 @@ definitions:
     type: SimpleRetriever
     $parameters:
       url_base: "https://api.callrail.com/v3/a/"
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       extractor:
         type: DpathExtractor
@@ -53,7 +50,7 @@ definitions:
         field_name: "per_page"
         inject_into: "request_parameter"
       page_token_option:
-        inject_into: "path"
+        type: RequestPath
     stream_slicer:
       $ref: "#/definitions/stream_slicer"
 

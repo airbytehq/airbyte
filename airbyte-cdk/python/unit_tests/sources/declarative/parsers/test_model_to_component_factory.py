@@ -43,6 +43,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginat
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
@@ -98,17 +99,17 @@ selector:
 metadata_paginator:
     type: DefaultPaginator
     page_size_option:
+      type: RequestOption
       inject_into: request_parameter
       field_name: page_size
     page_token_option:
-      inject_into: path
+      type: RequestPath
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
       page_size: 10
 requester:
   type: HttpRequester
-  name: "{{ parameters['name'] }}"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
@@ -117,7 +118,6 @@ requester:
   request_parameters:
     unit: "day"
 retriever:
-  name: "{{ parameters['name'] }}"
   stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{ config['start_time'] }}"
@@ -129,7 +129,6 @@ retriever:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   paginator:
     type: NoPagination
-  primary_key: "{{ parameters['primary_key'] }}"
 partial_stream:
   type: DeclarativeStream
   schema_loader:
@@ -139,10 +138,11 @@ list_stream:
   $ref: "#/partial_stream"
   $parameters:
     name: "lists"
-    primary_key: "id"
     extractor:
       $ref: "#/extractor"
       field_path: ["{{ parameters['name'] }}"]
+  name: "lists"
+  primary_key: "id"
   retriever:
     $ref: "#/retriever"
     requester:
@@ -201,8 +201,8 @@ spec:
     assert add_fields.fields[0].value.string == "{{ response.to_add }}"
 
     assert isinstance(stream.retriever, SimpleRetriever)
-    assert stream.retriever.primary_key == "{{ parameters['primary_key'] }}"
-    assert stream.retriever.name == "lists"
+    assert stream.retriever.primary_key == stream.primary_key
+    assert stream.retriever.name == stream.name
 
     assert isinstance(stream.retriever.record_selector, RecordSelector)
 
@@ -217,7 +217,7 @@ spec:
     assert isinstance(stream.retriever.paginator.decoder, JsonDecoder)
     assert stream.retriever.paginator.page_size_option.field_name == "page_size"
     assert stream.retriever.paginator.page_size_option.inject_into == RequestOptionType.request_parameter
-    assert stream.retriever.paginator.page_token_option.inject_into == RequestOptionType.path
+    assert isinstance(stream.retriever.paginator.page_token_option, RequestPath)
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
@@ -229,6 +229,7 @@ spec:
 
     assert isinstance(stream.retriever.requester, HttpRequester)
     assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester.name == stream.name
     assert stream.retriever.requester.path.string == "{{ next_page_token['next_page_url'] }}"
     assert stream.retriever.requester.path.default == "{{ next_page_token['next_page_url'] }}"
 
@@ -316,6 +317,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
       slice_values: "{{config['repos']}}"
       cursor_field: repository
       request_option:
+        type: RequestOption
         inject_into: header
         field_name: repository
     """
@@ -338,7 +340,6 @@ def test_create_substream_slicer():
       name: "{{ parameters['stream_name'] }}"
     retriever:
       requester:
-        name: "{{ parameters['name'] }}"
         type: "HttpRequester"
         path: "kek"
       record_selector:
@@ -346,17 +347,17 @@ def test_create_substream_slicer():
           field_path: []
     stream_A:
       type: DeclarativeStream
+      name: "A"
+      primary_key: "id"
       $parameters:
-        name: "A"
-        primary_key: "id"
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
     stream_B:
       type: DeclarativeStream
+      name: "B"
+      primary_key: "id"
       $parameters:
-        name: "B"
-        primary_key: "id"
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
@@ -367,6 +368,7 @@ def test_create_substream_slicer():
           parent_key: id
           stream_slice_field: repository_id
           request_option:
+            type: RequestOption
             inject_into: request_parameter
             field_name: repository_id
         - stream: "#/stream_B"
@@ -385,13 +387,13 @@ def test_create_substream_slicer():
     assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
     assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
 
-    assert stream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert stream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert stream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert stream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert stream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert stream_slicer.parent_stream_configs[1].parent_key == "someid"
-    assert stream_slicer.parent_stream_configs[1].stream_slice_field == "word_id"
+    assert stream_slicer.parent_stream_configs[1].parent_key.eval({}) == "someid"
+    assert stream_slicer.parent_stream_configs[1].stream_slice_field.eval({}) == "word_id"
     assert stream_slicer.parent_stream_configs[1].request_option is None
 
 
@@ -450,9 +452,11 @@ def test_datetime_stream_slicer():
         cursor_granularity: "PT0.000001S"
         lookback_window: "P5D"
         start_time_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: created[gte]
         end_time_option:
+          type: RequestOption
           inject_into: body_json
           field_name: end_time
         stream_state_field_start: star
@@ -585,15 +589,18 @@ requester:
     header: header_value
   {error_handler}
     """
+    name = "name"
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     requester_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["requester"], {})
 
-    selector = factory.create_component(model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config)
+    selector = factory.create_component(
+        model_type=HttpRequesterModel, component_definition=requester_manifest, config=input_config, name=name
+    )
 
     assert isinstance(selector, HttpRequester)
     assert selector._method == HttpMethod.GET
-    assert selector.name == "lists"
+    assert selector.name == "name"
     assert selector.path.string == "/v3/marketing/lists"
     assert selector.url_base.string == "https://api.sendgrid.com"
 
@@ -651,9 +658,10 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
+      name: "lists"
+      primary_key: id
       $parameters:
         name: "lists"
-        primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
           name: "{{ parameters.stream_name }}"
@@ -662,10 +670,11 @@ def test_config_with_defaults():
           paginator:
             type: "DefaultPaginator"
             page_size_option:
+              type: RequestOption
               inject_into: request_parameter
               field_name: page_size
             page_token_option:
-              inject_into: path
+              type: RequestPath
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
@@ -694,6 +703,8 @@ def test_config_with_defaults():
     assert stream.primary_key == "id"
     assert stream.name == "lists"
     assert isinstance(stream.retriever, SimpleRetriever)
+    assert stream.retriever.name == stream.name
+    assert stream.retriever.primary_key == stream.primary_key
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader.file_path.string == "./source_sendgrid/schemas/{{ parameters.name }}.yaml"
@@ -719,10 +730,11 @@ def test_create_default_paginator():
       paginator:
         type: "DefaultPaginator"
         page_size_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: page_size
         page_token_option:
-          inject_into: path
+          type: RequestPath
         pagination_strategy:
           type: "CursorPagination"
           page_size: 50
@@ -747,8 +759,7 @@ def test_create_default_paginator():
     assert paginator.page_size_option.inject_into == RequestOptionType.request_parameter
     assert paginator.page_size_option.field_name == "page_size"
 
-    assert isinstance(paginator.page_token_option, RequestOption)
-    assert paginator.page_token_option.inject_into == RequestOptionType.path
+    assert isinstance(paginator.page_token_option, RequestPath)
 
 
 @pytest.mark.parametrize(
@@ -791,11 +802,10 @@ def test_create_default_paginator():
             {
                 "type": "CustomErrorHandler",
                 "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
-                "optional_subcomponent_field": {"inject_into": "path"},
+                "optional_subcomponent_field": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "destination"},
             },
             "optional_subcomponent_field",
-            RequestOption(inject_into=RequestOptionType.path, parameters={}),
-            None,
+            RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", parameters={}),
             id="test_create_custom_component_with_subcomponent_wrapped_in_optional",
         ),
         pytest.param(
@@ -892,13 +902,11 @@ def test_custom_components_do_not_contain_extra_fields():
                     "primary_key": "id",
                     "retriever": {
                         "type": "SimpleRetriever",
-                        "name": "a_parent",
-                        "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
-                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                        "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "some"},
                     },
                     "schema_loader": {
                         "type": "JsonFileSchemaLoader",
@@ -916,8 +924,8 @@ def test_custom_components_do_not_contain_extra_fields():
     assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
-    assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
@@ -940,13 +948,11 @@ def test_parse_custom_component_fields_if_subcomponent():
                     "primary_key": "id",
                     "retriever": {
                         "type": "SimpleRetriever",
-                        "name": "a_parent",
-                        "primary_key": "id",
                         "record_selector": {
                             "type": "RecordSelector",
                             "extractor": {"type": "DpathExtractor", "field_path": []},
                         },
-                        "requester": {"type": "HttpRequester", "name": "a_parent", "url_base": "https://airbyte.io", "path": "some"},
+                        "requester": {"type": "HttpRequester", "url_base": "https://airbyte.io", "path": "some"},
                     },
                     "schema_loader": {
                         "type": "JsonFileSchemaLoader",
@@ -965,8 +971,8 @@ def test_parse_custom_component_fields_if_subcomponent():
     assert custom_substream_slicer.custom_field == "here"
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
-    assert custom_substream_slicer.parent_stream_configs[0].parent_key == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert custom_substream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
     assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
@@ -1075,11 +1081,8 @@ class TestCreateTransformations:
             "primary_key": [],
             "retriever": {
                 "type": "SimpleRetriever",
-                "name": "test",
-                "primary_key": [],
                 "requester": {
                     "type": "HttpRequester",
-                    "name": "test",
                     "url_base": "http://localhost:6767/",
                     "path": "items/",
                     "request_options_provider": {

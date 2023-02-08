@@ -12,7 +12,6 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
     http_method: "GET"
     authenticator:
@@ -21,8 +20,6 @@ definitions:
 
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
@@ -34,6 +31,7 @@ definitions:
         type: "OffsetIncrement"
         page_size: 100
       page_token_option:
+        type: RequestOption
         field_name: "offset"
         inject_into: "request_parameter"
 
@@ -148,7 +146,7 @@ definitions:
           cursor_value: "{{ response['next'] }}"
           page_size: 100
         page_token_option:
-          inject_into: "path"
+          type: RequestPath
         $parameters:
           url_base: "#/definitions/requester/url_base"
 

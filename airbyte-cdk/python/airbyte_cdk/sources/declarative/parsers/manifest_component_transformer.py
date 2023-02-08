@@ -31,7 +31,6 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # DefaultPaginator
     "DefaultPaginator.decoder": "JsonDecoder",
     "DefaultPaginator.page_size_option": "RequestOption",
-    "DefaultPaginator.page_token_option": "RequestOption",
     # DpathExtractor
     "DpathExtractor.decoder": "JsonDecoder",
     # HttpRequester

@@ -9,7 +9,6 @@ definitions:
 
   requester:
     type: HttpRequester
-    name: "{{ parameters['name'] }}"
     url_base: "https://api.sendgrid.com"
     http_method: "GET"
     authenticator:
@@ -22,7 +21,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: "page_size"
     page_token_option:
-      inject_into: "path"
+      type: RequestPath
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ response._metadata.next }}"
@@ -35,14 +34,13 @@ definitions:
       inject_into: "request_parameter"
       field_name: "limit"
     page_token_option:
+      type: RequestOption
       inject_into: "request_parameter"
       field_name: "offset"
     pagination_strategy:
       type: "OffsetIncrement"
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
   stream_slicer:
     type: "DatetimeStreamSlicer"
     start_datetime:
