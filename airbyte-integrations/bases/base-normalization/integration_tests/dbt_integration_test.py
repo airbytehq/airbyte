@@ -59,6 +59,8 @@ class DbtIntegrationTest(object):
             self.setup_clickhouse_db()
         if DestinationType.TIDB.value in destinations_to_test:
             self.setup_tidb_db()
+        if DestinationType.DUCKDB.value in destinations_to_test:
+            self.setup_duckdb_db()
 
     def setup_postgres_db(self):
         start_db = True
@@ -364,9 +366,9 @@ class DbtIntegrationTest(object):
             print("Executing: ", " ".join(commands))
             subprocess.call(commands)
 
-        if not os.path.exists("../integration_tests"):
-            os.makedirs("../integration_tests")
-        with open("../integration_tests/config.json", "w") as fh:
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/config.json", "w") as fh:
             fh.write(json.dumps(config))
 
     @staticmethod
