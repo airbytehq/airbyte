@@ -97,6 +97,7 @@ class CustomIncrementalSync(BaseModel):
 
     type: Literal["CustomIncrementalSync"]
     class_name: str
+    cursor_field: str
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 

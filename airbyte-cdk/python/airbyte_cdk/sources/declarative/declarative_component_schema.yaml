@@ -245,6 +245,7 @@ definitions:
     required:
       - type
       - class_name
+      - cursor_field
     properties:
       type:
         type: string
@@ -252,6 +253,8 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
+      cursor_field:
+        type: string
       $parameters:
         type: object
         additionalProperties: true
