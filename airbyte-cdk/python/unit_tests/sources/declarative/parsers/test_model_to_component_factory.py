@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
-from airbyte_cdk.sources.declarative.models import CustomStreamSlicer as CustomStreamSlicerModel
+from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
@@ -914,7 +914,7 @@ def test_create_custom_components(manifest, field_name, expected_value):
 
 def test_custom_components_do_not_contain_extra_fields():
     custom_substream_slicer_manifest = {
-        "type": "CustomStreamSlicer",
+        "type": "CustomPartitionRouter",
         "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
         "custom_field": "here",
         "extra_field_to_exclude": "should_not_pass_as_parameter",
@@ -946,7 +946,7 @@ def test_custom_components_do_not_contain_extra_fields():
         ],
     }
 
-    custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
+    custom_substream_slicer = factory.create_component(CustomPartitionRouterModel, custom_substream_slicer_manifest, input_config)
     assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
 
     assert len(custom_substream_slicer.parent_stream_configs) == 1
@@ -961,7 +961,7 @@ def test_custom_components_do_not_contain_extra_fields():
 
 def test_parse_custom_component_fields_if_subcomponent():
     custom_substream_slicer_manifest = {
-        "type": "CustomStreamSlicer",
+        "type": "CustomPartitionRouter",
         "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
         "custom_field": "here",
         "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
@@ -992,7 +992,7 @@ def test_parse_custom_component_fields_if_subcomponent():
         ],
     }
 
-    custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
+    custom_substream_slicer = factory.create_component(CustomPartitionRouterModel, custom_substream_slicer_manifest, input_config)
     assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
     assert custom_substream_slicer.custom_field == "here"
 
