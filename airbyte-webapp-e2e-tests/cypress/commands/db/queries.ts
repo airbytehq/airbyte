@@ -82,7 +82,7 @@ export const createDummyTablesQuery = (amountOfTables: number) =>
   }).join("\n");
 
 export const dropDummyTablesQuery = (amountOfTables: number) => {
-  // postgres doesn't allow to drop multiple tables in one query, so need to do it one by one
+  // postgres doesn't allow to drop multiple tables using wildcard, so need to compose the list of table names
   const tables = Array.from({ length: amountOfTables }, (_, index) => `public.dummy_table_${index + 1}`).join(", ");
   return dropTable(tables);
 };
