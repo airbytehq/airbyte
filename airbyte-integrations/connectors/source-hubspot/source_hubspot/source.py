@@ -4,17 +4,12 @@
 
 import logging
 from itertools import chain
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_cdk.utils.event_timing import create_timer
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
 from source_hubspot.streams import (
     API,
