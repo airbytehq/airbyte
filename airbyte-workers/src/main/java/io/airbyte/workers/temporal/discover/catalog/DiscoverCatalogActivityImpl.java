@@ -49,7 +49,6 @@ import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 @Slf4j
 public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 

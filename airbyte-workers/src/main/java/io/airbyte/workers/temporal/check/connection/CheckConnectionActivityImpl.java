@@ -49,7 +49,6 @@ import java.util.Map;
 import java.util.Optional;
 
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class CheckConnectionActivityImpl implements CheckConnectionActivity {
 
   private final WorkerConfigs workerConfigs;
