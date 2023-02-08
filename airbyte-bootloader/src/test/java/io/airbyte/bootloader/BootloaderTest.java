@@ -82,7 +82,8 @@ class BootloaderTest {
 
   // ⚠️ This line should change with every new migration to show that you meant to make a new
   // migration to the prod database
-  private static final String CURRENT_MIGRATION_VERSION = "0.40.28.001";
+  private static final String CURRENT_CONFIGS_MIGRATION_VERSION = "0.40.28.001";
+  private static final String CURRENT_JOBS_MIGRATION_VERSION = "0.40.28.001";
 
   @BeforeEach
   void setup() {
@@ -147,10 +148,10 @@ class BootloaderTest {
       bootloader.load();
 
       val jobsMigrator = new JobsDatabaseMigrator(jobDatabase, jobsFlyway);
-      assertEquals("0.40.26.001", jobsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals(CURRENT_JOBS_MIGRATION_VERSION, jobsMigrator.getLatestMigration().getVersion().getVersion());
 
       val configsMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
-      assertEquals(CURRENT_MIGRATION_VERSION, configsMigrator.getLatestMigration().getVersion().getVersion());
+      assertEquals(CURRENT_CONFIGS_MIGRATION_VERSION, configsMigrator.getLatestMigration().getVersion().getVersion());
 
       assertEquals(VERSION_0330_ALPHA, jobsPersistence.getVersion().get());
       assertEquals(new Version(PROTOCOL_VERSION_123), jobsPersistence.getAirbyteProtocolVersionMin().get());

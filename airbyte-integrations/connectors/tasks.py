@@ -56,10 +56,10 @@ TASK_COMMANDS: Dict[str, List[str]] = {
         f"mypy {{source_path}} --config-file={CONFIG_FILE}",
     ],
     "test": [
-        f"cp -rf {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'source-acceptance-test')} {{venv}}/",
+        f"cp -rf {os.path.join(CONNECTORS_DIR, os.pardir, 'bases', 'connector-acceptance-test')} {{venv}}/",
         "pip install build",
-        f"python -m build {os.path.join('{venv}', 'source-acceptance-test')}",
-        f"pip install {os.path.join('{venv}', 'source-acceptance-test', 'dist', 'source_acceptance_test-*.whl')}",
+        f"python -m build {os.path.join('{venv}', 'connector-acceptance-test')}",
+        f"pip install {os.path.join('{venv}', 'connector-acceptance-test', 'dist', 'connector_acceptance_test-*.whl')}",
         "pip install .",
         "pip install .[tests]",
         "pip install pytest-cov",

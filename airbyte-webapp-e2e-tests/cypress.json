@@ -5,7 +5,7 @@
   "viewportHeight": 800,
   "viewportWidth": 1280,
   "retries": {
-    "runMode": 2,
+    "runMode": 5,
     "openMode": 0
   },
   "defaultCommandTimeout": 10000,

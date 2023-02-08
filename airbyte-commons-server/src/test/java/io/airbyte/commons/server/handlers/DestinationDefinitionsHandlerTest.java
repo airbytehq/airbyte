@@ -29,7 +29,6 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.ReleaseStage;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.commons.server.errors.UnsupportedProtocolVersionException;
@@ -41,8 +40,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.ActorType;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.NormalizationDestinationDefinitionConfig;
 import io.airbyte.config.ResourceRequirements;
@@ -79,6 +76,7 @@ class DestinationDefinitionsHandlerTest {
   private AirbyteGithubStore githubStore;
   private DestinationHandler destinationHandler;
   private UUID workspaceId;
+  private AirbyteProtocolVersionRange protocolVersionRange;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -91,6 +89,7 @@ class DestinationDefinitionsHandlerTest {
     githubStore = mock(AirbyteGithubStore.class);
     destinationHandler = mock(DestinationHandler.class);
     workspaceId = UUID.randomUUID();
+    protocolVersionRange = new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.3.0"));
 
     destinationDefinitionsHandler = new DestinationDefinitionsHandler(
         configRepository,
@@ -98,7 +97,7 @@ class DestinationDefinitionsHandlerTest {
         schedulerSynchronousClient,
         githubStore,
         destinationHandler,
-        new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.3.0")));
+        protocolVersionRange);
   }
 
   private StandardDestinationDefinition generateDestinationDefinition() {
@@ -382,7 +381,7 @@ class DestinationDefinitionsHandlerTest {
     final String invalidProtocolVersion = "121.5.6";
     final StandardDestinationDefinition destination = generateDestinationDefinition();
     destination.getSpec().setProtocolVersion(invalidProtocolVersion);
-    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+    final String imageName = destination.getDockerRepository() + ":" + destination.getDockerImageTag();
 
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -417,7 +416,7 @@ class DestinationDefinitionsHandlerTest {
   @DisplayName("createCustomDestinationDefinition should correctly create a destinationDefinition")
   void testCreateCustomDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
     final StandardDestinationDefinition destination = generateDestinationDefinition();
-    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+    final String imageName = destination.getDockerRepository() + ":" + destination.getDockerImageTag();
 
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -474,7 +473,7 @@ class DestinationDefinitionsHandlerTest {
     final String invalidProtocol = "122.1.22";
     final StandardDestinationDefinition destination = generateDestinationDefinition();
     destination.getSpec().setProtocolVersion(invalidProtocol);
-    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
+    final String imageName = destination.getDockerRepository() + ":" + destination.getDockerImageTag();
 
     when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
     when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
@@ -521,7 +520,7 @@ class DestinationDefinitionsHandlerTest {
     assertNotEquals(newDockerImageTag, currentTag);
     assertNotEquals(newProtocolVersion, currentDestination.getProtocolVersion());
 
-    final String newImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), newDockerImageTag);
+    final String newImageName = destinationDefinition.getDockerRepository() + ":" + newDockerImageTag;
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
@@ -540,9 +539,6 @@ class DestinationDefinitionsHandlerTest {
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository).writeStandardDestinationDefinition(updatedDestination);
 
-    final Configs configs = new EnvConfigs();
-    final AirbyteProtocolVersionRange protocolVersionRange =
-        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
     verify(configRepository).clearUnsupportedProtocolVersionFlag(updatedDestination.getDestinationDefinitionId(), ActorType.DESTINATION,
         protocolVersionRange);
   }
@@ -560,7 +556,7 @@ class DestinationDefinitionsHandlerTest {
     assertNotEquals(newDockerImageTag, currentTag);
     assertNotEquals(newProtocolVersion, currentDestination.getProtocolVersion());
 
-    final String newImageName = DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), newDockerImageTag);
+    final String newImageName = destinationDefinition.getDockerRepository() + ":" + newDockerImageTag;
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);

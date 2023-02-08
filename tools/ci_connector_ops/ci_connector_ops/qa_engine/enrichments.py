@@ -6,8 +6,8 @@
 import pandas as pd
 
 def get_enriched_catalog(
-    oss_catalog: pd.DataFrame, 
-    cloud_catalog: pd.DataFrame, 
+    oss_catalog: pd.DataFrame,
+    cloud_catalog: pd.DataFrame,
     adoption_metrics_per_connector_version: pd.DataFrame) -> pd.DataFrame:
     """Merge OSS and Cloud catalog in a single dataframe on their definition id.
     Transformations:
@@ -35,7 +35,7 @@ def get_enriched_catalog(
         indicator=True,
         suffixes=("", "_cloud"),
     )
-    
+
     enriched_catalog.columns = enriched_catalog.columns.str.replace(
         "(?<=[a-z])(?=[A-Z])", "_", regex=True
     ).str.lower() # column names to snake case

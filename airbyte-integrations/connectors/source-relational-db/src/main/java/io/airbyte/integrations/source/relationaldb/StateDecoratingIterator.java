@@ -156,7 +156,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       } catch (final Exception e) {
         emitIntermediateState = true;
         hasCaughtException = true;
-        LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
+        LOGGER.error("Message iterator failed to read next record.", e);
         optionalIntermediateMessage = getIntermediateMessage();
         return optionalIntermediateMessage.orElse(endOfData());
       }

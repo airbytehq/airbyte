@@ -74,6 +74,12 @@ public class RedshiftS3StagingInsertDestinationAcceptanceTest extends RedshiftSt
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", DATASET_ID)));
+    super.tearDown(testEnv);
+  }
+
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTableDuringS3Staging() throws Exception {
     setup();

@@ -18,7 +18,7 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
     "pandas==1.3.1",
     "psutil",
     "pytest-order",

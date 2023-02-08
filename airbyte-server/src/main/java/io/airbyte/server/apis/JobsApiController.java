@@ -18,6 +18,7 @@ import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobListRequestBody;
 import io.airbyte.api.model.generated.JobOptionalRead;
 import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.JobHistoryHandler;
 import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
@@ -44,6 +45,7 @@ public class JobsApiController implements JobsApi {
 
   @Post("/cancel")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
@@ -58,6 +60,7 @@ public class JobsApiController implements JobsApi {
 
   @Post("/get_debug_info")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
@@ -65,6 +68,7 @@ public class JobsApiController implements JobsApi {
 
   @Post("/get")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
@@ -72,6 +76,7 @@ public class JobsApiController implements JobsApi {
 
   @Post("/get_light")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
@@ -86,6 +91,7 @@ public class JobsApiController implements JobsApi {
 
   @Post("/list")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.constants.AlwaysAllowedHosts;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 public class ConfigReplacer {
 
   private final Logger logger;
+  private final AlwaysAllowedHosts alwaysAllowedHosts = new AlwaysAllowedHosts();
 
   public ConfigReplacer(Logger logger) {
     this.logger = logger;
@@ -88,6 +90,8 @@ public class ConfigReplacer {
       this.logger.error(
           "All allowedHosts values are un-replaced.  Check this connector's configuration or actor definition - " + allowedHosts.getHosts());
     }
+
+    resolvedHosts.addAll(alwaysAllowedHosts.getHosts());
 
     final AllowedHosts resolvedAllowedHosts = new AllowedHosts();
     resolvedAllowedHosts.setHosts(resolvedHosts);
