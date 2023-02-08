@@ -26,12 +26,10 @@ class MySingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Auth
 
 
 class ExactStream(HttpStream, IncrementalMixin):
-    _single_refresh_token_authenticator = None
-    _divisions = None
-    _state_per_division = {}
-
     def __init__(self, config: Mapping[str, Any]):
         self._divisions = config["divisions"]
+
+        self._state_per_division = {}
         for division in self._divisions:
             self._state_per_division[str(division)] = {}
 
