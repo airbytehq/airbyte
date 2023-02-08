@@ -4,43 +4,31 @@
 
 package io.airbyte.commons.features;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FeatureFlagHelper {
 
   public static boolean isFieldSelectionEnabledForWorkspace(final FeatureFlags featureFlags, final UUID workspaceId) {
-    return isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::fieldSelectionWorkspaces, workspaceId, "field selection")
-        || featureFlags.applyFieldSelection();
-  }
-
-  public static boolean isStrictComparisonNormalizationEnabledForWorkspace(final FeatureFlags featureFlags, final UUID workspaceId) {
-    return isWorkspaceIncludedInFlag(featureFlags, FeatureFlags::strictComparisonNormalizationWorkspaces, workspaceId,
-        "strict comparison in normalization");
-  }
-
-  @VisibleForTesting
-  static boolean isWorkspaceIncludedInFlag(final FeatureFlags featureFlags,
-                                           final Function<FeatureFlags, String> flagRetriever,
-                                           final UUID workspaceId,
-                                           final String context) {
-    final String workspaceIdsString = flagRetriever.apply(featureFlags);
+    final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
     final Set<UUID> workspaceIds = new HashSet<>();
     if (workspaceIdsString != null && !workspaceIdsString.isEmpty()) {
       for (final String id : workspaceIdsString.split(",")) {
         try {
           workspaceIds.add(UUID.fromString(id));
         } catch (final IllegalArgumentException e) {
-          log.warn("Malformed workspace id for {}: {}", context, id);
+          log.warn("Malformed workspace id for field selection: {}", id);
         }
       }
     }
-    return workspaceId != null && workspaceIds.contains(workspaceId);
+    if (workspaceId != null && workspaceIds.contains(workspaceId)) {
+      return true;
+    }
+
+    return featureFlags.applyFieldSelection();
   }
 
 }
