@@ -17,7 +17,10 @@
     {"sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream_empty_arr_nest1_arr_nest2"}
   ],
   "mysql": [],
-  "mssql": [],
+  "mssql": [
+    {"sparse_nested_stream__y_obj_nest1_obj_nest2": "sparse_nested_stream___y_obj_nest1_obj_nest2"},
+    {"sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream___y_arr_nest1_arr_nest2"}
+  ],
   "tidb": [
     {"sparse_nested_stream__y_obj_nest1_obj_nest2": "sparse_nested_stream___y_obj_nest1_obj_nest2"},
     {"sparse_nested_stream__y_arr_nest1_arr_nest2": "sparse_nested_stream___y_arr_nest1_arr_nest2"}
