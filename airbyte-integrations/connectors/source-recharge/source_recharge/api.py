@@ -61,19 +61,6 @@ class RechargeStream(HttpStream, ABC):
         else:
             return [response_data]
 
-    def should_retry(self, response: requests.Response) -> bool:
-        content_length = int(response.headers.get("Content-Length", 0))
-        incomplete_data_response = response.status_code == 200 and content_length > len(response.content)
-
-        if incomplete_data_response:
-            return True
-        elif response.status_code == requests.codes.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.error(f"Skiping stream {self.name} because of a 403 error.")
-            return False
-
-        return super().should_retry(response)
-
 
 class IncrementalRechargeStream(RechargeStream, ABC):
 
