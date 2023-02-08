@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "icon": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "home_header": {
+      "type": ["null", "string"]
+    },
+    "splash": {
+      "type": ["null", "string"]
+    },
+    "discovery_splash": {
+      "type": ["null", "string"]
+    },
+    "features": {
+      "type": [
+        "null",
+        "array"
+      ],
+      "items": {
+        "type": "string"
+      }
+    },
+    "approximate_member_count": {
+      "type": ["null", "integer"]
+    },
+    "approximate_presence_count": {
+      "type": ["null", "integer"]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["null", "string"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "description": {
+        "type": ["null", "string"]
+      },
+      "permissions": {
+        "type": ["null", "string"]
+      },
+      "position": {
+        "type": ["null", "integer"]
+      },
+      "color": {
+        "type": ["null", "integer"]
+      },
+      "hoist": {
+        "type": ["null", "boolean"]
+      },
+      "managed": {
+        "type": ["null", "boolean"]
+      },
+      "mentionable": {
+        "type": ["null", "boolean"]
+      },
+      "icon": {
+        "type": ["null", "string"]
+      },
+      "flags": {
+        "type": ["null", "integer"]
+      },
+      "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+    }
+}

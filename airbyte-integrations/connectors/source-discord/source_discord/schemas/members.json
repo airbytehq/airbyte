@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "display_name": {
+      "type": ["null", "string"]
+    },
+    "guild_nick": {
+      "type": ["null", "string"]
+    },
+    "avatar": {
+      "type": ["null", "string"]
+    },
+    "public_flags": {
+      "type": ["null", "integer"]
+    },
+    "bot": {
+      "type": ["null", "boolean"],
+      "default": false
+    },
+    "guild_joined_at": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}
