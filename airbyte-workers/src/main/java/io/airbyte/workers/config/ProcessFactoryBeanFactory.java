@@ -30,7 +30,6 @@ import java.nio.file.Path;
 public class ProcessFactoryBeanFactory {
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Requires(notEnv = Environment.KUBERNETES)
   @Named("checkProcessFactory")
   public ProcessFactory checkDockerProcessFactory(
@@ -50,7 +49,6 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Requires(env = Environment.KUBERNETES)
   @Named("checkProcessFactory")
   public ProcessFactory checkKubernetesProcessFactory(
@@ -96,7 +94,6 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Requires(notEnv = Environment.KUBERNETES)
   @Named("discoverProcessFactory")
   public ProcessFactory discoverDockerProcessFactory(
@@ -116,7 +113,6 @@ public class ProcessFactoryBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Requires(env = Environment.KUBERNETES)
   @Named("discoverProcessFactory")
   public ProcessFactory discoverKubernetesProcessFactory(
