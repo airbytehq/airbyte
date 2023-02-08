@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class ResolveManifest(BaseModel):
@@ -19,6 +19,6 @@ class ResolveManifest(BaseModel):
         manifest: The manifest of this ResolveManifest.
     """
 
-    manifest: Dict[str, Any]
+    manifest: Dict[str, Any] = Field(alias="manifest")
 
 ResolveManifest.update_forward_refs()

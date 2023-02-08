@@ -1,7 +1,7 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-    id "org.openapi.generator" version "5.3.1"
+    id "org.openapi.generator" version "6.3.0"
     id 'airbyte-python-docker'
     id 'airbyte-docker'
 }
@@ -12,15 +12,14 @@ airbytePythonDocker {
 
 task generateOpenApiPythonServer(type: GenerateTask) {
     def generatedCodeDir = "$buildDir/airbyte_connector_builder_server"
-    // TODO this file doesn't need to be nested in 3 empty folders
+    // TODO this openapi file doesn't need to be nested in 3 empty folders
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
-    outputDir = generatedCodeDir
-
     generatorName = "python-fastapi"
     configFile = "$projectDir/openapi/generator_config.yaml"
     templateDir = "$projectDir/openapi/templates"
     packageName = "connector_builder.generated"
 
+    outputDir = generatedCodeDir
     // After we generate, we're only interested in the API declaration and the generated pydantic models.
     // So we copy those from the build/ directory
     doLast {

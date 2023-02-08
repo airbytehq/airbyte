@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class StreamsListRequestBody(BaseModel):
@@ -20,7 +20,7 @@ class StreamsListRequestBody(BaseModel):
         config: The config of this StreamsListRequestBody.
     """
 
-    manifest: Dict[str, Any]
-    config: Dict[str, Any]
+    manifest: Dict[str, Any] = Field(alias="manifest")
+    config: Dict[str, Any] = Field(alias="config")
 
 StreamsListRequestBody.update_forward_refs()

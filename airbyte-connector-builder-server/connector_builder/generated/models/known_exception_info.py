@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class KnownExceptionInfo(BaseModel):
@@ -21,8 +21,8 @@ class KnownExceptionInfo(BaseModel):
         exception_stack: The exception_stack of this KnownExceptionInfo [Optional].
     """
 
-    message: str
-    exception_class_name: Optional[str] = None
-    exception_stack: Optional[List[str]] = None
+    message: str = Field(alias="message")
+    exception_class_name: Optional[str] = Field(alias="exceptionClassName", default=None)
+    exception_stack: Optional[List[str]] = Field(alias="exceptionStack", default=None)
 
 KnownExceptionInfo.update_forward_refs()

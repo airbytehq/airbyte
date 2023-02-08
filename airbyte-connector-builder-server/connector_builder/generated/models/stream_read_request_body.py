@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class StreamReadRequestBody(BaseModel):
@@ -23,11 +23,11 @@ class StreamReadRequestBody(BaseModel):
         record_limit: The record_limit of this StreamReadRequestBody [Optional].
     """
 
-    manifest: Dict[str, Any]
-    stream: str
-    config: Dict[str, Any]
-    state: Optional[Dict[str, Any]] = None
-    record_limit: Optional[int] = None
+    manifest: Dict[str, Any] = Field(alias="manifest")
+    stream: str = Field(alias="stream")
+    config: Dict[str, Any] = Field(alias="config")
+    state: Optional[Dict[str, Any]] = Field(alias="state", default=None)
+    record_limit: Optional[int] = Field(alias="record_limit", default=None)
 
     @validator("record_limit")
     def record_limit_max(cls, value):
