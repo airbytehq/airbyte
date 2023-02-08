@@ -6,7 +6,6 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -17,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import org.slf4j.Logger;
@@ -31,19 +29,20 @@ public class RecordSchemaValidator {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private final FeatureFlagClient featureFlagClient;
-  private final UUID workspaceId;
   private static final JsonSchemaValidator validator = new JsonSchemaValidator();
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
   private final boolean backgroundValidation;
   private static final Executor validationExecutor = Executors.newFixedThreadPool(1);
 
-  public RecordSchemaValidator(final FeatureFlagClient featureFlagClient,
-                               final UUID workspaceId,
-                               final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas,
+  /**
+   * @param streamNamesToSchemas
+   * @param backgroundValidation Pass true if the json schema validation should occur in a different
+   *        thread. Pass false if the json schema validation should occur in current thread. TODO:
+   *        remove the backgroundValidation parameter when PerfBackgroundJsonValidation feature-flag
+   *        is removed.
+   */
+  public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas,
                                final boolean backgroundValidation) {
-    this.featureFlagClient = featureFlagClient;
-    this.workspaceId = workspaceId;
     this.backgroundValidation = backgroundValidation;
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema

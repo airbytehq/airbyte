@@ -328,7 +328,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   Optional.of(syncInput.getCatalog())),
               migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(featureFlags),
-          new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput),
+          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput),
               featureFlagClient.enabled(
                   PerfBackgroundJsonValidation.INSTANCE, new Workspace(syncInput.getWorkspaceId()))),
           metricReporter,

@@ -486,7 +486,7 @@ class DefaultReplicationWorkerTest {
     // Use a real schema validator to make sure validation doesn't affect this.
     final String streamName = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
     final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    recordSchemaValidator = new RecordSchemaValidator(new TestClient(), syncInput.getWorkspaceId(),
+    recordSchemaValidator = new RecordSchemaValidator(
         Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
             sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()),
         false);
@@ -521,7 +521,7 @@ class DefaultReplicationWorkerTest {
     // Use a real schema validator to make sure validation doesn't affect this.
     final String streamName = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
     final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    recordSchemaValidator = new RecordSchemaValidator(new TestClient(), syncInput.getWorkspaceId(),
+    recordSchemaValidator = new RecordSchemaValidator(
         Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
             sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()),
         false);
