@@ -227,7 +227,7 @@ def test_incremental_two_sequential_reads(
             {'test_stream': ['dateCreated']},
             [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
             [],
-            {"test_stream": {}},
+            {},
             pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path")
         ),
     ],
@@ -266,8 +266,8 @@ def test_incremental_two_sequential_reads_state_invalid(
         ]
     else:
         call_read_output_messages = [
-            *build_messages_from_record_data("test_stream", {"test_stream": latest_state}),
-            build_state_message(latest_state),
+            *build_messages_from_record_data("test_stream", records1),
+            build_state_message({"test_stream": latest_state}),
         ]
 
 
