@@ -40,6 +40,8 @@ definitions:
       type: "OffsetIncrement"
   retriever:
     type: SimpleRetriever
+    name: "{{ parameters['name'] }}"
+    primary_key: "{{ parameters['primary_key'] }}"
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
