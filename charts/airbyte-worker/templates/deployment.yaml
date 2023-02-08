@@ -310,6 +310,16 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: USE_STREAM_CAPABLE_STATE
+        - name: STRICT_COMPARISON_NORMALIZATION_TAG
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: STRICT_COMPARISON_NORMALIZATION_TAG
+        - name: STRICT_COMPARISON_NORMALIZATION_WORKSPACES
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: STRICT_COMPARISON_NORMALIZATION_WORKSPACES
         - name: SHOULD_RUN_NOTIFY_WORKFLOWS
           valueFrom:
             configMapKeyRef:
