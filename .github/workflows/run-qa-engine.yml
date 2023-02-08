@@ -2,10 +2,10 @@ name: Run QA Engine
 
 on:
   workflow_dispatch:
-  schedule:
-    # 1pm UTC is 6am PDT.
-    # same time as Generate Build Report
-    - cron: "0 13 * * *"
+  # schedule:
+  ## 1pm UTC is 6am PDT.
+  ## same time as Generate Build Report
+  # - cron: "0 13 * * *"
 
 jobs:
   run-qa-engine:
