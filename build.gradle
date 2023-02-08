@@ -339,8 +339,6 @@ subprojects { subproj ->
         }
     }
 
-    def integrationTagName = 'platform-integration'
-    def slowIntegrationTagName = 'platform-slow-integration'
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
@@ -361,36 +359,10 @@ subprojects { subproj ->
             excludes = ['**/*Test*', '**/generated*']
         }
         useJUnitPlatform {
-            excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
+            excludeTags(cloudStorageTestTagName)
         }
         testLogging() {
             events "passed", "skipped", "failed"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task newIntegrationTests(type: Test) {
-        useJUnitPlatform {
-            includeTags integrationTagName
-        }
-        testLogging() {
-            events "passed", "failed", "started"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task slowIntegrationTests(type: Test) {
-        useJUnitPlatform {
-            includeTags slowIntegrationTagName
-        }
-        testLogging() {
-            events "passed", "failed", "started"
             exceptionFormat 'full'
             // uncomment to get the full log output
             // showStandardStreams = true
