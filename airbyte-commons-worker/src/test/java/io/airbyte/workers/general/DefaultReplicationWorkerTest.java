@@ -488,7 +488,8 @@ class DefaultReplicationWorkerTest {
     final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
     recordSchemaValidator = new RecordSchemaValidator(new TestClient(), syncInput.getWorkspaceId(),
         Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
-            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
+            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()),
+        false);
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
         JOB_ATTEMPT,
@@ -522,7 +523,8 @@ class DefaultReplicationWorkerTest {
     final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
     recordSchemaValidator = new RecordSchemaValidator(new TestClient(), syncInput.getWorkspaceId(),
         Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
-            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
+            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()),
+        false);
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
         JOB_ATTEMPT,

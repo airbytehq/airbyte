@@ -24,6 +24,8 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.PerfBackgroundJsonValidation;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -170,7 +172,9 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
                 Optional.of(syncInput.getCatalog())),
             migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(featureFlags),
-        new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+        new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput),
+            featureFlagClient.enabled(
+                PerfBackgroundJsonValidation.INSTANCE, new Workspace(syncInput.getWorkspaceId()))),
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
         featureFlagClient,

@@ -37,7 +37,7 @@ class RecordSchemaValidatorTest {
   void testValidateValidSchema() throws Exception {
     final var featureFlagClient = new TestClient();
     final var recordSchemaValidator = new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(),
-        WorkerUtils.mapStreamNamesToSchemas(syncInput));
+        WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
     recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()));
   }
 
@@ -45,7 +45,7 @@ class RecordSchemaValidatorTest {
   void testValidateInvalidSchema() throws Exception {
     final var featureFlagClient = new TestClient();
     final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(),
-        WorkerUtils.mapStreamNamesToSchemas(syncInput));
+        WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
     assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(),
         AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));
   }

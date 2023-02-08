@@ -85,7 +85,7 @@ public class ReplicationWorkerPerformanceTest {
     final var workspaceID = UUID.randomUUID();
     final var validator = new RecordSchemaValidator(new TestClient(), workspaceID, Map.of(
         new AirbyteStreamNameNamespacePair("s1", null),
-        CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))));
+        CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))), false);
     final var featureFlagClient = new TestClient();
 
     final IntegrationLauncher integrationLauncher = new LimitedIntegrationLauncher();

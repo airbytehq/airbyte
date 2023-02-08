@@ -7,8 +7,6 @@ package io.airbyte.workers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.featureflag.FeatureFlagClient;
-import io.airbyte.featureflag.PerfBackgroundJsonValidation;
-import io.airbyte.featureflag.Workspace;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -20,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +35,16 @@ public class RecordSchemaValidator {
   private final UUID workspaceId;
   private static final JsonSchemaValidator validator = new JsonSchemaValidator();
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
+  private final boolean backgroundValidation;
+  private static final Executor validationExecutor = Executors.newFixedThreadPool(1);
 
   public RecordSchemaValidator(final FeatureFlagClient featureFlagClient,
                                final UUID workspaceId,
-                               final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas) {
+                               final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas,
+                               final boolean backgroundValidation) {
     this.featureFlagClient = featureFlagClient;
     this.workspaceId = workspaceId;
+    this.backgroundValidation = backgroundValidation;
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
@@ -59,24 +63,21 @@ public class RecordSchemaValidator {
    * Takes an AirbyteRecordMessage and uses the JsonSchemaValidator to validate that its data conforms
    * to the stream's schema If it does not, this method throws a RecordSchemaValidationException
    *
-   * @param message
    * @throws RecordSchemaValidationException
    */
-  public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream)
-      throws RecordSchemaValidationException {
+  public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
+    if (backgroundValidation) {
+      validationExecutor.execute(() -> {
+        doValidateSchema(message, messageStream);
+      });
+    } else {
+      doValidateSchema(message, messageStream);
+    }
+  }
 
+  public void doValidateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
-
-    if (workspaceId != null) {
-      if (featureFlagClient.enabled(PerfBackgroundJsonValidation.INSTANCE, new Workspace(workspaceId))) {
-        log.debug("feature flag enabled for workspace {}", workspaceId);
-      } else {
-        log.debug("feature flag disabled for workspace {}", workspaceId);
-      }
-    } else {
-      log.debug("workspace id is null");
-    }
 
     try {
       validator.ensureInitializedSchema(messageStream.toString(), messageData);
@@ -102,7 +103,6 @@ public class RecordSchemaValidator {
       throw new RecordSchemaValidationException(validationMessagesToDisplay,
           String.format("Record schema validation failed for %s", messageStream), e);
     }
-
   }
 
 }

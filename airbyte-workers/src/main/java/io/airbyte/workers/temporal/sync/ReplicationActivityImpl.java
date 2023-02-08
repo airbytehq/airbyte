@@ -39,6 +39,8 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.PerfBackgroundJsonValidation;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
@@ -326,7 +328,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   Optional.of(syncInput.getCatalog())),
               migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(featureFlags),
-          new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
+          new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput),
+              featureFlagClient.enabled(
+                  PerfBackgroundJsonValidation.INSTANCE, new Workspace(syncInput.getWorkspaceId()))),
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
           featureFlagClient,
