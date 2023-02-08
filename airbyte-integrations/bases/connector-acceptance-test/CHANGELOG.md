@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.1
+Fix discovered catalog caching for different configs. [#22301](https://github.com/airbytehq/airbyte/pull/22301)
+
 ## 0.5.0
 Re-release of 0.3.0 [#21451](https://github.com/airbytehq/airbyte/pull/21451)
 
