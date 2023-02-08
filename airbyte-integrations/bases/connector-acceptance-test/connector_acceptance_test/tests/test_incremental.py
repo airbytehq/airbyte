@@ -180,7 +180,7 @@ class TestIncremental(BaseTest):
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
 
-        parsed_records_1 = records_with_state(records_1, latest_state, stream_mapping, cursor_paths);
+        parsed_records_1 = list(records_with_state(records_1, latest_state, stream_mapping, cursor_paths));
 
         # This catches the case of a connector that emits an invalid state that is not compatible with the schema
         # See https://github.com/airbytehq/airbyte/issues/21863 to understand more

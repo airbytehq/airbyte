@@ -94,6 +94,13 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
     [
         ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-02", 0, does_not_raise()),
         (
+            [{"date": {}}, {"date": {}}],
+            [],
+            "2020-01-02",
+            0,
+            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path")
+        ),
+        (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-02",
@@ -190,6 +197,100 @@ def test_incremental_two_sequential_reads(
             cursor_paths=cursor_paths,
             docker_runner=docker_runner_mock,
         )
+
+
+@pytest.mark.parametrize(
+    "stream_name, cursor_type, cursor_paths, records1, records2, latest_state, expected_error",
+    [
+        (
+            "test_stream",
+            {
+                    "dateCreated": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+            },
+            {'test_stream': ['dateCreated']},
+            [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
+            [],
+            {"dateCreated": "2020-01-02T01:01:01.000000Z"},
+            does_not_raise(),
+        ),
+        (
+            "test_stream",
+            {
+                    "dateCreated": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+            },
+            {'test_stream': ['dateCreated']},
+            [{"dateCreated": "2020-01-01T01:01:01.000000Z"}, {"dateCreated": "2020-01-02T01:01:01.000000Z"}],
+            [],
+            {"test_stream": {}},
+            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path")
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    "run_per_stream_test",
+    [
+        # pytest.param(False, id="test_two_sequential_reads_using_a_mock_connector_emitting_legacy_state"),
+        pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
+    ],
+)
+def test_incremental_two_sequential_reads_state_invalid(
+    stream_name, records1, records2, latest_state, cursor_type, cursor_paths, expected_error, run_per_stream_test
+):
+    input_config = IncrementalConfig()
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="test_stream",
+                    json_schema={"type": "object", "properties": cursor_type},
+                    supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+                ),
+                sync_mode=SyncMode.incremental,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+                default_cursor_field=["dateCreated"],
+                cursor_field=["dateCreated"],
+            )
+        ]
+    )
+
+    if run_per_stream_test:
+        call_read_output_messages = [
+            *build_messages_from_record_data(stream_name, records1),
+            build_per_stream_state_message(descriptor=StreamDescriptor(name="test_stream"), stream_state=latest_state),
+        ]
+    else:
+        call_read_output_messages = [
+            *build_messages_from_record_data("test_stream", {"test_stream": latest_state}),
+            build_state_message(latest_state),
+        ]
+
+
+    call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
+
+    print("call_read_output_messages[1]")
+    print(call_read_output_messages[1])
+    # assert False
+
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.return_value = call_read_output_messages
+    docker_runner_mock.call_read_with_state.return_value = call_read_with_state_output_messages
+
+    t = _TestIncremental()
+    with expected_error:
+        t.test_two_sequential_reads(
+            inputs=input_config,
+            connector_config=MagicMock(),
+            configured_catalog_for_incremental=catalog,
+            cursor_paths=cursor_paths,
+            docker_runner=docker_runner_mock,
+        )
+
 
 
 @pytest.mark.parametrize(
