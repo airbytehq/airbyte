@@ -2,11 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.temporal.scheduling;
+package io.airbyte.commons.temporal.scheduling;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
+import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.config.Geography;
 import io.airbyte.config.persistence.ConfigRepository;
 import java.io.IOException;
@@ -40,21 +40,21 @@ class RouterServiceTest {
   void init() {
     routerService = new RouterService(mConfigRepository, mTaskQueueMapper);
 
-    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.AUTO)).thenReturn(US_TASK_QUEUE);
-    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.US)).thenReturn(US_TASK_QUEUE);
-    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.EU)).thenReturn(EU_TASK_QUEUE);
+    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.AUTO, TemporalJobType.SYNC)).thenReturn(US_TASK_QUEUE);
+    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.US, TemporalJobType.SYNC)).thenReturn(US_TASK_QUEUE);
+    Mockito.when(mTaskQueueMapper.getTaskQueue(Geography.EU, TemporalJobType.SYNC)).thenReturn(EU_TASK_QUEUE);
   }
 
   @Test
   void testGetTaskQueue() throws IOException {
     Mockito.when(mConfigRepository.getGeographyForConnection(CONNECTION_ID)).thenReturn(Geography.AUTO);
-    assertEquals(US_TASK_QUEUE, routerService.getTaskQueue(CONNECTION_ID));
+    assertEquals(US_TASK_QUEUE, routerService.getTaskQueue(CONNECTION_ID, TemporalJobType.SYNC));
 
     Mockito.when(mConfigRepository.getGeographyForConnection(CONNECTION_ID)).thenReturn(Geography.US);
-    assertEquals(US_TASK_QUEUE, routerService.getTaskQueue(CONNECTION_ID));
+    assertEquals(US_TASK_QUEUE, routerService.getTaskQueue(CONNECTION_ID, TemporalJobType.SYNC));
 
     Mockito.when(mConfigRepository.getGeographyForConnection(CONNECTION_ID)).thenReturn(Geography.EU);
-    assertEquals(EU_TASK_QUEUE, routerService.getTaskQueue(CONNECTION_ID));
+    assertEquals(EU_TASK_QUEUE, routerService.getTaskQueue(CONNECTION_ID, TemporalJobType.SYNC));
   }
 
 }
