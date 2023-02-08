@@ -224,8 +224,6 @@ class ExactStream(HttpStream, IncrementalMixin):
         expired.
         """
 
-        logger = logging.getLogger("airbyte")
-
         for num_retry in range(self.max_retries):
             try:
                 response = self._send(request, request_kwargs)
@@ -249,7 +247,7 @@ class ExactStream(HttpStream, IncrementalMixin):
                 if not self._is_token_expired(response):
                     raise exc
 
-                logger.info("Access token expired: will retry after refresh")
+                self.logger.info("Access token expired: will retry after refresh")
 
                 try:
                     # mark the token as expired and overwrite thea authorization header
