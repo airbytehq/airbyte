@@ -129,7 +129,7 @@ public abstract class AbstractSourceConnectorTest {
       ArgumentCaptor.forClass(io.airbyte.protocol.models.AirbyteCatalog.class);
 
   protected AirbyteCatalog getLastPersistedCatalog() {
-    return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
+    return convertProtocolObject(discoverWriteRequest.getValue().getCatalog(), AirbyteCatalog.class);
   }
 
   private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
