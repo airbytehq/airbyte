@@ -27,7 +27,7 @@ from airbyte_cdk.models import (
 )
 from destination_weaviate import DestinationWeaviate
 from destination_weaviate.client import Client, WeaviatePartialBatchError
-from destination_weaviate.utils import stream_to_class_name
+from destination_weaviate.utils import stream_to_class_name, get_schema_from_catalog
 
 
 @pytest.fixture(name="config")
@@ -607,10 +607,17 @@ def test_client_delete_stream_entries(caplog, client: Client):
 
 
 def test_client_flush_partial_error(client: Client):
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "id": {"type": "string"},
+        "title": {"type": "string"},
+    }}
+    catalog = create_catalog(stream_name, stream_schema, sync_mode=DestinationSyncMode.overwrite)
+    client.schema = get_schema_from_catalog(catalog)
     partial_error_result = load_json_file("create_objects_partial_error.json")
     client.client.batch.create_objects = Mock(return_value=partial_error_result)
     time.sleep = Mock(return_value=None)
-    client.buffered_write_operation("Article", {"id": "b7b1cfbe-20da-496c-b932-008d35805f26"})
-    client.buffered_write_operation("Article", {"id": "154cbccd-89f4-4b29-9c1b-001a3339d89a"})
+    client.buffered_write_operation("article", {"id": "b7b1cfbe-20da-496c-b932-008d35805f26", "title": "test1"})
+    client.buffered_write_operation("article", {"id": "154cbccd-89f4-4b29-9c1b-001a3339d89a", "title": "test2"})
     with pytest.raises(WeaviatePartialBatchError):
         client.flush()
