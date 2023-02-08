@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 # This file was auto-generated from Airbyte's custom OpenAPI templates. Do not edit it manually.
 # coding: utf-8
