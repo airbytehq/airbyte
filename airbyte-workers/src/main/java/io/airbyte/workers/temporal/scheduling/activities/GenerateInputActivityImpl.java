@@ -17,7 +17,6 @@ import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateType;
 import io.airbyte.api.client.model.generated.SaveAttemptSyncConfigRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.server.converters.ApiPojoConverters;
@@ -137,8 +136,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       throws IOException {
     final ConfigReplacer configReplacer = new ConfigReplacer(LOGGER);
     final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
-        ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
-            destinationDefinition.getNormalizationConfig().getNormalizationTag())
+        ? destinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":" +
+            destinationDefinition.getNormalizationConfig().getNormalizationTag()
         : null;
     final String normalizationIntegrationType =
         destinationDefinition.getNormalizationConfig() != null ? destinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
@@ -264,12 +263,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
 
       final ConfigType jobConfigType = job.getConfig().getConfigType();
-
-      final UUID connectionId = UUID.fromString(job.getScope());
-      final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig();
-      getCurrentConnectionState(connectionId).ifPresent(attemptSyncConfig::setState);
 
       if (ConfigType.SYNC.equals(jobConfigType)) {
         final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
