@@ -11,8 +11,8 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 
 
 @dataclass
-class SingleSlice(StreamSlicer):
-    """Stream slicer returning only a single stream slice"""
+class SinglePartitionRouter(StreamSlicer):
+    """Partition router returning only a stream slice"""
 
     parameters: InitVar[Mapping[str, Any]]
 

@@ -68,11 +68,11 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -94,7 +94,6 @@ from airbyte_cdk.sources.declarative.stream_slicers import (
     CartesianProductStreamSlicer,
     DatetimeStreamSlicer,
     ListStreamSlicer,
-    SingleSlice,
     StreamSlicer,
     SubstreamSlicer,
 )
@@ -163,7 +162,6 @@ class ModelToComponentFactory:
             RequestOptionModel: self.create_request_option,
             SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
-            SingleSliceModel: self.create_single_slice,
             SpecModel: self.create_spec,
             SubstreamSlicerModel: self.create_substream_slicer,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
@@ -719,7 +717,7 @@ class ModelToComponentFactory:
                 primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
-                stream_slicer=stream_slicer or SingleSlice(parameters={}),
+                stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
@@ -730,14 +728,10 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
-            stream_slicer=stream_slicer or SingleSlice(parameters={}),
+            stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
             config=config,
             parameters=model.parameters,
         )
-
-    @staticmethod
-    def create_single_slice(model: SingleSliceModel, config: Config, **kwargs) -> SingleSlice:
-        return SingleSlice(parameters={})
 
     @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:

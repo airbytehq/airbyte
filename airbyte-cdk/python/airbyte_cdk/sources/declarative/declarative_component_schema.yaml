@@ -1015,27 +1015,13 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomPartitionRouter"
           - "$ref": "#/definitions/ListStreamSlicer"
-          - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListStreamSlicer"
-                - "$ref": "#/definitions/SingleSlice"
                 - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
-  SingleSlice:
-    description: Stream slicer returning only a single stream slice
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [SingleSlice]
       $parameters:
         type: object
         additionalProperties: true
