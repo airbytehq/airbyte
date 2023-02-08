@@ -8,12 +8,12 @@ import LogsContent from "./components/LogsContent";
 
 const ConfigurationsPage: React.FC = () => {
   return (
-    <div>
+    <>
       <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]} />
       <Card title={<FormattedMessage id="admin.logs" />}>
         <LogsContent />
       </Card>
-    </div>
+    </>
   );
 };
 
