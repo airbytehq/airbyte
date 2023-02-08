@@ -3,6 +3,8 @@
   "notifications.error.health": "Cannot reach server",
   "notifications.error.somethingWentWrong": "Something went wrong",
   "notifications.error.noMessage": "No error message",
+  "notifications.airbyteUpdated": "Airbyte has been updated. Please reload the page.",
+  "notifications.airbyteUpdated.reload": "Reload now",
 
   "sidebar.homepage": "Homepage",
   "sidebar.sources": "Sources",
