@@ -62,6 +62,10 @@ class Client:
             if isinstance(v, list) and len(v) == 0 and k not in self.schema[stream_name]:
                 record[k] = ""
 
+        missing_properties = set(self.schema[stream_name].keys()).difference(record.keys()).discard("id")
+        for prop in missing_properties or []:
+            record[prop] = None
+
         # Property names in Weaviate have to start with lowercase letter
         record = {k[0].lower() + k[1:]: v for k, v in record.items()}
         vector = None
