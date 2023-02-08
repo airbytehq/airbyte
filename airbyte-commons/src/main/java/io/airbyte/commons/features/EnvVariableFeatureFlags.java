@@ -83,7 +83,9 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public Set<String> routeTaskQueueForWorkspaceAllowList() {
     return getEnvOrDefault(ROUTE_TASK_QUEUE_FOR_WORKSPACE_ALLOWLIST, new HashSet<>(),
         (arg) -> Arrays.stream(arg.split(",")).collect(Collectors.toSet()));
+  }
 
+  @Override
   public String strictComparisonNormalizationWorkspaces() {
     return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "", (arg) -> arg);
   }
