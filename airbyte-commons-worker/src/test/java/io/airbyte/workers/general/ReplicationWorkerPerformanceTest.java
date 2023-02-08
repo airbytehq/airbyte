@@ -86,6 +86,7 @@ public class ReplicationWorkerPerformanceTest {
     final var validator = new RecordSchemaValidator(new TestClient(), workspaceID, Map.of(
         new AirbyteStreamNameNamespacePair("s1", null),
         CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))));
+    final var featureFlagClient = new TestClient();
 
     final IntegrationLauncher integrationLauncher = new LimitedIntegrationLauncher();
     final var serDeProvider = new AirbyteMessageSerDeProvider(
@@ -115,6 +116,7 @@ public class ReplicationWorkerPerformanceTest {
         validator,
         metricReporter,
         connectorConfigUpdater,
+        featureFlagClient,
         false);
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {

@@ -25,6 +25,7 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
+import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -106,6 +107,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
   private final ConnectorConfigUpdater connectorConfigUpdater;
+  private final FeatureFlagClient featureFlagClient;
   private final boolean fieldSelectionEnabled;
 
   public DefaultReplicationWorker(final String jobId,
@@ -117,6 +119,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
                                   final ConnectorConfigUpdater connectorConfigUpdater,
+                                  final FeatureFlagClient featureFlagClient,
                                   final boolean fieldSelectionEnabled) {
     this.jobId = jobId;
     this.attempt = attempt;
@@ -128,6 +131,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
+    this.featureFlagClient = featureFlagClient;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
 
     this.cancelled = new AtomicBoolean(false);
@@ -606,8 +610,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
-                                     Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
-                                     Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
@@ -639,10 +643,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void populateUnexpectedFieldNames(AirbyteRecordMessage record, Set<String> fieldsInCatalog, Set<String> unexpectedFieldNames) {
+  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record,
+                                                   final Set<String> fieldsInCatalog,
+                                                   final Set<String> unexpectedFieldNames) {
     final JsonNode data = record.getData();
     if (data.isObject()) {
-      Iterator<String> fieldNamesInRecord = data.fieldNames();
+      final Iterator<String> fieldNamesInRecord = data.fieldNames();
       while (fieldNamesInRecord.hasNext()) {
         final String fieldName = fieldNamesInRecord.next();
         if (!fieldsInCatalog.contains(fieldName)) {

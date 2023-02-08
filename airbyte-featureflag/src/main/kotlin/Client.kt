@@ -118,7 +118,7 @@ class LaunchDarklyClient(private val client: LDClient) : FeatureFlagClient {
  *
  * @param [values] is a map of [Flag.key] to enabled/disabled status.
  */
-class TestClient @JvmOverloads constructor(val values: Map<String, Boolean> = mapOf()) : FeatureFlagClient {
+class TestClient @JvmOverloads constructor(val values: Map<String, Boolean> = mutableMapOf()) : FeatureFlagClient {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
             is EnvVar -> {
