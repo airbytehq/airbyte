@@ -1,4 +1,5 @@
 @use "./variables";
+@use "./colors";
 
 @mixin shadow {
   box-shadow: variables.$box-shadow;

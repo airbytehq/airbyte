@@ -27,6 +27,7 @@ import { useFeature, FeatureItem } from "hooks/services/Feature";
 import { useModalService } from "hooks/services/Modal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { FreeTag } from "packages/cloud/components/experiments/FreeConnectorProgram";
+import { RoutePaths } from "pages/routePaths";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
@@ -44,7 +45,7 @@ const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps
     <div className={styles.connectorListFooter}>
       {props.selectProps.selectProps.formType === "source" && (
         <div className={styles.builderPromptContainer}>
-          <BuilderPrompt />
+          <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
         </div>
       )}
       <button

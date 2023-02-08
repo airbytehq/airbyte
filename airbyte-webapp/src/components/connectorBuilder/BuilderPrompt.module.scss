@@ -1,6 +1,14 @@
 @use "scss/variables";
 @use "scss/colors";
 
+.iconAndText {
+  width: 100%;
+}
+
+.text {
+  flex: 1;
+}
+
 .title {
   font-weight: 600;
 }
@@ -9,26 +17,15 @@
   flex-shrink: 0;
 }
 
-.text {
-  flex: 1;
-  padding-right: variables.$spacing-2xl;
-}
-
 .description {
   color: colors.$grey-400;
 }
 
 .adjective {
-  font-weight: 700;
-  background-image: linear-gradient(to right, colors.$blue-400, colors.$orange-300);
-
-  // disable no-vendor-prefix check, because without -webkit-background-clip, the text gradient is not properly rendered in Chrome
-  /* stylelint-disable-next-line property-no-vendor-prefix */
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  display: inline;
 }
 
 .noun {
-  font-weight: 700;
+  display: inline;
+  color: inherit;
 }

@@ -12,6 +12,7 @@ import { PageHeader } from "components/ui/PageHeader";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useCreateSource } from "hooks/services/useSourceHook";
+import { RoutePaths } from "pages/routePaths";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
@@ -49,7 +50,7 @@ const CreateSourcePage: React.FC = () => {
         <FormPageContent>
           <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} />
           <Card fullWidth className={styles.builderPrompt}>
-            <BuilderPrompt />
+            <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
           </Card>
           <CloudInviteUsersHint connectorType="source" />
         </FormPageContent>

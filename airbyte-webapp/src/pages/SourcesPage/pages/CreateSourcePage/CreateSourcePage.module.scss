@@ -1,7 +1,6 @@
 @use "scss/variables";
 
 .builderPrompt {
-  padding: variables.$spacing-lg;
-  padding-right: variables.$spacing-xl;
+  padding: variables.$spacing-xl;
   align-self: center;
 }
