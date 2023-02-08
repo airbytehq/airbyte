@@ -1544,6 +1544,14 @@ public class ConfigRepository {
         .fetchOneInto(Geography.class);
   }
 
+  public Geography getGeographyForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.select(WORKSPACE.GEOGRAPHY)
+        .from(WORKSPACE)
+        .where(WORKSPACE.ID.eq(workspaceId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
+  }
+
   /**
    * Specialized query for efficiently determining eligibility for the Free Connector Program. If a
    * workspace has at least one Alpha or Beta connector, users of that workspace will be prompted to
