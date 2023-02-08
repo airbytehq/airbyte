@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -96,11 +96,11 @@ def pr_already_created_for_branch(head_branch: str) -> bool:
 
 def create_pr(connector: ConnectorQAReport, branch: str) -> Optional[requests.Response]:
     body = f"""The Cloud Availability Updater decided that it's the right time to make {connector.connector_name} available on Cloud!
-    Technical name: {connector.connector_technical_name}
-    Version: {connector.connector_version}
-    Definition ID: {connector.connector_definition_id}
-    OSS sync success rate: {connector.sync_success_rate}
-    OSS number of connections: {connector.number_of_connections}
+    - Technical name: {connector.connector_technical_name}
+    - Version: {connector.connector_version}
+    - Definition ID: {connector.connector_definition_id}
+    - OSS sync success rate: {connector.sync_success_rate}
+    - OSS number of connections: {connector.number_of_connections}
     """
     data = {
         "title": f"🤖 Add {connector.connector_technical_name} to cloud",
