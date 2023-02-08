@@ -4,16 +4,17 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SSL_MODE;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.PostgresConverter;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
+import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.integrations.util.PostgresSslConnectionUtils;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -72,12 +73,12 @@ public class PostgresCdcProperties {
           props.setProperty("database.history.consumer.security.protocol", "SSL");
         }
 
-        if (dbConfig.has(PostgresSource.CA_CERTIFICATE_PATH) && !dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText().isEmpty()) {
-          props.setProperty("database.sslrootcert", dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
+        if (dbConfig.has(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH) && !dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText().isEmpty()) {
+          props.setProperty("database.sslrootcert", dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.producer.ssl.truststore.location",
-              dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
+              dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.consumer.ssl.truststore.location",
-              dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
+              dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
           props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
 

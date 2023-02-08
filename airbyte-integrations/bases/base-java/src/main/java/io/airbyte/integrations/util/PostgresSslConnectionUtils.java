@@ -5,6 +5,7 @@
 package io.airbyte.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableSet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -13,6 +14,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
@@ -34,11 +36,19 @@ public class PostgresSslConnectionUtils {
   public static final String PARAM_CA_CERTIFICATE = "ca_certificate";
   public static final String PARAM_CLIENT_CERTIFICATE = "client_certificate";
   public static final String PARAM_CLIENT_KEY = "client_key";
+  public static final String PARAM_CA_CERTIFICATE_PATH = "ca_certificate_path";
+  public static final String PARAM_SSL_KEY = "sslkey";
+  public static final String PARAM_SSL_PASSWORD = "sslpassword";
+
+  public static final String PARAM_SSL_ROOT_CERT = "sslrootcert";
+  public static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
+
 
   public static final String VERIFY_CA = "verify-ca";
   public static final String VERIFY_FULL = "verify-full";
   public static final String DISABLE = "disable";
   public static final String TRUE_STRING_VALUE = "true";
+  public static final String FALSE_STRING_VALUE = "false";
   public static final String ENCRYPT_FILE_NAME = "encrypt";
   public static final String FACTORY_VALUE = "org.postgresql.ssl.DefaultJavaSSLFactory";
 
@@ -46,7 +56,7 @@ public class PostgresSslConnectionUtils {
     final Map<String, String> additionalParameters = new HashMap<>();
     if (!encryption.isNull()) {
       final var method = encryption.get(PARAM_MODE).asText();
-      var keyStorePassword = checkOrCreatePassword(encryption);
+      final var keyStorePassword = checkOrCreatePassword(encryption);
       switch (method) {
         case VERIFY_CA -> {
           additionalParameters.putAll(obtainConnectionCaOptions(encryption, method, keyStorePassword));
@@ -64,10 +74,10 @@ public class PostgresSslConnectionUtils {
   }
 
   private static String checkOrCreatePassword(final JsonNode encryption) {
-    String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
+    final String sslPassword = encryption.has(PARAM_CLIENT_KEY_PASSWORD) ? encryption.get(PARAM_CLIENT_KEY_PASSWORD).asText() : "";
     var keyStorePassword = RandomStringUtils.randomAlphanumeric(10);
     if (sslPassword.isEmpty()) {
-      var file = new File(ENCRYPT_FILE_NAME);
+      final var file = new File(ENCRYPT_FILE_NAME);
       if (file.exists()) {
         keyStorePassword = readFile(file);
       } else {
@@ -85,8 +95,8 @@ public class PostgresSslConnectionUtils {
 
   private static String readFile(final File file) {
     try {
-      BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
-      String currentLine = reader.readLine();
+      final BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8));
+      final String currentLine = reader.readLine();
       reader.close();
       return currentLine;
     } catch (final IOException e) {
@@ -168,12 +178,12 @@ public class PostgresSslConnectionUtils {
   }
 
   private static void updateTrustStoreSystemProperty(final String clientKeyPassword) {
-    String result = System.getProperty("user.dir") + "/customkeystore";
+    final String result = System.getProperty("user.dir") + "/customkeystore";
     System.setProperty("javax.net.ssl.trustStore", result);
     System.setProperty("javax.net.ssl.trustStorePassword", clientKeyPassword);
   }
 
-  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
+  private static void createCertificateFile(final String fileName, final String fileValue) throws IOException {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     }

@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.util.SSLCertificateUtils;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -17,9 +16,12 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -27,6 +29,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class JdbcSSLConnectionUtils {
+
+  public static final String SSL_MODE = "sslMode";
+
+  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
+  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
+  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
+  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
+
+  public enum SslMode {
+
+    DISABLED("disable"),
+    ALLOWED("allow"),
+    PREFERRED("preferred", "prefer"),
+    REQUIRED("required", "require"),
+    VERIFY_CA("verify_ca", "verify-ca"),
+    VERIFY_IDENTITY("verify_identity", "verify-full");
+
+    public final List<String> spec;
+
+    SslMode(final String... spec) {
+      this.spec = Arrays.asList(spec);
+    }
+
+    public static Optional<SslMode> bySpec(final String spec) {
+      return Arrays.stream(SslMode.values())
+          .filter(sslMode -> sslMode.spec.contains(spec))
+          .findFirst();
+    }
+
+  }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JdbcSSLConnectionUtils.class.getClass());
   public static final String PARAM_CA_CERTIFICATE = "ca_certificate";
@@ -55,7 +87,7 @@ public class JdbcSSLConnectionUtils {
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (config.has(JdbcUtils.SSL_MODE_KEY)) {
         final String specMode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
-        additionalParameters.put(AbstractJdbcSource.SSL_MODE,
+        additionalParameters.put(SSL_MODE,
             SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).name());
         if (Objects.isNull(caCertKeyStorePair)) {
           caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
@@ -65,8 +97,8 @@ public class JdbcSSLConnectionUtils {
           LOGGER.debug("uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
           try {
             additionalParameters.putAll(Map.of(
-                AbstractJdbcSource.TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
-                AbstractJdbcSource.TRUST_KEY_STORE_PASS, caCertKeyStorePair.getRight(),
+                TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
+                TRUST_KEY_STORE_PASS, caCertKeyStorePair.getRight(),
                 TRUST_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
           } catch (final MalformedURLException e) {
             throw new RuntimeException("Unable to get a URL for trust key store");
@@ -82,15 +114,15 @@ public class JdbcSSLConnectionUtils {
           LOGGER.debug("uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
           try {
             additionalParameters.putAll(Map.of(
-                AbstractJdbcSource.CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
-                AbstractJdbcSource.CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.getRight(),
+                CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
+                CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.getRight(),
                 CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
           } catch (final MalformedURLException e) {
             throw new RuntimeException("Unable to get a URL for client key store");
           }
         }
       } else {
-        additionalParameters.put(AbstractJdbcSource.SSL_MODE, SslMode.DISABLED.name());
+        additionalParameters.put(SSL_MODE, SslMode.DISABLED.name());
       }
     }
     LOGGER.debug("additional params: {}", additionalParameters);

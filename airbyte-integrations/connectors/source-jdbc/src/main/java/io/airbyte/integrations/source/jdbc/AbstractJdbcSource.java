@@ -19,7 +19,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
-import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
@@ -58,7 +57,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +64,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -83,36 +80,6 @@ import org.slf4j.LoggerFactory;
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
 public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
-
-  public static final String SSL_MODE = "sslMode";
-
-  public static final String TRUST_KEY_STORE_URL = "trustCertificateKeyStoreUrl";
-  public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
-  public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
-  public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
-
-  public enum SslMode {
-
-    DISABLED("disable"),
-    ALLOWED("allow"),
-    PREFERRED("preferred", "prefer"),
-    REQUIRED("required", "require"),
-    VERIFY_CA("verify_ca", "verify-ca"),
-    VERIFY_IDENTITY("verify_identity", "verify-full");
-
-    public final List<String> spec;
-
-    SslMode(final String... spec) {
-      this.spec = Arrays.asList(spec);
-    }
-
-    public static Optional<SslMode> bySpec(final String spec) {
-      return Arrays.stream(SslMode.values())
-          .filter(sslMode -> sslMode.spec.contains(spec))
-          .findFirst();
-    }
-
-  }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcSource.class);
 
@@ -505,32 +472,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       }
     });
     dataSources.clear();
-  }
-
-  /**
-   * Generates SSL related query parameters from map of parsed values.
-   *
-   * @apiNote Different connector may need an override for specific implementation
-   * @param sslParams
-   * @return SSL portion of JDBC question params or and empty string
-   */
-  protected String toJDBCQueryParams(final Map<String, String> sslParams) {
-    return Objects.isNull(sslParams) ? ""
-        : sslParams.entrySet()
-            .stream()
-            .map((entry) -> {
-              if (entry.getKey().equals(SSL_MODE)) {
-                return entry.getKey() + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()));
-              } else {
-                return entry.getKey() + EQUALS + entry.getValue();
-              }
-            })
-            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
-  }
-
-  protected String toSslJdbcParam(final SslMode sslMode) {
-    // Default implementation
-    return sslMode.name();
   }
 
   protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {

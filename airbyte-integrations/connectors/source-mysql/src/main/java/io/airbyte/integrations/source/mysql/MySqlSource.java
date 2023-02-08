@@ -4,9 +4,11 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +32,7 @@ import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
@@ -53,9 +56,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -189,6 +194,20 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     return Jsons.jsonNode(configBuilder.build());
   }
 
+  protected String toJDBCQueryParams(final Map<String, String> sslParams) {
+    return Objects.isNull(sslParams) ? ""
+        : sslParams.entrySet()
+            .stream()
+            .map((entry) -> {
+              if (entry.getKey().equals(SSL_MODE)) {
+                return entry.getKey() + EQUALS + toSslJdbcParamInternal(SslMode.valueOf(entry.getValue()));
+              } else {
+                return entry.getKey() + EQUALS + entry.getValue();
+              }
+            })
+            .collect(Collectors.joining(JdbcUtils.AMPERSAND));
+  }
+
   private static boolean isCdc(final JsonNode config) {
     if (config.hasNonNull("replication_method")) {
       if (config.get("replication_method").isTextual()) {
@@ -284,11 +303,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         "mysql",
         "performance_schema",
         "sys");
-  }
-
-  @Override
-  protected String toSslJdbcParam(final SslMode sslMode) {
-    return toSslJdbcParamInternal(sslMode);
   }
 
   @Override
