@@ -43,8 +43,8 @@ import {
   dropDummyTablesQuery,
 } from "commands/db/queries";
 
-// TODO: Disable before merge
-describe("New stream table - new connection set up ", () => {
+// TODO: Enable this test when the new stream table will be turned on
+describe.skip("New stream table - new connection set up ", () => {
   let source: Source;
   let destination: Destination;
   let connectionId: string;
