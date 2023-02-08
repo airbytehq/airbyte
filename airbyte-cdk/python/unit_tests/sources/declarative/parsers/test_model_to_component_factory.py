@@ -806,6 +806,7 @@ def test_create_default_paginator():
             },
             "optional_subcomponent_field",
             RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", parameters={}),
+            None,
             id="test_create_custom_component_with_subcomponent_wrapped_in_optional",
         ),
         pytest.param(
