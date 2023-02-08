@@ -1,0 +1,72 @@
+version: 0.1.1
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - followers count
+streams:
+  - type: DeclarativeStream
+    name: followers count
+    primary_key: []
+#    schema_loader:
+#      type: InlineSchemaLoader
+#      schema:
+#        $schema: http://json-schema.org/schema#
+#        properties:
+#          followers_count:
+#            type: integer
+#          following_count:
+#            type: integer
+#          listed_count:
+#            type: integer
+#          tweet_count:
+#            type: integer
+#        type: object
+    retriever:
+      type: SimpleRetriever
+      name: followers count
+      primary_key: []
+      requester:
+        type: HttpRequester
+        name: followers count
+        url_base: https://api.twitter.com
+        path: /2/users/by/username/{{ config['screen_name'] }}
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters:
+            user.fields: public_metrics
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+            - public_metrics
+      paginator:
+        type: NoPagination
+#spec:
+#  connection_specification:
+#    $schema: http://json-schema.org/draft-07/schema#
+#    type: object
+#    required:
+#      - screen_name
+#      - api_key
+#    properties:
+#      screen_name:
+#        title: screen_name
+#        description: screen_name
+#        default: coin_tofu
+#        type: string
+#      api_key:
+#        type: string
+#        title: API Key
+#        airbyte_secret: true
+#    additionalProperties: true
+#  documentation_url: ''
+#  type: Spec

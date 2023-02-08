@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "tweet_count": {
+      "type": ["null", "integer"]
+    },
+    "listed_count": {
+      "type": ["null", "integer"]
+    },
+    "following_count": {
+      "type": ["null", "integer"]
+    },
+    "followers_count": {
+      "type": ["null", "integer"]
+    }
+  }
+}
