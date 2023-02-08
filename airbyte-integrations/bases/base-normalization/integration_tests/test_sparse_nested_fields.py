@@ -64,7 +64,7 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize("destination_type", list(DestinationType))
+@pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_sparse_nested_fields(destination_type: DestinationType):
     print("!!!! DEBUG THING " + os.getcwd())
     # TODO extract these conditions?
