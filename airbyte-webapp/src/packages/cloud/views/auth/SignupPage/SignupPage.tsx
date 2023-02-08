@@ -39,7 +39,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
       <SpecialBlock />
       {oAuthPosition === "top" && (
         <>
-          <OAuthLogin isSignUpPage />
+          <OAuthLogin />
           <Separator />
         </>
       )}
@@ -47,7 +47,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
       {oAuthPosition === "bottom" && (
         <>
           <Separator />
-          <OAuthLogin isSignUpPage />
+          <OAuthLogin />
         </>
       )}
       <Disclaimer />
