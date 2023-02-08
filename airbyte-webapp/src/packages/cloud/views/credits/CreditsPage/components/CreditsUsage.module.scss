@@ -1,0 +1,16 @@
+@use "scss/variables";
+
+.empty {
+  height: 100%;
+  padding-bottom: variables.$spacing-xl;
+}
+
+.chartWrapper {
+  width: 100%;
+  height: 260px;
+  padding: 0 variables.$spacing-2xl variables.$spacing-xl 0;
+}
+
+.cardBlock {
+  margin: variables.$spacing-md 0 variables.$spacing-xl;
+}

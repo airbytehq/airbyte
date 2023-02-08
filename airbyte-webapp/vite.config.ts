@@ -8,7 +8,7 @@ import checker from "vite-plugin-checker";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
-import { docMiddleware } from "./packages/vite-plugins";
+import { buildInfo, docMiddleware } from "./packages/vite-plugins";
 
 export default defineConfig(({ mode }) => {
   // Load variables from all .env files
@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       basicSsl(),
       react(),
+      buildInfo(),
       viteTsconfigPaths(),
       svgrPlugin(),
       checker({
@@ -55,6 +56,7 @@ export default defineConfig(({ mode }) => {
     ],
     // Use `REACT_APP_` as a prefix for environment variables that should be accessible from within FE code.
     envPrefix: ["REACT_APP_"],
+    clearScreen: false,
     build: {
       outDir: "build/app",
     },
