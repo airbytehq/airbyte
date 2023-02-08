@@ -342,6 +342,13 @@ public interface Configs {
   String getLaunchDarklyKey();
 
   /**
+   * Get the type of feature flag client to use.
+   *
+   * @return
+   */
+  String getFeatureFlagClient();
+
+  /**
    * Defines a default map of environment variables to use for any launched job containers. The
    * expected format is a JSON encoded String -> String map. Make sure to escape properly. Defaults to
    * an empty map.
@@ -750,6 +757,10 @@ public interface Configs {
   boolean getApplyFieldSelection();
 
   String getFieldSelectionWorkspaces();
+
+  String getStrictComparisonNormalizationWorkspaces();
+
+  String getStrictComparisonNormalizationTag();
 
   enum TrackingStrategy {
     SEGMENT,
