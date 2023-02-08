@@ -1,7 +1,7 @@
 import { ToastProps } from "components/ui/Toast";
 
-export interface Notification extends ToastProps {
-  id: string | number;
+export interface Notification extends Pick<ToastProps, "type" | "onAction" | "onClose" | "actionBtnText" | "text"> {
+  id: string;
   nonClosable?: boolean;
 }
 
