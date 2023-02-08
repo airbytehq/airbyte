@@ -60,14 +60,12 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final LogConfigs logConfigs;
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
-  private final ConfigRepository configRepository;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
   private final FeatureFlags featureFlags;
 
   public DiscoverCatalogActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("discoverProcessFactory") final ProcessFactory processFactory,
-                                     final ConfigRepository configRepository,
                                      final SecretsHydrator secretsHydrator,
                                      @Named("workspaceRoot") final Path workspaceRoot,
                                      final WorkerEnvironment workerEnvironment,
@@ -77,7 +75,6 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final AirbyteMessageSerDeProvider serDeProvider,
                                      final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                      final FeatureFlags featureFlags) {
-    this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
