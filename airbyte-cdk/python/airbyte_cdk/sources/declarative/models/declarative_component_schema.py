@@ -269,8 +269,8 @@ class InjectInto(Enum):
 
 class RequestOption(BaseModel):
     type: Literal["RequestOption"]
-    inject_into: InjectInto
     field_name: str
+    inject_into: InjectInto
 
 
 class Schemas(BaseModel):
@@ -367,7 +367,7 @@ class DefaultPaginator(BaseModel):
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement]
     decoder: Optional[JsonDecoder] = None
     page_size_option: Optional[RequestOption] = None
-    page_token_option: Optional[Union[RequestPath, RequestOption]] = None
+    page_token_option: Optional[Union[RequestOption, RequestPath]] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
