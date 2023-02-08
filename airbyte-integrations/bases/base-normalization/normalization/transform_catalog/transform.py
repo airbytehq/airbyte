@@ -100,5 +100,12 @@ def extract_schema(profiles_yml: Dict) -> str:
         raise KeyError("No Dataset/Schema defined in profiles.yml")
 
 
+def extract_path(profiles_yml: Dict) -> str:
+    if "path" in profiles_yml:
+        return str(profiles_yml["path"])
+    else:
+        raise KeyError("No destination_path defined in profiles.yml")
+
+
 def main(args=None):
     TransformCatalog().run(args)
