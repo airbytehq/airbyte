@@ -73,7 +73,8 @@ public class PostgresCdcProperties {
           props.setProperty("database.history.consumer.security.protocol", "SSL");
         }
 
-        if (dbConfig.has(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH) && !dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText().isEmpty()) {
+        if (dbConfig.has(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH)
+            && !dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText().isEmpty()) {
           props.setProperty("database.sslrootcert", dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText());
           props.setProperty("database.history.producer.ssl.truststore.location",
               dbConfig.get(PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH).asText());

@@ -43,7 +43,6 @@ public class PostgresSslConnectionUtils {
   public static final String PARAM_SSL_ROOT_CERT = "sslrootcert";
   public static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
 
-
   public static final String VERIFY_CA = "verify-ca";
   public static final String VERIFY_FULL = "verify-full";
   public static final String DISABLE = "disable";
