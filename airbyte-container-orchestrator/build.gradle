@@ -48,8 +48,6 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-
-    testImplementation project(':airbyte-commons-docker')
 }
 
 application {
