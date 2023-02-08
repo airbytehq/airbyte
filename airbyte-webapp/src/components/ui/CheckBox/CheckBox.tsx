@@ -34,7 +34,6 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize 
         type="checkbox"
         aria-checked={indeterminate ? "mixed" : checked}
         {...inputProps}
-        onClick={(e) => e.stopPropagation()}
         tabIndex={tabIndex ?? 0}
       />
       {indeterminate ? (

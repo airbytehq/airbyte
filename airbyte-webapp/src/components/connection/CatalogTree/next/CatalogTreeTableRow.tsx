@@ -49,7 +49,24 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const paths = useMemo(() => primitiveFields.map((field) => field.path), [primitiveFields]);
   const fieldCount = fields?.length ?? 0;
-  const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
+  const onRowClick =
+    fieldCount > 0
+      ? (e: React.MouseEvent) => {
+          // tried: e.target.tagName !== "INPUT" && e.target.tagName !== "LABEL" && e.target.tagName !== "BUTTON"
+          // also tried: e.target.localName, e.target.firstChild
+          // ALSO, the click event target when UNCHECKING by mouse is actually the .svg not the label 🤡
+          // but not by keyboard.
+          // Current implementation works BY ACCIDENT for mice and not at all for keyboard
+          if (
+            e.currentTarget.tagName !== "input" &&
+            e.currentTarget.tagName !== "label" &&
+            e.currentTarget.localName !== "button"
+          ) {
+            console.log("PASSED THE TAGNAME CHECK, ONEXPAND FIRING");
+            onExpand();
+          }
+        }
+      : undefined;
 
   const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 

@@ -50,7 +50,6 @@ export const Switch: React.FC<SwitchProps> = ({
         value={value}
         disabled={loading || disabled}
         checked={checked || !!value}
-        onClick={(e) => e.stopPropagation()}
       />
       <span className={spanStyle} />
     </label>
