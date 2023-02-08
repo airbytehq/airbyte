@@ -32,12 +32,12 @@ export const DropdownMenu: React.FC<React.PropsWithChildren<DropdownMenuProps>> 
     placement,
   });
 
-  const elementProps = (item: DropdownMenuOptionType, active: boolean) => {
+  const elementProps = ({ openInNewTab = true, ...item }: DropdownMenuOptionType, active: boolean) => {
     const anchorProps =
       item.as === "a"
         ? {
-            target: "_blank",
-            rel: "noreferrer",
+            target: openInNewTab ? "_blank" : undefined,
+            rel: openInNewTab ? "noreferrer" : undefined,
             href: item?.href,
           }
         : {};

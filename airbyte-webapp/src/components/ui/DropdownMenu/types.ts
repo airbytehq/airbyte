@@ -14,6 +14,7 @@ export interface DropdownMenuOptionType {
   displayName: string;
   value?: unknown;
   href?: string;
+  openInNewTab?: boolean;
   className?: string;
 }
 

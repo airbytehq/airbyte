@@ -1,3 +1,4 @@
+import { faDocker } from "@fortawesome/free-brands-svg-icons";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
@@ -5,16 +6,18 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
+import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
 import { RoutePaths, DestinationPaths } from "pages/routePaths";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
+import { ReactComponent as BuilderIcon } from "./builder-icon.svg";
 import CreateConnectorModal from "./CreateConnectorModal";
 
 interface IProps {
-  type: string;
+  type: "sources" | "destinations";
 }
 
 interface ICreateProps {
@@ -75,12 +78,42 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
   const onSubmit = (values: ICreateProps) =>
     type === "sources" ? onSubmitSource(values) : onSubmitDestination(values);
 
+  const button = (
+    <Button
+      size="xs"
+      icon={<FontAwesomeIcon icon={faPlus} />}
+      onClick={type === "sources" ? undefined : onChangeModalState}
+    >
+      <FormattedMessage id="admin.newConnector" />
+    </Button>
+  );
+
   return (
     <>
-      {type === "configuration" ? null : (
-        <Button size="xs" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onChangeModalState}>
-          <FormattedMessage id="admin.newConnector" />
-        </Button>
+      {type === "sources" ? (
+        <DropdownMenu
+          placement="bottom"
+          options={[
+            {
+              as: "a",
+              href: `../${RoutePaths.ConnectorBuilder}`,
+              icon: <BuilderIcon />,
+              displayName: formatMessage({ id: "admin.newConnector.build" }),
+              openInNewTab: false,
+            },
+            {
+              as: "button",
+              icon: <FontAwesomeIcon icon={faDocker} color="#0091E2" size="xs" />,
+              value: "docker",
+              displayName: formatMessage({ id: "admin.newConnector.docker" }),
+            },
+          ]}
+          onChange={(data: DropdownMenuOptionType) => data.value === "docker" && onChangeModalState()}
+        >
+          {() => button}
+        </DropdownMenu>
+      ) : (
+        button
       )}
 
       {isModalOpen && (

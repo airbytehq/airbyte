@@ -501,6 +501,8 @@
   "admin.export": "Export",
   "admin.import": "Import",
   "admin.newConnector": "New connector",
+  "admin.newConnector.build": "Build a new connector",
+  "admin.newConnector.docker": "Add a new Docker connector",
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
   "admin.manageDestination": "Manage your destination connectors",

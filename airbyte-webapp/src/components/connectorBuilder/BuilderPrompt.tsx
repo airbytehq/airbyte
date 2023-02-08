@@ -17,7 +17,7 @@ interface BuilderPromptProps {
 export const BuilderPrompt: React.FC<BuilderPromptProps> = ({ builderRoutePath }) => {
   const navigate = useNavigate();
   const { width, ref } = useResizeDetector();
-  const applyNarrowLayout = Boolean(width && width < 450);
+  const applyNarrowLayout = Boolean(width && width < 460);
 
   return (
     <FlexContainer
