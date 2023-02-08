@@ -66,6 +66,13 @@ class Client:
         for prop in missing_properties or []:
             record[prop] = None
 
+        additional_props = set(record.keys()).difference(self.schema[stream_name].keys())
+        for prop in additional_props or []:
+            if isinstance(record[prop], dict):
+                record[prop] = json.dumps(record[prop])
+            if isinstance(record[prop], list) and len(record[prop]) > 0 and isinstance(record[prop][0], dict):
+                record[prop] = json.dumps(record[prop])
+
         # Property names in Weaviate have to start with lowercase letter
         record = {k[0].lower() + k[1:]: v for k, v in record.items()}
         vector = None

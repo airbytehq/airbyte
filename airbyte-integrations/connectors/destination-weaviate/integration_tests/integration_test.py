@@ -539,7 +539,8 @@ def test_record_additional_properties(config: Mapping, client: Client):
     class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
 
-    data = {"title": "with-add-props", "add_prop": "test", "add_prop2": ["test"]}
+    data = {"title": "with-add-props", "add_prop": "test", "add_prop2": ["test"],
+            "objArray": [{"title": "sam"}], "obj": {"title": "sam"}}
     second_record_chunk = [_record(stream_name, data)]
     second_state_message = _state({"state": 2})
     expected_states = [second_state_message]
