@@ -357,10 +357,7 @@ class AdCreativeName(Creatives):
         return {self.search_param: self.search_param_value}
 
     def stream_slices(
-            self,
-            sync_mode: sync_mode,
-            cursor_field: List[str] = [""],
-            stream_state: Mapping[str, Any] = None
+        self, sync_mode: sync_mode, cursor_field: List[str] = [""], stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, any]]]:
         parent = self.parent_stream(config=self.config)
         for record in parent.read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
