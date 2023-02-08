@@ -25,7 +25,7 @@ definitions:
         stop_condition: "{{response['paging']['next'] == None}}"
         page_size: 100
       page_token_option:
-        inject_into: "path"
+        type: RequestPath
     requester:
       $ref: "#/definitions/requester"
   base_stream:

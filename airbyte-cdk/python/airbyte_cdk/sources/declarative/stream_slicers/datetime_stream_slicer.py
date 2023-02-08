@@ -85,11 +85,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         if not self.end_datetime.datetime_format:
             self.end_datetime.datetime_format = self.datetime_format
 
-        if self.start_time_option and self.start_time_option.inject_into == RequestOptionType.path:
-            raise ValueError("Start time cannot be passed by path")
-        if self.end_time_option and self.end_time_option.inject_into == RequestOptionType.path:
-            raise ValueError("End time cannot be passed by path")
-
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
 

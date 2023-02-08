@@ -492,54 +492,24 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
             {},
             {"start_time": "2021-01-01T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
         ),
-        (
-            "test_start_time_inject_into_path",
-            RequestOptionType.path,
-            "start_time",
-            {},
-            {},
-            {},
-            {"start_time": "2021-01-01T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
-        ),
     ],
 )
 def test_request_option(test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
-    if inject_into == RequestOptionType.path:
-        start_request_option = RequestOption(inject_into=inject_into, parameters={})
-        end_request_option = RequestOption(inject_into=inject_into, parameters={})
-        try:
-            DatetimeStreamSlicer(
-                start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
-                end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
-                step="P1D",
-                cursor_field=InterpolatedString(string=cursor_field, parameters={}),
-                datetime_format=datetime_format,
-                cursor_granularity=cursor_granularity,
-                lookback_window=InterpolatedString(string="P0D", parameters={}),
-                start_time_option=start_request_option,
-                end_time_option=end_request_option,
-                config=config,
-                parameters={},
-            )
-            assert False
-        except ValueError:
-            return
-    else:
-        start_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name=field_name) if inject_into else None
-        end_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name="endtime") if inject_into else None
-        slicer = DatetimeStreamSlicer(
-            start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
-            end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
-            step="P1D",
-            cursor_field=InterpolatedString(string=cursor_field, parameters={}),
-            datetime_format=datetime_format,
-            cursor_granularity=cursor_granularity,
-            lookback_window=InterpolatedString(string="P0D", parameters={}),
-            start_time_option=start_request_option,
-            end_time_option=end_request_option,
-            config=config,
-            parameters={},
-        )
+    start_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name=field_name) if inject_into else None
+    end_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name="endtime") if inject_into else None
+    slicer = DatetimeStreamSlicer(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
+        step="P1D",
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format=datetime_format,
+        cursor_granularity=cursor_granularity,
+        lookback_window=InterpolatedString(string="P0D", parameters={}),
+        start_time_option=start_request_option,
+        end_time_option=end_request_option,
+        config=config,
+        parameters={},
+    )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
 
     slicer.update_cursor(stream_slice)

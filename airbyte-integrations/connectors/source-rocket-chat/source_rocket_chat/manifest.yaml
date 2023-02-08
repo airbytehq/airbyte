@@ -27,6 +27,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: "count"
     page_token_option:
+      type: RequestOption
       inject_into: "request_parameter"
       field_name: "offset"
     pagination_strategy:

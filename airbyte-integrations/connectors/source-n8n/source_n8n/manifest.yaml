@@ -26,6 +26,7 @@ definitions:
         cursor_value: "{{ response.nextCursor }}"
         page_size: 250
       page_token_option:
+        type: RequestOption
         field_name: "cursor"
         inject_into: "request_parameter"
     requester:
