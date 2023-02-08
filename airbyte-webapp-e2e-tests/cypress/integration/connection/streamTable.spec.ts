@@ -17,7 +17,7 @@ import {
   isAtNewConnectionPage,
   isNewConnectionPageHeaderVisible,
   selectExistingConnectorFromDropdown,
-} from "pages/newConnection";
+} from "pages/newConnectionPage";
 import {
   interceptCreateConnectionRequest,
   interceptDiscoverSchemaRequest,
