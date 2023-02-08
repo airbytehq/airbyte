@@ -249,7 +249,6 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             />
           </div>
         ))}
-      <pre>{JSON.stringify(streamNode, undefined, 2)}</pre>
     </div>
   );
 };
