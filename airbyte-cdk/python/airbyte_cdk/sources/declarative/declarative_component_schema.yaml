@@ -245,6 +245,7 @@ definitions:
     required:
       - type
       - class_name
+      - cursor_field
     properties:
       type:
         type: string
@@ -252,6 +253,8 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
+      cursor_field:
+        type: string
       $parameters:
         type: object
         additionalProperties: true
@@ -321,8 +324,8 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CustomStreamSlicer:
-    description: Stream slicer component whose behavior is derived from a custom code implementation of the connector
+  CustomPartitionRouter:
+    description: Partition router component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -331,7 +334,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [CustomStreamSlicer]
+        enum: [CustomPartitionRouter]
       class_name:
         type: string
       $parameters:
@@ -1010,14 +1013,14 @@ definitions:
         default: []
         description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         anyOf:
-          - "$ref": "#/definitions/CustomStreamSlicer"
+          - "$ref": "#/definitions/CustomPartitionRouter"
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
           - type: array
             items:
               anyOf:
-                - "$ref": "#/definitions/CustomStreamSlicer"
+                - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListStreamSlicer"
                 - "$ref": "#/definitions/SingleSlice"
                 - "$ref": "#/definitions/SubstreamSlicer"
