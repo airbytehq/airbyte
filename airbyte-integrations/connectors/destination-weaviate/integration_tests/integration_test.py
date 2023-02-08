@@ -517,6 +517,45 @@ def test_missing_fields(config: Mapping, client: Client):
     assert actual["properties"].get("arr") == None
 
 
+def test_record_additional_properties(config: Mapping, client: Client):
+    stream_name = "article"
+    stream_schema = {
+        "type": "object", "additionalProperties": True,
+        "properties": {"title": {"type": "string"}}
+    }
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    first_record_chunk = [_record(stream_name, {"title": "a-first-record"})]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    class_name = stream_to_class_name(stream_name)
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+
+    data = {"title": "with-add-props", "add_prop": "test", "add_prop2": ["test"]}
+    second_record_chunk = [_record(stream_name, data)]
+    second_state_message = _state({"state": 2})
+    expected_states = [second_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*second_record_chunk, second_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    assert count_objects(client, class_name) == 2
+    actual = sorted(get_objects(client, class_name), key=lambda x: x["properties"]["title"])[1]
+    assert actual["properties"].get("title") == data["title"]
+    assert actual["properties"].get("add_prop") == data["add_prop"]
+
+
 def test_id_custom_field_name(config: Mapping, client: Client):
     # This is common scenario from mongoDB
     stream_name = "article"
