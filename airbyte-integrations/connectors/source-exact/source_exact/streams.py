@@ -231,6 +231,11 @@ class ExactStream(HttpStream, IncrementalMixin):
                 response = self._send(request, request_kwargs)
                 return response
 
+            # Retry on timeout
+            except requests.exceptions.Timeout:
+                pass
+
+            # On other exceptions, we possibly refresh the token and retry
             except requests.RequestException as exc:
                 response: requests.Response = exc.response
                 if response is None:
