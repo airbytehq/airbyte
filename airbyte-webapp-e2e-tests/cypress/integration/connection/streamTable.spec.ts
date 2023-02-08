@@ -22,7 +22,7 @@ import {
   isStreamTableRowVisible,
   scrollTableToStream,
   selectExistingConnectorFromDropdown,
-} from "pages/newConnection";
+} from "pages/newConnectionPage";
 import {
   interceptCreateConnectionRequest,
   interceptDiscoverSchemaRequest,
