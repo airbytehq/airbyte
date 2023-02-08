@@ -21,6 +21,7 @@ import { naturalComparatorBy } from "utils/objects";
 import styles from "./CatalogSection.module.scss";
 import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
 import { StreamDetailsPanel } from "./next/StreamDetailsPanel/StreamDetailsPanel";
+import { SyncModeValue } from "./next/SyncModeSelect";
 import {
   updatePrimaryKey,
   toggleFieldInPrimaryKey,
@@ -28,6 +29,7 @@ import {
   updateFieldSelected,
   toggleAllFieldsSelected,
 } from "./streamConfigHelpers/streamConfigHelpers";
+import { updateStreamSyncMode } from "./streamConfigHelpers/updateStreamSyncMode";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -77,8 +79,16 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const onSelectSyncMode = useCallback(
-    (data: DropDownOptionDataItem) => updateStreamWithConfig(data.value),
-    [updateStreamWithConfig]
+    (data: DropDownOptionDataItem) => {
+      if (!streamNode.config || !streamNode.stream) {
+        return;
+      }
+      // todo: Remove once new stream table design is released. The old dropdown types data.value as any, hence the cast here.
+      const syncModes = data.value as SyncModeValue;
+      const updatedConfig = updateStreamSyncMode(streamNode.stream, streamNode.config, syncModes);
+      updateStreamWithConfig(updatedConfig);
+    },
+    [streamNode, updateStreamWithConfig]
   );
 
   const onSelectStream = useCallback(
@@ -239,6 +249,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             />
           </div>
         ))}
+      <pre>{JSON.stringify(streamNode, undefined, 2)}</pre>
     </div>
   );
 };

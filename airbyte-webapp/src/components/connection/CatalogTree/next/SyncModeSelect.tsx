@@ -9,7 +9,7 @@ import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 
 import styles from "./SyncModeSelect.module.scss";
 
-interface SyncModeValue {
+export interface SyncModeValue {
   syncMode: SyncMode;
   destinationSyncMode: DestinationSyncMode;
 }
