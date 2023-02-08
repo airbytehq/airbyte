@@ -13,9 +13,6 @@ import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.Geography;
-import io.airbyte.api.model.generated.Notification;
-import io.airbyte.api.model.generated.NotificationRead;
-import io.airbyte.api.model.generated.NotificationRead.StatusEnum;
 import io.airbyte.api.model.generated.SlugRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.WorkspaceCreate;
@@ -29,14 +26,12 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.server.converters.ApiPojoConverters;
 import io.airbyte.commons.server.converters.NotificationConverter;
 import io.airbyte.commons.server.converters.WorkspaceWebhookConfigsConverter;
-import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.commons.server.errors.InternalServerKnownException;
 import io.airbyte.commons.server.errors.ValueConflictKnownException;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.notification.NotificationClient;
 import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -220,23 +215,6 @@ public class WorkspacesHandler {
     configRepository.writeStandardWorkspaceNoSecrets(persistedWorkspace);
 
     return buildWorkspaceReadFromId(workspaceId);
-  }
-
-  public NotificationRead tryNotification(final Notification notification) {
-    try {
-      final NotificationClient notificationClient = NotificationClient.createNotificationClient(NotificationConverter.toConfig(notification));
-      final String messageFormat = "Hello World! This is a test from Airbyte to try %s notification settings for sync %s";
-      final boolean failureNotified = notificationClient.notifyFailure(String.format(messageFormat, notification.getNotificationType(), "failures"));
-      final boolean successNotified = notificationClient.notifySuccess(String.format(messageFormat, notification.getNotificationType(), "successes"));
-      if (failureNotified || successNotified) {
-        return new NotificationRead().status(StatusEnum.SUCCEEDED);
-      }
-    } catch (final IllegalArgumentException e) {
-      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name(), e);
-    } catch (final IOException | InterruptedException e) {
-      return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
-    }
-    return new NotificationRead().status(StatusEnum.FAILED);
   }
 
   public void setFeedbackDone(final WorkspaceGiveFeedback workspaceGiveFeedback)
