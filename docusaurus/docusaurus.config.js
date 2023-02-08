@@ -57,6 +57,10 @@ const config = {
                             from: '/connector-development/config-based/',
                             to: '/connector-development/config-based/low-code-cdk-overview',
                         },
+                        {
+                            from: '/project-overview/changelog/',
+                            to: '/category/release-notes',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
