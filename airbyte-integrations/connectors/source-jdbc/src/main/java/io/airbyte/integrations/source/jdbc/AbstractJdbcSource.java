@@ -52,8 +52,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import java.net.MalformedURLException;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -76,7 +74,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,12 +90,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   public static final String TRUST_KEY_STORE_PASS = "trustCertificateKeyStorePassword";
   public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
   public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
-  public static final String CLIENT_KEY_STORE_TYPE = "clientCertificateKeyStoreType";
-  public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
-  public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
-  public static final String PARAM_MODE = "mode";
-  Pair<URI, String> caCertKeyStorePair;
-  Pair<URI, String> clientCertKeyStorePair;
 
   public enum SslMode {
 
@@ -514,62 +505,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
       }
     });
     dataSources.clear();
-  }
-
-  /**
-   * Parses SSL related configuration and generates keystores to be used by connector
-   *
-   * @param config configuration
-   * @return map containing relevant parsed values including location of keystore or an empty map
-   */
-  protected Map<String, String> parseSSLConfig(final JsonNode config) {
-    LOGGER.debug("source config: {}", config);
-
-    final Map<String, String> additionalParameters = new HashMap<>();
-    // assume ssl if not explicitly mentioned.
-    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
-        final String specMode = config.get(JdbcUtils.SSL_MODE_KEY).get(PARAM_MODE).asText();
-        additionalParameters.put(SSL_MODE,
-            SslMode.bySpec(specMode).orElseThrow(() -> new IllegalArgumentException("unexpected ssl mode")).name());
-        if (Objects.isNull(caCertKeyStorePair)) {
-          caCertKeyStorePair = JdbcSSLConnectionUtils.prepareCACertificateKeyStore(config);
-        }
-
-        if (Objects.nonNull(caCertKeyStorePair)) {
-          LOGGER.debug("uri for ca cert keystore: {}", caCertKeyStorePair.getLeft().toString());
-          try {
-            additionalParameters.putAll(Map.of(
-                TRUST_KEY_STORE_URL, caCertKeyStorePair.getLeft().toURL().toString(),
-                TRUST_KEY_STORE_PASS, caCertKeyStorePair.getRight(),
-                TRUST_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
-          } catch (final MalformedURLException e) {
-            throw new RuntimeException("Unable to get a URL for trust key store");
-          }
-
-        }
-
-        if (Objects.isNull(clientCertKeyStorePair)) {
-          clientCertKeyStorePair = JdbcSSLConnectionUtils.prepareClientCertificateKeyStore(config);
-        }
-
-        if (Objects.nonNull(clientCertKeyStorePair)) {
-          LOGGER.debug("uri for client cert keystore: {} / {}", clientCertKeyStorePair.getLeft().toString(), clientCertKeyStorePair.getRight());
-          try {
-            additionalParameters.putAll(Map.of(
-                CLIENT_KEY_STORE_URL, clientCertKeyStorePair.getLeft().toURL().toString(),
-                CLIENT_KEY_STORE_PASS, clientCertKeyStorePair.getRight(),
-                CLIENT_KEY_STORE_TYPE, KEY_STORE_TYPE_PKCS12));
-          } catch (final MalformedURLException e) {
-            throw new RuntimeException("Unable to get a URL for client key store");
-          }
-        }
-      } else {
-        additionalParameters.put(SSL_MODE, SslMode.DISABLED.name());
-      }
-    }
-    LOGGER.debug("additional params: {}", additionalParameters);
-    return additionalParameters;
   }
 
   /**

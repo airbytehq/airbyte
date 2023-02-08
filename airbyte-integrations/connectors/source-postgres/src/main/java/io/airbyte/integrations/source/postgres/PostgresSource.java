@@ -138,7 +138,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
     }
 
-    final Map<String, String> sslParameters = parseSSLConfig(config);
+    final Map<String, String> sslParameters = JdbcSSLConnectionUtils.parseSSLConfig(config);
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
       sslParameters.put(CA_CERTIFICATE_PATH,
           JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
