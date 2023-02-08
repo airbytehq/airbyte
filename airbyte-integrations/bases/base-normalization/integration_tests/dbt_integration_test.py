@@ -341,6 +341,36 @@ class DbtIntegrationTest(object):
         with open("../secrets/tidb.json", "w") as fh:
             fh.write(json.dumps(config))
 
+    def setup_duckdb_db(self):
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH):
+            path = os.getenv(NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH)
+            start_db = False
+        else:
+            path = "/local/test.duckdb"
+        config = {
+            "destination_path": path,
+        }
+        if start_db:
+            self.db_names.append("duckdb")
+            print("Starting duckdb container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_duckdb",
+                "-d",
+                "airbyte/destination-duckdb:0.1.0",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+
+        if not os.path.exists("../integration_tests"):
+            os.makedirs("../integration_tests")
+        with open("../integration_tests/config.json", "w") as fh:
+            fh.write(json.dumps(config))
+
     @staticmethod
     def find_free_port():
         """
