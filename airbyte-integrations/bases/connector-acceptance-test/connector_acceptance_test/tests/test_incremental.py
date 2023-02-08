@@ -180,7 +180,7 @@ class TestIncremental(BaseTest):
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
 
-        parsed_records_1 = list(records_with_state(records_1, latest_state, stream_mapping, cursor_paths));
+        parsed_records_1 = list(records_with_state(records_1, latest_state, stream_mapping, cursor_paths))
 
         # This catches the case of a connector that emits an invalid state that is not compatible with the schema
         # See https://github.com/airbytehq/airbyte/issues/21863 to understand more
@@ -198,7 +198,6 @@ class TestIncremental(BaseTest):
             assert compare_cursor_with_threshold(
                 record_value, state_value, threshold_days
             ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
-
 
     def test_read_sequential_slices(
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner

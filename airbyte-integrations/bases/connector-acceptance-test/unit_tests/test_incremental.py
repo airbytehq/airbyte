@@ -272,7 +272,6 @@ def test_incremental_two_sequential_reads_state_invalid(
             build_state_message(stream_state),
         ]
 
-
     call_read_with_state_output_messages = build_messages_from_record_data(stream_name, records2)
 
     docker_runner_mock = MagicMock()
@@ -288,7 +287,6 @@ def test_incremental_two_sequential_reads_state_invalid(
             cursor_paths=cursor_paths,
             docker_runner=docker_runner_mock,
         )
-
 
 
 @pytest.mark.parametrize(
