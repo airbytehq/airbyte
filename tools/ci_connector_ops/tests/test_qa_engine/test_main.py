@@ -3,34 +3,38 @@
 #
 
 
-import pandas as pd
-import pytest
-
 from ci_connector_ops.qa_engine import main
 
-@pytest.fixture
-def dummy_report() -> pd.DataFrame:
-    return pd.DataFrame([
-        {
-            "connector_type": "source",
-            "connector_name": "test",
-            "docker_image_tag": "0.0.0",
-            "release_stage": "alpha",
-            "is_on_cloud": False,
-            "latest_build_is_successful": False,
-            "documentation_is_available": False,
-            "number_of_connections": 0,
-            "number_of_users": 0,
-            "sync_success_rate": .99
-        }
-    ])
 
-def test_main(tmp_path, mocker, dummy_report):
-    output_path = tmp_path / "output.json"
-    mocker.patch.object(main, "GCS_QA_REPORT_PATH", output_path)
-    mocker.patch.object(main, "get_enriched_catalog")
-    mocker.patch.object(main, "get_qa_report", mocker.Mock(return_value=dummy_report))
+def test_main(mocker, dummy_qa_report):
+    mock_oss_catalog = mocker.Mock(__len__=mocker.Mock(return_value=42))
+    mock_cloud_catalog = mocker.Mock()
+
+    mocker.patch.object(main, "enrichments")
+    mocker.patch.object(main, "outputs")
+    mocker.patch.object(
+        main.inputs, 
+        "fetch_remote_catalog",
+        mocker.Mock(side_effect=[mock_oss_catalog, mock_cloud_catalog]))
+    mocker.patch.object(main.inputs, "fetch_adoption_metrics_per_connector_version")
+    mocker.patch.object(main.validations, "get_qa_report", mocker.Mock(return_value=dummy_qa_report))
+    
     main.main()
-    main.get_enriched_catalog.assert_called_with(main.OSS_CATALOG, main.CLOUD_CATALOG)
-    main.get_qa_report.assert_called_with(main.get_enriched_catalog.return_value)
-    assert pd.read_json(output_path).to_dict() == dummy_report.to_dict()
+    
+    assert main.inputs.fetch_remote_catalog.call_count == 2
+    main.inputs.fetch_remote_catalog.assert_has_calls(
+        [
+            mocker.call(main.OSS_CATALOG_URL),
+            mocker.call(main.CLOUD_CATALOG_URL)
+        ]
+    )
+    main.enrichments.get_enriched_catalog.assert_called_with(
+        mock_oss_catalog, 
+        mock_cloud_catalog,
+        main.inputs.fetch_adoption_metrics_per_connector_version.return_value
+    )
+    main.validations.get_qa_report.assert_called_with(
+        main.enrichments.get_enriched_catalog.return_value,
+        len(mock_oss_catalog)
+    )
+

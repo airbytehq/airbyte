@@ -18,18 +18,19 @@ import java.util.function.Predicate;
  */
 public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
 
+  private static final String PROTOCOL_SCHEMA_NAME = "protocol schema";
   private final JsonSchemaValidator jsonSchemaValidator;
-  private final JsonNode schema;
 
   public AirbyteProtocolPredicate() {
     jsonSchemaValidator = new JsonSchemaValidator();
-    schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "AirbyteMessage");
+    final JsonNode schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "AirbyteMessage");
+    jsonSchemaValidator.initializeSchemaValidator(PROTOCOL_SCHEMA_NAME, schema);
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean test(final JsonNode s) {
-    return jsonSchemaValidator.test(schema, s);
+    return jsonSchemaValidator.testInitializedSchema(PROTOCOL_SCHEMA_NAME, s);
   }
 
 }

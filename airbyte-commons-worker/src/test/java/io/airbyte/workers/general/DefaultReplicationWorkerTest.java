@@ -40,6 +40,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.featureflag.TestClient;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.protocol.models.AirbyteLogMessage.Level;
@@ -48,7 +49,9 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.Config;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.workers.*;
+import io.airbyte.workers.RecordSchemaValidator;
+import io.airbyte.workers.WorkerMetricReporter;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.FailureHelper;
@@ -456,8 +459,9 @@ class DefaultReplicationWorkerTest {
     // Use a real schema validator to make sure validation doesn't affect this.
     final String streamName = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
     final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    recordSchemaValidator = new RecordSchemaValidator(Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
-        sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
+    recordSchemaValidator = new RecordSchemaValidator(new TestClient(), syncInput.getWorkspaceId(),
+        Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
+            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
         JOB_ATTEMPT,
@@ -487,8 +491,9 @@ class DefaultReplicationWorkerTest {
     // Use a real schema validator to make sure validation doesn't affect this.
     final String streamName = sourceConfig.getCatalog().getStreams().get(0).getStream().getName();
     final String streamNamespace = sourceConfig.getCatalog().getStreams().get(0).getStream().getNamespace();
-    recordSchemaValidator = new RecordSchemaValidator(Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
-        sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
+    recordSchemaValidator = new RecordSchemaValidator(new TestClient(), syncInput.getWorkspaceId(),
+        Map.of(new AirbyteStreamNameNamespacePair(streamName, streamNamespace),
+            sourceConfig.getCatalog().getStreams().get(0).getStream().getJsonSchema()));
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
         JOB_ATTEMPT,

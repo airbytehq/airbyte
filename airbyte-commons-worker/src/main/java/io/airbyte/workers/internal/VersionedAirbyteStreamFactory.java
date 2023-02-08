@@ -13,10 +13,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigrator;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Optional;
@@ -45,7 +46,8 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   private static final String TYPE_FIELD_NAME = "type";
 
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
+  private final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog;
   private AirbyteMessageDeserializer<T> deserializer;
   private AirbyteMessageVersionedMigrator<T> migrator;
   private Version protocolVersion;
@@ -53,15 +55,17 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   private boolean shouldDetectVersion = false;
 
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
-                                       final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                       final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                        final Version protocolVersion,
+                                       final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog,
                                        final Optional<Class<? extends RuntimeException>> exceptionClass) {
-    this(serDeProvider, migratorFactory, protocolVersion, MdcScope.DEFAULT_BUILDER, exceptionClass);
+    this(serDeProvider, migratorFactory, protocolVersion, configuredAirbyteCatalog, MdcScope.DEFAULT_BUILDER, exceptionClass);
   }
 
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
-                                       final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                       final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                        final Version protocolVersion,
+                                       final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog,
                                        final MdcScope.Builder containerLogMdcBuilder,
                                        final Optional<Class<? extends RuntimeException>> exceptionClass) {
     // TODO AirbyteProtocolPredicate needs to be updated to be protocol version aware
@@ -69,6 +73,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
     Preconditions.checkNotNull(protocolVersion);
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
+    this.configuredAirbyteCatalog = configuredAirbyteCatalog;
     this.initializeForProtocolVersion(protocolVersion);
   }
 
@@ -162,25 +167,19 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
 
   final protected void initializeForProtocolVersion(final Version protocolVersion) {
     this.deserializer = (AirbyteMessageDeserializer<T>) serDeProvider.getDeserializer(protocolVersion).orElseThrow();
-    this.migrator = migratorFactory.getVersionedMigrator(protocolVersion);
+    this.migrator = migratorFactory.getAirbyteMessageMigrator(protocolVersion);
     this.protocolVersion = protocolVersion;
   }
 
   @Override
   protected Stream<AirbyteMessage> toAirbyteMessage(final JsonNode json) {
     try {
-      final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
-      return Stream.of(convert(message));
+      final AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json), configuredAirbyteCatalog);
+      return Stream.of(message);
     } catch (final RuntimeException e) {
       logger.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json), e);
       return Stream.empty();
     }
-  }
-
-  // TODO remove this conversion once we migrated default AirbyteMessage to be from a versioned
-  // namespace
-  private AirbyteMessage convert(final io.airbyte.protocol.models.v0.AirbyteMessage message) {
-    return Jsons.object(Jsons.jsonNode(message), AirbyteMessage.class);
   }
 
 }

@@ -16,12 +16,14 @@ export interface ConfirmationModalProps {
   onSubmit: () => void;
   submitButtonDataId?: string;
   cancelButtonText?: string;
+  additionalContent?: React.ReactNode;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   title,
   text,
+  additionalContent,
   textValues,
   onSubmit,
   submitButtonText,
@@ -35,6 +37,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     <Modal onClose={onClose} title={<FormattedMessage id={title} />} testId="confirmationModal">
       <div className={styles.content}>
         <FormattedMessage id={text} values={textValues} />
+        {additionalContent}
         <div className={styles.buttonContent}>
           <Button
             className={styles.buttonWithMargin}

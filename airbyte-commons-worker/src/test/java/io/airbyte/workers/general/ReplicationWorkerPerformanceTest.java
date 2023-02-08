@@ -5,27 +5,39 @@
 package io.airbyte.workers.general;
 
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.protocol.AirbyteMessageMigrator;
+import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
+import io.airbyte.commons.protocol.ConfiguredAirbyteCatalogMigrator;
+import io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1;
+import io.airbyte.commons.protocol.migrations.v1.ConfiguredAirbyteCatalogMigrationV1;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.featureflag.TestClient;
 import io.airbyte.metrics.lib.NotImplementedMetricClient;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
+import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.mockito.Mockito;
@@ -41,7 +53,8 @@ public class ReplicationWorkerPerformanceTest {
 
   /**
    * Hook up the DefaultReplicationWorker to a test harness with an insanely quick Source
-   * {@link LimitedAirbyteSource} and Destination {@link EmptyAirbyteDestination}.
+   * {@link LimitedSourceProcess} via the {@link LimitedIntegrationLauncher} and Destination
+   * {@link EmptyAirbyteDestination}.
    * <p>
    * Harness uses Java Micro Benchmark to run the E2E sync a configured number of times. It then
    * reports a time distribution for the time taken to run the E2E sync.
@@ -64,18 +77,38 @@ public class ReplicationWorkerPerformanceTest {
   // Within each run, how many iterations to do.
   @Measurement(iterations = 2)
   public void executeOneSync() throws InterruptedException {
-    final var perSource = new LimitedAirbyteSource();
     final var perDestination = new EmptyAirbyteDestination();
     final var messageTracker = new AirbyteMessageTracker(new EnvVariableFeatureFlags());
     final var connectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
     final var metricReporter = new WorkerMetricReporter(new NotImplementedMetricClient(), "test-image:0.01");
     final var dstNamespaceMapper = new NamespacingMapper(NamespaceDefinitionType.DESTINATION, "", "");
-    final var validator = new RecordSchemaValidator(Map.of(
+    final var workspaceID = UUID.randomUUID();
+    final var validator = new RecordSchemaValidator(new TestClient(), workspaceID, Map.of(
         new AirbyteStreamNameNamespacePair("s1", null),
         CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))));
 
+    final IntegrationLauncher integrationLauncher = new LimitedIntegrationLauncher();
+    final var serDeProvider = new AirbyteMessageSerDeProvider(
+        List.of(new AirbyteMessageV0Deserializer()),
+        List.of(new AirbyteMessageV0Serializer()));
+    serDeProvider.initialize();
+
+    final var msgMigrator = new AirbyteMessageMigrator(List.of(new AirbyteMessageMigrationV1()));
+    msgMigrator.initialize();
+    final ConfiguredAirbyteCatalogMigrator catalogMigrator = new ConfiguredAirbyteCatalogMigrator(
+        List.of(new ConfiguredAirbyteCatalogMigrationV1()));
+    catalogMigrator.initialize();
+    final var migratorFactory = new AirbyteProtocolVersionedMigratorFactory(msgMigrator, catalogMigrator);
+
+    final var versionFac =
+        new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0"), Optional.empty(),
+            Optional.of(RuntimeException.class));
+    final var versionedAbSource =
+        new DefaultAirbyteSource(integrationLauncher, versionFac, migratorFactory.getProtocolSerializer(new Version("0.2.0")),
+            new EnvVariableFeatureFlags());
+
     final var worker = new DefaultReplicationWorker("1", 0,
-        perSource,
+        versionedAbSource,
         dstNamespaceMapper,
         perDestination,
         messageTracker,
@@ -86,9 +119,12 @@ public class ReplicationWorkerPerformanceTest {
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {
       try {
-        output.set(worker.run(new StandardSyncInput().withCatalog(new ConfiguredAirbyteCatalog()
-            .withStreams(List.of(new ConfiguredAirbyteStream().withSyncMode(SyncMode.FULL_REFRESH).withStream(new AirbyteStream().withName("s1"))))),
-            Path.of("/")));
+        final var ignoredPath = Path.of("/");
+        final StandardSyncInput testInput = new StandardSyncInput().withCatalog(
+            // The stream fields here are intended to match the records emitted by the LimitedSourceProcess
+            // class.
+            CatalogHelpers.createConfiguredAirbyteCatalog("s1", null, Field.of("data", JsonSchemaType.STRING)));
+        output.set(worker.run(testInput, ignoredPath));
       } catch (final WorkerException e) {
         throw new RuntimeException(e);
       }
@@ -102,7 +138,7 @@ public class ReplicationWorkerPerformanceTest {
     log.info("MBs read: {}, Time taken sec: {}, MB/s: {}", mbRead, timeTakenSec, mbRead / timeTakenSec);
   }
 
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException, InterruptedException {
     // Run this main class to start benchmarking.
     org.openjdk.jmh.Main.main(args);
   }

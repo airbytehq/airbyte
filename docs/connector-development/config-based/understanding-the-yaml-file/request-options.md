@@ -38,7 +38,6 @@ Example:
 ```yaml
 requester:
   type: HttpRequester
-  name: "{{ parameters['name'] }}"
   url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
   request_options_provider:
@@ -55,7 +54,6 @@ It is also possible to configure add a json-encoded body to outgoing requests.
 ```yaml
 requester:
   type: HttpRequester
-  name: "{{ parameters['name'] }}"
   url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
   request_options_provider:

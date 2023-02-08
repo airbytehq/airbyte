@@ -8,7 +8,7 @@ import {
   WebBackendConnectionListItem,
 } from "core/request/AirbyteClient";
 
-import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
+import { EntityTableDataItem, ConnectionTableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 const getConnectorTypeName = (connectorSpec: DestinationSnippetRead | SourceSnippetRead) => {
   return "sourceName" in connectorSpec ? connectorSpec.sourceName : connectorSpec.destinationName;
@@ -74,7 +74,7 @@ export function getEntityTableData<
 export const getConnectionTableData = (
   connections: WebBackendConnectionListItem[],
   type: "source" | "destination" | "connection"
-): ITableDataItem[] => {
+): ConnectionTableDataItem[] => {
   const connectType = type === "source" ? "destination" : "source";
 
   return connections.map((connection) => ({
