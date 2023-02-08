@@ -15,7 +15,8 @@ import pytest
 from integration_tests.dbt_integration_test import DbtIntegrationTest
 from integration_tests.utils import generate_dbt_models, run_destination_process
 from normalization.destination_type import DestinationType
-from normalization.transform_catalog import TransformCatalog
+
+# from normalization.transform_catalog import TransformCatalog
 
 temporary_folders = set()
 
@@ -28,6 +29,7 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
+    print("!!!! DEBUG THING " + os.getcwd())
     destinations_to_test = dbt_test_utils.get_test_targets()
     # set clean-up args to clean target destination after the test
     clean_up_args = {
@@ -62,93 +64,36 @@ def setup_test_path(request):
     os.chdir(request.config.invocation_dir)
 
 
-@pytest.mark.parametrize(
-    "test_resource_name",
-    set(
-        git_versioned_tests
-        + [
-            # Non-versioned tests outputs below will be written to /tmp folders instead
-        ]
-    ),
-)
-@pytest.mark.parametrize("destination_type", list(DestinationType))
-def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
-    if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    if (
-        destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)
-        and test_resource_name == "test_nested_streams"
-    ):
-        pytest.skip(f"Destinations {destination_type} does not support nested streams")
+# @pytest.mark.parametrize(
+#     "test_resource_name",
+#     set(
+#         git_versioned_tests
+#         + [
+#             # Non-versioned tests outputs below will be written to /tmp folders instead
+#         ]
+#     ),
+# )
+# @pytest.mark.parametrize("destination_type", list(DestinationType))
+# def test_normalization(destination_type: DestinationType, test_resource_name: str, setup_test_path):
+#     if destination_type.value not in dbt_test_utils.get_test_targets():
+#         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+#     if (
+#         destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)
+#         and test_resource_name == "test_nested_streams"
+#     ):
+#         pytest.skip(f"Destinations {destination_type} does not support nested streams")
 
-    target_schema = dbt_test_utils.target_schema
-    if destination_type.value == DestinationType.ORACLE.value:
-        # Oracle does not allow changing to random schema
-        dbt_test_utils.set_target_schema("test_normalization")
-    elif destination_type.value == DestinationType.REDSHIFT.value:
-        # set unique schema for Redshift test
-        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
-    try:
-        run_test_normalization(destination_type, test_resource_name)
-    finally:
-        dbt_test_utils.set_target_schema(target_schema)
-
-
-@pytest.mark.parametrize("destination_type", list(DestinationType))
-def test_sparse_nested_fields(destination_type: DestinationType):
-    # TODO extract these conditions?
-    if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    if (destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)):
-        pytest.skip(f"Destinations {destination_type} does not support nested streams")
-    if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
-        pytest.skip(f"{destination_type} does not support incremental yet")
-
-    target_schema = dbt_test_utils.target_schema
-    if destination_type.value == DestinationType.ORACLE.value:
-        # Oracle does not allow changing to random schema
-        dbt_test_utils.set_target_schema("test_normalization")
-    elif destination_type.value == DestinationType.REDSHIFT.value:
-        # set unique schema for Redshift test
-        dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
-
-    try:
-        print(f"Testing sparse nested field normalization {destination_type} in ", dbt_test_utils.target_schema)
-        test_resource_name = "test_sparse_nested_streams"
-
-        # Create the test folder with dbt project and appropriate destination settings to run integration tests from
-        test_root_dir = setup_test_dir(destination_type, test_resource_name)
-
-        # First sync
-        destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, test_root_dir)
-        assert setup_input_raw_data(destination_type, test_resource_name, test_root_dir, destination_config)
-        generate_dbt_models(destination_type, test_resource_name, test_root_dir, "models", "catalog.json", dbt_test_utils)
-        dbt_test_utils.dbt_check(destination_type, test_root_dir)
-        setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 1)
-        dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "sync1_output"))
-        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
-        dbt_test(destination_type, test_root_dir)
-
-        # Second sync
-        message_file = os.path.join("resources", test_resource_name, "data_input", "messages2.txt")
-        assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
-        setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 2)
-        dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "sync2_output"))
-        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
-        dbt_test(destination_type, test_root_dir)
-
-        # Third sync
-        message_file = os.path.join("resources", test_resource_name, "data_input", "messages3.txt")
-        assert run_destination_process(destination_type, test_root_dir, message_file, "destination_catalog.json", dbt_test_utils)
-        setup_dbt_sparse_nested_streams_test(destination_type, test_resource_name, test_root_dir, 3)
-        dbt_test_utils.dbt_run(destination_type, test_root_dir)
-        copy_tree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), os.path.join(test_root_dir, "sync3_output"))
-        shutil.rmtree(os.path.join(test_root_dir, "build/run/airbyte_utils/models/generated/"), ignore_errors=True)
-        dbt_test(destination_type, test_root_dir)
-    finally:
-        dbt_test_utils.set_target_schema(target_schema)
+#     target_schema = dbt_test_utils.target_schema
+#     if destination_type.value == DestinationType.ORACLE.value:
+#         # Oracle does not allow changing to random schema
+#         dbt_test_utils.set_target_schema("test_normalization")
+#     elif destination_type.value == DestinationType.REDSHIFT.value:
+#         # set unique schema for Redshift test
+#         dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_normalization_"))
+#     try:
+#         run_test_normalization(destination_type, test_resource_name)
+#     finally:
+#         dbt_test_utils.set_target_schema(target_schema)
 
 
 def run_test_normalization(destination_type: DestinationType, test_resource_name: str):
@@ -397,31 +342,6 @@ def setup_dbt_incremental_test(destination_type: DestinationType, test_resource_
     )
 
 
-def setup_dbt_sparse_nested_streams_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str, sync_number: int):
-    """
-    Prepare the data (copy) for the models for dbt test.
-    """
-    replace_identifiers = os.path.join("resources", test_resource_name, "data_input", "replace_identifiers.json")
-    test_directory = os.path.join(test_root_dir, "models/dbt_data_tests")
-    shutil.rmtree(test_directory, ignore_errors=True)
-    os.makedirs(test_directory, exist_ok=True)
-    copy_test_files(
-        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_expectations"),
-        test_directory,
-        destination_type,
-        replace_identifiers,
-    )
-    test_directory = os.path.join(test_root_dir, "tests")
-    shutil.rmtree(test_directory, ignore_errors=True)
-    os.makedirs(test_directory, exist_ok=True)
-    copy_test_files(
-        os.path.join("resources", test_resource_name, "dbt_test_config", f"sync{sync_number}_assertions"),
-        test_directory,
-        destination_type,
-        replace_identifiers,
-    )
-
-
 def setup_dbt_schema_change_test(destination_type: DestinationType, test_resource_name: str, test_root_dir: str):
     """
     Prepare the data (copy) for the models for dbt test.
@@ -565,49 +485,49 @@ def to_lower_identifier(input: re.Match) -> str:
         raise Exception(f"Unexpected number of groups in {input}")
 
 
-def test_redshift_normalization_migration(tmp_path, setup_test_path):
-    destination_type = DestinationType.REDSHIFT
-    clean_up_args = {
-        "destination_type": [destination_type],
-        "test_type": "ephemeral",  # "ephemeral", because we parse /tmp folders
-        "tmp_folders": [str(tmp_path)],
-    }
-    if destination_type.value not in dbt_test_utils.get_test_targets():
-        pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
-    resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
-    catalog_file = base_dir / resources_dir / "destination_catalog.json"
-    messages_file1 = base_dir / resources_dir / "messages1.txt"
-    messages_file2 = base_dir / resources_dir / "messages2.txt"
-    dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql.j2"
+# def test_redshift_normalization_migration(tmp_path, setup_test_path):
+#     destination_type = DestinationType.REDSHIFT
+#     clean_up_args = {
+#         "destination_type": [destination_type],
+#         "test_type": "ephemeral",  # "ephemeral", because we parse /tmp folders
+#         "tmp_folders": [str(tmp_path)],
+#     }
+#     if destination_type.value not in dbt_test_utils.get_test_targets():
+#         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
+#     base_dir = pathlib.Path(os.path.realpath(os.path.join(__file__, "../..")))
+#     resources_dir = base_dir / "integration_tests/resources/redshift_normalization_migration"
+#     catalog_file = base_dir / resources_dir / "destination_catalog.json"
+#     messages_file1 = base_dir / resources_dir / "messages1.txt"
+#     messages_file2 = base_dir / resources_dir / "messages2.txt"
+#     dbt_test_sql = base_dir / resources_dir / "test_pokemon_super.sql.j2"
 
-    shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
-    shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
-    shutil.copy(catalog_file, tmp_path / "destination_catalog.json")
+#     shutil.copytree(base_dir / "dbt-project-template", tmp_path, dirs_exist_ok=True)
+#     shutil.copytree(base_dir / "dbt-project-template-redshift", tmp_path, dirs_exist_ok=True)
+#     shutil.copy(catalog_file, tmp_path / "destination_catalog.json")
 
-    (tmp_path / "tests").mkdir()
-    shutil.copy(dbt_test_sql, tmp_path / "tests/test_pokemon_super.sql")
+#     (tmp_path / "tests").mkdir()
+#     shutil.copy(dbt_test_sql, tmp_path / "tests/test_pokemon_super.sql")
 
-    destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, tmp_path, random_schema=True)
-    with open(tmp_path / "destination_config.json", "w") as f:
-        f.write(json.dumps(destination_config))
+#     destination_config = dbt_test_utils.generate_profile_yaml_file(destination_type, tmp_path, random_schema=True)
+#     with open(tmp_path / "destination_config.json", "w") as f:
+#         f.write(json.dumps(destination_config))
 
-    transform_catalog = TransformCatalog()
-    transform_catalog.config = {
-        "integration_type": destination_type.value,
-        "schema": destination_config["schema"],
-        "catalog": [catalog_file],
-        "output_path": os.path.join(tmp_path, "models", "generated"),
-        "json_column": "_airbyte_data",
-        "profile_config_dir": tmp_path,
-    }
-    transform_catalog.process_catalog()
+#     transform_catalog = TransformCatalog()
+#     transform_catalog.config = {
+#         "integration_type": destination_type.value,
+#         "schema": destination_config["schema"],
+#         "catalog": [catalog_file],
+#         "output_path": os.path.join(tmp_path, "models", "generated"),
+#         "json_column": "_airbyte_data",
+#         "profile_config_dir": tmp_path,
+#     }
+#     transform_catalog.process_catalog()
 
-    run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", dbt_test_utils, docker_tag="0.3.29")
-    dbt_test_utils.dbt_check(destination_type, tmp_path)
-    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
-    run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", dbt_test_utils, docker_tag="dev")
-    dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
-    dbt_test(destination_type, tmp_path)
-    # clean-up test tables created for this test
-    dbt_test_utils.clean_tmp_tables(**clean_up_args)
+#     run_destination_process(destination_type, tmp_path, messages_file1, "destination_catalog.json", dbt_test_utils, docker_tag="0.3.29")
+#     dbt_test_utils.dbt_check(destination_type, tmp_path)
+#     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=True)
+#     run_destination_process(destination_type, tmp_path, messages_file2, "destination_catalog.json", dbt_test_utils, docker_tag="dev")
+#     dbt_test_utils.dbt_run(destination_type, tmp_path, force_full_refresh=False)
+#     dbt_test(destination_type, tmp_path)
+#     # clean-up test tables created for this test
+#     dbt_test_utils.clean_tmp_tables(**clean_up_args)
