@@ -27,7 +27,7 @@ definitions:
         inject_into: "request_parameter"
         field_name: ""
       page_token_option:
-        inject_into: "path"
+        type: RequestPath
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"

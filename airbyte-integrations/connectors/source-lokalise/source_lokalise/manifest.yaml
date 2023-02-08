@@ -20,6 +20,7 @@ definitions:
       type: "PageIncrement"
       page_size: 1000
     page_token_option:
+      type: RequestOption
       inject_into: "request_parameter"
       field_name: "page"
     page_size_option:

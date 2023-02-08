@@ -27,7 +27,7 @@ definitions:
       cursor_value: "{{response['meta']['next_page_url']}}"
       page_size: 50
     page_token_option:
-      inject_into: "path"
+      type: RequestPath
     url_base: "https://taskrouter.twilio.com"
   base_stream:
     retriever:

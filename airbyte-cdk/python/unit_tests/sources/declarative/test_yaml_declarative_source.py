@@ -58,7 +58,7 @@ class TestYamlDeclarativeSource:
                 inject_into: request_parameter
                 field_name: page_size
               page_token_option:
-                inject_into: path
+                type: RequestPath
               pagination_strategy:
                 type: "CursorPagination"
                 cursor_value: "{{ response._metadata.next }}"

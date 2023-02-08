@@ -51,6 +51,7 @@ definitions:
           inject_into: "request_parameter"
           field_name: "limit"
         page_token_option:
+          type: RequestOption
           inject_into: "request_parameter"
           field_name: "cursor"
 
@@ -70,6 +71,7 @@ definitions:
           cursor_value: "{{ response.cursor }}"
           stop_condition: "{{ 'cursor' not in response }}"
         page_token_option:
+          type: RequestOption
           field_name: "cursor"
           inject_into: "body_json"
         page_size_option:
@@ -115,6 +117,7 @@ definitions:
           cursor_value: "{{ response.cursor }}"
           stop_condition: "{{ 'cursor' not in response }}"
         page_token_option:
+          type: RequestOption
           field_name: "cursor"
           inject_into: "body_json"
         page_size_option:

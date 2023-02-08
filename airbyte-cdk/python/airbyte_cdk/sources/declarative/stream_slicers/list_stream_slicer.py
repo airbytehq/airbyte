@@ -37,8 +37,6 @@ class ListStreamSlicer(StreamSlicer):
         if isinstance(self.cursor_field, str):
             self.cursor_field = InterpolatedString(string=self.cursor_field, parameters=parameters)
 
-        if self.request_option and self.request_option.inject_into == RequestOptionType.path:
-            raise ValueError("Slice value cannot be injected in the path")
         self._cursor = None
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
