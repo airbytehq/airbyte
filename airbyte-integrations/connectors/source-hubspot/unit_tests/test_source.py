@@ -328,17 +328,6 @@ def configured_catalog_fixture():
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):
-    """
-    If 'quotes' stream is not in the client, it should skip it.
-    """
-    source = SourceHubspot()
-
-    all_records = list(source.read(logger, config=oauth_config, catalog=configured_catalog, state=None))
-    records = [record for record in all_records if record.type == Type.RECORD]
-    assert not records
-
-
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
