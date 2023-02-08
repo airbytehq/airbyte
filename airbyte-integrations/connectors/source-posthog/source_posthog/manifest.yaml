@@ -57,7 +57,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
-      stream_slicer:
+      partition_router:
         type: SubstreamSlicer
         parent_stream_configs:
           - stream: "#/definitions/projects_stream"
@@ -99,6 +99,32 @@ definitions:
       name: "events"
       path: "events"
     primary_key: "id"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+      partition_routers:
+        - type: SubstreamSlicer
+          parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: "id"
+              stream_slice_field: "project_id"
+        - type: DatetimeBasedCursor
+          start_datetime:
+            datetime: "{{ config['start_date'] }}"
+            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+          end_datetime:
+            datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+          cursor_granularity: "PT0.000001S"
+          step: "P30D"
+          cursor_field: timestamp
+          start_time_option:
+            field_name: after
+            inject_into: request_parameter
+          end_time_option:
+            field_name: before
+            inject_into: request_parameter
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
@@ -110,10 +136,10 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
-      stream_slicer:
+      partition_router:
         type: CustomStreamSlicer
         class_name: source_posthog.components.EventsCartesianProductStreamSlicer
-        stream_slicers:
+        partition_routers:
           - type: SubstreamSlicer
             parent_stream_configs:
               - stream: "#/definitions/projects_stream"

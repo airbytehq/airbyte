@@ -19,11 +19,11 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DatetimeBasedCursor.end_time_option": "RequestOption",
     "DatetimeBasedCursor.start_datetime": "MinMaxDatetime",
     "DatetimeBasedCursor.start_time_option": "RequestOption",
-    # CustomIncremental
-    "CustomIncremental.end_datetime": "MinMaxDatetime",
-    "CustomIncremental.end_time_option": "RequestOption",
-    "CustomIncremental.start_datetime": "MinMaxDatetime",
-    "CustomIncremental.start_time_option": "RequestOption",
+    # CustomIncrementalSync
+    "CustomIncrementalSync.end_datetime": "MinMaxDatetime",
+    "CustomIncrementalSync.end_time_option": "RequestOption",
+    "CustomIncrementalSync.start_datetime": "MinMaxDatetime",
+    "CustomIncrementalSync.start_time_option": "RequestOption",
     # DeclarativeSource
     "DeclarativeSource.check": "CheckStream",
     "DeclarativeSource.spec": "Spec",
@@ -52,7 +52,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SimpleRetriever.paginator": "NoPagination",
     "SimpleRetriever.record_selector": "RecordSelector",
     "SimpleRetriever.requester": "HttpRequester",
-    "SimpleRetriever.stream_slicer": "SingleSlice",
+    "SimpleRetriever.partition_router": "SingleSlice",
     # SubstreamSlicer
     "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
     # AddFields
@@ -77,7 +77,7 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "HttpRequester.authenticator": "CustomAuthenticator",
     "HttpRequester.error_handler": "CustomErrorHandler",
     "RecordSelector.extractor": "CustomRecordExtractor",
-    "SimpleRetriever.stream_slicer": "CustomStreamSlicer",
+    "SimpleRetriever.partition_router": "CustomStreamSlicer",
 }
 
 

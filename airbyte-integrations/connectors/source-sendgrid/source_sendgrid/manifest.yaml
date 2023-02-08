@@ -43,7 +43,7 @@ definitions:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
     primary_key: "{{ parameters['primary_key'] }}"
-  incremental:
+  incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_time'] }}"
@@ -60,7 +60,7 @@ definitions:
       inject_into: "request_parameter"
     datetime_format: "%s"
     cursor_granularity: "PT1S"
-  messages_incremental:
+  messages_incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_time'] }}"
@@ -159,12 +159,12 @@ streams:
       cursor_field: "created"
       path: "/v3/suppression/bounces"
       field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      incremental:
-        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "global_suppressions"
@@ -172,12 +172,12 @@ streams:
       cursor_field: "created"
       path: "/v3/suppression/unsubscribes"
       field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      incremental:
-        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "blocks"
@@ -185,12 +185,12 @@ streams:
       cursor_field: "created"
       path: "/v3/suppression/blocks"
       field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      incremental:
-        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "suppression_groups"
@@ -214,12 +214,12 @@ streams:
       cursor_field: "created"
       path: "/v3/suppression/invalid_emails"
       field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      incremental:
-        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "spam_reports"
@@ -227,12 +227,12 @@ streams:
       cursor_field: "created"
       path: "/v3/suppression/spam_reports"
       field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       paginator:
         $ref: "#/definitions/offset_paginator"
-      incremental:
-        $ref: "#/definitions/incremental"
   - $ref: "#/definitions/base_stream"
     $parameters:
       name: "messages"
@@ -240,6 +240,8 @@ streams:
       cursor_field: "last_event_time"
       path: "/v3/messages"
       field_path: []
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       requester:
@@ -247,8 +249,6 @@ streams:
         request_parameters:
           limit: "1000"
           query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
-      incremental:
-        $ref: "#/definitions/messages_incremental"
 check:
   type: CheckStream
   stream_names: ["lists"]

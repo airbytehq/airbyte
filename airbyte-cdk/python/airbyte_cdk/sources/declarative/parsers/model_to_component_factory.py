@@ -403,8 +403,8 @@ class ModelToComponentFactory:
         )
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
-        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's iterable field components
-        # if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
+        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
+        # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
         # the factory only support passing arguments to the component constructors, whereas this performs a merge of all slicers into one.
         combined_slicers = self._merge_stream_slicers(model=model, config=config)
@@ -414,7 +414,7 @@ class ModelToComponentFactory:
             model=model.retriever, config=config, name=model.name, primary_key=primary_key, stream_slicer=combined_slicers
         )
 
-        cursor_field = self._get_cursor_field_from_stream_slicer(model)
+        cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
@@ -445,8 +445,8 @@ class ModelToComponentFactory:
         )
 
         stream_slicer = None
-        if model.retriever.stream_slicer:
-            stream_slicer_model = model.retriever.stream_slicer
+        if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
+            stream_slicer_model = model.retriever.partition_router
             stream_slicer = (
                 CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -461,22 +461,6 @@ class ModelToComponentFactory:
             return incremental_sync
         elif stream_slicer:
             return stream_slicer
-        else:
-            return None
-
-    @staticmethod
-    def _get_cursor_field_from_stream_slicer(model: DeclarativeStreamModel) -> Optional[Union[str, List[str]]]:
-        if not model.retriever or not model.retriever.stream_slicer:
-            return None
-        elif hasattr(model.retriever.stream_slicer, "cursor_field"):
-            return model.retriever.stream_slicer.cursor_field
-        elif isinstance(model.retriever.stream_slicer, dict) and "stream_slicers" in model.retriever.stream_slicer:
-            # TODO: Remove once we redesign stream slicers
-            # Similar to the above. This covers the case for CustomStreamSlicer whose model will be in the form of dictionaries instead
-            # of Pydantic fields. Hence why we need to handle this temporary hack a little differently
-            for slicer in model.retriever.stream_slicer["stream_slicers"]:
-                if "cursor_field" in slicer:
-                    return slicer.get("cursor_field")
         else:
             return None
 

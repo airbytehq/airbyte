@@ -517,7 +517,7 @@ class SimpleRetriever(BaseModel):
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
     )
-    stream_slicer: Optional[
+    partition_router: Optional[
         Union[
             CustomStreamSlicer,
             ListStreamSlicer,

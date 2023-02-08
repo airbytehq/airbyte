@@ -9,7 +9,7 @@ definitions:
     http_method: "GET"
     request_headers:
       "User-Agent": "AirbyteWikipediaPageviewsConnector/1.0 (https://github.com/airbytehq/airbyte)"
-  top_incremental:
+  top_incremental_sync:
     type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{config.start}}"
@@ -21,7 +21,7 @@ definitions:
     cursor_field: "timestamp"
     datetime_format: "%Y/%m/%d"
     cursor_granularity: "P1D"
-  per_article_incremental:
+  per_article_incremental_sync:
     type: DatetimeBasedCursor
     start_datetime: "{{config.start}}"
     end_datetime: "{{config.end}}"
@@ -45,8 +45,6 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/per_article_requester"
-    incremental:
-      $ref: "#/definitions/per_article_incremental"
 
   top_retriever:
     record_selector:
@@ -55,12 +53,12 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/top_requester"
-    incremental:
-      $ref: "#/definitions/top_incremental"
   per_article_stream:
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
+    incremental_sync:
+      $ref: "#/definitions/per_article_incremental_sync"
     retriever:
       $ref: "#/definitions/per_article_retriever"
     $parameters:
@@ -69,6 +67,8 @@ definitions:
     schema_loader:
       type: JsonFileSchemaLoader
       file_path: "./source_wikipedia_pageviews/schemas/{{ parameters['name'] }}.json"
+    incremental_sync:
+      $ref: "#/definitions/top_incremental_sync"
     retriever:
       $ref: "#/definitions/top_retriever"
     $parameters:
