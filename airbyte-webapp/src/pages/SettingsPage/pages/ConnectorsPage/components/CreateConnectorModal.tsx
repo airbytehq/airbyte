@@ -57,132 +57,130 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
       }}
     >
       {({ isSubmitting, isValid, dirty }) => (
-        <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>
-          <Form>
-            <ModalBody>
-              <FlexContainer direction="column" gap="xl">
-                <Text>
-                  <FormattedMessage
-                    id="admin.learnMore"
-                    values={{
-                      lnk: (lnk: React.ReactNode) => (
-                        <a className={styles.docLink} target="_blank" href={links.docsLink} rel="noreferrer">
-                          {lnk}
-                        </a>
-                      ),
-                    }}
-                  />
-                </Text>
-                <FlexContainer direction="column">
-                  <Field name="name">
-                    {({ field, meta }: FieldProps<string>) => (
-                      <LabeledInput
-                        {...field}
-                        type="text"
-                        placeholder={formatMessage({
-                          id: "admin.connectorName.placeholder",
-                        })}
-                        label={
-                          <Label>
-                            <FormattedMessage id="admin.connectorName" />
-                          </Label>
-                        }
-                        error={meta.touched && !!meta.error}
-                        message={
-                          meta.touched && meta.error ? (
-                            <FormattedMessage id={meta.error} />
-                          ) : (
-                            <FormattedMessage id="form.empty.error" />
-                          )
-                        }
-                      />
-                    )}
-                  </Field>
-                  <Field name="dockerRepository">
-                    {({ field, meta }: FieldProps<string>) => (
-                      <LabeledInput
-                        {...field}
-                        type="text"
-                        autoComplete="off"
-                        placeholder={formatMessage({
-                          id: "admin.dockerRepository.placeholder",
-                        })}
-                        label={
-                          <Label>
-                            <FormattedMessage
-                              id={isCloudApp() ? "admin.dockerFullImageName" : "admin.dockerRepository"}
-                            />
-                          </Label>
-                        }
-                        error={meta.touched && !!meta.error}
-                        message={
-                          meta.touched && meta.error ? (
-                            <FormattedMessage id={meta.error} />
-                          ) : (
-                            <FormattedMessage id="form.empty.error" />
-                          )
-                        }
-                      />
-                    )}
-                  </Field>
-                  <Field name="dockerImageTag">
-                    {({ field, meta }: FieldProps<string>) => (
-                      <LabeledInput
-                        {...field}
-                        type="text"
-                        autoComplete="off"
-                        placeholder={formatMessage({
-                          id: "admin.dockerImageTag.placeholder",
-                        })}
-                        label={
-                          <Label>
-                            <FormattedMessage id="admin.dockerImageTag" />
-                          </Label>
-                        }
-                        error={!!meta.error && meta.touched}
-                        message={
-                          meta.touched && meta.error ? (
-                            <FormattedMessage id={meta.error} />
-                          ) : (
-                            <FormattedMessage id="form.empty.error" />
-                          )
-                        }
-                      />
-                    )}
-                  </Field>
-                  <Field name="documentationUrl">
-                    {({ field, meta }: FieldProps<string>) => (
-                      <LabeledInput
-                        {...field}
-                        type="text"
-                        autoComplete="off"
-                        placeholder={formatMessage({
-                          id: "admin.documentationUrl.placeholder",
-                        })}
-                        label={
-                          <Label>
-                            <FormattedMessage id="admin.documentationUrl" />
-                          </Label>
-                        }
-                        error={meta.touched && !!meta.error}
-                        message={meta.error && <FormattedMessage id={meta.error} />}
-                      />
-                    )}
-                  </Field>
+        <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />} wrapIn={Form}>
+          <ModalBody>
+            <FlexContainer direction="column" gap="xl">
+              <Text>
+                <FormattedMessage
+                  id="admin.learnMore"
+                  values={{
+                    lnk: (lnk: React.ReactNode) => (
+                      <a className={styles.docLink} target="_blank" href={links.docsLink} rel="noreferrer">
+                        {lnk}
+                      </a>
+                    ),
+                  }}
+                />
+              </Text>
+              <FlexContainer direction="column">
+                <Field name="name">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      type="text"
+                      placeholder={formatMessage({
+                        id: "admin.connectorName.placeholder",
+                      })}
+                      label={
+                        <Label>
+                          <FormattedMessage id="admin.connectorName" />
+                        </Label>
+                      }
+                      error={meta.touched && !!meta.error}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
+                    />
+                  )}
+                </Field>
+                <Field name="dockerRepository">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      type="text"
+                      autoComplete="off"
+                      placeholder={formatMessage({
+                        id: "admin.dockerRepository.placeholder",
+                      })}
+                      label={
+                        <Label>
+                          <FormattedMessage
+                            id={isCloudApp() ? "admin.dockerFullImageName" : "admin.dockerRepository"}
+                          />
+                        </Label>
+                      }
+                      error={meta.touched && !!meta.error}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
+                    />
+                  )}
+                </Field>
+                <Field name="dockerImageTag">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      type="text"
+                      autoComplete="off"
+                      placeholder={formatMessage({
+                        id: "admin.dockerImageTag.placeholder",
+                      })}
+                      label={
+                        <Label>
+                          <FormattedMessage id="admin.dockerImageTag" />
+                        </Label>
+                      }
+                      error={!!meta.error && meta.touched}
+                      message={
+                        meta.touched && meta.error ? (
+                          <FormattedMessage id={meta.error} />
+                        ) : (
+                          <FormattedMessage id="form.empty.error" />
+                        )
+                      }
+                    />
+                  )}
+                </Field>
+                <Field name="documentationUrl">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <LabeledInput
+                      {...field}
+                      type="text"
+                      autoComplete="off"
+                      placeholder={formatMessage({
+                        id: "admin.documentationUrl.placeholder",
+                      })}
+                      label={
+                        <Label>
+                          <FormattedMessage id="admin.documentationUrl" />
+                        </Label>
+                      }
+                      error={meta.touched && !!meta.error}
+                      message={meta.error && <FormattedMessage id={meta.error} />}
+                    />
+                  )}
+                </Field>
 
-                  {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
-                </FlexContainer>
+                {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
               </FlexContainer>
-            </ModalBody>
-            <ModalFooter>
-              <Button onClick={onClose} type="button" variant="secondary" disabled={isSubmitting}>
-                <FormattedMessage id="form.cancel" />
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
-                <FormattedMessage id="form.add" />
-              </Button>
-            </ModalFooter>
-          </Form>
+            </FlexContainer>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose} type="button" variant="secondary" disabled={isSubmitting}>
+              <FormattedMessage id="form.cancel" />
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
+              <FormattedMessage id="form.add" />
+            </Button>
+          </ModalFooter>
         </Modal>
       )}
     </Formik>

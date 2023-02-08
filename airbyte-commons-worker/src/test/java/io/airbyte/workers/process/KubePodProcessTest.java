@@ -7,19 +7,27 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import io.airbyte.commons.docker.DockerUtils;
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.BuildImageResultCallback;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 import io.airbyte.commons.string.Strings;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import java.io.File;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.shaded.com.github.dockerjava.core.DefaultDockerClientConfig;
+import org.testcontainers.shaded.com.github.dockerjava.core.DockerClientConfig;
+import org.testcontainers.shaded.com.github.dockerjava.core.DockerClientImpl;
 import org.testcontainers.shaded.com.google.common.io.Resources;
 
 // Disabled until we start minikube on the node.
@@ -33,6 +41,26 @@ class KubePodProcessTest {
 
   private static final String TEST_IMAGE_NO_VAR_PATH = "Dockerfile.no_var";
   private static final String TEST_IMAGE_NO_VAR_NAME = "worker-test:no-var";
+
+  private class DockerUtils {
+
+    private static final DockerClientConfig CONFIG = DefaultDockerClientConfig.createDefaultConfigBuilder().build();
+    private static final DockerHttpClient HTTP_CLIENT = new ApacheDockerHttpClient.Builder()
+        .dockerHost(CONFIG.getDockerHost())
+        .sslConfig(CONFIG.getSSLConfig())
+        .maxConnections(100)
+        .build();
+    private static final DockerClient DOCKER_CLIENT = DockerClientImpl.getInstance(CONFIG, HTTP_CLIENT);
+
+    public static String buildImage(final String dockerFilePath, final String tag) {
+      return DOCKER_CLIENT.buildImageCmd()
+          .withDockerfile(new File(dockerFilePath))
+          .withTags(Set.of(tag))
+          .exec(new BuildImageResultCallback())
+          .awaitImageId();
+    }
+
+  }
 
   @BeforeAll
   static void setup() {
