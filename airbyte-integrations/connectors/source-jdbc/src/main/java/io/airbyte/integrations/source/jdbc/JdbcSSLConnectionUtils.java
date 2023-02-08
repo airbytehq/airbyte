@@ -38,6 +38,7 @@ public class JdbcSSLConnectionUtils {
   public static final String TRUST_KEY_STORE_TYPE = "trustCertificateKeyStoreType";
   public static final String KEY_STORE_TYPE_PKCS12 = "PKCS12";
   public static final String PARAM_MODE = "mode";
+
   /**
    * Parses SSL related configuration and generates keystores to be used by connector
    *
