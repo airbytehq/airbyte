@@ -42,13 +42,13 @@ class TestFullRefresh(BaseTest):
         assert first_read_records_data, "At least one record should be read using provided catalog"
 
         first_read_records_emitted_at = [record.emitted_at for record in first_read_records]
-        max_emitted_at = max(first_read_records_emitted_at)
+        max_emitted_at_first_read = max(first_read_records_emitted_at)
 
         second_read_reords_emitted_at = [record.emitted_at for record in second_read_records]
 
-        min_emitted_at = min(second_read_reords_emitted_at)
+        min_emitted_at_second_read = min(second_read_reords_emitted_at)
 
-        assert max_emitted_at < min_emitted_at, "emitted_at should increase on subsequent runs"
+        assert max_emitted_at_first_read < min_emitted_at_second_read, "emitted_at should increase on subsequent runs"
 
     def assert_two_sequential_reads_produce_same_or_subset_records(
         self, records_1, records_2, configured_catalog, ignored_fields, detailed_logger
