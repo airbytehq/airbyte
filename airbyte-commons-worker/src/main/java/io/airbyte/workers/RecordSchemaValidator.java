@@ -11,15 +11,12 @@ import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
-import java.lang.invoke.MethodHandles;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -27,12 +24,10 @@ import org.slf4j.LoggerFactory;
  */
 public class RecordSchemaValidator {
 
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
   private static final JsonSchemaValidator validator = new JsonSchemaValidator();
+  private final ExecutorService validationExecutor = Executors.newFixedThreadPool(1);
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
   private final boolean backgroundValidation;
-  private static final Executor validationExecutor = Executors.newFixedThreadPool(1);
 
   /**
    * @param streamNamesToSchemas
@@ -41,8 +36,7 @@ public class RecordSchemaValidator {
    *        remove the backgroundValidation parameter when PerfBackgroundJsonValidation feature-flag
    *        is removed.
    */
-  public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas,
-                               final boolean backgroundValidation) {
+  public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas, final boolean backgroundValidation) {
     this.backgroundValidation = backgroundValidation;
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
@@ -66,15 +60,16 @@ public class RecordSchemaValidator {
    */
   public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
     if (backgroundValidation) {
-      validationExecutor.execute(() -> {
-        doValidateSchema(message, messageStream);
-      });
+      validationExecutor.execute(() -> doValidateSchema(message, messageStream));
     } else {
       doValidateSchema(message, messageStream);
     }
   }
 
-  public void doValidateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
+  /**
+   * @throws RecordSchemaValidationException
+   */
+  private void doValidateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 

@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.featureflag.TestClient;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
@@ -34,19 +33,33 @@ class RecordSchemaValidatorTest {
   }
 
   @Test
-  void testValidateValidSchema() throws Exception {
-    final var featureFlagClient = new TestClient();
-    final var recordSchemaValidator = new RecordSchemaValidator(
-        WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
-    recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()));
+  void testValidateValidSchema() {
+    final var recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
+    for (var i = 0; i < 10; i++) {
+      recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()));
+    }
   }
 
   @Test
-  void testValidateInvalidSchema() throws Exception {
-    final var featureFlagClient = new TestClient();
-    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(
-        WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
+  void testValidateInvalidSchema() {
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
     assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));
+  }
+
+  @Test
+  void testValidateValidSchemaWithBackgroundValidation() {
+    final var recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput), true);
+    for (var i = 0; i < 10; i++) {
+      recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()));
+    }
+  }
+
+  @Test
+  void testValidateInvalidSchemaWithBackgroundValidation() {
+    final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput), true);
+    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(
+        INVALID_RECORD.getRecord(),
         AirbyteStreamNameNamespacePair.fromRecordMessage(INVALID_RECORD.getRecord())));
   }
 
