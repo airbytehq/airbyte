@@ -8,11 +8,11 @@ import { Text } from "components/ui/Text";
 import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { ConnectorIds } from "utils/connectors";
 
-import { useConnectorForm } from "../../../connectorFormContext";
-import { useAuthentication } from "../../../useAuthentication";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
+import { useConnectorForm } from "../../../connectorFormContext";
+import { useAuthentication } from "../../../useAuthentication";
 
 function isGoogleConnector(connectorDefinitionId: string): boolean {
   return (

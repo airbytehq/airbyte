@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 
-import * as en from "../locales/en.json";
 import { formatBytes } from "./numberHelper";
+import * as en from "../locales/en.json";
 
 const _render = (args: Parameters<typeof formatBytes>) =>
   render(

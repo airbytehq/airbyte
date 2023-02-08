@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.config;
@@ -7,6 +7,9 @@ package io.airbyte.server.config;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.commons.server.scheduler.EventRunner;
+import io.airbyte.commons.server.scheduler.TemporalEventRunner;
+import io.airbyte.commons.server.services.AirbyteGithubStore;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -18,9 +21,6 @@ import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.server.scheduler.EventRunner;
-import io.airbyte.server.scheduler.TemporalEventRunner;
-import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Value;

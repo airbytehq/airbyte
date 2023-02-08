@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth;
@@ -71,6 +71,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-okta", new OktaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-paypal-transaction", new PayPalTransactionOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-airtable", new AirtableOAuthFlow(configRepository, httpClient))
         .build();
   }
 

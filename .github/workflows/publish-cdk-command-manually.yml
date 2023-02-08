@@ -20,7 +20,7 @@ on:
           - patch
         required: true
       skip-publish-test:
-        description: 'By default, the job publishes to Test PyPi. Use "true" to only publish to actual PyPi servers.'
+        description: 'By default, the job publishes to both Test and actual PyPi. Use "true" to only publish to actual PyPi servers.'
         required: false
       changelog-message:
         description: "Changelog message to be added to CHANGELOG.md"
@@ -43,7 +43,7 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-          token: ${{ secrets.AIRBYTEIO_PAT }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
       - name: "Publish Airbyte CDK: bump version"
         run: |
           pip install bumpversion
@@ -178,14 +178,14 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Airbyte CDK has been released!\n\n"
+                            "text": "A new version of Airbyte CDK has been released with changelog: ${{ github.event.inputs.changelog-message }}!\n\n"
                         }
                     },
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "See details on <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md?plain=1#L3-L4|CHANGELOG.md> and <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
                         }
                     }
                 ]

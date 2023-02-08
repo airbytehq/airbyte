@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -26,6 +26,8 @@ decoder = JsonDecoder(options={})
         ("test_field_in_config", ["{{ config['field'] }}"], {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_field_in_options", ["{{ options['options_field'] }}"], {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_field_does_not_exist", ["record"], {"id": 1}, []),
+        ("test_nested_list", ["list", "*", "item"], {"list": [{"item": {"id": "1"}}]}, [{"id": "1"}]),
+        ("test_complex_nested_list", ['data', '*', 'list', 'data2', '*'], {"data": [{"list": {"data2": [{"id": 1}, {"id": 2}]}},{"list": {"data2": [{"id": 3}, {"id": 4}]}}]}, [{"id": 1}, {"id": 2}, {"id": 3}, {"id": 4}])
     ],
 )
 def test_dpath_extractor(test_name, field_pointer, body, expected_records):

@@ -30,7 +30,7 @@ interface BaseFieldProps {
   // path to the location in the Connector Manifest schema which should be set by this component
   path: string;
   label: string;
-  tooltip?: string;
+  tooltip?: React.ReactNode;
   readOnly?: boolean;
   optional?: boolean;
   pattern?: RegExp;
@@ -40,7 +40,7 @@ interface BaseFieldProps {
 
 export type BuilderFieldProps = BaseFieldProps &
   (
-    | { type: "string" | "number" | "integer"; onChange?: (newValue: string) => void }
+    | { type: "string" | "number" | "integer"; onChange?: (newValue: string) => void; onBlur?: (value: string) => void }
     | { type: "boolean"; onChange?: (newValue: boolean) => void }
     | { type: "array"; onChange?: (newValue: string[]) => void }
     | { type: "enum"; onChange?: (newValue: string) => void; options: string[] }
@@ -116,6 +116,10 @@ const InnerBuilderField: React.FC<BuilderFieldProps & FastFieldProps<unknown>> =
           error={hasError}
           readOnly={readOnly}
           adornment={adornment}
+          onBlur={(e) => {
+            field.onBlur(e);
+            props.onBlur?.(e.target.value);
+          }}
         />
       )}
       {props.type === "array" && (
@@ -149,7 +153,8 @@ const InnerBuilderField: React.FC<BuilderFieldProps & FastFieldProps<unknown>> =
 
 export const BuilderField: React.FC<BuilderFieldProps> = (props) => {
   return (
-    <FastField name={props.path}>
+    // The key is set to enforce a re-render of the component if the type change, otherwise changes in props might not be reflected correctly
+    <FastField name={props.path} key={props.type}>
       {({ field, form, meta }: FastFieldProps<unknown>) => (
         <InnerBuilderField {...props} field={field} form={form} meta={meta} />
       )}

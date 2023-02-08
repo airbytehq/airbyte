@@ -1,7 +1,7 @@
 import classNames from "classnames";
 
-import { Text } from "../Text";
 import styles from "./InfoText.module.scss";
+import { Text } from "../Text";
 
 export type InfoTextVariant = "grey" | "light-grey" | "red" | "green" | "blue" | "light-blue";
 

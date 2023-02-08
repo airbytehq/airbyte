@@ -6,10 +6,10 @@ import { LabeledSwitch } from "components";
 
 import { FormBaseItem } from "core/form/types";
 
+import styles from "./PropertySection.module.scss";
 import { Control } from "../Property/Control";
 import { PropertyError } from "../Property/PropertyError";
 import { PropertyLabel } from "../Property/PropertyLabel";
-import styles from "./PropertySection.module.scss";
 
 interface PropertySectionProps {
   property: FormBaseItem;

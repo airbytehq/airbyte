@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.config;
@@ -7,7 +7,12 @@ package io.airbyte.server.config;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.server.scheduler.DefaultSynchronousSchedulerClient;
+import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.scheduling.DefaultTaskQueueMapper;
+import io.airbyte.commons.temporal.scheduling.RouterService;
+import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
@@ -17,8 +22,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
-import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Singleton;
@@ -57,11 +60,17 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
+  public TaskQueueMapper taskQueueMapper() {
+    return new DefaultTaskQueueMapper();
+  }
+
+  @Singleton
   public SynchronousSchedulerClient synchronousSchedulerClient(final TemporalClient temporalClient,
                                                                final JobTracker jobTracker,
                                                                final JobErrorReporter jobErrorReporter,
-                                                               final OAuthConfigSupplier oAuthConfigSupplier) {
-    return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
+                                                               final OAuthConfigSupplier oAuthConfigSupplier,
+                                                               final RouterService routerService) {
+    return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
   }
 
 }

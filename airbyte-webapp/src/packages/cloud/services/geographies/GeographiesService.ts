@@ -1,6 +1,6 @@
+import { useConfig } from "config";
 import { WebBackendGeographiesListResult } from "core/request/AirbyteClient";
 import { GeographiesService } from "packages/cloud/lib/domain/geographies/GeographiesService";
-import { useConfig } from "packages/cloud/services/config";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { SCOPE_USER } from "services/Scope";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";

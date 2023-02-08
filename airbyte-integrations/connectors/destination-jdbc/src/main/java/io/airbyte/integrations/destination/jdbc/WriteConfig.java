@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.util.ArrayList;
-import java.util.List;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -22,7 +20,6 @@ public class WriteConfig {
   private final String outputTableName;
   private final DestinationSyncMode syncMode;
   private final DateTime writeDatetime;
-  private final List<String> stagedFiles;
 
   public WriteConfig(final String streamName,
                      final String namespace,
@@ -46,7 +43,6 @@ public class WriteConfig {
     this.tmpTableName = tmpTableName;
     this.outputTableName = outputTableName;
     this.syncMode = syncMode;
-    this.stagedFiles = new ArrayList<>();
     this.writeDatetime = writeDatetime;
   }
 
@@ -76,18 +72,6 @@ public class WriteConfig {
 
   public DateTime getWriteDatetime() {
     return writeDatetime;
-  }
-
-  public List<String> getStagedFiles() {
-    return stagedFiles;
-  }
-
-  public void addStagedFile(final String file) {
-    stagedFiles.add(file);
-  }
-
-  public void clearStagedFiles() {
-    stagedFiles.clear();
   }
 
   @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
@@ -97,7 +97,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
                                                       final JdbcDatabase database,
                                                       final NamingConventionTransformer nameTransformer)
       throws Exception {
-    AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
+    AbstractJdbcDestination.attemptTableOperations(outputSchema, database, nameTransformer, getSqlOperations(), true);
   }
 
 }
