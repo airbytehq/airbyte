@@ -30,7 +30,7 @@ export const SimpleLeftSide: React.FC = () => {
         <FormattedMessage id="signup.title" />
       </Heading>
 
-      <FlexContainer className={styles.detailsContainer} alignItems="center">
+      <FlexContainer justifyContent="center" alignItems="center">
         <Detail>
           <FormattedMessage id="signup.details.noCreditCard" />
         </Detail>
@@ -41,7 +41,7 @@ export const SimpleLeftSide: React.FC = () => {
           <FormattedMessage id="signup.details.freeTrial" />
         </Detail>
       </FlexContainer>
-      {showOauth ? <OAuthLogin isSignUpPage /> : <SignupForm />}
+      {showOauth ? <OAuthLogin /> : <SignupForm />}
 
       {showOauth ? (
         <Button

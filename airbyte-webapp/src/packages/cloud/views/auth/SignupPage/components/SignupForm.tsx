@@ -96,19 +96,16 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
   return (
     <Field name="email">
       {({ field, meta }: FieldProps<string>) => (
-        <>
-          {" "}
-          <LabeledInput
-            {...field}
-            label={label || <FormattedMessage id="login.yourEmail" />}
-            placeholder={formatMessage({
-              id: "login.yourEmail.placeholder",
-            })}
-            type="text"
-            error={(!!meta.error && meta.touched) || (meta.touched && !isCorporateEmail(field.value))}
-            message={getMessage({ touched: meta.touched, error: meta.error, value: field.value })}
-          />
-        </>
+        <LabeledInput
+          {...field}
+          label={label || <FormattedMessage id="login.yourEmail" />}
+          placeholder={formatMessage({
+            id: "login.yourEmail.placeholder",
+          })}
+          type="text"
+          error={(!!meta.error && meta.touched) || (meta.touched && !isCorporateEmail(field.value))}
+          message={getMessage({ touched: meta.touched, error: meta.error, value: field.value })}
+        />
       )}
     </Field>
   );
@@ -116,7 +113,6 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
 
 export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) => {
   const { formatMessage } = useIntl();
-  const isSimpleLeftSide = useExperiment("authPage.signup.simplifyLeftSide", false);
 
   return (
     <Field name="password">
@@ -130,28 +126,26 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
             })}
             type="password"
             error={!!meta.error && meta.touched}
-            message={meta.touched && meta.error && formatMessage({ id: meta.error })}
           />
-          {isSimpleLeftSide && (
-            <FlexContainer gap="sm" alignItems="center" className={styles.passwordCheckContainer}>
-              <FontAwesomeIcon
-                icon={Boolean(meta.error) && meta.touched ? faXmarkCircle : faCheckCircle}
-                className={classNames(styles.checkIcon, {
-                  [styles.error]: Boolean(meta.error) && meta.touched,
-                  [styles.valid]: meta.touched && !meta.error,
-                })}
-              />
 
-              <Text
-                size="sm"
-                className={classNames({
-                  [styles.error]: Boolean(meta.error) && meta.touched,
-                })}
-              >
-                <FormattedMessage id="signup.password.minLength" />
-              </Text>
-            </FlexContainer>
-          )}
+          <FlexContainer gap="sm" alignItems="center" className={styles.passwordCheckContainer}>
+            <FontAwesomeIcon
+              icon={Boolean(meta.error) && meta.touched ? faXmarkCircle : faCheckCircle}
+              className={classNames(styles.checkIcon, {
+                [styles.error]: Boolean(meta.error) && meta.touched,
+                [styles.valid]: meta.touched && !meta.error,
+              })}
+            />
+
+            <Text
+              size="sm"
+              className={classNames({
+                [styles.error]: Boolean(meta.error) && meta.touched,
+              })}
+            >
+              <FormattedMessage id="signup.password.minLength" />
+            </Text>
+          </FlexContainer>
         </>
       )}
     </Field>
