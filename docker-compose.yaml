@@ -282,6 +282,7 @@ volumes:
 configs:
   flags:
     file: ./flags.yml
+    
 networks:
   airbyte_public:
   airbyte_internal:
