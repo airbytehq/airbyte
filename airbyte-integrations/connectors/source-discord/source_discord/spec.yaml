@@ -13,7 +13,6 @@ connectionSpecification:
       type: string
       title: Bot Token
       description: Bot token is provider by GTM
-      default: "MTA2OTE5ODE5NzQ0MTk1Nzk3OQ.GGlqQm.lGvoUpZtbmh2NMaIRb9FX0R2QDL_rOQSVt8zt4"
       airbyte_secret: true
     bot_id:
       type: string
