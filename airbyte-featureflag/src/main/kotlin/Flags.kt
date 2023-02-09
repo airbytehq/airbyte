@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.featureflag
@@ -37,6 +37,8 @@ object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES") 
         }
     }
 }
+
+object ShouldFailSyncIfHeartbeatFailure : Temporary(key = "heartbeat.failSync")
 
 /**
  * Flag is a sealed class that all feature-flags must inherit from.
