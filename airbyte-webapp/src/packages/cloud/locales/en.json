@@ -61,6 +61,8 @@
 
   "connection.dbtCloudJobs.cardTitle": "Transformations",
   "connection.dbtCloudJobs.addJob": "Add transformation",
+  "connection.dbtCloudJobs.dbtError": "There was an error communicating with dbt Cloud: {displayMessage}",
+  "connection.dbtCloudJobs.genericError": "There was an error communicating with dbt Cloud.",
   "connection.dbtCloudJobs.explanation": "After an Airbyte sync job has completed, the following jobs will run",
   "connection.dbtCloudJobs.noJobs": "No transformations",
   "connection.dbtCloudJobs.job.title": "dbt Cloud transform",
@@ -165,7 +167,7 @@
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{value, plural, one {# day} other {# days}}</b>.",
+  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{remainingDays, plural, one {# day} other {# days}}</b>.",
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
@@ -180,6 +182,7 @@
   "freeConnectorProgram.enrollNow": "Enroll now!",
   "freeConnectorProgram.enroll.description": "Enroll in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <b>free</b>.",
   "freeConnectorProgram.enroll.success": "Successfully enrolled in the Free Connector Program",
+  "freeConnectorProgram.enroll.failure": "Unable to verify that payment details were saved successfully. Please contact support for additional help.",
   "freeConnectorProgram.enrollmentModal.title": "Free connector program",
   "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have moved into General Availability (GA)</p2>",
   "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before your connection will start being charged.",

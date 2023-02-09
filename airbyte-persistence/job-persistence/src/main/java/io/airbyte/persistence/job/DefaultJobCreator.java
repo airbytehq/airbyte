@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -19,9 +19,6 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.State;
-import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -39,14 +36,11 @@ public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
   private final ResourceRequirements workerResourceRequirements;
-  private final StatePersistence statePersistence;
 
   public DefaultJobCreator(final JobPersistence jobPersistence,
-                           final ResourceRequirements workerResourceRequirements,
-                           final StatePersistence statePersistence) {
+                           final ResourceRequirements workerResourceRequirements) {
     this.jobPersistence = jobPersistence;
     this.workerResourceRequirements = workerResourceRequirements;
-    this.statePersistence = statePersistence;
   }
 
   @Override
@@ -85,22 +79,17 @@ public class DefaultJobCreator implements JobCreator {
         .withPrefix(standardSync.getPrefix())
         .withSourceDockerImage(sourceDockerImageName)
         .withSourceProtocolVersion(sourceProtocolVersion)
-        .withSourceConfiguration(source.getConfiguration())
         .withDestinationDockerImage(destinationDockerImageName)
         .withDestinationProtocolVersion(destinationProtocolVersion)
-        .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withWebhookOperationConfigs(webhookOperationConfigs)
         .withConfiguredAirbyteCatalog(standardSync.getCatalog())
-        .withState(null)
         .withResourceRequirements(mergedOrchestratorResourceReq)
         .withSourceResourceRequirements(mergedSrcResourceReq)
         .withDestinationResourceRequirements(mergedDstResourceReq)
         .withIsSourceCustomConnector(sourceDefinition.getCustom())
         .withIsDestinationCustomConnector(destinationDefinition.getCustom())
         .withWorkspaceId(workspaceId);
-
-    getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.SYNC)
@@ -141,7 +130,6 @@ public class DefaultJobCreator implements JobCreator {
         .withPrefix(standardSync.getPrefix())
         .withDestinationDockerImage(destinationDockerImage)
         .withDestinationProtocolVersion(destinationProtocolVersion)
-        .withDestinationConfiguration(destination.getConfiguration())
         .withOperationSequence(standardSyncOperations)
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
         .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
@@ -151,16 +139,10 @@ public class DefaultJobCreator implements JobCreator {
         .withIsSourceCustomConnector(false)
         .withIsDestinationCustomConnector(isDestinationCustomConnector);
 
-    getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(resetConnectionConfig::withState);
-
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(resetConnectionConfig);
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
-  }
-
-  private Optional<State> getCurrentConnectionState(final UUID connectionId) throws IOException {
-    return statePersistence.getCurrentState(connectionId).map(StateMessageHelper::getState);
   }
 
 }
