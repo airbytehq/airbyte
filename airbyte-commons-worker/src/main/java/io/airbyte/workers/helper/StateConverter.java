@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -13,6 +13,7 @@ import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import java.util.List;
 import java.util.Optional;
@@ -65,6 +66,15 @@ public class StateConverter {
         .withGlobal(globalStateToInternal(apiConnectionState).orElse(null))
         .withLegacyState(apiConnectionState != null ? apiConnectionState.getState() : null)
         .withStateMessages(streamStateToInternal(apiConnectionState).orElse(null));
+
+  }
+
+  public static StateWrapper clientToInternal(final @Nullable io.airbyte.api.client.model.generated.ConnectionState clientConnectionState) {
+    return new StateWrapper()
+        .withStateType(clientConnectionState != null ? convertClientStateTypeToInternal(clientConnectionState.getStateType()) : null)
+        .withGlobal(clientGlobalStateToInternal(clientConnectionState).orElse(null))
+        .withLegacyState(clientConnectionState != null ? clientConnectionState.getState() : null)
+        .withStateMessages(clientStreamStateToInternal(clientConnectionState).orElse(null));
 
   }
 
@@ -191,6 +201,23 @@ public class StateConverter {
     }
   }
 
+  private static Optional<AirbyteStateMessage> clientGlobalStateToInternal(final @Nullable io.airbyte.api.client.model.generated.ConnectionState connectionState) {
+    if (connectionState != null
+        && connectionState.getStateType() == io.airbyte.api.client.model.generated.ConnectionStateType.GLOBAL
+        && connectionState.getGlobalState() != null) {
+      return Optional.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.GLOBAL)
+          .withGlobal(new AirbyteGlobalState()
+              .withSharedState(connectionState.getGlobalState().getSharedState())
+              .withStreamStates(connectionState.getGlobalState().getStreamStates()
+                  .stream()
+                  .map(StateConverter::clientStreamStateStructToInternal)
+                  .toList())));
+    } else {
+      return Optional.empty();
+    }
+  }
+
   /**
    * If wrapper is of type stream state, returns API representation of stream state. Otherwise, empty
    * optional.
@@ -251,6 +278,19 @@ public class StateConverter {
     }
   }
 
+  private static Optional<List<AirbyteStateMessage>> clientStreamStateToInternal(final @Nullable io.airbyte.api.client.model.generated.ConnectionState connectionState) {
+    if (connectionState != null && connectionState.getStateType() == io.airbyte.api.client.model.generated.ConnectionStateType.STREAM
+        && connectionState.getStreamState() != null) {
+      return Optional.ofNullable(connectionState.getStreamState()
+          .stream()
+          .map(StateConverter::clientStreamStateStructToInternal)
+          .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(s))
+          .toList());
+    } else {
+      return Optional.empty();
+    }
+  }
+
   private static StreamState streamStateStructToApi(final AirbyteStreamState streamState) {
     return new StreamState()
         .streamDescriptor(ProtocolConverters.streamDescriptorToApi(streamState.getStreamDescriptor()))
@@ -266,6 +306,12 @@ public class StateConverter {
   private static AirbyteStreamState streamStateStructToInternal(final StreamState streamState) {
     return new AirbyteStreamState()
         .withStreamDescriptor(ProtocolConverters.streamDescriptorToProtocol(streamState.getStreamDescriptor()))
+        .withStreamState(streamState.getStreamState());
+  }
+
+  private static AirbyteStreamState clientStreamStateStructToInternal(final io.airbyte.api.client.model.generated.StreamState streamState) {
+    return new AirbyteStreamState()
+        .withStreamDescriptor(ProtocolConverters.clientStreamDescriptorToProtocol(streamState.getStreamDescriptor()))
         .withStreamState(streamState.getStreamState());
   }
 

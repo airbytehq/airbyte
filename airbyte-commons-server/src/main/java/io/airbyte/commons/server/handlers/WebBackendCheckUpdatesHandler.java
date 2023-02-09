@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -18,17 +18,24 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The web backend is an abstraction that allows the frontend to structure data in such a way that
+ * it is easier for a react frontend to consume. It should NOT have direct access to the database.
+ * It should operate exclusively by calling other endpoints that are exposed in the API.
+ **/
 @Slf4j
 @Singleton
 public class WebBackendCheckUpdatesHandler {
 
   private static final int NO_CHANGES_FOUND = 0;
 
-  final ConfigRepository configRepository;
+  // todo (cgardens) - this handler should NOT have access to the db. only access via handler.
+  @Deprecated
+  final ConfigRepository configRepositoryDoNotUse;
   final AirbyteGithubStore githubStore;
 
-  public WebBackendCheckUpdatesHandler(final ConfigRepository configRepository, final AirbyteGithubStore githubStore) {
-    this.configRepository = configRepository;
+  public WebBackendCheckUpdatesHandler(final ConfigRepository configRepositoryDoNotUse, final AirbyteGithubStore githubStore) {
+    this.configRepositoryDoNotUse = configRepositoryDoNotUse;
     this.githubStore = githubStore;
   }
 
@@ -47,7 +54,7 @@ public class WebBackendCheckUpdatesHandler {
     final Map<UUID, String> newActorDefToDockerImageTag;
 
     try {
-      currentActorDefToDockerImageTag = configRepository.listStandardDestinationDefinitions(false)
+      currentActorDefToDockerImageTag = configRepositoryDoNotUse.listStandardDestinationDefinitions(false)
           .stream()
           .map(def -> Map.entry(def.getDestinationDefinitionId(), def.getDockerImageTag()))
           .toList();
@@ -73,7 +80,7 @@ public class WebBackendCheckUpdatesHandler {
     final Map<UUID, String> newActorDefToDockerImageTag;
 
     try {
-      currentActorDefToDockerImageTag = configRepository.listStandardSourceDefinitions(false)
+      currentActorDefToDockerImageTag = configRepositoryDoNotUse.listStandardSourceDefinitions(false)
           .stream()
           .map(def -> Map.entry(def.getSourceDefinitionId(), def.getDockerImageTag()))
           .toList();

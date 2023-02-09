@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -59,8 +59,6 @@ class DbtIntegrationTest(object):
             self.setup_clickhouse_db()
         if DestinationType.TIDB.value in destinations_to_test:
             self.setup_tidb_db()
-        if DestinationType.DUCKDB.value in destinations_to_test:
-            self.setup_duckdb_db()
 
     def setup_postgres_db(self):
         start_db = True
