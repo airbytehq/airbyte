@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth;
@@ -52,6 +52,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-strava", new StravaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
+        .put("airbyte/source-gitlab", new GitlabOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         // revert me
         .put("airbyte/source-youtube-analytics-business", new YouTubeAnalyticsBusinessOAuthFlow(configRepository, httpClient))
@@ -70,6 +71,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-okta", new OktaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-paypal-transaction", new PayPalTransactionOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-airtable", new AirtableOAuthFlow(configRepository, httpClient))
         .build();
   }
 

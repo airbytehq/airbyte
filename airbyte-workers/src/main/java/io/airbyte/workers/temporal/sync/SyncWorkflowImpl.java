@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
@@ -12,6 +12,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
@@ -21,12 +22,16 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.WebhookOperationSummary;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.temporal.workflow.Workflow;
 import java.util.Map;
 import java.util.Optional;
@@ -43,8 +48,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final String NORMALIZATION_SUMMARY_CHECK_TAG = "normalization_summary_check";
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
   private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
-  private static final int AUTO_DETECT_SCHEMA_VERSION = 1;
-
+  private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
@@ -57,11 +61,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-  // Temporarily disabled to address OC issue #1210
-  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  // private RefreshSchemaActivity refreshSchemaActivity;
-  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  // private ConfigFetchActivity configFetchActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "discoveryActivityOptions")
+  private RefreshSchemaActivity refreshSchemaActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private ConfigFetchActivity configFetchActivity;
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
@@ -80,30 +83,31 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
-    // Temporarily suppressed to address OC issue #1210
-    @SuppressWarnings("PMD.UnusedLocalVariable")
     final int autoDetectSchemaVersion =
-        Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
+        Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION,
+            AUTO_DETECT_SCHEMA_VERSION);
 
-    // Temporarily disabled to address OC issue #1210
-    // if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-    // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
-    //
-    // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-    // LOGGER.info("Refreshing source schema...");
-    // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-    // }
-    //
-    // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
-    // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
-    // LOGGER.info("Connection is disabled. Cancelling run.");
-    // final StandardSyncOutput output =
-    // new StandardSyncOutput()
-    // .withStandardSyncSummary(new
-    // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-    // return output;
-    // }
-    // }
+    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+      final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+
+      if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+        LOGGER.info("Refreshing source schema...");
+        try {
+          refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+        } catch (final Exception e) {
+          return SyncOutputProvider.getRefreshSchemaFailure(e);
+        }
+      }
+
+      final Optional<ConnectionStatus> status = configFetchActivity.getStatus(connectionId);
+      if (!status.isEmpty() && ConnectionStatus.INACTIVE == status.get()) {
+        LOGGER.info("Connection is disabled. Cancelling run.");
+        final StandardSyncOutput output =
+            new StandardSyncOutput()
+                .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+        return output;
+      }
+    }
 
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);

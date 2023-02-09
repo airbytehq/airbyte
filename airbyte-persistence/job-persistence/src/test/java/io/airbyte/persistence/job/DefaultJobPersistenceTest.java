@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
@@ -30,6 +31,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
@@ -41,6 +43,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.State;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
@@ -150,7 +153,9 @@ class DefaultJobPersistenceTest {
         jobId,
         logPath,
         null,
+        null,
         status,
+        null,
         null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
@@ -163,7 +168,9 @@ class DefaultJobPersistenceTest {
         jobId,
         logPath,
         null,
+        null,
         status,
+        null,
         null,
         NOW.getEpochSecond(),
         NOW.getEpochSecond(),
@@ -308,6 +315,25 @@ class DefaultJobPersistenceTest {
     assertEquals(10L, storedNormalizationSummary.getStartTime());
     assertEquals(500L, storedNormalizationSummary.getEndTime());
     assertEquals(List.of(failureReason1, failureReason2), storedNormalizationSummary.getFailures());
+  }
+
+  @Test
+  @DisplayName("Should be able to read AttemptSyncConfig that was written")
+  void testWriteAttemptSyncConfig() throws IOException {
+    final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+    final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+    final Job created = jobPersistence.getJob(jobId);
+    final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig()
+        .withSourceConfiguration(Jsons.jsonNode(Map.of("source", "s_config_value")))
+        .withDestinationConfiguration(Jsons.jsonNode(Map.of("destination", "d_config_value")))
+        .withState(new State().withState(Jsons.jsonNode(ImmutableMap.of("state_key", "state_value"))));
+
+    when(timeSupplier.get()).thenReturn(Instant.ofEpochMilli(4242));
+    jobPersistence.writeAttemptSyncConfig(jobId, attemptNumber, attemptSyncConfig);
+
+    final Job updated = jobPersistence.getJob(jobId);
+    assertEquals(Optional.of(attemptSyncConfig), updated.getAttempts().get(0).getSyncConfig());
+    assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
   }
 
   @Test

@@ -1,0 +1,26 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  border-radius: variables.$border-radius-md;
+  padding: variables.$spacing-lg variables.$spacing-xl;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.default {
+  background-color: colors.$yellow-100;
+}
+
+.error {
+  background-color: colors.$red-50;
+}
+
+.info {
+  background-color: colors.$blue-50;
+}
+
+.boldInfo {
+  background-color: colors.$blue-200;
+}

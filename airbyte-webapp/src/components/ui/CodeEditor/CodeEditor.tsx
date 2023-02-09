@@ -2,8 +2,8 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import React from "react";
 
-import { Spinner } from "../Spinner";
 import styles from "./CodeEditor.module.scss";
+import { Spinner } from "../Spinner";
 
 interface CodeEditorProps {
   value: string;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -11,7 +11,6 @@ import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneFi
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Resources;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
@@ -63,7 +62,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
+    final StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
     }
@@ -77,7 +76,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
+    final StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
     }
@@ -131,9 +130,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
    * @return JSON of connector definition including the connector spec
    */
   private static JsonNode mergeSpecIntoDefinition(final JsonNode definitionJson, final Map<String, JsonNode> specConfigs) {
-    final String dockerImage = DockerUtils.getTaggedImageName(
-        definitionJson.get("dockerRepository").asText(),
-        definitionJson.get("dockerImageTag").asText());
+    final String dockerImage = definitionJson.get("dockerRepository").asText() + ":" + definitionJson.get("dockerImageTag").asText();
     final JsonNode specConfigJson = specConfigs.get(dockerImage);
     if (specConfigJson == null || specConfigJson.get(SPEC) == null) {
       throw new UnsupportedOperationException(String.format("There is no seed spec for docker image %s", dockerImage));
@@ -142,7 +139,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     return definitionJson;
   }
 
-  private static JsonNode addMissingFields(JsonNode element) {
+  private static JsonNode addMissingFields(final JsonNode element) {
     return addMissingPublicField(addMissingCustomField(addMissingTombstoneField(element)));
   }
 

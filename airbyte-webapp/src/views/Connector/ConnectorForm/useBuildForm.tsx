@@ -61,14 +61,26 @@ export function setDefaultValues(
 export function useBuildForm(
   isEditMode: boolean,
   formType: "source" | "destination",
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft,
+  selectedConnectorDefinitionSpecification:
+    | ConnectorDefinitionSpecification
+    | SourceDefinitionSpecificationDraft
+    | undefined,
   initialValues?: Partial<ConnectorFormValues>
 ): BuildFormHook {
   const { formatMessage } = useIntl();
-  const isDraft = isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification);
+
+  const isDraft =
+    selectedConnectorDefinitionSpecification &&
+    isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification);
 
   try {
     const jsonSchema: JSONSchema7 = useMemo(() => {
+      if (!selectedConnectorDefinitionSpecification) {
+        return {
+          type: "object",
+          properties: {},
+        };
+      }
       const schema: JSONSchema7 = {
         type: "object",
         properties: {
@@ -89,7 +101,7 @@ export function useBuildForm(
       };
       schema.required = ["name"];
       return schema;
-    }, [formType, formatMessage, isDraft, selectedConnectorDefinitionSpecification.connectionSpecification]);
+    }, [formType, formatMessage, isDraft, selectedConnectorDefinitionSpecification]);
 
     const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
 
@@ -119,7 +131,7 @@ export function useBuildForm(
         return baseValues;
       }
 
-      setDefaultValues(formFields, baseValues as Record<string, unknown>, { respectExistingValues: isDraft });
+      setDefaultValues(formFields, baseValues as Record<string, unknown>, { respectExistingValues: Boolean(isDraft) });
 
       return baseValues;
     }, [formFields, initialValues, isDraft, isEditMode, validationSchema]);
@@ -134,7 +146,9 @@ export function useBuildForm(
     if (isFormBuildError(e)) {
       throw new FormBuildError(
         e.message,
-        isDraft ? undefined : ConnectorSpecification.id(selectedConnectorDefinitionSpecification)
+        isDraft || !selectedConnectorDefinitionSpecification
+          ? undefined
+          : ConnectorSpecification.id(selectedConnectorDefinitionSpecification)
       );
     }
     throw e;

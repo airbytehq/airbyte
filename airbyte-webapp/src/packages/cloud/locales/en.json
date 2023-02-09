@@ -8,7 +8,7 @@
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
   "login.inviteEmail": "For security, re-enter your invite email*",
-  "login.yourEmail.placeholder": "work.email@example.com",
+  "login.yourEmail.placeholder": "name@company.com",
   "login.yourEmail.notFound": "User not found",
   "login.unknownError": "An unknown error has occurred",
   "login.password": "Enter your password*",
@@ -41,7 +41,6 @@
   "login.oauth.github": "Continue with GitHub",
   "login.oauth.differentCredentialsError": "Use your email and password to sign in.",
   "login.oauth.unknownError": "An unknown error happened during sign in: {error}",
-  "login.sourceSelector": "Select a source to get started",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
@@ -62,6 +61,8 @@
 
   "connection.dbtCloudJobs.cardTitle": "Transformations",
   "connection.dbtCloudJobs.addJob": "Add transformation",
+  "connection.dbtCloudJobs.dbtError": "There was an error communicating with dbt Cloud: {displayMessage}",
+  "connection.dbtCloudJobs.genericError": "There was an error communicating with dbt Cloud.",
   "connection.dbtCloudJobs.explanation": "After an Airbyte sync job has completed, the following jobs will run",
   "connection.dbtCloudJobs.noJobs": "No transformations",
   "connection.dbtCloudJobs.job.title": "dbt Cloud transform",
@@ -109,9 +110,6 @@
   "settings.generalSettings.changeWorkspace": "Change Workspace",
   "settings.generalSettings.form.name.label": "Workspace name",
   "settings.generalSettings.form.name.placeholder": "Workspace name",
-  "settings.generalSettings.form.advancedMode.label": "Advanced mode",
-  "settings.generalSettings.form.advancedMode.switchLabel": "Enable advanced mode",
-  "settings.generalSettings.form.advancedMode.tooltip": "When Advanced Mode is enabled, certain views will display additional technical information.",
   "settings.generalSettings.deleteLabel": "Delete your workspace",
   "settings.generalSettings.deleteText": "Delete",
   "settings.accessManagementSettings": "Access Management",
@@ -162,6 +160,12 @@
   "firebase.auth.error.default": "Confirmation email cannot be sent. Please try again later.",
 
   "signup.password.minLength": "Password should be at least 12 characters",
+  "signup.details.noCreditCard": "No credit card required",
+  "signup.details.instantSetup": "Instant setup",
+  "signup.details.freeTrial": "14-day free trial",
+  "signup.title": "Create your Airbyte account",
+  "signup.method.email": "Sign up using email",
+  "signup.method.oauth": "Sign up using Google or GitHub",
   "email.duplicate": "Email already exists",
   "email.notfound": "Email not found",
   "email.disabled": "Your account is disabled",
@@ -169,7 +173,7 @@
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{value, plural, one {# day} other {# days}}</b>.",
+  "trial.alertMessage": "You are using a trial of Airbyte. Your trial ends in <b>{remainingDays, plural, one {# day} other {# days}}</b>.",
 
   "verifyEmail.notification": "You successfully verified your email. Thank you.",
 
@@ -178,5 +182,22 @@
   "inviteUsersHint.message": "Need help from a teammate to set up the {connector}?",
   "inviteUsersHint.cta": "Invite users",
 
-  "sidebar.credits": "Credits"
+  "sidebar.credits": "Credits",
+
+  "freeConnectorProgram.title": "Free Connector Program",
+  "freeConnectorProgram.enrollNow": "Enroll now!",
+  "freeConnectorProgram.enroll.description": "Enroll in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <b>free</b>.",
+  "freeConnectorProgram.enroll.success": "Successfully enrolled in the Free Connector Program",
+  "freeConnectorProgram.enroll.failure": "Unable to verify that payment details were saved successfully. Please contact support for additional help.",
+  "freeConnectorProgram.enrollmentModal.title": "Free connector program",
+  "freeConnectorProgram.enrollmentModal.free": "<p1>Alpha and Beta Connectors are free while you're in the program.</p1><p2>The whole Connection is free until both Connectors have moved into General Availability (GA)</p2>",
+  "freeConnectorProgram.enrollmentModal.emailNotification": "We will email you before your connection will start being charged.",
+  "freeConnectorProgram.enrollmentModal.cardOnFile": "When both Connectors are in GA, the Connection will no longer be free. You'll need to have a credit card on file to enroll so Airbyte can handle a Connection's transition to paid service.",
+  "freeConnectorProgram.enrollmentModal.unvalidatedEmailWarning": "You need to <b>verify your email</b> address before you can enroll in the Free Connector Program. <resendEmail>Re-send verification email</resendEmail>.",
+  "freeConnectorProgram.enrollmentModal.validationEmailConfirmation": "Verification email sent",
+  "freeConnectorProgram.enrollmentModal.cancelButtonText": "Cancel",
+  "freeConnectorProgram.enrollmentModal.enrollButtonText": "Enroll now!",
+  "freeConnectorProgram.enrollmentModal.unvalidatedEmailButtonText": "Resend email validation",
+  "freeConnectorProgram.releaseStageBadge.free": "Free",
+  "freeConnectorProgram.youCanEnroll": "You can <enrollLink>enroll</enrollLink> in the <b>Free Connector Program</b> to use Alpha and Beta connectors for <freeText>free</freeText>."
 }

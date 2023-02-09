@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.config;
@@ -36,6 +36,8 @@ public class SecretPersistenceBeanFactory {
             pattern = "(?i)^(?!google_secret_manager).*")
   @Requires(property = "airbyte.secret.persistence",
             pattern = "(?i)^(?!vault).*")
+  @Requires(property = "airbyte.secret.persistence",
+            pattern = "(?i)^(?!aws_secret_manager).*")
   @Named("secretPersistence")
   public SecretPersistence defaultSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return localTestingSecretPersistence(configDatabase);

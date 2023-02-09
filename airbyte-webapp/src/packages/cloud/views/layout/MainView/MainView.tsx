@@ -1,12 +1,12 @@
 import classNames from "classnames";
 import React, { useMemo } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { FormattedMessage } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { SpeedyConnectionBanner } from "packages/cloud/components/experiments/SpeedyConnection/SpeedyConnectionBanner";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
@@ -22,7 +22,6 @@ import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsE
 import styles from "./MainView.module.scss";
 
 const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
-  const { formatMessage } = useIntl();
   useIntercom();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
@@ -38,6 +37,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
   // exp-speedy-connection
   const { isExperimentVariant } = useExperimentSpeedyConnection();
+
   const { hasCorporateEmail } = useAuthService();
   const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
   const showExperimentBanner = isExperimentVariant && isTrial && hasCorporateEmail();
@@ -62,10 +62,18 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
       // calculate days (rounding up if decimal)
       const trialRemainingDays = Math.ceil(trialRemainingMilliseconds / (1000 * 60 * 60 * 24));
 
-      return formatMessage({ id: "trial.alertMessage" }, { value: trialRemainingDays });
+      return (
+        <FormattedMessage
+          id="trial.alertMessage"
+          values={{
+            remainingDays: trialRemainingDays,
+            lnk: (cta: React.ReactNode) => <Link to={CloudRoutes.Credits}>{cta}</Link>,
+          }}
+        />
+      );
     }
     return null;
-  }, [alertToShow, cloudWorkspace, formatMessage]);
+  }, [alertToShow, cloudWorkspace]);
 
   return (
     <div className={styles.mainContainer}>

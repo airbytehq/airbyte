@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job.models;
@@ -19,7 +19,7 @@ class AttemptTest {
   }
 
   private static Attempt attemptWithStatus(final AttemptStatus attemptStatus) {
-    return new Attempt(1, 1L, null, null, attemptStatus, null, 0L, 0L, null);
+    return new Attempt(1, 1L, null, null, null, attemptStatus, null, null, 0L, 0L, null);
   }
 
 }

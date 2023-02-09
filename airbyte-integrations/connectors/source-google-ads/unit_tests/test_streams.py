@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -12,7 +13,7 @@ from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ClickView
+from source_google_ads.streams import ClickView, cyclic_sieve
 
 from .common import MockGoogleAdsClient as MockGoogleAdsClient
 
@@ -218,3 +219,14 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
         records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
     assert mocked_search.call_count == 5
     assert records == []
+
+
+def test_cyclic_sieve(caplog):
+    original_logger = logging.getLogger("test")
+    sieve = cyclic_sieve(original_logger, fraction=10)
+    for _ in range(20):
+        sieve.info("Ground Control to Major Tom")
+        sieve.info("Your circuit's dead, there's something wrong")
+        sieve.info("Can you hear me, Major Tom?")
+        sieve.bump()
+    assert len(caplog.records) == 6  # 20 * 3 / 10

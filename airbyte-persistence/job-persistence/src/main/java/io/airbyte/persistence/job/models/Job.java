@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job.models;
@@ -123,6 +123,19 @@ public class Job {
         .stream()
         .sorted(Comparator.comparing(Attempt::getCreatedAtInSecond).reversed())
         .filter(a -> a.getOutput().isPresent() && a.getOutput().get().getSync() != null && a.getOutput().get().getSync().getState() != null)
+        .findFirst();
+  }
+
+  public Optional<Attempt> getLastAttempt() {
+    return getAttempts()
+        .stream()
+        .max(Comparator.comparing(Attempt::getCreatedAtInSecond));
+  }
+
+  public Optional<Attempt> getAttemptByNumber(final int attemptNumber) {
+    return getAttempts()
+        .stream()
+        .filter(a -> a.getAttemptNumber() == attemptNumber)
         .findFirst();
   }
 

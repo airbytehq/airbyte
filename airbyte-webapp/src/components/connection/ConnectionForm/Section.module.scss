@@ -1,0 +1,18 @@
+@use "scss/variables";
+
+.section {
+  padding: variables.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-lg;
+
+  // TODO: We may be able to get rid of this.
+  &:not(:last-child) {
+    box-shadow: 0 1px 0 rgba(139, 139, 160, 25%);
+  }
+
+  &.flush {
+    padding: 0;
+    gap: 0;
+  }
+}

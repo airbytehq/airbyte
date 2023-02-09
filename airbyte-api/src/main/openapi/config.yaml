@@ -754,6 +754,27 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+
+  /v1/sources/write_discover_catalog_result:
+    post:
+      tags:
+        - source
+        - internal
+      summary: Should only called from worker, to write result from discover activity back to DB.
+      operationId: writeDiscoverCatalogResult
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceDiscoverSchemaWriteRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DiscoverCatalogResult"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -1219,7 +1240,7 @@ paths:
       description: |
         Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
         Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
-        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog
         containing the updated stream needs to be sent.
       operationId: updateConnection
       requestBody:
@@ -1862,7 +1883,7 @@ paths:
         connection along with the rest of the operationIds in the request body.
         Apply a patch-style update to a connection. Only fields present on the update request body will be updated.
         Note that if a catalog is present in the request body, the connection's entire catalog will be replaced
-        with the catalog from the request. This means that to modify a single stream, the entire new catalog 
+        with the catalog from the request. This means that to modify a single stream, the entire new catalog
         containing the updated stream needs to be sent.
       operationId: webBackendUpdateConnection
       requestBody:
@@ -1931,9 +1952,9 @@ paths:
         - web_backend
       description: Returns all available geographies in which a data sync can run.
       summary: |
-        Returns available geographies can be selected to run data syncs in a particular geography. 
-        The 'auto' entry indicates that the sync will be automatically assigned to a geography according 
-        to the platform default behavior. Entries other than 'auto' are two-letter country codes that 
+        Returns available geographies can be selected to run data syncs in a particular geography.
+        The 'auto' entry indicates that the sync will be automatically assigned to a geography according
+        to the platform default behavior. Entries other than 'auto' are two-letter country codes that
         follow the ISO 3166-1 alpha-2 standard.
       operationId: webBackendListGeographies
       responses:
@@ -1985,6 +2006,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JobInfoRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/jobs/get_last_replication_job:
+    post:
+      tags:
+        - jobs
+      operationId: getLastReplicationJob
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobOptionalRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2163,6 +2206,26 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SaveStatsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalOperationResult"
+  /v1/attempt/save_sync_config:
+    post:
+      tags:
+        - attempt
+        - internal
+      summary: For worker to save the AttemptSyncConfig for an attempt.
+      operationId: saveSyncConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAttemptSyncConfigRequestBody"
         required: true
       responses:
         "200":
@@ -2790,6 +2853,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SourceRead"
+    SourceDiscoverSchemaWriteRequestBody:
+      description: to write this requested object to database.
+      type: object
+      required:
+        - catalog
+      properties:
+        catalog:
+          $ref: "#/components/schemas/AirbyteCatalog"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        connectorVersion:
+          type: string
+        configurationHash:
+          type: string
+
     SourceDiscoverSchemaRead:
       description: Returns the results of a discover catalog job. If the job was not successful, the catalog field will not be present. jobInfo will aways be present and its status be used to determine if the job was successful or not.
       type: object
@@ -3821,7 +3899,10 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
-          description: If this is true, the stream is selected with all of its properties.
+          description: If this is true, the stream is selected with all of its properties. For new connections, this considers if the stream is suggested or not
+          type: boolean
+        suggested:
+          description: Does the connector suggest that this stream be enabled by default?
           type: boolean
         fieldSelectionEnabled:
           description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.
@@ -3905,6 +3986,9 @@ components:
           type: integer
           format: int64
         updatedAt:
+          type: integer
+          format: int64
+        startedAt:
           type: integer
           format: int64
         status:
@@ -4103,6 +4187,7 @@ components:
         - config_error
         - system_error
         - manual_cancellation
+        - refresh_schema
     AttemptStatus:
       type: string
       enum:
@@ -4139,6 +4224,11 @@ components:
       type: object
       required:
         - job
+      properties:
+        job:
+          $ref: "#/components/schemas/JobRead"
+    JobOptionalRead:
+      type: object
       properties:
         job:
           $ref: "#/components/schemas/JobRead"
@@ -4200,6 +4290,9 @@ components:
           format: int64
         succeeded:
           type: boolean
+        connectorConfigurationUpdated:
+          type: boolean
+          default: false
         logs:
           $ref: "#/components/schemas/LogRead"
     Pagination:
@@ -4953,6 +5046,31 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptStreamStats"
+    AttemptSyncConfig:
+      type: object
+      required:
+        - sourceConfiguration
+        - destinationConfiguration
+      properties:
+        sourceConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        destinationConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        state:
+          $ref: "#/components/schemas/ConnectionState"
+    SaveAttemptSyncConfigRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptNumber
+        - syncConfig
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        syncConfig:
+          $ref: "#/components/schemas/AttemptSyncConfig"
     InternalOperationResult:
       type: object
       required:
@@ -4960,6 +5078,14 @@ components:
       properties:
         succeeded:
           type: boolean
+    DiscoverCatalogResult:
+      type: object
+      required:
+        - catalogId
+      properties:
+        catalogId:
+          type: string
+          format: uuid
     AttemptNormalizationStatusReadList:
       type: object
       properties:

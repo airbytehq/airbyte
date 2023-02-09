@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -10,6 +10,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
@@ -20,13 +21,11 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleDataBasicSchedule
 import io.airbyte.api.client.model.generated.ConnectionScheduleDataCron;
 import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
+import io.airbyte.api.client.model.generated.JobOptionalRead;
+import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.WorkspaceRead;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.models.Job;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -50,7 +49,6 @@ import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFetchActivityImpl.class);
@@ -64,19 +62,19 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
       UUID.fromString("226edbc1-4a9c-4401-95a9-90435d667d9d"));
   private static final long SCHEDULING_NOISE_CONSTANT = 15;
 
-  private final JobPersistence jobPersistence;
+  private final JobsApi jobsApi;
   private final WorkspaceApi workspaceApi;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
   private final ConnectionApi connectionApi;
 
   @VisibleForTesting
-  protected ConfigFetchActivityImpl(final JobPersistence jobPersistence,
+  protected ConfigFetchActivityImpl(final JobsApi jobsApi,
                                     final WorkspaceApi workspaceApi,
                                     @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                     @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
                                     final ConnectionApi connectionApi) {
-    this.jobPersistence = jobPersistence;
+    this.jobsApi = jobsApi;
     this.workspaceApi = workspaceApi;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
@@ -107,21 +105,22 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
    *
    *         This method consumes the `scheduleType` and `scheduleData` fields.
    */
-  private ScheduleRetrieverOutput getTimeToWaitFromScheduleType(final ConnectionRead connectionRead, final UUID connectionId) throws IOException {
+  private ScheduleRetrieverOutput getTimeToWaitFromScheduleType(final ConnectionRead connectionRead, final UUID connectionId)
+      throws IOException, ApiException {
     if (connectionRead.getScheduleType() == ConnectionScheduleType.MANUAL || connectionRead.getStatus() != ConnectionStatus.ACTIVE) {
       // Manual syncs wait for their first run
       return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
     }
 
-    final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connectionId);
+    final JobOptionalRead previousJobOptional = jobsApi.getLastReplicationJob(new ConnectionIdRequestBody().connectionId(connectionId));
 
     if (connectionRead.getScheduleType() == ConnectionScheduleType.BASIC) {
-      if (previousJobOptional.isEmpty()) {
+      if (previousJobOptional.getJob() == null) {
         // Basic schedules don't wait for their first run.
         return new ScheduleRetrieverOutput(Duration.ZERO);
       }
-      final Job previousJob = previousJobOptional.get();
-      final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
+      final long prevRunStart = previousJobOptional.getJob().getStartedAt() != null ? previousJobOptional.getJob().getStartedAt()
+          : previousJobOptional.getJob().getCreatedAt();
       final long nextRunStart = prevRunStart + getIntervalInSecond(connectionRead.getScheduleData().getBasicSchedule());
       final Duration timeToWait = Duration.ofSeconds(
           Math.max(0, nextRunStart - currentSecondsSupplier.get()));
@@ -138,9 +137,10 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
         // us from multiple executions for the same scheduled time, since cron only has a 1-minute
         // resolution.
         final long earliestNextRun = Math.max(currentSecondsSupplier.get() * MS_PER_SECOND,
-            (previousJobOptional.isPresent()
-                ? previousJobOptional.get().getStartedAtInSecond().orElse(previousJobOptional.get().getCreatedAtInSecond())
-                    + MIN_CRON_INTERVAL_SECONDS
+            (previousJobOptional.getJob() != null
+                ? previousJobOptional.getJob().getStartedAt() != null ? previousJobOptional.getJob().getStartedAt() + MIN_CRON_INTERVAL_SECONDS
+                    : previousJobOptional.getJob().getCreatedAt()
+                        + MIN_CRON_INTERVAL_SECONDS
                 : currentSecondsSupplier.get()) * MS_PER_SECOND);
         final Date nextRunStart = cronExpression.getNextValidTimeAfter(new Date(earliestNextRun));
         Duration timeToWait = Duration.ofSeconds(
@@ -188,21 +188,22 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
    *
    *         This method consumes the `schedule` field.
    */
-  private ScheduleRetrieverOutput getTimeToWaitFromLegacy(final ConnectionRead connectionRead, final UUID connectionId) throws IOException {
+  private ScheduleRetrieverOutput getTimeToWaitFromLegacy(final ConnectionRead connectionRead, final UUID connectionId)
+      throws IOException, ApiException {
     if (connectionRead.getSchedule() == null || connectionRead.getStatus() != ConnectionStatus.ACTIVE) {
       // Manual syncs wait for their first run
       return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
     }
 
-    final Optional<Job> previousJobOptional = jobPersistence.getLastReplicationJob(connectionId);
+    final JobOptionalRead previousJobOptional = jobsApi.getLastReplicationJob(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    if (previousJobOptional.isEmpty() && connectionRead.getSchedule() != null) {
+    if (previousJobOptional.getJob() == null && connectionRead.getSchedule() != null) {
       // Non-manual syncs don't wait for their first run
       return new ScheduleRetrieverOutput(Duration.ZERO);
     }
 
-    final Job previousJob = previousJobOptional.get();
-    final long prevRunStart = previousJob.getStartedAtInSecond().orElse(previousJob.getCreatedAtInSecond());
+    final JobRead previousJob = previousJobOptional.getJob();
+    final long prevRunStart = previousJob.getStartedAt() != null ? previousJob.getStartedAt() : previousJob.getCreatedAt();
 
     final long nextRunStart = prevRunStart + getIntervalInSecond(connectionRead.getSchedule());
 

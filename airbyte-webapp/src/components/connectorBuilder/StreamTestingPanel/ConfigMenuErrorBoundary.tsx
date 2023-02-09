@@ -2,12 +2,12 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
-import { InfoBox } from "components/ui/InfoBox";
+import { Callout } from "components/ui/Callout";
 
 import { FormBuildError, isFormBuildError } from "core/form/FormBuildError";
-import { EditorView } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConfigMenuErrorBoundary.module.scss";
+import { EditorView } from "../types";
 
 interface ApiErrorBoundaryState {
   error?: string | FormBuildError;
@@ -40,7 +40,7 @@ export class ConfigMenuErrorBoundaryComponent extends React.Component<
     }
     return (
       <div className={styles.errorContent}>
-        <InfoBox>
+        <Callout>
           <FormattedMessage
             id="connectorBuilder.inputsError"
             values={{ error: typeof error === "string" ? error : <FormattedMessage id={error.message} /> }}
@@ -52,7 +52,7 @@ export class ConfigMenuErrorBoundaryComponent extends React.Component<
           >
             <FormattedMessage id="connectorBuilder.inputsErrorDocumentation" />
           </a>
-        </InfoBox>
+        </Callout>
         <Button onClick={closeAndSwitchToYaml}>
           {currentView === "ui" ? (
             <FormattedMessage id="connectorBuilder.goToYaml" />

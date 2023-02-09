@@ -1,5 +1,5 @@
-import groovy.yaml.YamlSlurper
 import groovy.json.JsonBuilder
+import groovy.yaml.YamlSlurper
 
 plugins {
     id 'application'
@@ -19,10 +19,10 @@ dependencies {
 
     // Ensure that the versions defined in deps.toml are used
     // instead of versions from transitive dependencies
-    implementation (libs.flyway.core) {
+    implementation(libs.flyway.core) {
         force = true
     }
-    implementation (libs.jooq) {
+    implementation(libs.jooq) {
         force = true
     }
     implementation(libs.s3) {
@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.auth0:java-jwt:3.19.2'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.guava
-    implementation (libs.temporal.sdk) {
+    implementation(libs.temporal.sdk) {
         exclude module: 'guava'
     }
     implementation 'org.apache.ant:ant:1.10.10'
@@ -55,20 +55,21 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-commons-server')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-featureflag')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-notification')
-    implementation (project(':airbyte-persistence:job-persistence')) {
+    implementation(project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
         exclude group: 'io.micronaut'
         exclude group: 'io.micronaut.flyway'
@@ -91,9 +92,10 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-
-    testImplementation project(':airbyte-commons-docker')
     testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
+    testImplementation project(':airbyte-api')
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
@@ -130,6 +132,7 @@ task cloudStorageIntegrationTest(type: Test) {
     }
 }
 
+// Duplicated in :airbyte-container-orchestrator, eventually, this should be handled in :airbyte-protocol
 task generateWellKnownTypes() {
     doLast {
         def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
@@ -143,6 +146,7 @@ task generateWellKnownTypes() {
 
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
+    dependsOn generateWellKnownTypes
 }
 
 // Ideally, we would have buildDockerImage depend on generateWellKnownTypes

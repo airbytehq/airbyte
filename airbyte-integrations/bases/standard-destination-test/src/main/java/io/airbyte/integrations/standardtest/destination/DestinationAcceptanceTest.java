@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -286,20 +286,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Override to return true to if the destination implements basic normalization and it should be
-   * tested here.
-   *
-   * @return - a boolean.
-   */
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  /**
    * Override to return true if a destination implements size limits on record size (then destination
    * should redefine getMaxRecordValueLimit() too)
    */
@@ -570,10 +556,8 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  public void specNormalizationValueShouldBeCorrect() throws Exception {
-    final boolean normalizationFromDefinition = normalizationFromDefinition();
-    assertEquals(normalizationFromDefinition, supportsNormalization());
-    if (normalizationFromDefinition) {
+  public void normalizationFromDefinitionValueShouldBeCorrect() {
+    if (normalizationFromDefinition()) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
         new DefaultNormalizationRunner(
@@ -584,13 +568,8 @@ public abstract class DestinationAcceptanceTest {
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
       }
-      assertEquals(normalizationFromDefinition, normalizationRunnerFactorySupportsDestinationImage);
+      assertEquals(normalizationFromDefinition(), normalizationRunnerFactorySupportsDestinationImage);
     }
-  }
-
-  @Test
-  public void specDBTValueShouldBeCorrect() {
-    assertEquals(dbtFromDefinition(), supportsDBT());
   }
 
   /**
@@ -1271,14 +1250,14 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws WorkerException {
     return convertProtocolObject(
         new DefaultGetSpecWorker(
-            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()))
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
         ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
@@ -1288,7 +1267,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()),
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
           mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
@@ -1301,7 +1280,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false, new EnvVariableFeatureFlags()));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
@@ -1781,7 +1760,7 @@ public abstract class DestinationAcceptanceTest {
 
   private void runAndCheck(final AirbyteCatalog catalog, final ConfiguredAirbyteCatalog configuredCatalog, final List<AirbyteMessage> messages)
       throws Exception {
-    if (supportsNormalization()) {
+    if (normalizationFromDefinition()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
     } else {

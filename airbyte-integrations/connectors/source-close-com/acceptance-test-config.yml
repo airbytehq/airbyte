@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-close-com:dev
 acceptance_tests:
@@ -40,6 +40,24 @@ acceptance_tests:
             bypass_reason: "unable to populate"
           - name: voicemail_tasks
             bypass_reason: "unable to populate"
+          - name: leads
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: events
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: users
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: contacts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: google_connected_accounts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: custom_email_connected_accounts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: zoom_connected_accounts
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: email_bulk_actions
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: incoming_email_tasks
+            bypass_reason: "unable to test due to fast-changing data"
   incremental:
     tests:
       - config_path: "secrets/config.json"

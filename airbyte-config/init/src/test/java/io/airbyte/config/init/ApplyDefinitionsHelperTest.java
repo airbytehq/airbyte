@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -79,7 +79,7 @@ class ApplyDefinitionsHelperTest {
   private ApplyDefinitionsHelper applyDefinitionsHelper;
 
   @BeforeEach
-  void setup() throws JsonValidationException, IOException {
+  void setup() throws IOException {
     configRepository = mock(ConfigRepository.class);
     definitionsProvider = mock(DefinitionsProvider.class);
     jobPersistence = mock(JobPersistence.class);
