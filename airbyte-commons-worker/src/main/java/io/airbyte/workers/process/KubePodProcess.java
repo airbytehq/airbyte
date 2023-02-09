@@ -227,6 +227,7 @@ public class KubePodProcess implements KubePod {
         // -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
         "-XX:+ExitOnOutOfMemoryError -javaagent:/airbyte/dd-java-agent.jar -Ddd.profiling.enabled=true -XX:FlightRecorderOptions=stackdepth=256 -Ddd.trace.sample.rate=5 -Ddd.trace.request_header.tags=User-Agent:http.useragent";
     if (image.contains("source-postgres")) {
+      LOGGER.error("----- Image name - {}", image);
       envVars.add(new EnvVar("JAVA_OPTS", ddEnvVar, null));
 
       if (System.getenv("DD_AGENT_HOST") != null) {
