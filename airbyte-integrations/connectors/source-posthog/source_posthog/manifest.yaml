@@ -102,8 +102,14 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+<<<<<<< HEAD
       partition_routers:
         - type: SubstreamPartitionRouter
+=======
+      cursor_field: timestamp
+      stream_slicers:
+        - type: SubstreamSlicer
+>>>>>>> issue-19961_rename-stream-slicer-review-branch
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"
               parent_key: "id"
@@ -136,6 +142,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+<<<<<<< HEAD
       partition_router:
         type: CustomStreamSlicer
         class_name: source_posthog.components.EventsCartesianProductStreamSlicer
@@ -162,6 +169,8 @@ definitions:
             end_time_option:
               field_name: before
               inject_into: request_parameter
+=======
+>>>>>>> issue-19961_rename-stream-slicer-review-branch
       paginator:
         type: "DefaultPaginator"
         page_size_option:

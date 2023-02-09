@@ -97,6 +97,7 @@ class CustomIncrementalSync(BaseModel):
 
     type: Literal["CustomIncrementalSync"]
     class_name: str
+    cursor_field: str
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
@@ -136,11 +137,11 @@ class CustomRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class CustomStreamSlicer(BaseModel):
+class CustomPartitionRouter(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Literal["CustomStreamSlicer"]
+    type: Literal["CustomPartitionRouter"]
     class_name: str
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -299,11 +300,6 @@ class SessionTokenAuthenticator(BaseModel):
     username: str
     validate_session_url: str
     password: Optional[str] = ""
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
-class SingleSlice(BaseModel):
-    type: Literal["SingleSlice"]
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
@@ -519,18 +515,10 @@ class SimpleRetriever(BaseModel):
     )
     partition_router: Optional[
         Union[
-            CustomStreamSlicer,
+            CustomPartitionRouter,
             ListStreamSlicer,
-            SingleSlice,
             SubstreamPartitionRouter,
-            List[
-                Union[
-                    CustomStreamSlicer,
-                    ListStreamSlicer,
-                    SingleSlice,
-                    SubstreamPartitionRouter,
-                ]
-            ],
+            List[Union[CustomPartitionRouter, ListStreamSlicer, SubstreamPartitionRouter]],
         ]
     ] = Field(
         [],
