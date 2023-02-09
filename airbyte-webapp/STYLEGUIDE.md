@@ -45,6 +45,78 @@ This serves as a living document regarding conventions we have agreed upon as a 
 
 ## Styling
 
+### Naming conventions
+
+A single `.module.scss` file should correspond to a single `.tsx` component file. Within the `.module.scss` file, styles should follow a [BEM](https://getbem.com/introduction/) naming scheme:
+
+```scss
+// MyComponent.module.scss
+@use "scss/colors";
+@use "scss/variables";
+
+// block
+.myComponent {
+  background-color: colors.$blue-400;
+
+  // modifier
+  &--highlighted {
+    border: variables.$border-thick solid colors.$green-400;
+  }
+
+  // element
+  &__element {
+    background-color: colors.$grey-300;
+
+    // modifier
+    &--error {
+      color: colors.$red;
+    }
+  }
+}
+```
+
+This helps us keep structure in the source files. This is how these styles can be referenced in React components:
+
+```jsx
+import styles from "./MyComponent.module.scss";
+import classNames from "classnames";
+
+const MyComponent = ({ isHighlighted, hasError }) => {
+  return (
+    <div className={classNames(styles.myComponent, { [styles["myComponent--highlighted"]]: isHighlighted })}>
+      <p>
+        Hello, world!
+      </p>
+      {hasError && <span className={classNames(styles.myComponent__element, [styles['myComponent__element--error']: hasError])}>Uh oh, error!</span>}
+    </div>
+  );
+};
+```
+
+Alternatively, the `classNames()` call can be extracted, which keeps the JSX cleaner:
+
+```jsx
+import styles from "./MyComponent.module.scss";
+import classNames from "classnames";
+
+const MyComponent = ({ isHighlighted, hasError }) => {
+  const componentClasses = classNames(styles.myComponent, {
+    [styles["myComponent--highlighted"]]: isHighlighted,
+  });
+
+  const elementClasses = classNames(styles.myComponent__element, {
+    [styles["myComponent__element--error"]]: hasError,
+  });
+
+  return (
+    <div className={componentClasses}>
+      <p>Hello, world!</p>
+      {hasError && <span className={elementClasses}>Uh oh, error!</span>}
+    </div>
+  );
+};
+```
+
 ### Color variables cannot be used inside of rgba() functions
 
 Our SCSS color variables compile to `rgb(X, Y, Z)`, which is an invalid value in the CSS `rgba()` function. A custom stylelint rule, `airbyte/no-color-variables-in-rgba`, enforces this rule.
