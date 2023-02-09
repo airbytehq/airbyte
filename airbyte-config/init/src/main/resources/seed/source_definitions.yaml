@@ -871,6 +871,9 @@
   icon: iterable.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.iterable.com
 - name: Jenkins
   sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
   dockerRepository: farosai/airbyte-jenkins-source
