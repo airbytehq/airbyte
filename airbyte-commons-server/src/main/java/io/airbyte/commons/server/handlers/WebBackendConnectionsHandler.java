@@ -413,7 +413,8 @@ public class WebBackendConnectionsHandler {
     final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody()
         .sourceId(sourceId)
         .disableCache(true)
-        .connectionId(connectionId).notifySchemaChange(false);
+        .connectionId(connectionId)
+        .notifySchemaChange(false);
     final SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
     return Optional.ofNullable(schemaRead);
   }
