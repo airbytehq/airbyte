@@ -838,7 +838,7 @@ definitions:
       - type
       - parent_key
       - stream
-      - stream_slice_field
+      - partition_field
     properties:
       type:
         type: string
@@ -847,7 +847,7 @@ definitions:
         type: string
       stream:
         "$ref": "#/definitions/DeclarativeStream"
-      stream_slice_field:
+      partition_field:
         type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
@@ -1015,27 +1015,13 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomPartitionRouter"
           - "$ref": "#/definitions/ListPartitionRouter"
-          - "$ref": "#/definitions/SingleSlice"
-          - "$ref": "#/definitions/SubstreamSlicer"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomPartitionRouter"
                 - "$ref": "#/definitions/ListPartitionRouter"
-                - "$ref": "#/definitions/SingleSlice"
-                - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
-  SingleSlice:
-    description: Stream slicer returning only a single stream slice
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [SingleSlice]
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
       $parameters:
         type: object
         additionalProperties: true
@@ -1054,7 +1040,7 @@ definitions:
         additionalProperties: true
       documentation_url:
         type: string
-  SubstreamSlicer:
+  SubstreamPartitionRouter:
     description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
     required:
@@ -1063,7 +1049,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SubstreamSlicer]
+        enum: [SubstreamPartitionRouter]
       parent_stream_configs:
         type: array
         items:

@@ -45,11 +45,11 @@ definitions:
       primary_key: "sid"
 
   workspace_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/workspaces_stream"
         parent_key: sid
-        stream_slice_field: id
+        partition_field: id
 
   workers_stream:
     $ref: "#/definitions/base_stream_with_pagination"

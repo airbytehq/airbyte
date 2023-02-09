@@ -30,11 +30,11 @@ definitions:
       primary_key: "requestId"
       path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
   sms_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/sms_stream"
         parent_key: "requestId"
-        stream_slice_field: "requestId"
+        partition_field: "requestId"
   # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Read%20SMS%20status
   messages_stream:
     $ref: "#/definitions/base_stream"

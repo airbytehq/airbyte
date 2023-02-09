@@ -60,7 +60,7 @@ definitions:
     parent_stream_configs:
       - stream: "#/definitions/surveys"
         parent_key: public_hash_id
-        stream_slice_field: id
+        partition_field: id
   survey_groups:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -74,7 +74,7 @@ definitions:
     parent_stream_configs:
       - stream: "#/definitions/survey_groups"
         parent_key: public_hash_id
-        stream_slice_field: id
+        partition_field: id
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "inserted_at"
@@ -132,7 +132,7 @@ definitions:
       incremental_sync:
         $ref: "#/definitions/incremental_sync"
       partition_router:
-        $ref: "#/definitions/surveys_slicer"
+        $ref: "#/definitions/survey_groups_slicer"
 
 streams:
   - "#/definitions/surveys"

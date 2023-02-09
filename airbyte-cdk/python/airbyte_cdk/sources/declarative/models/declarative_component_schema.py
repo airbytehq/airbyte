@@ -303,11 +303,6 @@ class SessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SingleSlice(BaseModel):
-    type: Literal["SingleSlice"]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class Spec(BaseModel):
     type: Literal["Spec"]
     connection_specification: Dict[str, Any]
@@ -499,7 +494,7 @@ class ParentStreamConfig(BaseModel):
     type: Literal["ParentStreamConfig"]
     parent_key: str
     stream: DeclarativeStream
-    stream_slice_field: str
+    partition_field: str
     request_option: Optional[RequestOption] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -522,16 +517,8 @@ class SimpleRetriever(BaseModel):
         Union[
             CustomPartitionRouter,
             ListPartitionRouter,
-            SingleSlice,
-            SubstreamSlicer,
-            List[
-                Union[
-                    CustomPartitionRouter,
-                    ListPartitionRouter,
-                    SingleSlice,
-                    SubstreamSlicer,
-                ]
-            ],
+            SubstreamPartitionRouter,
+            List[Union[CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter]],
         ]
     ] = Field(
         [],
@@ -540,8 +527,8 @@ class SimpleRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SubstreamSlicer(BaseModel):
-    type: Literal["SubstreamSlicer"]
+class SubstreamPartitionRouter(BaseModel):
+    type: Literal["SubstreamPartitionRouter"]
     parent_stream_configs: List[ParentStreamConfig]
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
