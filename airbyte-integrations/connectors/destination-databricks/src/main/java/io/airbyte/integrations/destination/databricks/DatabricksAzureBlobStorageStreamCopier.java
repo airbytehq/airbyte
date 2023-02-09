@@ -150,9 +150,9 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
 
     if (!useMetastore) {
       return String.format("CREATE TABLE %s.%s.%s (%s) USING csv LOCATION '%s' " +
-        "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
-        catalogName, schemaName, tmpTableName, schemaString,
-        getTmpTableLocation().replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME));
+          "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
+          catalogName, schemaName, tmpTableName, schemaString,
+          getTmpTableLocation().replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME));
     }
 
     return String.format("CREATE TABLE %s.%s (%s) USING csv LOCATION '%s' " +
@@ -188,11 +188,10 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
     if (!useMetastore) {
-        queries.append(sqlOperations.copyTableQuery(database, String.format("%s.%s", catalogName, schemaName), tmpTableName, destTableName));
+      queries.append(sqlOperations.insertTableQuery(database, String.format("%s.%s", catalogName, schemaName), tmpTableName, destTableName));
     } else {
-      queries.append(sqlOperations.copyTableQuery(database, schemaName, tmpTableName, destTableName));
+      queries.append(sqlOperations.insertTableQuery(database, schemaName, tmpTableName, destTableName));
     }
-    queries.append(sqlOperations.insertTableQuery(database, schemaName, tmpTableName, destTableName));
 
     return queries.toString();
   }
