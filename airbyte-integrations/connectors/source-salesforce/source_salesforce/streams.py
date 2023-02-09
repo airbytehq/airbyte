@@ -187,7 +187,6 @@ class RestSalesforceStream(SalesforceStream):
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         pagination_complete = False
-        next_page_token = None
         records = {}
         next_pages = {}
 
@@ -195,8 +194,7 @@ class RestSalesforceStream(SalesforceStream):
             index = 0
             for index, property_chunk in enumerate(self.chunk_properties()):
                 request, response = self._fetch_next_page(stream_slice, stream_state, next_pages.get(index), property_chunk)
-                next_page_token = self.next_page_token(response)
-                next_pages[index] = next_page_token
+                next_pages[index] = self.next_page_token(response)
                 chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
                 if not self.too_many_properties:
                     # this is the case when a stream has no primary key
@@ -208,7 +206,7 @@ class RestSalesforceStream(SalesforceStream):
 
                 for record_id, record in chunk_page_records.items():
                     if record_id not in records:
-                        records[record_id] = (record, 0)
+                        records[record_id] = (record, 1)
                         continue
                     incomplete_record, counter = records[record_id]
                     incomplete_record.update(record)
@@ -216,17 +214,20 @@ class RestSalesforceStream(SalesforceStream):
                     records[record_id] = (incomplete_record, counter)
 
             for record_id, (record, counter) in records.items():
-                if counter != index:
+                if counter != index + 1:
                     # Because we make multiple calls to query N records (each call to fetch X properties of all the N records),
                     # there's a chance that the number of records corresponding to the query may change between the calls. This
                     # may result in data inconsistency. We skip such records for now and log a warning message.
-                    self.logger.warning(f"Inconsistent record with primary key {record_id} found. Skipping it.")
+                    self.logger.warning(
+                        f"Inconsistent record with primary key {record_id} found. It consists of {counter} chunks instead of {index + 1}. "
+                        f"Skipping it."
+                    )
                     continue
                 yield record
 
             records = {}
 
-            if not next_page_token:
+            if not any(next_pages.values()):
                 pagination_complete = True
 
         # Always return an empty generator just in case no records were ever yielded
