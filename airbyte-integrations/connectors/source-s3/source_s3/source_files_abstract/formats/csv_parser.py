@@ -61,32 +61,29 @@ class CsvParser(AbstractFileParser):
         field_value = format_.get(field_name)
         if not field_value and allow_empty:
             return
-        if len(format_.get(field_name)) != 1:
+        if len(field_value) != 1:
             return f"{field_name} should contain 1 character only"
         if field_value in disallow_values:
             return f"{field_name} can not be {field_value}"
 
-    @staticmethod
-    def _validate_read_options(format_: Mapping[str, Any]) -> Optional[str]:
-        options = format_.get("advanced_options", "{}")
+    @classmethod
+    def _validate_options(cls, validator: Callable, options_name: str, format_: Mapping[str, Any]) -> Optional[str]:
+        options = format_.get(options_name, "{}")
         try:
             options = json.loads(options)
-            pa.csv.ReadOptions(**options)
+            validator(**options)
         except json.decoder.JSONDecodeError:
             return "Malformed advanced read options!"
         except TypeError as e:
             return f"One or more read options are invalid: {str(e)}"
 
-    @staticmethod
-    def _validate_convert_options(format_: Mapping[str, Any]) -> Optional[str]:
-        options = format_.get("additional_reader_options", "{}")
-        try:
-            options = json.loads(options)
-            pa.csv.ConvertOptions(**options)
-        except json.decoder.JSONDecodeError:
-            return "Malformed advanced read options!"
-        except TypeError as e:
-            return f"One or more read options are invalid: {str(e)}"
+    @classmethod
+    def _validate_read_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ReadOptions, "advanced_options", format_)
+
+    @classmethod
+    def _validate_convert_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ConvertOptions, "additional_reader_options", format_)
 
     def _validate_config(self, config: Mapping[str, Any]):
         format_ = config.get("format", {})
