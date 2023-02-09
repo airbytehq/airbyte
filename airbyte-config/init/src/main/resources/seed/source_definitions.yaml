@@ -1089,7 +1089,7 @@
   icon: walmart.svg
   sourceType: api
   releaseStage: alpha
-- name: Ebay
+- name: eBay
   sourceDefinitionId: e3863dae-eed0-4886-a43c-c255cbef94a5
   dockerRepository: yuanrui2014/source-ebay
   dockerImageTag: 0.1.0

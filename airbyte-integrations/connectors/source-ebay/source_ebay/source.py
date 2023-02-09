@@ -33,6 +33,9 @@ class EbayStream(HttpStream, ABC):
         self.nextCursor = None
 
     @property
+    def limit(self) -> str:
+        pass
+    @property
     def dataParam(self) -> str:
         pass
     @property
@@ -61,19 +64,17 @@ class EbayStream(HttpStream, ABC):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         date_map = ge_date(self.config_param, self.dateFormat)
-        param = f"limit=10"
+        param = f"limit={self.limit}"
         if self.dateFilter:
             param += f"&filter={self.dateParam}:[{date_map.get('start_time')}..{date_map.get('end_time')}]"
         if self.nextCursor is not None:
             param = self.nextCursor
-        print(f"{self.basePath}?{param}")
         return f"{self.basePath}?{param}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         if response.status_code == 200:
             respJson = response.json()
             results = respJson.get(self.dataParam)
-            print(respJson.get("next"))
             if "next" in respJson:
                 self.nextCursor = str(respJson.get("next")).split('?')[1]
             else:
@@ -142,55 +143,62 @@ class Marketing(EbayStream):
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        param = f"limit=10&marketplace_id={self.config_param['marketplace_id']}"
+        param = f"limit={self.limit}&marketplace_id={self.config_param['marketplace_id']}"
         if self.nextCursor is not None:
             param = self.nextCursor
-        print(f"{self.basePath}?{param}")
         return f"{self.basePath}?{param}"
 
 class PromotionReport(Marketing):
+    limit = 200
     name = "GET_PROMOTION_REPORTS"
     dataParam = "promotionReports"
     dateParam = "promotionReports"
     basePath = "/sell/marketing/v1/promotion_report"
 
 class Promotion(Marketing):
+    limit = 200
     name = "GET_PROMOTIONS"
     dataParam = "promotions"
     dateParam = "promotions"
     basePath = "/sell/marketing/v1/promotion"
 
 class Campaigns(Inventory):
+    limit = 500
     name = "GET_CAMPAIGNS"
     dataParam = "campaigns"
     dateParam = "campaigns"
     basePath = "/sell/marketing/v1/ad_campaign"
 
 class InventoryItems(Inventory):
+    limit = 100
     name = "GET_INVENTORY_ITEMS"
     dataParam = "inventoryItems"
     dateParam = "inventoryItems"
     basePath = "/sell/inventory/v1/inventory_item"
 
 class InventoryLocations(Inventory):
+    limit = 100
     name = "GET_INVENTORY_LOCATIONS"
     dataParam = "locations"
     dateParam = "locations"
     basePath = "/sell/inventory/v1/location"
 
 class Orders(Fulfillment):
+    limit = 200
     name = "GET_ORDERS"
     dataParam = "orders"
     dateParam = "creationdate"
     basePath = "/sell/fulfillment/v1/order"
 
 class Transaction(Finances):
+    limit = 1000
     name = "GET_TRANSACTIONS"
     dataParam = "transactions"
     dateParam = "transactionDate"
     basePath = "/sell/finances/v1/transaction"
 
 class Payout(Finances):
+    limit = 200
     name = "GET_PAYOUTS"
     dataParam = "payouts"
     dateParam = "payoutDate"
