@@ -187,9 +187,9 @@ In a successful sync, the number of emitted records and committed records should
 
 ## Manage replication settings
 
-To configure the sync schedule or how your connection handles non-breaking schema changes, you may need to modify the replication settings of your connection.
+To configure the sync schedule or how your connection responds to non-breaking schema changes, you may need to modify the replication settings for your connection.
 
-To modify the replication settings in your connection:
+To modify the replication settings for your connection:
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection you want to configure.
 
 2. Click the **Replication** tab.
@@ -214,17 +214,19 @@ To use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.
 
 :::note
 
-* Only one sync per connection can run at a time. 
+* Only one sync per connection can run at a time.
+
 * If a sync is scheduled to run before the previous sync finishes, the scheduled sync will start after the completion of the previous sync.
+
 * Airbyte Cloud does not support schedules that sync more than once per hour. 
 
 :::
 
 ## Manage streams in your connection
 
-In the **Activate the streams you want to sync** table, you can choose which streams of data are synced and how they are organized in the destination.
+In the **Activate the streams you want to sync** table, you can choose which streams to sync and how they are organized in the destination.
 
-To access the streams table:
+To access the table:
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection you want to configure.
 
 2. Click the **Replication** tab.
@@ -232,10 +234,10 @@ To access the streams table:
 ### Configure streams
 #### Configure an individual stream
 
-![Single Edit Gif 7](https://user-images.githubusercontent.com/106352739/187313088-85c61a6d-1025-45fa-b14e-a7fe86defea4.gif)
+![Single edit gif](https://user-images.githubusercontent.com/106352739/217615932-8376696a-9f93-4be6-8e23-4b72539bdcc0.gif)
 
 To configure an individual stream: 
-1. In the **Activate the streams you want to sync table**, toggle **Sync** on or off for your selected stream. 
+1. In the **Activate the streams you want to sync** table, toggle **Sync** on or off for your selected stream. 
 
 2. Click the **Sync mode** dropdown and select the sync mode you want to apply.
 
@@ -245,7 +247,13 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
 
 :::
 
-3. Select the **Cursor** or **Primary key** to include them in the sync if you have the option in those fields.
+3. Select the **Cursor** and **Primary key** if there are dropdowns in those fields.
+
+:::note 
+    
+Source-defined cursors or primary keys cannot be changed in the table.
+
+:::
 
 4. Click on a stream to display the stream details panel.
 
@@ -255,17 +263,17 @@ Depending on the sync mode you select, you may need to choose a cursor or primar
     
 * You can only deselect top-level fields. You cannot deselect nested fields.
 
-* The Airbyte platform may read all data from the source (depending on the source), but it will only write data to the destination from fields you have selected. Deselecting fields will not prevent the Airbyte platform from reading them.
+* The Airbyte platform may read all data from the source (depending on the source), but it will only write data to the destination from fields you selected. Deselecting fields will not prevent the Airbyte platform from reading them.
 
 * When you refresh the schema, new fields will be selected by default, even if you have previously deselected fields in that stream.
 
 :::
 
-6. Select the **Cursors** or **Primary keys** for the individual fields if you to include them in the sync.
+6. Select the **Cursor(s)** or **Primary key(s)** for the individual fields to include them in the sync.
 
 :::note 
     
-If the cursor or primary key are source defined, you cannot change them in the stream details panel. 
+If the cursor or primary key are source defined, you cannot change them in the stream details panel.
 
 :::
 
@@ -285,7 +293,7 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 
 #### Configure multiple streams
 
-![Batch Edit gif 5](https://user-images.githubusercontent.com/106352739/187312110-d16b4f9a-9d43-4b23-b644-b64004f33b58.gif)
+![Batch edit gif](https://user-images.githubusercontent.com/106352739/217616004-ee8a41c1-7f9a-4400-8d26-faca3edc6072.gif)
 
 To configure multiple streams:
 1. In the **Activate the streams you want to sync** table, select the checkboxes of streams that you want to apply changes to.
@@ -293,8 +301,9 @@ To configure multiple streams:
 :::note 
     
 To select or deselect all streams, click the checkbox in the table header.
+
 :::
-    
+
 In the highlighted footer of the table:
 
 2. Toggle **Sync** on or off. 
@@ -305,7 +314,7 @@ In the highlighted footer of the table:
 
 :::note 
     
-If the cursor or primary key are source defined, you cannot change them while configuring mutliple streams.
+Source-defined cursors or primary keys cannot be changed while configuring mutliple streams.
 
 :::
 
@@ -324,12 +333,12 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 8. Click **Save connection**.
 
 ### Configure the destination namespace and stream name
-You can configure both the destination namespace and stream name. These settings apply to all streams in the connection.
+In the **Activate the streams you want to sync** table, you can configure both the destination namespace and stream name. These settings apply to all streams in the connection.
 
 #### Destination namespace
 The destination namespace is where data is written in the destination. 
 
-To configure destination namespace: 
+To configure the destination namespace: 
 1. In the **Activate the streams you want to sync** table, click the **Namespace gear** icon in the **Destination** section of the table header. 
 
 2. In the **Destination namespace** dialog, select your preferred destination namespace setting.
@@ -355,7 +364,7 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 6. Click **Save connection**.
 
 #### Destination stream name
-Destination stream names allow you to define the table name in the destination.
+The destination stream name allows you to define the table name in the destination.
 
 To configure the destination stream name:
 1. In the **Activate the streams you want to sync** table, click the **Stream name gear** icon in the table header. 
