@@ -65,7 +65,8 @@ class GenerateInputActivityTest {
   static private final JsonNode SOURCE_CONFIGURATION = Jsons.jsonNode(Map.of("source_key", "source_value"));
   static private final JsonNode SOURCE_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value"));
   static private final JsonNode DESTINATION_CONFIGURATION = Jsons.jsonNode(Map.of("destination_key", "destination_value"));
-  static private final JsonNode DESTINATION_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("destination_key", "destination_value", "oauth", "oauth_value"));
+  static private final JsonNode DESTINATION_CONFIG_WITH_OAUTH =
+      Jsons.jsonNode(Map.of("destination_key", "destination_value", "oauth", "oauth_value"));
   static private final State STATE = new State().withState(Jsons.jsonNode(Map.of("state_key", "state_value")));
 
   static private final UUID WORKSPACE_ID = UUID.randomUUID();
