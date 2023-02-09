@@ -276,18 +276,8 @@ public class SecretsRepositoryWriter {
   /**
    * No frills, given a coordinate, just store the payload
    */
-  public SecretCoordinate storeOAuthSecret(final UUID workspaceId, final String payload) {
-    SecretCoordinate secretCoordinate = generateOAuthSecretCoordinate(workspaceId);
+  public SecretCoordinate storeSecret(final SecretCoordinate secretCoordinate, final String payload) {
     longLivedSecretPersistence.get().write(secretCoordinate, payload);
     return secretCoordinate;
   }
-
-  /**
-   * Generate our OAuthSecretCoordinate for storage For now we're treating these as always v1.
-   */
-  private SecretCoordinate generateOAuthSecretCoordinate(final UUID workspaceId) {
-    String coordinateBase = SecretsHelpers.getCoordinatorBase("airbyte_oauth_workspace_", workspaceId, UUID::randomUUID);
-    return new SecretCoordinate(coordinateBase, 1);
-  }
-
 }

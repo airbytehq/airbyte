@@ -37,6 +37,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinate;
+import io.airbyte.config.persistence.split_secrets.SecretsHelpers;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.OAuthImplementationFactory;
@@ -361,13 +362,27 @@ public class OAuthHandler {
     return Jsons.jsonNode(result);
   }
 
-  public SecretId writeOAuthSecret(final UUID workspaceId, final Map<String, Object> payload) {
+  public Map<String, Object> writeOAuthSecret(final UUID workspaceId, final Map<String, Object> payload) {
+
     try {
       final String payloadString = Jackson.getObjectMapper().writeValueAsString(payload);
-      final SecretCoordinate secretCoordinate = secretsRepositoryWriter.storeOAuthSecret(workspaceId, payloadString);
-      return new SecretId().secretId(secretCoordinate.getFullCoordinate());
+      final SecretCoordinate secretCoordinate = secretsRepositoryWriter.storeSecret(generateOAuthSecretCoordinate(workspaceId), payloadString);
+      return formatOAuthSecretResponse(secretCoordinate);
     } catch (final JsonProcessingException e) {
-      throw new RuntimeException("Json object could not be written to string - " + e);
+      throw new RuntimeException("Json object could not be written to string.", e);
     }
   }
+
+  public Map<String, Object> formatOAuthSecretResponse(final SecretCoordinate secretCoordinate){
+    return Map.of("secretId", secretCoordinate.getFullCoordinate());
+  }
+
+  /**
+   * Generate our OAuthSecretCoordinate for storage For now we're treating these as always v1.
+   */
+  private SecretCoordinate generateOAuthSecretCoordinate(final UUID workspaceId) {
+    final String coordinateBase = SecretsHelpers.getCoordinatorBase("airbyte_oauth_workspace_", workspaceId, UUID::randomUUID);
+    return new SecretCoordinate(coordinateBase, 1);
+  }
+
 }

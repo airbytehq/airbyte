@@ -40,16 +40,14 @@ public class SourceOauthApiController implements SourceOauthApi {
   @SecuredWorkspace
   @Override
   public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
-    return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
-  }
-
-  @Post("/complete_oauth_return_secret")
-  @Secured({EDITOR})
-  @Override
-  public SecretId completeSourceOAuthReturnSecret(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     final Map<String, Object> oAuthTokens = ApiHelper
         .execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
-    return ApiHelper.execute(() -> oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens));
+    if (completeSourceOauthRequest.getReturnSecretCoordinate()){
+      return ApiHelper.execute(() -> oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens));
+    }
+    else {
+      return oAuthTokens;
+    }
   }
 
   @Post("/get_consent_url")
