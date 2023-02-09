@@ -27,15 +27,20 @@ class Nettbutikk24Stream(HttpStream, ABC):
 
     url_base = "https://brewshop.no/api/v1/"
 
-    def __init__(self, config: Mapping[str, Any], **kwargs):
+    def __init__(self, config: Mapping[str, Any], flat: bool = False, **kwargs):
         super().__init__()
         self.access_token = config.get("access_token")
+        self.shop_name = config.get("shop_name")
+        self.flat = flat
 
         self.uri_params = {
             "since": convert_date_to_epoch(config.get('initial_start_date')),
             "offset": 0,
             "limit": 100,
         }
+
+    def get_url_base(self):
+        return f"https://{self.shop_name}/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -65,7 +70,7 @@ class Nettbutikk24Stream(HttpStream, ABC):
     def request_params(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        return {"access_token": self.access_token, "flat": True}
+        return {"access_token": self.access_token, "flat": self.flat}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -120,6 +125,8 @@ class IncrementalNettbutikk24Stream(Nettbutikk24Stream, ABC):
 class Products(IncrementalNettbutikk24Stream):
     primary_key = "id"
 
+    # self.flat = False
+
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -152,4 +159,4 @@ class SourceNettbutikk24(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Orders(config=config), Products(config=config)]
+        return [Orders(config=config, flat = True), Products(config=config, flat = False)]

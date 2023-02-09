@@ -7,6 +7,11 @@ connectionSpecification:
     - access_token
     - initial_start_date
   properties:
+    shop_name:
+      type: string
+      description: Shop name
+      example:
+        - brewshop.no
     access_token:
       type: string
       description: Access token
