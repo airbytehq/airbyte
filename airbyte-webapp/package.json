@@ -203,6 +203,11 @@
   "pnpm": {
     "patchedDependencies": {
       "react-virtualized@9.22.3": "patches/react-virtualized@9.22.3.patch"
+    },
+    "overrides": {
+      "json5@<1.0.2": ">=1.0.2",
+      "postcss@<7.0.36": ">=7.0.36",
+      "loader-utils@<1.4.1": ">=1.4.1"
     }
   }
 }
