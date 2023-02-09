@@ -16,7 +16,7 @@ connectionSpecification:
         - title: Oauth authentication
           type: object
           required:
-            - auth_type
+            - credentials_title
             - client_id
             - client_secret
             - refresh_token
@@ -43,7 +43,7 @@ connectionSpecification:
         - title: API key
           type: object
           required:
-            - auth_type
+            - credentials_title
             - api_key
           properties:
             credentials_title:
@@ -89,7 +89,7 @@ advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
     - credentials
-    - auth_type
+    - credentials_title
   predicate_value: Oauth
   oauth_config_specification:
     complete_oauth_output_specification:
