@@ -18,6 +18,7 @@ import io.airbyte.commons.server.scheduler.EventRunner;
 import io.airbyte.commons.server.scheduler.TemporalEventRunner;
 import io.airbyte.commons.server.services.AirbyteGithubStore;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
+import io.airbyte.commons.temporal.NotificationUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
@@ -214,6 +215,7 @@ public class ServerApp implements ServerRunnable {
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
     final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
     final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
+    final NotificationUtils notificationUtils = new NotificationUtils();
     final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
     final WorkflowClient workflowClient = TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
@@ -223,6 +225,7 @@ public class ServerApp implements ServerRunnable {
         temporalService,
         streamResetPersistence,
         connectionManagerUtils,
+        notificationUtils,
         streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
@@ -267,7 +270,8 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner,
         connectionsHandler,
-        envVariableFeatureFlags, workflowClient, webUrlHelper);
+        envVariableFeatureFlags,
+        webUrlHelper);
 
     final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
         configs.getAirbyteProtocolVersionMax());

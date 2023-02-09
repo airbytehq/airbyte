@@ -9,7 +9,6 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.model.generated.AdvancedAuth;
 import io.airbyte.api.model.generated.AuthSpecification;
 import io.airbyte.api.model.generated.CatalogDiff;
@@ -56,9 +55,6 @@ import io.airbyte.commons.server.scheduler.SynchronousResponse;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
-import io.airbyte.commons.temporal.TemporalJobType;
-import io.airbyte.commons.temporal.TemporalWorkflowUtils;
-import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -80,7 +76,6 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.temporal.client.WorkflowClient;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,7 +103,6 @@ public class SchedulerHandler {
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
   private final FeatureFlags envVariableFeatureFlags;
-  private final WorkflowClient workflowClient;
   private final WebUrlHelper webUrlHelper;
 
   // TODO: Convert to be fully using micronaut
@@ -122,7 +116,6 @@ public class SchedulerHandler {
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
                           final FeatureFlags envVariableFeatureFlags,
-                          final WorkflowClient workflowClient,
                           final WebUrlHelper webUrlHelper) {
     this(
         configRepository,
@@ -135,7 +128,6 @@ public class SchedulerHandler {
         new JobConverter(workerEnvironment, logConfigs),
         connectionsHandler,
         envVariableFeatureFlags,
-        workflowClient,
         webUrlHelper);
   }
 
@@ -150,7 +142,6 @@ public class SchedulerHandler {
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
                    final FeatureFlags envVariableFeatureFlags,
-                   final WorkflowClient workflowClient,
                    final WebUrlHelper webUrlHelper) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -162,7 +153,6 @@ public class SchedulerHandler {
     this.jobConverter = jobConverter;
     this.connectionsHandler = connectionsHandler;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
-    this.workflowClient = workflowClient;
     this.webUrlHelper = webUrlHelper;
   }
 
@@ -416,8 +406,6 @@ public class SchedulerHandler {
                                                                  final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody,
                                                                  final UUID workspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionNotificationWorkflow notificationWorkflow =
-        workflowClient.newWorkflowStub(ConnectionNotificationWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.NOTIFY));
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
       final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
@@ -440,11 +428,7 @@ public class SchedulerHandler {
       connectionsHandler.updateConnection(updateObject);
       if (shouldNotifySchemaChange(diff, connectionRead, discoverSchemaRequestBody)) {
         final String url = webUrlHelper.getConnectionUrl(workspaceId, connectionRead.getConnectionId());
-        try {
-          notificationWorkflow.sendSchemaChangeNotification(connectionRead.getConnectionId(), url);
-        } catch (ApiException | InterruptedException e) {
-          log.error("There was an error while sending a Schema Change Notification", e);
-        }
+        eventRunner.sendSchemaChangeNotification(connectionRead.getConnectionId(), url);
       }
       if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
         discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);

@@ -65,9 +65,6 @@ import io.airbyte.commons.server.scheduler.SynchronousResponse;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
-import io.airbyte.commons.temporal.TemporalJobType;
-import io.airbyte.commons.temporal.TemporalWorkflowUtils;
-import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -93,7 +90,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.temporal.client.WorkflowClient;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
@@ -161,8 +157,6 @@ class SchedulerHandlerTest {
   private JobConverter jobConverter;
   private ConnectionsHandler connectionsHandler;
   private EnvVariableFeatureFlags envVariableFeatureFlags;
-  private WorkflowClient workflowClient;
-  private ConnectionNotificationWorkflow notificationWorkflow;
   private WebUrlHelper webUrlHelper;
 
   @BeforeEach
@@ -187,12 +181,7 @@ class SchedulerHandlerTest {
     eventRunner = mock(EventRunner.class);
     connectionsHandler = mock(ConnectionsHandler.class);
     envVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
-    workflowClient = mock(WorkflowClient.class);
-    notificationWorkflow = mock(ConnectionNotificationWorkflow.class);
     webUrlHelper = mock(WebUrlHelper.class);
-
-    when(workflowClient.newWorkflowStub(ConnectionNotificationWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.NOTIFY)))
-        .thenReturn(notificationWorkflow);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
 
@@ -206,7 +195,8 @@ class SchedulerHandlerTest {
         eventRunner,
         jobConverter,
         connectionsHandler,
-        envVariableFeatureFlags, workflowClient, webUrlHelper);
+        envVariableFeatureFlags,
+        webUrlHelper);
   }
 
   @Test
@@ -629,7 +619,7 @@ class SchedulerHandlerTest {
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
     assertEquals(actual.getCatalogDiff(), catalogDiff);
     assertEquals(actual.getCatalog(), expectedActorCatalog);
-    verify(notificationWorkflow).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
+    verify(eventRunner).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
   }
 
   @Test
@@ -687,7 +677,7 @@ class SchedulerHandlerTest {
     assertEquals(actual.getCatalogDiff(), catalogDiff);
     assertEquals(actual.getCatalog(), expectedActorCatalog);
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.ACTIVE);
-    verify(notificationWorkflow).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
+    verify(eventRunner).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
   }
 
   @Test
@@ -744,7 +734,7 @@ class SchedulerHandlerTest {
     assertEquals(actual.getCatalogDiff(), catalogDiff);
     assertEquals(actual.getCatalog(), expectedActorCatalog);
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.INACTIVE);
-    verifyNoInteractions(notificationWorkflow);
+    verifyNoInteractions(eventRunner);
   }
 
   @Test
@@ -806,7 +796,7 @@ class SchedulerHandlerTest {
     assertEquals(actual.getCatalog(), expectedActorCatalog);
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.ACTIVE);
     verify(connectionsHandler).updateConnection(expectedConnectionUpdate);
-    verify(notificationWorkflow).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
+    verify(eventRunner).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
   }
 
   @Test
@@ -868,7 +858,7 @@ class SchedulerHandlerTest {
     assertEquals(actual.getCatalog(), expectedActorCatalog);
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.INACTIVE);
     verify(connectionsHandler).updateConnection(expectedConnectionUpdate);
-    verify(notificationWorkflow).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
+    verify(eventRunner).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
   }
 
   @Test
@@ -924,7 +914,7 @@ class SchedulerHandlerTest {
     assertEquals(actual.getCatalog(), expectedActorCatalog);
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.INACTIVE);
     // notification preferences are turned on, but there is no schema diff detected
-    verifyNoInteractions(notificationWorkflow);
+    verifyNoInteractions(eventRunner);
   }
 
   @Test
@@ -1013,9 +1003,9 @@ class SchedulerHandlerTest {
     assertEquals(ConnectionStatus.ACTIVE, connectionUpdateValues.get(0).getStatus());
     assertEquals(ConnectionStatus.ACTIVE, connectionUpdateValues.get(1).getStatus());
     assertEquals(ConnectionStatus.INACTIVE, connectionUpdateValues.get(2).getStatus());
-    verify(notificationWorkflow).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
-    verify(notificationWorkflow).sendSchemaChangeNotification(connectionId2, CONNECTION_URL);
-    verify(notificationWorkflow, times(0)).sendSchemaChangeNotification(connectionId3, CONNECTION_URL);
+    verify(eventRunner).sendSchemaChangeNotification(connectionId, CONNECTION_URL);
+    verify(eventRunner).sendSchemaChangeNotification(connectionId2, CONNECTION_URL);
+    verify(eventRunner, times(0)).sendSchemaChangeNotification(connectionId3, CONNECTION_URL);
   }
 
   @Test
