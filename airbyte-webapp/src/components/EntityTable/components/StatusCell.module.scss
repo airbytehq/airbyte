@@ -1,7 +1,9 @@
+@use "scss/variables";
+
 .container {
   display: flex;
   flex-direction: row;
   align-content: center;
   justify-content: space-between;
-  width: 100px;
+  gap: variables.$spacing-md;
 }
