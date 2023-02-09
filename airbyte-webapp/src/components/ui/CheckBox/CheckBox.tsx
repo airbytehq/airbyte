@@ -12,7 +12,7 @@ export interface CheckBoxProps extends InputHTMLAttributes<HTMLInputElement> {
   checkboxSize?: CheckBoxSize;
 }
 
-export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize = "lg", tabIndex, ...inputProps }) => {
+export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize = "lg", ...inputProps }) => {
   const { checked, disabled, className } = inputProps;
 
   return (
