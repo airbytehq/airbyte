@@ -13,7 +13,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.validation.json.JsonValidationException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +47,6 @@ public class CatalogClientConverters {
     protoCatalog.withStreams(airbyteStream);
     return protoCatalog;
   }
-
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static io.airbyte.protocol.models.AirbyteStream toConfiguredProtocol(final io.airbyte.api.client.model.generated.AirbyteStream stream,

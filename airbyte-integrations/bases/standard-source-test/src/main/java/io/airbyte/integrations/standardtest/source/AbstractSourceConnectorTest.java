@@ -124,7 +124,7 @@ public abstract class AbstractSourceConnectorTest {
   private SourceApi mSourceApi;
 
   private ConnectorConfigUpdater mConnectorConfigUpdater;
-  
+
   protected AirbyteCatalog getLastPersistedCatalog() {
     return convertProtocolObject(
         CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.getValue().getCatalog()), AirbyteCatalog.class);
