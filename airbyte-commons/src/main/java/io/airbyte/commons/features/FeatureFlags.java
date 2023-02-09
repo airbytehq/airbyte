@@ -37,18 +37,4 @@ public interface FeatureFlags {
    */
   String fieldSelectionWorkspaces();
 
-  /**
-   * Get the workspaces allow-listed for strict incremental comparison in normalization. This takes
-   * precedence over the normalization version in destination_definitions.yaml.
-   *
-   * @return a comma-separated list of workspace ids where strict incremental comparison should be
-   *         enabled in normalization.
-   */
-  String strictComparisonNormalizationWorkspaces();
-
-  /**
-   * @return The Docker image tag representing the normalization version with strict-comparison
-   */
-  String strictComparisonNormalizationTag();
-
 }
