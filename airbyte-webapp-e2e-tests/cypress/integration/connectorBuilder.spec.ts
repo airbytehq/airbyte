@@ -1,9 +1,20 @@
-import { goToConnectorBuilderPage, testStream } from "pages/connectorBuilderPage";
-import { assertTestReadItems, assertTestReadAuthFailure, configureAuth, configureGlobals, configureStream, configurePagination, assertMultiPageReadItems } from "commands/connectorBuilder";
+import { goToConnectorBuilderPage, startFromScratch, testStream } from "pages/connectorBuilderPage";
+import {
+  assertTestReadItems,
+  assertTestReadAuthFailure,
+  configureAuth,
+  configureGlobals,
+  configureStream,
+  configurePagination,
+  assertMultiPageReadItems,
+} from "commands/connectorBuilder";
+import { initialSetupCompleted } from "commands/workspaces";
 
 describe("Connector builder", () => {
   before(() => {
+    initialSetupCompleted();
     goToConnectorBuilderPage();
+    startFromScratch();
   });
 
   it("Configure basic connector", () => {

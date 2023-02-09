@@ -61,10 +61,7 @@ export const ConnectionTransformationPage: React.FC = () => {
 
   return (
     <div className={styles.content}>
-      <fieldset
-        disabled={mode === "readonly"}
-        style={{ border: "0", pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}
-      >
+      <fieldset disabled={mode === "readonly"} style={{ pointerEvents: `${mode === "readonly" ? "none" : "auto"}` }}>
         {supportsNormalization && <NormalizationCard operations={connection.operations} onSubmit={onSubmit} />}
         {supportsDbt && <CustomTransformationsCard operations={connection.operations} onSubmit={onSubmit} />}
         {supportsCloudDbtIntegration && <DbtCloudTransformationsCard connection={connection} />}

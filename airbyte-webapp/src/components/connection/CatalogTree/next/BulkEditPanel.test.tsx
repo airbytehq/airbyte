@@ -186,7 +186,7 @@ const renderBulkEditPanel = () =>
 
 describe("<BulkEditPanel />", () => {
   beforeAll(() => {
-    // @ts-ignore
+    // @ts-expect-error Okay for test
     ReactDOM.createPortal = (element) => {
       return element;
     };
@@ -210,9 +210,7 @@ describe("<BulkEditPanel />", () => {
 
   it("getAvailableSyncModesOptions should work correctly", () => {
     const expectedResult: SyncModeOption[] = [
-      { value: { syncMode: "incremental", destinationSyncMode: "append_dedup" } },
       { value: { syncMode: "full_refresh", destinationSyncMode: "overwrite" } },
-      { value: { syncMode: "incremental", destinationSyncMode: "append" } },
       { value: { syncMode: "full_refresh", destinationSyncMode: "append" } },
     ];
     const actualResult = getAvailableSyncModesOptions(

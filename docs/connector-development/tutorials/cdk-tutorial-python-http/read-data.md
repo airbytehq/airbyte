@@ -36,14 +36,14 @@ Let's begin by pulling data for the last day's rates by using the `/latest` endp
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "http://api.exchangeratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
 
     primary_key = None
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.base = config['base']
-        self.access_key = config['access_key']
+        self.apikey = config['apikey']
 
 
     def path(
@@ -55,14 +55,20 @@ class ExchangeRates(HttpStream):
         # The "/latest" path gives us the latest currency exchange rates
         return "latest"  
 
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        # The api requires that we include apikey as a header so we do that in this method
+        return {'apikey': self.apikey}
+
     def request_params(
             self,
             stream_state: Mapping[str, Any],
             stream_slice: Mapping[str, Any] = None,
             next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        # The api requires that we include access_key as a query param so we do that in this method
-        return {'access_key': self.access_key}
+        # The api requires that we include the base currency as a query param so we do that in this method
+        return {'base': self.base}
 
     def parse_response(
             self,
@@ -83,17 +89,18 @@ class ExchangeRates(HttpStream):
 
 This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code: 
 
-1. Added a constructor `__init__` which stores the `base` currency to query for and the `access_key` used for authentication.
-2. `return {'access_key': self.access_key}` to add the `?access_key=<access-key-string>` query parameter to the request based on the `access_key` input by the user.
-3. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file.
-4. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
+1. Added a constructor `__init__` which stores the `base` currency to query for and the `apikey` used for authentication.
+2. `return {'base': self.base}` to add the `?base=<base-value>` query parameter to the request based on the `base` input by the user.
+3. `return {'apikey': self.apikey}` to add the header `apikey=<apikey-string>` to the request based on the `apikey` input by the user.
+4. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file.
+5. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
 
 Let's also pass the config specified by the user to the stream class:
 
 ```python
-def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-    auth = NoAuth()
-    return [ExchangeRates(authenticator=auth, config=config)] 
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        auth = NoAuth()
+        return [ExchangeRates(authenticator=auth, config=config)]
 ```
 
 We're now ready to query the API!
@@ -147,14 +154,14 @@ from airbyte_cdk.sources.streams import IncrementalMixin
 
 
 class ExchangeRates(HttpStream, IncrementalMixin):
-    url_base = "http://api.exchangeratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
     cursor_field = "date"
     primary_key = "date"
 
     def __init__(self, config: Mapping[str, Any], start_date: datetime, **kwargs):
         super().__init__()
         self.base = config['base']
-        self.access_key = config['access_key']
+        self.apikey = config['apikey']
         self.start_date = start_date
         self._cursor_value = None
 ```

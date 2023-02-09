@@ -10,7 +10,7 @@ We'll begin by creating a stream to represent the data that we're pulling from t
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.exchangeratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
 
     # Set this as a noop.
     primary_key = None

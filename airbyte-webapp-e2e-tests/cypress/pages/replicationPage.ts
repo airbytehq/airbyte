@@ -1,3 +1,5 @@
+import { submitButtonClick } from "commands/common";
+
 const scheduleDropdown = "div[data-testid='scheduleData']";
 const scheduleValue = (value: string) => `div[data-testid='${value}']`;
 const destinationPrefix = "input[data-testid='prefixInput']";
@@ -8,20 +10,28 @@ const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destin
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
-const cursorFieldDropdown = "button[class^='PathPopoutButton_button']";
-const streamFieldNames = "[class^='TreeRowWrapper_rowWrapper'] span";
-const streamDataTypes = "[class^='TreeRowWrapper_rowWrapper'] div:nth-child(2)";
-const ExpandStreamDetailsTableBtn = "[class^='Arrow_container__']";
-const cursorFieldText = "[class^='PathPopoutButton_button__']";
-const primaryKeyText = "[class^='PathPopoutButton_button__']";
-const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
-const primaryKeyDropdown = "button[class^='PathPopoutButton_button']";
+const getFieldDropdownContainer = (streamName: string, type: Dropdown) => `div[id='${streamName}_${type}_pathPopout']`;
+const getFieldDropdownButton = (streamName: string, type: Dropdown) =>
+  `button[data-testid='${streamName}_${type}_pathPopout']`;
+const getFieldDropdownOption = (value: string) => `div[data-testid='${value}']`;
+const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
+const streamNameCell = "[data-testid='nameCell']";
+const streamDataTypeCell = "[data-testid='dataTypeCell']";
+const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
+const getPreFilledPrimaryKeyText = (streamName: string) => `[data-testid='${streamName}_primaryKey_pathPopout_text']`;
 const successResult = "div[data-id='success-result']";
+const resetModalResetCheckbox = "[data-testid='resetModal-reset-checkbox']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
 const refreshSourceSchemaButton = "button[data-testid='refresh-source-schema-btn']";
 const streamSyncEnabledSwitch = (streamName: string) => `[data-testid='${streamName}-stream-sync-switch']`;
 const streamNameInput = "input[data-testid='input']";
+const resetModalSaveButton = "[data-testid='resetModal-save']";
+const schemaChangesDetectedBanner = "[data-testid='schemaChangesDetected']";
+const schemaChangesReviewButton = "[data-testid='schemaChangesReviewButton']";
+const schemaChangesBackdrop = "[data-testid='schemaChangesBackdrop']";
+const nonBreakingChangesPreference = "[data-testid='nonBreakingChangesPreference']";
+const nonBreakingChangesPreferenceValue = (value: string) => `div[data-testid='nonBreakingChangesPreference-${value}']`;
 
 export const goToReplicationTab = () => {
   cy.get(replicationTab).click();
@@ -31,9 +41,7 @@ export const enterConnectionName = (name: string) => {
   cy.get(connectionNameInput).type(name);
 };
 
-export const expandStreamDetails = () => {
-  cy.get(ExpandStreamDetailsTableBtn).click();
-};
+export const expandStreamDetailsByName = (streamName: string) => cy.get(getExpandStreamArrowBtn(streamName)).click();
 
 export const selectSchedule = (value: string) => {
   cy.get(scheduleDropdown).click();
@@ -55,13 +63,9 @@ export const setupDestinationNamespaceSourceFormat = () => {
   cy.get(destinationNamespaceSource).click();
 };
 
-export const refreshSourceSchemaBtnClick = () => {
-  cy.get(refreshSourceSchemaButton).click();
-};
+export const refreshSourceSchemaBtnClick = () => cy.get(refreshSourceSchemaButton).click();
 
-export const resetModalSaveBtnClick = () => {
-  cy.get("[data-testid='resetModal-save']").click();
-};
+export const resetModalSaveBtnClick = () => cy.get(resetModalSaveButton).click();
 
 export const setupDestinationNamespaceDefaultFormat = () => {
   cy.get(destinationNamespace).click();
@@ -74,56 +78,156 @@ export const selectSyncMode = (source: string, dest: string) => {
   cy.get(`.react-select__option`).contains(`Source:${source}|Dest:${dest}`).click();
 };
 
-export const selectCursorField = (value: string) => {
-  cy.get(cursorFieldDropdown).first().click({ force: true });
+type Dropdown = "cursor" | "primaryKey";
+/**
+ * General function - select dropdown option(s)
+ * @param streamName
+ * @param dropdownType
+ * @param value
+ */
+const selectFieldDropdownOption = (streamName: string, dropdownType: Dropdown, value: string | string[]) => {
+  const container = getFieldDropdownContainer(streamName, dropdownType);
+  const button = getFieldDropdownButton(streamName, dropdownType);
 
-  cy.get(`.react-select__option`).contains(value).click();
+  cy.get(container).within(() => {
+    cy.get(button).click();
+
+    if (Array.isArray(value)) {
+      // in case if multiple options need to be selected
+      value.forEach((v) => cy.get(getFieldDropdownOption(v)).click());
+    } else {
+      // in case if one option need to be selected
+      cy.get(getFieldDropdownOption(value)).click();
+    }
+  });
+  // close dropdown
+  // (dropdown need to be closed manually by clicking on overlay in case if multiple option selection is available)
+  cy.get("body").then(($body) => {
+    if ($body.find(dropDownOverlayContainer).length > 0) {
+      cy.get(dropDownOverlayContainer).click();
+    }
+  });
 };
 
+/**
+ * Select cursor value from cursor dropdown(pathPopout) in desired stream
+ * @param streamName
+ * @param cursorValue
+ */
+export const selectCursorField = (streamName: string, cursorValue: string) =>
+  selectFieldDropdownOption(streamName, "cursor", cursorValue);
+
+/**
+ * Select primary key value(s) from primary key dropdown(pathPopout) in desired stream
+ * @param streamName
+ * @param primaryKeyValues
+ */
+export const selectPrimaryKeyField = (streamName: string, primaryKeyValues: string[]) =>
+  selectFieldDropdownOption(streamName, "primaryKey", primaryKeyValues);
+
 export const checkStreamFields = (listNames: string[], listTypes: string[]) => {
-  cy.get(streamFieldNames).each(($span, i) => {
+  cy.get(streamNameCell).each(($span, i) => {
     expect($span.text()).to.equal(listNames[i]);
   });
 
-  cy.get(streamDataTypes).each(($span, i) => {
+  cy.get(streamDataTypeCell).each(($span, i) => {
     expect($span.text()).to.equal(listTypes[i]);
   });
 };
 
-export const checkCursorField = (expectedValue: string) => {
-  cy.get(cursorFieldText).first().contains(expectedValue);
+/**
+ * General function - check selected field dropdown option or options
+ * @param streamName
+ * @param dropdownType
+ * @param expectedValue
+ */
+const checkDropdownField = (streamName: string, dropdownType: Dropdown, expectedValue: string | string[]) => {
+  const button = getFieldDropdownButton(streamName, dropdownType);
+  const isButtonContainsExactValue = (value: string) => cy.get(button).contains(new RegExp(`^${value}$`));
+
+  return Array.isArray(expectedValue)
+    ? expectedValue.every((value) => isButtonContainsExactValue(value))
+    : isButtonContainsExactValue(expectedValue);
 };
 
-export const checkPrimaryKey = (expectedValue: string) => {
-  cy.get(primaryKeyText).last().contains(expectedValue);
+/**
+ * Check selected value in cursor dropdown
+ * @param streamName
+ * @param expectedValue
+ */
+export const checkCursorField = (streamName: string, expectedValue: string) =>
+  checkDropdownField(streamName, "cursor", expectedValue);
+
+/**
+ * Check selected value(s) in primary key dropdown
+ * @param streamName
+ * @param expectedValues
+ */
+export const checkPrimaryKey = (streamName: string, expectedValues: string[]) =>
+  checkDropdownField(streamName, "primaryKey", expectedValues);
+
+export const checkPreFilledPrimaryKeyField = (streamName: string, expectedValue: string) => {
+  cy.get(getPreFilledPrimaryKeyText(streamName)).contains(expectedValue);
 };
 
-export const checkPreFilledPrimaryKeyField = (expectedValue: string) => {
-  cy.get(preFilledPrimaryKeyText).contains(expectedValue);
-};
-
-export const isPrimaryKeyNonExist = () => {
-  cy.get(preFilledPrimaryKeyText).should("not.exist");
-};
-
-export const selectPrimaryKeyField = (value: string) => {
-  cy.get(primaryKeyDropdown).last().click({ force: true });
-
-  cy.get(`.react-select__option`).contains(value).click();
+export const isPrimaryKeyNonExist = (streamName: string) => {
+  cy.get(getPreFilledPrimaryKeyText(streamName)).should("not.exist");
 };
 
 export const searchStream = (value: string) => {
   cy.get(streamNameInput).type(value);
 };
 
+export const clickSaveReplication = ({ reset = false, confirm = true } = {}) => {
+  cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+  submitButtonClick();
+
+  if (confirm) {
+    confirmStreamConfigurationChangedPopup({ reset });
+  }
+
+  cy.wait("@updateConnection").then((interception) => {
+    assert.isNotNull(interception.response?.statusCode, "200");
+  });
+
+  checkSuccessResult();
+};
+
 export const checkSuccessResult = () => {
   cy.get(successResult).should("exist");
 };
 
-export const confirmStreamConfigurationChangedPopup = () => {
+export const confirmStreamConfigurationChangedPopup = ({ reset = false } = {}) => {
+  if (!reset) {
+    cy.get(resetModalResetCheckbox).click({ force: true });
+  }
   cy.get(saveStreamChangesButton).click();
 };
 
 export const toggleStreamEnabledState = (streamName: string) => {
   cy.get(streamSyncEnabledSwitch(streamName)).check({ force: true });
+};
+
+export const checkSchemaChangesDetected = ({ breaking }: { breaking: boolean }) => {
+  cy.get(schemaChangesDetectedBanner).should("exist");
+  cy.get(schemaChangesDetectedBanner)
+    .invoke("attr", "class")
+    .should("match", breaking ? /\_breaking/ : /nonBreaking/);
+  cy.get(schemaChangesBackdrop).should(breaking ? "exist" : "not.exist");
+};
+
+export const checkSchemaChangesDetectedCleared = () => {
+  cy.get(schemaChangesDetectedBanner).should("not.exist");
+  cy.get(schemaChangesBackdrop).should("not.exist");
+};
+
+export const clickSchemaChangesReviewButton = () => {
+  cy.get(schemaChangesReviewButton).click();
+  cy.get(schemaChangesReviewButton).should("be.disabled");
+};
+
+export const selectNonBreakingChangesPreference = (preference: "ignore" | "disable") => {
+  cy.get(nonBreakingChangesPreference).click();
+  cy.get(nonBreakingChangesPreferenceValue(preference)).click();
 };

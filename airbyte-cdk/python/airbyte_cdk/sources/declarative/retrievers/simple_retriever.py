@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
+from itertools import islice
 from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
@@ -414,6 +415,28 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
+
+
+@dataclass
+class SimpleRetrieverTestReadDecorator(SimpleRetriever):
+    """
+    In some cases, we want to limit the number of requests that are made to the backend source. This class allows for limiting the number of
+    slices that are queried throughout a read command.
+    """
+
+    maximum_number_of_slices: int = 5
+
+    def __post_init__(self, options: Mapping[str, Any]):
+        super().__post_init__(options)
+        if self.maximum_number_of_slices and self.maximum_number_of_slices < 1:
+            raise ValueError(
+                f"The maximum number of slices on a test read needs to be strictly positive. Got {self.maximum_number_of_slices}"
+            )
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Optional[StreamState] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        return islice(super().stream_slices(sync_mode=sync_mode, stream_state=stream_state), self.maximum_number_of_slices)
 
 
 def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:

@@ -9,13 +9,13 @@ import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { StreamHeaderProps } from "../StreamHeader";
 import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
+import { StreamHeaderProps } from "../StreamHeader";
 
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
@@ -67,12 +67,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
         <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </CatalogTreeTableCell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
@@ -104,7 +104,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip={pkType === "sourceDefined"}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -120,12 +120,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <CatalogTreeTableCell size="xsmall">
         <ArrowRightIcon />
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>

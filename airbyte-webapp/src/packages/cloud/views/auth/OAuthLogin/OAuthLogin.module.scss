@@ -1,10 +1,10 @@
-@use "../../../../../scss/variables" as vars;
-@use "../../../../../scss/colors";
+@use "scss/variables";
+@use "scss/colors";
 
 .buttons {
   display: grid;
   grid-template-columns: 1fr;
-  gap: vars.$spacing-sm;
+  gap: variables.$spacing-sm;
 }
 
 .spinner {
@@ -31,11 +31,11 @@
   font-size: 16px;
   font-weight: 500;
   width: 100%;
-  margin: vars.$spacing-sm auto;
-  padding: vars.$spacing-md;
-  gap: vars.$spacing-md;
-  border-radius: vars.$border-radius-md;
-  transition: all vars.$transition;
+  margin: variables.$spacing-sm auto;
+  padding: variables.$spacing-md;
+  gap: variables.$spacing-md;
+  border-radius: variables.$border-radius-md;
+  transition: all variables.$transition;
   cursor: pointer;
 
   &:hover,
@@ -49,6 +49,6 @@
 }
 
 .error {
-  margin-top: vars.$spacing-lg;
+  margin-top: variables.$spacing-lg;
   color: colors.$red;
 }

@@ -1,25 +1,36 @@
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
 import { KeyValueListField } from "./KeyValueListField";
-import { UserInputField } from "./UserInputField";
+import { inferredAuthValues } from "../types";
 
 export const AuthenticationSection: React.FC = () => {
+  const analyticsService = useAnalyticsService();
+
   return (
     <BuilderCard>
       <BuilderOneOf
         path="global.authenticator"
         label="Authentication"
         tooltip="Authentication method to use for requests sent to the API"
+        onSelect={(type) =>
+          analyticsService.track(Namespace.CONNECTOR_BUILDER, Action.AUTHENTICATION_METHOD_SELECT, {
+            actionDescription: "Authentication method selected",
+            auth_type: type,
+          })
+        }
         options={[
           { label: "No Auth", typeValue: "NoAuth" },
           {
             label: "API Key",
             typeValue: "ApiKeyAuthenticator",
             default: {
-              api_token: "{{ config['api_key'] }}",
+              ...inferredAuthValues("ApiKeyAuthenticator"),
               header: "",
             },
             children: (
@@ -30,9 +41,12 @@ export const AuthenticationSection: React.FC = () => {
                   label="Header"
                   tooltip="HTTP header which should be set to the API Key"
                 />
-                <UserInputField
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.api_token"
                   label="API Key"
                   tooltip="The API key issued by the service. Fill it in in the user inputs"
+                  readOnly
                 />
               </>
             ),
@@ -41,12 +55,15 @@ export const AuthenticationSection: React.FC = () => {
             label: "Bearer",
             typeValue: "BearerAuthenticator",
             default: {
-              api_token: "{{ config['api_key'] }}",
+              ...inferredAuthValues("BearerAuthenticator"),
             },
             children: (
-              <UserInputField
+              <BuilderField
+                type="string"
+                path="global.authenticator.api_token"
                 label="API Key"
                 tooltip="The API key issued by the service. Fill it in in the user inputs"
+                readOnly
               />
             ),
           },
@@ -54,13 +71,24 @@ export const AuthenticationSection: React.FC = () => {
             label: "Basic HTTP",
             typeValue: "BasicHttpAuthenticator",
             default: {
-              username: "{{ config['username'] }}",
-              password: "{{ config['password'] }}",
+              ...inferredAuthValues("BasicHttpAuthenticator"),
             },
             children: (
               <>
-                <UserInputField label="Username" tooltip="The username for the login. Fill it in in the user inputs" />
-                <UserInputField label="Password" tooltip="The password for the login. Fill it in in the user inputs" />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.username"
+                  label="Username"
+                  tooltip="The username for the login. Fill it in in the user inputs"
+                  readOnly
+                />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.password"
+                  label="Password"
+                  tooltip="The password for the login. Fill it in in the user inputs"
+                  readOnly
+                />
               </>
             ),
           },
@@ -68,9 +96,7 @@ export const AuthenticationSection: React.FC = () => {
             label: "OAuth",
             typeValue: "OAuthAuthenticator",
             default: {
-              client_id: "{{ config['client_id'] }}",
-              client_secret: "{{ config['client_secret'] }}",
-              refresh_token: "{{ config['client_refresh_token'] }}",
+              ...inferredAuthValues("OAuthAuthenticator"),
               refresh_request_body: [],
               token_refresh_endpoint: "",
             },
@@ -82,9 +108,27 @@ export const AuthenticationSection: React.FC = () => {
                   label="Token refresh endpoint"
                   tooltip="The URL to call to obtain a new access token"
                 />
-                <UserInputField label="Client ID" tooltip="The OAuth client ID" />
-                <UserInputField label="Client secret" tooltip="The OAuth client secret" />
-                <UserInputField label="Refresh token" tooltip="The OAuth refresh token" />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.client_id"
+                  label="Client ID"
+                  tooltip="The OAuth client ID. Fill it in in the user inputs"
+                  readOnly
+                />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.client_secret"
+                  label="Client secret"
+                  tooltip="The OAuth client secret. Fill it in in the user inputs"
+                  readOnly
+                />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.refresh_token"
+                  label="Refresh token"
+                  tooltip="The OAuth refresh token. Fill it in in the user inputs"
+                  readOnly
+                />
                 <BuilderOptional>
                   <BuilderField
                     type="array"
@@ -134,9 +178,7 @@ export const AuthenticationSection: React.FC = () => {
             label: "Session token",
             typeValue: "SessionTokenAuthenticator",
             default: {
-              username: "{{ config['username'] }}",
-              password: "{{ config['password'] }}",
-              session_token: "{{ config['session_token'] }}",
+              ...inferredAuthValues("SessionTokenAuthenticator"),
             },
             children: (
               <>
@@ -164,11 +206,26 @@ export const AuthenticationSection: React.FC = () => {
                   label="Validate session url"
                   tooltip="Url to validate passed session token"
                 />
-                <UserInputField label="Username" tooltip="The username" />
-                <UserInputField label="Password" tooltip="The password" />
-                <UserInputField
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.username"
+                  label="Username"
+                  tooltip="The username for the login. Fill it in in the user inputs"
+                  readOnly
+                />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.password"
+                  label="Password"
+                  tooltip="The password for the login. Fill it in in the user inputs"
+                  readOnly
+                />
+                <BuilderField
+                  type="string"
+                  path="global.authenticator.session_token"
                   label="Session token"
-                  tooltip="Session token generated by user (if provided username and password are not required)"
+                  tooltip="Session token generated by user (if provided, username and password are not required). Fill it in in the user inputs"
+                  readOnly
                 />
               </>
             ),

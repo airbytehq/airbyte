@@ -1,6 +1,5 @@
 @use "scss/colors";
 @use "scss/variables";
-@use "scss/z-indices";
 
 @mixin knob-transform($position, $size) {
   @if $position == left {
@@ -99,7 +98,6 @@
 
     &::before {
       position: absolute;
-      z-index: z-indices.$switchSliderBefore;
       content: "";
       background: colors.$white;
       transition: variables.$transition;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.acceptance;
@@ -148,6 +148,9 @@ class BasicAcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
 
   private static final String TYPE = "type";
+  private static final String REF = "$ref";
+  private static final String INTEGER_REFERENCE = "WellKnownTypes.json#/definitions/Integer";
+  private static final String STRING_REFERENCE = "WellKnownTypes.json#/definitions/String";
   private static final String PUBLIC = "public";
   private static final String E2E_TEST_SOURCE = "E2E Test Source -";
   private static final String INFINITE_FEED = "INFINITE_FEED";
@@ -337,7 +340,8 @@ class BasicAcceptanceTests {
         .destinationSyncMode(DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(STREAM_NAME.replace(".", "_"))
-        .selected(true);
+        .selected(true)
+        .suggested(true);
     final AirbyteCatalog expected = new AirbyteCatalog()
         .streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
             .stream(stream)
@@ -359,6 +363,7 @@ class BasicAcceptanceTests {
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode).setFieldSelectionEnabled(false));
     final ConnectionRead createdConnection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.BASIC, BASIC_SCHEDULE_DATA);
+    createdConnection.getSyncCatalog().getStreams().forEach(s -> s.getConfig().setSuggested(true));
 
     assertEquals(sourceId, createdConnection.getSourceId());
     assertEquals(destinationId, createdConnection.getDestinationId());
