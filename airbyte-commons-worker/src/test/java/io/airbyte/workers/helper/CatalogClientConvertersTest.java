@@ -65,4 +65,10 @@ class CatalogClientConvertersTest {
         CatalogClientConverters.toAirbyteCatalogClientApi(BASIC_MODEL_CATALOG));
   }
 
+  @Test
+  void testConvertToProtocol() {
+    assertEquals(BASIC_MODEL_CATALOG,
+        CatalogClientConverters.toAirbyteProtocol(EXPECTED_CLIENT_CATALOG));
+  }
+
 }
