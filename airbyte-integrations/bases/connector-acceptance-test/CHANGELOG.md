@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.3
+Spec tests: Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
+
 ## 0.5.2
 Check that `emitted_at` increases during subsequent reads. [#22291](https://github.com/airbytehq/airbyte/pull/22291)
 
