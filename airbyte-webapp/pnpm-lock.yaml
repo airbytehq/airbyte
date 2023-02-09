@@ -87,7 +87,7 @@ specifiers:
   jest-environment-jsdom: ^29.3.1
   js-yaml: ^4.1.0
   json-schema: ^0.4.0
-  launchdarkly-js-client-sdk: ^2.22.1
+  launchdarkly-js-client-sdk: ^3.1.0
   license-checker: ^25.0.1
   lint-staged: ^12.3.7
   lodash: ^4.17.21
@@ -175,7 +175,7 @@ dependencies:
   framer-motion: 6.5.1_sfoxds7t5ydpegc3knd667wn6m
   js-yaml: 4.1.0
   json-schema: 0.4.0
-  launchdarkly-js-client-sdk: 2.24.2
+  launchdarkly-js-client-sdk: 3.1.0
   lodash: 4.17.21
   monaco-editor: 0.34.1
   query-string: 6.14.1
@@ -10626,19 +10626,19 @@ packages:
       language-subtag-registry: 0.3.22
     dev: true
 
-  /launchdarkly-js-client-sdk/2.24.2:
-    resolution: {integrity: sha512-8jrLOia0vfZ4stqQRv9TjAYfRGK2JyWpLIL6PbTl99LqTtJMuYtryFUQp0b8WH1153YN+gVdoqPVI7uwbbzLLQ==}
+  /launchdarkly-js-client-sdk/3.1.0:
+    resolution: {integrity: sha512-8aM3Wp5ZAS/TCIELOYkEs4CFzih/g7sO+YCHNQ5g0k80WDMTmTcGLMLhCKmrzaQnMK21HiBwbkBpAYnyzr5yUQ==}
     dependencies:
       escape-string-regexp: 4.0.0
-      launchdarkly-js-sdk-common: 3.8.2
+      launchdarkly-js-sdk-common: 5.0.1
     dev: false
 
-  /launchdarkly-js-sdk-common/3.8.2:
-    resolution: {integrity: sha512-pEqZ3FTKtYrTaPdbPntFJs87svzcezrkoRWY2GEFmyPC33txOqU788x0yby2+haC/saFPNfXpH6bbiJE/GjMSA==}
+  /launchdarkly-js-sdk-common/5.0.1:
+    resolution: {integrity: sha512-NPPU/9bT4hUCbglCCMAm9XGDWnRKs3aJ1OMhRF8g6xTUWAjOO2FieoGjwVbUVvOYKIiINVVtAWUiuVYbix1lqw==}
     dependencies:
       base64-js: 1.5.1
       fast-deep-equal: 2.0.1
-      uuid: 3.4.0
+      uuid: 8.3.2
     dev: false
 
   /lazy-universal-dotenv/4.0.0:
@@ -15188,9 +15188,8 @@ packages:
     resolution: {integrity: sha512-dsNgbLaTrd6l3MMxTtouOCFw4CBFc/3a+GgYA2YyrJvyQ1u6q4pcu3ktLoUZ/VN/Aw9WsauazbgsgdfVWgAKQg==}
     dev: true
 
-  /uuid/3.4.0:
-    resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
-    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+  /uuid/8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
     dev: false
 

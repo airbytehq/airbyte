@@ -1,6 +1,7 @@
 import * as LDClient from "launchdarkly-js-client-sdk";
 import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
+import { matchPath, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import { finalize, Subject } from "rxjs";
 
@@ -13,6 +14,7 @@ import { useAppMonitoringService, AppActionCodes } from "hooks/services/AppMonit
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
 import { FeatureSet, FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { rejectAfter } from "utils/promises";
@@ -51,19 +53,29 @@ type LDInitState = "initializing" | "failed" | "initialized";
  */
 const INITIALIZATION_TIMEOUT = 5000;
 
-function mapUserToLDUser(user: User | null, locale: string): LDClient.LDUser {
-  return user
-    ? {
-        key: user.userId,
-        email: user.email,
-        name: user.name,
-        custom: { intercomHash: user.intercomHash, locale },
-        anonymous: false,
-      }
-    : {
-        anonymous: true,
-        custom: { locale },
-      };
+function mapUserToLDUser(user: User | null, locale: string, workspaceId: string | null): LDClient.LDUser {
+  if (!user) {
+    return {
+      anonymous: true,
+      custom: { locale },
+    };
+  }
+  /**
+   * Currently we can identify that a user is in a workspace with an optional workspaceId custom attribute.
+   * Once the LD Contexts feature is GA, we can upgrade the SDK and refactor this to support contexts:
+   * https://docs.launchdarkly.com/sdk/client-side/javascript/migration-2-to-3
+   */
+  const custom: Record<string, string> = { intercomHash: user.intercomHash, locale };
+  if (workspaceId) {
+    custom.workspace = workspaceId;
+  }
+  return {
+    key: user.userId,
+    email: user.email,
+    name: user.name,
+    custom,
+    anonymous: false,
+  };
 }
 
 const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string }>> = ({ children, apiKey }) => {
@@ -111,7 +123,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   };
 
   if (!ldClient.current) {
-    ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user, locale));
+    ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user, locale, null));
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
@@ -152,8 +164,27 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
 
   // Whenever the user should change (e.g. login/logout) we need to reidentify the changes with the LD client
   useEffect(() => {
-    ldClient.current?.identify(mapUserToLDUser(user, locale));
+    ldClient.current?.identify(mapUserToLDUser(user, locale, null));
   }, [locale, user]);
+
+  // If we're inside a workspace, we need to pass the workspaceId to launchdarkly
+  const currentWorkspaceId = useRef<string | null>(null);
+  const location = useLocation();
+  useEffect(() => {
+    // useParams() doesn't work, since we haven't rendered a route yet. We can match the path here using the same matchPath algorithm:
+    const workspaceMatch = matchPath({ path: `/${CloudRoutes.SelectWorkspace}/:workspaceId/*` }, location.pathname);
+    if (workspaceMatch) {
+      const workspaceId = workspaceMatch.params.workspaceId;
+      if (workspaceId && currentWorkspaceId.current !== workspaceId) {
+        currentWorkspaceId.current = workspaceId;
+        ldClient.current?.identify(mapUserToLDUser(user, locale, workspaceId));
+      }
+    } else if (currentWorkspaceId.current !== null) {
+      // Reidentify the user if the navigate to a page outside the /workspaces/:workspaceId/* tree
+      currentWorkspaceId.current = null;
+      ldClient.current?.identify(mapUserToLDUser(user, locale, null));
+    }
+  }, [location.pathname, locale, user]);
 
   // Show the loading page while we're still waiting for the initial set of feature flags (or them to time out)
   if (state === "initializing") {

@@ -55,7 +55,7 @@
     "framer-motion": "^6.3.11",
     "js-yaml": "^4.1.0",
     "json-schema": "^0.4.0",
-    "launchdarkly-js-client-sdk": "^2.22.1",
+    "launchdarkly-js-client-sdk": "^3.1.0",
     "lodash": "^4.17.21",
     "monaco-editor": "^0.34.1",
     "query-string": "^6.13.1",
