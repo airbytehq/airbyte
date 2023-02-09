@@ -37,10 +37,9 @@ describe("SchemaChangesBackdrop", () => {
       schemaRefreshing: false,
     });
 
-    const renderResult = renderComponent();
-    const { getByTestId } = renderResult;
+    const { getByTestId } = renderComponent();
 
-    expect(renderResult).toMatchSnapshot();
+    expect(getByTestId("schemaChangesBackdrop")).toMatchSnapshot();
     userEvent.click(getByTestId("bg-button"));
     expect(buttonSpy).not.toHaveBeenCalled();
   });

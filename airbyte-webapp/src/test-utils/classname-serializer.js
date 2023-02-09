@@ -18,7 +18,8 @@ const traverseAndRedactClasses = (node) => {
 module.exports = {
   serialize(val, config) {
     // Clone the whole rendered DOM tree, since we're modifying it
-    const clone = val.baseElement.cloneNode(true);
+    const element = val instanceof HTMLElement ? val : val.baseElement;
+    const clone = element.cloneNode(true);
     // Redact all classnames
     traverseAndRedactClasses(clone);
     // Use prettyDOM to format the modified DOM as a string.
@@ -31,6 +32,6 @@ module.exports = {
   test(val) {
     // Only use this serializer when creating a snapshot of RenderResult, which is
     // the return value of testing-library/react's render method.
-    return val && val.baseElement && val.baseElement instanceof Element;
+    return val && ((val.baseElement && val.baseElement instanceof Element) || val instanceof HTMLElement);
   },
 };
