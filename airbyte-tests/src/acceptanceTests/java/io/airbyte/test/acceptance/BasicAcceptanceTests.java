@@ -140,6 +140,7 @@ class BasicAcceptanceTests {
   private static final Boolean WITH_SCD_TABLE = true;
 
   private static final Boolean WITHOUT_SCD_TABLE = false;
+  public static final String BASE_PATH = "/api";
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
@@ -168,21 +169,70 @@ class BasicAcceptanceTests {
   private static final ConnectionScheduleData BASIC_SCHEDULE_DATA = new ConnectionScheduleData().basicSchedule(
       new ConnectionScheduleDataBasicSchedule().units(1L).timeUnit(TimeUnitEnum.HOURS));
 
+  private static final void initClientsAndWorkspace() throws ApiException {
+    if (System.getenv().containsKey("AIRBYTE_REMOTE_TEST_ENDPOINT")) {
+      final String remoteEndpoint = System.getenv("AIRBYTE_REMOTE_TEST_ENDPOINT");
+      final String remoteEndpointAuthHeader = System.getenv("AIRBYTE_REMOTE_TEST_AUTH_HEADER");
+      final UUID remoteEndpointWorkspaceId = UUID.fromString(System.getenv("AIRBYTE_REMOTE_WORKSPACE_ID"));
+      if (remoteEndpoint.isEmpty()) {
+        throw new RuntimeException("Empty remote test endpoint");
+      }
+      if (remoteEndpointAuthHeader == null || remoteEndpointAuthHeader.isEmpty()) {
+        throw new RuntimeException("Empty remote test auth header");
+      }
+      if (remoteEndpointWorkspaceId == null) {
+        throw new RuntimeException("No remote workspace id");
+      }
+      LOGGER.info("Running acceptance tests with remote endpoint {}, auth header {}, and workspace id {}", remoteEndpoint, remoteEndpointAuthHeader,
+          remoteEndpointWorkspaceId);
+      apiClient = new AirbyteApiClient(
+          new ApiClient()
+              .setScheme("https")
+              .setPort(443)
+              .setHost(remoteEndpoint)
+              .setRequestInterceptor(builder -> {
+                builder.setHeader("Authorization", String.format("Bearer %s", remoteEndpointAuthHeader));
+                builder.setHeader("Referrer", "https://dev-1-cloud.airbyte.io/");
+                LOGGER.info("Request URI: {}", builder.build().uri());
+                LOGGER.info("Headers: {}", builder.build().headers());
+              })
+              .setResponseInterceptor(response -> {
+                LOGGER.info("Response URI: {}", response.uri());
+                LOGGER.info("response status: {}", response.statusCode());
+              })
+              .setBasePath(BASE_PATH));
+      webBackendApi = new WebBackendApi(
+          new ApiClient()
+              .setScheme("https")
+              .setPort(443)
+              .setHost(remoteEndpoint)
+              .setRequestInterceptor(builder -> {
+                builder.setHeader("Authorization", String.format("Bearer %s", remoteEndpointAuthHeader));
+              })
+              .setBasePath(BASE_PATH));
+      workspaceId = remoteEndpointWorkspaceId;
+    } else {
+      apiClient = new AirbyteApiClient(
+          new ApiClient().setScheme("http")
+              .setHost("localhost")
+              .setPort(8001)
+              .setBasePath(BASE_PATH));
+      webBackendApi = new WebBackendApi(
+          new ApiClient().setScheme("http")
+              .setHost("localhost")
+              .setPort(8001)
+              .setBasePath(BASE_PATH));
+      // work in whatever default workspace is present.
+      workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
+    }
+  }
+
   @BeforeAll
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
-    apiClient = new AirbyteApiClient(
-        new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
-            .setBasePath("/api"));
-    webBackendApi = new WebBackendApi(
-        new ApiClient().setScheme("http")
-            .setHost("localhost")
-            .setPort(8001)
-            .setBasePath("/api"));
-    // work in whatever default workspace is present.
-    workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
+    initClientsAndWorkspace();
     LOGGER.info("workspaceId = " + workspaceId);
+    LOGGER.info("apiClient: {}", apiClient);
+    LOGGER.info("source definition api: {}", apiClient.getSourceDefinitionApi());
 
     // log which connectors are being used.
     final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
@@ -1431,6 +1481,7 @@ class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    assertNotNull(catalog);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
     catalog.getStreams().forEach(s -> s.getConfig()

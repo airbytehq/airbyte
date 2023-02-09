@@ -161,6 +161,7 @@ public class AirbyteAcceptanceTestHarness {
   private static boolean isGke;
   private static boolean isMac;
   private static boolean useExternalDeployment;
+  private static boolean useRemoteDeployment;
 
   /**
    * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
@@ -275,6 +276,8 @@ public class AirbyteAcceptanceTestHarness {
         }
       }
       database.query(context -> context.execute(query.toString()));
+    } else if (useRemoteDeployment) {
+
     } else {
       PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(postgresSqlInitFile), sourcePsql);
 
@@ -319,6 +322,7 @@ public class AirbyteAcceptanceTestHarness {
     useExternalDeployment =
         System.getenv("USE_EXTERNAL_DEPLOYMENT") != null &&
             System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
+    useRemoteDeployment = System.getenv().containsKey("AIRBYTE_REMOTE_TEST_ENDPOINT");
   }
 
   private WorkflowClient getWorkflowClient() {
@@ -354,7 +358,9 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
-    return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
+    final var resp = apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId));
+    LOGGER.info("response: {}", resp);
+    return resp.getCatalog();
   }
 
   public AirbyteCatalog discoverSourceSchemaWithoutCache(final UUID sourceId) throws ApiException {
