@@ -192,6 +192,7 @@ class RestSalesforceStream(SalesforceStream):
         next_pages = {}
 
         while not pagination_complete:
+            index = 0
             for index, property_chunk in enumerate(self.chunk_properties()):
                 request, response = self._fetch_next_page(stream_slice, stream_state, next_pages.get(index), property_chunk)
                 next_page_token = self.next_page_token(response)
@@ -207,10 +208,22 @@ class RestSalesforceStream(SalesforceStream):
 
                 for record_id, record in chunk_page_records.items():
                     if record_id not in records:
-                        records[record_id] = record
-                    records[record_id].update(record)
+                        records[record_id] = (record, 0)
+                        continue
+                    incomplete_record, counter = records[record_id]
+                    incomplete_record.update(record)
+                    counter += 1
+                    records[record_id] = (incomplete_record, counter)
 
-            yield from records.values()
+            for record_id, (record, counter) in records.items():
+                if counter != index:
+                    # Because we make multiple calls to query N records (each call to fetch X properties of all the N records),
+                    # there's a chance that the number of records corresponding to the query may change between the calls. This
+                    # may result in data inconsistency. We skip such records for now and log a warning message.
+                    self.logger.warning(f"Inconsistent record with primary key {record_id} found. Skipping it.")
+                    continue
+                yield record
+
             records = {}
 
             if not next_page_token:
