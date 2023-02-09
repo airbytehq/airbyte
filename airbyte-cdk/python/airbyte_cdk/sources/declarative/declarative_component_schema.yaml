@@ -727,20 +727,20 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
-  ListStreamSlicer:
+  ListPartitionRouter:
     description: Partition router that is used to retrieve records that have been partitioned according to a list of values
     type: object
     required:
       - type
       - cursor_field
-      - slice_values
+      - values
     properties:
       type:
         type: string
-        enum: [ListStreamSlicer]
+        enum: [ListPartitionRouter]
       cursor_field:
         type: string
-      slice_values:
+      values:
         anyOf:
           - type: string
           - type: array
@@ -1014,13 +1014,13 @@ definitions:
         description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         anyOf:
           - "$ref": "#/definitions/CustomPartitionRouter"
-          - "$ref": "#/definitions/ListStreamSlicer"
+          - "$ref": "#/definitions/ListPartitionRouter"
           - "$ref": "#/definitions/SubstreamPartitionRouter"
           - type: array
             items:
               anyOf:
                 - "$ref": "#/definitions/CustomPartitionRouter"
-                - "$ref": "#/definitions/ListStreamSlicer"
+                - "$ref": "#/definitions/ListPartitionRouter"
                 - "$ref": "#/definitions/SubstreamPartitionRouter"
       $parameters:
         type: object

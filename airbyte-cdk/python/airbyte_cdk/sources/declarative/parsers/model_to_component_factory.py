@@ -53,7 +53,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListStreamSlicer as ListStreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
@@ -72,7 +72,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
-from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
@@ -91,12 +91,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import (
-    CartesianProductStreamSlicer,
-    DatetimeStreamSlicer,
-    ListStreamSlicer,
-    StreamSlicer,
-)
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer, StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
@@ -146,7 +141,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
-            ListStreamSlicerModel: self.create_list_stream_slicer,
+            ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
@@ -579,7 +574,7 @@ class ModelToComponentFactory:
         return JsonFileSchemaLoader(file_path=model.file_path, config=config, parameters=model.parameters)
 
     @staticmethod
-    def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config, **kwargs) -> ListStreamSlicer:
+    def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs) -> ListPartitionRouter:
         request_option = (
             RequestOption(
                 inject_into=RequestOptionType(model.request_option.inject_into.value),
@@ -589,10 +584,10 @@ class ModelToComponentFactory:
             if model.request_option
             else None
         )
-        return ListStreamSlicer(
+        return ListPartitionRouter(
             cursor_field=model.cursor_field,
             request_option=request_option,
-            slice_values=model.slice_values,
+            values=model.values,
             config=config,
             parameters=model.parameters,
         )

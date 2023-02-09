@@ -398,10 +398,10 @@ class DpathExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class ListStreamSlicer(BaseModel):
-    type: Literal["ListStreamSlicer"]
+class ListPartitionRouter(BaseModel):
+    type: Literal["ListPartitionRouter"]
     cursor_field: str
-    slice_values: Union[str, List[str]]
+    values: Union[str, List[str]]
     request_option: Optional[RequestOption] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -516,9 +516,9 @@ class SimpleRetriever(BaseModel):
     partition_router: Optional[
         Union[
             CustomPartitionRouter,
-            ListStreamSlicer,
+            ListPartitionRouter,
             SubstreamPartitionRouter,
-            List[Union[CustomPartitionRouter, ListStreamSlicer, SubstreamPartitionRouter]],
+            List[Union[CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter]],
         ]
     ] = Field(
         [],

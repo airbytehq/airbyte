@@ -21,7 +21,7 @@ from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as Dateti
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequesterModel
-from airbyte_cdk.sources.declarative.models import ListStreamSlicer as ListStreamSlicerModel
+from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
@@ -29,7 +29,7 @@ from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as S
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from airbyte_cdk.sources.declarative.partition_routers import SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -48,7 +48,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer, ListStreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -291,27 +291,29 @@ def test_list_based_stream_slicer_with_values_refd():
     content = """
     repositories: ["airbyte", "airbyte-cloud"]
     partition_router:
-      type: ListStreamSlicer
-      slice_values: "#/repositories"
+      type: ListPartitionRouter
+      values: "#/repositories"
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
-    stream_slicer = factory.create_component(
-        model_type=ListStreamSlicerModel, component_definition=partition_router_manifest, config=input_config
+    partition_router = factory.create_component(
+        model_type=ListPartitionRouterModel,
+        component_definition=partition_router_manifest,
+        config=input_config
     )
 
-    assert isinstance(stream_slicer, ListStreamSlicer)
-    assert stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
+    assert isinstance(partition_router, ListPartitionRouter)
+    assert partition_router.values == ["airbyte", "airbyte-cloud"]
 
 
 def test_list_based_stream_slicer_with_values_defined_in_config():
     content = """
     partition_router:
-      type: ListStreamSlicer
-      slice_values: "{{config['repos']}}"
+      type: ListPartitionRouter
+      values: "{{config['repos']}}"
       cursor_field: repository
       request_option:
         type: RequestOption
@@ -322,14 +324,16 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
-    stream_slicer = factory.create_component(
-        model_type=ListStreamSlicerModel, component_definition=partition_router_manifest, config=input_config
+    partition_router = factory.create_component(
+        model_type=ListPartitionRouterModel,
+        component_definition=partition_router_manifest,
+        config=input_config
     )
 
-    assert isinstance(stream_slicer, ListStreamSlicer)
-    assert stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
-    assert stream_slicer.request_option.inject_into == RequestOptionType.header
-    assert stream_slicer.request_option.field_name == "repository"
+    assert isinstance(partition_router, ListPartitionRouter)
+    assert partition_router.values == ["airbyte", "airbyte-cloud"]
+    assert partition_router.request_option.inject_into == RequestOptionType.header
+    assert partition_router.request_option.field_name == "repository"
 
 
 def test_create_substream_partition_router():
@@ -502,8 +506,8 @@ list_stream:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
     partition_router:
-      type: ListStreamSlicer
-      slice_values: "{{config['repos']}}"
+      type: ListPartitionRouter
+      values: "{{config['repos']}}"
       cursor_field: a_key
       request_option:
         inject_into: header
@@ -554,8 +558,8 @@ list_stream:
     assert datetime_stream_slicer.cursor_field.string == "created"
 
     list_stream_slicer = stream.retriever.stream_slicer.stream_slicers[1]
-    assert isinstance(list_stream_slicer, ListStreamSlicer)
-    assert list_stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
+    assert isinstance(list_stream_slicer, ListPartitionRouter)
+    assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
     assert list_stream_slicer.cursor_field.string == "a_key"
 
 
@@ -1157,11 +1161,11 @@ class TestCreateTransformations:
         pytest.param(
             None,
             {
-                "type": "ListStreamSlicer",
-                "slice_values": "{{config['repos']}}",
+                "type": "ListPartitionRouter",
+                "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
-            ListStreamSlicer,
+            ListPartitionRouter,
             1,
             id="test_create_simple_retriever_with_partition_router",
         ),
@@ -1176,8 +1180,8 @@ class TestCreateTransformations:
                 "cursor_granularity": "PT0.000001S",
             },
             {
-                "type": "ListStreamSlicer",
-                "slice_values": "{{config['repos']}}",
+                "type": "ListPartitionRouter",
+                "values": "{{config['repos']}}",
                 "cursor_field": "a_key",
             },
             CartesianProductStreamSlicer,
@@ -1196,13 +1200,13 @@ class TestCreateTransformations:
             },
             [
                 {
-                    "type": "ListStreamSlicer",
-                    "slice_values": "{{config['repos']}}",
+                    "type": "ListPartitionRouter",
+                    "values": "{{config['repos']}}",
                     "cursor_field": "a_key",
                 },
                 {
-                    "type": "ListStreamSlicer",
-                    "slice_values": "{{config['repos']}}",
+                    "type": "ListPartitionRouter",
+                    "values": "{{config['repos']}}",
                     "cursor_field": "b_key",
                 },
             ],
