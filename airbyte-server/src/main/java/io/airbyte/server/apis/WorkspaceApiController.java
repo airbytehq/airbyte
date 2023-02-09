@@ -20,7 +20,6 @@ import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.WorkspacesHandler;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -30,8 +29,6 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/workspaces")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class WorkspaceApiController implements WorkspaceApi {

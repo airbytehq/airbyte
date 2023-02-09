@@ -9,7 +9,7 @@ import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
-import io.airbyte.workers.helper.StateConverter;
+import io.airbyte.converters.StateConverter;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Optional;

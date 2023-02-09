@@ -28,7 +28,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.State;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.workers.helper.StateConverter;
+import io.airbyte.converters.StateConverter;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
