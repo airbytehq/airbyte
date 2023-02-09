@@ -73,6 +73,8 @@ public class OrchestratorConstants {
           EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
           EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
           EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES,
+          EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES,
+          EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG,
           FEATURE_FLAG_CLIENT,
           FEATURE_FLAG_PATH,
           EnvConfigs.LAUNCHDARKLY_KEY,
