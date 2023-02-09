@@ -21,7 +21,7 @@ class StripeSubStreamAvailabilityStrategy(HttpAvailabilityStrategy):
             # Accessing the `availability_strategy` property will instantiate AvailabilityStrategy under the hood
             availability_strategy = parent_stream_instance.availability_strategy
             if availability_strategy:
-                available, reason = availability_strategy.check_availability(parent_stream_instance, logger, source)
-                if not available:
-                    return available, reason
+                is_available, reason = availability_strategy.check_availability(parent_stream_instance, logger, source)
+                if not is_available:
+                    return is_available, reason
         return super().check_availability(stream, logger, source)
