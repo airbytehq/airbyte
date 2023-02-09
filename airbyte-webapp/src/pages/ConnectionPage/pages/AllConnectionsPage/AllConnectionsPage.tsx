@@ -1,28 +1,32 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import {
-  Button,
-  LoadingPage,
-  MainPageWithScroll,
-  PageTitle,
-  // DropDown, DropDownRow
-} from "components";
+import { Button, LoadingPage, MainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
-// import { Pagination } from "components/Pagination";
-// import { Separator } from "components/Separator";
+import { Pagination } from "components/Pagination";
+import { Separator } from "components/Separator";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useDestinationOptionList } from "hooks/services/useDestinationHook";
+import { useSourceOptionList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
+
+interface ConnectionsFilterState {
+  pageSize: number;
+  pageCurrent: number;
+  status: string;
+  sourceId: string;
+  destinationId: string;
+}
 
 const BtnInnerContainer = styled.div`
   width: 100%;
@@ -43,28 +47,28 @@ const BtnText = styled.div`
   color: #ffffff;
 `;
 
-// const DDsContainer = styled.div`
-//   width: 100%;
-//   display: flex;
-//   align-items: center;
-//   justify-content: flex-end;
-//   padding: 0 32px;
-// `;
+const DDsContainer = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 32px;
+`;
 
-// const DDContainer = styled.div<{
-//   margin?: string;
-// }>`
-//   width: 216px;
-//   margin: ${({ margin }) => margin};
-// `;
+const DDContainer = styled.div<{
+  margin?: string;
+}>`
+  width: 216px;
+  margin: ${({ margin }) => margin};
+`;
 
-// const Footer = styled.div`
-//   width: 100%;
-//   display: flex;
-//   flex-direction: row;
-//   align-items: center;
-//   justify-content: center;
-// `;
+const Footer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`;
 
 const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
@@ -72,19 +76,32 @@ const AllConnectionsPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
 
+  const sourceOptions = useSourceOptionList();
+  const destinationOptions = useDestinationOptionList();
+  const statusOptions: DropDownRow.IDataItem[] = [
+    { label: "All Status", value: "All Status" },
+    { label: "Active", value: "Active" },
+    { label: "Inactive", value: "Inactive" },
+  ];
+
+  const [filters, setFilters] = useState<ConnectionsFilterState>({
+    pageSize: 10,
+    pageCurrent: 1,
+    status: statusOptions[0].value,
+    sourceId: sourceOptions[0].value,
+    destinationId: destinationOptions[0].value,
+  });
+
+  const onSelectFilter = (
+    filterType: "pageCurrent" | "status" | "sourceId" | "destinationId",
+    option: DropDownRow.IDataItem
+  ) => {
+    setFilters({ ...filters, [filterType]: option.value });
+  };
+
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
   const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
-
-  // const StatusOptions: DropDownRow.IDataItem[] = [
-  //   { label: "All status", value: "All status" },
-  //   { label: "Active", value: "Active" },
-  //   { label: "Inactive", value: "Inactive" },
-  // ];
-
-  // const SourceOptions: DropDownRow.IDataItem[] = [{ label: "All sources", value: "All sources" }];
-
-  // const DestinationOptions: DropDownRow.IDataItem[] = [{ label: "All destinations", value: "All destinations" }];
 
   return (
     <Suspense fallback={<LoadingPage />}>
@@ -108,24 +125,42 @@ const AllConnectionsPage: React.FC = () => {
             />
           }
         >
-          {/* <Separator />
+          <Separator />
           <DDsContainer>
             <DDContainer margin="0 24px 0 0">
-              <DropDown $withBorder $background="white" value={StatusOptions[0].value} options={StatusOptions} />
+              <DropDown
+                $withBorder
+                $background="white"
+                value={filters.status}
+                options={statusOptions}
+                onChange={(option) => onSelectFilter("status", option)}
+              />
             </DDContainer>
             <DDContainer margin="0 24px 0 0">
-              <DropDown $withBorder $background="white" value={SourceOptions[0].value} options={SourceOptions} />
+              <DropDown
+                $withBorder
+                $background="white"
+                value={filters.sourceId}
+                options={sourceOptions}
+                onChange={(option) => onSelectFilter("sourceId", option)}
+              />
             </DDContainer>
             <DDContainer>
-              <DropDown $withBorder $background="white" value={DestinationOptions[0].value} options={DestinationOptions} />
+              <DropDown
+                $withBorder
+                $background="white"
+                value={filters.destinationId}
+                options={destinationOptions}
+                onChange={(option) => onSelectFilter("destinationId", option)}
+              />
             </DDContainer>
           </DDsContainer>
-          <Separator height="24px" /> */}
+          <Separator height="24px" />
           <ConnectionsTable connections={connections} />
-          {/* <Separator height="54px" />
+          <Separator height="54px" />
           <Footer>
             <Pagination />
-          </Footer> */}
+          </Footer>
         </MainPageWithScroll>
       ) : (
         <EmptyResourceListView
