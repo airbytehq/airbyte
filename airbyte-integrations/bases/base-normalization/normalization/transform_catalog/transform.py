@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -98,6 +98,13 @@ def extract_schema(profiles_yml: Dict) -> str:
         return str(profiles_yml["schema"])
     else:
         raise KeyError("No Dataset/Schema defined in profiles.yml")
+
+
+def extract_path(profiles_yml: Dict) -> str:
+    if "path" in profiles_yml:
+        return str(profiles_yml["path"])
+    else:
+        raise KeyError("No destination_path defined in profiles.yml")
 
 
 def main(args=None):

@@ -1,6 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+import datetime
 
 import pytest
 from airbyte_cdk.sources.streams.http.auth import NoAuth
@@ -9,14 +11,15 @@ from source_gitlab.streams import Commits, Jobs, MergeRequestCommits, MergeReque
 auth_params = {"authenticator": NoAuth(), "api_url": "gitlab.com"}
 
 
+start_date = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=14)
 projects = Projects(project_ids=["p_1"], **auth_params)
-pipelines = Pipelines(parent_stream=projects, start_date="2021-01-01T00:00:00Z", **auth_params)
-merge_requests = MergeRequests(parent_stream=projects, start_date="2021-01-01T00:00:00Z", **auth_params)
+pipelines = Pipelines(parent_stream=projects, start_date=str(start_date), **auth_params)
+merge_requests = MergeRequests(parent_stream=projects, start_date=str(start_date), **auth_params)
 tags = Tags(parent_stream=projects, repository_part=True, **auth_params)
 releases = Releases(parent_stream=projects, **auth_params)
 jobs = Jobs(parent_stream=pipelines, **auth_params)
 merge_request_commits = MergeRequestCommits(parent_stream=merge_requests, **auth_params)
-commits = Commits(parent_stream=projects, repository_part=True, start_date="2021-01-01T00:00:00Z", **auth_params)
+commits = Commits(parent_stream=projects, repository_part=True, start_date=str(start_date), **auth_params)
 
 
 def test_should_retry(mocker, requests_mock):

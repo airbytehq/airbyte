@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,13 +56,13 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   }
 
   @Override
-  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
-    boolean didFlush = false;
+  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    Optional<BufferFlushType> flushed = Optional.empty();
 
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
       flushAll();
-      didFlush = true;
+      flushed = Optional.of(BufferFlushType.FLUSH_ALL);
       bufferSizeInBytes = 0;
     }
 
@@ -69,7 +70,7 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     bufferedRecords.add(message.getRecord());
     bufferSizeInBytes += messageSizeInBytes;
 
-    return didFlush;
+    return flushed;
   }
 
   @Override

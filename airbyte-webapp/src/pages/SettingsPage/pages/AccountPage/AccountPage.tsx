@@ -6,8 +6,8 @@ import { HeadTitle } from "components/common/HeadTitle";
 import useWorkspaceEditor from "pages/SettingsPage/components/useWorkspaceEditor";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { Content, SettingsCard } from "../SettingsComponents";
 import AccountForm from "./components/AccountForm";
+import { Content, SettingsCard } from "../SettingsComponents";
 
 const AccountPage: React.FC = () => {
   const workspace = useCurrentWorkspace();

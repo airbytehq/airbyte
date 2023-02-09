@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -15,8 +15,10 @@ import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
+import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerConfigs;
@@ -51,15 +53,26 @@ class AirbyteIntegrationLauncherTest {
       CATALOG, "{}",
       "state", "{}");
 
-  private static final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
-  private static final Map<String, String> JOB_METADATA = Map.of(
-      WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
-      WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
-      WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
-      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()),
-      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()),
-      EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()),
-      EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces());
+  private static final FeatureFlags FEATURE_FLAGS = new EnvVariableFeatureFlags();
+  private static final Configs CONFIGS = new EnvConfigs();
+
+  private static final Map<String, String> JOB_METADATA =
+      Maps.newHashMap(
+          ImmutableMap.<String, String>builder()
+              .put(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE)
+              .put(WorkerEnvConstants.WORKER_JOB_ID, JOB_ID)
+              .put(WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT))
+              .put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(FEATURE_FLAGS.useStreamCapableState()))
+              .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(FEATURE_FLAGS.autoDetectSchema()))
+              .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(FEATURE_FLAGS.applyFieldSelection()))
+              .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, FEATURE_FLAGS.fieldSelectionWorkspaces())
+              .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES, FEATURE_FLAGS.strictComparisonNormalizationWorkspaces())
+              .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, FEATURE_FLAGS.strictComparisonNormalizationTag())
+              .put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, CONFIGS.getSocatSidecarKubeCpuLimit())
+              .put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, CONFIGS.getSocatSidecarKubeCpuRequest())
+              .put(EnvConfigs.LAUNCHDARKLY_KEY, CONFIGS.getLaunchDarklyKey())
+              .put(EnvConfigs.FEATURE_FLAG_CLIENT, CONFIGS.getFeatureFlagClient())
+              .build());
 
   private WorkerConfigs workerConfigs;
   @Mock
@@ -69,8 +82,8 @@ class AirbyteIntegrationLauncherTest {
   @BeforeEach
   void setUp() {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), false,
-        featureFlags);
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), null, false,
+        FEATURE_FLAGS);
   }
 
   @Test
@@ -78,7 +91,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, Collections.emptyMap(), null,
-        workerConfigs.getResourceRequirements(), Map.of(JOB_TYPE_KEY, SPEC_JOB), JOB_METADATA,
+        workerConfigs.getResourceRequirements(), null, Map.of(JOB_TYPE_KEY, SPEC_JOB), JOB_METADATA,
         Map.of(),
         "spec");
   }
@@ -89,6 +102,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(CHECK_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
+        null,
         Map.of(JOB_TYPE_KEY, CHECK_JOB),
         JOB_METADATA,
         Map.of(),
@@ -102,6 +116,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(DISCOVER_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
+        null,
         Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         JOB_METADATA,
         Map.of(),
@@ -115,6 +130,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
+        null,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         JOB_METADATA,
         Map.of(),
@@ -131,6 +147,7 @@ class AirbyteIntegrationLauncherTest {
 
     Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
+        null,
         Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         JOB_METADATA,
         Map.of(),

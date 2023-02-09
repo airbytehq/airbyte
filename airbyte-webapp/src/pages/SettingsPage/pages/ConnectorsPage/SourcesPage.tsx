@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
@@ -15,12 +15,15 @@ const SourcesPage: React.FC = () => {
 
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
+  const feedbackListRef = useRef(feedbackList);
+  feedbackListRef.current = feedbackList;
 
   const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
+  const [updatingDefinitionId, setUpdatingDefinitionId] = useState<string>();
 
   const { hasNewSourceVersion } = useGetConnectorsOutOfDate();
   const { updateAllSourceVersions } = useUpdateSourceDefinitions();
@@ -28,20 +31,23 @@ const SourcesPage: React.FC = () => {
   const onUpdateVersion = useCallback(
     async ({ id, version }: { id: string; version: string }) => {
       try {
+        setUpdatingDefinitionId(id);
         await updateSourceDefinition({
           sourceDefinitionId: id,
           dockerImageTag: version,
         });
-        setFeedbackList({ ...feedbackList, [id]: "success" });
+        setFeedbackList({ ...feedbackListRef.current, [id]: "success" });
       } catch (e) {
         const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
-          ...feedbackList,
+          ...feedbackListRef.current,
           [id]: formatMessage({ id: messageId }),
         });
+      } finally {
+        setUpdatingDefinitionId(undefined);
       }
     },
-    [feedbackList, formatMessage, updateSourceDefinition]
+    [formatMessage, updateSourceDefinition]
   );
 
   const usedSourcesDefinitions: SourceDefinitionRead[] = useMemo(() => {
@@ -72,6 +78,7 @@ const SourcesPage: React.FC = () => {
     <ConnectorsView
       type="sources"
       loading={loading}
+      updatingDefinitionId={updatingDefinitionId}
       error={error}
       isUpdateSuccess={isUpdateSuccess}
       hasNewConnectorVersion={hasNewSourceVersion}

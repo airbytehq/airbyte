@@ -47,15 +47,13 @@ describe("#progressBarCalculations", () => {
   });
 });
 
-const makeAttempt = (
-  totalStats: AttemptStats = {},
-  streamStats: AttemptStreamStats[] = [],
+const makeAttempt = (totalStats: AttemptStats = {}, streamStats: AttemptStreamStats[] = []) => {
+  const now = Date.now();
   // API returns time in seconds
-  createdAt = Date.now() / 1000 - 10,
-  updatedAt = Date.now() / 1000,
-  id = 123,
-  status: AttemptStatus = "running"
-) => {
+  const createdAt = now / 1000 - 10;
+  const updatedAt = now / 1000;
+  const id = 123;
+  const status: AttemptStatus = "running";
   const attempt: AttemptRead = { id, status, createdAt, updatedAt, totalStats, streamStats };
   return attempt;
 };

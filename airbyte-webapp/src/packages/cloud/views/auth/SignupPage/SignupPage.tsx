@@ -2,16 +2,18 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { HeadTitle } from "components/common/HeadTitle";
+import { FlexContainer } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useExperiment } from "hooks/services/Experiment";
 
-import { OAuthLogin } from "../OAuthLogin";
 import { Separator } from "./components/Separator";
 import { Disclaimer, SignupForm } from "./components/SignupForm";
+import { SimpleLeftSide } from "./components/SimpleLeftSide/SimpleLeftSide";
 import SpecialBlock from "./components/SpecialBlock";
 import styles from "./SignupPage.module.scss";
+import { OAuthLogin } from "../OAuthLogin";
 
 interface SignupPageProps {
   highlightStyle?: React.CSSProperties;
@@ -19,10 +21,13 @@ interface SignupPageProps {
 
 const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
   useTrackPage(PageTrackingCodes.SIGNUP);
-  const oAuthPosition = useExperiment("authPage.oauth.position", "bottom");
+  const isSimpleLeftSide = useExperiment("authPage.signup.simplifyLeftSide", false);
 
+  if (isSimpleLeftSide) {
+    return <SimpleLeftSide />;
+  }
   return (
-    <div className={styles.container}>
+    <FlexContainer direction="column" gap="xl">
       <HeadTitle titles={[{ id: "login.signup" }]} />
       <Heading as="h1" size="xl" className={styles.title}>
         <FormattedMessage
@@ -37,21 +42,12 @@ const SignupPage: React.FC<SignupPageProps> = ({ highlightStyle }) => {
         />
       </Heading>
       <SpecialBlock />
-      {oAuthPosition === "top" && (
-        <>
-          <OAuthLogin isSignUpPage />
-          <Separator />
-        </>
-      )}
+
+      <OAuthLogin />
+      <Separator />
       <SignupForm />
-      {oAuthPosition === "bottom" && (
-        <>
-          <Separator />
-          <OAuthLogin isSignUpPage />
-        </>
-      )}
       <Disclaimer />
-    </div>
+    </FlexContainer>
   );
 };
 

@@ -5,7 +5,16 @@ const streamWithChangesToggleBtn = (streamName: string) =>
   `button[data-testid='toggle-accordion-${streamName}-stream']`;
 export const removedFieldsTable = "table[aria-label='removed fields']";
 export const newFieldsTable = "table[aria-label='new fields']";
+export const closeButton = "[data-testid='update-schema-confirm-btn']";
+
+export const checkCatalogDiffModal = () => {
+  cy.get(catalogDiffModal).should("exist");
+};
 
 export const toggleStreamWithChangesAccordion = (streamName: string) => {
   cy.get(streamWithChangesToggleBtn(streamName)).click();
+};
+
+export const clickCatalogDiffCloseButton = () => {
+  cy.get(closeButton).click();
 };

@@ -8,8 +8,8 @@ import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
-import { useConnectorForm } from "../../connectorFormContext";
 import { FormSection } from "./FormSection";
+import { useConnectorForm } from "../../connectorFormContext";
 
 interface VariableInputFormProps {
   formField: FormObjectArrayItem;
