@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
 
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.protocol.models.v0.CatalogHelpers.fieldsToJsonSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -161,6 +162,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
 
+    logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog);
+
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
             emittedAt);
@@ -178,6 +181,36 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
         });
+  }
+
+  // in case of user manually modified source table schema but did not refresh it and save into the
+  // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
+  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     ConfiguredAirbyteCatalog catalog) {
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
+      final AirbyteStream stream = airbyteStream.getStream();
+      final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+          stream.getName());
+      if (!fullyQualifiedTableNameToInfo.containsKey(fullyQualifiedTableName)) {
+        continue;
+      }
+      final TableInfo<CommonField<DataType>> table = fullyQualifiedTableNameToInfo.get(fullyQualifiedTableName);
+      final List<Field> fields = table.getFields()
+          .stream()
+          .map(this::toField)
+          .distinct()
+          .collect(Collectors.toList());
+      final JsonNode currentJsonSchema = fieldsToJsonSchema(fields);
+
+      final JsonNode catalogSchema = stream.getJsonSchema();
+      if (!catalogSchema.equals(currentJsonSchema)) {
+        LOGGER.warn(
+            "Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
+            fullyQualifiedTableName,
+            currentJsonSchema,
+            catalogSchema);
+      }
+    }
   }
 
   private void validateCursorFieldForIncrementalTables(
