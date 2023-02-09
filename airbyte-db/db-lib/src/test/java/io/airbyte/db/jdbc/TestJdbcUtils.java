@@ -401,12 +401,11 @@ class TestJdbcUtils {
   }
 
   @ParameterizedTest
-  @CsvSource (
-      {"'3E+1', 30",
-      "'30', 30",
-      "'999000000000', 999000000000",
-      "'999E+9', 999000000000",
-      "'1.79E+3', 1790"})
+  @CsvSource({"'3E+1', 30",
+    "'30', 30",
+    "'999000000000', 999000000000",
+    "'999E+9', 999000000000",
+    "'1.79E+3', 1790"})
   void testSetStatementSpecialValues(final String colValue, final long value) throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
       createTableWithAllTypes(connection);
@@ -423,4 +422,5 @@ class TestJdbcUtils {
       assertExpectedOutputTypes(connection);
     }
   }
+
 }
