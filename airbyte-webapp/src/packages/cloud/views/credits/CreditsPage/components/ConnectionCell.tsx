@@ -1,9 +1,11 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import styled from "styled-components";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
+import { FlexContainer, FlexItem } from "components/ui/Flex";
+import { Text } from "components/ui/Text";
+
+import styles from "./ConnectionCell.module.scss";
 
 interface ConnectionCellProps {
   sourceDefinitionName: string;
@@ -12,25 +14,6 @@ interface ConnectionCellProps {
   destinationIcon?: string;
 }
 
-const Icon = styled(ConnectorIcon)`
-  margin-right: 12px;
-  display: inline-block;
-  vertical-align: middle;
-  height: 20px;
-  width: 20px;
-`;
-
-const Connector = styled.div`
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 25px;
-`;
-
-const Arrow = styled(FontAwesomeIcon)`
-  margin: 0 17px 0 9px;
-  font-size: 9px;
-`;
-
 const ConnectionCell: React.FC<ConnectionCellProps> = ({
   sourceDefinitionName,
   destinationDefinitionName,
@@ -38,17 +21,23 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
   destinationIcon,
 }) => {
   return (
-    <>
-      <Connector>
-        <Icon icon={sourceIcon} />
-        {sourceDefinitionName}
-      </Connector>
-      <Connector>
-        <Arrow icon={faArrowRight} />
-        <Icon icon={destinationIcon} />
-        {destinationDefinitionName}
-      </Connector>
-    </>
+    <FlexContainer justifyContent="space-between">
+      <FlexItem className={styles.connectorItem}>
+        <FlexContainer direction="row" alignItems="center">
+          <ConnectorIcon icon={sourceIcon} />
+          <Text size="lg">{sourceDefinitionName}</Text>
+        </FlexContainer>
+      </FlexItem>
+      <FlexItem className={styles.arrowItem}>
+        <ArrowRightIcon />
+      </FlexItem>
+      <FlexItem className={styles.connectorItem}>
+        <FlexContainer direction="row" alignItems="center">
+          <ConnectorIcon icon={destinationIcon} />
+          <Text size="lg">{destinationDefinitionName}</Text>
+        </FlexContainer>
+      </FlexItem>
+    </FlexContainer>
   );
 };
 
