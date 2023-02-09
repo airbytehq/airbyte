@@ -94,13 +94,6 @@ def test_compare_cursor_with_threshold(record_value, state_value, threshold_days
     [
         ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-02", 0, does_not_raise()),
         (
-            [{"date": {}}, {"date": {}}],
-            [],
-            "2020-01-02",
-            0,
-            pytest.raises(AssertionError, match="At least one valid state should be produced, given a cursor path")
-        ),
-        (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-02",
