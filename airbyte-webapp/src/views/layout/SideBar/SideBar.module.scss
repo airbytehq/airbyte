@@ -12,6 +12,10 @@
   padding: variables.$spacing-xl variables.$spacing-xs variables.$spacing-lg;
   text-align: center;
   box-shadow: variables.$box-shadow-sidebar;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 
   ul {
     width: 100%;

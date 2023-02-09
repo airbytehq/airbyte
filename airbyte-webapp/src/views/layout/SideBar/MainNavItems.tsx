@@ -10,33 +10,27 @@ import SourceIcon from "./components/SourceIcon";
 
 export const MainNavItems: React.FC = () => {
   return (
-    <ul data-testid="navMainItems">
-      <MenuContent>
-        <li>
-          <NavItem
-            label={<FormattedMessage id="sidebar.connections" />}
-            icon={<ConnectionsIcon />}
-            to={RoutePaths.Connections}
-            testId="connectionsLink"
-          />
-        </li>
-        <li>
-          <NavItem
-            label={<FormattedMessage id="sidebar.sources" />}
-            icon={<SourceIcon />}
-            to={RoutePaths.Source}
-            testId="sourcesLink"
-          />
-        </li>
-        <li>
-          <NavItem
-            label={<FormattedMessage id="sidebar.destinations" />}
-            icon={<DestinationIcon />}
-            testId="destinationsLink"
-            to={RoutePaths.Destination}
-          />
-        </li>
-      </MenuContent>
-    </ul>
+    <MenuContent data-testid="navMainItems">
+      <NavItem
+        label={<FormattedMessage id="sidebar.connections" />}
+        icon={<ConnectionsIcon />}
+        to={RoutePaths.Connections}
+        testId="connectionsLink"
+      />
+
+      <NavItem
+        label={<FormattedMessage id="sidebar.sources" />}
+        icon={<SourceIcon />}
+        to={RoutePaths.Source}
+        testId="sourcesLink"
+      />
+
+      <NavItem
+        label={<FormattedMessage id="sidebar.destinations" />}
+        icon={<DestinationIcon />}
+        testId="destinationsLink"
+        to={RoutePaths.Destination}
+      />
+    </MenuContent>
   );
 };

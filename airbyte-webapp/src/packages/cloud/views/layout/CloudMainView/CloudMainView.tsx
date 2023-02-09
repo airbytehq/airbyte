@@ -4,8 +4,10 @@ import { FormattedMessage } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
+import { CreditsIcon } from "components/icons/CreditsIcon";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";
 import { SpeedyConnectionBanner } from "packages/cloud/components/experiments/SpeedyConnection/SpeedyConnectionBanner";
@@ -13,23 +15,30 @@ import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
+import { RoutePaths } from "pages/routePaths";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import { AirbyteHomeLink } from "views/layout/SideBar/AirbyteHomeLink";
 import { MenuContent } from "views/layout/SideBar/components/MenuContent";
+import { NavItem } from "views/layout/SideBar/components/NavItem";
+import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import { MainNavItems } from "views/layout/SideBar/MainNavItems";
 import { SideBar } from "views/layout/SideBar/SideBar";
 
-import { CloudBottomItems } from "./CloudBottomItems";
 import styles from "./CloudMainView.module.scss";
+import { CloudResourcesDropdown } from "./CloudResourcesDropdown";
+import { CloudSupportDropdown } from "./CloudSupportDropdown";
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
+import { LOW_BALANCE_CREDIT_THRESHOLD } from "../../credits/CreditsPage/components/LowCreditBalanceHint/LowCreditBalanceHint";
 import { WorkspacePopout } from "../../workspaces/WorkspacePopout";
 
 const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   useIntercom();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+  const isAllowUpdateConnectorsEnabled = useFeature(FeatureItem.AllowUpdateConnectors);
+
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
@@ -84,18 +93,31 @@ const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
     <div className={styles.mainContainer}>
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar>
+          <AirbyteHomeLink />
+          <WorkspacePopout>
+            {({ onOpen, value }) => (
+              <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
+                {value}
+              </button>
+            )}
+          </WorkspacePopout>
           <MenuContent>
-            <AirbyteHomeLink />
-            <WorkspacePopout>
-              {({ onOpen, value }) => (
-                <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
-                  {value}
-                </button>
-              )}
-            </WorkspacePopout>
+            <MainNavItems />
             <MenuContent>
-              <MainNavItems />
-              <CloudBottomItems />
+              <NavItem
+                to={CloudRoutes.Credits}
+                icon={<CreditsIcon />}
+                label={<FormattedMessage id="sidebar.credits" />}
+                testId="creditsButton"
+                withNotification={cloudWorkspace.remainingCredits <= LOW_BALANCE_CREDIT_THRESHOLD}
+              />
+              <CloudResourcesDropdown /> <CloudSupportDropdown />
+              <NavItem
+                label={<FormattedMessage id="sidebar.settings" />}
+                icon={<SettingsIcon />}
+                to={RoutePaths.Settings}
+                withNotification={isAllowUpdateConnectorsEnabled}
+              />
             </MenuContent>
           </MenuContent>
         </SideBar>
