@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -167,11 +167,11 @@ def test_create_pr(mocker, pr_already_created):
     response = cloud_availability_updater.create_pr(connector, "my_awesome_branch")
     expected_url = "https://api.github.com/repos/airbytehq/airbyte-platform-internal/pulls"
     expected_body = f"""The Cloud Availability Updater decided that it's the right time to make {connector.connector_name} available on Cloud!
-    Technical name: {connector.connector_technical_name}
-    Version: {connector.connector_version}
-    Definition ID: {connector.connector_definition_id}
-    OSS sync success rate: {connector.sync_success_rate}
-    OSS number of connections: {connector.number_of_connections}
+    - Technical name: {connector.connector_technical_name}
+    - Version: {connector.connector_version}
+    - Definition ID: {connector.connector_definition_id}
+    - OSS sync success rate: {connector.sync_success_rate}
+    - OSS number of connections: {connector.number_of_connections}
     """
     expected_data = {
         "title": "🤖 Add source-foobar to cloud",
