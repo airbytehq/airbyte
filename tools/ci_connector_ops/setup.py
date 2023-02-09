@@ -5,6 +5,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
+    "click~=8.1.3",
     "requests",
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
