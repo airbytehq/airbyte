@@ -799,7 +799,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -1565,7 +1565,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
