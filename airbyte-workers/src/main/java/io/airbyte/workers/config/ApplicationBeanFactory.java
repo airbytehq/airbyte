@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.config;
@@ -14,7 +14,6 @@ import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.SecretPersistenceType;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
@@ -81,12 +80,10 @@ public class ApplicationBeanFactory {
 
   @Singleton
   public DefaultJobCreator defaultJobCreator(final JobPersistence jobPersistence,
-                                             @Named("defaultWorkerConfigs") final WorkerConfigs defaultWorkerConfigs,
-                                             final StatePersistence statePersistence) {
+                                             @Named("defaultWorkerConfigs") final WorkerConfigs defaultWorkerConfigs) {
     return new DefaultJobCreator(
         jobPersistence,
-        defaultWorkerConfigs.getResourceRequirements(),
-        statePersistence);
+        defaultWorkerConfigs.getResourceRequirements());
   }
 
   @Singleton

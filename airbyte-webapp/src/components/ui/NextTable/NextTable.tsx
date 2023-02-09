@@ -3,6 +3,7 @@ import classNames from "classnames";
 import { PropsWithChildren } from "react";
 
 import styles from "./NextTable.module.scss";
+import { ColumnMeta } from "./types";
 
 export interface TableProps<T> {
   className?: string;
@@ -35,7 +36,7 @@ export const NextTable = <T,>({
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={`table-header-${headerGroup.id}}`}>
             {headerGroup.headers.map((header) => {
-              const { meta } = header.column.columnDef;
+              const meta = header.column.columnDef.meta as ColumnMeta | undefined;
               return (
                 <th
                   colSpan={header.colSpan}
@@ -63,16 +64,19 @@ export const NextTable = <T,>({
               key={`table-row-${row.id}`}
               onClick={() => onClickRow?.(row.original)}
             >
-              {row.getVisibleCells().map((cell) => (
-                <td
-                  className={classNames(styles.td, cell.column.columnDef.meta?.tdClassName, {
-                    [styles.responsive]: cell.column.columnDef.meta?.responsive,
-                  })}
-                  key={`table-cell-${row.id}-${cell.id}`}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </td>
-              ))}
+              {row.getVisibleCells().map((cell) => {
+                const meta = cell.column.columnDef.meta as ColumnMeta | undefined;
+                return (
+                  <td
+                    className={classNames(styles.td, meta?.tdClassName, {
+                      [styles.responsive]: meta?.responsive,
+                    })}
+                    key={`table-cell-${row.id}-${cell.id}`}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                );
+              })}
             </tr>
           );
         })}
