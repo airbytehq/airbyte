@@ -124,8 +124,7 @@ public abstract class AbstractSourceConnectorTest {
   private SourceApi mSourceApi;
 
   private ConnectorConfigUpdater mConnectorConfigUpdater;
-
-  // This has to be using the protocol version of the platform in order to capture the arg
+  
   protected AirbyteCatalog getLastPersistedCatalog() {
     return convertProtocolObject(
         CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.getValue().getCatalog()), AirbyteCatalog.class);
