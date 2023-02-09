@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -94,3 +94,16 @@ def test_set_datetime_format():
     actual_date = min_max_date.get_datetime(custom_fmt_config)
 
     assert actual_date == datetime.datetime.strptime("2022-01-01T20:12:19", "%Y-%m-%dT%H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+
+
+def test_min_max_datetime_lazy_eval():
+    kwargs = {
+        "datetime": "2022-01-10T00:00:00",
+        "datetime_format": "%Y-%m-%dT%H:%M:%S",
+        "min_datetime": "{{ options.min_datetime }}",
+        "max_datetime": "{{ options.max_datetime }}",
+    }
+
+    assert datetime.datetime(2022, 1, 10, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(**kwargs, options={}).get_datetime({})
+    assert datetime.datetime(2022, 1, 20, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(**kwargs, options={"min_datetime": "2022-01-20T00:00:00"}).get_datetime({})
+    assert datetime.datetime(2021, 1, 1, 0, 0, tzinfo=datetime.timezone.utc) == MinMaxDatetime(**kwargs, options={"max_datetime": "2021-01-01T00:00:00"}).get_datetime({})

@@ -25,7 +25,7 @@
     "stylelint": "stylelint 'src/**/*.{css,scss}'",
     "stylelint-check": "stylelint-config-prettier-scss-check",
     "license-check": "node ./scripts/license-check.js",
-    "generate-client": "orval",
+    "generate-client": "./scripts/load-declarative-schema.sh && orval",
     "validate-links": "ts-node --skip-project ./scripts/validate-links.ts"
   },
   "dependencies": {
@@ -134,6 +134,7 @@
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "@vitejs/plugin-react": "^3.0.1",
     "babel-jest": "^29.3.1",
+    "chalk": "^4.1.2",
     "dotenv": "^16.0.3",
     "eslint": "^8.32.0",
     "eslint-config-prettier": "^8.6.0",
