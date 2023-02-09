@@ -123,6 +123,11 @@ class PostgresStressTest extends JdbcStressTest {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 
+    @Override
+    protected Set<String> getExcludedViews() {
+      return Set.of("pg_stat_statements", "pg_stat_statements_info");
+    }
+
     public static void main(final String[] args) throws Exception {
       final Source source = new PostgresTestSource();
       LOGGER.info("starting source: {}", PostgresTestSource.class);
