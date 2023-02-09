@@ -304,25 +304,25 @@ To select or deselect all streams, click the checkbox in the table header.
 
 :::
 
-In the highlighted footer of the table:
+* In the highlighted footer of the table:  
 
-2. Toggle **Sync** on or off. 
+    1. Toggle **Sync** on or off. 
 
-3. Click the **Sync mode** dropdown and select the sync mode you want to apply.
+    2. Click the **Sync mode** dropdown and select the sync mode you want to apply.
 
-4. Select the **Cursor** and **Primary key** if there are dropdowns in those fields.
+    3. Select the **Cursor** and **Primary key** if there are dropdowns in those fields.
 
-:::note 
+    :::note 
     
-Source-defined cursors or primary keys cannot be changed while configuring mutliple streams.
+    Source-defined cursors or primary keys cannot be changed while configuring mutliple streams.
 
-:::
+    :::
 
-5. Click **Apply** to apply these changes to the streams you selected, or click **Cancel** to discard the changes.
+    4. Click **Apply** to apply these changes to the streams you selected, or click **Cancel** to discard the changes.
 
-6. Scroll to the bottom of the page and click **Save changes**, or click **Cancel** to discard the changes.
+2. Scroll to the bottom of the page and click **Save changes**, or click **Cancel** to discard the changes.
 
-7. The **Stream configuration changed** dialog displays. This gives you the option to reset streams when you save the changes.
+3. The **Stream configuration changed** dialog displays. This gives you the option to reset streams when you save the changes.
 
 :::caution
 
@@ -330,7 +330,7 @@ Airbyte recommends that you reset streams. A reset will delete data in the desti
 
 :::
 
-8. Click **Save connection**.
+4. Click **Save connection**.
 
 ### Configure the destination namespace and stream name
 In the **Activate the streams you want to sync** table, you can configure both the destination namespace and stream name. These settings apply to all streams in the connection.
