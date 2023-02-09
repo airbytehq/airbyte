@@ -40,18 +40,9 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
     parent_stream = MagicMock()
     parent_stream.stream.read_records = MagicMock(return_value=records)
     parent_stream.stream.stream_slices = MagicMock(return_value=stream_slices)
-<<<<<<< HEAD
     parent_stream.parent_key = "updates_ids"
-    parent_stream.stream_slice_field = "parent_stream_update_id"
-    slicer = UpdatesSubstreamSlicer(parent_stream_configs=[parent_stream], parameters={})
-=======
-    parent_stream.parent_key = 'updates_ids'
     parent_stream.partition_field = "parent_stream_update_id"
-    slicer = UpdatesSubstreamPartitionRouter(
-        parent_stream_configs=[parent_stream],
-        parameters={}
-    )
->>>>>>> fe93644d395 ([ISSUE #19961] TMP rename SubstreamSlicer  to SubstreamPartitionRouter)
+    slicer = UpdatesSubstreamPartitionRouter(parent_stream_configs=[parent_stream], parameters={}, config={})
 
     for stream_slice, expected_slice in zip(slicer.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}), expected):
         assert stream_slice == expected_slice
@@ -74,8 +65,4 @@ def test_updates_substream_partition_router(records, stream_slices, expected):
 )
 def test_list_add_fields_transformer(input_record, field, kwargs, expected):
     inputs = [AddedFieldDefinition(path=v[0], value=v[1], parameters={}) for v in field]
-<<<<<<< HEAD
-    assert ListAddFields(fields=inputs, parameters={"option": "test"}).transform(input_record, **kwargs) == expected
-=======
     assert ListAddFields(fields=inputs, parameters={"parameter": "test"}).transform(input_record, **kwargs) == expected
->>>>>>> fe93644d395 ([ISSUE #19961] TMP rename SubstreamSlicer  to SubstreamPartitionRouter)
