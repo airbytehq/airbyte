@@ -32,5 +32,5 @@ class ZenloopSubstreamSlicer(SubstreamSlicer):
             yield from super().stream_slices(sync_mode, stream_state)
         else:
             for parent_stream_config in self.parent_stream_configs:
-                stream_state_field = parent_stream_config.stream_slice_field or None
+                stream_state_field = parent_stream_config.partition_field or None
                 yield {stream_state_field: custom_stream_state_value, "parent_slice": {}}

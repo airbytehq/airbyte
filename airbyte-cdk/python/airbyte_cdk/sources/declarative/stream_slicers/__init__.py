@@ -3,8 +3,6 @@
 #
 
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
 
-__all__ = ["CartesianProductStreamSlicer", "ListStreamSlicer", "StreamSlicer", "SubstreamSlicer"]
+__all__ = ["CartesianProductStreamSlicer", "StreamSlicer"]

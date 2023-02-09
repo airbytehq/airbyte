@@ -40,8 +40,8 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DpathExtractor.decoder": "JsonDecoder",
     # HttpRequester
     "HttpRequester.error_handler": "DefaultErrorHandler",
-    # ListStreamSlicer
-    "ListStreamSlicer.request_option": "RequestOption",
+    # ListPartitionRouter
+    "ListPartitionRouter.request_option": "RequestOption",
     # ParentStreamConfig
     "ParentStreamConfig.request_option": "RequestOption",
     "ParentStreamConfig.stream": "DeclarativeStream",
@@ -52,8 +52,8 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SimpleRetriever.paginator": "NoPagination",
     "SimpleRetriever.record_selector": "RecordSelector",
     "SimpleRetriever.requester": "HttpRequester",
-    # SubstreamSlicer
-    "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    # SubstreamPartitionRouter
+    "SubstreamPartitionRouter.parent_stream_configs": "ParentStreamConfig",
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
     # CustomPartitionRouter
