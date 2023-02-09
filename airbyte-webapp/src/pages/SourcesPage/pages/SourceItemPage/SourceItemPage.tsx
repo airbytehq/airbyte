@@ -1,3 +1,5 @@
+import type { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
+
 import React, { Suspense, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
@@ -18,10 +20,10 @@ import { useGetSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import SourceConnectionTable from "./components/SourceConnectionTable";
-import SourceSettings from "./components/SourceSettings";
-import { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
 import { RoutePaths } from "../../../routePaths";
+
+const SourceConnectionTable = React.lazy(() => import("./components/SourceConnectionTable"));
+const SourceSettings = React.lazy(() => import("./components/SourceSettings"));
 
 const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
