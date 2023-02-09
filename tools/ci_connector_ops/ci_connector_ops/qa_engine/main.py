@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 @click.command()
 @click.option("--create-prs", is_flag=True)
 def main(create_prs):
-    breakpoint()
     logger.info("Fetch the OSS connectors catalog.")
     oss_catalog = inputs.fetch_remote_catalog(OSS_CATALOG_URL)
     logger.info("Fetch the Cloud connectors catalog.")
@@ -30,8 +29,8 @@ def main(create_prs):
     qa_report = validations.get_qa_report(enriched_catalog, len(oss_catalog))
     logger.info("Persist QA report to GCS")
     outputs.persist_qa_report(qa_report, GCS_QA_REPORT_PATH, public_fields_only=False)
-    eligible_connectors = validations.get_connectors_eligible_for_cloud(qa_report)
 
     if create_prs:
         logger.info("Start eligible connectors deployment to Cloud.")
+        eligible_connectors = validations.get_connectors_eligible_for_cloud(qa_report)
         cloud_availability_updater.deploy_eligible_connectors_to_cloud_repo(eligible_connectors)
