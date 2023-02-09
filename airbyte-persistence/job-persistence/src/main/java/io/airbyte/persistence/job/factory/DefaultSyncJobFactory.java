@@ -4,6 +4,7 @@
 
 package io.airbyte.persistence.job.factory;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.DestinationConnection;
@@ -27,15 +28,18 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   private final boolean connectorSpecificResourceDefaultsEnabled;
   private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
   private final WorkspaceHelper workspaceHelper;
 
   public DefaultSyncJobFactory(final boolean connectorSpecificResourceDefaultsEnabled,
                                final DefaultJobCreator jobCreator,
                                final ConfigRepository configRepository,
+                               final OAuthConfigSupplier oAuthConfigSupplier,
                                final WorkspaceHelper workspaceHelper) {
     this.connectorSpecificResourceDefaultsEnabled = connectorSpecificResourceDefaultsEnabled;
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
     this.workspaceHelper = workspaceHelper;
   }
 
@@ -47,6 +51,16 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
       final StandardWorkspace workspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, true);
       final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
       final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
+      final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+          sourceConnection.getSourceDefinitionId(),
+          sourceConnection.getWorkspaceId(),
+          sourceConnection.getConfiguration());
+      sourceConnection.withConfiguration(sourceConfiguration);
+      final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+          destinationConnection.getDestinationDefinitionId(),
+          destinationConnection.getWorkspaceId(),
+          destinationConnection.getConfiguration());
+      destinationConnection.withConfiguration(destinationConfiguration);
       final StandardSourceDefinition sourceDefinition = configRepository
           .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition = configRepository
