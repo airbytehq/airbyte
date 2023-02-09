@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.temporal.sync;
@@ -19,7 +19,6 @@ public class OrchestratorConstants {
   private static final String S3_PATH_STYLE_ACCESS = "S3_PATH_STYLE_ACCESS";
   private static final String FEATURE_FLAG_CLIENT = "FEATURE_FLAG_CLIENT";
   private static final String FEATURE_FLAG_PATH = "FEATURE_FLAG_PATH";
-  private static final String LAUNCHDARKLY_KEY = "LAUNCHDARKLY_KEY";
 
   // set of env vars necessary for the container orchestrator app to run
   public static final Set<String> ENV_VARS_TO_TRANSFER = new ImmutableSet.Builder<String>()
@@ -74,9 +73,11 @@ public class OrchestratorConstants {
           EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
           EnvVariableFeatureFlags.APPLY_FIELD_SELECTION,
           EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES,
+          EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES,
+          EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG,
           FEATURE_FLAG_CLIENT,
           FEATURE_FLAG_PATH,
-          LAUNCHDARKLY_KEY,
+          EnvConfigs.LAUNCHDARKLY_KEY,
           EnvConfigs.SOCAT_KUBE_CPU_LIMIT,
           EnvConfigs.SOCAT_KUBE_CPU_REQUEST))
       .build();
