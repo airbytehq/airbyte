@@ -2,45 +2,48 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime
-from typing import Iterable
+from typing import List
 
 import pandas as pd
 import requests
 
 from .constants import INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
+from .inputs import BUILD_STATUSES, fetch_latest_build_status_for_connector_version
 from .models import ConnectorQAReport, QAReport
-from .inputs import fetch_latest_build_status_for_connector_version, BUILD_STATUSES
 
-TRUTHY_COLUMNS_TO_BE_ELIGIBLE = [
-  "documentation_is_available",
-  "is_appropriate_for_cloud_use",
-  "latest_build_is_successful"
-]
+logger = logging.getLogger(__name__)
+
+
+TRUTHY_COLUMNS_TO_BE_ELIGIBLE = ["documentation_is_available", "is_appropriate_for_cloud_use", "latest_build_is_successful"]
+
 
 class QAReportGenerationError(Exception):
     pass
+
 
 def url_is_reachable(url: str) -> bool:
     response = requests.get(url)
     return response.status_code == 200
 
+
 def is_appropriate_for_cloud_use(definition_id: str) -> bool:
     return definition_id not in INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS
 
+
 def is_eligible_for_promotion_to_cloud(connector_qa_data: pd.Series) -> bool:
-  if connector_qa_data["is_on_cloud"]:
-    return False
-  return all([
-    connector_qa_data[col]
-    for col in TRUTHY_COLUMNS_TO_BE_ELIGIBLE
-  ])
+    if connector_qa_data["is_on_cloud"]:
+        return False
+    return all([connector_qa_data[col] for col in TRUTHY_COLUMNS_TO_BE_ELIGIBLE])
+
 
 def latest_build_is_successful(connector_qa_data: pd.Series) -> bool:
     connector_technical_name = connector_qa_data["connector_technical_name"]
     connector_version = connector_qa_data["connector_version"]
     latest_build_status = fetch_latest_build_status_for_connector_version(connector_technical_name, connector_version)
     return latest_build_status == BUILD_STATUSES.SUCCESS
+
 
 def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd.DataFrame:
     """Perform validation steps on top of the enriched catalog.
@@ -74,13 +77,15 @@ def get_qa_report(enriched_catalog: pd.DataFrame, oss_catalog_length: int) -> pd
     qa_report["report_generation_datetime"] = datetime.utcnow()
 
     # Only select dataframe columns defined in the ConnectorQAReport model.
-    qa_report= qa_report[[field.name for field in ConnectorQAReport.__fields__.values()]]
+    qa_report = qa_report[[field.name for field in ConnectorQAReport.__fields__.values()]]
     # Validate the report structure with pydantic QAReport model.
     QAReport(connectors_qa_report=qa_report.to_dict(orient="records"))
     if len(qa_report) != oss_catalog_length:
-      raise QAReportGenerationError("The QA report does not contain all the connectors defined in the OSS catalog.")
+        raise QAReportGenerationError("The QA report does not contain all the connectors defined in the OSS catalog.")
     return qa_report
 
-def get_connectors_eligible_for_cloud(qa_report: pd.DataFrame) -> Iterable[ConnectorQAReport]:
-    for _, row in qa_report[qa_report["is_eligible_for_promotion_to_cloud"]].iterrows():
-      yield ConnectorQAReport(**row)
+
+def get_connectors_eligible_for_cloud(qa_report: pd.DataFrame) -> List[ConnectorQAReport]:
+    eligible_connectors = [ConnectorQAReport(**row) for _, row in qa_report[qa_report["is_eligible_for_promotion_to_cloud"]].iterrows()]
+    logger.info(f"{len(eligible_connectors)} connectors are eligible for Cloud.")
+    return eligible_connectors

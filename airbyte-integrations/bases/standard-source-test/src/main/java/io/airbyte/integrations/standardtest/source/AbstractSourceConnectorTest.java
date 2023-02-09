@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
@@ -37,6 +37,7 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.helper.CatalogClientConverters;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -124,12 +125,9 @@ public abstract class AbstractSourceConnectorTest {
 
   private ConnectorConfigUpdater mConnectorConfigUpdater;
 
-  // This has to be using the protocol version of the platform in order to capture the arg
-  private final ArgumentCaptor<io.airbyte.protocol.models.AirbyteCatalog> lastPersistedCatalog =
-      ArgumentCaptor.forClass(io.airbyte.protocol.models.AirbyteCatalog.class);
-
   protected AirbyteCatalog getLastPersistedCatalog() {
-    return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
+    return convertProtocolObject(
+        CatalogClientConverters.toAirbyteProtocol(discoverWriteRequest.getValue().getCatalog()), AirbyteCatalog.class);
   }
 
   private final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> discoverWriteRequest =
