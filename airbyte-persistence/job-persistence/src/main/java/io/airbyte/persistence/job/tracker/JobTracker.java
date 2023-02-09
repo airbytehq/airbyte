@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job.tracker;
@@ -11,10 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardCheckConnectionOutput;
@@ -27,6 +29,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WorkspaceHelper;
+import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -39,6 +42,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JobTracker {
@@ -124,6 +128,9 @@ public class JobTracker {
       final boolean allowedJob = configType == ConfigType.SYNC || configType == ConfigType.RESET_CONNECTION;
       Preconditions.checkArgument(allowedJob, "Job type " + configType + " is not allowed!");
       final long jobId = job.getId();
+      final Optional<Attempt> lastAttempt = job.getLastAttempt();
+      final Optional<AttemptSyncConfig> attemptSyncConfig = lastAttempt.flatMap(Attempt::getSyncConfig);
+
       final UUID connectionId = UUID.fromString(job.getScope());
       final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
       final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
@@ -136,6 +143,7 @@ public class JobTracker {
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
       final Map<String, Object> syncConfigMetadata = generateSyncConfigMetadata(
           job.getConfig(),
+          attemptSyncConfig.orElse(null),
           sourceDefinition.getSpec().getConnectionSpecification(),
           destinationDefinition.getSpec().getConnectionSpecification());
 
@@ -184,18 +192,27 @@ public class JobTracker {
     });
   }
 
-  private Map<String, Object> generateSyncConfigMetadata(final JobConfig config,
+  private Map<String, Object> generateSyncConfigMetadata(
+                                                         final JobConfig config,
+                                                         @Nullable final AttemptSyncConfig attemptSyncConfig,
                                                          final JsonNode sourceConfigSchema,
                                                          final JsonNode destinationConfigSchema) {
     if (config.getConfigType() == ConfigType.SYNC) {
-      final JsonNode sourceConfiguration = config.getSync().getSourceConfiguration();
-      final JsonNode destinationConfiguration = config.getSync().getDestinationConfiguration();
+      final Map<String, Object> actorConfigMetadata = new HashMap<>();
 
-      final Map<String, Object> sourceMetadata = configToMetadata(CONFIG + ".source", sourceConfiguration, sourceConfigSchema);
-      final Map<String, Object> destinationMetadata = configToMetadata(CONFIG + ".destination", destinationConfiguration, destinationConfigSchema);
+      if (attemptSyncConfig != null) {
+        final JsonNode sourceConfiguration = attemptSyncConfig.getSourceConfiguration();
+        final JsonNode destinationConfiguration = attemptSyncConfig.getDestinationConfiguration();
+
+        final Map<String, Object> sourceMetadata = configToMetadata(CONFIG + ".source", sourceConfiguration, sourceConfigSchema);
+        final Map<String, Object> destinationMetadata = configToMetadata(CONFIG + ".destination", destinationConfiguration, destinationConfigSchema);
+
+        actorConfigMetadata.putAll(sourceMetadata);
+        actorConfigMetadata.putAll(destinationMetadata);
+      }
+
       final Map<String, Object> catalogMetadata = getCatalogMetadata(config.getSync().getConfiguredAirbyteCatalog());
-
-      return MoreMaps.merge(sourceMetadata, destinationMetadata, catalogMetadata);
+      return MoreMaps.merge(actorConfigMetadata, catalogMetadata);
     } else {
       return emptyMap();
     }
