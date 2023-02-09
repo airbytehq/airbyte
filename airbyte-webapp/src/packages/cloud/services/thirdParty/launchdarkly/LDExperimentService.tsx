@@ -1,7 +1,6 @@
 import * as LDClient from "launchdarkly-js-client-sdk";
 import { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
-import { matchPath, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 import { finalize, Subject } from "rxjs";
 
@@ -14,9 +13,9 @@ import { useAppMonitoringService, AppActionCodes } from "hooks/services/AppMonit
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
 import { FeatureSet, FeatureItem, useFeatureService } from "hooks/services/Feature";
-import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { rejectAfter } from "utils/promises";
 
 /**
@@ -87,6 +86,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   const { locale } = useIntl();
   const { setMessageOverwrite } = useI18nContext();
   const { trackAction } = useAppMonitoringService();
+  const workspaceId = useCurrentWorkspaceId();
 
   /**
    * This function checks for all experiments to find the ones beginning with "i18n_{locale}_"
@@ -168,23 +168,9 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   }, [locale, user]);
 
   // If we're inside a workspace, we need to pass the workspaceId to launchdarkly
-  const currentWorkspaceId = useRef<string | null>(null);
-  const location = useLocation();
   useEffect(() => {
-    // useParams() doesn't work, since we haven't rendered a route yet. We can match the path here using the same matchPath algorithm:
-    const workspaceMatch = matchPath({ path: `/${CloudRoutes.SelectWorkspace}/:workspaceId/*` }, location.pathname);
-    if (workspaceMatch) {
-      const workspaceId = workspaceMatch.params.workspaceId;
-      if (workspaceId && currentWorkspaceId.current !== workspaceId) {
-        currentWorkspaceId.current = workspaceId;
-        ldClient.current?.identify(mapUserToLDUser(user, locale, workspaceId));
-      }
-    } else if (currentWorkspaceId.current !== null) {
-      // Reidentify the user if the navigate to a page outside the /workspaces/:workspaceId/* tree
-      currentWorkspaceId.current = null;
-      ldClient.current?.identify(mapUserToLDUser(user, locale, null));
-    }
-  }, [location.pathname, locale, user]);
+    ldClient.current?.identify(mapUserToLDUser(user, locale, workspaceId || null));
+  }, [workspaceId, locale, user]);
 
   // Show the loading page while we're still waiting for the initial set of feature flags (or them to time out)
   if (state === "initializing") {
