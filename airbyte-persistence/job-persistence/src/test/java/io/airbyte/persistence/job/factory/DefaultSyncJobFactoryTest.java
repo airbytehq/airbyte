@@ -98,7 +98,7 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(
         new StandardWorkspace().withWorkspaceId(workspaceId).withWebhookOperationConfigs(persistedWebhookConfigs));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class), workspaceHelper);
+    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, workspaceHelper);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 

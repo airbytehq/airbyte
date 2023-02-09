@@ -75,13 +75,11 @@ public class TemporalBeanFactory {
                                    final JobPersistence jobPersistence,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
                                              defaultValue = "false") final boolean connectorSpecificResourceDefaultsEnabled,
-                                   final DefaultJobCreator jobCreator,
-                                   final OAuthConfigSupplier oAuthConfigSupplier) {
+                                   final DefaultJobCreator jobCreator) {
     return new DefaultSyncJobFactory(
         connectorSpecificResourceDefaultsEnabled,
         jobCreator,
         configRepository,
-        oAuthConfigSupplier,
         new WorkspaceHelper(configRepository, jobPersistence));
   }
 
