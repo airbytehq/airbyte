@@ -16,14 +16,14 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                               |
 | `email_events`              | `content`                                                                        |
-| `engagements`               | `crm.objects.engagements.read`                                                   |
+| `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce`|
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
 | `form_submissions`          | `forms`                                                                          |
 | `line_items`                | `e-commerce`                                                                     |
 | `owners`                    | `crm.objects.owners.read`                                                        |
 | `products`                  | `e-commerce`                                                                     |
-| `property_history`          | `crm.objects.property_history.read`                                              |
+| `property_history`          | `crm.objects.contacts.read`                                                      |
 | `subscription_changes`      | `content`                                                                        |
 | `tickets`                   | `tickets`                                                                        |
 | `workflows`                 | `automation`                                                                     |
