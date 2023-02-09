@@ -13,7 +13,7 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.text.Names;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.validation.json.JsonValidationException;
-import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,8 +33,7 @@ public class CatalogClientConverters {
    * @param catalog
    * @return
    */
-  public static io.airbyte.protocol.models.AirbyteCatalog toAirbyteProtocol(
-      final io.airbyte.api.client.model.generated.AirbyteCatalog catalog) {
+  public static io.airbyte.protocol.models.AirbyteCatalog toAirbyteProtocol(final io.airbyte.api.client.model.generated.AirbyteCatalog catalog) {
 
     io.airbyte.protocol.models.AirbyteCatalog protoCatalog =
         new io.airbyte.protocol.models.AirbyteCatalog();
@@ -52,7 +51,8 @@ public class CatalogClientConverters {
 
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
-  private static io.airbyte.protocol.models.AirbyteStream toConfiguredProtocol(final io.airbyte.api.client.model.generated.AirbyteStream stream, AirbyteStreamConfiguration config)
+  private static io.airbyte.protocol.models.AirbyteStream toConfiguredProtocol(final io.airbyte.api.client.model.generated.AirbyteStream stream,
+                                                                               AirbyteStreamConfiguration config)
       throws JsonValidationException {
     if (config.getFieldSelectionEnabled() != null && config.getFieldSelectionEnabled()) {
       // Validate the selected field paths.
