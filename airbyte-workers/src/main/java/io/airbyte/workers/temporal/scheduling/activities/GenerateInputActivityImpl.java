@@ -74,7 +74,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                                    final StateApi stateApi,
                                    final AttemptApi attemptApi,
                                    final FeatureFlags featureFlags,
-                                   OAuthConfigSupplier oAuthConfigSupplier) {
+                                   final OAuthConfigSupplier oAuthConfigSupplier) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.stateApi = stateApi;
