@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
@@ -60,8 +60,14 @@ function usePreloadData(): {
   destinationDefinition?: DestinationDefinitionRead;
 } {
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const source = useGetSource(hasSourceId(location.state) ? location.state.sourceId : null);
+  const sourceId = hasSourceId(location.state) ? location.state.sourceId : searchParams.get("sourceId");
+  const source = useGetSource(sourceId);
+
+  if (source && source.sourceId !== searchParams.get("sourceId")) {
+    setSearchParams({ sourceId: source.sourceId });
+  }
 
   const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
 
