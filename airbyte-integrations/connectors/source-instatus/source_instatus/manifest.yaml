@@ -74,11 +74,11 @@ definitions:
       path: "v1/user"
 
   page_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/status_pages_stream"
         parent_key: "id"
-        stream_slice_field: "page_id"
+        partition_field: "page_id"
 
   page_components_stream:
     $ref: "#/definitions/base_stream"
@@ -112,11 +112,11 @@ definitions:
             value: "{{ record['updates'] }}"
 
   incident_updates_partition_router:
-    class_name: "source_instatus.components.UpdatesSubstreamSlicer"
+    class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
     parent_stream_configs:
       - stream: "#/definitions/incidents_stream"
         parent_key: "updates_ids"
-        stream_slice_field: "incident_update_id"
+        partition_field: "incident_update_id"
 
   incident_updates_stream:
     $ref: "#/definitions/base_stream"
@@ -150,11 +150,11 @@ definitions:
             value: "{{ record['updates'] }}"
 
   maintenance_updates_partition_router:
-    class_name: "source_instatus.components.UpdatesSubstreamSlicer"
+    class_name: "source_instatus.components.UpdatesSubstreamPartitionRouter"
     parent_stream_configs:
       - stream: "#/definitions/maintenances_stream"
         parent_key: "updates_ids"
-        stream_slice_field: "maintenance_update_id"
+        partition_field: "maintenance_update_id"
 
   maintenance_updates_stream:
     $ref: "#/definitions/base_stream"
@@ -222,11 +222,11 @@ definitions:
         $ref: "#/definitions/page_partition_router"
 
   page_url_partition_router:
-    type: SubstreamSlicer
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/status_pages_stream"
         parent_key: "subdomain"
-        stream_slice_field: "url"
+        partition_field: "url"
 
   public_data_stream:
     $ref: "#/definitions/base_stream"

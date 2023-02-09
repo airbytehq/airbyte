@@ -494,7 +494,7 @@ class ParentStreamConfig(BaseModel):
     type: Literal["ParentStreamConfig"]
     parent_key: str
     stream: DeclarativeStream
-    stream_slice_field: str
+    partition_field: str
     request_option: Optional[RequestOption] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -517,8 +517,8 @@ class SimpleRetriever(BaseModel):
         Union[
             CustomPartitionRouter,
             ListStreamSlicer,
-            SubstreamSlicer,
-            List[Union[CustomPartitionRouter, ListStreamSlicer, SubstreamSlicer]],
+            SubstreamPartitionRouter,
+            List[Union[CustomPartitionRouter, ListStreamSlicer, SubstreamPartitionRouter]],
         ]
     ] = Field(
         [],
@@ -527,8 +527,8 @@ class SimpleRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SubstreamSlicer(BaseModel):
-    type: Literal["SubstreamSlicer"]
+class SubstreamPartitionRouter(BaseModel):
+    type: Literal["SubstreamPartitionRouter"]
     parent_stream_configs: List[ParentStreamConfig]
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 

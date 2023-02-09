@@ -58,11 +58,11 @@ definitions:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.id }}/{{ parameters['name'] }}"
       partition_router:
-        type: SubstreamSlicer
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/projects_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
 
   cohorts_stream:
     $ref: "#/definitions/base_slicing_stream"
@@ -102,13 +102,18 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+<<<<<<< HEAD
+      partition_routers:
+        - type: SubstreamPartitionRouter
+=======
       cursor_field: timestamp
       stream_slicers:
         - type: SubstreamSlicer
+>>>>>>> issue-19961_rename-stream-slicer-review-branch
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"
               parent_key: "id"
-              stream_slice_field: "project_id"
+              partition_field: "project_id"
         - type: DatetimeBasedCursor
           start_datetime:
             datetime: "{{ config['start_date'] }}"
@@ -137,6 +142,35 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+<<<<<<< HEAD
+      partition_router:
+        type: CustomStreamSlicer
+        class_name: source_posthog.components.EventsCartesianProductStreamSlicer
+        partition_routers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+              - stream: "#/definitions/projects_stream"
+                parent_key: "id"
+                partition_field: "project_id"
+          - type: DatetimeStreamSlicer
+            start_datetime:
+              datetime: "{{ config['start_date'] }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+            end_datetime:
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+            datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+            cursor_granularity: "PT0.000001S"
+            step: "P30D"
+            cursor_field: timestamp
+            start_time_option:
+              field_name: after
+              inject_into: request_parameter
+            end_time_option:
+              field_name: before
+              inject_into: request_parameter
+=======
+>>>>>>> issue-19961_rename-stream-slicer-review-branch
       paginator:
         type: "DefaultPaginator"
         page_size_option:
