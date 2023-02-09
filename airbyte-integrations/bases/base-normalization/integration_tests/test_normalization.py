@@ -28,7 +28,6 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
-    print("!!!! DEBUG THING " + os.getcwd())
     destinations_to_test = dbt_test_utils.get_test_targets()
     # set clean-up args to clean target destination after the test
     clean_up_args = {

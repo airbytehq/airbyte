@@ -362,13 +362,10 @@ class DbtIntegrationTest(object):
     def change_current_test_dir(request):
         # This makes the test run whether it is executed from the tests folder (with pytest/gradle)
         # or from the base-normalization folder (through pycharm)
-        print("Attempting to change working directory from " + os.getcwd())
         integration_tests_dir = os.path.join(request.fspath.dirname, "integration_tests")
         if os.path.exists(integration_tests_dir):
-            print("Changing working directory to " + integration_tests_dir)
             os.chdir(integration_tests_dir)
         else:
-            print("Changing working directory to " + request.fspath.dirname)
             os.chdir(request.fspath.dirname)
 
     def generate_profile_yaml_file(

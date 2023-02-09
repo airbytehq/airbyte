@@ -29,7 +29,6 @@ dbt_test_utils = DbtIntegrationTest()
 
 @pytest.fixture(scope="module", autouse=True)
 def before_all_tests(request):
-    print("!!!! DEBUG THING " + os.getcwd())
     destinations_to_test = dbt_test_utils.get_test_targets()
     # set clean-up args to clean target destination after the test
     clean_up_args = {
@@ -66,7 +65,6 @@ def setup_test_path(request):
 
 @pytest.mark.parametrize("destination_type", DestinationType.testable_destinations())
 def test_sparse_nested_fields(destination_type: DestinationType):
-    print("!!!! DEBUG THING " + os.getcwd())
     # TODO extract these conditions?
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
