@@ -25,18 +25,12 @@ public class RouterService {
   private final ConfigRepository configRepository;
   private final TaskQueueMapper taskQueueMapper;
 
-<<<<<<< Updated upstream
   private final FeatureFlags featureFlags;
 
-  public RouterService(final ConfigRepository configRepository,
-                       final TaskQueueMapper taskQueueMapper,
-                       final FeatureFlags featureFlags) {
-=======
   private static final Set<TemporalJobType> WORKSPACE_ROUTING_JOB_TYPE_SET =
       Set.of(TemporalJobType.DISCOVER_SCHEMA, TemporalJobType.CHECK_CONNECTION);
 
-  public RouterService(final ConfigRepository configRepository, final TaskQueueMapper taskQueueMapper) {
->>>>>>> Stashed changes
+  public RouterService(final ConfigRepository configRepository, final TaskQueueMapper taskQueueMapper, final FeatureFlags featureFlags) {
     this.configRepository = configRepository;
     this.taskQueueMapper = taskQueueMapper;
     this.featureFlags = featureFlags;
@@ -55,20 +49,16 @@ public class RouterService {
   // feature flag
   // so even the geography might be in EU they will still be directed to US.
   public String getTaskQueueForWorkspace(final UUID workspaceId, final TemporalJobType jobType) throws IOException {
-<<<<<<< Updated upstream
+    if (!WORKSPACE_ROUTING_JOB_TYPE_SET.contains(jobType)) {
+      throw new RuntimeException("Jobtype not expected to call - getTaskQueueForWorkspace - " + jobType);
+    }
+
     if (featureFlags.routeTaskQueueForWorkspaceEnabled() || featureFlags.routeTaskQueueForWorkspaceAllowList().contains(workspaceId.toString())) {
       final Geography geography = configRepository.getGeographyForWorkspace(workspaceId);
       return taskQueueMapper.getTaskQueue(geography, jobType);
     } else {
       return taskQueueMapper.getTaskQueue(Geography.AUTO, jobType);
     }
-=======
-    if (!WORKSPACE_ROUTING_JOB_TYPE_SET.contains(jobType)) {
-      throw new RuntimeException("Jobtype not expected to call - getTaskQueueForWorkspace - " + jobType);
-    }
-    final Geography geography = configRepository.getGeographyForWorkspace(workspaceId);
-    return taskQueueMapper.getTaskQueue(geography, jobType);
->>>>>>> Stashed changes
   }
 
 }
