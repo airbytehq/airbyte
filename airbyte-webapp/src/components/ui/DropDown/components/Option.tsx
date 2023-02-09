@@ -70,11 +70,7 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
         }}
       >
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
-          {props.isMulti && (
-            <>
-              <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} tabIndex={-1} />{" "}
-            </>
-          )}
+          {props.isMulti && <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />}
           {Array.isArray(props.label)
             ? props.label
                 .map<React.ReactNode>((node, index) => <Fragment key={index}>{node}</Fragment>)

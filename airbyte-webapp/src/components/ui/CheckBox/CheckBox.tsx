@@ -10,7 +10,6 @@ type CheckBoxSize = "lg" | "sm";
 export interface CheckBoxProps extends InputHTMLAttributes<HTMLInputElement> {
   indeterminate?: boolean;
   checkboxSize?: CheckBoxSize;
-  tabIndex?: number;
 }
 
 export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize = "lg", tabIndex, ...inputProps }) => {
@@ -30,12 +29,7 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize 
         className
       )}
     >
-      <input
-        type="checkbox"
-        aria-checked={indeterminate ? "mixed" : checked}
-        {...inputProps}
-        tabIndex={tabIndex ?? 0}
-      />
+      <input type="checkbox" aria-checked={indeterminate ? "mixed" : checked} {...inputProps} />
       {indeterminate ? (
         <FontAwesomeIcon size={checkboxSize} icon={faMinus} />
       ) : (

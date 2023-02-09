@@ -16,8 +16,6 @@ $sm-size: 14px;
   background-color: colors.$white;
   cursor: pointer;
 
-  @include mixins.focus-ring;
-
   input {
     @include mixins.screen-reader-only;
   }

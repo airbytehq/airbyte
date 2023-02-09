@@ -102,7 +102,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
           <div className={iconStyle}>{changedSelected && (isStreamEnabled ? <PlusIcon /> : <MinusIcon />)}</div>
-          <CheckBox checked={isSelected} className={styles.checkBox} onChange={selectForBulkEdit} />
+          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
       <ArrowCell>
