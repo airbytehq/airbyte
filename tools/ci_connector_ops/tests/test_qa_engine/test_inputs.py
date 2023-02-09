@@ -53,12 +53,7 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
     adoption_metrics_per_connector_version = inputs.fetch_adoption_metrics_per_connector_version()
     assert isinstance(adoption_metrics_per_connector_version, pd.DataFrame)
     assert set(adoption_metrics_per_connector_version.columns) == expected_columns
-    inputs.service_account.Credentials.from_service_account_info.assert_called_with({"type": "fake_service_account"})
-    inputs.pd.read_gbq.assert_called_with(
-        expected_sql_query,
-        project_id=expected_project_id,
-        credentials=inputs.service_account.Credentials.from_service_account_info.return_value,
-    )
+    inputs.pd.read_gbq.assert_called_with(expected_sql_query, project_id=expected_project_id)
 
 
 @pytest.mark.parametrize(
