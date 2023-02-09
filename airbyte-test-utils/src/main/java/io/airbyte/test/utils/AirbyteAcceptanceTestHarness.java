@@ -753,6 +753,24 @@ public class AirbyteAcceptanceTestHarness {
         .getDestinationDefinitionId();
   }
 
+  public UUID getFakerSourceDefinitionId() throws ApiException {
+    return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
+        .stream()
+        .filter(sourceRead -> "Sample Data (Faker)".equals(sourceRead.getName()))
+        .findFirst()
+        .orElseThrow()
+        .getSourceDefinitionId();
+  }
+
+  public UUID getDevNullDestinationDefinitionId() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+        .stream()
+        .filter(destinationRead -> "End-to-End Testing (/dev/null)".equals(destinationRead.getName()))
+        .findFirst()
+        .orElseThrow()
+        .getDestinationDefinitionId();
+  }
+
   public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
     apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
         .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
