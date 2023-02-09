@@ -63,7 +63,9 @@ class GenerateInputActivityTest {
   static private Job job;
 
   static private final JsonNode SOURCE_CONFIGURATION = Jsons.jsonNode(Map.of("source_key", "source_value"));
+  static private final JsonNode SOURCE_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value"));
   static private final JsonNode DESTINATION_CONFIGURATION = Jsons.jsonNode(Map.of("destination_key", "destination_value"));
+  static private final JsonNode DESTINATION_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("destination_key", "destination_value", "oauth", "oauth_value"));
   static private final State STATE = new State().withState(Jsons.jsonNode(Map.of("state_key", "state_value")));
 
   static private final UUID WORKSPACE_ID = UUID.randomUUID();
@@ -98,7 +100,7 @@ class GenerateInputActivityTest {
     when(configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID)).thenReturn(mock(StandardDestinationDefinition.class));
     when(configRepository.getSourceDefinitionFromSource(SOURCE_ID)).thenReturn(mock(StandardSourceDefinition.class));
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(DESTINATION_DEFINITION_ID, WORKSPACE_ID, DESTINATION_CONFIGURATION))
-        .thenReturn(DESTINATION_CONFIGURATION);
+        .thenReturn(DESTINATION_CONFIG_WITH_OAUTH);
 
     final StandardSync standardSync = new StandardSync()
         .withSourceId(SOURCE_ID)
@@ -123,7 +125,7 @@ class GenerateInputActivityTest {
         .withConfiguration(SOURCE_CONFIGURATION);
     when(configRepository.getSourceConnection(SOURCE_ID)).thenReturn(sourceConnection);
     when(oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, WORKSPACE_ID, SOURCE_CONFIGURATION))
-        .thenReturn(SOURCE_CONFIGURATION);
+        .thenReturn(SOURCE_CONFIG_WITH_OAUTH);
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withWorkspaceId(UUID.randomUUID())
@@ -142,8 +144,8 @@ class GenerateInputActivityTest {
         .withWorkspaceId(jobSyncConfig.getWorkspaceId())
         .withSourceId(SOURCE_ID)
         .withDestinationId(DESTINATION_ID)
-        .withSourceConfiguration(SOURCE_CONFIGURATION)
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE)
         .withCatalog(jobSyncConfig.getConfiguredAirbyteCatalog())
         .withWorkspaceId(jobSyncConfig.getWorkspaceId());
@@ -172,8 +174,8 @@ class GenerateInputActivityTest {
     assertEquals(expectedGeneratedJobInput, generatedJobInput);
 
     final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
-        .withSourceConfiguration(SOURCE_CONFIGURATION)
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE);
 
     verify(oAuthConfigSupplier).injectSourceOAuthParameters(sourceDefinitionId, WORKSPACE_ID, SOURCE_CONFIGURATION);
@@ -206,7 +208,7 @@ class GenerateInputActivityTest {
         .withSourceId(SOURCE_ID)
         .withDestinationId(DESTINATION_ID)
         .withSourceConfiguration(Jsons.emptyObject())
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE)
         .withCatalog(jobResetConfig.getConfiguredAirbyteCatalog())
         .withWorkspaceId(jobResetConfig.getWorkspaceId());
@@ -236,7 +238,7 @@ class GenerateInputActivityTest {
 
     final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
         .withSourceConfiguration(Jsons.emptyObject())
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE);
 
     verify(oAuthConfigSupplier).injectDestinationOAuthParameters(DESTINATION_DEFINITION_ID, WORKSPACE_ID, DESTINATION_CONFIGURATION);
