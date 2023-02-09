@@ -1,5 +1,5 @@
-@use "../../../../../../scss/colors";
-@use "../../../../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .statusMessage {
   margin-top: variables.$spacing-md;
@@ -8,4 +8,20 @@
 
 .disclaimer {
   margin-top: variables.$spacing-xl;
+}
+
+.passwordCheckContainer {
+  margin-top: variables.$spacing-lg;
+}
+
+.checkIcon {
+  color: colors.$dark-blue-100;
+}
+
+.error {
+  color: colors.$red;
+}
+
+.valid {
+  color: colors.$green;
 }
