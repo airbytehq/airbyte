@@ -33,12 +33,12 @@ definitions:
       name: "products"
       primary_key: "productId"
       path: "/products"
-  product_stream_slicer:
-    type: SubstreamSlicer
+  product_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/products_stream"
         parent_key: productId
-        stream_slice_field: productId
+        partition_field: productId
   tags_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -49,8 +49,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/products/{{ stream_slice.productId }}/tags"
-      stream_slicer:
-        $ref: "#/definitions/product_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   environments_stream:
@@ -63,16 +63,16 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/products/{{ stream_slice.productId }}/environments"
-      stream_slicer:
-        $ref: "#/definitions/product_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/product_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
-  organization_stream_slicer:
-    type: SubstreamSlicer
+  organization_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/organizations_stream"
         parent_key: organizationId
-        stream_slice_field: organizationId
+        partition_field: organizationId
   organization_members_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -83,8 +83,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/organizations/{{ stream_slice.organizationId }}/members"
-      stream_slicer:
-        $ref: "#/definitions/organization_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/organization_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
 

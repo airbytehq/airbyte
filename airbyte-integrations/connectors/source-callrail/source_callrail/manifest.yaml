@@ -16,7 +16,7 @@ definitions:
       header: "Authorization"
       api_token: "Token token={{ config.api_key }}"
 
-  incremental:
+  incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config.start_date }}"
@@ -52,8 +52,6 @@ definitions:
       page_token_option:
         inject_into: "path"
         type: RequestPath
-    incremental:
-      $ref: "#/definitions/incremental"
 
   calls_stream:
     $parameters:
@@ -62,6 +60,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -77,6 +77,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -92,6 +94,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -105,6 +109,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:

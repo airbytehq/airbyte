@@ -19,11 +19,11 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DatetimeBasedCursor.end_time_option": "RequestOption",
     "DatetimeBasedCursor.start_datetime": "MinMaxDatetime",
     "DatetimeBasedCursor.start_time_option": "RequestOption",
-    # CustomIncremental
-    "CustomIncremental.end_datetime": "MinMaxDatetime",
-    "CustomIncremental.end_time_option": "RequestOption",
-    "CustomIncremental.start_datetime": "MinMaxDatetime",
-    "CustomIncremental.start_time_option": "RequestOption",
+    # CustomIncrementalSync
+    "CustomIncrementalSync.end_datetime": "MinMaxDatetime",
+    "CustomIncrementalSync.end_time_option": "RequestOption",
+    "CustomIncrementalSync.start_datetime": "MinMaxDatetime",
+    "CustomIncrementalSync.start_time_option": "RequestOption",
     # DeclarativeSource
     "DeclarativeSource.check": "CheckStream",
     "DeclarativeSource.spec": "Spec",
@@ -40,8 +40,8 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DpathExtractor.decoder": "JsonDecoder",
     # HttpRequester
     "HttpRequester.error_handler": "DefaultErrorHandler",
-    # ListStreamSlicer
-    "ListStreamSlicer.request_option": "RequestOption",
+    # ListPartitionRouter
+    "ListPartitionRouter.request_option": "RequestOption",
     # ParentStreamConfig
     "ParentStreamConfig.request_option": "RequestOption",
     "ParentStreamConfig.stream": "DeclarativeStream",
@@ -52,23 +52,17 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SimpleRetriever.paginator": "NoPagination",
     "SimpleRetriever.record_selector": "RecordSelector",
     "SimpleRetriever.requester": "HttpRequester",
-    "SimpleRetriever.stream_slicer": "SingleSlice",
-    # SubstreamSlicer
-    "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    # SubstreamPartitionRouter
+    "SubstreamPartitionRouter.parent_stream_configs": "ParentStreamConfig",
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
-    # CustomStreamSlicer
-    "CustomStreamSlicer.end_datetime": "MinMaxDatetime",
-    "CustomStreamSlicer.end_time_option": "RequestOption",
-    "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
-    "CustomStreamSlicer.start_datetime": "MinMaxDatetime",
-    "CustomStreamSlicer.start_time_option": "RequestOption",
+    # CustomPartitionRouter
+    "CustomPartitionRouter.parent_stream_configs": "ParentStreamConfig",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "CartesianProductStreamSlicer.stream_slicers": "CustomStreamSlicer",
     "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DeclarativeStream.retriever": "CustomRetriever",
     "DeclarativeStream.transformations": "CustomTransformation",
@@ -77,7 +71,7 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "HttpRequester.authenticator": "CustomAuthenticator",
     "HttpRequester.error_handler": "CustomErrorHandler",
     "RecordSelector.extractor": "CustomRecordExtractor",
-    "SimpleRetriever.stream_slicer": "CustomStreamSlicer",
+    "SimpleRetriever.partition_router": "CustomPartitionRouter",
 }
 
 

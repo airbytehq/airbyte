@@ -245,6 +245,7 @@ definitions:
     required:
       - type
       - class_name
+      - cursor_field
     properties:
       type:
         type: string
@@ -252,6 +253,8 @@ definitions:
       class_name:
         type: string
         additionalProperties: true
+      cursor_field:
+        type: string
       $parameters:
         type: object
         additionalProperties: true
@@ -321,8 +324,8 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CustomStreamSlicer:
-    description: Stream slicer component whose behavior is derived from a custom code implementation of the connector
+  CustomPartitionRouter:
+    description: Partition router component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -331,7 +334,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [CustomStreamSlicer]
+        enum: [CustomPartitionRouter]
       class_name:
         type: string
       $parameters:
@@ -724,20 +727,20 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
-  ListStreamSlicer:
+  ListPartitionRouter:
     description: Partition router that is used to retrieve records that have been partitioned according to a list of values
     type: object
     required:
       - type
       - cursor_field
-      - slice_values
+      - values
     properties:
       type:
         type: string
-        enum: [ListStreamSlicer]
+        enum: [ListPartitionRouter]
       cursor_field:
         type: string
-      slice_values:
+      values:
         anyOf:
           - type: string
           - type: array
@@ -835,7 +838,7 @@ definitions:
       - type
       - parent_key
       - stream
-      - stream_slice_field
+      - partition_field
     properties:
       type:
         type: string
@@ -844,7 +847,7 @@ definitions:
         type: string
       stream:
         "$ref": "#/definitions/DeclarativeStream"
-      stream_slice_field:
+      partition_field:
         type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
@@ -1006,33 +1009,19 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
-      stream_slicer:
+      partition_router:
         default: []
         description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         anyOf:
-          - "$ref": "#/definitions/CustomStreamSlicer"
-          - "$ref": "#/definitions/ListStreamSlicer"
-          - "$ref": "#/definitions/SingleSlice"
-          - "$ref": "#/definitions/SubstreamSlicer"
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
           - type: array
             items:
               anyOf:
-                - "$ref": "#/definitions/CustomStreamSlicer"
-                - "$ref": "#/definitions/ListStreamSlicer"
-                - "$ref": "#/definitions/SingleSlice"
-                - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
-  SingleSlice:
-    description: Stream slicer returning only a single stream slice
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [SingleSlice]
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
       $parameters:
         type: object
         additionalProperties: true
@@ -1051,7 +1040,7 @@ definitions:
         additionalProperties: true
       documentation_url:
         type: string
-  SubstreamSlicer:
+  SubstreamPartitionRouter:
     description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
     required:
@@ -1060,7 +1049,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SubstreamSlicer]
+        enum: [SubstreamPartitionRouter]
       parent_stream_configs:
         type: array
         items:

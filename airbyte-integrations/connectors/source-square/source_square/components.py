@@ -30,7 +30,7 @@ class AuthenticatorSquare(DeclarativeAuthenticator, JsonSchemaMixin):
 
 
 @dataclass
-class SquareSubstreamSlicer(DatetimeStreamSlicer):
+class SquareSubstreamIncrementalSync(DatetimeStreamSlicer):
     parent_stream: Stream = None
     parent_key: str = None
     parent_records_per_request: int = 10

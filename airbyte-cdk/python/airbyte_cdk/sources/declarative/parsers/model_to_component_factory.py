@@ -35,10 +35,10 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomErrorHandler as CustomErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomIncrementalSync as CustomIncrementalSyncModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPartitionRouter as CustomPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRequester as CustomRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -53,7 +53,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListStreamSlicer as ListStreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
@@ -68,11 +68,12 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestPath as RequestPathModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
-from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -90,15 +91,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import (
-    CartesianProductStreamSlicer,
-    DatetimeStreamSlicer,
-    ListStreamSlicer,
-    SingleSlice,
-    StreamSlicer,
-    SubstreamSlicer,
-)
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer, StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
@@ -135,7 +128,7 @@ class ModelToComponentFactory:
             CustomRequesterModel: self.create_custom_component,
             CustomRetrieverModel: self.create_custom_component,
             CustomPaginationStrategyModel: self.create_custom_component,
-            CustomStreamSlicerModel: self.create_custom_component,
+            CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
             DatetimeBasedCursorModel: self.create_datetime_stream_slicer,
             DeclarativeStreamModel: self.create_declarative_stream,
@@ -148,7 +141,7 @@ class ModelToComponentFactory:
             InlineSchemaLoaderModel: self.create_inline_schema_loader,
             JsonDecoderModel: self.create_json_decoder,
             JsonFileSchemaLoaderModel: self.create_json_file_schema_loader,
-            ListStreamSlicerModel: self.create_list_stream_slicer,
+            ListPartitionRouterModel: self.create_list_partition_router,
             MinMaxDatetimeModel: self.create_min_max_datetime,
             NoAuthModel: self.create_no_auth,
             NoPaginationModel: self.create_no_pagination,
@@ -163,9 +156,8 @@ class ModelToComponentFactory:
             RequestOptionModel: self.create_request_option,
             SessionTokenAuthenticatorModel: self.create_session_token_authenticator,
             SimpleRetrieverModel: self.create_simple_retriever,
-            SingleSliceModel: self.create_single_slice,
             SpecModel: self.create_spec,
-            SubstreamSlicerModel: self.create_substream_slicer,
+            SubstreamPartitionRouterModel: self.create_substream_partition_router,
             WaitTimeFromHeaderModel: self.create_wait_time_from_header,
             WaitUntilTimeFromHeaderModel: self.create_wait_until_time_from_header,
         }
@@ -403,8 +395,8 @@ class ModelToComponentFactory:
         )
 
     def create_declarative_stream(self, model: DeclarativeStreamModel, config: Config, **kwargs) -> DeclarativeStream:
-        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's iterable field components
-        # if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
+        # When constructing a declarative stream, we assemble the incremental_sync component and retriever's partition_router field
+        # components if they exist into a single CartesianProductStreamSlicer. This is then passed back as an argument when constructing the
         # Retriever. This is done in the declarative stream not the retriever to support custom retrievers. The custom create methods in
         # the factory only support passing arguments to the component constructors, whereas this performs a merge of all slicers into one.
         combined_slicers = self._merge_stream_slicers(model=model, config=config)
@@ -414,7 +406,7 @@ class ModelToComponentFactory:
             model=model.retriever, config=config, name=model.name, primary_key=primary_key, stream_slicer=combined_slicers
         )
 
-        cursor_field = self._get_cursor_field_from_stream_slicer(model)
+        cursor_field = model.incremental_sync.cursor_field if model.incremental_sync else None
 
         if model.schema_loader:
             schema_loader = self._create_component_from_model(model=model.schema_loader, config=config)
@@ -445,8 +437,8 @@ class ModelToComponentFactory:
         )
 
         stream_slicer = None
-        if model.retriever.stream_slicer:
-            stream_slicer_model = model.retriever.stream_slicer
+        if hasattr(model.retriever, "partition_router") and model.retriever.partition_router:
+            stream_slicer_model = model.retriever.partition_router
             stream_slicer = (
                 CartesianProductStreamSlicer(
                     [self._create_component_from_model(model=slicer, config=config) for slicer in stream_slicer_model], parameters={}
@@ -461,22 +453,6 @@ class ModelToComponentFactory:
             return incremental_sync
         elif stream_slicer:
             return stream_slicer
-        else:
-            return None
-
-    @staticmethod
-    def _get_cursor_field_from_stream_slicer(model: DeclarativeStreamModel) -> Optional[Union[str, List[str]]]:
-        if not model.retriever or not model.retriever.stream_slicer:
-            return None
-        elif hasattr(model.retriever.stream_slicer, "cursor_field"):
-            return model.retriever.stream_slicer.cursor_field
-        elif isinstance(model.retriever.stream_slicer, dict) and "stream_slicers" in model.retriever.stream_slicer:
-            # TODO: Remove once we redesign stream slicers
-            # Similar to the above. This covers the case for CustomStreamSlicer whose model will be in the form of dictionaries instead
-            # of Pydantic fields. Hence why we need to handle this temporary hack a little differently
-            for slicer in model.retriever.stream_slicer["stream_slicers"]:
-                if "cursor_field" in slicer:
-                    return slicer.get("cursor_field")
         else:
             return None
 
@@ -598,7 +574,7 @@ class ModelToComponentFactory:
         return JsonFileSchemaLoader(file_path=model.file_path, config=config, parameters=model.parameters)
 
     @staticmethod
-    def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config, **kwargs) -> ListStreamSlicer:
+    def create_list_partition_router(model: ListPartitionRouterModel, config: Config, **kwargs) -> ListPartitionRouter:
         request_option = (
             RequestOption(
                 inject_into=RequestOptionType(model.request_option.inject_into.value),
@@ -608,10 +584,10 @@ class ModelToComponentFactory:
             if model.request_option
             else None
         )
-        return ListStreamSlicer(
+        return ListPartitionRouter(
             cursor_field=model.cursor_field,
             request_option=request_option,
-            slice_values=model.slice_values,
+            values=model.values,
             config=config,
             parameters=model.parameters,
         )
@@ -667,7 +643,7 @@ class ModelToComponentFactory:
             parent_key=model.parent_key,
             request_option=request_option,
             stream=declarative_stream,
-            stream_slice_field=model.stream_slice_field,
+            partition_field=model.partition_field,
             config=config,
             parameters=model.parameters,
         )
@@ -735,7 +711,7 @@ class ModelToComponentFactory:
                 primary_key=primary_key,
                 requester=requester,
                 record_selector=record_selector,
-                stream_slicer=stream_slicer or SingleSlice(parameters={}),
+                stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
                 config=config,
                 maximum_number_of_slices=self._limit_slices_fetched,
                 parameters=model.parameters,
@@ -746,20 +722,16 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             requester=requester,
             record_selector=record_selector,
-            stream_slicer=stream_slicer or SingleSlice(parameters={}),
+            stream_slicer=stream_slicer or SinglePartitionRouter(parameters={}),
             config=config,
             parameters=model.parameters,
         )
 
     @staticmethod
-    def create_single_slice(model: SingleSliceModel, config: Config, **kwargs) -> SingleSlice:
-        return SingleSlice(parameters={})
-
-    @staticmethod
     def create_spec(model: SpecModel, config: Config, **kwargs) -> Spec:
         return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, parameters={})
 
-    def create_substream_slicer(self, model: SubstreamSlicerModel, config: Config, **kwargs) -> SubstreamSlicer:
+    def create_substream_partition_router(self, model: SubstreamPartitionRouterModel, config: Config, **kwargs) -> SubstreamPartitionRouter:
         parent_stream_configs = []
         if model.parent_stream_configs:
             parent_stream_configs.extend(
@@ -769,7 +741,7 @@ class ModelToComponentFactory:
                 ]
             )
 
-        return SubstreamSlicer(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
+        return SubstreamPartitionRouter(parent_stream_configs=parent_stream_configs, parameters=model.parameters, config=config)
 
     @staticmethod
     def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config, **kwargs) -> WaitTimeFromHeaderBackoffStrategy:

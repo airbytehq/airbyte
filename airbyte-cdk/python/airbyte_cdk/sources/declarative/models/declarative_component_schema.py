@@ -97,6 +97,7 @@ class CustomIncrementalSync(BaseModel):
 
     type: Literal["CustomIncrementalSync"]
     class_name: str
+    cursor_field: str
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
@@ -136,11 +137,11 @@ class CustomRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class CustomStreamSlicer(BaseModel):
+class CustomPartitionRouter(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Literal["CustomStreamSlicer"]
+    type: Literal["CustomPartitionRouter"]
     class_name: str
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -302,11 +303,6 @@ class SessionTokenAuthenticator(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SingleSlice(BaseModel):
-    type: Literal["SingleSlice"]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
 class Spec(BaseModel):
     type: Literal["Spec"]
     connection_specification: Dict[str, Any]
@@ -402,10 +398,10 @@ class DpathExtractor(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class ListStreamSlicer(BaseModel):
-    type: Literal["ListStreamSlicer"]
+class ListPartitionRouter(BaseModel):
+    type: Literal["ListPartitionRouter"]
     cursor_field: str
-    slice_values: Union[str, List[str]]
+    values: Union[str, List[str]]
     request_option: Optional[RequestOption] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -498,7 +494,7 @@ class ParentStreamConfig(BaseModel):
     type: Literal["ParentStreamConfig"]
     parent_key: str
     stream: DeclarativeStream
-    stream_slice_field: str
+    partition_field: str
     request_option: Optional[RequestOption] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
@@ -517,13 +513,12 @@ class SimpleRetriever(BaseModel):
         None,
         description="Paginator component that describes how to navigate through the API's pages.",
     )
-    stream_slicer: Optional[
+    partition_router: Optional[
         Union[
-            CustomStreamSlicer,
-            ListStreamSlicer,
-            SingleSlice,
-            SubstreamSlicer,
-            List[Union[CustomStreamSlicer, ListStreamSlicer, SingleSlice, SubstreamSlicer]],
+            CustomPartitionRouter,
+            ListPartitionRouter,
+            SubstreamPartitionRouter,
+            List[Union[CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter]],
         ]
     ] = Field(
         [],
@@ -532,8 +527,8 @@ class SimpleRetriever(BaseModel):
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
-class SubstreamSlicer(BaseModel):
-    type: Literal["SubstreamSlicer"]
+class SubstreamPartitionRouter(BaseModel):
+    type: Literal["SubstreamPartitionRouter"]
     parent_stream_configs: List[ParentStreamConfig]
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 

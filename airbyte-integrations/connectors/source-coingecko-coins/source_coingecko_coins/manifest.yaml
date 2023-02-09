@@ -11,7 +11,7 @@ definitions:
       x_cg_pro_api_key: "{{ config['api_key'] }}"
       vs_currency: "{{ config['vs_currency'] }}"
       days: "{{ config['days'] }}"
-  incremental:
+  incremental_sync:
     type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ config['start_date'] }}"
@@ -33,16 +33,13 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-  sliced_retriever:
-    $ref: "#/definitions/retriever"
-    incremental:
-      $ref: "#/definitions/incremental"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
-  sliced_stream:
-    retriever:
-      $ref: "#/definitions/sliced_retriever"
+  incremental_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
   market_chart_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -50,7 +47,7 @@ definitions:
       path: "/market_chart"
       primary_key: "prices"
   history_stream:
-    $ref: "#/definitions/sliced_stream"
+    $ref: "#/definitions/incremental_stream"
     $parameters:
       name: "history"
       path: "/history"

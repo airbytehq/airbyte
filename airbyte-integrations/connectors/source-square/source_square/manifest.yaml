@@ -56,6 +56,21 @@ definitions:
           field_name: "cursor"
 
   base_incremental_stream:
+    incremental_sync:
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: "P30D"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.000001S"
+      cursor_field: "created_at"
+      start_time_option:
+        field_name: begin_time
+        inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -77,26 +92,26 @@ definitions:
         page_size_option:
           field_name: "limit"
           inject_into: "body_json"
-      incremental:
-        type: DatetimeBasedCursor
-        start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        end_datetime:
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: "P30D"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        cursor_granularity: "PT0.000001S"
-        cursor_field: "created_at"
-        start_time_option:
-          field_name: begin_time
-          inject_into: body_json
   base_catalog_objects_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
       primary_key: "id"
       path: "/catalog/search"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: "P30D"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.000001S"
+      cursor_field: "updated_at"
+      start_time_option:
+        field_name: begin_time
+        inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -123,21 +138,6 @@ definitions:
         page_size_option:
           field_name: "limit"
           inject_into: "body_json"
-      incremental:
-        type: DatetimeBasedCursor
-        start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        end_datetime:
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: "P30D"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        cursor_granularity: "PT0.000001S"
-        cursor_field: "updated_at"
-        start_time_option:
-          field_name: begin_time
-          inject_into: body_json
   base_stream_page_json_limit:
     retriever:
       $ref: "#/definitions/retriever"
@@ -263,6 +263,21 @@ definitions:
       name: "orders"
       primary_key: "id"
       path: "/orders/search"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_square.components.SquareSubstreamIncrementalSync
+      start_datetime:
+        datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      end_datetime:
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      step: P30D
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      cursor_granularity: "PT0.000001S"
+      parent_stream: "#/definitions/locations_stream"
+      cursor_field: "updated_at"
+      parent_key: "id"
     retriever:
       $ref: "#/definitions/base_stream_page_json_limit/retriever"
       requester:
@@ -270,20 +285,6 @@ definitions:
         http_method: "POST"
         request_body_json:
           limit: "{{ 500 }}"
-      stream_slicer:
-        class_name: source_square.components.SquareSubstreamSlicer
-        start_datetime:
-          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        end_datetime:
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        step: P30D
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        cursor_granularity: "PT0.000001S"
-        parent_stream: "#/definitions/locations_stream"
-        cursor_field: "updated_at"
-        parent_key: "id"
 
 streams:
   - "#/definitions/customers_stream"
