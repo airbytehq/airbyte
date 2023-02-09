@@ -77,7 +77,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
         onSubmit={onSubmitForm}
         jobInfo={LogsRequestError.extractJobInfo(error)}
       />
-      {showBuilderNavigationLinks && (
+      {showBuilderNavigationLinks && !sourceDefinitionSpecification && (
         <Card fullWidth className={styles.builderPrompt}>
           <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
         </Card>
