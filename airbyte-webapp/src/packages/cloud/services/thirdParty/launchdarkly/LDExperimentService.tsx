@@ -162,12 +162,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
     return () => ldClient.current?.off("change", onFeatureFlagsChanged);
   });
 
-  // Whenever the user should change (e.g. login/logout) we need to reidentify the changes with the LD client
-  useEffect(() => {
-    ldClient.current?.identify(mapUserToLDUser(user, locale, null));
-  }, [locale, user]);
-
-  // If we're inside a workspace, we need to pass the workspaceId to launchdarkly
+  // Whenever the user, locale or workspaceId changes, we need to re-identify with launchdarkly
   useEffect(() => {
     ldClient.current?.identify(mapUserToLDUser(user, locale, workspaceId || null));
   }, [workspaceId, locale, user]);
