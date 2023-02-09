@@ -382,7 +382,7 @@ class ModelToComponentFactory:
                         f"Error creating component '{type_name}' with parent custom component {model.class_name}: Please provide "
                         + ", ".join((f"{type_name}.$parameters.{parameter}" for parameter in missing_parameters))
                     )
-                raise
+                raise TypeError(f"Error creating component '{type_name}' with parent custom component {model.class_name}: {error}")
         else:
             raise ValueError(
                 f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"
