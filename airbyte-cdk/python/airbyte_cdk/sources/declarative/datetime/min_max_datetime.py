@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime as dt
@@ -62,11 +62,15 @@ class MinMaxDatetime(JsonSchemaMixin):
         time = self._parser.parse(str(self.datetime.eval(config, **additional_options)), datetime_format, self.timezone)
 
         if self.min_datetime:
-            min_time = self._parser.parse(str(self.min_datetime.eval(config, **additional_options)), datetime_format, self.timezone)
-            time = max(time, min_time)
+            min_time = str(self.min_datetime.eval(config, **additional_options))
+            if min_time:
+                min_time = self._parser.parse(min_time, datetime_format, self.timezone)
+                time = max(time, min_time)
         if self.max_datetime:
-            max_time = self._parser.parse(str(self.max_datetime.eval(config, **additional_options)), datetime_format, self.timezone)
-            time = min(time, max_time)
+            max_time = str(self.max_datetime.eval(config, **additional_options))
+            if max_time:
+                max_time = self._parser.parse(max_time, datetime_format, self.timezone)
+                time = min(time, max_time)
         return time
 
     @property
