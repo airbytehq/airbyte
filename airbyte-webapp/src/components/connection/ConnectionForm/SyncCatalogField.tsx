@@ -45,7 +45,7 @@ const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProp
         </Heading>
         <div className={styles.actions}>
           <Button type="button" variant="clear" className={styles.feedback}>
-            <a href="https://forms.gle/vbL77GtWdZmtnRHF8" target="_blank" rel="noreferrer">
+            <a href="https://forms.gle/5wDQHf6hL5sCvLgK7" target="_blank" rel="noreferrer">
               <FormattedMessage id="form.leaveFeedback" />
             </a>
           </Button>
