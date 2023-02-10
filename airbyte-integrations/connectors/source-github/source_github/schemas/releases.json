@@ -48,7 +48,7 @@
       "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "published_at": {
