@@ -59,6 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.val;
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -218,6 +219,7 @@ public class KubePodProcess implements KubePod {
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
     List<EnvVar> envVars = envMap.entrySet().stream()
+            .peek(entry -> LOGGER.error("**** enrty before name - {}, value - {}", entry.getKey(), entry.getValue()))
         // .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
@@ -237,6 +239,8 @@ public class KubePodProcess implements KubePod {
         envVars.add(new EnvVar("DD_DOGSTATSD_PORT", System.getenv("DD_DOGSTATSD_PORT"), null));
       }
       envVars = envVars.stream().filter(KubePodProcess::filterDdService).toList();
+      addServerNameAndVersion(image, envVars);
+
     }
 
     envVars.forEach(envVar -> LOGGER.error("****Env var with name - {}, value - {}, and valueFrom - {}", envVar.getName(), envVar.getValue(),
@@ -257,6 +261,14 @@ public class KubePodProcess implements KubePod {
       containerBuilder.withResources(resourceRequirementsBuilder.build());
     }
     return containerBuilder.build();
+  }
+
+  private static void addServerNameAndVersion(String image, List<EnvVar> envVars) {
+      String[] imageNameAndVersion = image.split(":");
+    if (imageNameAndVersion.length == 2) {
+      envVars.add(new EnvVar("DD_SERVICE", imageNameAndVersion[0], null));
+      envVars.add(new EnvVar("DD_VERSION", imageNameAndVersion[1], null));
+    }
   }
 
   private static boolean filterDdService(EnvVar envVar) {
