@@ -22,6 +22,8 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_aws_datalake import DestinationAwsDatalake
+from destination_aws_datalake.aws import AwsHandler
+from destination_aws_datalake.config_reader import ConnectorConfig
 
 logger = logging.getLogger("airbyte")
 
@@ -109,10 +111,16 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
     """
     append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
 
+    destination = DestinationAwsDatalake()
+
+    connector_config = ConnectorConfig(**config)
+    aws_handler = AwsHandler(connector_config, destination)
+
+    database = connector_config.lakeformation_database_name
+
     # make sure we start with empty tables
     for tbl in [append_stream, overwrite_stream]:
-        wr.catalog.delete_table_if_exists(database=config["lakeformation_database_name"], table=tbl)
-        wr.s3.delete_objects(path=f"s3://{config['bucket_name']}/{config['lakeformation_database_name']}/{tbl}")
+        aws_handler.reset_table(database, tbl)
 
     first_state_message = _state({"state": "1"})
 
@@ -125,8 +133,6 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
         _record(overwrite_stream, str(i), i, datetime.now()) for i in range(5, 10)
     ]
 
-    destination = DestinationAwsDatalake()
-
     expected_states = [first_state_message, second_state_message]
     output_states = list(
         destination.write(
@@ -137,7 +143,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
 
     # Check if table was created
     for tbl in [append_stream, overwrite_stream]:
-        table = wr.catalog.table(database=config["lakeformation_database_name"], table=tbl)
+        table = wr.catalog.table(database=database, table=tbl, boto3_session=aws_handler._session)
         expected_types = {"string_col": "string", "int_col": "bigint", "date_col": "timestamp"}
 
         # Check table format
@@ -146,5 +152,9 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog):
             assert col["Type"] == expected_types[col["Column Name"]]
 
         # Check table data
-        df = wr.lakeformation.read_sql_query(f"SELECT * FROM {tbl}", database=config["lakeformation_database_name"])
+        # cannot use wr.lakeformation.read_sql_query because of this issue: https://github.com/aws/aws-sdk-pandas/issues/2007
+        df = wr.athena.read_sql_query(f"SELECT * FROM {tbl}", database=database, boto3_session=aws_handler._session)
         assert len(df) == 10
+
+        # Reset table
+        aws_handler.reset_table(database, tbl)

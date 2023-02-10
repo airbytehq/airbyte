@@ -96,6 +96,13 @@ class AwsHandler:
                 region_name=self._config.region,
             )
 
+    def _get_s3_path(self, database: str, table: str) -> str:
+        bucket = f"s3://{self._config.bucket_name}"
+        if self._config.bucket_prefix:
+            bucket += f"/{self._config.bucket_prefix}"
+
+        return f"{bucket}/{database}/{table}/"
+
     def _get_compression_type(self, compression: CompressionCodec):
         if compression == CompressionCodec.GZIP:
             return "gzip"
@@ -199,11 +206,21 @@ class AwsHandler:
 
     def delete_table(self, database: str, table: str) -> bool:
         logger.info(f"Deleting table {database}.{table}")
-        if self.table_exists(database, table):
-            return wr.catalog.delete_table_if_exists(database=database, table=table, boto3_session=self._session)
-        return True
+        return wr.catalog.delete_table_if_exists(database=database, table=table, boto3_session=self._session)
 
-    def write(self, df: pd.DataFrame, path: str, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+    def delete_table_objects(self, database: str, table: str) -> None:
+        path = self._get_s3_path(database, table)
+        logger.info(f"Deleting objects in {path}")
+        return wr.s3.delete_objects(path=path, boto3_session=self._session)
+
+    def reset_table(self, database: str, table: str) -> None:
+        logger.info(f"Resetting table {database}.{table}")
+        if self.table_exists(database, table):
+            self.delete_table(database, table)
+            self.delete_table_objects(database, table)
+
+    def write(self, df: pd.DataFrame, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+        path = self._get_s3_path(database, table)
         return self._write(
             df,
             path,
@@ -214,7 +231,8 @@ class AwsHandler:
             partition_cols,
         )
 
-    def append(self, df: pd.DataFrame, path: str, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+    def append(self, df: pd.DataFrame, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+        path = self._get_s3_path(database, table)
         return self._write(
             df,
             path,
@@ -225,7 +243,8 @@ class AwsHandler:
             partition_cols,
         )
 
-    def upsert(self, df: pd.DataFrame, path: str, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+    def upsert(self, df: pd.DataFrame, database: str, table: str, dtype: Dict[str, str], partition_cols: list):
+        path = self._get_s3_path(database, table)
         return self._write(
             df,
             path,

@@ -32,13 +32,6 @@ class StreamWriter:
 
         logger.info(f"Creating StreamWriter for {self._database}:{self._table}")
 
-    def _get_path(self) -> str:
-        bucket = f"s3://{self._config.bucket_name}"
-        if self._config.bucket_prefix:
-            bucket += f"/{self._config.bucket_prefix}"
-
-        return f"{bucket}/{self._database}/{self._table}/"
-
     def _get_date_columns(self) -> list:
         date_columns = []
         for key, val in self._schema.items():
@@ -384,7 +377,6 @@ class StreamWriter:
             logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.write(
                 df,
-                self._get_path(),
                 self._database,
                 self._table,
                 dtype,
@@ -395,7 +387,6 @@ class StreamWriter:
             logger.debug(f"Appending {len(df)} records to {self._database}:{self._table}")
             self._aws_handler.append(
                 df,
-                self._get_path(),
                 self._database,
                 self._table,
                 dtype,

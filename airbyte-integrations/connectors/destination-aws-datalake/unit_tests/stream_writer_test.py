@@ -186,18 +186,6 @@ def get_big_schema_writer(config: Dict[str, Any]):
     return StreamWriter(aws_handler, connector_config, get_big_schema_configured_stream())
 
 
-def test_get_path():
-    writer = get_writer(get_config())
-    assert writer._get_path() == "s3://datalake-bucket/test/append_stream/"
-
-
-def test_get_path_prefix():
-    config = get_config()
-    config["bucket_prefix"] = "prefix"
-    writer = get_writer(config)
-    assert writer._get_path() == "s3://datalake-bucket/prefix/test/append_stream/"
-
-
 def test_get_date_columns():
     writer = get_writer(get_config())
     assert writer._get_date_columns() == ["datetime_col", "date_col"]

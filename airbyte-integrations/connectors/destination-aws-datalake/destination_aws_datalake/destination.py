@@ -134,20 +134,16 @@ class DestinationAwsDatalake(Destination):
             message = f"""Could not find bucket {connector_config.bucket_name} in aws://{connector_config.aws_account_id}:{connector_config.region} Exception: {repr(e)}"""
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
+        tbl = "airbyte_test"
+        db = connector_config.lakeformation_database_name
         try:
             df = pd.DataFrame({"id": [1, 2], "value": ["foo", "bar"]})
 
-            bucket = f"s3://{connector_config.bucket_name}"
-            if connector_config.bucket_prefix:
-                bucket += f"/{connector_config.bucket_prefix}"
-
-            path = f"{bucket}/{connector_config.lakeformation_database_name}/airbyte_test/"
-            logger.debug(f"Writing test file to {path}")
-            aws_handler.write(df, path, connector_config.lakeformation_database_name, "airbyte_test", None, None)
-            aws_handler.delete_table(connector_config.lakeformation_database_name, "airbyte_test")
+            aws_handler.write(df, db, tbl, None, None)
+            aws_handler.reset_table(db, tbl)
 
         except Exception as e:
-            message = f"Could not create a table in database {connector_config.lakeformation_database_name}: {repr(e)}"
+            message = f"Could not create table {tbl} in database {db}: {repr(e)}"
             logger.error(message)
             return AirbyteConnectionStatus(status=Status.FAILED, message=message)
 
