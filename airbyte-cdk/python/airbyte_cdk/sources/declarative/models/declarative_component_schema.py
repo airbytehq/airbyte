@@ -96,8 +96,14 @@ class CustomIncrementalSync(BaseModel):
         extra = Extra.allow
 
     type: Literal["CustomIncrementalSync"]
-    class_name: str
-    cursor_field: str
+    class_name: str = Field(
+        ...,
+        description="The class that will be implementing the custom incremental sync. The format is `source_<name>.<package>.<class_name>`",
+    )
+    cursor_field: str = Field(
+        ...,
+        description="The location of the value on a record that will be used as a bookmark during sync",
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 
@@ -358,9 +364,9 @@ class DatetimeBasedCursor(BaseModel):
         None,
         description="How many days before start_datetime to read data for (ISO8601 duration)",
     )
-    start_time_option: Optional[RequestOption] = Field(None, description="Request option for start time")
     partition_field_end: Optional[str] = Field(None, description="Partition start time field")
     partition_field_start: Optional[str] = Field(None, description="Partition end time field")
+    start_time_option: Optional[RequestOption] = Field(None, description="Request option for start time")
     parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
 
 

@@ -115,8 +115,6 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
-      incremental_sync:
-        $ref: "#/definitions/incremental_sync"
       partition_router:
         $ref: "#/definitions/surveys_slicer"
   answers_survey_group:
@@ -129,8 +127,6 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
-      incremental_sync:
-        $ref: "#/definitions/incremental_sync"
       partition_router:
         $ref: "#/definitions/survey_groups_slicer"
 

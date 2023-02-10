@@ -251,9 +251,11 @@ definitions:
         type: string
         enum: [CustomIncrementalSync]
       class_name:
+        description: The class that will be implementing the custom incremental sync. The format is `source_<name>.<package>.<class_name>`
         type: string
         additionalProperties: true
       cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
         type: string
       $parameters:
         type: object
@@ -399,15 +401,15 @@ definitions:
       lookback_window:
         description: How many days before start_datetime to read data for (ISO8601 duration)
         type: string
-      start_time_option:
-        description: Request option for start time
-        "$ref": "#/definitions/RequestOption"
       partition_field_end:
         description: Partition start time field
         type: string
       partition_field_start:
         description: Partition end time field
         type: string
+      start_time_option:
+        description: Request option for start time
+        "$ref": "#/definitions/RequestOption"
       $parameters:
         type: object
         additionalProperties: true
@@ -838,8 +840,8 @@ definitions:
     required:
       - type
       - parent_key
-      - stream
       - partition_field
+      - stream
     properties:
       type:
         type: string
