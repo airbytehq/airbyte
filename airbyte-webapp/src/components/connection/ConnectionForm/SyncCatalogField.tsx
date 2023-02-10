@@ -8,6 +8,7 @@ import { Heading } from "components/ui/Heading";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode } from "core/request/AirbyteClient";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import styles from "./SyncCatalogField.module.scss";
@@ -37,6 +38,8 @@ const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProp
     [fieldName, setField]
   );
 
+  const newTable = useNewTableDesignExperiment();
+
   return (
     <>
       <div className={styles.header}>
@@ -44,11 +47,13 @@ const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProp
           <FormattedMessage id={mode === "readonly" ? "form.dataSync.readonly" : "form.dataSync"} />
         </Heading>
         <div className={styles.actions}>
-          <Button type="button" variant="clear" className={styles.feedback}>
-            <a href="https://forms.gle/5wDQHf6hL5sCvLgK7" target="_blank" rel="noreferrer">
-              <FormattedMessage id="form.leaveFeedback" />
-            </a>
-          </Button>
+          {newTable && (
+            <Button type="button" variant="clear" className={styles.feedback}>
+              <a href="https://forms.gle/5wDQHf6hL5sCvLgK7" target="_blank" rel="noreferrer">
+                <FormattedMessage id="form.leaveFeedback" />
+              </a>
+            </Button>
+          )}
           {mode !== "readonly" && additionalControl}
         </div>
       </div>
