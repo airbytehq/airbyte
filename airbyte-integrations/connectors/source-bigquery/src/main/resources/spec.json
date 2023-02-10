@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Source Spec",
     "type": "object",
-    "required": ["project_id", "credentials_json"],
+    "required": ["project_id"],
     "properties": {
       "project_id": {
         "type": "string",
@@ -20,8 +20,8 @@
       },
       "credentials_json": {
         "type": "string",
-        "description": "The contents of your Service Account Key JSON file. See the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key.",
-        "title": "Credentials JSON",
+        "description": "The contents of the JSON service account key. See the <a href=\"https://docs.airbyte.com/integrations/sources/bigquery#setup-the-bigquery-source-in-airbyte\">docs</a> for more information on how to obtain this key. Default credentials will be used if this field is left empty.",
+        "title": "Service Account Key JSON (Required for cloud, optional for open-source)",
         "airbyte_secret": true
       }
     }

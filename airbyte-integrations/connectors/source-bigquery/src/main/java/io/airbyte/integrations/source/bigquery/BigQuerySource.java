@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,7 +66,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   @Override
   protected BigQueryDatabase createDatabase(final JsonNode config) {
     dbConfig = Jsons.clone(config);
-    return new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), config.get(CONFIG_CREDS).asText());
+    String credentialsAsText = Optional.ofNullable(config.get(CONFIG_CREDS)).map(JsonNode::asText).orElse(null);
+    return new BigQueryDatabase(config.get(CONFIG_PROJECT_ID).asText(), credentialsAsText );
   }
 
   @Override
