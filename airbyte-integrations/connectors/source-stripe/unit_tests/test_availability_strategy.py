@@ -18,7 +18,6 @@ def test_traverse_over_substreams(mocker):
     root = mocker.Mock()
     root.availability_strategy = HttpAvailabilityStrategy()
     root.parent = None
-    root.get_parent_stream_instance.return_value = None
 
     child_1 = mocker.Mock()
     child_1.availability_strategy = StripeSubStreamAvailabilityStrategy()

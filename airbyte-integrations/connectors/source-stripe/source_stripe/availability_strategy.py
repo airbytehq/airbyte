@@ -13,9 +13,6 @@ class StripeSubStreamAvailabilityStrategy(HttpAvailabilityStrategy):
             current_stream, parent_stream = stream, getattr(stream, "parent")
         except AttributeError:
             return super().check_availability(stream, logger, source)
-        # 1. Instantiate a parent stream
-        # 2. Run availability strategy of the parent stream if specified
-        # 3. Run availability strategy of the current stream
         if parent_stream:
             parent_stream_instance = getattr(current_stream, "get_parent_stream_instance")()
             # Accessing the `availability_strategy` property will instantiate AvailabilityStrategy under the hood
