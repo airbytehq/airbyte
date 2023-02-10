@@ -338,4 +338,89 @@ public class TemporalUtils {
         .resolve(String.valueOf(attemptId));
   }
 
+  public static void main(final String[] args) {
+    final String clientKey = "-----BEGIN PRIVATE KEY-----\n"
+        + "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDQPWJfRhTmKUy7\n"
+        + "IEw/wVQi4xEpMxyCCAOAD6xXoqcJS/kL/U2mp/jta1ed/U75q+uwadBq1GNuGGY+\n"
+        + "4ukcBjCFjYp9TVIO0NVQl4xSr2QPcCJAImKC4fBUREhuBlYINu+Tq/misGpocjTz\n"
+        + "I/rmv0z6KrbIiWE5P/g6yJpx0MT8eVJtmtDIU6vJP+RtRoWb4HGN6/eoGyWUvk5q\n"
+        + "fAgNMIe1uRL+j5UKvxeT4g095AIOOdBn19YQbGBoBsGkEKJPzV4pQ1zO4ZpPNcgW\n"
+        + "O9FNjFWEzk5gxTuMb/H8/+KgHvU57m96u2JE+4mJxh4iZADUSLDnjVDJeH1L0hJD\n"
+        + "8YTJdXzdAgMBAAECggEADlkEY6MdAoS69DOz/TqRVPwHLSsH3k+2CgdKbRlYX/Qb\n"
+        + "mz9fL8noBVe9iDWxUNOPIC8SPKIYnbfRp6iTvioRAsqvTZXbvwiVggGHGhValBO6\n"
+        + "UGfuGK1/lRbFVMtb9yHt3ONfBl4YXszrqAsFGQv6PkxeHrAUglDNhiNXPNtRD0Ie\n"
+        + "xPGhVKf8DfNz9Mwr54gK2OEBFlpgVl5NhsvIDNSgP2SmHfJBgmMcG3iMYIR/jPdZ\n"
+        + "pAi7BD3k686v3Q+N+LJShxdFCnWi0I7QDze/8qSskbeD0e7QlyxadKk9vxu6fjVi\n"
+        + "XgcmG2STI60EU9zvVngZouah6gMF7P3wxnexJrpk8wKBgQD7S/SLqeLSpdp9EUdI\n"
+        + "aNroODIIJCJhUjHglx+0H6O7NgVRv/NkJJssrht5I2o2BTflz2lfNYP0vD0ix/Pe\n"
+        + "iPp5J/8aP6aEV+fddX7KA4nW/PA6RvKqHta4Jxjzj3D0P8NKNOk7SpZnqzmeCYa0\n"
+        + "oVXTsh7AI5sEFko8bl1IMNIR7wKBgQDUIyEUxXh9aWJKdbNJWTxze+O4gKD+f69F\n"
+        + "76IgW9Zh+G/kXGGoSaF+he0jiNZCqygmcS2wX1IlGrsY6DiZeA9J8+1BlSxxfKP4\n"
+        + "hB5ycjLXhH1M6Sv4+swSoZAOXlnzJcXbsH0wcY4Brna61qjmwFFWiHHHWVxUNzXt\n"
+        + "HLs8NDP58wKBgDZv9NDQg49oWFVhidSYylsl2UjEMyJsANwLQNXvSLPEdxCHiX03\n"
+        + "JNpf+Rmb32VGah6BeO0kFarNoFzJff3GJKRcUrnn8fWXaWYjDs1KSPDmqE+nkOfj\n"
+        + "eFY6OgCBIVH4AiEwJxouBTj98aRXofO9Q29xlZG/5NPU1E4VBmYeFVPHAoGBAJ5K\n"
+        + "kDa1mtDJwAQbi2ph4c+yVBuqL3d3w0uGIg3POUrlXGij3mL6fjywpmBrjKU2ncEB\n"
+        + "lrwShHMXXSCatxEdGxttnk3fh8gu3xNjUmzHddSHEhA/tQYV7gzA7YMrOCdMujTR\n"
+        + "nrh1IydyDTohTurP+mF9cpjzvwdAI0cIt1WXBmmtAoGAbDgvT0otR0jOQ07KkGxR\n"
+        + "RsXT2jHdiZ/CyqxnG1zXi/abEm/L3iAKTKIRaEWfIgR9aOypIJUDxW0GmCvGvcA0\n"
+        + "mvzqFLZLoX5FkiaWLlyjL2hSRceoQAfjyybPUcMN7XdUdDPbxS4cQskDnRX84qnI\n"
+        + "a3AZnVUwUxW4G9E8HGQpA7M=\n"
+        + "-----END PRIVATE KEY-----";
+
+    final String clientCert = "-----BEGIN CERTIFICATE-----\n"
+        + "MIIFcjCCA1qgAwIBAgITcK+zoW/cVbkSKuQrMgEEXzr2pTANBgkqhkiG9w0BAQsF\n"
+        + "ADAmMRQwEgYDVQQKEwtBaXJieXRlIEluYzEOMAwGA1UEAxMFbXktY2EwHhcNMjMw\n"
+        + "MjA5MDAwODQwWhcNMjQwMjA5MDAwODM5WjAAMIIBIjANBgkqhkiG9w0BAQEFAAOC\n"
+        + "AQ8AMIIBCgKCAQEA0D1iX0YU5ilMuyBMP8FUIuMRKTMcgggDgA+sV6KnCUv5C/1N\n"
+        + "pqf47WtXnf1O+avrsGnQatRjbhhmPuLpHAYwhY2KfU1SDtDVUJeMUq9kD3AiQCJi\n"
+        + "guHwVERIbgZWCDbvk6v5orBqaHI08yP65r9M+iq2yIlhOT/4OsiacdDE/HlSbZrQ\n"
+        + "yFOryT/kbUaFm+Bxjev3qBsllL5OanwIDTCHtbkS/o+VCr8Xk+INPeQCDjnQZ9fW\n"
+        + "EGxgaAbBpBCiT81eKUNczuGaTzXIFjvRTYxVhM5OYMU7jG/x/P/ioB71Oe5verti\n"
+        + "RPuJicYeImQA1Eiw541QyXh9S9ISQ/GEyXV83QIDAQABo4IBvTCCAbkwDgYDVR0P\n"
+        + "AQH/BAQDAgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAMBgNVHRMB\n"
+        + "Af8EAjAAMB0GA1UdDgQWBBTbuVzFZ3EHiKtv2BG24iP5SZ4XwTAfBgNVHSMEGDAW\n"
+        + "gBQsLrMLRDLjbOy7dzLMG4ODcbdV5TCBjQYIKwYBBQUHAQEEgYAwfjB8BggrBgEF\n"
+        + "BQcwAoZwaHR0cDovL3ByaXZhdGVjYS1jb250ZW50LTYyNjljODAwLTAwMDAtMjBk\n"
+        + "MS04MTdjLTE0YzE0ZWYzMDk5OC5zdG9yYWdlLmdvb2dsZWFwaXMuY29tL2IxYzVh\n"
+        + "YThiM2FlYjNjNDU1MzU4L2NhLmNydDAlBgNVHREBAf8EGzAZghdoeWJyaWQtdGVz\n"
+        + "dC5haXJieXRlLmNvbTCBggYDVR0fBHsweTB3oHWgc4ZxaHR0cDovL3ByaXZhdGVj\n"
+        + "YS1jb250ZW50LTYyNjljODAwLTAwMDAtMjBkMS04MTdjLTE0YzE0ZWYzMDk5OC5z\n"
+        + "dG9yYWdlLmdvb2dsZWFwaXMuY29tL2IxYzVhYThiM2FlYjNjNDU1MzU4L2NybC5j\n"
+        + "cmwwDQYJKoZIhvcNAQELBQADggIBAIl/2DZwBiWu+JI0ghMso515hkPjBnqH2uf5\n"
+        + "RErMahnDuiPh1x0icumU60T6FQyQCMXw9uZ5Zc9nvjeHSCUFnQXIDsJvAxxLNJaE\n"
+        + "/0KZhFhfAnauXTKQyde0g3VA5ugdCYvCpNpBqV03r/AXi+KbjBDh90g6nJ4LeouF\n"
+        + "ZEwCR/yjqLf8AvfqhjzAs5eav/lUVXTetM381jV054R7Gxu/+jBoY2cFXI/kpxtR\n"
+        + "SngiXlNtf+8tk3WaP0e0NNYs4nI8BuzzPZ8UsuoRNW89jNiFNEs9mHZOFcT77SdF\n"
+        + "/j5JKELzRvIe1KXefdX19KIPwCVJFIHReoJKC+hWHaO99tyT1DLLpTIaRwBI+I6F\n"
+        + "WDb04qcJGmoCVVmD8irYc8esvSfT3dnhgTcWfgPyFnZXYuYKviQYcvlWp0Zd6TN2\n"
+        + "fNwq1aLqMNCsMy3b9n46M3lX8UZ/PMiszVXGk3vZwyVGlK2ZhUpWww81/oAhiYQw\n"
+        + "RxICnwPjDKP7+V25P0Kg5drbVmo812SLd0N7kOMKo+GaBs7WDmEUqKo/0Rl4she5\n"
+        + "6FPcxZ51OEMRdH0PWI7UaiQmU1OOvVUwT15Z0XIBtplowBL22BL7klaDFoJjKCBt\n"
+        + "Eram2/k3kAYAyXXJOrkZogT9X3X5Qe4BLpX6ObWXakw2Lw+vPVmKY0He54RP97N7\n"
+        + "CO8jVoQ3\n"
+        + "-----END CERTIFICATE-----";
+
+    final InputStream clientCertStream = new ByteArrayInputStream(clientCert.getBytes(StandardCharsets.UTF_8));
+    final InputStream clientKeyStream = new ByteArrayInputStream(clientKey.getBytes(StandardCharsets.UTF_8));
+    final WorkflowServiceStubsOptions.Builder optionBuilder;
+    try {
+      optionBuilder = WorkflowServiceStubsOptions.newBuilder()
+          .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCertStream, clientKeyStream).build())
+          .setTarget("hybrid-testing.ebc2e.tmprl.cloud:7233");
+    } catch (final SSLException e) {
+      log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
+      throw new RuntimeException(e);
+    }
+
+    final WorkflowServiceStubsOptions options = optionBuilder.build();
+    final String namespace = "hybrid-testing.ebc2e";
+
+
+
+    final var service = WorkflowServiceStubs.newInstance(options);
+
+    service.healthCheck();
+  }
+
 }

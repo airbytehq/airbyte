@@ -27,12 +27,17 @@ import io.temporal.api.workflowservice.v1.DescribeNamespaceResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
+import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.temporal.serviceclient.WorkflowServiceStubsOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
 import io.temporal.workflow.Workflow;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -41,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import javax.net.ssl.SSLException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -413,4 +419,35 @@ class TemporalUtilsTest {
 
   }
 
+
+  @Test
+  void test() {
+    final String clientKey = "<replace with key>";
+
+    final String clientCert = "<replace with cert>";
+
+    final String otherClientCert = "<replace with cert>";
+
+    final String otherClientKey = "<replace with key>";
+
+    final InputStream clientCertStream = new ByteArrayInputStream(clientCert.getBytes(StandardCharsets.UTF_8));
+    final InputStream clientKeyStream = new ByteArrayInputStream(clientKey.getBytes(StandardCharsets.UTF_8));
+    final WorkflowServiceStubsOptions.Builder optionBuilder;
+    try {
+      optionBuilder = WorkflowServiceStubsOptions.newBuilder()
+          .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCertStream, clientKeyStream).build())
+          .setTarget("dev.ebc2e.tmprl.cloud:7233");
+    } catch (final SSLException e) {
+      throw new RuntimeException(e);
+    }
+
+    final WorkflowServiceStubsOptions options = optionBuilder.build();
+    final String namespace = "dev.ebc2e";
+
+
+
+    final var service = WorkflowServiceStubs.newInstance(options);
+
+    service.healthCheck();
+  }
 }
