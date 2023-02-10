@@ -58,9 +58,9 @@ data:
   WORKSPACE_ROOT: /workspace
   METRIC_CLIENT: {{ .Values.global.metrics.metricClient | default "" | quote }}
   OTEL_COLLECTOR_ENDPOINT: {{ .Values.global.metrics.otelCollectorEndpoint | default "" | quote }}
-  ACTIVITY_MAX_ATTEMPT: {{ .Values.worker.activityMaxAttempt | default ""  }}
-  ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activityInitialDelayBetweenAttemptsSeconds | default ""  }}
-  ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activityMaxDelayBetweenAttemptsSeconds | default ""  }}
+  ACTIVITY_MAX_ATTEMPT: {{ .Values.worker.activityMaxAttempt | default "" | quote  }}
+  ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activityInitialDelayBetweenAttemptsSeconds | default "" | quote  }}
+  ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS: {{ .Values.worker.activityMaxDelayBetweenAttemptsSeconds | default "" | quote  }}
   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS: ""
   USE_STREAM_CAPABLE_STATE: "true"
   AUTO_DETECT_SCHEMA: "true"
@@ -71,5 +71,5 @@ data:
   WORKER_LOGS_STORAGE_TYPE: {{ .Values.global.logs.storage.type | quote }}
   WORKER_STATE_STORAGE_TYPE:  {{ .Values.global.state.storage.type | quote }}
   SHOULD_RUN_NOTIFY_WORKFLOWS: "false"
-  MAX_NOTIFY_WORKERS: {{ .Values.worker.maxNotifyWorkers | quote  }}
+  MAX_NOTIFY_WORKERS: {{ .Values.worker.maxNotifyWorkers | default "5" | quote }}
 {{- end }}
