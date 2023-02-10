@@ -17,9 +17,7 @@ class LowCodeSourceAdapter(CdkAdapter):
     def __init__(self, manifest: Dict[str, Any], limit_page_fetched_per_slice, limit_slices_fetched):
         # Request and response messages are only emitted for a sources that have debug turned on
         self._source = ManifestDeclarativeSource(
-            manifest,
-            debug=True,
-            component_factory=ModelToComponentFactory(limit_page_fetched_per_slice, limit_slices_fetched)
+            manifest, debug=True, component_factory=ModelToComponentFactory(limit_page_fetched_per_slice, limit_slices_fetched)
         )
 
     def get_http_streams(self, config: Dict[str, Any]) -> List[HttpStream]:
@@ -66,7 +64,6 @@ class LowCodeSourceAdapter(CdkAdapter):
 
 
 class LowCodeSourceAdapterFactory(CdkAdapterFactory):
-
     def __init__(self, max_pages_per_slice, max_slices):
         self._max_pages_per_slice = max_pages_per_slice
         self._max_slices = max_slices

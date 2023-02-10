@@ -10,11 +10,8 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.requesters.paginators import PaginatorTestReadDecorator
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
 from airbyte_cdk.sources.streams.http import HttpStream
-
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
 
 
@@ -54,19 +51,19 @@ class MockConcreteStream(HttpStream, ABC):
 
 MANIFEST = {
     "version": "0.1.0",
-    "type" : "DeclarativeSource",
+    "type": "DeclarativeSource",
     "definitions": {
         "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type" : "DeclarativeSource" },
+        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
         "retriever": {
-                "type" : "DeclarativeSource",
+            "type": "DeclarativeSource",
             "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
-                "type" : "DeclarativeSource",
+                "type": "DeclarativeSource",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -75,7 +72,7 @@ MANIFEST = {
         },
         "breathing_techniques_stream": {
             "retriever": {
-                "type" : "DeclarativeSource",
+                "type": "DeclarativeSource",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -85,9 +82,9 @@ MANIFEST = {
     },
     "streams": [
         {
-            "type" : "DeclarativeStream",
+            "type": "DeclarativeStream",
             "retriever": {
-                "type" : "SimpleRetriever",
+                "type": "SimpleRetriever",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -95,9 +92,9 @@ MANIFEST = {
             "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         {
-            "type" : "DeclarativeStream",
+            "type": "DeclarativeStream",
             "retriever": {
-                "type" : "SimpleRetriever",
+                "type": "SimpleRetriever",
                 "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
@@ -110,56 +107,26 @@ MANIFEST = {
 
 MANIFEST_WITH_REFERENCES = {
     "version": "0.1.0",
-    "type" : "DeclarativeSource",
+    "type": "DeclarativeSource",
     "definitions": {
-        "selector": {
-            "type": "RecordSelector",
-            "extractor": {
-                "type": "DpathExtractor",
-                "field_pointer": []
-            }
-        },
+        "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
         "requester": {
             "type": "HttpRequester",
             "url_base": "https://demonslayers.com/api/v1/",
             "http_method": "GET",
-            "authenticator": {
-                "type": "BearerAuthenticator",
-                "api_token": "{{ config['api_key'] }}"
-            }
+            "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config['api_key'] }}"},
         },
         "retriever": {
             "type": "SimpleRetriever",
-            "record_selector": {
-                "$ref": "*ref(definitions.selector)"
-            },
-            "paginator": {
-                "type": "NoPagination"
-            },
-            "requester": {
-                "$ref": "*ref(definitions.requester)"
-            }
+            "record_selector": {"$ref": "*ref(definitions.selector)"},
+            "paginator": {"type": "NoPagination"},
+            "requester": {"$ref": "*ref(definitions.requester)"},
         },
-        "base_stream": {
-            "type": "DeclarativeStream",
-            "retriever": {
-                "$ref": "*ref(definitions.retriever)"
-            }
-        },
-        "ranks_stream": {
-            "$ref": "*ref(definitions.base_stream)",
-            "$options": {
-                "name": "ranks",
-                "primary_key": "id",
-                "path": "/ranks"
-            }
-        }
+        "base_stream": {"type": "DeclarativeStream", "retriever": {"$ref": "*ref(definitions.retriever)"}},
+        "ranks_stream": {"$ref": "*ref(definitions.base_stream)", "$options": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
     },
     "streams": ["*ref(definitions.ranks_stream)"],
-    "check": {
-        "type": "CheckStream",
-        "stream_names": ["ranks"]
-    },
+    "check": {"type": "CheckStream", "stream_names": ["ranks"]},
     "spec": {
         "type": "Spec",
         "documentation_url": "https://docsurl.com",
@@ -168,47 +135,16 @@ MANIFEST_WITH_REFERENCES = {
             "type": "object",
             "required": ["api_key"],
             "additionalProperties": True,
-            "properties": {
-                "api_key": {
-                    "type": "string",
-                    "description": "API Key"
-                }
-            }
-        }
-    }
+            "properties": {"api_key": {"type": "string", "description": "API Key"}},
+        },
+    },
 }
 
-MANIFEST_WITH_PAGINATOR = {
-    "version": "0.1.0",
-    "type" : "DeclarativeSource",
-    "definitions": {
-    },
-    "streams": [
-        {
-            "type" : "DeclarativeStream",
-            "retriever": {
-                "type" : "SimpleRetriever",
-                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-                "paginator": {
-                    "type": "DefaultPaginator",
-                    "pagination_strategy": {
-                        "type": "OffsetIncrement",
-                        "page_size": 10
-                    },
-                    "url_base": "https://demonslayers.com/api/v1/"
-                },
-                "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
-            },
-            "$options": {"name": "hashiras", "path": "/hashiras"},
-        },
-    ],
-    "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
-}
 
 def test_get_http_streams():
     expected_urls = {"https://demonslayers.com/api/v1/breathing_techniques", "https://demonslayers.com/api/v1/hashiras"}
 
-    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    adapter = LowCodeSourceAdapter(MANIFEST)
     actual_streams = adapter.get_http_streams(config={})
     actual_urls = {http_stream.url_base + http_stream.path() for http_stream in actual_streams}
 
@@ -216,13 +152,10 @@ def test_get_http_streams():
     assert actual_urls == expected_urls
 
 
-MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
-MAXIMUM_NUMBER_OF_SLICES = 5
-
 def test_get_http_manifest_with_references():
     expected_urls = {"https://demonslayers.com/api/v1/ranks"}
 
-    adapter = LowCodeSourceAdapter(MANIFEST_WITH_REFERENCES, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    adapter = LowCodeSourceAdapter(MANIFEST_WITH_REFERENCES)
     actual_streams = adapter.get_http_streams(config={})
     actual_urls = {http_stream.url_base + http_stream.path() for http_stream in actual_streams}
 
@@ -236,50 +169,57 @@ def test_get_http_streams_non_declarative_streams():
     mock_source = MagicMock()
     mock_source.streams.return_value = [non_declarative_stream]
 
-    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    adapter = LowCodeSourceAdapter(MANIFEST)
     adapter._source = mock_source
     with pytest.raises(TypeError):
         adapter.get_http_streams(config={})
 
 
 def test_get_http_streams_non_http_stream():
-    declarative_stream_non_http_retriever = DeclarativeStream(name="hashiras", primary_key="id", retriever=MagicMock(), config={},
-                                                              options={})
+    declarative_stream_non_http_retriever = DeclarativeStream(
+        name="hashiras", primary_key="id", retriever=MagicMock(), config={}, options={}
+    )
 
     mock_source = MagicMock()
     mock_source.streams.return_value = [declarative_stream_non_http_retriever]
 
-    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    adapter = LowCodeSourceAdapter(MANIFEST)
     adapter._source = mock_source
     with pytest.raises(TypeError):
         adapter.get_http_streams(config={})
 
 
 def test_read_streams():
-    expected_messages = iter([
-        AirbyteMessage(
-            type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
-        ),
-        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="response:{'status': 200}")),
-        AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(data={"name": "Tengen Uzui", "breathing_technique": "sound"}, emitted_at=1234, stream="hashiras"),
-        ),
-        AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(
-                data={"name": "Kyojuro Rengoku", "breathing_technique": "fire"}, emitted_at=1234, stream="hashiras"
+    expected_messages = iter(
+        [
+            AirbyteMessage(
+                type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
             ),
-        ),
-        AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(data={"name": "Giyu Tomioka", "breathing_technique": "water"}, emitted_at=1234, stream="hashiras"),
-        ),
-    ])
+            AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="response:{'status': 200}")),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    data={"name": "Tengen Uzui", "breathing_technique": "sound"}, emitted_at=1234, stream="hashiras"
+                ),
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    data={"name": "Kyojuro Rengoku", "breathing_technique": "fire"}, emitted_at=1234, stream="hashiras"
+                ),
+            ),
+            AirbyteMessage(
+                type=Type.RECORD,
+                record=AirbyteRecordMessage(
+                    data={"name": "Giyu Tomioka", "breathing_technique": "water"}, emitted_at=1234, stream="hashiras"
+                ),
+            ),
+        ]
+    )
     mock_source = MagicMock()
     mock_source.read.return_value = expected_messages
 
-    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    adapter = LowCodeSourceAdapter(MANIFEST)
     adapter._source = mock_source
     actual_messages = list(adapter.read_stream("hashiras", {}))
 
@@ -304,7 +244,7 @@ def test_read_streams_with_error():
 
     mock_source.read.side_effect = return_value
 
-    adapter = LowCodeSourceAdapter(MANIFEST, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
+    adapter = LowCodeSourceAdapter(MANIFEST)
     adapter._source = mock_source
     actual_messages = list(adapter.read_stream("hashiras", {}))
 
@@ -315,40 +255,14 @@ def test_read_streams_with_error():
 def test_read_streams_invalid_reference():
     invalid_reference_manifest = {
         "version": "0.1.0",
-        "type" : "DeclarativeSource",
+        "type": "DeclarativeSource",
         "definitions": {
-            "selector": {
-                "type": "RecordSelector",
-                "extractor": {
-                    "type": "DpathExtractor",
-                    "field_pointer": []
-                }
-            },
-            "ranks_stream": {
-                "$ref": "*ref(definitions.base_stream)",
-                "$options": {
-                    "name": "ranks",
-                    "primary_key": "id",
-                    "path": "/ranks"
-                }
-            }
+            "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_pointer": []}},
+            "ranks_stream": {"$ref": "*ref(definitions.base_stream)", "$options": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
         },
         "streams": ["*ref(definitions.ranks_stream)"],
-        "check": {
-            "type": "CheckStream",
-            "stream_names": ["ranks"]
-        }
+        "check": {"type": "CheckStream", "stream_names": ["ranks"]},
     }
 
     with pytest.raises(UndefinedReferenceException):
-        LowCodeSourceAdapter(invalid_reference_manifest, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
-
-
-def test_stream_use_read_test_retriever_and_paginator():
-    adapter = LowCodeSourceAdapter(MANIFEST_WITH_PAGINATOR, MAXIMUM_NUMBER_OF_PAGES_PER_SLICE, MAXIMUM_NUMBER_OF_SLICES)
-    streams = adapter.get_http_streams(config={})
-
-    assert streams
-    for stream in streams:
-        assert isinstance(stream, SimpleRetrieverTestReadDecorator)
-        assert isinstance(stream.paginator, PaginatorTestReadDecorator)
+        LowCodeSourceAdapter(invalid_reference_manifest)

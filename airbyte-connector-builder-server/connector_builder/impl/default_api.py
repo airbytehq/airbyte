@@ -30,7 +30,6 @@ from jsonschema import ValidationError
 
 
 class DefaultApiImpl(DefaultApi):
-
     logger = logging.getLogger("airbyte.connector-builder")
 
     def __init__(self, adapter_factory: CdkAdapterFactory, max_pages_per_slice, max_slices, max_record_limit: int = 1000):
@@ -156,7 +155,7 @@ spec:
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
-            inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream)
+            inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream),
         )
 
     def _has_reached_limit(self, slices):
@@ -251,7 +250,9 @@ spec:
     @staticmethod
     def _close_page(current_page_request, current_page_response, current_slice_pages, current_page_records):
         if not current_page_request or not current_page_response:
-            raise ValueError("Every message grouping should have at least one request and response")
+            raise ValueError(
+                f"Every message grouping should have at least one request and response. Got request={current_page_request} and response={current_page_response}"
+            )
 
         current_slice_pages.append(
             StreamReadPages(request=current_page_request, response=current_page_response, records=current_page_records)

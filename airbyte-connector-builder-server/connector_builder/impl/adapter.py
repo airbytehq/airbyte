@@ -35,7 +35,6 @@ class CdkAdapter(ABC):
 
 
 class CdkAdapterFactory(ABC):
-
     @abstractmethod
     def create(self, manifest: Dict[str, Any]) -> CdkAdapter:
         """Return an implementation of CdkAdapter"""

@@ -12,11 +12,9 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
-CDK_VERSION = (HERE / "CDK_VERSION").read_text()
-
 setup(
     name="connector-builder-server",
-    version="0.40.32",
+    version="0.40.28",
     description="",
     long_description=README,
     author="Airbyte",
@@ -43,7 +41,7 @@ setup(
     },
     packages=find_packages(exclude=("unit_tests", "integration_tests", "docs")),
     package_data={},
-    install_requires=[f"airbyte-cdk=={CDK_VERSION}", "fastapi", "uvicorn"],
+    install_requires=["airbyte-cdk~=0.15", "fastapi", "uvicorn"],
     python_requires=">=3.9.11",
     extras_require={
         "tests": [
