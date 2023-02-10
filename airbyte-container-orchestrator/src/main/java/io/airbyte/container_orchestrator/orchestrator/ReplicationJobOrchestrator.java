@@ -74,14 +74,14 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final DestinationApi destinationApi;
 
   public ReplicationJobOrchestrator(final Configs configs,
-      final ProcessFactory processFactory,
-      final FeatureFlags featureFlags,
-      final FeatureFlagClient featureFlagClient,
-      final AirbyteMessageSerDeProvider serDeProvider,
-      final AirbyteProtocolVersionedMigratorFactory migratorFactory,
-      final JobRunConfig jobRunConfig,
-      final SourceApi sourceApi,
-      final DestinationApi destinationApi) {
+                                    final ProcessFactory processFactory,
+                                    final FeatureFlags featureFlags,
+                                    final FeatureFlagClient featureFlagClient,
+                                    final AirbyteMessageSerDeProvider serDeProvider,
+                                    final AirbyteProtocolVersionedMigratorFactory migratorFactory,
+                                    final JobRunConfig jobRunConfig,
+                                    final SourceApi sourceApi,
+                                    final DestinationApi destinationApi) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
@@ -199,11 +199,11 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   }
 
   private AirbyteStreamFactory getStreamFactory(final Version protocolVersion,
-      final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-      final MdcScope.Builder mdcScope) {
+                                                final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                                final MdcScope.Builder mdcScope) {
     return protocolVersion != null
         ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.of(configuredAirbyteCatalog), mdcScope,
-        Optional.of(RuntimeException.class))
+            Optional.of(RuntimeException.class))
         : new DefaultAirbyteStreamFactory(mdcScope);
   }
 
