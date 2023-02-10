@@ -241,7 +241,8 @@ public class SchedulerHandler {
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
         .destinationId(updatedDestination.getDestinationId())
         .connectionConfiguration(updatedDestination.getConfiguration())
-        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
+        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId())
+        .workspaceId(updatedDestination.getWorkspaceId());
 
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
