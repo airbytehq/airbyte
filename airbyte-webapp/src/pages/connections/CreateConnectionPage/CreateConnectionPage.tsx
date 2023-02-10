@@ -21,6 +21,7 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
 import { useGetSource } from "hooks/services/useSourceHook";
+import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
@@ -188,6 +189,7 @@ export const CreateConnectionPage: React.FC = () => {
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
         return (
           <>
+            {source && <InlineEnrollmentCallout withBottomMargin />}
             {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm type="destination" onSubmit={onSelectExistingDestination} />
             )}
