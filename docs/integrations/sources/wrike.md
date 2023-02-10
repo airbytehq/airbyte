@@ -46,5 +46,6 @@ The Wrike connector should not run into Wrike API limitations under normal usage
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.1   | 2023-02-10 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification
 | 0.1.0   | 2022-08-16 | [15638](https://github.com/airbytehq/airbyte/pull/15638) | Initial version/release of the connector.
 
