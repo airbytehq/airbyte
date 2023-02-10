@@ -12,13 +12,13 @@ import io.temporal.client.WorkflowClient;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.UUID;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor
 @Singleton
 @Slf4j
 public class NotificationUtils {
+
+  public NotificationUtils() {}
 
   public void sendSchemaChangeNotification(final WorkflowClient client, final UUID connectionId, final String url) {
     final ConnectionNotificationWorkflow notificationWorkflow =
