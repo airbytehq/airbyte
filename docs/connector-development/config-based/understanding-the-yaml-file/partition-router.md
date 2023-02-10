@@ -2,7 +2,7 @@
 
 In some cases, the data you are replicating is spread across multiple partitions. You can specify a set of parameters to be iterated over and used while requesting all of your data. On each iteration, using the current element being iterated upon, the connector will perform a cycle of requesting data from your source.
 
-`PartitionRouter`s give you the ability to specify either a static or dynamic set of elements that will be iterated over one at a time. This in turn is used to route requests to a partition of your data according to the elements iterated over.
+`PartitionRouter`s gives you the ability to specify either a static or dynamic set of elements that will be iterated over one at a time. This in turn is used to route requests to a partition of your data according to the elements iterated over.
 
 The most common use case for the `PartitionRouter` component is the retrieval of data from an API endpoint that requires extra request inputs to indicate which partition of data to fetch.
 
