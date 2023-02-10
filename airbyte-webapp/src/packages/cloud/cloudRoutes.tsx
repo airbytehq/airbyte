@@ -8,6 +8,7 @@ import LoadingPage from "components/LoadingPage";
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
 import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
+import { useBuildUpdateCheck } from "hooks/services/useBuildUpdateCheck";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
@@ -97,7 +98,7 @@ const MainViewRoutes = () => {
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
         <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}
-      <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
+      <Route path={RoutePaths.Workspaces} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
         path={`${RoutePaths.Workspaces}/:workspaceId/*`}
@@ -116,6 +117,8 @@ export const Routing: React.FC = () => {
   const { user, inited, providers, hasCorporateEmail } = useAuthService();
 
   const { search } = useLocation();
+
+  useBuildUpdateCheck();
 
   useEffectOnce(() => {
     setSegmentAnonymousId(search);

@@ -46,9 +46,6 @@ acceptance_tests:
       configured_catalog_path: integration_tests/configured_catalog.json
     - config_path: secrets/config_report.json
       configured_catalog_path: integration_tests/configured_catalog_report.json
-      ignored_fields:
-        sponsored_products_report_stream:
-        - updatedAt
       timeout_seconds: 3600
   incremental:
     tests:
