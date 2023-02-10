@@ -29,13 +29,13 @@ import { ConnectionCreateDestinationForm } from "./ConnectionCreateDestinationFo
 import { ConnectionCreateSourceForm } from "./ConnectionCreateSourceForm";
 import ExistingEntityForm from "./ExistingEntityForm";
 
-export enum StepsTypes {
+enum StepsTypes {
   CREATE_ENTITY = "createEntity",
   CREATE_CONNECTOR = "createConnector",
   CREATE_CONNECTION = "createConnection",
 }
 
-export enum EntityStepsTypes {
+enum EntityStepsTypes {
   SOURCE = "source",
   DESTINATION = "destination",
   CONNECTION = "connection",
