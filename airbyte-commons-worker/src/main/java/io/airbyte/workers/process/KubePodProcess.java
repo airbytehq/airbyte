@@ -59,7 +59,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import lombok.val;
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,7 +218,7 @@ public class KubePodProcess implements KubePod {
     final List<ContainerPort> containerPorts = createContainerPortList(internalToExternalPorts);
 
     List<EnvVar> envVars = envMap.entrySet().stream()
-            .peek(entry -> LOGGER.error("**** enrty before name - {}, value - {}", entry.getKey(), entry.getValue()))
+        .peek(entry -> LOGGER.error("**** enrty before name - {}, value - {}", entry.getKey(), entry.getValue()))
         // .filter(entry -> isConnectorNeedDatadogSupport(image, entry))
         .map(entry -> new EnvVar(entry.getKey(), entry.getValue(), null))
         .collect(Collectors.toList());
@@ -264,8 +263,9 @@ public class KubePodProcess implements KubePod {
   }
 
   private static void addServerNameAndVersion(String image, List<EnvVar> envVars) {
-      String[] imageNameAndVersion = image.split(":");
-    if (imageNameAndVersion.length == 2) {
+    String[] imageNameAndVersion = image.split(":");
+    int expectedCount = 2;
+    if (imageNameAndVersion.length == expectedCount) {
       envVars.add(new EnvVar("DD_SERVICE", imageNameAndVersion[0], null));
       envVars.add(new EnvVar("DD_VERSION", imageNameAndVersion[1], null));
     }
