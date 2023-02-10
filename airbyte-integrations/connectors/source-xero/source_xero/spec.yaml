@@ -65,3 +65,4 @@ connectionSpecification:
       description: "UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ. Any data with created_at before this data will not be synced."
       examples:
         - "2022-03-01T00:00:00Z"
+      format: date-time
