@@ -25,7 +25,7 @@ class Nettbutikk24Stream(HttpStream, ABC):
     Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
     """
 
-    url_base = "https://brewshop.no/api/v1/"
+    # url_base = "https://brewshop.no/api/v1/"
 
     def __init__(self, config: Mapping[str, Any], flat: bool = False, **kwargs):
         super().__init__()
@@ -39,7 +39,8 @@ class Nettbutikk24Stream(HttpStream, ABC):
             "limit": 100,
         }
 
-    def get_url_base(self):
+    @property
+    def url_base(self):
         return f"https://{self.shop_name}/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
