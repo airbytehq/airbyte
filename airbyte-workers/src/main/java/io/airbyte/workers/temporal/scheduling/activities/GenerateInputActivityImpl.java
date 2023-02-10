@@ -132,6 +132,20 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
     return sourceLauncherConfig;
   }
 
+  private JsonNode getSourceConfiguration(final SourceConnection source) throws IOException {
+    return oAuthConfigSupplier.injectSourceOAuthParameters(
+        source.getSourceDefinitionId(),
+        source.getWorkspaceId(),
+        source.getConfiguration());
+  }
+
+  private JsonNode getDestinationConfiguration(final DestinationConnection destination) throws IOException {
+    return oAuthConfigSupplier.injectDestinationOAuthParameters(
+        destination.getDestinationDefinitionId(),
+        destination.getWorkspaceId(),
+        destination.getConfiguration());
+  }
+
   private IntegrationLauncherConfig getDestinationIntegrationLauncherConfig(final long jobId,
                                                                             final int attempt,
                                                                             final JobSyncConfig config,
@@ -212,13 +226,16 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final StandardSourceDefinition sourceDefinition =
           configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
 
+      final JsonNode sourceConfiguration = getSourceConfiguration(source);
+      final JsonNode destinationConfiguration = getDestinationConfiguration(destination);
+
       final IntegrationLauncherConfig sourceLauncherConfig = getSourceIntegrationLauncherConfig(
           jobId,
           attemptNumber,
           jobConfig.getConfigType(),
           jobSyncConfig,
           sourceDefinition,
-          source.getConfiguration());
+          sourceConfiguration);
 
       final IntegrationLauncherConfig destinationLauncherConfig =
           getDestinationIntegrationLauncherConfig(
@@ -226,17 +243,17 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
               attemptNumber,
               jobSyncConfig,
               destinationDefinition,
-              destination.getConfiguration());
+              destinationConfiguration);
 
       final StandardCheckConnectionInput sourceCheckConnectionInput = new StandardCheckConnectionInput()
           .withActorType(ActorType.SOURCE)
           .withActorId(source.getSourceId())
-          .withConnectionConfiguration(source.getConfiguration());
+          .withConnectionConfiguration(sourceConfiguration);
 
       final StandardCheckConnectionInput destinationCheckConnectionInput = new StandardCheckConnectionInput()
           .withActorType(ActorType.DESTINATION)
           .withActorId(destination.getDestinationId())
-          .withConnectionConfiguration(destination.getConfiguration());
+          .withConnectionConfiguration(destinationConfiguration);
 
       return new SyncJobCheckConnectionInputs(
           sourceLauncherConfig,
@@ -270,10 +287,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       if (ConfigType.SYNC.equals(jobConfigType)) {
         final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
-        final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
-            source.getSourceDefinitionId(),
-            source.getWorkspaceId(),
-            source.getConfiguration());
+        final JsonNode sourceConfiguration = getSourceConfiguration(source);
         attemptSyncConfig.setSourceConfiguration(sourceConfiguration);
       } else if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
@@ -285,10 +299,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
       final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
-      final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
-          destination.getDestinationDefinitionId(),
-          destination.getWorkspaceId(),
-          destination.getConfiguration());
+      final JsonNode destinationConfiguration = getDestinationConfiguration(destination);
       attemptSyncConfig.setDestinationConfiguration(destinationConfiguration);
 
       final StandardSourceDefinition sourceDefinition =

@@ -104,7 +104,6 @@ class GenerateInputActivityTest {
         .withConfiguration(DESTINATION_CONFIGURATION);
     when(configRepository.getDestinationConnection(DESTINATION_ID)).thenReturn(destinationConnection);
     when(configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID)).thenReturn(mock(StandardDestinationDefinition.class));
-    when(configRepository.getSourceDefinitionFromSource(SOURCE_ID)).thenReturn(mock(StandardSourceDefinition.class));
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(DESTINATION_DEFINITION_ID, WORKSPACE_ID, DESTINATION_CONFIGURATION))
         .thenReturn(DESTINATION_CONFIG_WITH_OAUTH);
 
@@ -270,10 +269,13 @@ class GenerateInputActivityTest {
     final UUID sourceDefId = UUID.randomUUID();
     final SourceConnection sourceConnection = new SourceConnection()
         .withSourceId(SOURCE_ID)
+        .withWorkspaceId(WORKSPACE_ID)
         .withSourceDefinitionId(sourceDefId)
         .withConfiguration(SOURCE_CONFIGURATION);
     when(configRepository.getSourceConnection(SOURCE_ID)).thenReturn(sourceConnection);
     when(configRepository.getStandardSourceDefinition(sourceDefId)).thenReturn(mock(StandardSourceDefinition.class));
+    when(oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefId, WORKSPACE_ID, SOURCE_CONFIGURATION))
+        .thenReturn(SOURCE_CONFIG_WITH_OAUTH);
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withWorkspaceId(UUID.randomUUID())
@@ -301,12 +303,12 @@ class GenerateInputActivityTest {
     final StandardCheckConnectionInput expectedDestinationCheckInput = new StandardCheckConnectionInput()
         .withActorId(DESTINATION_ID)
         .withActorType(ActorType.DESTINATION)
-        .withConnectionConfiguration(DESTINATION_CONFIGURATION);
+        .withConnectionConfiguration(DESTINATION_CONFIG_WITH_OAUTH);
 
     final StandardCheckConnectionInput expectedSourceCheckInput = new StandardCheckConnectionInput()
         .withActorId(SOURCE_ID)
         .withActorType(ActorType.SOURCE)
-        .withConnectionConfiguration(SOURCE_CONFIGURATION);
+        .withConnectionConfiguration(SOURCE_CONFIG_WITH_OAUTH);
 
     final SyncJobCheckConnectionInputs expectedCheckInputs = new SyncJobCheckConnectionInputs(
         expectedSourceLauncherConfig,
