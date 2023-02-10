@@ -185,10 +185,6 @@ class SnapchatMarketingStream(HttpStream, ABC):
         return self.name
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    @property
     def response_item_name(self):
         """Remove last 's' from response_root_name, see example in parse_response function"""
         return self.response_root_name[:-1]
