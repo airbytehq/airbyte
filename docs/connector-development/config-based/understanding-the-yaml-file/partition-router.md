@@ -145,7 +145,7 @@ retriever:
     parent_streams_configs:
       - stream: "#/repositories_stream"
         parent_key: "id"
-        stream_slice_field: "repository"
+        partition_field: "repository"
 ```
 
 ## Nested streams
