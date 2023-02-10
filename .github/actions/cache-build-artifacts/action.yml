@@ -35,7 +35,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: |
-          ~/.pnpm-store
+          ~/.local/share/pnpm/store
         key: ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-

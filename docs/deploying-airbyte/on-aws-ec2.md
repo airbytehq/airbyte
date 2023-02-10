@@ -62,7 +62,7 @@ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP
 
 ``` bash
 mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}
 docker compose up -d # run the Docker container
 ```
 
