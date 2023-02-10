@@ -41,7 +41,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, PageIncrement
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -301,9 +301,7 @@ def test_list_based_stream_slicer_with_values_refd():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     partition_router = factory.create_component(
-        model_type=ListPartitionRouterModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(partition_router, ListPartitionRouter)
@@ -326,9 +324,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
     partition_router = factory.create_component(
-        model_type=ListPartitionRouterModel,
-        component_definition=partition_router_manifest,
-        config=input_config
+        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
     )
 
     assert isinstance(partition_router, ListPartitionRouter)
@@ -834,7 +830,7 @@ def test_create_default_paginator():
 
 
 @pytest.mark.parametrize(
-    "manifest, field_name, expected_value",
+    "manifest, field_name, expected_value, expected_error",
     [
         pytest.param(
             {
@@ -844,6 +840,7 @@ def test_create_default_paginator():
             },
             "subcomponent_field_with_hint",
             DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
+            None,
             id="test_create_custom_component_with_subcomponent_that_must_be_parsed",
         ),
         pytest.param(
@@ -854,6 +851,7 @@ def test_create_default_paginator():
             },
             "subcomponent_field_with_hint",
             DpathExtractor(field_path=[], config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}),
+            None,
             id="test_create_custom_component_with_subcomponent_that_must_infer_type_from_explicit_hints",
         ),
         pytest.param(
@@ -864,6 +862,7 @@ def test_create_default_paginator():
             },
             "basic_field",
             "expected",
+            None,
             id="test_create_custom_component_with_built_in_type",
         ),
         pytest.param(
@@ -874,6 +873,7 @@ def test_create_default_paginator():
             },
             "optional_subcomponent_field",
             RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", parameters={}),
+            None,
             id="test_create_custom_component_with_subcomponent_wrapped_in_optional",
         ),
         pytest.param(
@@ -890,6 +890,7 @@ def test_create_default_paginator():
                 RequestOption(inject_into=RequestOptionType.header, field_name="store_me", parameters={}),
                 RequestOption(inject_into=RequestOptionType.request_parameter, field_name="destination", parameters={}),
             ],
+            None,
             id="test_create_custom_component_with_subcomponent_wrapped_in_list",
         ),
         pytest.param(
@@ -900,16 +901,57 @@ def test_create_default_paginator():
             },
             "without_hint",
             None,
+            None,
             id="test_create_custom_component_with_subcomponent_without_type_hints",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                    "$parameters": {"url_base": "https://physical_100.com"},
+                },
+            },
+            "paginator",
+            DefaultPaginator(
+                pagination_strategy=OffsetIncrement(
+                    page_size=10, config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}
+                ),
+                url_base="https://physical_100.com",
+                config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]},
+                parameters={},
+            ),
+            None,
+            id="test_create_custom_component_with_subcomponent_that_uses_parameters",
+        ),
+        pytest.param(
+            {
+                "type": "CustomErrorHandler",
+                "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingSomeComponent",
+                "paginator": {
+                    "type": "DefaultPaginator",
+                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
+                },
+            },
+            "paginator",
+            None,
+            ValueError,
+            id="test_create_custom_component_missing_required_field_emits_error",
         ),
     ],
 )
-def test_create_custom_components(manifest, field_name, expected_value):
-    custom_component = factory.create_component(CustomErrorHandlerModel, manifest, input_config)
-    assert isinstance(custom_component, TestingSomeComponent)
+def test_create_custom_components(manifest, field_name, expected_value, expected_error):
+    if expected_error:
+        with pytest.raises(expected_error):
+            factory.create_component(CustomErrorHandlerModel, manifest, input_config)
+    else:
+        custom_component = factory.create_component(CustomErrorHandlerModel, manifest, input_config)
+        assert isinstance(custom_component, TestingSomeComponent)
 
-    assert isinstance(getattr(custom_component, field_name), type(expected_value))
-    assert getattr(custom_component, field_name) == expected_value
+        assert isinstance(getattr(custom_component, field_name), type(expected_value))
+        assert getattr(custom_component, field_name) == expected_value
 
 
 def test_custom_components_do_not_contain_extra_fields():
@@ -947,9 +989,7 @@ def test_custom_components_do_not_contain_extra_fields():
     }
 
     custom_substream_partition_router = factory.create_component(
-        CustomPartitionRouterModel,
-        custom_substream_partition_router_manifest,
-        input_config
+        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config
     )
     assert isinstance(custom_substream_partition_router, TestingCustomSubstreamPartitionRouter)
 
@@ -997,9 +1037,7 @@ def test_parse_custom_component_fields_if_subcomponent():
     }
 
     custom_substream_partition_router = factory.create_component(
-        CustomPartitionRouterModel,
-        custom_substream_partition_router_manifest,
-        input_config
+        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config
     )
     assert isinstance(custom_substream_partition_router, TestingCustomSubstreamPartitionRouter)
     assert custom_substream_partition_router.custom_field == "here"

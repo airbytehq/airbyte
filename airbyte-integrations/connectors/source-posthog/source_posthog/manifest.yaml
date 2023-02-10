@@ -148,6 +148,8 @@ definitions:
           page_size: 100
         page_token_option:
           type: RequestPath
+        $parameters:
+          url_base: "#/definitions/requester/url_base"
 
 streams:
   - "#/definitions/projects_stream"

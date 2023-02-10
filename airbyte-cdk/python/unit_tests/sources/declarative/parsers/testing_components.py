@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.paginators import PaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, PaginationStrategy
 
 
 @dataclass
@@ -23,6 +23,7 @@ class TestingSomeComponent(DefaultErrorHandler):
     optional_subcomponent_field: Optional[RequestOption] = None
     list_of_subcomponents: List[RequestOption] = None
     without_hint = None
+    paginator: DefaultPaginator = None
 
 
 @dataclass
