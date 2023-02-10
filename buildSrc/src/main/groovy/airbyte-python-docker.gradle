@@ -8,14 +8,10 @@ This plugin exists to build & test a python module via Gradle without requiring 
 Modules consuming this plugin must define two scripts `run_tests.sh` and `run_format.sh`. 
 */
 
-class AirbytePythonDockerConfiguration {
-    String moduleDirectory
-}
-
 class AirbytePythonDockerPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        def extension = project.extensions.create('airbytePythonDocker', AirbytePythonDockerConfiguration)
+        // TODO define inputs and outputs for these
 
         project.task('airbytePythonDockerApply', type: Exec) {
             /*

@@ -1,13 +1,22 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
+/*
+TODOs for making incremental: 
+1. make generateOpenApiPythonServer incremental 
+    1a. Verify if we need to make the copy task inputs/outputs explicitly declared
+2. make airbyte-python-docker incremental
+3. make airbyte-docker incremental
+4. make anything else incremental
+
+Bonus: attach unit tests to the Gradle-defined project “test” task 
+
+*/
+
+
 plugins {
     id "org.openapi.generator" version "6.3.0"
     id 'airbyte-python-docker'
     id 'airbyte-docker'
-}
-
-airbytePythonDocker {
-    moduleDirectory 'connector_builder'
 }
 
 task generateOpenApiPythonServer(type: GenerateTask) {
@@ -22,6 +31,8 @@ task generateOpenApiPythonServer(type: GenerateTask) {
     outputDir = generatedCodeDir
     // After we generate, we're only interested in the API declaration and the generated pydantic models.
     // So we copy those from the build/ directory
+    // TODO: should we define these as inputs/outputs? Should the copy even be a separate task that depends 
+    // on this task?
     doLast {
         def sourceDir = "$generatedCodeDir/src/connector_builder/generated/"
         def targetDir = "$projectDir/connector_builder/generated"
