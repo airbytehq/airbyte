@@ -4,9 +4,15 @@ connectionSpecification:
   title: Planday Spec
   type: object
   required:
-    - TODO
+    - client_id
+    - refresh_token
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    client_id:
       type: string
-      description: describe me
+      description: Planday client id
+    refresh_token:
+      type: string
+      description: Planday refresh token
+    
+    
