@@ -1,0 +1,109 @@
+{
+    "type": "object",
+    "properties": {
+      "id": { "type": ["null", "string"] },
+      "type": { "type": ["null", "string"] },
+      "attributes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "email": { "type": ["null", "string"] },
+            "phone_number": { "type": ["null", "string"] },
+            "external_id": { "type": ["null", "string"] },
+            "anonymous_id": { "type": ["null", "string"] },
+            "first_name": { "type": ["null", "string"] },
+            "last_name": { "type": ["null", "string"] },
+            "organization": { "type": ["null", "string"] },
+            "title": { "type": ["null", "string"] },
+            "image": { "type": ["null", "string"] },
+            "created": { "type": ["null", "string"] },
+            "updated": { "type": ["null", "string"] },
+            "last_event_date": { "type": ["null", "string"] },
+            "location": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "address1": { "type": ["null", "string"] },
+                    "address2": { "type": ["null", "string"] },
+                    "city": { "type": ["null", "string"] },
+                    "country": { "type": ["null", "string"] },
+                    "latitude": { "type": ["null", "string"] },
+                    "longitude": { "type": ["null", "string"] },
+                    "region": { "type": ["null", "string"] },
+                    "zip": { "type": ["null", "string"] },
+                    "timezone": { "type": ["null", "string"] }
+                  }
+                }
+            },
+            "properties": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "Accepts Marketing": { "type": ["null", "boolean"] },
+                    "Shopify Tags": { "type": ["null", "string"] },
+                    "$consent": { "type": ["null", "string"] },
+                    "$consent_timestamp": { "type": ["null", "string"] }
+                  }
+                }
+            },
+            "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "self": { "type": ["null", "string"] }
+                  }
+                }
+            },
+            "relationships": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "lists": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "links": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "self": { "type": ["null", "string"] },
+                                    "related": { "type": ["null", "string"] }
+                                  }
+                                }
+                            }
+                          }
+                        }
+                    } 
+                  }
+                }
+            },
+            "segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "links": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "self": { "type": ["null", "string"] },
+                            "related": { "type": ["null", "string"] }
+                        }
+                        }
+                    }
+                  }
+                }
+            }
+          }
+        }
+      }
+    }
+}

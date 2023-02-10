@@ -237,6 +237,32 @@ class Metrics(KlaviyoStream):
     def path(self, **kwargs) -> str:
         return "metrics"
 
+class Profiles(KlaviyoStream):
+    """Docs: https://developers.klaviyo.com/en/reference/get_profiles"""
+
+    url_base = "https://a.klaviyo.com/api/"
+    page_size = 100  # the maximum value allowed by API
+
+    def path(self, **kwargs) -> str:
+        return "profiles"
+    
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "Authorization": f"Klaviyo-API-Key {self._api_key}",
+            "accept": "application/json",
+            "revision": "2023-01-24"
+        }
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """Usually contains common params e.g. pagination size etc."""
+        return None
+    
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
 class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
