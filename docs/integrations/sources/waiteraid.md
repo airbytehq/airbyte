@@ -54,4 +54,5 @@ The Waiteraid source connector supports the following [sync modes](https://docs.
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-QQ | [QQQQ](https://github.com/airbytehq/airbyte/pull/QQQQ)   | New Source: Waiteraid                                |
+| 0.1.1   | 2023-03-10 | [00000](https://github.com/airbytehq/airbyte/pull/00000)   | Mark date fields properly in spec                                |
+| 0.1.0   | 2022-10-19 | [18165](https://github.com/airbytehq/airbyte/pull/18165)   | New Source: Waiteraid                                |
