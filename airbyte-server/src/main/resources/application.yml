@@ -7,7 +7,6 @@ micronaut:
   server:
     netty:
       initial-buffer-size: ${NETTY_INITIAL_BUFFER_SIZE:128}
-      log-level: ${LOG_LEVEL:INFO}
       max-chunk-size: ${NETTY_MAX_CHUNK_SIZE:8192}
       max-header-size: ${NETTY_MAX_HEADER_SIZE:8192}
     port: 8001
