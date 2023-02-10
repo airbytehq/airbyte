@@ -88,7 +88,7 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 | Version | Date       | Pull Request | Subject                                                                                                                                   |
 |:--------|:-----------| :--- |:------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.4   | 2023-02-10 | [](https://github.com/airbytehq/airbyte/pull/) | Support Application Default Credentials        |
+| 0.2.4   | 2023-02-10 | [22802](https://github.com/airbytehq/airbyte/pull/22802) | Support Application Default Credentials        |
 | 0.2.3   | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.2.2   | 2022-09-22 | [16902](https://github.com/airbytehq/airbyte/pull/16902) | Source BigQuery: added user agent header                                                                                                  |
 | 0.2.1   | 2022-09-14 | [15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                            |
