@@ -6,6 +6,7 @@ package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -15,8 +16,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -25,7 +30,7 @@ import java.util.concurrent.Executors;
 public class RecordSchemaValidator {
 
   private static final JsonSchemaValidator validator = new JsonSchemaValidator();
-  private final ExecutorService validationExecutor = Executors.newFixedThreadPool(1);
+  private final ExecutorService validationExecutor;
   private final Map<AirbyteStreamNameNamespacePair, JsonNode> streams;
   private final boolean backgroundValidation;
 
@@ -37,10 +42,18 @@ public class RecordSchemaValidator {
    *        is removed.
    */
   public RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas, final boolean backgroundValidation) {
+    this(streamNamesToSchemas, backgroundValidation, Executors.newFixedThreadPool(1));
+  }
+
+  @VisibleForTesting
+  RecordSchemaValidator(final Map<AirbyteStreamNameNamespacePair, JsonNode> streamNamesToSchemas,
+                        final boolean backgroundValidation,
+                        final ExecutorService validationExecutor) {
     this.backgroundValidation = backgroundValidation;
     // streams is Map of a stream source namespace + name mapped to the stream schema
     // for easy access when we check each record's schema
     this.streams = streamNamesToSchemas;
+    this.validationExecutor = validationExecutor;
     // initialize schema validator to avoid creating validators each time.
     for (final AirbyteStreamNameNamespacePair stream : streamNamesToSchemas.keySet()) {
       // We must choose a JSON validator version for validating the schema
@@ -49,7 +62,6 @@ public class RecordSchemaValidator {
       ((ObjectNode) schema).put("$schema", "http://json-schema.org/draft-07/schema#");
       validator.initializeSchemaValidator(stream.toString(), schema);
     }
-
   }
 
   /**
@@ -58,11 +70,39 @@ public class RecordSchemaValidator {
    *
    * @throws RecordSchemaValidationException
    */
-  public void validateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
+  public void validateSchema(
+                             final AirbyteRecordMessage message,
+                             final AirbyteStreamNameNamespacePair messageStream,
+                             final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors) {
     if (backgroundValidation) {
-      validationExecutor.execute(() -> doValidateSchema(message, messageStream));
+      validationExecutor.execute(() -> {
+        try {
+          doValidateSchema(message, messageStream);
+        } catch (final RecordSchemaValidationException e) {
+          handleException(e, messageStream, validationErrors);
+        }
+      });
     } else {
-      doValidateSchema(message, messageStream);
+      try {
+        doValidateSchema(message, messageStream);
+      } catch (final RecordSchemaValidationException e) {
+        handleException(e, messageStream, validationErrors);
+      }
+    }
+  }
+
+  private void handleException(final RecordSchemaValidationException e,
+                               final AirbyteStreamNameNamespacePair messageStream,
+                               final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors) {
+    final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
+    if (exceptionWithCount == null) {
+      validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
+    } else {
+      final Integer currentCount = exceptionWithCount.getRight();
+      final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
+      final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream())
+          .collect(Collectors.toSet());
+      validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
     }
   }
 

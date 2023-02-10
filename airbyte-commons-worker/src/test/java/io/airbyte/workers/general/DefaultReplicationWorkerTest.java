@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -182,10 +183,14 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE2);
     verify(source, atLeastOnce()).close();
     verify(destination).close();
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()));
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()));
+    verify(recordSchemaValidator).validateSchema(
+        RECORD_MESSAGE1.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()),
+        new ConcurrentHashMap<>());
+    verify(recordSchemaValidator).validateSchema(
+        RECORD_MESSAGE2.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()),
+        new ConcurrentHashMap<>());
   }
 
   @Test
@@ -212,12 +217,18 @@ class DefaultReplicationWorkerTest {
     verify(destination).accept(RECORD_MESSAGE1);
     verify(destination).accept(RECORD_MESSAGE2);
     verify(destination).accept(RECORD_MESSAGE3);
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()));
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()));
-    verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE3.getRecord(),
-        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE3.getRecord()));
+    verify(recordSchemaValidator).validateSchema(
+        RECORD_MESSAGE1.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()),
+        new ConcurrentHashMap<>());
+    verify(recordSchemaValidator).validateSchema(
+        RECORD_MESSAGE2.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()),
+        new ConcurrentHashMap<>());
+    verify(recordSchemaValidator).validateSchema(
+        RECORD_MESSAGE3.getRecord(),
+        AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE3.getRecord()),
+        new ConcurrentHashMap<>());
     verify(source).close();
     verify(destination).close();
   }

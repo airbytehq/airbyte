@@ -36,7 +36,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.FailureHelper;
@@ -59,13 +58,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -340,7 +339,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       long recordsRead = 0L;
-      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
+      final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields = new HashMap<>();
@@ -612,7 +611,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
                                      final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
                                      final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
-                                     final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
+                                     final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
       return;
@@ -621,25 +620,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     final AirbyteRecordMessage record = message.getRecord();
     final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
     // avoid noise by validating only if the stream has less than 10 records with validation errors
-    final boolean streamHasLessThenTenErrs =
-        validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;
+    final boolean streamHasLessThenTenErrs = validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;
     if (streamHasLessThenTenErrs) {
-      try {
-        recordSchemaValidator.validateSchema(record, messageStream);
-        final Set<String> unexpectedFieldNames = unexpectedFields.getOrDefault(messageStream, new HashSet<>());
-        populateUnexpectedFieldNames(record, streamToAllFields.get(messageStream), unexpectedFieldNames);
-        unexpectedFields.put(messageStream, unexpectedFieldNames);
-      } catch (final RecordSchemaValidationException e) {
-        final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
-        if (exceptionWithCount == null) {
-          validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
-        } else {
-          final Integer currentCount = exceptionWithCount.getRight();
-          final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
-          final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
-          validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
-        }
-      }
+      recordSchemaValidator.validateSchema(record, messageStream, validationErrors);
+      final Set<String> unexpectedFieldNames = unexpectedFields.getOrDefault(messageStream, new HashSet<>());
+      populateUnexpectedFieldNames(record, streamToAllFields.get(messageStream), unexpectedFieldNames);
+      unexpectedFields.put(messageStream, unexpectedFieldNames);
     }
   }
 
