@@ -122,7 +122,7 @@ partition_router:
   parent_streams_configs:
     - stream: "#/repositories_stream"
       parent_key: "id"
-      stream_slice_field: "repository"
+      partition_field: "repository"
       request_option:
         type: RequestOption
         field_name: "repository"
