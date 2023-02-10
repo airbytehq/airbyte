@@ -16,23 +16,6 @@ definitions:
       time_start: "{{ config['start_date'] }}"
       time_end: "{{ config['end_date'] }}"
       limit: "{{ config['limit'] }}"
-  stream_slicer:
-    type: DatetimeStreamSlicer
-    start_datetime:
-      datetime: "{{ config['start_time'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    end_datetime:
-      datetime: "{{ config['end_time'] }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    cursor_granularity: "PT1S"
-    step: "P1D"
-    start_time_option:
-      field_name: time_start
-      inject_into: request_parameter
-    end_time_option:
-      field_name: time_end
-      inject_into: request_parameter
 
   retriever:
     record_selector:

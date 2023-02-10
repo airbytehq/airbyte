@@ -9,6 +9,7 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.exceptions import ReadException
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
@@ -19,7 +20,6 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
     _prepared_request_to_airbyte_message,
     _response_to_airbyte_message,
 )
-from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
@@ -46,14 +46,14 @@ def test_simple_retriever_full(mock_http_stream):
     record_selector = MagicMock()
     record_selector.select_records.return_value = records
 
-    iterator = MagicMock()
+    stream_slicer = MagicMock()
     stream_slices = [{"date": "2022-01-01"}, {"date": "2022-01-02"}]
-    iterator.stream_slices.return_value = stream_slices
+    stream_slicer.stream_slices.return_value = stream_slices
 
     response = requests.Response()
 
     underlying_state = {"date": "2021-01-01"}
-    iterator.get_stream_state.return_value = underlying_state
+    stream_slicer.get_stream_state.return_value = underlying_state
 
     requester.get_authenticator.return_value = NoAuth()
     url_base = "https://airbyte.io"
@@ -85,7 +85,7 @@ def test_simple_retriever_full(mock_http_stream):
         requester=requester,
         paginator=paginator,
         record_selector=record_selector,
-        stream_slicer=iterator,
+        stream_slicer=stream_slicer,
         parameters={},
         config={},
     )
@@ -122,7 +122,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
     requester = MagicMock()
     paginator = MagicMock()
     record_selector = MagicMock()
-    iterator = DatetimeStreamSlicer(
+    stream_slicer = DatetimeBasedCursor(
         start_datetime="",
         end_datetime="",
         step="P1D",
@@ -139,7 +139,7 @@ def test_simple_retriever_with_request_response_logs(mock_http_stream):
         requester=requester,
         paginator=paginator,
         record_selector=record_selector,
-        stream_slicer=iterator,
+        stream_slicer=stream_slicer,
         parameters={},
         config={},
     )
@@ -160,7 +160,7 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
     record_selector = MagicMock()
     record_selector.select_records.return_value = request_response_logs
     response = requests.Response()
-    iterator = DatetimeStreamSlicer(
+    stream_slicer = DatetimeBasedCursor(
         start_datetime="",
         end_datetime="",
         step="P1D",
@@ -177,7 +177,7 @@ def test_simple_retriever_with_request_response_log_last_records(mock_http_strea
         requester=requester,
         paginator=paginator,
         record_selector=record_selector,
-        stream_slicer=iterator,
+        stream_slicer=stream_slicer,
         parameters={},
         config={},
     )

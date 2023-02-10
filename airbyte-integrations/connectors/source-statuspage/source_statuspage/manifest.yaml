@@ -48,12 +48,12 @@ definitions:
       name: "pages"
       primary_key: "id"
       path: "/pages"
-  page_stream_slicer:
-    type: SubstreamSlicer
+  page_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/pages_stream"
         parent_key: id
-        stream_slice_field: page_id
+        partition_field: page_id
   subscribers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -64,8 +64,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/subscribers"
-      stream_slicer:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   subscribers_histogram_by_state_stream:
@@ -77,8 +77,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/subscribers/histogram_by_state"
-      stream_slicer:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   incident_templates_stream:
@@ -91,8 +91,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/incident_templates"
-      stream_slicer:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   incidents_stream:
@@ -105,8 +105,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/incidents"
-      stream_slicer:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   components_stream:
@@ -119,8 +119,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/components"
-      stream_slicer:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
   metrics_stream:
@@ -133,8 +133,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/pages/{{ stream_slice.page_id }}/metrics"
-      stream_slicer:
-        $ref: "#/definitions/page_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/page_partition_router"
       record_selector:
         $ref: "#/definitions/selector"
 streams:

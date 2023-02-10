@@ -36,6 +36,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
   incremental_base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
@@ -52,13 +54,13 @@ definitions:
       path: "surveys"
       data_field: "surveys"
   surveys_slicer:
-    class_name: source_zenloop.components.ZenloopSubstreamSlicer
+    class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
       config_parent_field: "survey_id"
     parent_stream_configs:
       - stream: "#/definitions/surveys"
         parent_key: public_hash_id
-        stream_slice_field: id
+        partition_field: id
   survey_groups:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -66,15 +68,15 @@ definitions:
       path: "survey_groups"
       data_field: "survey_groups"
   survey_groups_slicer:
-    class_name: source_zenloop.components.ZenloopSubstreamSlicer
+    class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
       config_parent_field: "survey_group_id"
     parent_stream_configs:
       - stream: "#/definitions/survey_groups"
         parent_key: public_hash_id
-        stream_slice_field: id
-  date_slicer:
-    type: DatetimeStreamSlicer
+        partition_field: id
+  incremental_sync:
+    type: DatetimeBasedCursor
     cursor_field: "inserted_at"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     cursor_granularity: "PT0.000001S"
@@ -101,7 +103,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "{{ 'surveys/' + config['survey_id'] + '/properties' if config['survey_id'] else 'surveys/' + stream_slice.id + '/properties' }}"
-      stream_slicer:
+      partition_router:
         $ref: "#/definitions/surveys_slicer"
   answers:
     $ref: "#/definitions/incremental_base_stream"
@@ -113,11 +115,8 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
-      stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - "#/definitions/surveys_slicer"
-          - "#/definitions/date_slicer"
+      partition_router:
+        $ref: "#/definitions/surveys_slicer"
   answers_survey_group:
     $ref: "#/definitions/incremental_base_stream"
     $parameters:
@@ -128,11 +127,8 @@ definitions:
       requester:
         $ref: "#/definitions/incremental_base_stream/retriever/requester"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
-      stream_slicer:
-        type: CartesianProductStreamSlicer
-        stream_slicers:
-          - "#/definitions/survey_groups_slicer"
-          - "#/definitions/date_slicer"
+      partition_router:
+        $ref: "#/definitions/survey_groups_slicer"
 
 streams:
   - "#/definitions/surveys"

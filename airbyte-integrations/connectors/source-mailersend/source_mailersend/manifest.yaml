@@ -12,8 +12,8 @@ definitions:
       api_token: "{{ config['api_token'] }}"
     request_parameters:
       limit: "100"
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  incremental_sync:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%s"
@@ -46,9 +46,11 @@ definitions:
       $ref: "#/definitions/paginator"
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   activity_stream:

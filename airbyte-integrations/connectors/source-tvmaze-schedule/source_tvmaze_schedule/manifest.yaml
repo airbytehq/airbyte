@@ -16,8 +16,8 @@ definitions:
           if parameters['name'] == 'web' 
           else ''
         }}
-  stream_slicer:
-    type: DatetimeStreamSlicer
+  incremental_sync:
+    type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       format: "%Y-%m-%d"
@@ -38,9 +38,9 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
   base_stream:
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
   domestic_stream:

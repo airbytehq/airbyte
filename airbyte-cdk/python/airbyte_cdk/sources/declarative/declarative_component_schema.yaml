@@ -118,28 +118,6 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CartesianProductStreamSlicer:
-    description: Stream slicer that iterates over the cartesian product of input stream slicers
-    type: object
-    required:
-      - type
-      - stream_slicers
-    properties:
-      type:
-        type: string
-        enum: [CartesianProductStreamSlicer]
-      stream_slicers:
-        type: array
-        items:
-          anyOf:
-            - "$ref": "#/definitions/CustomStreamSlicer"
-            - "$ref": "#/definitions/DatetimeStreamSlicer"
-            - "$ref": "#/definitions/ListStreamSlicer"
-            - "$ref": "#/definitions/SingleSlice"
-            - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
   CheckStream:
     description: Checks the connections by trying to read records from one or many of the streams selected by the developer
     type: object
@@ -260,6 +238,28 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  CustomIncrementalSync:
+    description: Incremental component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+      - cursor_field
+    properties:
+      type:
+        type: string
+        enum: [CustomIncrementalSync]
+      class_name:
+        description: The class that will be implementing the custom incremental sync. The format is `source_<name>.<package>.<class_name>`
+        type: string
+        additionalProperties: true
+      cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
+        type: string
+      $parameters:
+        type: object
+        additionalProperties: true
   CustomPaginationStrategy:
     description: Pagination strategy component whose behavior is derived from a custom code implementation of the connector
     type: object
@@ -326,8 +326,8 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  CustomStreamSlicer:
-    description: Stream slicer component whose behavior is derived from a custom code implementation of the connector
+  CustomPartitionRouter:
+    description: Partition router component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -336,7 +336,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [CustomStreamSlicer]
+        enum: [CustomPartitionRouter]
       class_name:
         type: string
       $parameters:
@@ -358,8 +358,8 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
-  DatetimeStreamSlicer:
-    description: Stream slicer that slices the stream over a datetime range
+  DatetimeBasedCursor:
+    description: Cursor to provide incremental capabilities over datetime
     type: object
     required:
       - type
@@ -372,33 +372,44 @@ definitions:
     properties:
       type:
         type: string
-        enum: [DatetimeStreamSlicer]
+        enum: [DatetimeBasedCursor]
       cursor_field:
+        description: The location of the value on a record that will be used as a bookmark during sync
         type: string
       datetime_format:
+        description: The format of the datetime
         type: string
       cursor_granularity:
+        description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
         type: string
       end_datetime:
+        description: The datetime that determines the last record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       start_datetime:
+        description: The datetime that determines the earliest record that should be synced
         anyOf:
           - type: string
           - "$ref": "#/definitions/MinMaxDatetime"
       step:
+        description: The size of the time window (ISO8601 duration)
         type: string
       end_time_option:
+        description: Request option for end time
         "$ref": "#/definitions/RequestOption"
       lookback_window:
+        description: How many days before start_datetime to read data for (ISO8601 duration)
+        type: string
+      partition_field_end:
+        description: Partition start time field
+        type: string
+      partition_field_start:
+        description: Partition end time field
         type: string
       start_time_option:
+        description: Request option for start time
         "$ref": "#/definitions/RequestOption"
-      stream_state_field_end:
-        type: string
-      stream_state_field_start:
-        type: string
       $parameters:
         type: object
         additionalProperties: true
@@ -463,6 +474,10 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/CustomRetriever"
           - "$ref": "#/definitions/SimpleRetriever"
+      incremental_sync:
+        anyOf:
+          - "$ref": "#/definitions/CustomIncrementalSync"
+          - "$ref": "#/definitions/DatetimeBasedCursor"
       name:
         definition: The stream name
         type: string
@@ -715,20 +730,20 @@ definitions:
       type:
         type: string
         enum: [JsonDecoder]
-  ListStreamSlicer:
-    description: Stream slicer that iterates over the values of a list
+  ListPartitionRouter:
+    description: Partition router that is used to retrieve records that have been partitioned according to a list of values
     type: object
     required:
       - type
       - cursor_field
-      - slice_values
+      - values
     properties:
       type:
         type: string
-        enum: [ListStreamSlicer]
+        enum: [ListPartitionRouter]
       cursor_field:
         type: string
-      slice_values:
+      values:
         anyOf:
           - type: string
           - type: array
@@ -825,8 +840,8 @@ definitions:
     required:
       - type
       - parent_key
+      - partition_field
       - stream
-      - stream_slice_field
     properties:
       type:
         type: string
@@ -835,7 +850,7 @@ definitions:
         type: string
       stream:
         "$ref": "#/definitions/DeclarativeStream"
-      stream_slice_field:
+      partition_field:
         type: string
       request_option:
         "$ref": "#/definitions/RequestOption"
@@ -974,7 +989,7 @@ definitions:
         type: object
         additionalProperties: true
   SimpleRetriever:
-    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the partition router.
     type: object
     required:
       - type
@@ -997,27 +1012,19 @@ definitions:
         anyOf:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
-      stream_slicer:
+      partition_router:
+        default: []
         description: StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.
         anyOf:
-          - "$ref": "#/definitions/CartesianProductStreamSlicer"
-          - "$ref": "#/definitions/CustomStreamSlicer"
-          - "$ref": "#/definitions/DatetimeStreamSlicer"
-          - "$ref": "#/definitions/ListStreamSlicer"
-          - "$ref": "#/definitions/SingleSlice"
-          - "$ref": "#/definitions/SubstreamSlicer"
-      $parameters:
-        type: object
-        additionalProperties: true
-  SingleSlice:
-    description: Stream slicer returning only a single stream slice
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [SingleSlice]
+          - "$ref": "#/definitions/CustomPartitionRouter"
+          - "$ref": "#/definitions/ListPartitionRouter"
+          - "$ref": "#/definitions/SubstreamPartitionRouter"
+          - type: array
+            items:
+              anyOf:
+                - "$ref": "#/definitions/CustomPartitionRouter"
+                - "$ref": "#/definitions/ListPartitionRouter"
+                - "$ref": "#/definitions/SubstreamPartitionRouter"
       $parameters:
         type: object
         additionalProperties: true
@@ -1036,8 +1043,8 @@ definitions:
         additionalProperties: true
       documentation_url:
         type: string
-  SubstreamSlicer:
-    description: Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
+  SubstreamPartitionRouter:
+    description: Partition router that is used to retrieve records that have been partitioned according to records from the specified parent streams
     type: object
     required:
       - type
@@ -1045,7 +1052,7 @@ definitions:
     properties:
       type:
         type: string
-        enum: [SubstreamSlicer]
+        enum: [SubstreamPartitionRouter]
       parent_stream_configs:
         type: array
         items:

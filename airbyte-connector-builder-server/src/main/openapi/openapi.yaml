@@ -219,8 +219,6 @@ components:
           type: object
           description: The headers of the HTTP response, if any
     # --- Commenting out for now since they do not work with our orval openapi client generator ---
-    # ConnectorManifest:
-    #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     # AirbyteProtocol:
     #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
