@@ -29,6 +29,7 @@ export const AllConnectionsPage: React.FC = () => {
     <Suspense fallback={<LoadingPage />}>
       {connections.length ? (
         <MainPageWithScroll
+          softScrollEdge={false}
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
             <PageHeader
@@ -39,6 +40,7 @@ export const AllConnectionsPage: React.FC = () => {
                   variant="primary"
                   size="sm"
                   onClick={() => onCreateClick()}
+                  data-testid="new-connection-button"
                 >
                   <FormattedMessage id="connection.newConnection" />
                 </Button>

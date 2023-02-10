@@ -1,5 +1,5 @@
-export const submitButtonClick = () => {
-  cy.get("button[type=submit]").click();
+export const submitButtonClick = (force = false) => {
+  cy.get("button[type=submit]").click({ force });
 };
 
 export const updateField = (field: string, value: string) => {
