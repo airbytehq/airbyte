@@ -40,6 +40,7 @@ export const AllConnectionsPage: React.FC = () => {
                   variant="primary"
                   size="sm"
                   onClick={() => onCreateClick()}
+                  data-testid="new-connection-button"
                 >
                   <FormattedMessage id="connection.newConnection" />
                 </Button>
