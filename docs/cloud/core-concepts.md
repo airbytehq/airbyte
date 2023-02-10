@@ -163,4 +163,3 @@ When you [sign up](http://cloud.airbyte.io/signup) for Airbyte Cloud, we automat
 ## Glossary of Terms
 
 You find and extended list of [Airbyte specific terms](https://glossary.airbyte.com/term/airbyte-glossary-of-terms/), [data engineering concepts](https://glossary.airbyte.com/term/data-engineering-concepts) or many [other data related terms](https://glossary.airbyte.com/).
-

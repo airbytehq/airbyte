@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -41,7 +41,6 @@ import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -153,7 +152,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
     final boolean isCustomConnector = sourceDef.getCustom();
     final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
 
@@ -177,7 +176,7 @@ public class SchedulerHandler {
 
     final Version protocolVersion = new Version(sourceDef.getProtocolVersion());
 
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
     final boolean isCustomConnector = sourceDef.getCustom();
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
   }
@@ -193,7 +192,8 @@ public class SchedulerHandler {
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .sourceId(updatedSource.getSourceId())
         .connectionConfiguration(updatedSource.getConfiguration())
-        .sourceDefinitionId(updatedSource.getSourceDefinitionId());
+        .sourceDefinitionId(updatedSource.getSourceDefinitionId())
+        .workspaceId(updatedSource.getWorkspaceId());
 
     return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
   }
@@ -202,7 +202,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
     final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
+    final String imageName = destinationDef.getDockerRepository() + ":" + destinationDef.getDockerImageTag();
     final boolean isCustomConnector = destinationDef.getCustom();
     final Version protocolVersion = new Version(destinationDef.getProtocolVersion());
     return reportConnectionStatus(
@@ -224,7 +224,7 @@ public class SchedulerHandler {
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(destinationConfig.getWorkspaceId());
-    final String imageName = DockerUtils.getTaggedImageName(destDef.getDockerRepository(), destDef.getDockerImageTag());
+    final String imageName = destDef.getDockerRepository() + ":" + destDef.getDockerImageTag();
     final Version protocolVersion = new Version(destDef.getProtocolVersion());
     return reportConnectionStatus(
         synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
@@ -241,7 +241,8 @@ public class SchedulerHandler {
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
         .destinationId(updatedDestination.getDestinationId())
         .connectionConfiguration(updatedDestination.getConfiguration())
-        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
+        .destinationDefinitionId(updatedDestination.getDestinationDefinitionId())
+        .workspaceId(updatedDestination.getWorkspaceId());
 
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
@@ -250,7 +251,7 @@ public class SchedulerHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
     final boolean isCustomConnector = sourceDef.getCustom();
 
     final String configHash = HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
@@ -298,7 +299,7 @@ public class SchedulerHandler {
         sourceCreate.getConnectionConfiguration(),
         sourceDef.getSpec());
 
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final String imageName = sourceDef.getDockerRepository() + ":" + sourceDef.getDockerImageTag();
     final boolean isCustomConnector = sourceDef.getCustom();
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
