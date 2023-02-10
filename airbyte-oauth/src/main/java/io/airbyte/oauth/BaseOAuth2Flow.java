@@ -265,7 +265,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
 
   protected String getBase64Auth(final String clientId,
                                   final String clientSecret) {
-    return "";
+    return "Auth";
   }
 
 
