@@ -331,10 +331,7 @@ class TransformConfig:
 
         # ssl is an optional configuration and is not present in strict-encrypt config
         # if ssl option is not present in the config - default to True
-        if "ssl" in config:
-            dbt_config["secure"] = config["ssl"]
-        else:
-            dbt_config["secure"] = True
+        dbt_config["secure"] = config.get("ssl", True)
 
         return dbt_config
 
