@@ -12,6 +12,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -83,8 +84,8 @@ public class EbayOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getBase64Auth(String clientId, String clientSecret) {
-    String auth = Base64.encodeBase64String((clientId+":"+clientSecret).getBytes());
-    return "Basic "+auth;
+  protected String getBase64Auth(final String clientId, final String clientSecret) throws UnsupportedEncodingException {
+    String auth = Base64.encodeBase64String((clientId + ":" + clientSecret).getBytes("UTF-8"));
+    return "Basic " + auth;
   }
 }

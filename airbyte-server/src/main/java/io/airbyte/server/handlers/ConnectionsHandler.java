@@ -259,7 +259,7 @@ public class ConnectionsHandler {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
     for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
-            workspaceIdRequestBody.getSourceId(),workspaceIdRequestBody.getDestinationId(),workspaceIdRequestBody.getStatus(),
+            workspaceIdRequestBody.getSourceDefinitionId(),workspaceIdRequestBody.getDestinationDefinitionId(),workspaceIdRequestBody.getStatus(),
             workspaceIdRequestBody.getPageSize(),workspaceIdRequestBody.getPageCurrent())) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
@@ -269,7 +269,7 @@ public class ConnectionsHandler {
   public Long pageConnectionsForWorkspaceCount(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
       throws IOException{
     return configRepository.pageWorkspaceStandardSyncsCount(workspaceIdRequestBody.getWorkspaceId(),
-            workspaceIdRequestBody.getSourceId(),workspaceIdRequestBody.getDestinationId(),workspaceIdRequestBody.getStatus());
+            workspaceIdRequestBody.getSourceDefinitionId(),workspaceIdRequestBody.getDestinationDefinitionId(),workspaceIdRequestBody.getStatus());
   }
 
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {

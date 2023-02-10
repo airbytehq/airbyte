@@ -2436,10 +2436,10 @@ components:
       properties:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
-        sourceId:
+        sourceDefinitionId:
           type: string
           format: uuid
-        destinationId:
+        destinationDefinitionId:
           type: string
           format: uuid
         status:
