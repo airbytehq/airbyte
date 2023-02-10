@@ -1,0 +1,85 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/azureblobstorage",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "AzureBlobStorage Source Spec",
+    "type": "object",
+    "required": [
+      "azure_blob_storage_account_name",
+      "azure_blob_storage_account_key",
+      "format"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "azure_blob_storage_endpoint": {
+        "title": "Endpoint Domain Name",
+        "type": "string",
+        "default": "blob.core.windows.net",
+        "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+        "examples": ["blob.core.windows.net"]
+      },
+      "azure_blob_storage_container_name": {
+        "title": "Azure blob storage container (Bucket) Name",
+        "type": "string",
+        "description": "The name of the Azure blob storage container.",
+        "examples": ["airbytetescontainername"]
+      },
+      "azure_blob_storage_account_name": {
+        "title": "Azure Blob Storage account name",
+        "type": "string",
+        "description": "The account's name of the Azure Blob Storage.",
+        "examples": ["airbyte5storage"]
+      },
+      "azure_blob_storage_account_key": {
+        "title": "Azure Blob Storage account key",
+        "description": "The Azure blob storage account key.",
+        "airbyte_secret": true,
+        "type": "string",
+        "examples": [
+          "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+        ]
+      },
+      "azure_blob_storage_blobs_tags": {
+        "title": "Azure Blob Storage blobs tags",
+        "description": "The Azure blob storage tag query to be applied",
+        "type": "string",
+        "examples": [
+          "\"Rank\" >= '010' AND \"Rank\" < '100'"
+        ]
+      },
+      "azure_blob_storage_blobs_prefix": {
+        "title": "Azure Blob Storage blobs prefix",
+        "description": "The Azure blob storage prefix to be applied",
+        "type": "string",
+        "examples": [
+          "FolderA/FolderB/"
+        ]
+      },
+      "azure_blob_storage_blobs_schema": {
+        "title": "Azure Blob Storage blobs schema",
+        "description": "The Azure blob storage schema to be used",
+        "type": "string",
+        "examples": [
+          "{\"column_1\": \"number\", \"column_2\": \"string\", \"column_3\": \"array\", \"column_4\": \"object\", \"column_5\": \"boolean\"}"
+        ]
+      },
+      "format": {
+        "title": "Input Format",
+        "type": "object",
+        "description": "Input data format",
+        "oneOf": [
+          {
+            "title": "JSON Lines: newline-delimited JSON",
+            "required": ["format_type"],
+            "properties": {
+              "format_type": {
+                "type": "string",
+                "const": "JSONL"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
