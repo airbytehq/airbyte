@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -264,7 +265,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   protected String getBase64Auth(final String clientId,
-                                  final String clientSecret) {
+                                  final String clientSecret) throws UnsupportedEncodingException {
     return "Auth";
   }
 
