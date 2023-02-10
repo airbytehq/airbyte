@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -26,7 +26,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
         pytest.param(
             {
                 "type": "DeclarativeStream",
-                "retriever": {"type": "SimpleRetriever", "paginator": {}, "record_selector": {}, "requester": {}, "stream_slicer": {}},
+                "retriever": {"type": "SimpleRetriever", "paginator": {}, "record_selector": {}, "requester": {}},
             },
             {
                 "type": "DeclarativeStream",
@@ -35,7 +35,6 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
                     "paginator": {"type": "NoPagination"},
                     "record_selector": {"type": "RecordSelector"},
                     "requester": {"type": "HttpRequester"},
-                    "stream_slicer": {"type": "SingleSlice"},
                 },
             },
             id="test_simple_retriever",
@@ -64,11 +63,11 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
             id="test_default_paginator",
         ),
         pytest.param(
-            {"type": "SimpleRetriever", "stream_slicer": {"type": "SubstreamSlicer", "parent_stream_configs": [{}, {}, {}]}},
+            {"type": "SimpleRetriever", "partition_router": {"type": "SubstreamPartitionRouter", "parent_stream_configs": [{}, {}, {}]}},
             {
                 "type": "SimpleRetriever",
-                "stream_slicer": {
-                    "type": "SubstreamSlicer",
+                "partition_router": {
+                    "type": "SubstreamPartitionRouter",
                     "parent_stream_configs": [
                         {"type": "ParentStreamConfig"},
                         {"type": "ParentStreamConfig"},

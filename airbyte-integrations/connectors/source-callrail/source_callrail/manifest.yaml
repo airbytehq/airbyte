@@ -16,8 +16,8 @@ definitions:
       header: "Authorization"
       api_token: "Token token={{ config.api_key }}"
 
-  stream_slicer:
-    type: "DatetimeStreamSlicer"
+  incremental_sync:
+    type: "DatetimeBasedCursor"
     start_datetime:
       datetime: "{{ config.start_date }}"
       datetime_format: "%Y-%m-%d"
@@ -50,9 +50,8 @@ definitions:
         field_name: "per_page"
         inject_into: "request_parameter"
       page_token_option:
+        inject_into: "path"
         type: RequestPath
-    stream_slicer:
-      $ref: "#/definitions/stream_slicer"
 
   calls_stream:
     $parameters:
@@ -61,6 +60,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -76,6 +77,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -91,6 +94,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -104,6 +109,8 @@ definitions:
     primary_key: "id"
     schema_loader:
       $ref: "#/definitions/schema_loader"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
     retriever:
       $ref: "#/definitions/retriever"
       requester:

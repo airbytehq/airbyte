@@ -57,7 +57,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
-      stream_slicer:
+      partition_router:
         request_cursor_field: "updated_after"
         cursor_field: "updated_at"
         class_name: source_greenhouse.components.GreenHouseSlicer
@@ -69,7 +69,7 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
-      stream_slicer:
+      partition_router:
         request_cursor_field: "created_after"
         cursor_field: "applied_at"
         class_name: source_greenhouse.components.GreenHouseSlicer
@@ -110,12 +110,12 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "jobs/{{ stream_slice.parent_id }}/openings"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/jobs_stream"
             parent_key: "id"
-            stream_slice_field: "parent_id"
+            partition_field: "parent_id"
   applications_demographics_answers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -125,7 +125,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "applications/{{ stream_slice.parent_id }}/demographics/answers"
-      stream_slicer:
+      partition_router:
         class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
         parent_stream: "#/definitions/applications_stream"
         request_cursor_field: "updated_after"
@@ -141,7 +141,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "applications/{{ stream_slice.parent_id }}/scheduled_interviews"
-      stream_slicer:
+      partition_router:
         class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
         parent_stream: "#/definitions/applications_stream"
         request_cursor_field: "updated_after"
@@ -169,12 +169,12 @@ definitions:
         requester:
           $ref: "#/definitions/requester"
           path: "demographics/questions/{{ stream_slice.parent_id }}/answer_options"
-        stream_slicer:
-          type: SubstreamSlicer
+        partition_router:
+          type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/questions_stream"
               parent_key: "id"
-              stream_slice_field: "parent_id"
+              partition_field: "parent_id"
   demographics_question_sets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -191,12 +191,12 @@ definitions:
         requester:
           $ref: "#/definitions/requester"
           path: "demographics/question_sets/{{ stream_slice.parent_id }}/questions"
-        stream_slicer:
-          type: SubstreamSlicer
+        partition_router:
+          type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/demographics_question_sets_stream"
               parent_key: "id"
-              stream_slice_field: "parent_id"
+              partition_field: "parent_id"
   interviews_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -222,7 +222,7 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "jobs/{{ stream_slice.parent_id }}/stages"
-      stream_slicer:
+      partition_router:
         class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
         parent_stream: "#/definitions/jobs_stream"
         request_cursor_field: "updated_after"

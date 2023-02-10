@@ -1,15 +1,15 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
 from typing import List, Optional
 
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, PaginationStrategy
-from airbyte_cdk.sources.declarative.stream_slicers import SubstreamSlicer
 
 
 @dataclass
@@ -27,9 +27,9 @@ class TestingSomeComponent(DefaultErrorHandler):
 
 
 @dataclass
-class TestingCustomSubstreamSlicer(SubstreamSlicer):
+class TestingCustomSubstreamPartitionRouter(SubstreamPartitionRouter):
     """
-    A test class based on a SubstreamSlicer used for testing manifests that use custom components.
+    A test class based on a SubstreamPartitionRouter used for testing manifests that use custom components.
     """
 
     custom_field: str

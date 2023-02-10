@@ -39,12 +39,12 @@ definitions:
       name: "projects"
       primary_key: "_id"
       path: "/projects"
-  project_stream_slicer:
-    type: SubstreamSlicer
+  project_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/projects_stream"
         parent_key: key
-        stream_slice_field: project_key
+        partition_field: project_key
   environments_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -57,8 +57,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_key }}/environments"
-      stream_slicer:
-        $ref: "#/definitions/project_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/project_partition_router"
   metrics_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -71,8 +71,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/metrics/{{ stream_slice.project_key }}"
-      stream_slicer:
-        $ref: "#/definitions/project_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/project_partition_router"
   members_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -97,8 +97,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "/flags/{{ stream_slice.project_key }}"
-      stream_slicer:
-        $ref: "#/definitions/project_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/project_partition_router"
 
 streams:
   - "#/definitions/projects_stream"

@@ -3,16 +3,16 @@ definitions:
   selector:
     extractor:
       field_path: []
-  url_stream_slicer:
-    type: "ListStreamSlicer"
-    slice_values: "{{ config['urls'] }}"
+  url_partition_router:
+    type: "ListPartitionRouter"
+    values: "{{ config['urls'] }}"
     cursor_field: url
     request_option:
       field_name: "url"
       inject_into: "request_parameter"
-  strategy_stream_slicer:
-    type: "ListStreamSlicer"
-    slice_values: "{{ config['strategies'] }}"
+  strategy_partition_router:
+    type: "ListPartitionRouter"
+    values: "{{ config['strategies'] }}"
     cursor_field: strategy
     request_option:
       field_name: "strategy"
@@ -30,11 +30,9 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
-    stream_slicer:
-      type: CartesianProductStreamSlicer
-      stream_slicers:
-        - "#/definitions/url_stream_slicer"
-        - "#/definitions/strategy_stream_slicer"
+    partition_router:
+      - "#/definitions/url_partition_router"
+      - "#/definitions/strategy_partition_router"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"

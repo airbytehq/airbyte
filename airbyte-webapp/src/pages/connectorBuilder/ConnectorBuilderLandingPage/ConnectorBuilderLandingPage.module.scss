@@ -1,0 +1,32 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/mixins";
+
+.titleContainer {
+  padding-top: variables.$spacing-2xl;
+}
+
+.title {
+  color: colors.$grey-400;
+}
+
+.tile {
+  width: 270px;
+  padding: 30px variables.$spacing-xl;
+}
+
+.tileImage {
+  height: 125px;
+}
+
+.tileText {
+  height: 80px;
+}
+
+.tileDescription {
+  flex-grow: 1;
+}
+
+.tileButton {
+  padding: variables.$spacing-xs;
+}

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import asyncio
@@ -727,7 +727,7 @@ def test_resolve_manifest():
                     "type": "DefaultPaginator",
                     "page_size": 10,
                     "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                    "page_token_option": {"inject_into": "path"},
+                    "page_token_option": {"inject_into": "path", "type": "RequestPath"},
                     "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                 },
                 "requester": {
@@ -759,7 +759,7 @@ def test_resolve_manifest():
                     "type": "DefaultPaginator",
                     "page_size": 10,
                     "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                    "page_token_option": {"inject_into": "path"},
+                    "page_token_option": {"inject_into": "path", "type": "RequestPath"},
                     "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                 },
                 "requester": {
@@ -796,7 +796,7 @@ def test_resolve_manifest():
                             "$parameters": _stream_options,
                         },
                         "page_token_option": {
-                            "type": "RequestOption",
+                            "type": "RequestPath",
                             "inject_into": "path",
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,

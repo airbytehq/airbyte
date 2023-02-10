@@ -1,15 +1,15 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 
 
 @pytest.mark.parametrize(
@@ -17,16 +17,16 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
     [
         (
             "test_single_stream_slicer",
-            [ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={})],
+            [ListPartitionRouter(values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={})],
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
         (
             "test_two_stream_slicers",
             [
-                ListStreamSlicer(
-                    slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
+                ListPartitionRouter(
+                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
                 ),
-                ListStreamSlicer(slice_values=["A", "B"], cursor_field="letter", config={}, parameters={}),
+                ListPartitionRouter(values=["A", "B"], cursor_field="letter", config={}, parameters={}),
             ],
             [
                 {"owner_resource": "customer", "letter": "A"},
@@ -40,10 +40,10 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
         (
             "test_list_and_datetime",
             [
-                ListStreamSlicer(
-                    slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
+                ListPartitionRouter(
+                    values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}
                 ),
-                DatetimeStreamSlicer(
+                DatetimeBasedCursor(
                     start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
                     end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
                     step="P1D",
@@ -88,8 +88,8 @@ def test_substream_slicer(test_name, stream_slicers, expected_slices):
 )
 def test_update_cursor(test_name, stream_slice, expected_state):
     stream_slicers = [
-        ListStreamSlicer(slice_values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}),
-        DatetimeStreamSlicer(
+        ListPartitionRouter(values=["customer", "store", "subscription"], cursor_field="owner_resource", config={}, parameters={}),
+        DatetimeBasedCursor(
             start_datetime=MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d", parameters={}),
             end_datetime=MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d", parameters={}),
             step="P1D",
@@ -163,15 +163,15 @@ def test_request_option(
 ):
     slicer = CartesianProductStreamSlicer(
         stream_slicers=[
-            ListStreamSlicer(
-                slice_values=["customer", "store", "subscription"],
+            ListPartitionRouter(
+                values=["customer", "store", "subscription"],
                 cursor_field="owner_resource",
                 config={},
                 request_option=stream_1_request_option,
                 parameters={},
             ),
-            ListStreamSlicer(
-                slice_values=["airbyte", "airbyte-cloud"],
+            ListPartitionRouter(
+                values=["airbyte", "airbyte-cloud"],
                 cursor_field="repository",
                 config={},
                 request_option=stream_2_request_option,
@@ -193,15 +193,15 @@ def test_request_option_before_updating_cursor():
     stream_2_request_option = RequestOption(inject_into=RequestOptionType.header, parameters={}, field_name="repo")
     slicer = CartesianProductStreamSlicer(
         stream_slicers=[
-            ListStreamSlicer(
-                slice_values=["customer", "store", "subscription"],
+            ListPartitionRouter(
+                values=["customer", "store", "subscription"],
                 cursor_field="owner_resource",
                 config={},
                 request_option=stream_1_request_option,
                 parameters={},
             ),
-            ListStreamSlicer(
-                slice_values=["airbyte", "airbyte-cloud"],
+            ListPartitionRouter(
+                values=["airbyte", "airbyte-cloud"],
                 cursor_field="repository",
                 config={},
                 request_option=stream_2_request_option,

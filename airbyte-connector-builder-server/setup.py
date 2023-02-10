@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pathlib
@@ -11,6 +11,8 @@ HERE = pathlib.Path(__file__).parent
 
 # The text of the README file
 README = (HERE / "README.md").read_text()
+
+CDK_VERSION = (HERE / "CDK_VERSION").read_text()
 
 setup(
     name="connector-builder-server",

@@ -44,12 +44,12 @@ definitions:
       path: "/v1/Workspaces"
       primary_key: "sid"
 
-  workspace_stream_slicer:
-    type: SubstreamSlicer
+  workspace_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/workspaces_stream"
         parent_key: sid
-        stream_slice_field: id
+        partition_field: id
 
   workers_stream:
     $ref: "#/definitions/base_stream_with_pagination"
@@ -63,8 +63,8 @@ definitions:
         $ref: "#/definitions/requester"
       paginator:
         $ref: "#/definitions/default_paginator"
-      stream_slicer:
-        $ref: "#/definitions/workspace_stream_slicer"
+      partition_router:
+        $ref: "#/definitions/workspace_partition_router"
 
 streams:
   - "#/definitions/workspaces_stream"

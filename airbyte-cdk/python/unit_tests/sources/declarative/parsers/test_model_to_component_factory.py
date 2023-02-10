@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -12,24 +12,25 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
-from airbyte_cdk.sources.declarative.models import CartesianProductStreamSlicer as CartesianProductStreamSlicerModel
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models import CustomErrorHandler as CustomErrorHandlerModel
-from airbyte_cdk.sources.declarative.models import CustomStreamSlicer as CustomStreamSlicerModel
-from airbyte_cdk.sources.declarative.models import DatetimeStreamSlicer as DatetimeStreamSlicerModel
+from airbyte_cdk.sources.declarative.models import CustomPartitionRouter as CustomPartitionRouterModel
+from airbyte_cdk.sources.declarative.models import DatetimeBasedCursor as DatetimeBasedCursorModel
 from airbyte_cdk.sources.declarative.models import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models import HttpRequester as HttpRequesterModel
-from airbyte_cdk.sources.declarative.models import ListStreamSlicer as ListStreamSlicerModel
+from airbyte_cdk.sources.declarative.models import ListPartitionRouter as ListPartitionRouterModel
 from airbyte_cdk.sources.declarative.models import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.models import Spec as SpecModel
-from airbyte_cdk.sources.declarative.models import SubstreamSlicer as SubstreamSlicerModel
+from airbyte_cdk.sources.declarative.models import SubstreamPartitionRouter as SubstreamPartitionRouterModel
 from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
+from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
@@ -48,16 +49,11 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import (
-    CartesianProductStreamSlicer,
-    DatetimeStreamSlicer,
-    ListStreamSlicer,
-    SubstreamSlicer,
-)
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamSlicer, TestingSomeComponent
+from unit_tests.sources.declarative.parsers.testing_components import TestingCustomSubstreamPartitionRouter, TestingSomeComponent
 
 factory = ModelToComponentFactory()
 
@@ -118,15 +114,6 @@ requester:
   request_parameters:
     unit: "day"
 retriever:
-  stream_slicer:
-    type: DatetimeStreamSlicer
-    start_datetime: "{{ config['start_time'] }}"
-    end_datetime: "{{ config['end_time'] }}"
-    step: "P10D"
-    cursor_field: "created"
-    cursor_granularity: "PT0.000001S"
-    $parameters:
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
   paginator:
     type: NoPagination
 partial_stream:
@@ -157,6 +144,15 @@ list_stream:
       fields:
       - path: ["extra"]
         value: "{{ response.to_add }}"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    start_datetime: "{{ config['start_time'] }}"
+    end_datetime: "{{ config['end_time'] }}"
+    step: "P10D"
+    cursor_field: "created"
+    cursor_granularity: "PT0.000001S"
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 check:
   type: CheckStream
   stream_names: ["list_stream"]
@@ -295,26 +291,28 @@ def test_interpolate_config():
 def test_list_based_stream_slicer_with_values_refd():
     content = """
     repositories: ["airbyte", "airbyte-cloud"]
-    stream_slicer:
-      type: ListStreamSlicer
-      slice_values: "#/repositories"
+    partition_router:
+      type: ListPartitionRouter
+      values: "#/repositories"
       cursor_field: repository
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
-    stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
+    partition_router = factory.create_component(
+        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
+    )
 
-    assert isinstance(stream_slicer, ListStreamSlicer)
-    assert stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
+    assert isinstance(partition_router, ListPartitionRouter)
+    assert partition_router.values == ["airbyte", "airbyte-cloud"]
 
 
 def test_list_based_stream_slicer_with_values_defined_in_config():
     content = """
-    stream_slicer:
-      type: ListStreamSlicer
-      slice_values: "{{config['repos']}}"
+    partition_router:
+      type: ListPartitionRouter
+      values: "{{config['repos']}}"
       cursor_field: repository
       request_option:
         type: RequestOption
@@ -323,17 +321,19 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
-    stream_slicer = factory.create_component(model_type=ListStreamSlicerModel, component_definition=slicer_manifest, config=input_config)
+    partition_router = factory.create_component(
+        model_type=ListPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
+    )
 
-    assert isinstance(stream_slicer, ListStreamSlicer)
-    assert stream_slicer.slice_values == ["airbyte", "airbyte-cloud"]
-    assert stream_slicer.request_option.inject_into == RequestOptionType.header
-    assert stream_slicer.request_option.field_name == "repository"
+    assert isinstance(partition_router, ListPartitionRouter)
+    assert partition_router.values == ["airbyte", "airbyte-cloud"]
+    assert partition_router.request_option.inject_into == RequestOptionType.header
+    assert partition_router.request_option.field_name == "repository"
 
 
-def test_create_substream_slicer():
+def test_create_substream_partition_router():
     content = """
     schema_loader:
       file_path: "./source_sendgrid/schemas/{{ parameters['name'] }}.yaml"
@@ -361,85 +361,48 @@ def test_create_substream_slicer():
         retriever: "#/retriever"
         url_base: "https://airbyte.io"
         schema_loader: "#/schema_loader"
-    stream_slicer:
-      type: SubstreamSlicer
+    partition_router:
+      type: SubstreamPartitionRouter
       parent_stream_configs:
         - stream: "#/stream_A"
           parent_key: id
-          stream_slice_field: repository_id
+          partition_field: repository_id
           request_option:
             type: RequestOption
             inject_into: request_parameter
             field_name: repository_id
         - stream: "#/stream_B"
           parent_key: someid
-          stream_slice_field: word_id
+          partition_field: word_id
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    partition_router_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["partition_router"], {})
 
-    stream_slicer = factory.create_component(model_type=SubstreamSlicerModel, component_definition=slicer_manifest, config=input_config)
+    partition_router = factory.create_component(
+        model_type=SubstreamPartitionRouterModel, component_definition=partition_router_manifest, config=input_config
+    )
 
-    assert isinstance(stream_slicer, SubstreamSlicer)
-    parent_stream_configs = stream_slicer.parent_stream_configs
+    assert isinstance(partition_router, SubstreamPartitionRouter)
+    parent_stream_configs = partition_router.parent_stream_configs
     assert len(parent_stream_configs) == 2
     assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
     assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
 
-    assert stream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
-    assert stream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
-    assert stream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
+    assert partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert stream_slicer.parent_stream_configs[1].parent_key.eval({}) == "someid"
-    assert stream_slicer.parent_stream_configs[1].stream_slice_field.eval({}) == "word_id"
-    assert stream_slicer.parent_stream_configs[1].request_option is None
+    assert partition_router.parent_stream_configs[1].parent_key.eval({}) == "someid"
+    assert partition_router.parent_stream_configs[1].partition_field.eval({}) == "word_id"
+    assert partition_router.parent_stream_configs[1].request_option is None
 
 
-def test_create_cartesian_stream_slicer():
+def test_datetime_based_cursor():
     content = """
-    stream_slicer_A:
-      type: ListStreamSlicer
-      slice_values: "{{config['repos']}}"
-      cursor_field: repository
-    stream_slicer_B:
-      type: ListStreamSlicer
-      slice_values:
-        - hello
-        - world
-      cursor_field: words
-    stream_slicer:
-      type: CartesianProductStreamSlicer
-      stream_slicers:
-        - "#/stream_slicer_A"
-        - "#/stream_slicer_B"
-    """
-    parsed_manifest = YamlDeclarativeSource._parse(content)
-    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
-
-    stream_slicer = factory.create_component(
-        model_type=CartesianProductStreamSlicerModel, component_definition=slicer_manifest, config=input_config
-    )
-
-    assert isinstance(stream_slicer, CartesianProductStreamSlicer)
-    underlying_slicers = stream_slicer.stream_slicers
-    assert len(stream_slicer.stream_slicers) == 2
-
-    underlying_slicer_0 = underlying_slicers[0]
-    assert isinstance(underlying_slicer_0, ListStreamSlicer)
-    assert ["airbyte", "airbyte-cloud"] == underlying_slicer_0.slice_values
-
-    underlying_slicer_1 = underlying_slicers[1]
-    assert isinstance(underlying_slicer_1, ListStreamSlicer)
-    assert ["hello", "world"] == underlying_slicer_1.slice_values
-
-
-def test_datetime_stream_slicer():
-    content = """
-    stream_slicer:
-        type: DatetimeStreamSlicer
+    incremental:
+        type: DatetimeBasedCursor
         $parameters:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
@@ -459,18 +422,16 @@ def test_datetime_stream_slicer():
           type: RequestOption
           inject_into: body_json
           field_name: end_time
-        stream_state_field_start: star
-        stream_state_field_end: en
+        partition_field_start: star
+        partition_field_end: en
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
-    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["stream_slicer"], {})
+    slicer_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["incremental"], {})
 
-    stream_slicer = factory.create_component(
-        model_type=DatetimeStreamSlicerModel, component_definition=slicer_manifest, config=input_config
-    )
+    stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
-    assert isinstance(stream_slicer, DatetimeStreamSlicer)
+    assert isinstance(stream_slicer, DatetimeBasedCursor)
     assert stream_slicer._timezone == datetime.timezone.utc
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
@@ -480,8 +441,8 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_time_option.field_name == "created[gte]"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
     assert stream_slicer.end_time_option.field_name == "end_time"
-    assert stream_slicer.stream_state_field_start == "star"
-    assert stream_slicer.stream_state_field_end == "en"
+    assert stream_slicer.partition_field_start.eval({}) == "star"
+    assert stream_slicer.partition_field_end.eval({}) == "en"
 
     assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -491,6 +452,112 @@ def test_datetime_stream_slicer():
 
     assert isinstance(stream_slicer.end_datetime, MinMaxDatetime)
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+
+
+def test_stream_with_incremental_and_retriever_with_partition_router():
+    content = """
+decoder:
+  type: JsonDecoder
+extractor:
+  type: DpathExtractor
+  decoder: "#/decoder"
+selector:
+  type: RecordSelector
+  record_filter:
+    type: RecordFilter
+    condition: "{{ record['id'] > stream_state['id'] }}"
+requester:
+  type: HttpRequester
+  name: "{{ parameters['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
+  http_method: "GET"
+  authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['apikey'] }}"
+  request_parameters:
+    unit: "day"
+list_stream:
+  type: DeclarativeStream
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_sendgrid/schemas/{{ parameters.name }}.json"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    $parameters:
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    start_datetime: "{{ config['start_time'] }}"
+    end_datetime: "{{ config['end_time'] }}"
+    step: "P10D"
+    cursor_field: "created"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P5D"
+    start_time_option:
+      inject_into: request_parameter
+      field_name: created[gte]
+    end_time_option:
+      inject_into: body_json
+      field_name: end_time
+    partition_field_start: star
+    partition_field_end: en
+  retriever:
+    type: SimpleRetriever
+    name: "{{ parameters['name'] }}"
+    partition_router:
+      type: ListPartitionRouter
+      values: "{{config['repos']}}"
+      cursor_field: a_key
+      request_option:
+        inject_into: header
+        field_name: a_key
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        inject_into: request_parameter
+        field_name: page_size
+      page_token_option:
+        inject_into: path
+        type: RequestPath
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response._metadata.next }}"
+        page_size: 10
+    requester:
+      $ref: "#/requester"
+      path: "{{ next_page_token['next_page_url'] }}"
+    record_selector:
+      $ref: "#/selector"
+  $parameters:
+    name: "lists"
+    primary_key: "id"
+    extractor:
+      $ref: "#/extractor"
+      field_path: ["{{ parameters['name'] }}"]
+    """
+
+    parsed_manifest = YamlDeclarativeSource._parse(content)
+    resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
+    stream_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["list_stream"], {})
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert isinstance(stream.retriever, SimpleRetriever)
+    assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
+    assert len(stream.retriever.stream_slicer.stream_slicers) == 2
+
+    datetime_stream_slicer = stream.retriever.stream_slicer.stream_slicers[0]
+    assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
+    assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
+    assert isinstance(datetime_stream_slicer.end_datetime, MinMaxDatetime)
+    assert datetime_stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
+    assert datetime_stream_slicer.step == "P10D"
+    assert datetime_stream_slicer.cursor_field.string == "created"
+
+    list_stream_slicer = stream.retriever.stream_slicer.stream_slicers[1]
+    assert isinstance(list_stream_slicer, ListPartitionRouter)
+    assert list_stream_slicer.values == ["airbyte", "airbyte-cloud"]
+    assert list_stream_slicer.cursor_field.string == "a_key"
 
 
 @pytest.mark.parametrize(
@@ -888,9 +955,9 @@ def test_create_custom_components(manifest, field_name, expected_value, expected
 
 
 def test_custom_components_do_not_contain_extra_fields():
-    custom_substream_slicer_manifest = {
-        "type": "CustomStreamSlicer",
-        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
+    custom_substream_partition_router_manifest = {
+        "type": "CustomPartitionRouter",
+        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamPartitionRouter",
         "custom_field": "here",
         "extra_field_to_exclude": "should_not_pass_as_parameter",
         "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
@@ -915,29 +982,31 @@ def test_custom_components_do_not_contain_extra_fields():
                     },
                 },
                 "parent_key": "id",
-                "stream_slice_field": "repository_id",
+                "partition_field": "repository_id",
                 "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
             }
         ],
     }
 
-    custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
-    assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
+    custom_substream_partition_router = factory.create_component(
+        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config
+    )
+    assert isinstance(custom_substream_partition_router, TestingCustomSubstreamPartitionRouter)
 
-    assert len(custom_substream_slicer.parent_stream_configs) == 1
-    assert custom_substream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
-    assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert len(custom_substream_partition_router.parent_stream_configs) == 1
+    assert custom_substream_partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert custom_substream_partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert isinstance(custom_substream_slicer.custom_pagination_strategy, PageIncrement)
-    assert custom_substream_slicer.custom_pagination_strategy.page_size == 100
+    assert isinstance(custom_substream_partition_router.custom_pagination_strategy, PageIncrement)
+    assert custom_substream_partition_router.custom_pagination_strategy.page_size == 100
 
 
 def test_parse_custom_component_fields_if_subcomponent():
-    custom_substream_slicer_manifest = {
-        "type": "CustomStreamSlicer",
-        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamSlicer",
+    custom_substream_partition_router_manifest = {
+        "type": "CustomPartitionRouter",
+        "class_name": "unit_tests.sources.declarative.parsers.testing_components.TestingCustomSubstreamPartitionRouter",
         "custom_field": "here",
         "custom_pagination_strategy": {"type": "PageIncrement", "page_size": 100},
         "parent_stream_configs": [
@@ -961,24 +1030,26 @@ def test_parse_custom_component_fields_if_subcomponent():
                     },
                 },
                 "parent_key": "id",
-                "stream_slice_field": "repository_id",
+                "partition_field": "repository_id",
                 "request_option": {"type": "RequestOption", "inject_into": "request_parameter", "field_name": "repository_id"},
             }
         ],
     }
 
-    custom_substream_slicer = factory.create_component(CustomStreamSlicerModel, custom_substream_slicer_manifest, input_config)
-    assert isinstance(custom_substream_slicer, TestingCustomSubstreamSlicer)
-    assert custom_substream_slicer.custom_field == "here"
+    custom_substream_partition_router = factory.create_component(
+        CustomPartitionRouterModel, custom_substream_partition_router_manifest, input_config
+    )
+    assert isinstance(custom_substream_partition_router, TestingCustomSubstreamPartitionRouter)
+    assert custom_substream_partition_router.custom_field == "here"
 
-    assert len(custom_substream_slicer.parent_stream_configs) == 1
-    assert custom_substream_slicer.parent_stream_configs[0].parent_key.eval({}) == "id"
-    assert custom_substream_slicer.parent_stream_configs[0].stream_slice_field.eval({}) == "repository_id"
-    assert custom_substream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert custom_substream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
+    assert len(custom_substream_partition_router.parent_stream_configs) == 1
+    assert custom_substream_partition_router.parent_stream_configs[0].parent_key.eval({}) == "id"
+    assert custom_substream_partition_router.parent_stream_configs[0].partition_field.eval({}) == "repository_id"
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert custom_substream_partition_router.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert isinstance(custom_substream_slicer.custom_pagination_strategy, PageIncrement)
-    assert custom_substream_slicer.custom_pagination_strategy.page_size == 100
+    assert isinstance(custom_substream_partition_router.custom_pagination_strategy, PageIncrement)
+    assert custom_substream_partition_router.custom_pagination_strategy.page_size == 100
 
 
 class TestCreateTransformations:
@@ -1106,3 +1177,118 @@ class TestCreateTransformations:
         )
         schema_loader = stream.schema_loader
         assert schema_loader.default_loader._get_json_filepath().split("/")[-1] == f"{stream.name}.json"
+
+
+@pytest.mark.parametrize(
+    "incremental, partition_router, expected_type, expected_slicer_count",
+    [
+        pytest.param(
+            {
+                "type": "DatetimeBasedCursor",
+                "datetime_format": "%Y-%m-%dT%H:%M:%S.%f%z",
+                "start_datetime": "{{ config['start_time'] }}",
+                "end_datetime": "{{ config['end_time'] }}",
+                "step": "P10D",
+                "cursor_field": "created",
+                "cursor_granularity": "PT0.000001S",
+            },
+            None,
+            DatetimeBasedCursor,
+            1,
+            id="test_create_simple_retriever_with_incremental",
+        ),
+        pytest.param(
+            None,
+            {
+                "type": "ListPartitionRouter",
+                "values": "{{config['repos']}}",
+                "cursor_field": "a_key",
+            },
+            ListPartitionRouter,
+            1,
+            id="test_create_simple_retriever_with_partition_router",
+        ),
+        pytest.param(
+            {
+                "type": "DatetimeBasedCursor",
+                "datetime_format": "%Y-%m-%dT%H:%M:%S.%f%z",
+                "start_datetime": "{{ config['start_time'] }}",
+                "end_datetime": "{{ config['end_time'] }}",
+                "step": "P10D",
+                "cursor_field": "created",
+                "cursor_granularity": "PT0.000001S",
+            },
+            {
+                "type": "ListPartitionRouter",
+                "values": "{{config['repos']}}",
+                "cursor_field": "a_key",
+            },
+            CartesianProductStreamSlicer,
+            2,
+            id="test_create_simple_retriever_with_incremental_and_partition_router",
+        ),
+        pytest.param(
+            {
+                "type": "DatetimeBasedCursor",
+                "datetime_format": "%Y-%m-%dT%H:%M:%S.%f%z",
+                "start_datetime": "{{ config['start_time'] }}",
+                "end_datetime": "{{ config['end_time'] }}",
+                "step": "P10D",
+                "cursor_field": "created",
+                "cursor_granularity": "PT0.000001S",
+            },
+            [
+                {
+                    "type": "ListPartitionRouter",
+                    "values": "{{config['repos']}}",
+                    "cursor_field": "a_key",
+                },
+                {
+                    "type": "ListPartitionRouter",
+                    "values": "{{config['repos']}}",
+                    "cursor_field": "b_key",
+                },
+            ],
+            CartesianProductStreamSlicer,
+            2,
+            id="test_create_simple_retriever_with_partition_routers_multiple_components",
+        ),
+        pytest.param(None, None, SinglePartitionRouter, 1, id="test_create_simple_retriever_with_no_incremental_or_partition_router"),
+    ],
+)
+def test_merge_incremental_and_partition_router(incremental, partition_router, expected_type, expected_slicer_count):
+    stream_model = {
+        "type": "DeclarativeStream",
+        "retriever": {
+            "type": "SimpleRetriever",
+            "record_selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_path": [],
+                },
+            },
+            "requester": {
+                "type": "HttpRequester",
+                "name": "list",
+                "url_base": "orange.com",
+                "path": "/v1/api",
+            },
+        },
+    }
+
+    if incremental:
+        stream_model["incremental_sync"] = incremental
+
+    if partition_router:
+        stream_model["retriever"]["partition_router"] = partition_router
+
+    stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_model, config=input_config)
+
+    assert isinstance(stream, DeclarativeStream)
+    assert isinstance(stream.retriever, SimpleRetriever)
+    assert isinstance(stream.retriever.stream_slicer, expected_type)
+
+    if expected_slicer_count > 1:
+        assert isinstance(stream.retriever.stream_slicer, CartesianProductStreamSlicer)
+        assert len(stream.retriever.stream_slicer.stream_slicers) == expected_slicer_count
