@@ -39,6 +39,7 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.FieldSelectionEnabled;
 import io.airbyte.featureflag.PerfBackgroundJsonValidation;
 import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -112,21 +113,21 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final WorkerConfigs workerConfigs;
 
   public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
-                                 @Named("replicationProcessFactory") final ProcessFactory processFactory,
-                                 final SecretsHydrator secretsHydrator,
-                                 @Named("workspaceRoot") final Path workspaceRoot,
-                                 final WorkerEnvironment workerEnvironment,
-                                 final LogConfigs logConfigs,
-                                 @Value("${airbyte.version}") final String airbyteVersion,
-                                 final FeatureFlags featureFlags,
-                                 @Value("${micronaut.server.port}") final Integer serverPort,
-                                 final AirbyteConfigValidator airbyteConfigValidator,
-                                 final TemporalUtils temporalUtils,
-                                 final AirbyteApiClient airbyteApiClient,
-                                 final AirbyteMessageSerDeProvider serDeProvider,
-                                 final AirbyteProtocolVersionedMigratorFactory migratorFactory,
-                                 @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
-                                 final FeatureFlagClient featureFlagClient) {
+      @Named("replicationProcessFactory") final ProcessFactory processFactory,
+      final SecretsHydrator secretsHydrator,
+      @Named("workspaceRoot") final Path workspaceRoot,
+      final WorkerEnvironment workerEnvironment,
+      final LogConfigs logConfigs,
+      @Value("${airbyte.version}") final String airbyteVersion,
+      final FeatureFlags featureFlags,
+      @Value("${micronaut.server.port}") final Integer serverPort,
+      final AirbyteConfigValidator airbyteConfigValidator,
+      final TemporalUtils temporalUtils,
+      final AirbyteApiClient airbyteApiClient,
+      final AirbyteMessageSerDeProvider serDeProvider,
+      final AirbyteProtocolVersionedMigratorFactory migratorFactory,
+      @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs,
+      final FeatureFlagClient featureFlagClient) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -151,10 +152,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public StandardSyncOutput replicate(final JobRunConfig jobRunConfig,
-                                      final IntegrationLauncherConfig sourceLauncherConfig,
-                                      final IntegrationLauncherConfig destinationLauncherConfig,
-                                      final StandardSyncInput syncInput,
-                                      @Nullable final String taskQueue) {
+      final IntegrationLauncherConfig sourceLauncherConfig,
+      final IntegrationLauncherConfig destinationLauncherConfig,
+      final StandardSyncInput syncInput,
+      @Nullable final String taskQueue) {
     final Map<String, Object> traceAttributes =
         Map.of(
             ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(),
@@ -260,7 +261,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
     final MetricAttribute[] attributes = metricAttributes.entrySet().stream()
         .map(e -> new MetricAttribute(ApmTraceUtils.formatTag(e.getKey()), e.getValue().toString()))
-        .collect(Collectors.toSet()).toArray(new MetricAttribute[] {});
+        .collect(Collectors.toSet()).toArray(new MetricAttribute[]{});
     final Map<String, Object> tags = new HashMap<>();
     if (replicationSummary.getBytesSynced() != null) {
       tags.put(REPLICATION_BYTES_SYNCED_KEY, replicationSummary.getBytesSynced());
@@ -279,10 +280,10 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getLegacyWorkerFactory(
-                                                                                                          final IntegrationLauncherConfig sourceLauncherConfig,
-                                                                                                          final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                          final JobRunConfig jobRunConfig,
-                                                                                                          final StandardSyncInput syncInput) {
+      final IntegrationLauncherConfig sourceLauncherConfig,
+      final IntegrationLauncherConfig destinationLauncherConfig,
+      final JobRunConfig jobRunConfig,
+      final StandardSyncInput syncInput) {
     return () -> {
       final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
           sourceLauncherConfig.getJobId(),
@@ -315,6 +316,14 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
+      final UUID workspaceId = syncInput.getWorkspaceId();
+      // NOTE: we apply field selection if the feature flag client says so (recommended) or the old
+      // environment-variable flags say so (deprecated).
+      // The latter FeatureFlagHelper will be removed once the flag client is fully deployed.
+      final boolean fieldSelectionEnabled = workspaceId != null &&
+          (featureFlagClient.enabled(FieldSelectionEnabled.INSTANCE, new Workspace(workspaceId))
+              || FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
+
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -334,18 +343,18 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
           featureFlagClient,
-          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
+          fieldSelectionEnabled);
     };
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(
-                                                                                                                     final ContainerOrchestratorConfig containerOrchestratorConfig,
-                                                                                                                     final IntegrationLauncherConfig sourceLauncherConfig,
-                                                                                                                     final IntegrationLauncherConfig destinationLauncherConfig,
-                                                                                                                     final JobRunConfig jobRunConfig,
-                                                                                                                     final ResourceRequirements resourceRequirements,
-                                                                                                                     final Supplier<ActivityExecutionContext> activityContext,
-                                                                                                                     final WorkerConfigs workerConfigs)
+      final ContainerOrchestratorConfig containerOrchestratorConfig,
+      final IntegrationLauncherConfig sourceLauncherConfig,
+      final IntegrationLauncherConfig destinationLauncherConfig,
+      final JobRunConfig jobRunConfig,
+      final ResourceRequirements resourceRequirements,
+      final Supplier<ActivityExecutionContext> activityContext,
+      final WorkerConfigs workerConfigs)
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));

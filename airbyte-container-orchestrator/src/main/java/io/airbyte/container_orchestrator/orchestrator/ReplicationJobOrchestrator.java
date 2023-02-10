@@ -24,6 +24,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.FieldSelectionEnabled;
 import io.airbyte.featureflag.PerfBackgroundJsonValidation;
 import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -55,6 +56,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,14 +74,14 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final DestinationApi destinationApi;
 
   public ReplicationJobOrchestrator(final Configs configs,
-                                    final ProcessFactory processFactory,
-                                    final FeatureFlags featureFlags,
-                                    final FeatureFlagClient featureFlagClient,
-                                    final AirbyteMessageSerDeProvider serDeProvider,
-                                    final AirbyteProtocolVersionedMigratorFactory migratorFactory,
-                                    final JobRunConfig jobRunConfig,
-                                    final SourceApi sourceApi,
-                                    final DestinationApi destinationApi) {
+      final ProcessFactory processFactory,
+      final FeatureFlags featureFlags,
+      final FeatureFlagClient featureFlagClient,
+      final AirbyteMessageSerDeProvider serDeProvider,
+      final AirbyteProtocolVersionedMigratorFactory migratorFactory,
+      final JobRunConfig jobRunConfig,
+      final SourceApi sourceApi,
+      final DestinationApi destinationApi) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
@@ -160,6 +162,13 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage());
 
     log.info("Setting up replication worker...");
+    final UUID workspaceId = syncInput.getWorkspaceId();
+    // NOTE: we apply field selection if the feature flag client says so (recommended) or the old
+    // environment-variable flags say so (deprecated).
+    // The latter FeatureFlagHelper will be removed once the flag client is fully deployed.
+    final boolean fieldSelectionEnabled = workspaceId != null &&
+        (featureFlagClient.enabled(FieldSelectionEnabled.INSTANCE, new Workspace(workspaceId))
+            || FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
     final var replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -178,7 +187,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
         featureFlagClient,
-        FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()));
+        fieldSelectionEnabled);
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
@@ -190,11 +199,11 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   }
 
   private AirbyteStreamFactory getStreamFactory(final Version protocolVersion,
-                                                final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
-                                                final MdcScope.Builder mdcScope) {
+      final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+      final MdcScope.Builder mdcScope) {
     return protocolVersion != null
         ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.of(configuredAirbyteCatalog), mdcScope,
-            Optional.of(RuntimeException.class))
+        Optional.of(RuntimeException.class))
         : new DefaultAirbyteStreamFactory(mdcScope);
   }
 
