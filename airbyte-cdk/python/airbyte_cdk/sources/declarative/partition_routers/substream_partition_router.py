@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -27,7 +27,7 @@ class ParentStreamConfig:
 
     stream: Stream
     parent_key: Union[InterpolatedString, str]
-    partition_field: str
+    partition_field: Union[InterpolatedString, str]
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None

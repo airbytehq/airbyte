@@ -54,7 +54,7 @@ definitions:
       path: "surveys"
       data_field: "surveys"
   surveys_slicer:
-    class_name: source_zenloop.components.ZenloopSubstreamSlicer
+    class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
       config_parent_field: "survey_id"
     parent_stream_configs:
@@ -68,7 +68,7 @@ definitions:
       path: "survey_groups"
       data_field: "survey_groups"
   survey_groups_slicer:
-    class_name: source_zenloop.components.ZenloopSubstreamSlicer
+    class_name: source_zenloop.components.ZenloopPartitionRouter
     $parameters:
       config_parent_field: "survey_group_id"
     parent_stream_configs:

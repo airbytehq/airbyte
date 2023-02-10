@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.temporal;
@@ -31,6 +31,7 @@ import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -78,6 +79,9 @@ public class TemporalClientTest {
   private static final UUID JOB_UUID = UUID.randomUUID();
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
+
+  private static final String CHECK_TASK_QUEUE = "CHECK_CONNECTION";
+  private static final String DISCOVER_TASK_QUEUE = "DISCOVER_SCHEMA";
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID);
@@ -240,7 +244,7 @@ public class TemporalClientTest {
       final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
           .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-      temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+      temporalClient.submitCheckConnection(JOB_UUID, ATTEMPT_ID, CHECK_TASK_QUEUE, checkConnectionConfig);
       checkConnectionWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
       verify(workflowClient).newWorkflowStub(CheckConnectionWorkflow.class,
           TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.CHECK_CONNECTION));
@@ -257,7 +261,7 @@ public class TemporalClientTest {
       final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
           .withConnectionConfiguration(checkConnectionConfig.getConnectionConfiguration());
 
-      temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, checkConnectionConfig);
+      temporalClient.submitDiscoverSchema(JOB_UUID, ATTEMPT_ID, DISCOVER_TASK_QUEUE, checkConnectionConfig);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, UUID_LAUNCHER_CONFIG, input);
       verify(workflowClient).newWorkflowStub(DiscoverCatalogWorkflow.class,
           TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.DISCOVER_SCHEMA));
@@ -271,26 +275,27 @@ public class TemporalClientTest {
       final JobSyncConfig syncConfig = new JobSyncConfig()
           .withSourceDockerImage(IMAGE_NAME1)
           .withDestinationDockerImage(IMAGE_NAME2)
-          .withSourceConfiguration(Jsons.emptyObject())
-          .withDestinationConfiguration(Jsons.emptyObject())
           .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
+      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig()
+          .withSourceConfiguration(Jsons.emptyObject())
+          .withDestinationConfiguration(Jsons.emptyObject());
       final StandardSyncInput input = new StandardSyncInput()
           .withNamespaceDefinition(syncConfig.getNamespaceDefinition())
           .withNamespaceFormat(syncConfig.getNamespaceFormat())
           .withPrefix(syncConfig.getPrefix())
-          .withSourceConfiguration(syncConfig.getSourceConfiguration())
-          .withDestinationConfiguration(syncConfig.getDestinationConfiguration())
+          .withSourceConfiguration(attemptSyncConfig.getSourceConfiguration())
+          .withDestinationConfiguration(attemptSyncConfig.getDestinationConfiguration())
           .withOperationSequence(syncConfig.getOperationSequence())
           .withCatalog(syncConfig.getConfiguredAirbyteCatalog())
-          .withState(syncConfig.getState());
+          .withState(attemptSyncConfig.getState());
 
       final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(JOB_ID))
           .withAttemptId((long) ATTEMPT_ID)
           .withDockerImage(IMAGE_NAME2);
 
-      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, attemptSyncConfig, CONNECTION_ID);
       discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID);
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.SYNC));
     }
@@ -340,15 +345,17 @@ public class TemporalClientTest {
       doReturn(true).when(temporalClient).isWorkflowReachable(any(UUID.class));
       when(workflowClient.newWorkflowStub(any(Class.class), anyString())).thenReturn(mConnectionManagerWorkflow);
 
+      final AttemptSyncConfig attemptSyncConfig = new AttemptSyncConfig()
+          .withSourceConfiguration(Jsons.emptyObject())
+          .withDestinationConfiguration(Jsons.emptyObject());
+
       final JobSyncConfig syncConfig = new JobSyncConfig()
           .withSourceDockerImage(IMAGE_NAME1)
           .withDestinationDockerImage(IMAGE_NAME2)
-          .withSourceConfiguration(Jsons.emptyObject())
-          .withDestinationConfiguration(Jsons.emptyObject())
           .withOperationSequence(List.of())
           .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
 
-      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
+      temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, attemptSyncConfig, CONNECTION_ID);
       temporalClient.forceDeleteWorkflow(CONNECTION_ID);
 
       verify(connectionManagerUtils).deleteWorkflowIfItExist(workflowClient, CONNECTION_ID);

@@ -713,6 +713,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [JsonFileSchemaLoader]
       file_path:
         type: string
