@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
@@ -11,24 +11,15 @@ import { FormPageContent } from "components/ConnectorBlocks";
 import { PageHeader } from "components/ui/PageHeader";
 import { StepsIndicator } from "components/ui/StepsIndicator";
 
-import {
-  DestinationDefinitionRead,
-  DestinationRead,
-  SourceDefinitionRead,
-  SourceRead,
-} from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
-import { useGetDestination } from "hooks/services/useDestinationHook";
-import { useGetSource } from "hooks/services/useSourceHook";
 import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { ConnectionCreateDestinationForm } from "./ConnectionCreateDestinationForm";
 import { ConnectionCreateSourceForm } from "./ConnectionCreateSourceForm";
 import ExistingEntityForm from "./ExistingEntityForm";
+import { hasDestinationId, hasSourceId, usePreloadData } from "./usePreloadData";
 
 enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -40,72 +31,6 @@ enum EntityStepsTypes {
   SOURCE = "source",
   DESTINATION = "destination",
   CONNECTION = "connection",
-}
-
-const hasSourceId = (state: unknown): state is { sourceId: string } => {
-  return typeof state === "object" && state !== null && typeof (state as { sourceId?: string }).sourceId === "string";
-};
-
-const hasDestinationId = (state: unknown): state is { destinationId: string } => {
-  return (
-    typeof state === "object" &&
-    state !== null &&
-    typeof (state as { destinationId?: string }).destinationId === "string"
-  );
-};
-
-function usePreloadData(): {
-  sourceDefinition?: SourceDefinitionRead;
-  destination?: DestinationRead;
-  source?: SourceRead;
-  destinationDefinition?: DestinationDefinitionRead;
-} {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const sourceIdFromLocationState = hasSourceId(location.state) && location.state.sourceId;
-  const sourceIdFromSearchParams = searchParams.get("sourceId");
-  const sourceId = sourceIdFromLocationState || sourceIdFromSearchParams;
-
-  /**
-   * There are two places we may find a sourceId, depending on the scenario. This effect
-   * keeps them in sync according to the following logic:
-   *   0) if `location.state.sourceId` and the `sourceId` query param are both unset or
-   *      are both set to the same value, then we don't need to take any action.
-   *   1) else if `location.state.sourceId` exists, we arrived at this page via the legacy
-   *      internal "routing" system, meaning there has been a user interaction
-   *      specifically selecting that source. This is the highest precedence source of
-   *      truth, so if it exists we explicitly set the sourceId query param to match it.
-   *   2) else if there's a `sourceId` query param, we arrived at this page via a fresh
-   *      page load. This logic was added to support the airbyte-cloud's free connector
-   *      program enrollment flow: it involves a round-trip visit to a Stripe domain,
-   *      which wipes location.state. We explicitly navigate to the current path
-   *      (including the current query string) with `location.state.sourceId` set.
-   */
-  useEffect(() => {
-    if (sourceIdFromLocationState && sourceIdFromSearchParams === sourceIdFromLocationState) {
-      // sourceId is set and everything is in sync, no further action needed
-    } else if (sourceIdFromLocationState) {
-      sourceId && setSearchParams({ sourceId });
-    } else if (sourceIdFromSearchParams) {
-      // we have to simultaneously set both the query string and location.state to avoid
-      // an infinite mutually recursive rerender loop:
-      //   A: set location.state and rerender; GOTO B
-      //   B: set query param and rerender; GOTO A
-      navigate(`${location.search}`, { state: { sourceId }, replace: true });
-    } else {
-      // sourceId is unset and everything is in sync, no further action needed
-    }
-  }, [sourceIdFromLocationState, sourceIdFromSearchParams, setSearchParams, navigate, sourceId, location.search]);
-  const source = useGetSource(sourceId);
-
-  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
-
-  const destination = useGetDestination(hasDestinationId(location.state) ? location.state.destinationId : null);
-  const destinationDefinition = useDestinationDefinition(destination?.destinationDefinitionId);
-
-  return { source, sourceDefinition, destination, destinationDefinition };
 }
 
 export const CreateConnectionPage: React.FC = () => {
