@@ -49,6 +49,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
   private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
   private static final int AUTO_DETECT_SCHEMA_VERSION = 2;
+  private static final String REMOVE_ACTIVITY_FOR_NORM_INPUT = "remove_activity_for_norm_input";
+  private static final int REMOVE_ACTIVITY_FOR_NORM_INPUT_CURRENT_VERSION = 1;
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
@@ -186,7 +188,13 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput,
                                                         final StandardSyncOutput syncOutput) {
 
-    return normalizationActivity.generateNormalizationInput(syncInput, syncOutput);
+    final int version = Workflow.getVersion(REMOVE_ACTIVITY_FOR_NORM_INPUT, Workflow.DEFAULT_VERSION, REMOVE_ACTIVITY_FOR_NORM_INPUT_CURRENT_VERSION);
+    if (version == Workflow.DEFAULT_VERSION) {
+      return normalizationActivity.generateNormalizationInput(syncInput, syncOutput);
+    } else {
+      return normalizationActivity.generateNormalizationInputWithMinimumPayload(syncInput.getDestinationConfiguration(), syncInput.getCatalog(),
+          syncInput.getWorkspaceId());
+    }
   }
 
 }
