@@ -1,0 +1,17 @@
+services:
+  integration-base-python:
+    image: airbyte/integration-base-python:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-integrations/bases/base-python
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+        io.airbyte.version: ${VERSION}
+  integration-base-java:
+    image: airbyte/integration-base-java:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-integrations/bases/base-java
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+        io.airbyte.version: ${VERSION}

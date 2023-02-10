@@ -1,6 +1,10 @@
-ARG JDK_VERSION=17.0.4
-FROM amazoncorretto:${JDK_VERSION}
-COPY --from=airbyte/integration-base:dev /airbyte /airbyte
+FROM amazonlinux:2022.0.20220831.1
+
+WORKDIR /airbyte
+
+COPY base.sh .
+
+FROM amazoncorretto:17.0.4
 
 RUN yum install -y tar openssl && yum clean all
 
@@ -18,5 +22,4 @@ ENV AIRBYTE_WRITE_CMD "/airbyte/javabase.sh --write"
 ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 ENTRYPOINT ["/airbyte/base.sh"]
 
-LABEL io.airbyte.version=0.1.1
 LABEL io.airbyte.name=airbyte/integration-base-java

@@ -1,4 +1,6 @@
-FROM airbyte/integration-base-python:dev AS builder
+ARG INTEGRATION_BASE_PYTHON_TAG latest
+FROM airbyte/integration-base-python:${INTEGRATION_BASE_PYTHON_TAG} AS builder
+
 WORKDIR /airbyte/integration_code
 
 COPY setup.py ./
