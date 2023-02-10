@@ -4,7 +4,7 @@ An incremental sync is a sync which pulls only the data that has changed since t
 
 Incremental syncs are usually implemented using a cursor value (like a timestamp) that delineates which data was pulled and which data is new. A very common cursor value is an `updated_at` timestamp. This cursor means that records whose `updated_at` value is less than or equal than that cursor value have been synced already, and that the next sync should only export records whose `updated_at` value is greater than the cursor value.
 
-On a retriever, `incremental_sync` defines the connector behavior to support cursor based replication.
+On a stream, `incremental_sync` defines the connector behavior to support cursor based replication.
 
 When a stream is read incrementally, a state message will be output by the connector after reading all the records, which allows for checkpointing (link: https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing). On the next incremental sync, the prior state message will be used to determine the next set of records to read.
 
