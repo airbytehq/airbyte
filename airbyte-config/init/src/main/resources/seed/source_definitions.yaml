@@ -1840,7 +1840,7 @@
 - name: TVMaze Schedule
   sourceDefinitionId: bd14b08f-9f43-400f-b2b6-7248b5c72561
   dockerRepository: airbyte/source-tvmaze-schedule
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/tvmaze-schedule
   icon: tvmazeschedule.svg
   sourceType: api
