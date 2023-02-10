@@ -94,8 +94,6 @@ Let's first define a datetime cursor at the top level of the connector definitio
 
 ```yaml
 definitions:
-  requester:
-    <...>
   datetime_cursor:
     type: "DatetimeBasedCursor"
     start_datetime:
