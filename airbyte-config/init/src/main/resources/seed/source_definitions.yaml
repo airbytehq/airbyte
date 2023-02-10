@@ -2032,7 +2032,7 @@
 - name: Zendesk Sunshine
   sourceDefinitionId: 325e0640-e7b3-4e24-b823-3361008f603f
   dockerRepository: airbyte/source-zendesk-sunshine
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
   icon: zendesk-sunshine.svg
   sourceType: api
