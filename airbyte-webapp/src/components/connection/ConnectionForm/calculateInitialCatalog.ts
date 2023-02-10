@@ -37,7 +37,6 @@ const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChanges
       .map((update) => update.fieldName);
 
     // if there is a primary key in the config, and any of its field paths were removed, we'll be clearing it
-    // The source-defined primary key already been updated by verifySourceDefinedProperties
     if (
       !!primaryKey?.length &&
       primaryKey?.some((primaryKeyPath) => breakingFieldPaths.some((path) => isEqual(primaryKeyPath, path)))
@@ -46,7 +45,6 @@ const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChanges
     }
 
     // if there is a cursor field, and any of its field path was removed, we'll be clearing it
-    // The source-defined cursor has already been updated by verifySourceDefinedProperties
     if (!!cursorField?.length && breakingFieldPaths.some((path) => isEqual(path, cursorField))) {
       clearCursorField = true;
     }
