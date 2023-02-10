@@ -98,7 +98,7 @@ const MainViewRoutes = () => {
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
         <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}
-      <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
+      <Route path={RoutePaths.Workspaces} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
         path={`${RoutePaths.Workspaces}/:workspaceId/*`}
