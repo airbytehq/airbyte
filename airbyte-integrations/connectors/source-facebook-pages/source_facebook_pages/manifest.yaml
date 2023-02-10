@@ -11,10 +11,13 @@ definitions:
     url_base: "https://graph.facebook.com/v15.0"
     http_method: "GET"
     error_handler:
-      type: DefaultErrorHandler
-      response_filters:
-        - http_codes: [ 400 ]
-          action: RETRY
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - http_codes: [ 400 ]
+              action: RETRY
+        - type: DefaultErrorHandler
     authenticator:
       type: CustomAuthenticator
       class_name: source_facebook_pages.components.AuthenticatorFacebookPageAccessToken
