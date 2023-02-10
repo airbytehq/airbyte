@@ -13,7 +13,7 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "b76be0a6-27dc-4560-95f6-2623da0bd7b6",  # Local SQL Lite
 ]
 
-GCS_QA_REPORT_PATH = "gs://prod-airbyte-cloud-connector-metadata-service/qa_report.json"
+GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
 AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER = "airbytehq"
 AIRBYTE_PLATFORM_INTERNAL_REPO_NAME = "airbyte-platform-internal"
 AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL = (
