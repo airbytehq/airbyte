@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
 import org.apache.commons.lang3.RandomStringUtils;
 
 /**
@@ -65,6 +66,12 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   protected final HttpClient httpClient;
   protected final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
+
+  protected Boolean headerAuth = false;
+
+  public void setHeaderAuth(Boolean headerAuth) {
+    this.headerAuth = headerAuth;
+  }
 
   public BaseOAuth2Flow(final ConfigRepository configRepository, final HttpClient httpClient) {
     this(configRepository, httpClient, BaseOAuth2Flow::generateRandomState);
@@ -228,13 +235,25 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
                                                   final JsonNode oAuthParamConfig)
       throws IOException {
     final var accessTokenUrl = getAccessTokenUrl(inputOAuthConfiguration);
-    final HttpRequest request = HttpRequest.newBuilder()
-        .POST(HttpRequest.BodyPublishers
-            .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
-        .uri(URI.create(accessTokenUrl))
-        .header("Content-Type", tokenReqContentType.contentType)
-        .header("Accept", "application/json")
-        .build();
+    HttpRequest request;
+    if(headerAuth){
+      request  = HttpRequest.newBuilder()
+              .POST(HttpRequest.BodyPublishers
+                      .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+              .uri(URI.create(accessTokenUrl))
+              .header("Content-Type", TOKEN_REQUEST_CONTENT_TYPE.URL_ENCODED.contentType)
+              .header("Authorization",getBase64Auth(clientId, clientSecret))
+              .build();
+    }else{
+      request  = HttpRequest.newBuilder()
+              .POST(HttpRequest.BodyPublishers
+                      .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
+              .uri(URI.create(accessTokenUrl))
+              .header("Content-Type", tokenReqContentType.contentType)
+              .header("Accept", "application/json")
+              .build();
+    }
+
     // TODO: Handle error response to report better messages
     try {
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -243,6 +262,12 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       throw new IOException("Failed to complete OAuth flow", e);
     }
   }
+
+  protected String getBase64Auth(final String clientId,
+                                  final String clientSecret) {
+    return "";
+  }
+
 
   /**
    * Query parameters to provide the access token url with.

@@ -23,6 +23,7 @@ public class OAuthImplementationFactory {
         .put("yuanrui2014/source-amazon-ads", new AmazonAdsOAuthFlow(configRepository, httpClient))
         .put("yuanrui2014/source-amazon-seller-partner", new AmazonSellerPartnerOAuthFlow(configRepository, httpClient))
         .put("yuanrui2014/source-asana", new AsanaOAuthFlow(configRepository, httpClient))
+        .put("yuanrui2014/source-ebay", new EbayOAuthFlow(configRepository, httpClient))
         .put("yuanrui2014/source-facebook-marketing", new FacebookMarketingOAuthFlow(configRepository, httpClient))
         .put("yuanrui2014/source-facebook-pages", new FacebookPagesOAuthFlow(configRepository, httpClient))
         .put("yuanrui2014/source-github", new GithubOAuthFlow(configRepository, httpClient))

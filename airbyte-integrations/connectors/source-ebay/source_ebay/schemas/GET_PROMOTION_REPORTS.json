@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "averageItemDiscount": {
+      "type": ["null", "object"]
+    },
+    "averageItemRevenue": {
+      "type": ["null", "object"]
+    },
+    "averageOrderDiscount": {
+      "type": ["null", "object"]
+    },
+    "averageOrderRevenue": {
+      "type": ["null", "object"]
+    },
+    "averageOrderSize": {
+      "type": ["null", "string"]
+    },
+    "baseSale": {
+      "type": ["null", "object"]
+    },
+    "itemsSoldQuantity": {
+      "type": ["null", "integer"]
+    },
+    "numberOfOrdersSold": {
+      "type": ["null", "integer"]
+    },
+    "percentageSalesLift": {
+      "type": ["null", "string"]
+    },
+    "promotionHref": {
+      "type": ["null", "string"]
+    },
+    "promotionId": {
+      "type": ["null", "string"]
+    },
+    "promotionReportId": {
+      "type": ["null", "string"]
+    },
+    "promotionSale": {
+      "type": ["null", "object"]
+    },
+    "promotionType": {
+      "type": ["null", "string"]
+    },
+    "totalDiscount": {
+      "type": ["null", "object"]
+    },
+    "totalSale": {
+      "type": ["null", "object"]
+    }
+  }
+}
