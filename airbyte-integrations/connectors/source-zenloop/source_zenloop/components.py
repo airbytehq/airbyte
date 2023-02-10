@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -33,4 +33,4 @@ class ZenloopSubstreamSlicer(SubstreamSlicer):
         else:
             for parent_stream_config in self.parent_stream_configs:
                 stream_state_field = parent_stream_config.stream_slice_field or None
-                yield {stream_state_field: custom_stream_state_value, "parent_slice": {}}
+                yield {stream_state_field.string: custom_stream_state_value, "parent_slice": {}}

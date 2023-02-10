@@ -126,6 +126,7 @@ definitions:
       - stream_slicers
     properties:
       type:
+        type: string
         enum: [CartesianProductStreamSlicer]
       stream_slicers:
         type: array
@@ -699,6 +700,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [JsonFileSchemaLoader]
       file_path:
         type: string

@@ -82,7 +82,6 @@ include ':airbyte-commons'
 // shared by CONNECTORS_BASE and PLATFORM sub builds
 include ':airbyte-api'
 include ':airbyte-commons-cli'
-include ':airbyte-commons-docker'
 include ':airbyte-commons-protocol'
 include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
@@ -148,6 +147,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
     include ':airbyte-integrations:connectors:destination-tidb'
+    include ':airbyte-integrations:connectors:destination-duckdb'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'

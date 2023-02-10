@@ -2,7 +2,7 @@
 # for more information about how to configure these tests
 
 connector_image: airbyte/source-tiktok-marketing:dev
-cache_discovered_catalog: False
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -48,6 +48,11 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
         timeout_seconds: 1200
         empty_streams:
           - name: ads_reports_hourly
@@ -58,64 +63,27 @@ acceptance_tests:
             bypass_reason: "Tested with daily granularity."
           - name: campaigns_reports_hourly
             bypass_reason: "Tested with daily granularity."
-          - name: advertisers_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: advertisers_audience_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: campaigns_audience_reports_by_country
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: ad_group_audience_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: ads_audience_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: ad_groups_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: ads_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
-          - name: campaigns_reports
-            bypass_reason: "Stream was added during discover with granularity config. Will be tested below."
       # Old style streams with granularity config (for < 0.1.13)
       # Note: not needed to be tested separately in full and incremental tests, because code of
       # these streams is called directly in new style streams
       - config_path: "secrets/prod_config_with_day_granularity.json"
+        expect_records:
+          path: "integration_tests/expected_records2.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
         timeout_seconds: 1200
         empty_streams:
-          - name: ads_reports_lifetime
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ad_groups_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: advertisers_audience_reports_lifetime
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: campaigns_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ads_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: advertisers_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ad_groups_reports_lifetime
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: campaigns_reports_hourly
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ads_audience_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ads_audience_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ad_group_audience_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: campaigns_reports_lifetime
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ad_groups_reports_hourly
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: advertisers_reports_lifetime
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: campaigns_audience_reports_by_country_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: advertisers_audience_reports_daily
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: advertisers_reports_hourly
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
-          - name: ads_reports_hourly
-            bypass_reason: "Stream was added during discover without granularity config. Was tested abowe."
+          - name: ad_groups
+            bypass_reason: "This stream is tested on the new style config."
+          - name: ads
+            bypass_reason: "This stream is tested on the new style config."
+          - name: advertiser_ids
+            bypass_reason: "This stream is tested on the new style config."
+          - name: advertisers
+            bypass_reason: "This stream is tested on the new style config."
+          - name: campaigns
+            bypass_reason: "This stream is tested on the new style config."
   full_refresh:
     tests:
       - config_path: "secrets/prod_config_with_day_granularity.json"
