@@ -443,6 +443,7 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
+  icon: weaviate.svg
 - name: DuckDB
   destinationDefinitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
   dockerRepository: airbyte/destination-duckdb
