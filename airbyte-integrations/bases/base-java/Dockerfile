@@ -1,10 +1,12 @@
+ARG JDK_VERSION=17.0.4
+
 FROM amazonlinux:2022.0.20220831.1
 
 WORKDIR /airbyte
 
 COPY base.sh .
 
-FROM amazoncorretto:17.0.4
+FROM amazoncorretto:${JDK_VERSION}
 
 RUN yum install -y tar openssl && yum clean all
 

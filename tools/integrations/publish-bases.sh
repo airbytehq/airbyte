@@ -20,9 +20,9 @@ GIT_REVISION=$GIT_REVISION VERSION=$VERSION docker buildx bake \
   -f docker-compose.connector-bases.yaml                       \
   --push
 
-# GIT_REVISION=$GIT_REVISION VERSION="latest" docker buildx bake \
-#   --set "*.platform=$BUILD_ARCH"                               \
-#   -f docker-compose.connector-bases.yaml                       \
-#   --push
+GIT_REVISION=$GIT_REVISION VERSION="latest" docker buildx bake \
+  --set "*.platform=$BUILD_ARCH"                               \
+  -f docker-compose.connector-bases.yaml                       \
+  --push
 
 # docker buildx rm connector-buildx
