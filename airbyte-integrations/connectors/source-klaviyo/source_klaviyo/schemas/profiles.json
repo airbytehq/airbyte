@@ -21,86 +21,19 @@
             "updated": { "type": ["null", "string"] },
             "last_event_date": { "type": ["null", "string"] },
             "location": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "address1": { "type": ["null", "string"] },
-                    "address2": { "type": ["null", "string"] },
-                    "city": { "type": ["null", "string"] },
-                    "country": { "type": ["null", "string"] },
-                    "latitude": { "type": ["null", "string"] },
-                    "longitude": { "type": ["null", "string"] },
-                    "region": { "type": ["null", "string"] },
-                    "zip": { "type": ["null", "string"] },
-                    "timezone": { "type": ["null", "string"] }
-                  }
-                }
+                "type": "array"
             },
             "properties": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "Accepts Marketing": { "type": ["null", "boolean"] },
-                    "Shopify Tags": { "type": ["null", "string"] },
-                    "$consent": { "type": ["null", "string"] },
-                    "$consent_timestamp": { "type": ["null", "string"] }
-                  }
-                }
+                "type": "array"
             },
             "links": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "self": { "type": ["null", "string"] }
-                  }
-                }
+                "type": "array"
             },
             "relationships": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "lists": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "links": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "self": { "type": ["null", "string"] },
-                                    "related": { "type": ["null", "string"] }
-                                  }
-                                }
-                            }
-                          }
-                        }
-                    } 
-                  }
-                }
+                "type": "array"
             },
             "segments": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "links": {
-                        "type": "array",
-                        "items": {
-                        "type": "object",
-                        "properties": {
-                            "self": { "type": ["null", "string"] },
-                            "related": { "type": ["null", "string"] }
-                        }
-                        }
-                    }
-                  }
-                }
+                "type": "array"
             }
           }
         }
