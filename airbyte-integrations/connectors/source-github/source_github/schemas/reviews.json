@@ -56,7 +56,7 @@
       "format": "date-time"
     },
     "updated_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "commit_id": {

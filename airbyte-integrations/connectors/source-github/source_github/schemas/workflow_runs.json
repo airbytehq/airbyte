@@ -64,7 +64,8 @@
       "type": ["null", "integer"]
     },
     "run_started_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "jobs_url": {
       "type": ["null", "string"]
