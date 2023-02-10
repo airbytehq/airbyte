@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
@@ -455,7 +455,7 @@ class SyncWorkflowTest {
         configuredCatalog);
   }
 
-  private static void verifyNormalize(final NormalizationActivity normalizationActivity, final NormalizationInput normalizationInput) {
+  private void verifyNormalize(final NormalizationActivity normalizationActivity, final NormalizationInput normalizationInput) {
     verify(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,

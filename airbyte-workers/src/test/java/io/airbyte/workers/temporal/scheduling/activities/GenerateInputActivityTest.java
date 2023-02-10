@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -37,6 +37,7 @@ import io.airbyte.config.State;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -63,15 +64,21 @@ class GenerateInputActivityTest {
   static private JobPersistence jobPersistence;
   static private ConfigRepository configRepository;
   static private GenerateInputActivityImpl generateInputActivity;
+  static private OAuthConfigSupplier oAuthConfigSupplier;
   static private Job job;
 
   static private final JsonNode SOURCE_CONFIGURATION = Jsons.jsonNode(Map.of("source_key", "source_value"));
+  static private final JsonNode SOURCE_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value"));
   static private final JsonNode DESTINATION_CONFIGURATION = Jsons.jsonNode(Map.of("destination_key", "destination_value"));
+  static private final JsonNode DESTINATION_CONFIG_WITH_OAUTH =
+      Jsons.jsonNode(Map.of("destination_key", "destination_value", "oauth", "oauth_value"));
   static private final State STATE = new State().withState(Jsons.jsonNode(Map.of("state_key", "state_value")));
 
+  static private final UUID WORKSPACE_ID = UUID.randomUUID();
   static private final long JOB_ID = 1;
   static private final int ATTEMPT_ID = 1;
   static private final UUID SOURCE_ID = UUID.randomUUID();
+  static private final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
   static private final UUID DESTINATION_ID = UUID.randomUUID();
   static private final UUID CONNECTION_ID = UUID.randomUUID();
 
@@ -79,24 +86,27 @@ class GenerateInputActivityTest {
   void setUp() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     final FeatureFlags featureFlags = mock(FeatureFlags.class);
 
+    oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
     stateApi = mock(StateApi.class);
     attemptApi = mock(AttemptApi.class);
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    generateInputActivity = new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags);
+    generateInputActivity = new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier);
 
     job = mock(Job.class);
 
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
 
-    final UUID destinationDefinitionId = UUID.randomUUID();
-
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withDestinationId(DESTINATION_ID)
-        .withDestinationDefinitionId(destinationDefinitionId)
+        .withWorkspaceId(WORKSPACE_ID)
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
         .withConfiguration(DESTINATION_CONFIGURATION);
     when(configRepository.getDestinationConnection(DESTINATION_ID)).thenReturn(destinationConnection);
-    when(configRepository.getStandardDestinationDefinition(destinationDefinitionId)).thenReturn(mock(StandardDestinationDefinition.class));
+    when(configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID)).thenReturn(mock(StandardDestinationDefinition.class));
+    when(configRepository.getSourceDefinitionFromSource(SOURCE_ID)).thenReturn(mock(StandardSourceDefinition.class));
+    when(oAuthConfigSupplier.injectDestinationOAuthParameters(DESTINATION_DEFINITION_ID, WORKSPACE_ID, DESTINATION_CONFIGURATION))
+        .thenReturn(DESTINATION_CONFIG_WITH_OAUTH);
 
     final StandardSync standardSync = new StandardSync()
         .withSourceId(SOURCE_ID)
@@ -108,11 +118,16 @@ class GenerateInputActivityTest {
   void testGetSyncWorkflowInput() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     final SyncInput syncInput = new SyncInput(ATTEMPT_ID, JOB_ID);
 
+    final UUID sourceDefinitionId = UUID.randomUUID();
     final SourceConnection sourceConnection = new SourceConnection()
         .withSourceId(SOURCE_ID)
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withWorkspaceId(WORKSPACE_ID)
         .withConfiguration(SOURCE_CONFIGURATION);
     when(configRepository.getSourceConnection(SOURCE_ID)).thenReturn(sourceConnection);
     when(configRepository.getSourceDefinitionFromSource(SOURCE_ID)).thenReturn(mock(StandardSourceDefinition.class));
+    when(oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, WORKSPACE_ID, SOURCE_CONFIGURATION))
+        .thenReturn(SOURCE_CONFIG_WITH_OAUTH);
 
     when(stateApi.getState(new ConnectionIdRequestBody().connectionId(CONNECTION_ID)))
         .thenReturn(new ConnectionState()
@@ -136,8 +151,8 @@ class GenerateInputActivityTest {
         .withWorkspaceId(jobSyncConfig.getWorkspaceId())
         .withSourceId(SOURCE_ID)
         .withDestinationId(DESTINATION_ID)
-        .withSourceConfiguration(SOURCE_CONFIGURATION)
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE)
         .withCatalog(jobSyncConfig.getConfiguredAirbyteCatalog())
         .withWorkspaceId(jobSyncConfig.getWorkspaceId());
@@ -166,9 +181,12 @@ class GenerateInputActivityTest {
     assertEquals(expectedGeneratedJobInput, generatedJobInput);
 
     final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
-        .withSourceConfiguration(SOURCE_CONFIGURATION)
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE);
+
+    verify(oAuthConfigSupplier).injectSourceOAuthParameters(sourceDefinitionId, WORKSPACE_ID, SOURCE_CONFIGURATION);
+    verify(oAuthConfigSupplier).injectDestinationOAuthParameters(DESTINATION_DEFINITION_ID, WORKSPACE_ID, DESTINATION_CONFIGURATION);
 
     verify(attemptApi).saveSyncConfig(new SaveAttemptSyncConfigRequestBody()
         .jobId(JOB_ID)
@@ -204,7 +222,7 @@ class GenerateInputActivityTest {
         .withSourceId(SOURCE_ID)
         .withDestinationId(DESTINATION_ID)
         .withSourceConfiguration(Jsons.emptyObject())
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE)
         .withCatalog(jobResetConfig.getConfiguredAirbyteCatalog())
         .withWorkspaceId(jobResetConfig.getWorkspaceId());
@@ -234,8 +252,10 @@ class GenerateInputActivityTest {
 
     final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
         .withSourceConfiguration(Jsons.emptyObject())
-        .withDestinationConfiguration(DESTINATION_CONFIGURATION)
+        .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE);
+
+    verify(oAuthConfigSupplier).injectDestinationOAuthParameters(DESTINATION_DEFINITION_ID, WORKSPACE_ID, DESTINATION_CONFIGURATION);
 
     verify(attemptApi).saveSyncConfig(new SaveAttemptSyncConfigRequestBody()
         .jobId(JOB_ID)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -43,6 +43,7 @@ import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -68,6 +69,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   private final AttemptApi attemptApi;
   private final StateApi stateApi;
   private final FeatureFlags featureFlags;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GenerateInputActivity.class);
 
@@ -75,12 +77,14 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                                    final ConfigRepository configRepository,
                                    final StateApi stateApi,
                                    final AttemptApi attemptApi,
-                                   final FeatureFlags featureFlags) {
+                                   final FeatureFlags featureFlags,
+                                   final OAuthConfigSupplier oAuthConfigSupplier) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.stateApi = stateApi;
     this.attemptApi = attemptApi;
     this.featureFlags = featureFlags;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   private Optional<State> getCurrentConnectionState(final UUID connectionId) {
@@ -266,7 +270,11 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       if (ConfigType.SYNC.equals(jobConfigType)) {
         final SourceConnection source = configRepository.getSourceConnection(standardSync.getSourceId());
-        attemptSyncConfig.setSourceConfiguration(source.getConfiguration());
+        final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
+            source.getSourceDefinitionId(),
+            source.getWorkspaceId(),
+            source.getConfiguration());
+        attemptSyncConfig.setSourceConfiguration(sourceConfiguration);
       } else if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
@@ -277,7 +285,11 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
       final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
-      attemptSyncConfig.setDestinationConfiguration(destination.getConfiguration());
+      final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+          destination.getDestinationDefinitionId(),
+          destination.getWorkspaceId(),
+          destination.getConfiguration());
+      attemptSyncConfig.setDestinationConfiguration(destinationConfiguration);
 
       final StandardSourceDefinition sourceDefinition =
           configRepository.getSourceDefinitionFromSource(standardSync.getSourceId());
