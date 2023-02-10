@@ -9,6 +9,7 @@ import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getError
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -74,11 +75,16 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
 
+  public static final String CHECK_TRACE_OPERATION_NAME = "check";
+  public static final String DISCOVER_TRACE_OPERATION_NAME = "discover";
+  public static final String READ_TRACE_OPERATION_NAME = "read";
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
   // TODO: Remove when the flag is not use anymore
   private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   @Override
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabaseInternal(config);

@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
@@ -151,6 +152,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
   }
 
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   /**
    * Configures a list of operations that can be used to check the connection to the source.
    *

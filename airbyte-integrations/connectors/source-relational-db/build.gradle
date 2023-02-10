@@ -14,6 +14,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation libs.bundles.datadog
 
     testImplementation project(':airbyte-test-utils')
 

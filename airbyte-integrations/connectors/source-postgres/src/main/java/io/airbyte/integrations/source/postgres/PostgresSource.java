@@ -94,8 +94,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
-  public static final String ACTIVITY_TRACE_OPERATION_NAME = "activity";
-
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String PARAM_SSL = "ssl";
@@ -207,7 +205,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
@@ -277,6 +275,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
@@ -320,7 +319,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Trace(operationName = READ_TRACE_OPERATION_NAME)
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config,
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
@@ -497,7 +496,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     ApmTraceUtils.addTagsToTrace(Map.of("cdc_mode", PostgresUtils.isCdc(config)));
     if (PostgresUtils.isCdc(config)) {
