@@ -3,6 +3,7 @@ import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { CatalogTree } from "components/connection/CatalogTree";
+import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -42,7 +43,14 @@ const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProp
         <Heading as="h2" size="sm">
           <FormattedMessage id={mode === "readonly" ? "form.dataSync.readonly" : "form.dataSync"} />
         </Heading>
-        {mode !== "readonly" && additionalControl}
+        <div className={styles.actions}>
+          <Button type="button" variant="clear" className={styles.feedback}>
+            <a href="https://forms.gle/vbL77GtWdZmtnRHF8" target="_blank" rel="noreferrer">
+              <FormattedMessage id="form.leaveFeedback" />
+            </a>
+          </Button>
+          {mode !== "readonly" && additionalControl}
+        </div>
       </div>
       <CatalogTree streams={streams} onStreamsChanged={onStreamsUpdated} isLoading={isSubmitting} />
     </>

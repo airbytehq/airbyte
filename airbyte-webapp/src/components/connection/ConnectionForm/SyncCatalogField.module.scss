@@ -11,3 +11,9 @@
   line-height: 17px;
   padding: variables.$spacing-md variables.$spacing-xl;
 }
+
+.actions {
+  .feedback {
+    padding-right: 15px;
+  }
+}

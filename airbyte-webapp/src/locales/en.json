@@ -54,6 +54,7 @@
   "form.cursorField": "Cursor field",
   "form.dataSync": "Activate the streams you want to sync",
   "form.dataSync.readonly": "Activated streams",
+  "form.leaveFeedback": "Leave Feedback",
   "form.apply": "Apply",
   "form.cancel": "Cancel",
   "form.canceling": "Canceling",
