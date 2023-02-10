@@ -9,6 +9,7 @@ interface StepProps {
   isActive?: boolean;
   icon?: React.ReactNode;
   num: number;
+  disabled?: boolean;
 }
 
 const StepView = styled.div<{
@@ -51,9 +52,9 @@ const Num = styled.div<{ isActive?: boolean }>`
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
 `;
 
-export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon }) => {
+export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon, disabled }) => {
   const onItemClickItem = () => {
-    if (onClick) {
+    if (onClick && !disabled) {
       onClick(id);
     }
   };
@@ -61,7 +62,7 @@ export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, li
   return (
     <StepView
       data-id={`${id.toLowerCase()}-step`}
-      nonClickable={!onClick}
+      nonClickable={!onClick || disabled}
       onClick={onItemClickItem}
       isActive={isActive}
       lightMode={lightMode}
