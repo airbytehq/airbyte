@@ -75,7 +75,7 @@ It is described by:
 1. [Requester](./requester.md): Describes how to submit requests to the API source
 2. [Paginator](./pagination.md): Describes how to navigate through the API's pages
 3. [Record selector](./record-selector.md): Describes how to extract records from a HTTP response
-4. [Partition router](./location-iteration.md): Describes how to retrieve data across multiple resource locations 
+4. [Partition router](./partition_router.md): Describes how to retrieve data across multiple resource locations 
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integration they are building against.
