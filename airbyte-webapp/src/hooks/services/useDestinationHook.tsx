@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 import { Action, Namespace } from "core/analytics";
@@ -6,14 +7,14 @@ import { DestinationService } from "core/domain/connector/DestinationService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "../../config";
 import { DestinationRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useRemoveConnectionsFromList } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const destinationsKeys = {
   all: [SCOPE_WORKSPACE, "destinations"] as const,
@@ -58,6 +59,14 @@ const useGetDestination = <T extends string | undefined | null>(
   return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
     enabled: isDefined(destinationId),
   });
+};
+
+export const useInvalidateDestination = <T extends string | undefined | null>(destinationId: T): (() => void) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(() => {
+    queryClient.invalidateQueries(destinationsKeys.detail(destinationId ?? ""));
+  }, [queryClient, destinationId]);
 };
 
 const useCreateDestination = () => {

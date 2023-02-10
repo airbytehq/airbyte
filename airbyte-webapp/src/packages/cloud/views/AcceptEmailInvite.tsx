@@ -6,9 +6,6 @@ import { HeadTitle } from "components/common/HeadTitle";
 
 import { isGdprCountry } from "utils/dataPrivacy";
 
-import { FieldError } from "../lib/errors/FieldError";
-import { useAuthService } from "../services/auth/AuthService";
-import { EmailLinkErrorCodes } from "../services/auth/types";
 import { FieldItem, Form } from "./auth/components/FormComponents";
 import { FormTitle } from "./auth/components/FormTitle";
 import {
@@ -20,6 +17,9 @@ import {
   SignupButton,
   SignupFormStatusMessage,
 } from "./auth/SignupPage/components/SignupForm";
+import { FieldError } from "../lib/errors/FieldError";
+import { useAuthService } from "../services/auth/AuthService";
+import { EmailLinkErrorCodes } from "../services/auth/types";
 
 const ValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),

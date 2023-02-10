@@ -1,5 +1,5 @@
 @use "scss/colors";
-@use "scss/variables" as vars;
+@use "scss/variables";
 @use "scss/z-indices";
 @use "scss/mixins";
 
@@ -38,16 +38,17 @@ $toast-bottom-margin: 27px;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  gap: vars.$spacing-md;
-  max-width: vars.$width-max-notification;
+  gap: variables.$spacing-md;
+  max-width: variables.$width-max-notification;
   position: fixed;
   box-sizing: border-box;
   bottom: $toast-bottom-margin;
+  margin-left: calc(variables.$width-size-menu / 2);
   left: 50%;
   transform: translate(-50%, 0);
   z-index: z-indices.$notification;
-  padding: vars.$spacing-md;
-  border-radius: vars.$border-radius-md;
+  padding: variables.$spacing-md;
+  border-radius: variables.$border-radius-md;
   animation: slide-up-animations 0.25s ease-out;
 
   @include mixins.shadow;
@@ -63,8 +64,8 @@ $toast-bottom-margin: 27px;
   height: $toast-icon-container-size;
   max-height: $toast-icon-container-size;
   min-width: $toast-icon-container-size;
-  padding: vars.$border-radius-md;
-  border-radius: vars.$border-radius-md;
+  padding: variables.$border-radius-md;
+  border-radius: variables.$border-radius-md;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -85,10 +86,6 @@ $toast-bottom-margin: 27px;
 .text {
   line-height: 17px;
   text-align: left;
-}
-
-.actionButton {
-  margin-top: vars.$spacing-xs;
 }
 
 .closeButton {

@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Text } from "components/ui/Text";
@@ -21,11 +20,7 @@ export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = 
 
   const { hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
 
-  const schemaChangeImage = useMemo(() => {
-    return hasBreakingSchemaChange ? <OctaviaRedFlag /> : hasNonBreakingSchemaChange ? <OctaviaYellowFlag /> : null;
-  }, [hasBreakingSchemaChange, hasNonBreakingSchemaChange]);
-
-  if (!allowAutoDetectSchema || (!hasBreakingSchemaChange && !hasNonBreakingSchemaChange) || schemaHasBeenRefreshed) {
+  if (!allowAutoDetectSchema || !hasBreakingSchemaChange || schemaHasBeenRefreshed) {
     return <>{children}</>;
   }
 
@@ -33,7 +28,9 @@ export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = 
     <div className={styles.schemaChangeBackdropContainer} data-testid="schemaChangesBackdrop">
       <div className={styles.backdrop}>
         <div className={styles.contentContainer}>
-          <div>{schemaChangeImage}</div>
+          <div>
+            {hasBreakingSchemaChange ? <OctaviaRedFlag /> : hasNonBreakingSchemaChange ? <OctaviaYellowFlag /> : null}
+          </div>
           <Text className={styles.text}>
             <FormattedMessage id="connectionForm.schemaChangesBackdrop.message" />
           </Text>

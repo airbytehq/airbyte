@@ -1,12 +1,12 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useAsyncFn } from "react-use";
-import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 import { Switch } from "components/ui/Switch";
 
-import { useEnableConnection } from "hooks/services/useConnectionHook";
+import { useConnectionList, useEnableConnection, useSyncConnection } from "hooks/services/useConnectionHook";
+
+import styles from "./StatusCellControl.module.scss";
 
 interface StatusCellControlProps {
   allowSync?: boolean;
@@ -15,30 +15,28 @@ interface StatusCellControlProps {
   isSyncing?: boolean;
   isManual?: boolean;
   id: string;
-  onSync: (id: string) => void;
 }
-
-const ProgressMessage = styled.div`
-  padding: 7px 0;
-`;
 
 export const StatusCellControl: React.FC<StatusCellControlProps> = ({
   enabled,
   isManual,
   id,
   isSyncing,
-  onSync,
   allowSync,
   hasBreakingChange,
 }) => {
+  const { connections } = useConnectionList();
   const { mutateAsync: enableConnection, isLoading } = useEnableConnection();
-  const [{ loading }, OnLaunch] = useAsyncFn(
-    async (event: React.SyntheticEvent) => {
-      event.stopPropagation();
-      onSync(id);
-    },
-    [id]
-  );
+  const { mutateAsync: syncConnection, isLoading: isSyncStarting } = useSyncConnection();
+
+  const onRunManualSync = (event: React.SyntheticEvent) => {
+    event.stopPropagation();
+
+    const connection = connections.find((c) => c.connectionId === id);
+    if (connection) {
+      syncConnection(connection);
+    }
+  };
 
   if (!isManual) {
     const onSwitchChange = async (event: React.SyntheticEvent) => {
@@ -69,21 +67,20 @@ export const StatusCellControl: React.FC<StatusCellControlProps> = ({
 
   if (isSyncing) {
     return (
-      <ProgressMessage>
-        <FormattedMessage id="tables.progress" />
-      </ProgressMessage>
+      <div className={styles.inProgressLabel}>
+        <FormattedMessage id="connection.syncInProgress" />
+      </div>
     );
   }
 
   return (
     <Button
-      size="xs"
-      onClick={OnLaunch}
-      isLoading={loading}
-      disabled={!allowSync || !enabled || hasBreakingChange}
+      onClick={onRunManualSync}
+      isLoading={isSyncStarting}
+      disabled={!allowSync || !enabled || hasBreakingChange || isSyncStarting}
       data-testid="manual-sync-button"
     >
-      <FormattedMessage id="tables.launch" />
+      <FormattedMessage id="connection.startSync" />
     </Button>
   );
 };

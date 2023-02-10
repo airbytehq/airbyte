@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -200,6 +200,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
   }
 
   @Override
@@ -557,12 +562,19 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
 
-      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
 
       if (!tableEstimateResult.isEmpty() && tableEstimateResult.get(0).has(ROW_COUNT_RESULT_COL) &&
           tableEstimateResult.get(0).has(TOTAL_BYTES_RESULT_COL)) {
         final long syncRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
         final long syncByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+        // The fast count query can return negative or otherwise invalid results for small tables. In this
+        // case, we can skip emitting an
+        // estimate trace altogether since the sync will likely complete quickly.
+        if (syncRowCount <= 0) {
+          return;
+        }
 
         // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
         // is to
@@ -588,20 +600,23 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
 
-      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
 
       final long tableRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
       final long tableByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+      // The fast count query can return negative or otherwise invalid results for small tables. In this
+      // case, we can skip emitting an
+      // estimate trace altogether since the sync will likely complete quickly.
+      if (tableRowCount <= 0) {
+        return;
+      }
 
       final long syncRowCount;
       final long syncByteCount;
 
       syncRowCount = getIncrementalTableRowCount(database, fullTableName, cursorInfo, cursorFieldType);
-      if (tableRowCount == 0) {
-        syncByteCount = 0;
-      } else {
-        syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
-      }
+      syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
 
       // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
       // is to
@@ -615,10 +630,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
-  private List<JsonNode> getFullTableEstimate(final JdbcDatabase database, final String fullTableName) throws SQLException {
+  private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
+                                              final String fullTableName,
+                                              final String schemaName,
+                                              final String tableName)
+      throws SQLException {
     // Construct the table estimate query.
     final String tableEstimateQuery =
-        String.format(TABLE_ESTIMATE_QUERY, fullTableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
+        String.format(TABLE_ESTIMATE_QUERY, schemaName, tableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
     LOGGER.debug("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));

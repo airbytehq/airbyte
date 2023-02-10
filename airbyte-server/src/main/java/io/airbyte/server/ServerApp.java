@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server;
@@ -10,11 +10,20 @@ import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.server.RequestLogger;
+import io.airbyte.commons.server.errors.*;
+import io.airbyte.commons.server.handlers.*;
+import io.airbyte.commons.server.scheduler.DefaultSynchronousSchedulerClient;
+import io.airbyte.commons.server.scheduler.EventRunner;
+import io.airbyte.commons.server.scheduler.TemporalEventRunner;
+import io.airbyte.commons.server.services.AirbyteGithubStore;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.temporal.scheduling.RouterService;
+import io.airbyte.commons.temporal.scheduling.TaskQueueMapper;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
@@ -38,12 +47,6 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
-import io.airbyte.server.errors.*;
-import io.airbyte.server.handlers.*;
-import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
-import io.airbyte.server.scheduler.EventRunner;
-import io.airbyte.server.scheduler.TemporalEventRunner;
-import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.temporal.serviceclient.WorkflowServiceStubs;
@@ -151,7 +154,8 @@ public class ServerApp implements ServerRunnable {
                                          final DSLContext configsDslContext,
                                          final Flyway configsFlyway,
                                          final DSLContext jobsDslContext,
-                                         final Flyway jobsFlyway)
+                                         final Flyway jobsFlyway,
+                                         final TaskQueueMapper taskQueueMapper)
       throws Exception {
     LogClientSingleton.getInstance().setWorkspaceMdc(
         configs.getWorkerEnvironment(),
@@ -220,8 +224,9 @@ public class ServerApp implements ServerRunnable {
         streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
+    RouterService routerService = new RouterService(configRepository, taskQueueMapper);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
-        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 

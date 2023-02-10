@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -46,7 +46,6 @@ public class S3BaseChecksTest {
 
     S3BaseChecks.attemptS3WriteAndDelete(operations, config, "test/bucket/path");
 
-    verify(s3Client).putObject("test_bucket", "test/bucket/path/", "");
     verify(s3Client).putObject(eq("test_bucket"), startsWith("test/bucket/path/_airbyte_connection_test_"), anyString());
     verify(s3Client).listObjects(ArgumentMatchers.<ListObjectsRequest>argThat(request -> "test_bucket".equals(request.getBucketName())));
     verify(s3Client).deleteObject(eq("test_bucket"), startsWith("test/bucket/path/_airbyte_connection_test_"));

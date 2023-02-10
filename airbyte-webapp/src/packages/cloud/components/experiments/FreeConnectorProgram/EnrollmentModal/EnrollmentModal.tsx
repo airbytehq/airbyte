@@ -18,8 +18,7 @@ import styles from "./EnrollmentModal.module.scss";
 import { ReactComponent as FreeAlphaBetaPillsSVG } from "./free-alpha-beta-pills.svg";
 import { ReactComponent as FreeSVG } from "./free.svg";
 import { ReactComponent as MailSVG } from "./mail.svg";
-
-const STRIPE_SUCCESS_QUERY = "stripeCheckoutSuccess";
+import { STRIPE_SUCCESS_QUERY } from "../hooks/useFreeConnectorProgram";
 
 interface EnrollmentModalContentProps {
   closeModal: () => void;

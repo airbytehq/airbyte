@@ -9,10 +9,17 @@ import { Text } from "components/ui/Text";
 
 import { ReactComponent as ConnectorsBadges } from "./connectors-badges.svg";
 import { useShowEnrollmentModal } from "./EnrollmentModal";
+import { useFreeConnectorProgram } from "./hooks/useFreeConnectorProgram";
 import styles from "./LargeEnrollmentCallout.module.scss";
 
 export const LargeEnrollmentCallout: React.FC = () => {
   const { showEnrollmentModal } = useShowEnrollmentModal();
+  const { userDidEnroll, enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
+
+  if (userDidEnroll || !showEnrollmentUi) {
+    return null;
+  }
 
   return (
     <Callout variant="boldInfo" className={styles.container}>

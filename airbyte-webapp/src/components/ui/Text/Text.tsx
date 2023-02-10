@@ -13,6 +13,7 @@ interface TextProps {
   size?: TextSize;
   bold?: boolean;
   inverseColor?: boolean;
+  title?: string;
 }
 
 const getTextClassNames = ({
