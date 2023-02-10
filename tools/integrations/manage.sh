@@ -277,40 +277,7 @@ cmd_publish() {
 
     cd $original_pwd
   else
-    # We have to go arch-by-arch locally (see https://github.com/docker/buildx/issues/59 for more info) due to our base images (e.g. airbyte-integrations/bases/base-java)
-    # Alternative local approach @ https://github.com/docker/buildx/issues/301#issuecomment-755164475
-    # We need to use the regular docker buildx driver (not docker container) because we need this intermediate contaiers to be available for later build steps
-
-    for arch in $(echo $build_arch | sed "s/,/ /g")
-    do
-      echo "building base images for $arch"
-      docker buildx build -t airbyte/integration-base-java:dev --platform $arch --load airbyte-integrations/bases/base-java
-      docker buildx build -t airbyte/integration-base-python:dev --platform $arch --load airbyte-integrations/bases/base-python
-
-      local arch_versioned_image=$image_name:`echo $arch | sed "s/\//-/g"`-$image_version
-      echo "Publishing new version ($arch_versioned_image) from $path"
-      docker buildx build -t $arch_versioned_image --platform $arch --push $path
-      docker manifest create $latest_image --amend $arch_versioned_image
-      docker manifest create $versioned_image --amend $arch_versioned_image
-    done
-
-    docker manifest push $latest_image
-    docker manifest push $versioned_image
-    docker manifest rm $latest_image
-    docker manifest rm $versioned_image
-
-    # delete the temporary image tags made with arch_versioned_image
-    sleep 10
-    for arch in $(echo $build_arch | sed "s/,/ /g")
-    do
-      local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version
-      echo "deleting temporary tag: ${image_name}/tags/${arch_versioned_tag}"
-      TAG_URL="https://hub.docker.com/v2/repositories/${image_name}/tags/${arch_versioned_tag}/" # trailing slash is needed!
-      set +x
-      curl -X DELETE -H "Authorization: JWT ${DOCKER_TOKEN}" "$TAG_URL"
-      set -x
-    done
-
+    docker buildx build --push --platform $build_arch --tag $latest_image --tag $versioned_image
   fi
 
   # Checking if the image was successfully registered on DockerHub

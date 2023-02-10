@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-java:dev
+FROM airbyte/integration-base-java
 
 WORKDIR /airbyte
 

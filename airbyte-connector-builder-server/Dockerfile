@@ -1,7 +1,5 @@
-FROM python:3.9-slim as base
-
-RUN apt-get upgrade \
-    && pip install --upgrade pip
+ARG INTEGRATION_BASE_PYTHON_TAG latest
+FROM airbyte/integration-base-python:${INTEGRATION_BASE_PYTHON_TAG} AS builder
 
 WORKDIR /home/connector-builder-server
 COPY . ./

@@ -1,4 +1,4 @@
-FROM airbyte/integration-base-java:dev
+FROM airbyte/integration-base-java
 
 # uncomment to run Yourkit java profiling
 #RUN yum install -y curl zip
