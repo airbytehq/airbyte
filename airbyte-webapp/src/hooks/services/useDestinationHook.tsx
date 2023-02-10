@@ -68,7 +68,7 @@ const useDestinationOptionList = (): DropDownRow.IDataItem[] => {
     value: destination.destinationId,
   }));
 
-  return [{ label: "All Destinations", value: "All Destinations" }, ...destinationOptions];
+  return [{ label: "All Destinations", value: "" }, ...destinationOptions];
 };
 
 const useGetDestination = <T extends string | undefined | null>(

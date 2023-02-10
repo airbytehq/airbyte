@@ -10,23 +10,17 @@ import HeadTitle from "components/HeadTitle";
 import { Pagination } from "components/Pagination";
 import { Separator } from "components/Separator";
 
+import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useFilteredConnectionList } from "hooks/services/useConnectionHook";
 import { useDestinationOptionList } from "hooks/services/useDestinationHook";
 import { useSourceOptionList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
-
-interface ConnectionsFilterState {
-  pageSize: number;
-  pageCurrent: number;
-  status: string;
-  sourceId: string;
-  destinationId: string;
-}
 
 const BtnInnerContainer = styled.div`
   width: 100%;
@@ -74,17 +68,18 @@ const AllConnectionsPage: React.FC = () => {
   const { push } = useRouter();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
-  const { connections } = useConnectionList();
+  const workspace = useCurrentWorkspace();
 
   const sourceOptions = useSourceOptionList();
   const destinationOptions = useDestinationOptionList();
   const statusOptions: DropDownRow.IDataItem[] = [
-    { label: "All Status", value: "All Status" },
-    { label: "Active", value: "Active" },
-    { label: "Inactive", value: "Inactive" },
+    { label: "All Status", value: "" },
+    { label: "Active", value: "active" },
+    { label: "Inactive", value: "inactive" },
   ];
 
-  const [filters, setFilters] = useState<ConnectionsFilterState>({
+  const [filters, setFilters] = useState<FilterConnectionRequestBody>({
+    workspaceId: workspace.workspaceId,
     pageSize: 10,
     pageCurrent: 1,
     status: statusOptions[0].value,
@@ -92,11 +87,13 @@ const AllConnectionsPage: React.FC = () => {
     destinationId: destinationOptions[0].value,
   });
 
+  const { connections, total, pageSize } = useFilteredConnectionList(filters);
+
   const onSelectFilter = (
     filterType: "pageCurrent" | "status" | "sourceId" | "destinationId",
-    option: DropDownRow.IDataItem
+    filterValue: number | string
   ) => {
-    setFilters({ ...filters, [filterType]: option.value });
+    setFilters({ ...filters, [filterType]: filterValue });
   };
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
@@ -133,7 +130,7 @@ const AllConnectionsPage: React.FC = () => {
                 $background="white"
                 value={filters.status}
                 options={statusOptions}
-                onChange={(option) => onSelectFilter("status", option)}
+                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value)}
               />
             </DDContainer>
             <DDContainer margin="0 24px 0 0">
@@ -142,7 +139,7 @@ const AllConnectionsPage: React.FC = () => {
                 $background="white"
                 value={filters.sourceId}
                 options={sourceOptions}
-                onChange={(option) => onSelectFilter("sourceId", option)}
+                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceId", option.value)}
               />
             </DDContainer>
             <DDContainer>
@@ -151,7 +148,7 @@ const AllConnectionsPage: React.FC = () => {
                 $background="white"
                 value={filters.destinationId}
                 options={destinationOptions}
-                onChange={(option) => onSelectFilter("destinationId", option)}
+                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationId", option.value)}
               />
             </DDContainer>
           </DDsContainer>
@@ -159,7 +156,7 @@ const AllConnectionsPage: React.FC = () => {
           <ConnectionsTable connections={connections} />
           <Separator height="54px" />
           <Footer>
-            <Pagination />
+            <Pagination pages={total / pageSize} onChange={(value: number) => onSelectFilter("pageCurrent", value)} />
           </Footer>
         </MainPageWithScroll>
       ) : (

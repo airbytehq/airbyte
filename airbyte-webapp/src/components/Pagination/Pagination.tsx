@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
 import { Button } from "components";
 
 import { StartIcon, PrevIcon, NextIcon, EndIcon } from "./Icons";
+
+interface IProps {
+  pages: number;
+  onChange?: (value: number) => void;
+}
 
 interface ButtonProps {
   isSelected?: boolean;
@@ -53,9 +58,18 @@ const PageButton = styled(Button)<ButtonProps>`
   margin: ${(props) => getMargin(props)};
 `;
 
-export const Pagination: React.FC = () => {
-  const pages: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  const [currentPage, setCurrentPage] = useState<number>(pages[0]);
+export const Pagination: React.FC<IProps> = ({ pages, onChange }) => {
+  const formPages = (numberOfPages: number): number[] => {
+    const myPages = [];
+    for (let index = 0; index < numberOfPages; index++) {
+      myPages.push(index + 1);
+    }
+    return myPages;
+  };
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  useEffect(() => onChange?.(currentPage), [currentPage]);
 
   const onPrev = () => {
     setCurrentPage((prev) => {
@@ -68,20 +82,16 @@ export const Pagination: React.FC = () => {
 
   const onNext = () => {
     setCurrentPage((prev) => {
-      if (prev < pages.length) {
+      if (prev < pages) {
         return prev + 1;
       }
       return prev;
     });
   };
 
-  const onStart = () => {
-    setCurrentPage(1);
-  };
+  const onStart = () => setCurrentPage(1);
 
-  const onEnd = () => {
-    setCurrentPage(pages.length);
-  };
+  const onEnd = () => setCurrentPage(pages);
   return (
     <Container>
       <PageButton onClick={onStart} buttonType="start">
@@ -90,7 +100,7 @@ export const Pagination: React.FC = () => {
       <PageButton onClick={onPrev} buttonType="prev">
         <PrevIcon />
       </PageButton>
-      {pages.map((page) => (
+      {formPages(pages).map((page) => (
         <PageButton isSelected={page === currentPage} onClick={() => setCurrentPage(page)} buttonType="page">
           {page}
         </PageButton>
