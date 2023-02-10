@@ -67,7 +67,7 @@ As an example, this partition router will iterate over the 2 repositories ("airb
 ```yaml
 partition_router:
   type: ListPartitionRouter
-  slice_values:
+  values:
     - "airbyte"
     - "airbyte-secret"
   cursor_field: "repository"
