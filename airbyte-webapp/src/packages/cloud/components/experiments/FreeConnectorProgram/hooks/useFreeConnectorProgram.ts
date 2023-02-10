@@ -34,16 +34,20 @@ export const useFreeConnectorProgram = () => {
   const { registerNotification } = useNotificationService();
   const { trackError } = useAppMonitoringService();
 
+  const removeStripeSuccessQuery = () => {
+    const { [STRIPE_SUCCESS_QUERY]: _, ...unrelatedSearchParams } = Object.fromEntries(searchParams);
+    setSearchParams(unrelatedSearchParams, { replace: true });
+  };
+
   useEffectOnce(() => {
     if (searchParams.has(STRIPE_SUCCESS_QUERY)) {
-      // Remove the stripe parameter from the URL
       pollUntil(
         () => webBackendGetFreeConnectorProgramInfoForWorkspace({ workspaceId }, requestOptions),
         ({ hasPaymentAccountSaved }) => hasPaymentAccountSaved,
         { intervalMs: 1000, maxTimeoutMs: 10000 }
       ).then((maybeFcpInfo) => {
         if (maybeFcpInfo) {
-          setSearchParams({}, { replace: true });
+          removeStripeSuccessQuery();
           setUserDidEnroll(true);
           registerNotification({
             id: "fcp/enrollment-success",
