@@ -18,6 +18,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.incremental.datetime_based_cursor import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
@@ -48,7 +49,6 @@ from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSc
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition, AddFields
 
@@ -66,7 +66,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "CompositeErrorHandler": CompositeErrorHandler,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
     "CursorPagination": CursorPaginationStrategy,
-    "DatetimeStreamSlicer": DatetimeStreamSlicer,
+    "DatetimeBasedCursor": DatetimeBasedCursor,
     "DeclarativeStream": DeclarativeStream,
     "DefaultErrorHandler": DefaultErrorHandler,
     "DefaultPaginator": DefaultPaginator,

@@ -73,11 +73,11 @@ Schema:
       start_time_option:
         description: Request option for start time
         "$ref": "#/definitions/RequestOption"
-      stream_state_field_end:
-        description: Stream slice start time field
+      partition_field_end:
+        description: Partition start time field
         type: string
-      stream_state_field_start:
-        description: Stream slice end time field
+      partition_field_start:
+        description: Partition end time field
         type: string
       $parameters:
         type: object
@@ -138,7 +138,7 @@ incremental_sync:
 will read data from `2022-01-01` to `2022-03-01`.
 
 The stream partitions will be of the form `{"start_date": "2021-02-01T00:00:00.000000+0000", "end_date": "2021-02-02T23:59:59.999999+0000"}`
-The stream partitions' field names can be customized through the `stream_state_field_start` and `stream_state_field_end` parameters.
+The stream partitions' field names can be customized through the `partition_field_start` and `partition_field_end` parameters.
 
 The `datetime_format` can be used to specify the format of the start and end time. It is [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) by default.
 

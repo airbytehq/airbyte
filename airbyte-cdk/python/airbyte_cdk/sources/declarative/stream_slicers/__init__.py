@@ -3,7 +3,6 @@
 #
 
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 
-__all__ = ["CartesianProductStreamSlicer", "DatetimeStreamSlicer", "StreamSlicer"]
+__all__ = ["CartesianProductStreamSlicer", "StreamSlicer"]

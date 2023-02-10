@@ -8,9 +8,9 @@ import unittest
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 cursor_granularity = "PT0.000001S"
@@ -377,7 +377,7 @@ def test_stream_slices(
     expected_slices,
 ):
     lookback_window = InterpolatedString(string=lookback_window, parameters={}) if lookback_window else None
-    slicer = DatetimeStreamSlicer(
+    slicer = DatetimeBasedCursor(
         start_datetime=start,
         end_datetime=end,
         step=step,
@@ -435,7 +435,7 @@ def test_stream_slices(
     ],
 )
 def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, expected_state):
-    slicer = DatetimeStreamSlicer(
+    slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
@@ -497,7 +497,7 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
 def test_request_option(test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
     start_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name=field_name) if inject_into else None
     end_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name="endtime") if inject_into else None
-    slicer = DatetimeStreamSlicer(
+    slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
@@ -541,7 +541,7 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
     ],
 )
 def test_parse_date(test_name, input_date, date_format, date_format_granularity, expected_output_date):
-    slicer = DatetimeStreamSlicer(
+    slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
@@ -565,7 +565,7 @@ def test_parse_date(test_name, input_date, date_format, date_format_granularity,
     ],
 )
 def test_format_datetime(test_name, input_dt, datetimeformat, datetimeformat_granularity, expected_output):
-    slicer = DatetimeStreamSlicer(
+    slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",

@@ -7,17 +7,17 @@ import operator
 from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @dataclass
-class DatetimeIncrementalSyncComponent(DatetimeStreamSlicer):
+class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
     """
-    Extending DatetimeStreamSlicer by adding step option to existing start_time/end_time options
+    Extending DatetimeBasedCursor by adding step option to existing start_time/end_time options
     """
 
     step_option: Optional[RequestOption] = None

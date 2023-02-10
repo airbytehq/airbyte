@@ -20,6 +20,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
@@ -91,7 +92,7 @@ from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever, SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer, StreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, StreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
@@ -130,7 +131,7 @@ class ModelToComponentFactory:
             CustomPaginationStrategyModel: self.create_custom_component,
             CustomPartitionRouterModel: self.create_custom_component,
             CustomTransformationModel: self.create_custom_component,
-            DatetimeBasedCursorModel: self.create_datetime_stream_slicer,
+            DatetimeBasedCursorModel: self.create_datetime_based_cursor,
             DeclarativeStreamModel: self.create_declarative_stream,
             DefaultErrorHandlerModel: self.create_default_error_handler,
             DefaultPaginatorModel: self.create_default_paginator,
@@ -351,7 +352,7 @@ class ModelToComponentFactory:
     def _is_component(model_value: Any) -> bool:
         return isinstance(model_value, dict) and model_value.get("type")
 
-    def create_datetime_stream_slicer(self, model: DatetimeBasedCursorModel, config: Config, **kwargs) -> DatetimeStreamSlicer:
+    def create_datetime_based_cursor(self, model: DatetimeBasedCursorModel, config: Config, **kwargs) -> DatetimeBasedCursor:
         start_datetime = (
             model.start_datetime if isinstance(model.start_datetime, str) else self.create_min_max_datetime(model.start_datetime, config)
         )
@@ -378,7 +379,7 @@ class ModelToComponentFactory:
             else None
         )
 
-        return DatetimeStreamSlicer(
+        return DatetimeBasedCursor(
             cursor_field=model.cursor_field,
             cursor_granularity=model.cursor_granularity,
             datetime_format=model.datetime_format,
@@ -388,8 +389,8 @@ class ModelToComponentFactory:
             end_time_option=end_time_option,
             lookback_window=model.lookback_window,
             start_time_option=start_time_option,
-            stream_state_field_end=model.stream_state_field_end,
-            stream_state_field_start=model.stream_state_field_start,
+            partition_field_end=model.partition_field_end,
+            partition_field_start=model.partition_field_start,
             config=config,
             parameters=model.parameters,
         )

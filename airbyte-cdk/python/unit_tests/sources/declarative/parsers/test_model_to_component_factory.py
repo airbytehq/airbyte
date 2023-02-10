@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -48,7 +49,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer, DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
@@ -425,8 +426,8 @@ def test_datetime_based_cursor():
           type: RequestOption
           inject_into: body_json
           field_name: end_time
-        stream_state_field_start: star
-        stream_state_field_end: en
+        partition_field_start: star
+        partition_field_end: en
     """
     parsed_manifest = YamlDeclarativeSource._parse(content)
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
@@ -434,7 +435,7 @@ def test_datetime_based_cursor():
 
     stream_slicer = factory.create_component(model_type=DatetimeBasedCursorModel, component_definition=slicer_manifest, config=input_config)
 
-    assert isinstance(stream_slicer, DatetimeStreamSlicer)
+    assert isinstance(stream_slicer, DatetimeBasedCursor)
     assert stream_slicer._timezone == datetime.timezone.utc
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
@@ -444,8 +445,8 @@ def test_datetime_based_cursor():
     assert stream_slicer.start_time_option.field_name == "created[gte]"
     assert stream_slicer.end_time_option.inject_into == RequestOptionType.body_json
     assert stream_slicer.end_time_option.field_name == "end_time"
-    assert stream_slicer.stream_state_field_start.eval({}) == "star"
-    assert stream_slicer.stream_state_field_end.eval({}) == "en"
+    assert stream_slicer.partition_field_start.eval({}) == "star"
+    assert stream_slicer.partition_field_end.eval({}) == "en"
 
     assert isinstance(stream_slicer.start_datetime, MinMaxDatetime)
     assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -500,8 +501,8 @@ list_stream:
     end_time_option:
       inject_into: body_json
       field_name: end_time
-    stream_state_field_start: star
-    stream_state_field_end: en
+    partition_field_start: star
+    partition_field_end: en
   retriever:
     type: SimpleRetriever
     name: "{{ parameters['name'] }}"
@@ -549,7 +550,7 @@ list_stream:
     assert len(stream.retriever.stream_slicer.stream_slicers) == 2
 
     datetime_stream_slicer = stream.retriever.stream_slicer.stream_slicers[0]
-    assert isinstance(datetime_stream_slicer, DatetimeStreamSlicer)
+    assert isinstance(datetime_stream_slicer, DatetimeBasedCursor)
     assert isinstance(datetime_stream_slicer.start_datetime, MinMaxDatetime)
     assert datetime_stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert isinstance(datetime_stream_slicer.end_datetime, MinMaxDatetime)
@@ -1154,7 +1155,7 @@ class TestCreateTransformations:
                 "cursor_granularity": "PT0.000001S",
             },
             None,
-            DatetimeStreamSlicer,
+            DatetimeBasedCursor,
             1,
             id="test_create_simple_retriever_with_incremental",
         ),

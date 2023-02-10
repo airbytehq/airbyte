@@ -402,11 +402,11 @@ definitions:
       start_time_option:
         description: Request option for start time
         "$ref": "#/definitions/RequestOption"
-      stream_state_field_end:
-        description: Stream slice start time field
+      partition_field_end:
+        description: Partition start time field
         type: string
-      stream_state_field_start:
-        description: Stream slice end time field
+      partition_field_start:
+        description: Partition end time field
         type: string
       $parameters:
         type: object
