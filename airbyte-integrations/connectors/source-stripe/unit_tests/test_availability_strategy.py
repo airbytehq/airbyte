@@ -94,7 +94,8 @@ def test_substream_availability(mocker):
     )
 
     stream = InvoiceLineItems(start_date=pendulum.today().subtract(days=3).int_timestamp, account_id="None")
-    stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
+    is_available, reason = stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
+    assert is_available and reason is None
 
     assert check_availability_mock.call_count == 2
     assert isinstance(check_availability_mock.call_args_list[0].args[0], Invoices)
