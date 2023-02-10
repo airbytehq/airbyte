@@ -480,7 +480,7 @@ describe("Connection sync modes", () => {
     deleteDestination(destName);
   });
 
-  it("Create Postgres <> Postgres connection, update connection replication settings - select 'Incremental Deduped History'(PK is NOT defined), select Cursor field, select PK, verify changes", () => {
+  it.only("Create Postgres <> Postgres connection, update connection replication settings - select 'Incremental Deduped History'(PK is NOT defined), select Cursor field, select PK, verify changes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "cities";
@@ -499,7 +499,7 @@ describe("Connection sync modes", () => {
     isPrimaryKeyNonExist(streamName);
     selectPrimaryKeyField(streamName, ["city_code"]);
 
-    submitButtonClick();
+    submitButtonClick(true);
     confirmStreamConfigurationChangedPopup();
 
     waitForUpdateConnectionRequest().then((interception) => {

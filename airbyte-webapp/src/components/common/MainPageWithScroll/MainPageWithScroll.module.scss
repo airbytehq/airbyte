@@ -1,6 +1,11 @@
+@use "scss/colors";
 @use "scss/variables";
+@use "scss/z-indices";
 
-.page {
+$blur-height: 15px;
+$spacing: variables.$spacing-xl;
+
+.container {
   overflow-y: hidden;
   width: 100%;
   height: 100%;
@@ -12,16 +17,36 @@
   flex: 1;
   max-width: 100%;
   overflow-x: auto;
-  padding-top: variables.$spacing-lg;
+  position: relative;
+
+  &.softScrollEdge {
+    padding-top: $spacing - $blur-height;
+  }
+
+  &:not(.softScrollEdge) {
+    padding-top: $spacing;
+  }
+}
+
+.contentScroll {
+  overflow-y: auto;
+  height: 100%;
 }
 
 .content {
-  overflow-y: auto;
-  height: 100%;
-  padding: 0 variables.$spacing-xl variables.$spacing-xl;
+  padding: 0 $spacing $spacing;
   min-width: variables.$main-page-content-min-width;
 
   &.cloud {
     padding-bottom: variables.$spacing-page-bottom-cloud;
   }
+}
+
+.edge {
+  position: sticky;
+  width: 100%;
+  top: 0;
+  z-index: z-indices.$mainPageWithScrollEdge;
+  min-height: $blur-height;
+  background: linear-gradient(180deg, colors.$grey-50, rgba(248, 248, 250, 0%) 15px);
 }
