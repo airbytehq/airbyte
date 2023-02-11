@@ -819,6 +819,13 @@ worker:
     enabled: true
     image: ""
 
+  ## current no exist documentations
+  activityMaxAttempt: ""
+  activityInitialDelayBetweenAttemptsSeconds: ""
+  activityMaxDelayBetweenAttemptsSeconds: ""
+
+  maxNotifyWorkers: 5
+
 ## @section Metrics parameters
 metrics:
   enabled: false
