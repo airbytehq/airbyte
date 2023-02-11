@@ -20,6 +20,7 @@ import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardConnectorBuilderReadOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
@@ -118,6 +119,15 @@ public class JobTracker {
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
 
       track(workspaceId, MoreMaps.merge(jobMetadata, sourceDefMetadata, stateMetadata));
+    });
+  }
+
+  public void trackConnectorBuilderRead(UUID jobId, UUID workspaceId, JobState jobState, StandardConnectorBuilderReadOutput value) {
+    Exceptions.swallow(() -> {
+      final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CONNECTOR_BUILDER_READ);
+      final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
+
+      track(workspaceId, MoreMaps.merge(jobMetadata, stateMetadata));
     });
   }
 

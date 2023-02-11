@@ -27,6 +27,7 @@ public final class Metadata {
   public static final String SPEC_JOB = "spec";
   public static final String CHECK_JOB = "check";
   public static final String DISCOVER_JOB = "discover";
+  public static final String CONNECTOR_JOB = "connector";
 
   /**
    * A sync job can actually be broken down into the following steps. Try to be as precise as possible

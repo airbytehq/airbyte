@@ -98,6 +98,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
   public static final String MAX_NOTIFY_WORKERS = "MAX_NOTIFY_WORKERS";
+  public static final String MAX_CONNECTORS_WORKERS = "MAX_CONNECTORS_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
@@ -217,6 +218,7 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
+  private static final long DEFAULT_MAX_CONNECTORS_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
   private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("0.3.0");
   private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN = new Version("0.0.0");
@@ -1012,7 +1014,8 @@ public class EnvConfigs implements Configs {
         Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_NOTIFY_WORKERS, DEFAULT_MAX_NOTIFY_WORKERS)));
+        Math.toIntExact(getEnvOrDefault(MAX_NOTIFY_WORKERS, DEFAULT_MAX_NOTIFY_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_CONNECTORS_WORKERS, DEFAULT_MAX_CONNECTORS_WORKERS)));
   }
 
   @Override

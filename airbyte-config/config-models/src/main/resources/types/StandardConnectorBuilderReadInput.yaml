@@ -1,0 +1,12 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/StandardCheckConnectionInput.yaml
+title: StandardConnectorBuilderReadInput
+description: describes
+type: object
+required:
+  - docker_image
+additionalProperties: false
+properties:
+  docker_image:
+    type: string

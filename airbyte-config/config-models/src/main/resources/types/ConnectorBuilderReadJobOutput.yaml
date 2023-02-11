@@ -1,0 +1,13 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ConnectorBuilderReadJobOutput.yaml
+title: ConnectorBuilderReadJobOutput
+description: job connector builder read config
+type: object
+additionalProperties: false
+required:
+  - output
+properties:
+  output:
+    type: string
+    description: output

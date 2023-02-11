@@ -90,6 +90,7 @@ public class TemporalWorkerRunFactory {
       case CHECK_CONNECTION_SOURCE, CHECK_CONNECTION_DESTINATION -> TemporalJobType.CHECK_CONNECTION;
       case DISCOVER_SCHEMA -> TemporalJobType.DISCOVER_SCHEMA;
       case SYNC, RESET_CONNECTION -> TemporalJobType.SYNC;
+      case CONNECTOR_BUILDER_READ -> TemporalJobType.CONNECTORS;
     };
   }
 

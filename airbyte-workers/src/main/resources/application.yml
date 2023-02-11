@@ -67,6 +67,8 @@ airbyte:
       task-queue: ${DATA_DISCOVER_TASK_QUEUES:DISCOVER_SCHEMA}
     sync:
       task-queue: ${DATA_SYNC_TASK_QUEUES:SYNC}
+    connector:
+      task-queue: ${CONNECTOR_TASK_QUEUES:CONNECTOR}
     plane:
       service-account:
         credentials-path: ${DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH:}
@@ -118,6 +120,8 @@ airbyte:
         annotations: ${DISCOVER_JOB_KUBE_ANNOTATIONS:}
         node-selectors: ${DISCOVER_JOB_KUBE_NODE_SELECTORS:}
       max-workers: ${MAX_DISCOVER_WORKERS:5}
+    connector:
+      max-workers: ${MAX_CONNECTOR_WORKERS:5}
     job:
       error-reporting:
         sentry:

@@ -8,6 +8,7 @@ import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
+import io.airbyte.workers.temporal.connector.ConnectorBuilderReadActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
@@ -93,6 +94,14 @@ public class ActivityBeanFactory {
   public List<Object> discoverActivities(
                                          final DiscoverCatalogActivity discoverCatalogActivity) {
     return List.of(discoverCatalogActivity);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("connectorActivities")
+  public List<Object> connectorActivities(
+      final ConnectorBuilderReadActivity connectorBuilderReadActivity) {
+    return List.of(connectorBuilderReadActivity);
   }
 
   @Singleton

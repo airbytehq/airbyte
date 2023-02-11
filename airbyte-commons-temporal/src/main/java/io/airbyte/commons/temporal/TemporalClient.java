@@ -12,17 +12,22 @@ import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.commons.temporal.scheduling.CheckConnectionWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
+import io.airbyte.commons.temporal.scheduling.ConnectorBuilderReadWorkflow;
 import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.config.AttemptSyncConfig;
+import io.airbyte.config.ConnectorBuilderReadJobOutput;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
+import io.airbyte.config.JobConnectorBuilderReadConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardConnectorBuilderReadInput;
+import io.airbyte.config.StandardConnectorBuilderReadOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -373,6 +378,17 @@ public class TemporalClient {
 
     return execute(jobRunConfig,
         () -> getWorkflowStubWithTaskQueue(DiscoverCatalogWorkflow.class, taskQueue).run(jobRunConfig, launcherConfig, input));
+  }
+
+  public TemporalResponse<ConnectorJobOutput> submitConnectorBuilderRead(final UUID jobId,
+                                                                                    final int attempt,
+                                                                                    final String taskQueue,
+                                                                                    final JobConnectorBuilderReadConfig config) {
+    final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
+    final StandardConnectorBuilderReadInput input = new StandardConnectorBuilderReadInput()
+        .withDockerImage(config.getDockerImage());
+    return execute(jobRunConfig,
+        () -> getWorkflowStubWithTaskQueue(ConnectorBuilderReadWorkflow.class, taskQueue).run(jobRunConfig, input));
   }
 
   public TemporalResponse<StandardSyncOutput> submitSync(final long jobId,

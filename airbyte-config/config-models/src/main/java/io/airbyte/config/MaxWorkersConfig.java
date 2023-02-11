@@ -11,17 +11,20 @@ public class MaxWorkersConfig {
   private final int maxDiscoverWorkers;
   private final int maxSyncWorkers;
   private final int maxNotifyWorkers;
+  private final int maxConnectorsWorkers;
 
   public MaxWorkersConfig(final int maxSpecWorkers,
                           final int maxCheckWorkers,
                           final int maxDiscoverWorkers,
                           final int maxSyncWorkers,
-                          final int maxNotifyWorkers) {
+                          final int maxNotifyWorkers,
+                          final int maxConnectorsWorkers) {
     this.maxSpecWorkers = maxSpecWorkers;
     this.maxCheckWorkers = maxCheckWorkers;
     this.maxDiscoverWorkers = maxDiscoverWorkers;
     this.maxSyncWorkers = maxSyncWorkers;
     this.maxNotifyWorkers = maxNotifyWorkers;
+    this.maxConnectorsWorkers = maxConnectorsWorkers;
   }
 
   public int getMaxSpecWorkers() {
@@ -41,6 +44,10 @@ public class MaxWorkersConfig {
   }
 
   public int getMaxNotifyWorkers() {
+    return maxNotifyWorkers;
+  }
+
+  public int getMaxConnectorsWorkers() {
     return maxNotifyWorkers;
   }
 

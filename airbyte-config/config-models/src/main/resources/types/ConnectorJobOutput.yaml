@@ -14,6 +14,7 @@ properties:
       - checkConnection
       - discoverCatalogId
       - spec
+      - connectorBuilderRead
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
   discoverCatalogId:
@@ -22,6 +23,8 @@ properties:
     format: uuid
   spec:
     existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+  connectorBuilderRead:
+    "$ref": StandardConnectorBuilderReadOutput.yaml
   connectorConfigurationUpdated:
     description: A boolean indicating whether the configuration was updated during the job, e.g. if an AirbyteConfigControlMessage was received.
     type: boolean

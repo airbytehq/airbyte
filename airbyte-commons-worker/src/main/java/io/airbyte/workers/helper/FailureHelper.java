@@ -29,7 +29,8 @@ public class FailureHelper {
     CHECK("check"),
     DISCOVER("discover"),
     WRITE("write"),
-    READ("read");
+    READ("read"),
+    CONNECTOR_BUILDER_READ("connectorBuilderRead");
 
     private final String value;
 

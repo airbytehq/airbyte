@@ -21,6 +21,7 @@ import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.workers.process.KubePortManagerSingleton;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflowImpl;
+import io.airbyte.workers.temporal.connector.ConnectorBuilderReadWorkflowImpl;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.ConnectionNotificationWorkflowImpl;
@@ -78,7 +79,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Inject
   @Named("discoverActivities")
   private Optional<List<Object>> discoverActivities;
-
+  @Inject
+  @Named("connectorActivities")
+  private Optional<List<Object>> connectorActivities;
   @Inject
   @Named("notifyActivities")
   private Optional<List<Object>> notifyActivities;
@@ -99,6 +102,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   private Integer maxCheckWorkers;
   @Value("${airbyte.worker.notify.max-workers}")
   private Integer maxNotifyWorkers;
+
+  @Value("${airbyte.worker.connector.max-workers}")
+  private Integer maxConnectorWorkers;
   @Value("${airbyte.worker.discover.max-workers}")
   private Integer maxDiscoverWorkers;
   @Value("${airbyte.worker.spec.max-workers}")
@@ -148,6 +154,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
   @Value("${airbyte.data.discover.task-queue}")
   private String discoverTaskQueue;
+
+  @Value("${airbyte.data.connector.task-queue}")
+  private String connectorsTaskQueue;
   @Inject
   private Environment environment;
 
@@ -165,7 +174,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
 
       registerWorkerFactory(workerFactory,
           new MaxWorkersConfig(maxCheckWorkers, maxDiscoverWorkers, maxSpecWorkers,
-              maxSyncWorkers, maxNotifyWorkers));
+              maxSyncWorkers, maxNotifyWorkers, maxConnectorWorkers));
 
       log.info("Starting worker factory...");
       workerFactory.start();
@@ -229,6 +238,9 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
     if (shouldRunDiscoverWorkflows) {
       registerDiscover(workerFactory, maxWorkersConfiguration);
     }
+
+    //FIXME: hide behind a flag
+    registerConnectors(workerFactory, maxWorkersConfiguration);
 
     if (shouldRunSyncWorkflows) {
       registerSync(workerFactory, maxWorkersConfiguration);
@@ -299,6 +311,24 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       discoverWorker.registerActivitiesImplementations(
           discoverActivities.orElseThrow().toArray(new Object[] {}));
       log.info("Discover Workflow registered.");
+    }
+  }
+
+  private void registerConnectors(final WorkerFactory factory,
+                                final MaxWorkersConfig maxWorkersConfig) {
+    final Set<String> taskQueues = getConnectorsTaskQueue();
+    for (final String taskQueue : taskQueues) {
+      final Worker worker =
+          factory.newWorker(taskQueue,
+              getWorkerOptions(maxWorkersConfig.getMaxConnectorsWorkers()));
+      final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
+          .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+      worker
+          .registerWorkflowImplementationTypes(options,
+              temporalProxyHelper.proxyWorkflowClass(ConnectorBuilderReadWorkflowImpl.class));
+      worker.registerActivitiesImplementations(
+          connectorActivities.orElseThrow().toArray(new Object[] {}));
+      log.info("Connnector Workflow registered.");
     }
   }
 
@@ -400,6 +430,13 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       return Set.of();
     }
     return Arrays.stream(discoverTaskQueue.split(",")).collect(Collectors.toSet());
+  }
+
+  private Set<String> getConnectorsTaskQueue() {
+    if (StringUtils.isEmpty(connectorsTaskQueue)) {
+      return Set.of();
+    }
+    return Arrays.stream(connectorsTaskQueue.split(",")).collect(Collectors.toSet());
   }
 
 }

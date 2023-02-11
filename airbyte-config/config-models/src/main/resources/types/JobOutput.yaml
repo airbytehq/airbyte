@@ -15,6 +15,7 @@ properties:
       - discoverCatalog
       - getSpec
       - sync
+      - connectorBuilderRead
   checkConnection:
     "$ref": StandardCheckConnectionOutput.yaml
   discoverCatalog:
@@ -23,3 +24,5 @@ properties:
     "$ref": StandardGetSpecOutput.yaml
   sync:
     "$ref": StandardSyncOutput.yaml
+  connectorBuilderRead:
+    "$ref": StandardConnectorBuilderReadOutput.yaml

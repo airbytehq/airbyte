@@ -687,150 +687,10 @@
             https://cloud.google.com/bigquery/docs/datasets#create-dataset\">here</a>."
           title: "Default Dataset ID"
           order: 2
-        loading_method:
-          type: "object"
-          title: "Loading Method"
-          description: "Loading method used to send select the way data will be uploaded\
-            \ to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL\
-            \ INSERT statements. This method is extremely inefficient and provided\
-            \ only for quick testing. In almost all cases, you should use staging.\
-            \ <br/><b>GCS Staging</b> - Writes large batches of records to a file,\
-            \ uploads the file to GCS, then uses <b>COPY INTO table</b> to upload\
-            \ the file. Recommended for most workloads for better speed and scalability.\
-            \ Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\"\
-            >here</a>."
-          order: 3
-          oneOf:
-          - title: "Standard Inserts"
-            required:
-            - "method"
-            properties:
-              method:
-                type: "string"
-                const: "Standard"
-          - title: "GCS Staging"
-            required:
-            - "method"
-            - "gcs_bucket_name"
-            - "gcs_bucket_path"
-            - "credential"
-            properties:
-              method:
-                type: "string"
-                const: "GCS Staging"
-                order: 0
-              credential:
-                title: "Credential"
-                description: "An HMAC key is a type of credential and can be associated\
-                  \ with a service account or a user account in Cloud Storage. Read\
-                  \ more <a href=\"https://cloud.google.com/storage/docs/authentication/hmackeys\"\
-                  >here</a>."
-                type: "object"
-                order: 1
-                oneOf:
-                - title: "HMAC key"
-                  required:
-                  - "credential_type"
-                  - "hmac_key_access_id"
-                  - "hmac_key_secret"
-                  properties:
-                    credential_type:
-                      type: "string"
-                      const: "HMAC_KEY"
-                      order: 0
-                    hmac_key_access_id:
-                      type: "string"
-                      description: "HMAC key access ID. When linked to a service account,\
-                        \ this ID is 61 characters long; when linked to a user account,\
-                        \ it is 24 characters long."
-                      title: "HMAC Key Access ID"
-                      airbyte_secret: true
-                      examples:
-                      - "1234567890abcdefghij1234"
-                      order: 1
-                    hmac_key_secret:
-                      type: "string"
-                      description: "The corresponding secret for the access ID. It\
-                        \ is a 40-character base-64 encoded string."
-                      title: "HMAC Key Secret"
-                      airbyte_secret: true
-                      examples:
-                      - "1234567890abcdefghij1234567890ABCDEFGHIJ"
-                      order: 2
-              gcs_bucket_name:
-                title: "GCS Bucket Name"
-                type: "string"
-                description: "The name of the GCS bucket. Read more <a href=\"https://cloud.google.com/storage/docs/naming-buckets\"\
-                  >here</a>."
-                examples:
-                - "airbyte_sync"
-                order: 2
-              gcs_bucket_path:
-                title: "GCS Bucket Path"
-                description: "Directory under the GCS bucket where data will be written."
-                type: "string"
-                examples:
-                - "data_sync/test"
-                order: 3
-              keep_files_in_gcs-bucket:
-                type: "string"
-                description: "This upload method is supposed to temporary store records\
-                  \ in GCS bucket. By this select you can chose if these records should\
-                  \ be removed from GCS when migration has finished. The default \"\
-                  Delete all tmp files from GCS\" value is used if not set explicitly."
-                title: "GCS Tmp Files Afterward Processing"
-                default: "Delete all tmp files from GCS"
-                enum:
-                - "Delete all tmp files from GCS"
-                - "Keep all tmp files in GCS"
-                order: 4
-        credentials_json:
-          type: "string"
-          description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#service-account-key\"\
-            >docs</a> if you need help generating this key. Default credentials will\
-            \ be used if this field is left empty."
-          title: "Service Account Key JSON (Required for cloud, optional for open-source)"
-          airbyte_secret: true
-          order: 4
-        transformation_priority:
-          type: "string"
-          description: "Interactive run type means that the query is executed as soon\
-            \ as possible, and these queries count towards concurrent rate limit and\
-            \ daily limit. Read more about interactive run type <a href=\"https://cloud.google.com/bigquery/docs/running-queries#queries\"\
-            >here</a>. Batch queries are queued and started as soon as idle resources\
-            \ are available in the BigQuery shared resource pool, which usually occurs\
-            \ within a few minutes. Batch queries don’t count towards your concurrent\
-            \ rate limit. Read more about batch queries <a href=\"https://cloud.google.com/bigquery/docs/running-queries#batch\"\
-            >here</a>. The default \"interactive\" value is used if not set explicitly."
-          title: "Transformation Query Run Type"
-          default: "interactive"
-          enum:
-          - "interactive"
-          - "batch"
-          order: 5
-        big_query_client_buffer_size_mb:
-          title: "Google BigQuery Client Chunk Size"
-          description: "Google BigQuery client's chunk (buffer) size (MIN=1, MAX =\
-            \ 15) for each table. The size that will be written by a single RPC. Written\
-            \ data will be buffered and only flushed upon reaching this size or closing\
-            \ the channel. The default 15MB value is used if not set explicitly. Read\
-            \ more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\"\
-            >here</a>."
-          type: "integer"
-          minimum: 1
-          maximum: 15
-          default: 15
-          examples:
-          - "15"
-          order: 6
-    supportsIncremental: true
-    supportsNormalization: true
-    supportsDBT: true
-    supported_destination_sync_modes:
-    - "overwrite"
-    - "append"
-    - "append_dedup"
+        loading_method: null
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/destination-bigquery-denormalized:1.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/bigquery"
@@ -1031,7 +891,7 @@
     - "append"
 - dockerImage: "airbyte/destination-cassandra:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/cassandra"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/cassandra"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Cassandra Destination Spec"
@@ -1096,7 +956,7 @@
     - "append"
 - dockerImage: "airbyte/destination-keen:0.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/keen"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/keen"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Keen Spec"
@@ -1301,7 +1161,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-r2:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/r2"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/r2"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "R2 Destination Spec"
@@ -1327,7 +1187,7 @@
             \ Read and Write permissions to the given bucket. Read more <a href=\"\
             https://developers.cloudflare.com/r2/platform/s3-compatibility/tokens/\"\
             >here</a>."
-          title: "R2 Key ID"
+          title: "R2 Key ID *"
           airbyte_secret: true
           examples:
           - "A012345678910EXAMPLE"
@@ -1337,7 +1197,7 @@
           description: "The corresponding secret to the access key ID. Read more <a\
             \ href=\"https://developers.cloudflare.com/r2/platform/s3-compatibility/tokens/\"\
             >here</a>"
-          title: "R2 Access Key"
+          title: "R2 Access Key *"
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGHAbCdEfGhEXAMPLEKEY"
@@ -1358,7 +1218,7 @@
           - "data_sync/test"
           order: 4
         format:
-          title: "Output Format"
+          title: "Output Format *"
           type: "object"
           description: "Format of the data output. See <a href=\"https://docs.airbyte.com/integrations/destinations/s3/#supported-output-schema\"\
             >here</a> for more details"
@@ -1369,14 +1229,14 @@
             - "compression_codec"
             properties:
               format_type:
-                title: "Format Type"
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "Avro"
                 default: "Avro"
                 order: 0
               compression_codec:
-                title: "Compression Codec"
+                title: "Compression Codec *"
                 description: "The compression algorithm used to compress data. Default\
                   \ to no compression."
                 type: "object"
@@ -1475,7 +1335,7 @@
             - "flattening"
             properties:
               format_type:
-                title: "Format Type"
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "CSV"
@@ -1519,7 +1379,7 @@
             - "format_type"
             properties:
               format_type:
-                title: "Format Type"
+                title: "Format Type *"
                 type: "string"
                 enum:
                 - "JSONL"
@@ -1549,7 +1409,7 @@
                       default: "GZIP"
           order: 5
         s3_path_format:
-          title: "R2 Path Format"
+          title: "R2 Path Format (Optional)"
           description: "Format string on how data will be organized inside the R2\
             \ bucket directory. Read more <a href=\"https://docs.airbyte.com/integrations/destinations/r2#:~:text=The%20full%20path%20of%20the%20output%20data%20with%20the%20default%20S3%20path%20format\"\
             >here</a>"
@@ -1561,7 +1421,7 @@
           type: "string"
           description: "The pattern allows you to set the file-name format for the\
             \ R2 staging file(s)"
-          title: "R2 Filename pattern"
+          title: "R2 Filename pattern (Optional)"
           examples:
           - "{date}"
           - "{date:yyyy_MM}"
@@ -1879,7 +1739,7 @@
     - "append"
 - dockerImage: "airbyte/destination-e2e-test:0.2.4"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/e2e-test"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/e2e-test"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "E2E Test Destination Spec"
@@ -2231,7 +2091,7 @@
     supportsNamespaces: true
 - dockerImage: "airbyte/destination-firebolt:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/firebolt"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firebolt"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Firebolt Spec"
@@ -2706,7 +2566,7 @@
     $schema: "http://json-schema.org/draft-07/schema#"
 - dockerImage: "airbyte/destination-firestore:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/firestore"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firestore"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Google Firestore"
@@ -2723,7 +2583,7 @@
         credentials_json:
           type: "string"
           description: "The contents of the JSON service account key. Check out the\
-            \ <a href=\"https://docs.airbyte.com/integrations/destinations/firestore\"\
+            \ <a href=\"https://docs.airbyte.io/integrations/destinations/firestore\"\
             >docs</a> if you need help generating this key. Default credentials will\
             \ be used if this field is left empty."
           title: "Credentials JSON"
@@ -2944,7 +2804,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-kafka:0.1.10"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/kafka"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Kafka Destination Spec"
@@ -3235,7 +3095,7 @@
     - "append"
 - dockerImage: "airbyte/destination-kinesis:0.1.5"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/kinesis"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/kinesis"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Kinesis Destination Spec"
@@ -3365,7 +3225,7 @@
     - "append"
 - dockerImage: "airbyte/destination-local-json:0.2.11"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/local-json"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/local-json"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Local Json Destination Spec"
@@ -3377,7 +3237,7 @@
         destination_path:
           description: "Path to the directory where json files will be written. The\
             \ files will be placed inside that local mount. For more information check\
-            \ out our <a href=\"https://docs.airbyte.com/integrations/destinations/local-json\"\
+            \ out our <a href=\"https://docs.airbyte.io/integrations/destinations/local-json\"\
             >docs</a>"
           title: "Destination Path"
           type: "string"
@@ -3391,7 +3251,7 @@
     - "append"
 - dockerImage: "airbyte/destination-mqtt:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mqtt"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mqtt"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MQTT Destination Spec"
@@ -3988,7 +3848,7 @@
     - "append"
 - dockerImage: "airbyte/destination-mysql:0.1.20"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mysql"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mysql"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MySQL Destination Spec"
@@ -4153,7 +4013,7 @@
     - "append"
 - dockerImage: "airbyte/destination-oracle:0.1.19"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/oracle"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Oracle Destination Spec"
@@ -4385,7 +4245,7 @@
     - "append"
 - dockerImage: "airbyte/destination-postgres:0.3.26"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/postgres"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Postgres Destination Spec"
@@ -4540,7 +4400,7 @@
                 order: 1
               client_key_password:
                 type: "string"
-                title: "Client key password"
+                title: "Client key password (Optional)"
                 description: "Password for keystorage. This field is optional. If\
                   \ you do not add it - the password will be generated automatically."
                 airbyte_secret: true
@@ -4584,7 +4444,7 @@
                 order: 3
               client_key_password:
                 type: "string"
-                title: "Client key password"
+                title: "Client key password (Optional)"
                 description: "Password for keystorage. This field is optional. If\
                   \ you do not add it - the password will be generated automatically."
                 airbyte_secret: true
@@ -4706,7 +4566,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-pulsar:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/pulsar"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/pulsar"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Pulsar Destination Spec"
@@ -4854,7 +4714,7 @@
     - "append"
 - dockerImage: "airbyte/destination-rabbitmq:0.1.1"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/rabbitmq"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/rabbitmq"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Rabbitmq"
@@ -5451,7 +5311,7 @@
     - "append"
 - dockerImage: "airbyte/destination-rockset:0.1.4"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/rockset"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/rockset"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Rockset Destination Spec"
@@ -6058,7 +5918,7 @@
     - "append"
 - dockerImage: "airbyte/destination-sftp-json:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/sftp-json"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/sftp-json"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination SFTP JSON"
@@ -6575,7 +6435,7 @@
               - "client_secret"
 - dockerImage: "airbyte/destination-mariadb-columnstore:0.1.7"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MariaDB Columnstore Destination Spec"
@@ -6734,7 +6594,7 @@
     - "append"
 - dockerImage: "ghcr.io/devmate-cloud/streamr-airbyte-connectors:0.0.1"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/streamr"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/streamr"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Streamr"
@@ -6761,7 +6621,7 @@
     - "append_dedup"
 - dockerImage: "airbyte/destination-scylla:0.1.3"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/scylla"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/scylla"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Scylla Destination Spec"
@@ -6879,7 +6739,7 @@
         - - "refresh_token"
 - dockerImage: "airbyte/destination-sqlite:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/sqlite"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/sqlite"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Destination Sqlite"
@@ -6891,7 +6751,7 @@
         destination_path:
           type: "string"
           description: "Path to the sqlite.db file. The file will be placed inside\
-            \ that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/sqlite\"\
+            \ that local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/sqlite\"\
             >docs</a>"
           example: "/local/sqlite.db"
     supportsIncremental: true
@@ -6902,7 +6762,7 @@
     - "append"
 - dockerImage: "airbyte/destination-tidb:0.1.0"
   spec:
-    documentationUrl: "https://docs.airbyte.com/integrations/destinations/tidb"
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/tidb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "TiDB Destination Spec"
@@ -7352,17 +7212,17 @@
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/duckdb"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
-      title: "DuckDB Destination Spec"
+      title: "Destination Duckdb"
       type: "object"
       required:
       - "destination_path"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         destination_path:
           type: "string"
-          description: "Path to the destination.duckdb file. The file will be placed\
-            \ inside that local mount. For more information check out our <a href=\"\
-            https://docs.airbyte.io/integrations/destinations/duckdb\">docs</a>"
+          description: "Path to the .duckdb file. The file will be placed inside that\
+            \ local mount. For more information check out our <a href=\"https://docs.airbyte.io/integrations/destinations/duckdb\"\
+            >docs</a>"
           example: "/local/destination.duckdb"
         schema:
           type: "string"

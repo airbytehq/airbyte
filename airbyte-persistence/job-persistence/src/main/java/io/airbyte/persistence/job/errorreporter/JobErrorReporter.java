@@ -294,4 +294,11 @@ public class JobErrorReporter {
     }
   }
 
+  public void reportConnectorBuilderReadJobFailure(UUID workspaceId, FailureReason failureReason, ConnectorJobReportingContext jobContext)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = workspaceId != null ? configRepository.getStandardWorkspaceNoSecrets(workspaceId, true) : null;
+    final Map<String, String> metadata = MoreMaps.merge(
+        Map.of(JOB_ID_KEY, jobContext.jobId().toString()));
+    reportJobFailureReason(workspace, failureReason, jobContext.dockerImage(), metadata);
+  }
 }
