@@ -43,7 +43,7 @@ export const BuilderPrompt: React.FC<BuilderPromptProps> = ({ builderRoutePath }
                   </Text>
                 ),
                 noun: (
-                  <Text as="span" bold size="sm">
+                  <Text as="span" bold size="sm" className={styles.description}>
                     <FormattedMessage id="connectorBuilder.builderPrompt.noun" />
                   </Text>
                 ),
