@@ -66,7 +66,7 @@ fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "faste
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.12.0" }
 flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
 glassfish = { module = "org.glassfish.jersey:jackson-bom", version.ref = "glassfish_version" }
-google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.2.2" }
+google-cloud-storage = { module = "com.google.cloud:google-cloud-storage", version = "2.17.2" }
 guava = { module = "com.google.guava:guava", version = "31.1-jre" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "fasterxml_version" }
