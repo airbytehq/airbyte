@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from collections import namedtuple
 from unittest.mock import Mock
 
@@ -15,6 +16,7 @@ from source_google_ads.custom_query_stream import CustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, AdGroupLabels, ServiceAccounts, chunk_date_range
+from source_google_ads.utils import GAQL
 
 from .common import MockErroringGoogleAdsClient, MockGoogleAdsClient, make_google_ads_exception
 
@@ -159,7 +161,7 @@ def test_streams_count(config, mock_account_info):
 )
 def test_metrics_in_custom_query(query, is_metrics_in_query):
     source = SourceGoogleAds()
-    assert source.is_metrics_in_custom_query(query) is is_metrics_in_query
+    assert source.is_metrics_in_custom_query(GAQL(query)) is is_metrics_in_query
 
 
 @pytest.mark.parametrize(
@@ -185,45 +187,10 @@ def stream_instance(query, api_mock, **kwargs):
         api=api_mock,
         conversion_window_days=conversion_window_days,
         start_date=start_date,
-        custom_query_config={"query": query, "table_name": "whatever_table"},
+        config={"query": GAQL(query), "table_name": "whatever_table"},
         **kwargs,
     )
     return instance
-
-
-@pytest.mark.parametrize(
-    "query, fields",
-    [
-        (
-            """
-SELECT
-  campaign.id,
-  campaign.name,
-  campaign.status,
-  metrics.impressions
-FROM campaign
-WHERE campaign.status = 'PAUSED'
-AND metrics.impressions > 100
-ORDER BY campaign.status
-    """,
-            ["campaign.id", "campaign.name", "campaign.status", "metrics.impressions"],
-        ),
-        (
-            """
-SELECT
-  campaign.accessible_bidding_strategy,
-  segments.ad_destination_type,
-  campaign.start_date,
-  campaign.end_date
-FROM campaign
-    """,
-            ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"],
-        ),
-        ("""selet aasdasd from aaa""", []),
-    ],
-)
-def test_get_query_fields(query, fields):
-    assert CustomQuery.get_query_fields(query) == fields
 
 
 @pytest.mark.parametrize(
@@ -246,8 +213,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 WHERE campaign.status = 'PAUSED'
 AND metrics.impressions > 100
@@ -270,8 +237,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 
 WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
@@ -294,8 +261,8 @@ SELECT
   campaign.id,
   campaign.name,
   campaign.status,
-  metrics.impressions
-, segments.date
+  metrics.impressions,
+  segments.date
 FROM campaign
 WHERE campaign.status = 'PAUSED'
 AND metrics.impressions > 100
@@ -316,8 +283,8 @@ SELECT
     campaign.accessible_bidding_strategy,
     segments.ad_destination_type,
     campaign.start_date,
-    campaign.end_date
-, segments.date
+    campaign.end_date,
+    segments.date
 FROM campaign
 
 WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
@@ -326,7 +293,8 @@ WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
     ],
 )
 def test_insert_date(original_query, expected_query):
-    assert CustomQuery.insert_segments_date_expr(original_query, "1980-01-01", "2000-01-01") == expected_query
+    expected_query = re.sub(r"\s+", " ", expected_query.strip())
+    assert str(CustomQuery.insert_segments_date_expr(GAQL(original_query), "1980-01-01", "2000-01-01")) == expected_query
 
 
 def test_get_json_schema_parse_query(mock_fields_meta_data, customers):
