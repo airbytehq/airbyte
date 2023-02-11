@@ -94,16 +94,15 @@ public class RecordSchemaValidator {
   private void handleException(final RecordSchemaValidationException e,
                                final AirbyteStreamNameNamespacePair messageStream,
                                final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors) {
-    final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
-    if (exceptionWithCount == null) {
-      validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
-    } else {
-      final Integer currentCount = exceptionWithCount.getRight();
-      final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
-      final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream())
-          .collect(Collectors.toSet());
-      validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
-    }
+    validationErrors.compute(messageStream, (k, v) -> {
+      if (v == null) {
+        return new ImmutablePair<>(e.errorMessages, 1);
+      } else {
+        final var updatedErrorMessages = Stream.concat(v.getLeft().stream(), e.errorMessages.stream()).collect(Collectors.toSet());
+        final var updatedCount = v.getRight() + 1;
+        return new ImmutablePair<>(updatedErrorMessages, updatedCount);
+      }
+    });
   }
 
   /**
