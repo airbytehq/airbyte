@@ -26,11 +26,18 @@ class GAQL:
         flags=re.I | re.DOTALL | re.VERBOSE,
     )
 
+    REGEX_FIELD_NAME = re.compile(r"^[a-z][a-z0-9._]*$", re.I)
+
     def __init__(self, query):
         m = self.REGEX.match(query)
         if not m:
             raise Exception(f"incorrect GAQL query statement: {repr(query)}")
+
         self.FieldNames = [f.strip() for f in m.group("FieldNames").split(",")]
+        for field in self.FieldNames:
+            if not self.REGEX_FIELD_NAME.match(field):
+                raise Exception(f"incorrect GAQL query statement: {repr(query)}")
+
         self.ResourceName = m.group("ResourceName")
         self.WhereClause = m.group("WhereClause")
         if self.WhereClause:

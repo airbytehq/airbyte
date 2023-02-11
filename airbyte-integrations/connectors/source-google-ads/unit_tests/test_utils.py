@@ -76,3 +76,7 @@ def test_parse_GAQL_fail():
 
     with pytest.raises(Exception) as e:
         GAQL("SELECT field1, field2 FROM x_Table WHERE ")
+    with pytest.raises(Exception) as e:
+        GAQL("SELECT field1, , field2 FROM table")
+    with pytest.raises(Exception) as e:
+        GAQL("SELECT fie ld1, field2 FROM table")
