@@ -49,5 +49,6 @@ Please refer to the [getting started with the API](https://docs.talkdesk.com/doc
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
+| 0.1.1 | 2022-02-07 |[00000](https://github.com/airbytehq/airbyte/issues/00000) | Specified date formatting in specification
 | 0.1.0 | 2022-02-07 | | New Source: Talkdesk Explore
 | :--- | :--- | :--- | :--- |
