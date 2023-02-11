@@ -80,3 +80,37 @@ def test_parse_GAQL_fail():
         GAQL("SELECT field1, , field2 FROM table")
     with pytest.raises(Exception) as e:
         GAQL("SELECT fie ld1, field2 FROM table")
+
+
+@pytest.mark.parametrize(
+    "query, fields",
+    [
+        (
+            """
+SELECT
+  campaign.id,
+  campaign.name,
+  campaign.status,
+  metrics.impressions
+FROM campaign
+WHERE campaign.status = 'PAUSED'
+AND metrics.impressions > 100
+ORDER BY campaign.status
+    """,
+            ["campaign.id", "campaign.name", "campaign.status", "metrics.impressions"],
+        ),
+        (
+            """
+SELECT
+  campaign.accessible_bidding_strategy,
+  segments.ad_destination_type,
+  campaign.start_date,
+  campaign.end_date
+FROM campaign
+    """,
+            ["campaign.accessible_bidding_strategy", "segments.ad_destination_type", "campaign.start_date", "campaign.end_date"],
+        ),
+    ],
+)
+def test_get_query_fields(query, fields):
+    assert GAQL(query).FieldNames == fields
