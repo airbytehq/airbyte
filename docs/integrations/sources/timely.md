@@ -33,4 +33,5 @@ The Timely source connector supports the following [sync modes](https://docs.air
 
 | Version | Date       | Pull Request                                             | Subject         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.1   | 2023-02-11 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification |
 | 0.1.0   | 2022-06-22 | [13617](https://github.com/airbytehq/airbyte/pull/13617) | Initial release |
