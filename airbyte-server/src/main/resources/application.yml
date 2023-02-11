@@ -5,10 +5,6 @@ micronaut:
     authentication-provider-strategy: ALL
     enabled: ${API_AUTHORIZATION_ENABLED:false}
   server:
-    netty:
-      initial-buffer-size: ${NETTY_INITIAL_BUFFER_SIZE:128}
-      max-chunk-size: ${NETTY_MAX_CHUNK_SIZE:8192}
-      max-header-size: ${NETTY_MAX_HEADER_SIZE:8192}
     port: 8001
     cors:
       enabled: true
