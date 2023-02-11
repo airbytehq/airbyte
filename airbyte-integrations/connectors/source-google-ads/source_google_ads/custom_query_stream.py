@@ -58,7 +58,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
             "BOOLEAN": "boolean",
             "DATE": "string",
         }
-        fields = self.config["query"].FieldNames[:]
+        fields = list(self.config["query"].fields)
         fields.append(self.cursor_field)
         google_schema = self.google_ads_client.get_fields_metadata(fields)
 
@@ -97,11 +97,9 @@ class CustomQuery(IncrementalGoogleAdsStream):
         :param end_date end date for metric (inclusive)
         :return Modified query with date window condition included
         """
-        if "segments.date" not in query.FieldNames:
-            query.FieldNames.append("segments.date")
+        if "segments.date" not in query.fields:
+            query = query.append_field("segments.date")
         condition = f"segments.date BETWEEN '{start_date}' AND '{end_date}'"
-        if query.WhereClause:
-            query.WhereClause += " AND " + condition
-        else:
-            query.WhereClause = condition
-        return query
+        if query.where:
+            return query.set_where(query.where + " AND " + condition)
+        return query.set_where(condition)

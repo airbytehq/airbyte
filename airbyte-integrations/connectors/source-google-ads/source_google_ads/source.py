@@ -44,7 +44,7 @@ class SourceGoogleAds(AbstractSource):
         if config.get("end_date") == "":
             config.pop("end_date")
         for query in config.get("custom_queries", []):
-            query["query"] = GAQL(query["query"])
+            query["query"] = GAQL.parse(query["query"])
         return config
 
     @staticmethod
@@ -81,7 +81,7 @@ class SourceGoogleAds(AbstractSource):
 
     @staticmethod
     def is_metrics_in_custom_query(query: GAQL) -> bool:
-        for field in query.FieldNames:
+        for field in query.fields:
             if field.split(".")[0] == "metrics":
                 return True
         return False
@@ -103,7 +103,7 @@ class SourceGoogleAds(AbstractSource):
                             f"Metrics are not available for manager account {customer.id}. "
                             f"Please remove metrics fields in your custom query: {query}."
                         )
-                    if CustomQuery.cursor_field in query.FieldNames:
+                    if CustomQuery.cursor_field in query.fields:
                         return False, f"Custom query should not contain {CustomQuery.cursor_field}"
                     req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
                     response = google_api.send_request(str(req_q), customer_id=customer.id)

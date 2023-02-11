@@ -161,7 +161,7 @@ def test_streams_count(config, mock_account_info):
 )
 def test_metrics_in_custom_query(query, is_metrics_in_query):
     source = SourceGoogleAds()
-    assert source.is_metrics_in_custom_query(GAQL(query)) is is_metrics_in_query
+    assert source.is_metrics_in_custom_query(GAQL.parse(query)) is is_metrics_in_query
 
 
 @pytest.mark.parametrize(
@@ -187,7 +187,7 @@ def stream_instance(query, api_mock, **kwargs):
         api=api_mock,
         conversion_window_days=conversion_window_days,
         start_date=start_date,
-        config={"query": GAQL(query), "table_name": "whatever_table"},
+        config={"query": GAQL.parse(query), "table_name": "whatever_table"},
         **kwargs,
     )
     return instance
@@ -294,7 +294,7 @@ WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
 )
 def test_insert_date(original_query, expected_query):
     expected_query = re.sub(r"\s+", " ", expected_query.strip())
-    assert str(CustomQuery.insert_segments_date_expr(GAQL(original_query), "1980-01-01", "2000-01-01")) == expected_query
+    assert str(CustomQuery.insert_segments_date_expr(GAQL.parse(original_query), "1980-01-01", "2000-01-01")) == expected_query
 
 
 def test_get_json_schema_parse_query(mock_fields_meta_data, customers):
