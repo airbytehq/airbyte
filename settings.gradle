@@ -108,7 +108,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-bootloader'
     include ':airbyte-commons-server'
     include ':airbyte-config:specs'
-    include ':airbyte-connector-builder-server'
+//    include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
     include ':airbyte-metrics:reporter'
@@ -123,7 +123,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 
 include ':airbyte-integrations:bases:base'
 include ':airbyte-integrations:bases:base-java'
-include ':airbyte-integrations:connectors:source-5gb-benchmark'
 include ':airbyte-integrations:connectors:source-e2e-test'
 include ':airbyte-integrations:connectors:source-e2e-test-cloud'
 include ':airbyte-integrations:bases:standard-source-test'
