@@ -22,7 +22,6 @@ public class TestingSources extends BaseConnector implements Source {
 
   public enum TestingSourceType {
     CONTINUOUS_FEED,
-    // the following are legacy types
     EXCEPTION_AFTER_N,
     INFINITE_FEED
   }
