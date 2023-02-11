@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -340,6 +340,13 @@ public interface Configs {
    * @return LaunchDarkly API key as a string.
    */
   String getLaunchDarklyKey();
+
+  /**
+   * Get the type of feature flag client to use.
+   *
+   * @return
+   */
+  String getFeatureFlagClient();
 
   /**
    * Defines a default map of environment variables to use for any launched job containers. The
@@ -750,6 +757,10 @@ public interface Configs {
   boolean getApplyFieldSelection();
 
   String getFieldSelectionWorkspaces();
+
+  String getStrictComparisonNormalizationWorkspaces();
+
+  String getStrictComparisonNormalizationTag();
 
   enum TrackingStrategy {
     SEGMENT,
