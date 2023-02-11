@@ -1,0 +1,58 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/sftp-csv",
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supportsIncremental": true,
+  "supportsDBT": false,
+  "supportsNormalization": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination SFTP CSV",
+    "type": "object",
+    "required": ["username", "host"],
+    "additionalProperties": true,
+    "properties": {
+      "username": {
+        "title": "User",
+        "description": "Username to use to access the SFTP server.",
+        "type": "string",
+        "order": 0
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "private_key": {
+        "title": "Private key",
+        "description": "The private key.",
+        "type": "string",
+        "multiline": true,
+        "order": 2
+      },
+      "host": {
+        "title": "Host Address",
+        "description": "Hostname of the SFTP server.",
+        "type": "string",
+        "examples": ["www.host.com", "192.0.2.1"],
+        "order": 3
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of the SFTP server.",
+        "type": "integer",
+        "default": 22,
+        "examples": ["22"],
+        "order": 4
+      },
+      "destination_path": {
+        "title": "Destination path",
+        "type": "string",
+        "description": "Path to the directory where csv files will be written.",
+        "examples": ["/json_data"],
+        "order": 5
+      }
+    }
+  }
+}
