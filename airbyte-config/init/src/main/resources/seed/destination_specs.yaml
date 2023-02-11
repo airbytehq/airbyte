@@ -7180,7 +7180,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-databend:0.1.0"
+- dockerImage: "airbyte/destination-databend:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databend"
     connectionSpecification:
