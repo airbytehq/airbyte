@@ -126,7 +126,7 @@ services:
       bootloader:
         condition: service_completed_successfully
   server:
-    image: airbyte/server:${VERSION}
+    image: airbyte/server:0.40.31
     logging: *default-logging
     container_name: airbyte-server
     restart: unless-stopped
@@ -173,7 +173,7 @@ services:
       bootloader:
         condition: service_completed_successfully
   webapp:
-    image: airbyte/webapp:${VERSION}
+    image: airbyte/webapp:0.40.31
     logging: *default-logging
     container_name: airbyte-webapp
     restart: unless-stopped
@@ -247,15 +247,20 @@ services:
       - 80
     environment:
       - AIRBYTE_VERSION=${VERSION}
+      - CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_URL=${DATABASE_URL}
       - WEBAPP_URL=${WEBAPP_URL}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - MICRONAUT_ENVIRONMENTS=${CONNECTOR_BUILDER_SERVER_MICRONAUT_ENVIRONMENTS}
     networks:
       - airbyte_internal
     depends_on:
       bootloader:
         condition: service_completed_successfully
   airbyte-proxy:
-    image: airbyte/proxy:${VERSION}
+    image: airbyte/proxy:0.40.31
     container_name: airbyte-proxy
     restart: unless-stopped
     ports:

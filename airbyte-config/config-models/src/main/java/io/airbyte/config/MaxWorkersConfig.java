@@ -48,7 +48,7 @@ public class MaxWorkersConfig {
   }
 
   public int getMaxConnectorsWorkers() {
-    return maxNotifyWorkers;
+    return maxConnectorsWorkers;
   }
 
   @Override
@@ -59,6 +59,7 @@ public class MaxWorkersConfig {
         ", maxDiscoverWorkers=" + maxDiscoverWorkers +
         ", maxSyncWorkers=" + maxSyncWorkers +
         ", maxNotifyWorkers=" + maxNotifyWorkers +
+        ", maxConnectorsWorkers=" + maxConnectorsWorkers +
         '}';
   }
 

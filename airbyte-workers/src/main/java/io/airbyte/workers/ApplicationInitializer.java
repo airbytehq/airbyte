@@ -239,7 +239,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       registerDiscover(workerFactory, maxWorkersConfiguration);
     }
 
-    //FIXME: hide behind a flag
+    // FIXME: hide behind a flag
     registerConnectors(workerFactory, maxWorkersConfiguration);
 
     if (shouldRunSyncWorkflows) {
@@ -315,7 +315,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   }
 
   private void registerConnectors(final WorkerFactory factory,
-                                final MaxWorkersConfig maxWorkersConfig) {
+                                  final MaxWorkersConfig maxWorkersConfig) {
     final Set<String> taskQueues = getConnectorsTaskQueue();
     for (final String taskQueue : taskQueues) {
       final Worker worker =

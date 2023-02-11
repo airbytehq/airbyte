@@ -26,6 +26,10 @@ micronaut:
       sensitive: false
 
 airbyte:
+  connector-builder-server:
+    auto-upgrade-connectors: ${AUTO_UPGRADE_CONNECTORS_PROTOCOL:false} #fixme: add to env
+    migration-baseline-version: ${CONNECTOR_BUILDER_SERVER_MIGRATION_BASELINE_VERSION:0.29.0.001} #fixme add to env
+    run-migration-on-startup: ${RUN_DATABASE_MIGRATION_ON_STARTUP:true} #fixme add to env
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
   local:
     docker-mount: ${LOCAL_DOCKER_MOUNT:}
@@ -57,9 +61,31 @@ temporal:
     namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
   host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
   retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
-
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    maximum-pool-size: 5
+    minimum-idle: 0
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  jobs:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    maximum-pool-size: 5
+    minimum-idle: 0
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
 logger:
   levels:
     io.airbyte.bootloader: DEBUG
 # Uncomment to help resolve issues with conditional beans
-#    io.micronaut.context.condition: DEBUG
+    io.micronaut.context.condition: DEBUG

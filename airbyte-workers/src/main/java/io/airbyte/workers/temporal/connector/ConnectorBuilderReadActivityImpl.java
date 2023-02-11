@@ -93,8 +93,8 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
   @Override
   public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
                                 final StandardConnectorBuilderReadInput config) {
-    ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY, "docker_image_activity")); //FIXME
-
+    ApmTraceUtils.addTagsToTrace(
+        Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY, "docker_image_activity")); // FIXME
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
@@ -121,7 +121,7 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
               Optional.empty());
       final ConnectorConfigUpdater connectorConfigUpdater =
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi());
-      return new DefaultConnectorBuilderReadWorker(airbyteApiClient, processFactory, connectorConfigUpdater, streamFactory, jobId, "image_name");
+      return new DefaultConnectorBuilderReadWorker(airbyteApiClient, processFactory, connectorConfigUpdater, streamFactory, jobId);
     };
   }
 

@@ -1,13 +1,17 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.connectorbuilder.scheduler;
 
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobConnectorBuilderReadConfig;
 import io.airbyte.config.StandardConnectorBuilderReadOutput;
+import io.airbyte.connectorbuilder.temporal.TemporalClient;
 import io.airbyte.persistence.job.errorreporter.ConnectorJobReportingContext;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.tracker.JobTracker;
@@ -22,13 +26,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultSynchronousScheduler implements SynchronousScheduler {
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousScheduler.class);
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousScheduler.class);
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
   private final JobErrorReporter jobErrorReporter;
-  private final String taskQueue = TemporalJobType.CONNECTORS.name();
+  private final String taskQueue = TemporalJobType.CONNECTOR.name();
 
   public DefaultSynchronousScheduler(final TemporalClient temporalClient,
                                      final JobTracker jobTracker,
@@ -37,8 +41,10 @@ public class DefaultSynchronousScheduler implements SynchronousScheduler {
     this.jobTracker = jobTracker;
     this.jobErrorReporter = jobErrorReporter;
   }
+
   @Override
-  public SynchronousResponse<StandardConnectorBuilderReadOutput> createConnectorBuilderReadJob(String dockerImage) throws IOException {
+  public SynchronousResponse<StandardConnectorBuilderReadOutput> createConnectorBuilderReadJob(UUID workspaceID, String dockerImage)
+      throws IOException {
 
     final UUID jobId = UUID.randomUUID();
     final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
@@ -46,15 +52,17 @@ public class DefaultSynchronousScheduler implements SynchronousScheduler {
     final JobConnectorBuilderReadConfig config = new JobConnectorBuilderReadConfig()
         .withDockerImage(dockerImage);
 
+    LOGGER.info("createConnectorBuilderReadJob with" + workspaceID.toString());
+
     return execute(
         ConfigType.CONNECTOR_BUILDER_READ,
         jobReportingContext,
         () -> temporalClient.submitConnectorBuilderRead(jobId, 0, taskQueue, config),
         ConnectorJobOutput::getConnectorBuilderRead,
-        null); //FIXME: can workspace id be null?
+        workspaceID);
   }
 
-  //FIXME: copypasted
+  // FIXME: copypasted
   <T> SynchronousResponse<T> execute(final ConfigType configType,
                                      final ConnectorJobReportingContext jobContext,
                                      final Supplier<TemporalResponse<ConnectorJobOutput>> executor,
@@ -63,8 +71,10 @@ public class DefaultSynchronousScheduler implements SynchronousScheduler {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = jobContext.jobId();
     try {
+      LOGGER.info("submitted");
       track(jobId, configType, workspaceId, JobState.STARTED, null);
       final TemporalResponse<ConnectorJobOutput> temporalResponse = executor.get();
+      LOGGER.info("gotresponse");
       final Optional<ConnectorJobOutput> jobOutput = temporalResponse.getOutput();
       final T mappedOutput = jobOutput.map(outputMapper).orElse(null);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
@@ -97,11 +107,17 @@ public class DefaultSynchronousScheduler implements SynchronousScheduler {
                          final JobState jobState,
                          final T value) {
     switch (configType) {
-      case CONNECTOR_BUILDER_READ -> jobTracker.trackConnectorBuilderRead(
-          jobId,
-          workspaceId,
-          jobState,
-          (StandardConnectorBuilderReadOutput) value);
+      case CONNECTOR_BUILDER_READ -> {
+        LOGGER.info(jobId.toString());
+        LOGGER.info(workspaceId.toString());
+        LOGGER.info(jobState.toString());
+        LOGGER.info((String) value);
+        if (jobTracker != null) {
+          jobTracker.trackConnectorBuilderRead(jobId, workspaceId,
+              jobState, (StandardConnectorBuilderReadOutput) value);
+          LOGGER.info(jobTracker.toString());
+        }
+      }
       default -> throw new IllegalArgumentException(
           String.format("Jobs of type %s cannot be processed here. They should be consumed in the JobSubmitter.", configType));
     }
@@ -121,4 +137,5 @@ public class DefaultSynchronousScheduler implements SynchronousScheduler {
       }
     });
   }
+
 }

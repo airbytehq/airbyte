@@ -123,11 +123,16 @@ public class JobTracker {
   }
 
   public void trackConnectorBuilderRead(UUID jobId, UUID workspaceId, JobState jobState, StandardConnectorBuilderReadOutput value) {
+    System.out.println(workspaceId.toString());
+    System.out.printf(jobId.toString());
+    System.out.printf(jobState.toString());
+    System.out.println(value.toString());
     Exceptions.swallow(() -> {
-      final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(), ConfigType.CONNECTOR_BUILDER_READ);
+      final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(),
+          ConfigType.CONNECTOR_BUILDER_READ);
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
 
-      track(workspaceId, MoreMaps.merge(jobMetadata, stateMetadata));
+      track(workspaceId, MoreMaps.merge(jobMetadata, stateMetadata)); // FIXME
     });
   }
 
@@ -363,10 +368,9 @@ public class JobTracker {
   }
 
   /**
-   * The CheckConnection jobs (both source and destination) of the
-   * {@link io.airbyte.scheduler.client.SynchronousSchedulerClient} interface can have a successful
-   * job with a failed check. Because of this, tracking just the job attempt status does not capture
-   * the whole picture. The `check_connection_outcome` field tracks this.
+   * The CheckConnection jobs (both source and destination) of the interface can have a successful job
+   * with a failed check. Because of this, tracking just the job attempt status does not capture the
+   * whole picture. The `check_connection_outcome` field tracks this.
    */
   private Map<String, Object> generateCheckConnectionMetadata(final StandardCheckConnectionOutput output) {
     if (output == null) {

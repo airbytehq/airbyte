@@ -13,5 +13,5 @@ public enum TemporalJobType {
   CONNECTION_UPDATER,
   REPLICATE,
   NOTIFY,
-  CONNECTORS
+  CONNECTOR
 }

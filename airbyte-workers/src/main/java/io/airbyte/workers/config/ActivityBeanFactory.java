@@ -100,7 +100,7 @@ public class ActivityBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("connectorActivities")
   public List<Object> connectorActivities(
-      final ConnectorBuilderReadActivity connectorBuilderReadActivity) {
+                                          final ConnectorBuilderReadActivity connectorBuilderReadActivity) {
     return List.of(connectorBuilderReadActivity);
   }
 
@@ -141,6 +141,15 @@ public class ActivityBeanFactory {
   public ActivityOptions discoveryActivityOptions() {
     return ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofHours(2))
+        .setRetryOptions(TemporalUtils.NO_RETRY)
+        .build();
+  }
+
+  @Singleton
+  @Named("connectorBuilderReadActivityOptions")
+  public ActivityOptions connectorBuilderReadActivityOptions() {
+    return ActivityOptions.newBuilder()
+        .setScheduleToCloseTimeout(Duration.ofMinutes(1))
         .setRetryOptions(TemporalUtils.NO_RETRY)
         .build();
   }
