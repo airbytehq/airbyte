@@ -138,14 +138,13 @@ public class CatalogConverter {
         .cursorField(stream.getDefaultCursorField())
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(stream.getSourceDefinedPrimaryKey())
-        .selected(!suggestingStreams)
-        .suggested(true);
+        .selected(false)
+        .suggested(false);
 
     if (suggestingStreams) {
       if (suggestedStreams.contains(stream.getName())) {
         result.setSelected(true);
-      } else {
-        result.setSuggested(false);
+        result.setSuggested(true);
       }
     }
 
