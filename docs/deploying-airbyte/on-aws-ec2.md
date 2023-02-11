@@ -28,17 +28,28 @@ ssh -i $SSH_KEY ec2-user@$INSTANCE_IP # connect to the aws ec2 instance AMI and 
 
 2. To install Docker, run the following command in your SSH session on the instance terminal:
 
+Install with `yum`
 ``` bash
 sudo yum update -y
 sudo yum install -y docker
 sudo service docker start
 sudo usermod -a -G docker $USER
 ```
-
+Install with `apt`
+``` bash
+sudo apt update -y
+sudo apt install docker.io 
+``` 
 3. To install `docker-compose`, run the following command in your ssh session on the instance terminal:
 
+Install with `yum`
 ``` bash
 sudo yum install -y docker-compose-plugin
+docker compose version
+```
+Install with `apt`
+``` bash
+sudo apt install -y docker-compose
 docker compose version
 ```
 
