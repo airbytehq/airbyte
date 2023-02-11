@@ -12,9 +12,9 @@ import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.scheduling.ConnectorBuilderReadWorkflow;
-import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobConnectorBuilderReadConfig;
 import io.airbyte.config.StandardConnectorBuilderReadInput;
+import io.airbyte.config.StandardConnectorBuilderReadOutput;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.temporal.client.WorkflowClient;
@@ -58,10 +58,10 @@ public class TemporalClient {
     this.streamResetRecordsHelper = streamResetRecordsHelper;
   }
 
-  public TemporalResponse<ConnectorJobOutput> submitConnectorBuilderRead(final UUID jobId,
-                                                                         final int attempt,
-                                                                         final String taskQueue,
-                                                                         final JobConnectorBuilderReadConfig config) {
+  public TemporalResponse<StandardConnectorBuilderReadOutput> submitConnectorBuilderRead(final UUID jobId,
+                                                                                         final int attempt,
+                                                                                         final String taskQueue,
+                                                                                         final JobConnectorBuilderReadConfig config) {
     final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
     final StandardConnectorBuilderReadInput input = new StandardConnectorBuilderReadInput()
         .withDockerImage(config.getDockerImage());
@@ -85,8 +85,8 @@ public class TemporalClient {
     }
 
     boolean succeeded = exception == null;
-    if (succeeded && operationOutput instanceof ConnectorJobOutput) {
-      succeeded = getConnectorJobSucceeded((ConnectorJobOutput) operationOutput);
+    if (succeeded && operationOutput instanceof StandardConnectorBuilderReadOutput) {
+      succeeded = getConnectorJobSucceeded((StandardConnectorBuilderReadOutput) operationOutput);
     }
 
     final JobMetadata metadata = new JobMetadata(succeeded, logPath);
@@ -97,8 +97,9 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalWorkflowUtils.buildWorkflowOptionsWithTaskQueue(taskQueue));
   }
 
-  private boolean getConnectorJobSucceeded(final ConnectorJobOutput output) {
-    return output.getFailureReason() == null;
+  private boolean getConnectorJobSucceeded(final StandardConnectorBuilderReadOutput output) {
+    // return output.getFailureReason() == null; FIXME
+    return true;
   }
 
 }

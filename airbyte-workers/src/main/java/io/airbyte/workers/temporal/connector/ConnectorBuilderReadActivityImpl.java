@@ -19,8 +19,8 @@ import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardConnectorBuilderReadInput;
+import io.airbyte.config.StandardConnectorBuilderReadOutput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -91,14 +91,14 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
-  public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
-                                final StandardConnectorBuilderReadInput config) {
+  public StandardConnectorBuilderReadOutput run(final JobRunConfig jobRunConfig,
+                                                final StandardConnectorBuilderReadInput config) {
     ApmTraceUtils.addTagsToTrace(
         Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DOCKER_IMAGE_KEY, "docker_image_activity")); // FIXME
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    final TemporalAttemptExecution<StandardConnectorBuilderReadInput, ConnectorJobOutput> temporalAttemptExecution =
+    final TemporalAttemptExecution<StandardConnectorBuilderReadInput, StandardConnectorBuilderReadOutput> temporalAttemptExecution =
         new TemporalAttemptExecution<>(
             workspaceRoot,
             workerEnvironment,
@@ -114,7 +114,7 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
     return temporalAttemptExecution.get();
   }
 
-  private CheckedSupplier<Worker<StandardConnectorBuilderReadInput, ConnectorJobOutput>, Exception> getWorkerFactory(String jobId) {
+  private CheckedSupplier<Worker<StandardConnectorBuilderReadInput, StandardConnectorBuilderReadOutput>, Exception> getWorkerFactory(String jobId) {
     return () -> {
       final AirbyteStreamFactory streamFactory =
           new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, new Version("1.0.0"), Optional.empty(), // FIXME

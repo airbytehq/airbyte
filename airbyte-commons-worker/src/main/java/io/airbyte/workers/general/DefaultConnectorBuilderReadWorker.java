@@ -20,9 +20,6 @@ import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBod
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.Configs;
-import io.airbyte.config.ConnectorBuilderReadJobOutput;
-import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardConnectorBuilderReadInput;
@@ -83,7 +80,8 @@ public class DefaultConnectorBuilderReadWorker implements ConnectorBuilderReadWo
 
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
-  public ConnectorJobOutput run(final StandardConnectorBuilderReadInput connectorBuilderReadInput, final Path jobRoot) throws WorkerException {
+  public StandardConnectorBuilderReadOutput run(final StandardConnectorBuilderReadInput connectorBuilderReadInput, final Path jobRoot)
+      throws WorkerException {
     ApmTraceUtils.addTagsToTrace(generateTraceTags(connectorBuilderReadInput, jobRoot));
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, "image_name_from_worker")); // FIXME
@@ -109,11 +107,7 @@ public class DefaultConnectorBuilderReadWorker implements ConnectorBuilderReadWo
 
       final StandardConnectorBuilderReadOutput output = new StandardConnectorBuilderReadOutput()
           .withOutput(messagesByType.get(Type.RECORD).stream().findFirst().toString());
-
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput()
-          .withOutputType(OutputType.CONNECTOR_BUILDER_READ)
-          .withConnectorBuilderRead(output);
-      return jobOutput;
+      return output;
     } catch (final WorkerException e) {
       ApmTraceUtils.addExceptionToTrace(e);
       throw e;

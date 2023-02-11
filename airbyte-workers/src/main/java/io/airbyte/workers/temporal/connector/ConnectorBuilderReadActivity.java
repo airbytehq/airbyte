@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.connector;
 
-import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardConnectorBuilderReadInput;
+import io.airbyte.config.StandardConnectorBuilderReadOutput;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
@@ -14,7 +14,7 @@ import io.temporal.activity.ActivityMethod;
 public interface ConnectorBuilderReadActivity {
 
   @ActivityMethod
-  ConnectorJobOutput run(JobRunConfig jobRunConfig,
-                         StandardConnectorBuilderReadInput config);
+  StandardConnectorBuilderReadOutput run(JobRunConfig jobRunConfig,
+                                         StandardConnectorBuilderReadInput config);
 
 }

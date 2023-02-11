@@ -208,7 +208,7 @@ public class ConnectionManagerUtils {
     return connectionManagerWorkflow;
   }
 
-  public Optional<WorkflowState> getWorkflowState(final WorkflowClient client, final UUID connectionId) {
+  Optional<WorkflowState> getWorkflowState(final WorkflowClient client, final UUID connectionId) {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
           getConnectionManagerName(connectionId));
@@ -219,7 +219,7 @@ public class ConnectionManagerUtils {
     }
   }
 
-  public boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
+  boolean isWorkflowStateRunning(final WorkflowClient client, final UUID connectionId) {
     return getWorkflowState(client, connectionId).map(WorkflowState::isRunning).orElse(false);
   }
 

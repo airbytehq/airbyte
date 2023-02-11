@@ -15,7 +15,6 @@ import java.util.UUID;
 public class SynchronousJobMetadata {
 
   private final UUID id;
-  private final ConfigType configType;
   private final UUID configId;
 
   private final long createdAt;
@@ -27,14 +26,12 @@ public class SynchronousJobMetadata {
 
   public static SynchronousJobMetadata fromJobMetadata(final JobMetadata jobMetadata,
                                                        final UUID id,
-                                                       final ConfigType configType,
                                                        final UUID configId,
                                                        final boolean connectorConfigurationUpdated,
                                                        final long createdAt,
                                                        final long endedAt) {
     return new SynchronousJobMetadata(
         id,
-        configType,
         configId,
         createdAt,
         endedAt,
@@ -44,7 +41,6 @@ public class SynchronousJobMetadata {
   }
 
   public SynchronousJobMetadata(final UUID id,
-                                final ConfigType configType,
                                 final UUID configId,
                                 final long createdAt,
                                 final long endedAt,
@@ -52,7 +48,6 @@ public class SynchronousJobMetadata {
                                 final boolean connectorConfigurationUpdated,
                                 final Path logPath) {
     this.id = id;
-    this.configType = configType;
     this.configId = configId;
     this.createdAt = createdAt;
     this.endedAt = endedAt;
@@ -63,10 +58,6 @@ public class SynchronousJobMetadata {
 
   public UUID getId() {
     return id;
-  }
-
-  public ConfigType getConfigType() {
-    return configType;
   }
 
   public Optional<UUID> getConfigId() {
@@ -104,19 +95,18 @@ public class SynchronousJobMetadata {
     final SynchronousJobMetadata that = (SynchronousJobMetadata) o;
     return createdAt == that.createdAt && endedAt == that.endedAt && succeeded == that.succeeded
         && connectorConfigurationUpdated == that.connectorConfigurationUpdated && Objects.equals(id, that.id)
-        && configType == that.configType && Objects.equals(configId, that.configId) && Objects.equals(logPath, that.logPath);
+        && Objects.equals(configId, that.configId) && Objects.equals(logPath, that.logPath);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, configType, configId, createdAt, endedAt, succeeded, connectorConfigurationUpdated, logPath);
+    return Objects.hash(id, configId, createdAt, endedAt, succeeded, connectorConfigurationUpdated, logPath);
   }
 
   @Override
   public String toString() {
     return "SynchronousJobMetadata{" +
         "id=" + id +
-        ", configType=" + configType +
         ", configId=" + configId +
         ", createdAt=" + createdAt +
         ", endedAt=" + endedAt +
@@ -135,7 +125,6 @@ public class SynchronousJobMetadata {
 
     return new SynchronousJobMetadata(
         UUID.randomUUID(),
-        configType,
         configId,
         now,
         now,

@@ -124,7 +124,6 @@ public class WorkerUtils {
       case SPEC -> ConnectorCommand.SPEC;
       case CHECK_CONNECTION -> ConnectorCommand.CHECK;
       case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
-      case CONNECTOR_BUILDER_READ -> ConnectorCommand.CONNECTOR_BUILDER_READ;
     };
   }
 
