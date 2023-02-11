@@ -27,16 +27,10 @@ export const BuilderPrompt: React.FC<BuilderPromptProps> = ({ builderRoutePath }
       gap="md"
       ref={ref}
     >
-      <FlexContainer
-        direction="row"
-        justifyContent="flex-start"
-        alignItems="center"
-        gap="md"
-        className={styles.iconAndText}
-      >
+      <FlexContainer direction="row" justifyContent="flex-start" alignItems="center" gap="md">
         <BuilderPromptIcon className={styles.icon} />
-        <FlexContainer direction="column" className={styles.text} gap="sm">
-          <Heading as="h2" size="sm" className={styles.title}>
+        <FlexContainer direction="column" gap="sm">
+          <Heading as="h2" size="sm">
             <FormattedMessage id="connectorBuilder.builderPrompt.title" />
           </Heading>
           <Text size="sm" className={styles.description}>
@@ -44,12 +38,12 @@ export const BuilderPrompt: React.FC<BuilderPromptProps> = ({ builderRoutePath }
               id="connectorBuilder.builderPrompt.description"
               values={{
                 adjective: (
-                  <Text className={styles.adjective} bold gradient size="sm">
+                  <Text as="span" bold gradient size="sm">
                     <FormattedMessage id="connectorBuilder.builderPrompt.adjective" />
                   </Text>
                 ),
                 noun: (
-                  <Text className={styles.noun} bold size="sm">
+                  <Text as="span" bold size="sm">
                     <FormattedMessage id="connectorBuilder.builderPrompt.noun" />
                   </Text>
                 ),

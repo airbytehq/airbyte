@@ -1,31 +1,10 @@
 @use "scss/variables";
 @use "scss/colors";
 
-.iconAndText {
-  width: 100%;
-}
-
-.text {
-  flex: 1;
-}
-
-.title {
-  font-weight: 600;
-}
-
 .icon {
   flex-shrink: 0;
 }
 
 .description {
   color: colors.$grey-400;
-}
-
-.adjective {
-  display: inline;
-}
-
-.noun {
-  display: inline;
-  color: inherit;
 }

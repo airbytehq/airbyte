@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
+import { HeadTitle } from "components/common/HeadTitle";
 import {
   BuilderFormValues,
   DEFAULT_BUILDER_FORM_VALUES,
@@ -210,6 +211,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
 
 export const ConnectorBuilderLandingPage: React.FC = () => (
   <ConnectorBuilderLocalStorageProvider>
+    <HeadTitle titles={[{ id: "connectorBuilder.landingPage.title" }]} />
     <ConnectorBuilderLandingPageInner />
   </ConnectorBuilderLocalStorageProvider>
 );

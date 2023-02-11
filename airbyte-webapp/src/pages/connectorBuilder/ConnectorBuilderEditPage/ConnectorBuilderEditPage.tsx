@@ -3,6 +3,7 @@ import { Formik } from "formik";
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 
+import { HeadTitle } from "components/common/HeadTitle";
 import { Builder } from "components/connectorBuilder/Builder/Builder";
 import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
 import { builderFormValidationSchema, BuilderFormValues } from "components/connectorBuilder/types";
@@ -67,6 +68,7 @@ export const ConnectorBuilderEditPage: React.FC = () => (
   <ConnectorBuilderLocalStorageProvider>
     <ConnectorBuilderFormStateProvider>
       <ConnectorBuilderTestStateProvider>
+        <HeadTitle titles={[{ id: "connectorBuilder.editPage.title" }]} />
         <ConnectorBuilderEditPageInner />
       </ConnectorBuilderTestStateProvider>
     </ConnectorBuilderFormStateProvider>
