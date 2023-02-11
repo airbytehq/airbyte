@@ -49,6 +49,7 @@ Please read [How to get your APIs Token and Key](https://developer.atlassian.com
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.7 | 2023-02-11 | [00000](https://github.com/airbytehq/airbyte/pull/0000) |Specified date formatting in specification |
 | 0.1.6 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Updated fields in source-connector specifications |
 | 0.1.3 | 2021-11-25 | [8183](https://github.com/airbytehq/airbyte/pull/8183) | Enable specifying board ids in configuration |
 | 0.1.2 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
