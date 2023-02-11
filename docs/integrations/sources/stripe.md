@@ -82,7 +82,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.2   | 2023-02-11 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification                                                     |
+| 1.0.2   | 2023-02-11 | [22866](https://github.com/airbytehq/airbyte/pull/22866) | Specified date formatting in specification                                                     |
 | 1.0.0   | 2023-01-25 | [21858](https://github.com/airbytehq/airbyte/pull/21858) | Update the `Subscriptions` and `Invoices` stream schemas                                                                                             |
 | 0.1.40  | 2022-10-20 | [18228](https://github.com/airbytehq/airbyte/pull/18228) | Update the `Payment Intents` stream schema                                                                                                           |
 | 0.1.39  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                                                                        |
