@@ -3050,6 +3050,134 @@
     },
     {
       "stream": {
+        "name": "early_fraud_warnings",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": ["null", "string"]
+            },
+            "object": {
+              "type": ["null", "string"]
+            },
+            "url": {
+              "type": ["null", "string"]
+            },
+            "has_more": {
+              "type": ["boolean", "null"]
+            },
+            "data": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "object": {
+                    "type": "string"
+                  },
+                  "actionable": {
+                    "type": "boolean"
+                  },
+                  "charge": {
+                    "type": "string"
+                  },
+                  "created": {
+                    "type": "number"
+                  },
+                  "fraud_type": {
+                    "type": "string"
+                  },
+                  "livemode": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "object",
+                  "actionable",
+                  "charge",
+                  "created",
+                  "fraud_type",
+                  "livemode"
+                ]
+              }
+            }
+          },
+          "required": ["object", "url", "has_more", "data"]
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["created"]
+    },
+    {
+      "stream": {
+        "name": "early_fraud_warnings_with_id",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$id": "#root/id",
+              "title": "Id",
+              "type": ["null", "string"],
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "object": {
+              "$id": "#root/object",
+              "title": "Object",
+              "type": ["null", "string"],
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "actionable": {
+              "$id": "#root/actionable",
+              "title": "Actionable",
+              "type": ["null", "string", "boolean"],
+              "default": true
+            },
+            "charge": {
+              "$id": "#root/charge",
+              "title": "Charge",
+              "type": ["null", "string"],
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "created": {
+              "$id": "#root/created",
+              "title": "Created",
+              "type": ["null", "string", "integer"],
+              "default": 0
+            },
+            "fraud_type": {
+              "$id": "#root/fraud_type",
+              "title": "Fraud_type",
+              "type": ["null", "string"],
+              "default": "",
+              "pattern": "^.*$"
+            },
+            "livemode": {
+              "$id": "#root/livemode",
+              "title": "Livemode",
+              "type": ["null", "string", "boolean"],
+              "default": true
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "plans",
         "json_schema": {
           "type": ["null", "object", "string"],

@@ -180,7 +180,6 @@ class BalanceTransactions(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/balance_transactions/list
     """
-
     cursor_field = "created"
     name = "balance_transactions"
 
@@ -654,3 +653,30 @@ class ExternalAccountCards(ExternalAccount):
     """
 
     object = "card"
+
+
+class EarlyFraudWarnings(IncrementalStripeStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings
+    """
+
+    cursor_field = "created"
+
+    def path(self, **kwargs):
+        return "radar/early_fraud_warnings"
+
+
+class EarlyFraudWarningsWithId(StripeSubStream):
+    """
+    API docs: https://stripe.com/docs/api/radar/early_fraud_warnings/retrieve
+    """
+
+    name = "early_fraud_warnings"
+
+    parent = EarlyFraudWarnings
+    parent_id: str = "fraud_id"
+    sub_items_attr = "data"
+    add_parent_id = True
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"radar/early_fraud_warnings/{stream_slice[self.parent_id]}/"
