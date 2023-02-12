@@ -237,8 +237,14 @@ public class KubePodProcess implements KubePod {
       if (System.getenv("DD_DOGSTATSD_PORT") != null) {
         envVars.add(new EnvVar("DD_DOGSTATSD_PORT", System.getenv("DD_DOGSTATSD_PORT"), null));
       }
-      envVars = envVars.stream().filter(KubePodProcess::filterDdService).toList();
+//      envVars = envVars.stream().filter(KubePodProcess::filterDdService).toList();
       addServerNameAndVersion(image, envVars);
+//      String[] imageNameAndVersion = image.split(":");
+//      int expectedCount = 2;
+//      if (imageNameAndVersion.length == expectedCount) {
+//        envVars.add(new EnvVar("DD_SERVICE", imageNameAndVersion[0], null));
+//        envVars.add(new EnvVar("DD_VERSION", imageNameAndVersion[1], null));
+//      }
 
     }
 
