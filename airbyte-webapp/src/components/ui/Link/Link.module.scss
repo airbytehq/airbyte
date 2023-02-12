@@ -1,0 +1,6 @@
+@use "scss/colors";
+
+.link {
+  color: colors.$grey-300;
+  text-underline-offset: 2px;
+}
