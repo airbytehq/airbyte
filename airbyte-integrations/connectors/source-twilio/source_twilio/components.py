@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 
 @dataclass
-class TwilioCartesianProductStreamSlicer(CartesianProductStreamSlicer):
+class NestedStateCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     def __post_init__(self, options: Mapping[str, Any]):
         self._cursor = {}
         self._options = options

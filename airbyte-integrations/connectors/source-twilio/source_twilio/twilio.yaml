@@ -213,7 +213,7 @@ definitions:
           $ref: "*ref(definitions.boundary_request_parameters)"
       stream_slicer:
         type: CustomStreamSlicer
-        class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
+        class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
         stream_slicers:
           - $ref: "*ref(definitions.accounts_slicer)"
           - $ref: "*ref(definitions.datetime_slicer)"
@@ -340,7 +340,7 @@ definitions:
         path: "/2010-04-01/Accounts/{{ stream_slice.record.sid }}/Usage/Records/Daily.json"
       stream_slicer:
         type: CustomStreamSlicer
-        class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
+        class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
         stream_slicers:
           - $ref: "*ref(definitions.accounts_slicer)"
           - $ref: "*ref(definitions.datetime_slicer)"
@@ -428,7 +428,7 @@ definitions:
         path: "{{ stream_slice.record.subresource_uris.media }}"
       stream_slicer:
         type: CustomStreamSlicer
-        class_name: source_twilio.components.TwilioCartesianProductStreamSlicer
+        class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
         stream_slicers:
           - type: SubstreamSlicer
             parent_stream_configs:
