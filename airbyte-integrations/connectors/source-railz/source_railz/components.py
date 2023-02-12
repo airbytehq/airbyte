@@ -88,6 +88,9 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
 @dataclass
 class NestedStateCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     """
+    [Low-Code Custom Component] NestedStateCartesianProductStreamSlicer
+    https://github.com/airbytehq/airbyte/issues/22873
+
     Some streams require support of nested state:
     {
       "accounting_transactions": {
