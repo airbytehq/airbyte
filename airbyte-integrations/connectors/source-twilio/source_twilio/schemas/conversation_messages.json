@@ -1,0 +1,180 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "object",
+    "properties": {
+      "date_created" : {},
+      "meta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number"
+          },
+          "page_size": {
+            "type": "number"
+          },
+          "first_page_url": {
+            "type": "string"
+          },
+          "previous_page_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "next_page_url": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "page",
+          "page_size",
+          "first_page_url",
+          "previous_page_url",
+          "url",
+          "next_page_url",
+          "key"
+        ]
+      },
+      "messages": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "sid": {
+              "type": "string"
+            },
+            "account_sid": {
+              "type": "string"
+            },
+            "conversation_sid": {
+              "type": "string"
+            },
+            "body": {
+              "type": "string"
+            },
+            "media": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "sid": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "number"
+                  },
+                  "content_type": {
+                    "type": "string"
+                  },
+                  "filename": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sid",
+                  "size",
+                  "content_type",
+                  "filename"
+                ]
+              }
+            },
+            "author": {
+              "type": "string"
+            },
+            "participant_sid": {
+              "type": "string"
+            },
+            "attributes": {
+              "type": "object",
+              "properties": {
+                "importance": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "importance"
+              ]
+            },
+            "date_created": {
+              "type": "string"
+            },
+            "date_updated": {
+              "type": "string"
+            },
+            "index": {
+              "type": "number"
+            },
+            "delivery": {
+              "type": "object",
+              "properties": {
+                "total": {
+                  "type": "number"
+                },
+                "sent": {
+                  "type": "string"
+                },
+                "delivered": {
+                  "type": "string"
+                },
+                "read": {
+                  "type": "string"
+                },
+                "failed": {
+                  "type": "string"
+                },
+                "undelivered": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "total",
+                "sent",
+                "delivered",
+                "read",
+                "failed",
+                "undelivered"
+              ]
+            },
+            "content_sid": {},
+            "url": {
+              "type": "string"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "delivery_receipts": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "delivery_receipts"
+              ]
+            }
+          },
+          "required": [
+            "sid",
+            "account_sid",
+            "conversation_sid",
+            "author",
+            "participant_sid",
+            "attributes",
+            "date_created",
+            "date_updated",
+            "index",
+            "delivery",
+            "content_sid",
+            "url",
+            "links"
+          ]
+        }
+      }
+    },
+    "required": [
+      "meta",
+      "messages"
+    ]
+  }

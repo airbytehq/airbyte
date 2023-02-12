@@ -22,26 +22,28 @@ acceptance_tests:
           # TODO: SAT should be able to exclude expected records validation on the stream > field level
           # to avoid exposures such as `auth_token`
           # reference: https://github.com/airbytehq/airbyte/pull/20430
-      - name: "accounts"
-        bypass_reason: "expected records could not be provided without field bypassing, skipping for now. Read #TODO above."
-      - name: "alerts"
-        bypass_reason: "alerts are transient - they emerge and disappear from time to time"
-      - name: "dependent_phone_numbers"
-        bypass_reason: "stream not filled yet"
-      - name: "conference_participants"
-        bypass_reason: "stream not filled yet"
-      - name: "keys"
-        bypass_reason: "stream not filled yet"
-      - name: "available_phone_numbers_local"
-        bypass_reason: "very volatile data"
-      - name: "available_phone_numbers_mobile"
-        bypass_reason: "very volatile data"
-      - name: "available_phone_numbers_toll_free"
-        bypass_reason: "very volatile data"
-      - name: "usage_records"
-        bypass_reason: "very volatile data"
-      timeout_seconds: 600
-      fail_on_extra_columns: false
+          - name: "accounts"
+            bypass_reason: "expected records could not be provided without field bypassing, skipping for now. Read #TODO above."
+            #
+          - name: "alerts"
+            bypass_reason: "alerts are transient - they emerge and disappear from time to time"
+          - name: "dependent_phone_numbers"
+            bypass_reason: "stream not filled yet"
+          - name: "conference_participants"
+            bypass_reason: "stream not filled yet"
+          - name: "keys"
+            bypass_reason: "stream not filled yet"
+          - name: "conversation_messages"
+            bypass_reason: "stream not filled yet"
+          - name: "available_phone_numbers_local"
+            bypass_reason: "very volatile data"
+          - name: "available_phone_numbers_mobile"
+            bypass_reason: "very volatile data"
+          - name: "available_phone_numbers_toll_free"
+            bypass_reason: "very volatile data"
+          - name: "usage_records"
+            bypass_reason: "very volatile data"
+        timeout_seconds: 600
   incremental:
     tests:
     - config_path: "secrets/config.json"
