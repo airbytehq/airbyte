@@ -277,9 +277,9 @@ public class KubePodProcess implements KubePod {
     }
   }
 
-  private static boolean filterDdService(EnvVar envVar) {
-    return !"DD_SERVICE".equals(envVar.getName());
-  }
+//  private static boolean filterDdService(EnvVar envVar) {
+//    return !"DD_SERVICE".equals(envVar.getName());
+//  }
 
   // private static boolean isConnectorNeedDatadogSupport(String image, Map.Entry<String, String>
   // entry) {
