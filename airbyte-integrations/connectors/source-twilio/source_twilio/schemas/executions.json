@@ -1,0 +1,113 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "object",
+    "properties": {
+      "meta": {
+        "type": "object",
+        "properties": {
+          "previous_page_url": {
+            "type": "string"
+          },
+          "next_page_url": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "page": {
+            "type": "number"
+          },
+          "first_page_url": {
+            "type": "string"
+          },
+          "page_size": {
+            "type": "number"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "previous_page_url",
+          "next_page_url",
+          "url",
+          "page",
+          "first_page_url",
+          "page_size",
+          "key"
+        ]
+      },
+      "date_created": {},
+      "executions": {
+        "type": ["array", "null"],
+        "items": {
+          "type": "object",
+          "properties": {
+            "sid": {
+              "type": "string"
+            },
+            "account_sid": {
+              "type": "string"
+            },
+            "flow_sid": {
+              "type": "string"
+            },
+            "contact_sid": {
+              "type": "string"
+            },
+            "contact_channel_address": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "context": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            },
+            "date_created": {
+              "type": "string"
+            },
+            "date_updated": {},
+            "url": {
+              "type": "string"
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "steps": {
+                  "type": "string"
+                },
+                "execution_context": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "steps",
+                "execution_context"
+              ]
+            }
+          },
+          "required": [
+            "sid",
+            "account_sid",
+            "flow_sid",
+            "contact_sid",
+            "contact_channel_address",
+            "status",
+            "context",
+            "date_created",
+            "date_updated",
+            "url",
+            "links"
+          ]
+        }
+      }
+    },
+    "required": [
+      "meta",
+      "executions"
+    ]
+  }

@@ -39,6 +39,8 @@ acceptance_tests:
             bypass_reason: "very volatile data"
           - name: "available_phone_numbers_toll_free"
             bypass_reason: "very volatile data"
+          - name: "executions"
+            bypass_reason: "very volatile data"
           - name: "usage_records"
             bypass_reason: "very volatile data"
         timeout_seconds: 600
@@ -49,7 +51,7 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 3600
-      - config_path: "secrets/config_with_lookback.json"
+      - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"

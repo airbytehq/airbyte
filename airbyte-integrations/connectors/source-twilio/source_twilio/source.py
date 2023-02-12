@@ -24,6 +24,7 @@ from source_twilio.streams import (
     ConferenceParticipants,
     Conferences,
     DependentPhoneNumbers,
+    Executions,
     IncomingPhoneNumbers,
     Keys,
     MessageMedia,
@@ -71,6 +72,7 @@ class SourceTwilio(AbstractSource):
             "lookback_window": config.get("lookback_window", 0),
             "slice_step_map": config.get("slice_step_map", {}),
         }
+        execution_kwargs = {"authenticator": auth}
 
         # Fix for `Date range specified in query is partially or entirely outside of retention window of 400 days`
         # See: https://app.zenhub.com/workspaces/python-connectors-6262f8b593bb82001df56c65/issues/airbytehq/airbyte/10418
@@ -93,6 +95,7 @@ class SourceTwilio(AbstractSource):
             ConferenceParticipants(**full_refresh_stream_kwargs),
             Conferences(**incremental_stream_kwargs),
             DependentPhoneNumbers(**full_refresh_stream_kwargs),
+            Executions(**execution_kwargs),
             IncomingPhoneNumbers(**full_refresh_stream_kwargs),
             Keys(**full_refresh_stream_kwargs),
             MessageMedia(**incremental_stream_kwargs_message_stream),

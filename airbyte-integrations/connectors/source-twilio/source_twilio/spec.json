@@ -21,6 +21,11 @@
         "type": "string",
         "order": 2
       },
+      "flow_sid": {
+        "title": "Flow_sid",
+        "type": "string",
+        "description": "Flow Sid for execution stream"
+      },
       "start_date": {
         "title": "Replication Start Date",
         "description": "UTC date and time in the format 2020-10-01T00:00:00Z. Any data before this date will not be replicated.",

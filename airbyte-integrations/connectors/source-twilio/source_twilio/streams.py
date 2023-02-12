@@ -22,6 +22,7 @@ from requests.auth import AuthBase
 TWILIO_API_URL_BASE = "https://api.twilio.com"
 TWILIO_API_URL_BASE_VERSIONED = f"{TWILIO_API_URL_BASE}/2010-04-01/"
 TWILIO_MONITOR_URL_BASE = "https://monitor.twilio.com/v1/"
+TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 
 
 class TwilioStream(HttpStream, ABC):
@@ -397,6 +398,26 @@ class ConferenceParticipants(TwilioNestedStream):
     primary_key = ["account_sid", "conference_sid"]
     parent_stream = Conferences
     data_field = "participants"
+
+
+class Executions(IncrementalTwilioStream, TwilioNestedStream):
+    """
+    https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
+    """
+
+    parent_stream = Accounts
+    lower_boundary_filter_field = "DateCreatedFrom"
+    upper_boundary_filter_field = "DateCreatedTo"
+    cursor_field = "date_created"
+    time_filter_template = "YYYY-MM-DDThh:mm:ss-hh:mm"
+    primary_key = None
+    url_base = TWILIO_STUDIO_API_BASE
+    uri_from_subresource = False
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
+        return f"Flows/{stream_slice['flow_sid']}/Executions"
+    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {"flow_sid": record["executions"]["flow_sid"]}
 
 
 class OutgoingCallerIds(TwilioNestedStream):
