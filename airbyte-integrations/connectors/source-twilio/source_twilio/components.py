@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -12,6 +12,20 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 @dataclass
 class NestedStateCartesianProductStreamSlicer(CartesianProductStreamSlicer):
+    """
+    [Low-Code Custom Component] NestedStateCartesianProductStreamSlicer
+    https://github.com/airbytehq/airbyte/issues/22873
+
+    Some streams require support of nested state:
+    {
+      "recordings": {
+        "account_id": {
+          "date_created": "2023-01-19T23:30:52Z"
+        }
+      }
+    }
+    """
+
     def __post_init__(self, options: Mapping[str, Any]):
         self._cursor = {}
         self._options = options
