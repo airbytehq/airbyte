@@ -12,7 +12,7 @@ from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import today
-from source_google_ads.custom_query_stream import CustomQuery
+from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import AdGroupAdReport, AdGroupLabels, ServiceAccounts, chunk_date_range
@@ -183,7 +183,7 @@ def test_updated_state(stream_mock, latest_record, current_state, expected_state
 def stream_instance(query, api_mock, **kwargs):
     start_date = "2021-03-04"
     conversion_window_days = 14
-    instance = CustomQuery(
+    instance = IncrementalCustomQuery(
         api=api_mock,
         conversion_window_days=conversion_window_days,
         start_date=start_date,
@@ -294,7 +294,7 @@ WHERE segments.date BETWEEN '1980-01-01' AND '2000-01-01'
 )
 def test_insert_date(original_query, expected_query):
     expected_query = re.sub(r"\s+", " ", expected_query.strip())
-    assert str(CustomQuery.insert_segments_date_expr(GAQL.parse(original_query), "1980-01-01", "2000-01-01")) == expected_query
+    assert str(IncrementalCustomQuery.insert_segments_date_expr(GAQL.parse(original_query), "1980-01-01", "2000-01-01")) == expected_query
 
 
 def test_get_json_schema_parse_query(mock_fields_meta_data, customers):

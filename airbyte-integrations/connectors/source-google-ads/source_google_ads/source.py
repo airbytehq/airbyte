@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 from pendulum import parse, today
 
-from .custom_query_stream import CustomQuery
+from .custom_query_stream import IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import Customer
 from .streams import (
@@ -103,9 +103,9 @@ class SourceGoogleAds(AbstractSource):
                             f"Metrics are not available for manager account {customer.id}. "
                             f"Please remove metrics fields in your custom query: {query}."
                         )
-                    if CustomQuery.cursor_field in query.fields:
-                        return False, f"Custom query should not contain {CustomQuery.cursor_field}"
-                    req_q = CustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    if IncrementalCustomQuery.cursor_field in query.fields:
+                        return False, f"Custom query should not contain {IncrementalCustomQuery.cursor_field}"
+                    req_q = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
                     response = google_api.send_request(str(req_q), customer_id=customer.id)
                     # iterate over the response otherwise exceptions will not be raised!
                     for _ in response:
@@ -152,7 +152,7 @@ class SourceGoogleAds(AbstractSource):
             query = single_query_config["query"]
             if self.is_metrics_in_custom_query(query):
                 if non_manager_accounts:
-                    streams.append(CustomQuery(config=single_query_config, **non_manager_incremental_config))
+                    streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
                 continue
-            streams.append(CustomQuery(config=single_query_config, **incremental_config))
+            streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
         return streams

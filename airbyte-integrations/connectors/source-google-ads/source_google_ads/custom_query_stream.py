@@ -9,7 +9,7 @@ from .streams import IncrementalGoogleAdsStream
 from .utils import GAQL
 
 
-class CustomQuery(IncrementalGoogleAdsStream):
+class CustomQueryMixin:
     def __init__(self, config, **kwargs):
         self.config = config
         super().__init__(**kwargs)
@@ -27,11 +27,6 @@ class CustomQuery(IncrementalGoogleAdsStream):
     @property
     def name(self):
         return self.config["table_name"]
-
-    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        start_date, end_date = stream_slice["start_date"], stream_slice["end_date"]
-        query = self.insert_segments_date_expr(self.config["query"], start_date, end_date)
-        return str(query)
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
     # responses, caching playing crucial role for performance here.
@@ -87,6 +82,13 @@ class CustomQuery(IncrementalGoogleAdsStream):
             local_json_schema["properties"][field] = field_value
 
         return local_json_schema
+
+
+class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        start_date, end_date = stream_slice["start_date"], stream_slice["end_date"]
+        query = self.insert_segments_date_expr(self.config["query"], start_date, end_date)
+        return str(query)
 
     @staticmethod
     def insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
