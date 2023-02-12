@@ -22,6 +22,9 @@ from isodate import Duration, parse_duration
 @dataclass
 class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
     """
+    [Low-Code Custom Component] ShortLivedTokenAuthenticator
+    https://github.com/airbytehq/airbyte/issues/22872
+
     https://docs.railz.ai/reference/authentication
     """
 
