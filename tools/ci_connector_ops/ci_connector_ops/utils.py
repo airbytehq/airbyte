@@ -1,22 +1,16 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 
 from dataclasses import dataclass
 import logging
 from pathlib import Path
 from typing import Dict, Optional, Set, Tuple, List
-import os
 import git
 import requests
 import yaml
 
-# ensure we are at the repository root
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-os.chdir('../../..')
-
-AIRBYTE_REPO = git.Repo(".")
+AIRBYTE_REPO = git.Repo(search_parent_directories=True)
 DIFFED_BRANCH = "origin/master"
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
@@ -27,14 +21,11 @@ SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/sour
 DESTINATION_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
 DEFINITIONS_FILE_PATH = {"source": SOURCE_DEFINITIONS_FILE_PATH, "destination": DESTINATION_DEFINITIONS_FILE_PATH}
 
-
 def download_catalog(catalog_url):
     response = requests.get(catalog_url)
     return response.json()
 
-
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
-
 
 class ConnectorInvalidNameError(Exception):
     pass
@@ -48,7 +39,6 @@ def read_definitions(definitions_file_path: str) -> Dict:
 
 def get_connector_name_from_path(path):
     return path.split("/")[2]
-
 
 def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[str]:
     """Retrieve a list of connector names for which the acceptance_test_config file was changed in the current branch (compared to master).

@@ -1,7 +1,7 @@
 # CDK and Connector Acceptance Tests
 /airbyte-cdk/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
+/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 
 # Oauth
 /airbyte-oauth/ @airbytehq/connector-operations
