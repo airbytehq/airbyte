@@ -23,7 +23,9 @@ public class TestingSources extends BaseConnector implements Source {
   public enum TestingSourceType {
     CONTINUOUS_FEED,
     EXCEPTION_AFTER_N,
-    INFINITE_FEED
+    INFINITE_FEED,
+
+    BENCHMARK
   }
 
   public TestingSources() {
@@ -31,6 +33,7 @@ public class TestingSources extends BaseConnector implements Source {
         .put(TestingSourceType.CONTINUOUS_FEED, new ContinuousFeedSource())
         .put(TestingSourceType.EXCEPTION_AFTER_N, new LegacyExceptionAfterNSource())
         .put(TestingSourceType.INFINITE_FEED, new LegacyInfiniteFeedSource())
+        .put(TestingSourceType.BENCHMARK, new BenchmarkSource())
         .build());
   }
 

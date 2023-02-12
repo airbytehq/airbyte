@@ -5,14 +5,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "E2E Test Source Spec",
     "additionalProperties": true,
+    "type": "object",
     "oneOf": [
       {
         "title" : "Legacy Infinite Feed",
+        "description" : "This mode is used for Platform acceptance tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will emit messages infinitely.",
         "required" : [
           "type",
           "max_records"
         ],
-        "description" : "This mode is used for Platform accpetance tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will emit messages infinitely.",
+        "type": "object",
         "additionalProperties" : true,
         "properties" : {
           "type" : {
@@ -31,15 +33,15 @@
             "type" : "integer"
           }
         }
-      }
-    ,
+      },
       {
         "title" : "Legacy Exception After N",
+        "description" : "This mode is used for Platform acceptance tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will throw an exception after N messages.",
         "required" : [
           "type",
           "throw_after_n_records"
         ],
-        "description" : "This mode is used for Platform acceptance tests. The catalog has one \"data\" stream, which has one string field \"column1\". This mode will throw an exception after N messages.",
+        "type": "object",
         "additionalProperties" : true,
         "properties" : {
           "type" : {
@@ -109,6 +111,7 @@
               {
                 "title" : "Single Schema",
                 "description" : "A catalog with one or multiple streams that share the same schema.",
+                "type" : "object",
                 "required" : [
                   "type",
                   "stream_name",
@@ -144,6 +147,7 @@
               },
               {
                 "title" : "Multi Schema",
+                "type" : "object",
                 "description" : "A catalog with multiple data streams, each with a different schema.",
                 "required" : [
                   "type",
@@ -160,6 +164,69 @@
                     "description" : "A Json object specifying multiple data streams and their schemas. Each key in this object is one stream name. Each value is the schema for that stream. The schema should be compatible with <a href=\"https://json-schema.org/draft-07/json-schema-release-notes.html\">draft-07</a>. See <a href=\"https://cswr.github.io/JsonSchema/spec/introduction/\">this doc</a> for examples.",
                     "type" : "string",
                     "default" : "{ \"stream1\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"string\" } } }, \"stream2\": { \"type\": \"object\", \"properties\": { \"field1\": { \"type\": \"boolean\" } } } }"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "title" : "Benchmark",
+        "description" : "This mode is used for speed benchmarks. Specifically, it should be used for testing the throughput of the platform and destination. It optimizes for emitting records very quickly, so that it should never be the bottleneck.",
+        "type": "object",
+        "required" : [
+          "type",
+          "schema",
+          "terminationCondition"
+        ],
+        "additionalProperties" : true,
+        "properties" : {
+          "type" : {
+            "type" : "string",
+            "const" : "BENCHMARK",
+            "default" : "BENCHMARK"
+          },
+          "schema": {
+            "title": "Schema",
+            "description": "schema of the data in the benchmark.",
+            "type": "string",
+            "enum":[
+              "FIVE_STRING_COLUMNS"
+            ]
+          },
+          "terminationCondition": {
+            "title": "Termination Condition",
+            "description": "when does the benchmark stop?",
+            "type": "object",
+            "oneOf": [
+              {
+                "title": "max records",
+                "type": "object",
+                "required": ["type","max"],
+                "properties": {
+                  "type" : {
+                    "type" : "string",
+                    "const" : "MAX_RECORDS",
+                    "default" : "MAX_RECORDS"
+                  },
+                  "max": {
+                    "type": "number"
+                  }
+                }
+              },
+              {
+                "title" : "max bytes",
+                "type" : "object",
+                "required": ["type","max"],
+                "properties" : {
+                  "type" : {
+                    "type" : "string",
+                    "const" : "MAX_BYTES",
+                    "default" : "MAX_BYTES"
+                  },
+                  "max" : {
+                    "type" : "number"
                   }
                 }
               }
