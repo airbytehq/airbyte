@@ -156,7 +156,7 @@ definitions:
             endDate: "{{ format_datetime(stream_slice.end_time, '%Y-%m-%d') }}"
       stream_slicer:
         type: CustomStreamSlicer
-        class_name: source_railz.components.RailzCartesianProductStreamSlicer
+        class_name: source_railz.components.NestedStateCartesianProductStreamSlicer
         stream_slicers:
           - type: SubstreamSlicer
             parent_stream_configs:

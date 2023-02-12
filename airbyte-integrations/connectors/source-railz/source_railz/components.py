@@ -86,7 +86,7 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
 
 
 @dataclass
-class RailzCartesianProductStreamSlicer(CartesianProductStreamSlicer):
+class NestedStateCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     """
     Some streams require support of nested state:
     {
