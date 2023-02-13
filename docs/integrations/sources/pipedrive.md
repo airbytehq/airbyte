@@ -87,7 +87,7 @@ See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
-| 0.1.14  | 2023-02-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification                                     |
+| 0.1.14  | 2023-02-13 | [22914](https://github.com/airbytehq/airbyte/pull/22914) | Specified date formatting in specification                                     |
 | 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                    |
 | 0.1.12  | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas                           |
 | 0.1.10  | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields |
