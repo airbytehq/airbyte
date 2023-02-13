@@ -152,7 +152,7 @@ export const ScheduleField: React.FC = () => {
               <DropDown
                 {...field}
                 options={frequencies}
-                data-testid="scheduleData"
+                data-testid="schedule-data"
                 onChange={(item) => {
                   onScheduleChange(item, form);
                 }}
@@ -190,7 +190,7 @@ export const ScheduleField: React.FC = () => {
                   <Input
                     disabled={mode === "readonly"}
                     error={!!meta.error}
-                    data-testid="cronExpression"
+                    data-testid="cron-expression"
                     placeholder={formatMessage({
                       id: "form.cronExpression.placeholder",
                     })}
@@ -207,7 +207,7 @@ export const ScheduleField: React.FC = () => {
                   />
                 </FlexContainer>
                 {cronValidationError && (
-                  <Text className={styles.errorMessage} data-testid="cronExpressionError">
+                  <Text className={styles.errorMessage} data-testid="cron-expression-error">
                     <FormattedMessage id={cronValidationError} />
                   </Text>
                 )}

@@ -68,7 +68,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                 >
                   <div
                     class="<removed-for-snapshot-test>"
-                    data-testid="scheduleData"
+                    data-testid="schedule-data"
                     role="combobox"
                   >
                     <span

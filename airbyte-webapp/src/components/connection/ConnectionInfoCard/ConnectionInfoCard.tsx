@@ -38,12 +38,12 @@ export const ConnectionInfoCard: React.FC = () => {
         };
 
   return (
-    <div className={styles.container} data-testid="connectionInfo">
+    <div className={styles.container} data-testid="connection-info">
       <div className={styles.pathContainer}>
         <Link
           to={sourceConnectionPath}
           className={classNames(styles.connectorLink, schemaChangeClassNames)}
-          data-testid="connectionInfo-sourceLink"
+          data-testid="connection-info-source-link"
         >
           <ConnectorCard
             connectionName={source.sourceName}
@@ -56,7 +56,7 @@ export const ConnectionInfoCard: React.FC = () => {
         <Link
           to={destinationConnectionPath}
           className={styles.connectorLink}
-          data-testid="connectionInfo-destinationLink"
+          data-testid="connection-info-destination-link"
         >
           <ConnectorCard
             connectionName={destination.destinationName}

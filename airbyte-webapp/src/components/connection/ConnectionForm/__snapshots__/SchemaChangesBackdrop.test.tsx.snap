@@ -3,7 +3,7 @@
 exports[`SchemaChangesBackdrop renders with breaking changes and prevents background interaction 1`] = `
 <div
   class="schemaChangeBackdropContainer"
-  data-testid="schemaChangesBackdrop"
+  data-testid="schema-changes-backdrop"
 >
   <div
     class="backdrop"

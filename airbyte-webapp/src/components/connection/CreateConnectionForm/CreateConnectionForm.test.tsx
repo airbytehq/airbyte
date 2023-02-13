@@ -101,9 +101,9 @@ describe("CreateConnectionForm", () => {
         </TestWrapper>
       );
 
-      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+      await selectEvent.select(container.getByTestId("schedule-data"), /cron/i);
 
-      const cronExpressionInput = container.getByTestId("cronExpression");
+      const cronExpressionInput = container.getByTestId("cron-expression");
 
       userEvent.clear(cronExpressionInput);
       await userEvent.type(cronExpressionInput, INVALID_CRON_EXPRESSION, { delay: 1 });
@@ -122,13 +122,13 @@ describe("CreateConnectionForm", () => {
         </TestWrapper>
       );
 
-      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+      await selectEvent.select(container.getByTestId("schedule-data"), /cron/i);
 
-      const cronExpressionField = container.getByTestId("cronExpression");
+      const cronExpressionField = container.getByTestId("cron-expression");
 
       await userEvent.type(cronExpressionField, `{selectall}${CRON_EXPRESSION_EVERY_MINUTE}`, { delay: 1 });
 
-      const errorMessage = container.queryByTestId("cronExpressionError");
+      const errorMessage = container.queryByTestId("cron-expression-error");
 
       expect(errorMessage).not.toBeInTheDocument();
     });
@@ -144,13 +144,13 @@ describe("CreateConnectionForm", () => {
         </TestWrapper>
       );
 
-      await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
+      await selectEvent.select(container.getByTestId("schedule-data"), /cron/i);
 
-      const cronExpressionField = container.getByTestId("cronExpression");
+      const cronExpressionField = container.getByTestId("cron-expression");
 
       await userEvent.type(cronExpressionField, `{selectall}${CRON_EXPRESSION_EVERY_MINUTE}`, { delay: 1 });
 
-      const errorMessage = container.getByTestId("cronExpressionError");
+      const errorMessage = container.getByTestId("cron-expression-error");
 
       expect(errorMessage).toBeInTheDocument();
     });

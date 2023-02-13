@@ -39,7 +39,7 @@ describe("SchemaChangesBackdrop", () => {
 
     const { getByTestId } = renderComponent();
 
-    expect(getByTestId("schemaChangesBackdrop")).toMatchSnapshot();
+    expect(getByTestId("schema-changes-backdrop")).toMatchSnapshot();
     userEvent.click(getByTestId("bg-button"));
     expect(buttonSpy).not.toHaveBeenCalled();
   });
@@ -53,7 +53,7 @@ describe("SchemaChangesBackdrop", () => {
 
     const { queryByTestId, getByTestId } = renderComponent();
 
-    expect(queryByTestId("schemaChangesBackdrop")).toBeFalsy();
+    expect(queryByTestId("schema-changes-backdrop")).toBeFalsy();
 
     userEvent.click(getByTestId("bg-button"));
     expect(buttonSpy).not.toHaveBeenCalled();
@@ -68,7 +68,7 @@ describe("SchemaChangesBackdrop", () => {
 
     const { queryByTestId, getByTestId } = renderComponent();
 
-    expect(queryByTestId("schemaChangesBackdrop")).toBeFalsy();
+    expect(queryByTestId("schema-changes-backdrop")).toBeFalsy();
 
     userEvent.click(getByTestId("bg-button"));
     expect(buttonSpy).not.toHaveBeenCalled();
@@ -82,7 +82,7 @@ describe("SchemaChangesBackdrop", () => {
     });
 
     const { queryByTestId, getByTestId } = renderComponent();
-    expect(queryByTestId("schemaChangesBackdrop")).toBeFalsy();
+    expect(queryByTestId("schema-changes-backdrop")).toBeFalsy();
 
     userEvent.click(getByTestId("bg-button"));
     expect(buttonSpy).not.toHaveBeenCalled();
