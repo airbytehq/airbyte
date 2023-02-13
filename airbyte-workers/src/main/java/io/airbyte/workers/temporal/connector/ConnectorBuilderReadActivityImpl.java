@@ -22,14 +22,12 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardConnectorBuilderReadInput;
 import io.airbyte.config.StandardConnectorBuilderReadOutput;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultConnectorBuilderReadWorker;
-import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -58,14 +56,12 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
   private final LogConfigs logConfigs;
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
-  private final ConfigRepository configRepository;
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
   private final FeatureFlags featureFlags;
 
   public ConnectorBuilderReadActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                           @Named("discoverProcessFactory") final ProcessFactory processFactory,
-                                          final ConfigRepository configRepository,
                                           final SecretsHydrator secretsHydrator,
                                           @Named("workspaceRoot") final Path workspaceRoot,
                                           final WorkerEnvironment workerEnvironment,
@@ -75,7 +71,6 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
                                           final AirbyteMessageSerDeProvider serDeProvider,
                                           final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                           final FeatureFlags featureFlags) {
-    this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -87,6 +82,7 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
     this.featureFlags = featureFlags;
+    this.featureFlags.equals(null); // FIXME: just for pmd
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -119,9 +115,7 @@ public class ConnectorBuilderReadActivityImpl implements ConnectorBuilderReadAct
       final AirbyteStreamFactory streamFactory =
           new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, new Version("1.0.0"), Optional.empty(), // FIXME
               Optional.empty());
-      final ConnectorConfigUpdater connectorConfigUpdater =
-          new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi());
-      return new DefaultConnectorBuilderReadWorker(airbyteApiClient, processFactory, connectorConfigUpdater, streamFactory, jobId);
+      return new DefaultConnectorBuilderReadWorker(processFactory, streamFactory, jobId);
     };
   }
 

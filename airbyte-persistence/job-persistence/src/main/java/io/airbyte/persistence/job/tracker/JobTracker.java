@@ -123,10 +123,6 @@ public class JobTracker {
   }
 
   public void trackConnectorBuilderRead(UUID jobId, UUID workspaceId, JobState jobState, StandardConnectorBuilderReadOutput value) {
-    System.out.println(workspaceId.toString());
-    System.out.printf(jobId.toString());
-    System.out.printf(jobState.toString());
-    System.out.println(value.toString());
     Exceptions.swallow(() -> {
       final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(),
           ConfigType.CONNECTOR_BUILDER_READ);
