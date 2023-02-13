@@ -3,7 +3,7 @@ ALTER ROLE postgres WITH REPLICATION;
 CREATE
     TABLE
         id_and_name(
-            id INTEGER,
+            id INTEGER PRIMARY KEY,
             name VARCHAR(200)
         );
 

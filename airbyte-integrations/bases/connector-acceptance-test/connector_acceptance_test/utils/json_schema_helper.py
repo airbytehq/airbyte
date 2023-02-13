@@ -43,11 +43,17 @@ class CatalogField:
             return pendulum.parse(value)
         return value
 
+    def _cast_value(self, value: Any) -> Any:
+        if value:
+            if self.schema["airbyte_type"] == 'integer':
+              return int(value)
+        return value
+
     def parse(self, record: Mapping[str, Any], path: Optional[List[str]] = None) -> Any:
         """Extract field value from the record and cast it to native type"""
         path = path or self.path
         value = reduce(lambda data, key: data[key], path, record)
-        return self._parse_value(value)
+        return self._parse_value(self._cast_value(value))
 
 
 class JsonSchemaHelper:

@@ -84,6 +84,7 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
 
 
 def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any, Any]]:
+    state_value = None
     """Iterate over records and return cursor value with corresponding cursor value from state"""
     for record in records:
         stream_name = record.record.stream
@@ -102,7 +103,30 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
                 # try second time as an absolute path in state file (i.e. bookmarks -> stream_name -> column -> value)
                 state_value = cursor_field.parse(record=state, path=state_cursor_paths[stream_name])
             except KeyError:
-                continue
+                # LEGACY states in incremental mode
+                if "cdc_state" in state.keys():
+                    """ CDC incremental states are defined like this:
+                    {'cdc': False, 'cdc_state': {'state': {'{"schema":null,"payload":["postgres",{"server":"postgres"}]}': '{"transaction_id":null,"lsn":2101199320,"txId":1055370,"ts_usec":1676304204421970}'}}, 'streams': [{'stream_name': 'id_and_name', 'stream_namespace': 'public', 'cursor_field': ['id']}]}
+                    
+                    Also CDC states messages uses lsn in order to track the current position, we can not compare it with the record value.
+                    For that reason we assign the lsn to the record and state.  
+                    """
+                    value = json.loads(list(state["cdc_state"]["state"].values())[0])["lsn"]
+                    record_value = value
+                    state_value = value
+                else:
+                    """Incremental LEGACY states example:
+                    {'cdc': False, 'streams': [{'stream_name': 'id_and_name', 'stream_namespace': 'public', 'cursor_field': ['id'], 'cursor': '3', 'cursor_record_count': 1}]}
+                    """
+                    try:
+                        for stream_state in state["streams"]:
+                            if stream_state["stream_name"] == stream_name:
+                                print({stream_state["cursor_field"][0]: stream_state["cursor"]})
+                                state_value = cursor_field.parse(
+                                    record={stream_state["cursor_field"][0]: stream_state["cursor"]}
+                                )
+                    except KeyError:
+                        continue
         yield record_value, state_value, stream_name
 
 
@@ -155,7 +179,7 @@ class TestIncremental(BaseTest):
         inputs: IncrementalConfig,
         connector_config: SecretDict,
         configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
-        cursor_paths: dict[str, list[str]],
+        cursor_paths: Dict[str, List[str]],
         docker_runner: ConnectorRunner,
     ):
         threshold_days = getattr(inputs, "threshold_days") or 0
@@ -200,7 +224,12 @@ class TestIncremental(BaseTest):
             ), f"Second incremental sync should produce records older or equal to cursor value from the state. Stream: {stream_name}"
 
     def test_read_sequential_slices(
-        self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner
+            self,
+            inputs: IncrementalConfig,
+            connector_config: SecretDict,
+            configured_catalog_for_incremental: ConfiguredAirbyteCatalog,
+            cursor_paths: Dict[str, List[str]],
+            docker_runner: ConnectorRunner
     ):
         """
         Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
