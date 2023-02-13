@@ -17,7 +17,7 @@ $sm-size: 14px;
   cursor: pointer;
 
   input {
-    @include mixins.screen-reader-only;
+    display: none;
   }
 
   &.disabled {
