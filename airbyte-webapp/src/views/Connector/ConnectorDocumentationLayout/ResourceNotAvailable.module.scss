@@ -1,0 +1,6 @@
+@use "scss/variables";
+
+.requestContainer {
+  height: 80vh;
+  padding: variables.$spacing-xl;
+}

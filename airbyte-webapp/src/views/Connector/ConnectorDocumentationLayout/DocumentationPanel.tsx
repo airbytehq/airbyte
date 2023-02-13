@@ -7,13 +7,13 @@ import { useLocation } from "react-router-dom";
 import { useUpdateEffect } from "react-use";
 import rehypeSlug from "rehype-slug";
 import urls from "rehype-urls";
-import { match } from "ts-pattern";
 
 import { LoadingPage } from "components";
 import { Markdown } from "components/ui/Markdown";
 import { StepsMenu } from "components/ui/StepsMenu";
 
 import { useConfig } from "config";
+import { isSourceDefinition } from "core/domain/connector/source";
 import { useDocumentation } from "hooks/services/useDocumentation";
 import { isCloudApp } from "utils/app";
 import { links } from "utils/links";
@@ -33,7 +33,6 @@ export const DocumentationPanel: React.FC = () => {
   const { formatMessage } = useIntl();
   const config = useConfig();
   const { setDocumentationPanelOpen, documentationUrl, selectedConnectorDefinition } = useDocumentationPanelContext();
-  const isSource = Object.hasOwn(selectedConnectorDefinition, "sourceDefinitionId");
 
   const [isSchemaRequested, setIsSchemaRequested] = useState(false);
   const [isERDRequested, setIsERDRequested] = useState(false);
@@ -84,35 +83,29 @@ export const DocumentationPanel: React.FC = () => {
     <LoadingPage />
   ) : (
     <div className={styles.container}>
-      {isSource && (
+      {selectedConnectorDefinition && isSourceDefinition(selectedConnectorDefinition) && (
         <div className={styles.stepsContainer}>
           <StepsMenu lightMode data={tabs} onSelect={setActiveTab} activeStep={activeTab} />
         </div>
       )}
 
-      {match(activeTab)
-        .with("setupGuide", () => (
-          <Markdown
-            className={styles.content}
-            content={
-              docs && !error
-                ? prepareMarkdown(docs, isCloudApp() ? "cloud" : "oss")
-                : formatMessage({ id: "connector.setupGuide.notFound" })
-            }
-            rehypePlugins={urlReplacerPlugin}
-          />
-        ))
-        .with("schema", () => (
-          <ResourceNotAvailable
-            activeTab="schema"
-            setRequested={setIsSchemaRequested}
-            isRequested={isSchemaRequested}
-          />
-        ))
-        .with("erd", () => (
-          <ResourceNotAvailable activeTab="erd" setRequested={setIsERDRequested} isRequested={isERDRequested} />
-        ))
-        .otherwise(() => null)}
+      {activeTab === "setupGuide" && (
+        <Markdown
+          className={styles.content}
+          content={
+            docs && !error
+              ? prepareMarkdown(docs, isCloudApp() ? "cloud" : "oss")
+              : formatMessage({ id: "connector.setupGuide.notFound" })
+          }
+          rehypePlugins={urlReplacerPlugin}
+        />
+      )}
+      {activeTab === "schema" && (
+        <ResourceNotAvailable activeTab="schema" setRequested={setIsSchemaRequested} isRequested={isSchemaRequested} />
+      )}
+      {activeTab === "erd" && (
+        <ResourceNotAvailable activeTab="erd" setRequested={setIsERDRequested} isRequested={isERDRequested} />
+      )}
     </div>
   );
 };

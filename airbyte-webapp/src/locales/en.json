@@ -283,7 +283,7 @@
   "sources.sourceSettings": "Source Settings",
   "sources.documentationPanel.tabs.setupGuide": "Setup Guide",
   "sources.documentationPanel.tabs.schema": "Schema",
-  "sources.documentationPanel.tabs.erd": "ERD (Entities Relationship Diagram)",
+  "sources.documentationPanel.tabs.erd": "ERD (Entity Relationship Diagram)",
   "sources.request.button.schema": "Request schema for this source",
   "sources.request.button.erd": "Request ERD for this source",
   "sources.request.prioritize": "We're still building this feature - if you'd like us to prioritize this source.",
