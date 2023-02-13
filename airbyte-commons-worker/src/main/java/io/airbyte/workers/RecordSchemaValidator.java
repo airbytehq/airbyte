@@ -66,35 +66,33 @@ public class RecordSchemaValidator {
 
   /**
    * Takes an AirbyteRecordMessage and uses the JsonSchemaValidator to validate that its data conforms
-   * to the stream's schema If it does not, this method throws a RecordSchemaValidationException
-   *
-   * @throws RecordSchemaValidationException
+   * to the stream's schema If it does not, an error is added to the validationErrors map.
    */
   public void validateSchema(
                              final AirbyteRecordMessage message,
-                             final AirbyteStreamNameNamespacePair messageStream,
+                             final AirbyteStreamNameNamespacePair airbyteStream,
                              final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors) {
     if (backgroundValidation) {
       validationExecutor.execute(() -> {
         try {
-          doValidateSchema(message, messageStream);
+          doValidateSchema(message, airbyteStream);
         } catch (final RecordSchemaValidationException e) {
-          handleException(e, messageStream, validationErrors);
+          handleException(e, airbyteStream, validationErrors);
         }
       });
     } else {
       try {
-        doValidateSchema(message, messageStream);
+        doValidateSchema(message, airbyteStream);
       } catch (final RecordSchemaValidationException e) {
-        handleException(e, messageStream, validationErrors);
+        handleException(e, airbyteStream, validationErrors);
       }
     }
   }
 
   private void handleException(final RecordSchemaValidationException e,
-                               final AirbyteStreamNameNamespacePair messageStream,
+                               final AirbyteStreamNameNamespacePair airbyteStream,
                                final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors) {
-    validationErrors.compute(messageStream, (k, v) -> {
+    validationErrors.compute(airbyteStream, (k, v) -> {
       if (v == null) {
         return new ImmutablePair<>(e.errorMessages, 1);
       } else {
@@ -108,12 +106,12 @@ public class RecordSchemaValidator {
   /**
    * @throws RecordSchemaValidationException
    */
-  private void doValidateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair messageStream) {
+  private void doValidateSchema(final AirbyteRecordMessage message, final AirbyteStreamNameNamespacePair airbyteStream) {
     final JsonNode messageData = message.getData();
-    final JsonNode matchingSchema = streams.get(messageStream);
+    final JsonNode matchingSchema = streams.get(airbyteStream);
 
     try {
-      validator.ensureInitializedSchema(messageStream.toString(), messageData);
+      validator.ensureInitializedSchema(airbyteStream.toString(), messageData);
     } catch (final JsonValidationException e) {
       final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
       final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
@@ -134,7 +132,7 @@ public class RecordSchemaValidator {
       }
 
       throw new RecordSchemaValidationException(validationMessagesToDisplay,
-          String.format("Record schema validation failed for %s", messageStream), e);
+          String.format("Record schema validation failed for %s", airbyteStream), e);
     }
   }
 

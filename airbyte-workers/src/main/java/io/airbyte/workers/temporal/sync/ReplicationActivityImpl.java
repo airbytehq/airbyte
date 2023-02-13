@@ -342,7 +342,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   PerfBackgroundJsonValidation.INSTANCE, new Workspace(syncInput.getWorkspaceId()))),
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
-          featureFlagClient,
           fieldSelectionEnabled);
     };
   }

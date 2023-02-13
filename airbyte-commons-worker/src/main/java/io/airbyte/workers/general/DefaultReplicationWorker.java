@@ -25,7 +25,6 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
-import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -106,7 +105,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
   private final ConnectorConfigUpdater connectorConfigUpdater;
-  private final FeatureFlagClient featureFlagClient;
   private final boolean fieldSelectionEnabled;
 
   public DefaultReplicationWorker(final String jobId,
@@ -118,7 +116,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
                                   final ConnectorConfigUpdater connectorConfigUpdater,
-                                  final FeatureFlagClient featureFlagClient,
                                   final boolean fieldSelectionEnabled) {
     this.jobId = jobId;
     this.attempt = attempt;
@@ -130,7 +127,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
-    this.featureFlagClient = featureFlagClient;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
 
     this.cancelled = new AtomicBoolean(false);
@@ -339,6 +335,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
       long recordsRead = 0L;
+      /**
+       * validationErrors must be a ConcurrentHashMap as it may potentially be updated and read in
+       * different threads concurrently depending on the
+       * {@link io.airbyte.featureflag.PerfBackgroundJsonValidation} feature-flag.
+       */
       final ConcurrentHashMap<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new ConcurrentHashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields = new HashMap<>();

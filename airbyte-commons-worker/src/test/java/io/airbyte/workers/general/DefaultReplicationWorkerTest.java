@@ -172,7 +172,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     worker.run(syncInput, jobRoot);
@@ -207,7 +206,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     worker.run(syncInput, jobRoot);
@@ -246,7 +244,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -269,7 +266,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -292,7 +288,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -319,7 +314,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -343,7 +337,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -370,7 +363,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -395,7 +387,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -419,7 +410,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -444,7 +434,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -473,7 +462,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     worker.run(syncInput, jobRoot);
@@ -511,7 +499,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         true);
 
     worker.run(syncInput, jobRoot);
@@ -546,7 +533,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     worker.run(syncInput, jobRoot);
@@ -570,7 +556,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -594,7 +579,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -619,7 +603,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
@@ -645,7 +628,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     worker.run(syncInput, jobRoot);
@@ -689,7 +671,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final Thread workerThread = new Thread(() -> {
@@ -740,7 +721,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
@@ -810,7 +790,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
@@ -832,7 +811,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
@@ -869,7 +847,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
@@ -918,7 +895,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
@@ -941,7 +917,6 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }

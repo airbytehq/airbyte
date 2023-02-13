@@ -186,7 +186,6 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
                 PerfBackgroundJsonValidation.INSTANCE, new Workspace(syncInput.getWorkspaceId()))),
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
-        featureFlagClient,
         fieldSelectionEnabled);
 
     log.info("Running replication worker...");

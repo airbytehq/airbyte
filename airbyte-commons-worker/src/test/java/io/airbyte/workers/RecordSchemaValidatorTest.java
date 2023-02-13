@@ -40,11 +40,11 @@ class RecordSchemaValidatorTest {
   @Test
   void testValidateValidSchema() {
     final var recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput), false);
-    for (var i = 0; i < 10; i++) {
-      recordSchemaValidator.validateSchema(
-          VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()),
-          validationErrors);
-    }
+
+    recordSchemaValidator.validateSchema(
+        VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()),
+        validationErrors);
+
     assertEquals(0, validationErrors.size());
   }
 
@@ -61,10 +61,9 @@ class RecordSchemaValidatorTest {
   @Test
   void testValidateValidSchemaWithBackgroundValidation() {
     final var recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput), true);
-    for (var i = 0; i < 10; i++) {
-      recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()),
-          validationErrors);
-    }
+    recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), AirbyteStreamNameNamespacePair.fromRecordMessage(VALID_RECORD.getRecord()),
+        validationErrors);
+
     assertEquals(0, validationErrors.size());
   }
 

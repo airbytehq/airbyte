@@ -114,7 +114,6 @@ public class ReplicationWorkerPerformanceTest {
         validator,
         metricReporter,
         connectorConfigUpdater,
-        featureFlagClient,
         false);
     final AtomicReference<ReplicationOutput> output = new AtomicReference<>();
     final Thread workerThread = new Thread(() -> {
