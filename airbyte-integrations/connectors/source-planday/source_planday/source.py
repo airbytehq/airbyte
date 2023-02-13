@@ -7,9 +7,10 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import datetime
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 """
@@ -61,6 +62,8 @@ class PlandayStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=Oauth2Authenticator(token_refresh_endpoint="https://id.planday.com/connect/token",
                                                            client_id=config["client_id"], client_secret="", refresh_token=config["refresh_token"]))
+        self.client_id = config["client_id"]
+        self.sync_from = config["sync_from"]
 
         self.uri_params = {
             "offset": 0,
@@ -102,7 +105,16 @@ class PlandayStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         print(response.json().get("data", []))
         print("WAS IST DAS?")
-        yield from response.json().get("data", [])
+        data = response.json().get("data", [])
+        yield from data if isinstance(data, list) else [data]
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        """
+        Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        """
+        return {"X-ClientId": self.client_id}
 
 
 class Departments(PlandayStream):
@@ -134,14 +146,29 @@ class EmployeeGroups(PlandayStream):
         return "hr/v1/employeegroups"
 
 
-class TimeAndCosts(PlandayStream):
+class TimeAndCosts(HttpSubStream, PlandayStream):
     # TODO: How to get this to work with department ID
     primary_key = "id"
+
+    def __init__(self, parent: Departments, config: Mapping[str, Any]):
+        super().__init__(parent=parent, config=config)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "scheduling/v1/timeandcost/"
+        return f"scheduling/v1/timeandcost/{stream_slice['parent']['id']}"
+
+    @staticmethod
+    def get_today_string():
+        return datetime.datetime.now().strftime("%Y-%m-%d")
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "from": self.sync_from,
+            "to": self.get_today_string(),
+        }
 
 
 class Shifts(PlandayStream):
@@ -184,6 +211,5 @@ class SourcePlanday(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        # TODO remove the authenticator if not required.
-        # Oauth2Authenticator is also available if you need oauth support
-        return [Departments(config), Employees(config), EmployeeGroups(config), TimeAndCosts(config), Shifts(config), ShiftTypes(config)]
+
+        return [Departments(config), Employees(config), EmployeeGroups(config), TimeAndCosts(parent=Departments(config), config=config), Shifts(config), ShiftTypes(config)]
