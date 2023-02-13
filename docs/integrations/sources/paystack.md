@@ -59,6 +59,6 @@ If you would like to test Airbyte using test data on Paystack, `sk_test_` API ke
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.2  | 2023-02-13 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Specified date formatting in specification  |
+| 0.1.2  | 2023-02-13 | [22915](https://github.com/airbytehq/airbyte/pull/22915) | Specified date formatting in specification  |
 | 0.1.1  | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
 | 0.1.0  | 2021-10-20 | [7214](https://github.com/airbytehq/airbyte/pull/7214) | Add Paystack source connector |
