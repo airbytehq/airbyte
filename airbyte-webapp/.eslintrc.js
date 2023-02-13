@@ -9,7 +9,15 @@ module.exports = {
     "plugin:jsx-a11y/recommended",
     "plugin:@airbyte/recommended",
   ],
-  plugins: ["@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y", "@airbyte"],
+  plugins: [
+    "@typescript-eslint",
+    "prettier",
+    "unused-imports",
+    "css-modules",
+    "jsx-a11y",
+    "@airbyte",
+    "testing-library",
+  ],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: "module",
@@ -84,6 +92,13 @@ module.exports = {
       },
     ],
     "jest/consistent-test-it": ["warn", { fn: "it", withinDescribe: "it" }],
+    "testing-library/consistent-data-testid": [
+      "error",
+      {
+        testIdAttribute: ["data-testid", "testId"],
+        testIdPattern: "^([a-z]+(-[a-z]+)*)$",
+      },
+    ],
     "react/no-danger": "error",
     "react/jsx-boolean-value": "warn",
     "react/jsx-curly-brace-presence": "warn",
