@@ -56,6 +56,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ"};
   private final String BYTEA_TYPE = "BYTEA";
   private final String JSONB_TYPE = "JSONB";
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public void configure(final Properties props) {}
@@ -87,7 +88,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
       try {
-        return new ObjectMapper().readTree(x.toString()).toString();
+        return objectMapper.readTree(x.toString()).toString();
       } catch (JsonProcessingException e) {
         throw new RuntimeException("Could not parse 'jsonb' value:" + e);
       }

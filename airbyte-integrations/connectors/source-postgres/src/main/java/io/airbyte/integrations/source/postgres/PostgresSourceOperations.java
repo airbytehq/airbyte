@@ -625,6 +625,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   private static class ColumnInfo {
+
     public String columnTypeName;
     public PostgresType columnType;
 

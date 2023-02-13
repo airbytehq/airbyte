@@ -15,8 +15,6 @@ import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTes
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -48,15 +46,14 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     return true;
   }
 
-  protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
+  protected String getValueFromJsonNode(final JsonNode jsonNode) {
     if (jsonNode != null) {
       if (jsonNode.isArray() || jsonNode.isObject()) {
         return jsonNode.toString();
       }
 
-      String value = (jsonNode.isBinary() ? Arrays.toString(jsonNode.binaryValue()) : jsonNode.asText());
-      value = (value != null && value.equals("null") ? null : value);
-      return value;
+      String value = jsonNode.asText();
+      return (value != null && value.equals("null") ? null : value);
     }
     return null;
   }
