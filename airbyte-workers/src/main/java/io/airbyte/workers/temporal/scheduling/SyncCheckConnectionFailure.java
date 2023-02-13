@@ -1,16 +1,16 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling;
+
+import static io.airbyte.workers.temporal.sync.SyncOutputProvider.EMPTY_FAILED_SYNC;
 
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
 import java.util.List;
@@ -58,19 +58,7 @@ public class SyncCheckConnectionFailure {
     }
 
     final StandardSyncOutput syncOutput = new StandardSyncOutput()
-        .withStandardSyncSummary(
-            new StandardSyncSummary()
-                .withStatus(StandardSyncSummary.ReplicationStatus.FAILED)
-                .withStartTime(System.currentTimeMillis())
-                .withEndTime(System.currentTimeMillis())
-                .withRecordsSynced(0L)
-                .withBytesSynced(0L)
-                .withTotalStats(new SyncStats()
-                    .withRecordsEmitted(0L)
-                    .withBytesEmitted(0L)
-                    .withSourceStateMessagesEmitted(0L)
-                    .withDestinationStateMessagesEmitted(0L)
-                    .withRecordsCommitted(0L)));
+        .withStandardSyncSummary(EMPTY_FAILED_SYNC);
 
     if (failureOutput.getFailureReason() != null) {
       syncOutput.setFailures(List.of(failureOutput.getFailureReason().withFailureOrigin(origin)));
