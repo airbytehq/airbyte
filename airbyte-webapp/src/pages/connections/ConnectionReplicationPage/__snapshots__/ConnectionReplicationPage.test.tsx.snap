@@ -190,7 +190,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                 >
                   <div
                     class="<removed-for-snapshot-test>"
-                    data-testid="nonBreakingChangesPreference"
+                    data-testid="non-breaking-changes-preference"
                     role="combobox"
                   >
                     <span
@@ -461,7 +461,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                   >
                     <input
                       class="<removed-for-snapshot-test>"
-                      data-testid="prefixInput"
+                      data-testid="prefix-input"
                       name="prefix"
                       placeholder="prefix"
                       style="pointer-events: auto;"

@@ -2,7 +2,7 @@ import { submitButtonClick } from "commands/common";
 
 const scheduleDropdown = "div[data-testid='scheduleData']";
 const scheduleValue = (value: string) => `div[data-testid='${value}']`;
-const destinationPrefix = "input[data-testid='prefixInput']";
+const destinationPrefix = "input[data-testid='prefix-input']";
 const replicationTab = "div[data-id='replication-step']";
 const destinationNamespace = "div[data-testid='namespaceDefinition']";
 const destinationNamespaceCustom = "div[data-testid='namespaceDefinition-customformat']";
@@ -22,16 +22,17 @@ const getPreFilledPrimaryKeyText = (streamName: string) => `[data-testid='${stre
 const successResult = "div[data-id='success-result']";
 const resetModalResetCheckbox = "[data-testid='reset-modal-reset-checkbox']";
 const saveStreamChangesButton = "button[data-testid='reset-modal-save']";
-const connectionNameInput = "input[data-testid='connectionName']";
+const connectionNameInput = "input[data-testid='connection-name']";
 const refreshSourceSchemaButton = "button[data-testid='refresh-source-schema-btn']";
 const streamSyncEnabledSwitch = (streamName: string) => `[data-testid='${streamName}-stream-sync-switch']`;
 const streamNameInput = "input[data-testid='input']";
 const resetModalSaveButton = "[data-testid='reset-modal-save']";
 const schemaChangesDetectedBanner = "[data-testid='schema-changes-detected']";
 const schemaChangesReviewButton = "[data-testid='schema-changes-review-button']";
-const schemaChangesBackdrop = "[data-testid='schemaChangesBackdrop']";
-const nonBreakingChangesPreference = "[data-testid='nonBreakingChangesPreference']";
-const nonBreakingChangesPreferenceValue = (value: string) => `div[data-testid='nonBreakingChangesPreference-${value}']`;
+const schemaChangesBackdrop = "[data-testid='schema-changes-backdrop']";
+const nonBreakingChangesPreference = "[data-testid='non-breaking-changes-preference']";
+const nonBreakingChangesPreferenceValue = (value: string) =>
+  `div[data-testid='non-breaking-changes-preference-${value}']`;
 
 export const goToReplicationTab = () => {
   cy.get(replicationTab).click();

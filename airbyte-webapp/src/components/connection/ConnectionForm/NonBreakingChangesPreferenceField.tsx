@@ -21,7 +21,7 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
     return SUPPORTED_PREFERENCES.map((value) => ({
       value,
       label: formatMessage({ id: `connectionForm.nonBreakingChangesPreference.${value}` }),
-      testId: `nonBreakingChangesPreference-${value}`,
+      testId: `non-breaking-changes-preference-${value}`,
     }));
   }, [formatMessage]);
 
@@ -45,7 +45,7 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
           {...field}
           options={preferenceOptions}
           error={form.touched[field.name] && !!form.errors[field.name]}
-          data-testid="nonBreakingChangesPreference"
+          data-testid="non-breaking-changes-preference"
           value={field.value}
           onChange={({ value }) => form.setFieldValue(field.name, value)}
         />

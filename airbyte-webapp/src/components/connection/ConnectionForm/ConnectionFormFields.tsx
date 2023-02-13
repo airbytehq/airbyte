@@ -118,7 +118,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                       placeholder={formatMessage({
                         id: `form.prefix.placeholder`,
                       })}
-                      data-testid="prefixInput"
+                      data-testid="prefix-input"
                       style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
