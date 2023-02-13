@@ -51,6 +51,7 @@ connectionSpecification:
         If your dataset has data from 2020-10-10 10:21:10, set the start_date to 2020-10-10 or later
       examples:
         - "2017-01-25"
+      format: date
     slice_range:
       type: integer
       title: Data request time increment in days
