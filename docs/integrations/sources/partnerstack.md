@@ -38,5 +38,5 @@ The Partnerstack connector should not run into Partnerstack API limitations unde
 
 | Version | Date       | Pull Request                                         | Subject                           |
 | :------ | :--------- | :--------------------------------------------------- | :-------------------------------- |
-| 0.1.1   | 2023-02-13 | [0000](https://github.com/airbytehq/airbyte/pull/0000) | Specified date formatting in specification  |
+| 0.1.1   | 2023-02-13 | [22917](https://github.com/airbytehq/airbyte/pull/22917) | Specified date formatting in specification  |
 | 0.1.0   | 2022-10-27 | [XXX](https://github.com/airbytehq/airbyte/pull/XXX) | Add Partnerstack Source Connector |
