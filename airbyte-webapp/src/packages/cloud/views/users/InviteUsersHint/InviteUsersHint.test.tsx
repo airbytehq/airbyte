@@ -45,7 +45,7 @@ describe("InviteUsersHint", () => {
     jest.spyOn(ExperimentService, "useExperiment").mockImplementation(createUseExperimentMock({ visible: true }));
 
     const { getByTestId } = render(<InviteUsersHint connectorType="source" />, { wrapper: TestWrapper });
-    const element = getByTestId("inviteUsersHint");
+    const element = getByTestId("invite-users-hint");
     expect(element).toBeInTheDocument();
   });
 
@@ -53,7 +53,7 @@ describe("InviteUsersHint", () => {
     jest.spyOn(ExperimentService, "useExperiment").mockImplementation(createUseExperimentMock({ visible: true }));
 
     const { getByTestId } = render(<InviteUsersHint connectorType="source" />, { wrapper: TestWrapper });
-    const element = getByTestId("inviteUsersHint-cta");
+    const element = getByTestId("invite-users-hint-cta");
 
     expect(element).not.toHaveAttribute("href");
 
@@ -67,7 +67,7 @@ describe("InviteUsersHint", () => {
       .mockImplementation(createUseExperimentMock({ visible: true, linkToUsersPage: true }));
 
     const { getByTestId } = render(<InviteUsersHint connectorType="source" />, { wrapper: TestWrapper });
-    const element = getByTestId("inviteUsersHint-cta");
+    const element = getByTestId("invite-users-hint-cta");
 
     expect(element).toHaveAttribute("href", `../${RoutePaths.Settings}/${CloudSettingsRoutes.AccessManagement}`);
 

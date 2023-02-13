@@ -86,7 +86,7 @@ const WorkspacesList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProp
       <BottomElement>
         <Block onClick={exitWorkspace}>
           <ExitIcon />
-          <TextBlock data-testid="workspaces.viewAllWorkspaces">
+          <TextBlock data-testid="workspaces-view-all-workspaces">
             <FormattedMessage id="workspaces.viewAllWorkspaces" />
           </TextBlock>
         </Block>

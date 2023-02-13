@@ -23,14 +23,14 @@ const InviteUsersHintContent: React.VFC<InviteUsersHintProps> = ({ connectorType
   const linkToUsersPage = useExperiment("connector.inviteUsersHint.linkToUsersPage", false);
 
   const inviteUsersCta = linkToUsersPage ? (
-    <a href={ACCESS_MANAGEMENT_PATH} target="_blank" rel="noreferrer" data-testid="inviteUsersHint-cta">
+    <a href={ACCESS_MANAGEMENT_PATH} target="_blank" rel="noreferrer" data-testid="invite-users-hint-cta">
       <FormattedMessage id="inviteUsersHint.cta" />
     </a>
   ) : (
     <Button
       className={styles.ctaButton}
       variant="secondary"
-      data-testid="inviteUsersHint-cta"
+      data-testid="invite-users-hint-cta"
       onClick={() => {
         toggleInviteUsersModalOpen();
       }}
@@ -43,7 +43,7 @@ const InviteUsersHintContent: React.VFC<InviteUsersHintProps> = ({ connectorType
     <Text
       size="sm"
       className={classNames(styles.container, linkToUsersPage && styles.withLink)}
-      data-testid="inviteUsersHint"
+      data-testid="invite-users-hint"
     >
       <FormattedMessage
         id="inviteUsersHint.message"

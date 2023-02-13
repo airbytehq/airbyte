@@ -53,7 +53,7 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({ onSubmit }) =
               <ClearInput {...field} type="text" error={!!meta.error && meta.touched} />
             )}
           </Field>
-          <Button type="submit" isLoading={isSubmitting} data-testid="workspaces.create">
+          <Button type="submit" isLoading={isSubmitting} data-testid="workspaces-create">
             <FormattedMessage id="workspaces.create" />
           </Button>
         </CreationForm>

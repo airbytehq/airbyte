@@ -187,7 +187,7 @@ export const InviteUsersModal: React.FC<{
                   </Button>
                   <Button
                     className={styles.sendInvitationButton}
-                    data-testid="modals.addUser.button.submit"
+                    data-testid="modals-add-user-button-submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}

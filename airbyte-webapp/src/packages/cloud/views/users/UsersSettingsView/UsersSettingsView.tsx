@@ -58,7 +58,7 @@ const Header: React.VFC = () => {
           toggleInviteUsersModalOpen();
         }}
         icon={<FontAwesomeIcon icon={faPlus} />}
-        data-testid="userSettings.button.addNewUser"
+        data-testid="user-settings-button-add-new-user"
       >
         <FormattedMessage id="userSettings.button.addNewUser" />
       </Button>

@@ -37,7 +37,7 @@ export const WorkspaceSettingsView: React.FC = () => {
         title={
           <div className={styles.header}>
             <FormattedMessage id="settings.generalSettings" />
-            <Button type="button" onClick={exitWorkspace} data-testid="button.changeWorkspace">
+            <Button type="button" onClick={exitWorkspace} data-testid="button-change-workspace">
               <FormattedMessage id="settings.generalSettings.changeWorkspace" />
             </Button>
           </div>
