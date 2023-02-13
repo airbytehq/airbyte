@@ -41,5 +41,6 @@ Each endpoint has its own performance limitations, which also consider the accou
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
+| 0.1.2   | 2023-02-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) |Specified date formatting in specification                                 |
 | 0.1.1   | 2022-11-01 | [18826](https://github.com/airbytehq/airbyte/pull/18826) | Fix stream analytics_conversions                                |
 | 0.1.0   | 2022-10-23 | [18348](https://github.com/airbytehq/airbyte/pull/18348) | Initial Release                                                 |
