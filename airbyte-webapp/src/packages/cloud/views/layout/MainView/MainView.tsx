@@ -1,7 +1,6 @@
 import classNames from "classnames";
-import React, { useMemo } from "react";
-import { FormattedMessage } from "react-intl";
-import { Link, Outlet } from "react-router-dom";
+import React from "react";
+import { Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
@@ -31,39 +30,6 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const { hasCorporateEmail } = useAuthService();
   const isTrial = Boolean(cloudWorkspace.trialExpiryTimestamp);
   const showExperimentBanner = isExperimentVariant && isTrial && hasCorporateEmail();
-
-  const alertMessage = useMemo(() => {
-    if (alertToShow === "credits") {
-      return (
-        <FormattedMessage
-          id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`}
-          values={{
-            lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
-          }}
-        />
-      );
-    } else if (alertToShow === "trial") {
-      const { trialExpiryTimestamp } = cloudWorkspace;
-
-      // calculate difference between timestamp (in epoch milliseconds) and now (in epoch milliseconds)
-      // empty timestamp is 0
-      const trialRemainingMilliseconds = trialExpiryTimestamp ? trialExpiryTimestamp - Date.now() : 0;
-
-      // calculate days (rounding up if decimal)
-      const trialRemainingDays = Math.ceil(trialRemainingMilliseconds / (1000 * 60 * 60 * 24));
-
-      return (
-        <FormattedMessage
-          id="trial.alertMessage"
-          values={{
-            remainingDays: trialRemainingDays,
-            lnk: (cta: React.ReactNode) => <Link to={CloudRoutes.Credits}>{cta}</Link>,
-          }}
-        />
-      );
-    }
-    return null;
-  }, [alertToShow, cloudWorkspace]);
 
   return (
     <div className={styles.mainContainer}>
