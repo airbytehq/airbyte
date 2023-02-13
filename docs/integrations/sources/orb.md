@@ -54,7 +54,7 @@ an Orb Account and API Key.
 
 | Version | Date | Pull Request | Subject |
 | --- | --- | --- | --- |
-| 1.0.0 | 2023-02-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification
+| 1.0.0 | 2023-02-13 | [22922](https://github.com/airbytehq/airbyte/pull/22922) | Specified date formatting in specification
 | 1.0.0 | 2023-02-02 | [21951](https://github.com/airbytehq/airbyte/pull/21951) | Add SubscriptionUsage stream, and made `start_date` a required field
 | 0.1.4 | 2022-10-07 | [17761](https://github.com/airbytehq/airbyte/pull/17761) | Fix bug with enriching ledger entries with multiple credit blocks
 | 0.1.3 | 2022-08-26 | [16017](https://github.com/airbytehq/airbyte/pull/16017) | Add credit block id to ledger entries
