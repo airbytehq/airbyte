@@ -192,7 +192,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     if (version == Workflow.DEFAULT_VERSION) {
       return normalizationActivity.generateNormalizationInput(syncInput, syncOutput);
     } else {
-      return normalizationActivity.generateNormalizationInputWithMinimumPayload(syncInput.getDestinationConfiguration(), syncOutput.getOutputCatalog(),
+      return normalizationActivity.generateNormalizationInputWithMinimumPayload(syncInput.getDestinationConfiguration(),
+          syncOutput.getOutputCatalog(),
           syncInput.getWorkspaceId());
     }
   }
