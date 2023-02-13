@@ -576,11 +576,8 @@ function builderStreamToDeclarativeSteam(
     schema_loader: parseSchemaString(stream.schema),
     retriever: {
       type: "SimpleRetriever",
-      name: stream.name,
-      primary_key: stream.primaryKey,
       requester: {
         type: "HttpRequester",
-        name: stream.name,
         url_base: values.global?.urlBase,
         path: stream.urlPath,
         http_method: stream.httpMethod,
