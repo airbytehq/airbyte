@@ -25,5 +25,6 @@ connectionSpecification:
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
         this date will not be replicated.
+      format: date
       examples:
         - "2017-01-25T00:00:00Z"
