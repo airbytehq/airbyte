@@ -124,8 +124,7 @@ public class JobTracker {
 
   public void trackConnectorBuilderRead(UUID jobId, UUID workspaceId, JobState jobState, StandardConnectorBuilderReadOutput value) {
     Exceptions.swallow(() -> {
-      final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString(),
-          ConfigType.CONNECTOR_BUILDER_READ);
+      final Map<String, Object> jobMetadata = generateJobMetadata(jobId.toString());
       final Map<String, Object> stateMetadata = generateStateMetadata(jobState);
 
       track(workspaceId, MoreMaps.merge(jobMetadata, stateMetadata)); // FIXME
