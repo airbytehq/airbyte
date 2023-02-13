@@ -99,7 +99,7 @@ public class TemporalClient {
 
   private boolean getConnectorJobSucceeded(final StandardConnectorBuilderReadOutput output) {
     // return output.getFailureReason() == null; FIXME
-    return true;
+    return output.toString() != null;
   }
 
 }
