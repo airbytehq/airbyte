@@ -5,7 +5,7 @@
 package io.airbyte.server.apis;
 
 import static io.airbyte.commons.auth.AuthRoleConstants.AUTHENTICATED_USER;
-import static io.airbyte.commons.auth.AuthRoleConstants.OWNER;
+import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
 import static io.airbyte.commons.auth.AuthRoleConstants.READER;
 
 import io.airbyte.api.generated.WorkspaceApi;
@@ -47,7 +47,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/delete")
-  @Secured({OWNER})
+  @Secured({EDITOR})
   @SecuredWorkspace
   @Override
   @Status(HttpStatus.NO_CONTENT)
@@ -59,7 +59,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/get")
-  @Secured({OWNER})
+  @Secured({READER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead getWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
@@ -67,7 +67,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/get_by_slug")
-  @Secured({OWNER})
+  @Secured({AUTHENTICATED_USER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead getWorkspaceBySlug(@Body final SlugRequestBody slugRequestBody) {
@@ -82,7 +82,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/update")
-  @Secured({OWNER})
+  @Secured({EDITOR})
   @SecuredWorkspace
   @Override
   public WorkspaceRead updateWorkspace(@Body final WorkspaceUpdate workspaceUpdate) {
@@ -90,7 +90,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/tag_feedback_status_as_done")
-  @Secured({OWNER})
+  @Secured({EDITOR})
   @SecuredWorkspace
   @Override
   public void updateWorkspaceFeedback(@Body final WorkspaceGiveFeedback workspaceGiveFeedback) {
@@ -101,7 +101,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/update_name")
-  @Secured({OWNER})
+  @Secured({EDITOR})
   @SecuredWorkspace
   @Override
   public WorkspaceRead updateWorkspaceName(@Body final WorkspaceUpdateName workspaceUpdateName) {
