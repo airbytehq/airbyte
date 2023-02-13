@@ -48,7 +48,8 @@
         "title": "Start Date",
         "type": "string",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-        "examples": ["2021-03-20T00:00:00Z"]
+        "examples": ["2021-03-20T00:00:00Z"],
+        "format": "date-time"
       },
       "sandbox": {
         "description": "Determines whether to use the sandbox or production environment.",

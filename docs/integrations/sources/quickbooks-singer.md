@@ -78,6 +78,7 @@ The easiest way to get these credentials is by using Quickbook's [OAuth 2.0 play
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------- |
+| `0.1.6` | 2023-02-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification                |
 | `0.1.5` | 2022-02-17 | [10346](https://github.com/airbytehq/airbyte/pull/10346) | Update label `Quickbooks` -> `QuickBooks`                |
 | `0.1.4` | 2021-12-20 | [8960](https://github.com/airbytehq/airbyte/pull/8960)   | Update connector fields title/description                |
 | `0.1.3` | 2021-08-10 | [4986](https://github.com/airbytehq/airbyte/pull/4986)   | Using number data type for decimal fields instead string |
