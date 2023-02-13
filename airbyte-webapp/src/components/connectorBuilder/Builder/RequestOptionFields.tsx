@@ -18,7 +18,7 @@ export const RequestOptionFields: React.FC<RequestOptionFieldsProps> = ({ path, 
       <BuilderField
         type="enum"
         path={`${path}.inject_into`}
-        options={excludePathInjection ? injectIntoValues : [...injectIntoValues, "path"]}
+        options={excludePathInjection ? injectIntoValues.filter((target) => target !== "path") : injectIntoValues}
         onChange={(newValue) => {
           if (newValue === "path") {
             helpers.setValue({ inject_into: newValue });

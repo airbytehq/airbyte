@@ -1,5 +1,6 @@
 import { JSONSchema7 } from "json-schema";
 import merge from "lodash/merge";
+import semver from "semver";
 import * as yup from "yup";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
@@ -14,17 +15,17 @@ import {
   SessionTokenAuthenticator,
   RequestOption,
   OAuthAuthenticator,
-  SimpleRetrieverStreamSlicer,
   HttpRequesterAuthenticator,
-  SubstreamSlicer,
-  SubstreamSlicerType,
-  CartesianProductStreamSlicer,
   DeclarativeStreamSchemaLoader,
   PageIncrement,
   OffsetIncrement,
   CursorPagination,
   SimpleRetrieverPaginator,
   DefaultPaginatorPageTokenOption,
+  DatetimeBasedCursor,
+  ListPartitionRouter,
+  SubstreamPartitionRouterType,
+  SubstreamPartitionRouter,
 } from "core/request/ConnectorManifest";
 
 export type EditorView = "ui" | "yaml";
@@ -67,19 +68,12 @@ export interface BuilderPaginator {
   pageSizeOption?: RequestOption;
 }
 
-export interface BuilderSubstreamSlicer {
-  type: SubstreamSlicerType;
+export interface BuilderSubstreamPartitionRouter {
+  type: SubstreamPartitionRouterType;
   parent_key: string;
-  stream_slice_field: string;
+  partition_field: string;
   parentStreamReference: string;
   request_option?: RequestOption;
-}
-
-export interface BuilderCartesianProductSlicer {
-  type: "CartesianProductStreamSlicer";
-  stream_slicers: Array<
-    Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer> | BuilderSubstreamSlicer
-  >;
 }
 
 export interface BuilderStream {
@@ -95,12 +89,17 @@ export interface BuilderStream {
     requestBody: Array<[string, string]>;
   };
   paginator?: BuilderPaginator;
-  streamSlicer?:
-    | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
-    | BuilderSubstreamSlicer
-    | BuilderCartesianProductSlicer;
+  incrementalSync?: DatetimeBasedCursor;
+  partitionRouter?: Array<ListPartitionRouter | BuilderSubstreamPartitionRouter>;
   schema?: string;
   unsupportedFields?: Record<string, unknown>;
+}
+
+// TODO pull in CDK version to ensure it's consistent across all components
+export const CDK_VERSION = "1.0.0";
+
+export function versionSupported(version: string) {
+  return semver.satisfies(version, `>= 1.0.0 <=${CDK_VERSION}`);
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -113,7 +112,7 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   inferredInputOverrides: {},
   streams: [],
   checkStreams: [],
-  version: "0.1.0",
+  version: CDK_VERSION,
 };
 
 export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
@@ -304,80 +303,6 @@ const nonPathRequestOptionSchema = yup
   .notRequired()
   .default(undefined);
 
-const regularSlicerShape = {
-  cursor_field: yup.mixed().when("type", {
-    is: (val: string) => val !== "SubstreamSlicer" && val !== "CartesianProductStreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  slice_values: yup.mixed().when("type", {
-    is: "ListStreamSlicer",
-    then: yup.array().of(yup.string()),
-    otherwise: (schema) => schema.strip(),
-  }),
-  request_option: nonPathRequestOptionSchema,
-  start_datetime: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  end_datetime: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  step: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  datetime_format: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  start_time_option: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: nonPathRequestOptionSchema,
-    otherwise: (schema) => schema.strip(),
-  }),
-  end_time_option: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: nonPathRequestOptionSchema,
-    otherwise: (schema) => schema.strip(),
-  }),
-  stream_state_field_start: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string(),
-    otherwise: (schema) => schema.strip(),
-  }),
-  stream_state_field_end: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string(),
-    otherwise: (schema) => schema.strip(),
-  }),
-  lookback_window: yup.mixed().when("type", {
-    is: "DatetimeStreamSlicer",
-    then: yup.string(),
-    otherwise: (schema) => schema.strip(),
-  }),
-  parent_key: yup.mixed().when("type", {
-    is: "SubstreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  parentStreamReference: yup.mixed().when("type", {
-    is: "SubstreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-  stream_slice_field: yup.mixed().when("type", {
-    is: "SubstreamSlicer",
-    then: yup.string().required("form.empty.error"),
-    otherwise: (schema) => schema.strip(),
-  }),
-};
-
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
     connectorName: yup.string().required("form.empty.error"),
@@ -476,15 +401,52 @@ export const builderFormValidationSchema = yup.object().shape({
         })
         .notRequired()
         .default(undefined),
-      streamSlicer: yup
+      partitionRouter: yup
+        .array(
+          yup.object().shape({
+            cursor_field: yup.mixed().when("type", {
+              is: (val: string) => val === "ListPartitionRouter",
+              then: yup.string().required("form.empty.error"),
+              otherwise: (schema) => schema.strip(),
+            }),
+            values: yup.mixed().when("type", {
+              is: "ListPartitionRouter",
+              then: yup.array().of(yup.string()),
+              otherwise: (schema) => schema.strip(),
+            }),
+            request_option: nonPathRequestOptionSchema,
+            parent_key: yup.mixed().when("type", {
+              is: "SubstreamPartitionRouter",
+              then: yup.string().required("form.empty.error"),
+              otherwise: (schema) => schema.strip(),
+            }),
+            parentStreamReference: yup.mixed().when("type", {
+              is: "SubstreamPartitionRouter",
+              then: yup.string().required("form.empty.error"),
+              otherwise: (schema) => schema.strip(),
+            }),
+            partition_field: yup.mixed().when("type", {
+              is: "SubstreamPartitionRouter",
+              then: yup.string().required("form.empty.error"),
+              otherwise: (schema) => schema.strip(),
+            }),
+          })
+        )
+        .notRequired()
+        .default(undefined),
+      incrementalSync: yup
         .object()
         .shape({
-          ...regularSlicerShape,
-          stream_slicers: yup.mixed().when("type", {
-            is: "CartesianProductStreamSlicer",
-            then: yup.array().of(yup.object().shape(regularSlicerShape)),
-            otherwise: (schema) => schema.strip(),
-          }),
+          request_option: nonPathRequestOptionSchema,
+          start_datetime: yup.string().required("form.empty.error"),
+          end_datetime: yup.string().required("form.empty.error"),
+          step: yup.string().required("form.empty.error"),
+          datetime_format: yup.string().required("form.empty.error"),
+          start_time_option: nonPathRequestOptionSchema,
+          end_time_option: nonPathRequestOptionSchema,
+          stream_state_field_start: yup.string(),
+          stream_state_field_end: yup.string(),
+          lookback_window: yup.string(),
         })
         .notRequired()
         .default(undefined),
@@ -531,51 +493,48 @@ function builderPaginatorToManifest(paginator: BuilderStream["paginator"]): Simp
   };
 }
 
-function builderStreamSlicerToManifest(
+function builderStreamPartitionRouterToManifest(
   values: BuilderFormValues,
-  slicer: BuilderStream["streamSlicer"],
+  partitionRouter: BuilderStream["partitionRouter"],
   visitedStreams: string[]
-): SimpleRetrieverStreamSlicer | undefined {
-  if (!slicer) {
+): Array<ListPartitionRouter | SubstreamPartitionRouter> | undefined {
+  if (!partitionRouter) {
     return undefined;
   }
-  if (slicer.type !== "SubstreamSlicer" && slicer.type !== "CartesianProductStreamSlicer") {
-    return slicer;
+  if (partitionRouter.length === 0) {
+    return undefined;
   }
-  if (slicer.type === "CartesianProductStreamSlicer") {
+  return partitionRouter.map((subRouter) => {
+    if (subRouter.type === "ListPartitionRouter") {
+      return subRouter;
+    }
+    const parentStream = values.streams.find(({ id }) => id === subRouter.parentStreamReference);
+    if (!parentStream) {
+      return {
+        type: "SubstreamPartitionRouter",
+        parent_stream_configs: [],
+      };
+    }
+    if (visitedStreams.includes(parentStream.id)) {
+      // circular dependency
+      return {
+        type: "SubstreamPartitionRouter",
+        parent_stream_configs: [],
+      };
+    }
     return {
-      type: "CartesianProductStreamSlicer",
-      stream_slicers: slicer.stream_slicers.map((subSlicer) => {
-        return builderStreamSlicerToManifest(values, subSlicer, visitedStreams);
-      }),
-    } as unknown as CartesianProductStreamSlicer;
-  }
-  const parentStream = values.streams.find(({ id }) => id === slicer.parentStreamReference);
-  if (!parentStream) {
-    return {
-      type: "SubstreamSlicer",
-      parent_stream_configs: [],
+      type: "SubstreamPartitionRouter",
+      parent_stream_configs: [
+        {
+          type: "ParentStreamConfig",
+          parent_key: subRouter.parent_key,
+          request_option: subRouter.request_option,
+          partition_field: subRouter.partition_field,
+          stream: builderStreamToDeclarativeSteam(values, parentStream, visitedStreams),
+        },
+      ],
     };
-  }
-  if (visitedStreams.includes(parentStream.id)) {
-    // circular dependency
-    return {
-      type: "SubstreamSlicer",
-      parent_stream_configs: [],
-    };
-  }
-  return {
-    type: "SubstreamSlicer",
-    parent_stream_configs: [
-      {
-        type: "ParentStreamConfig",
-        parent_key: slicer.parent_key,
-        request_option: slicer.request_option,
-        stream_slice_field: slicer.stream_slice_field,
-        stream: builderStreamToDeclarativeSteam(values, parentStream, visitedStreams),
-      },
-    ],
-  };
+  });
 }
 
 const EMPTY_SCHEMA = { type: "InlineSchemaLoader", schema: {} } as const;
@@ -621,8 +580,12 @@ function builderStreamToDeclarativeSteam(
         },
       },
       paginator: builderPaginatorToManifest(stream.paginator),
-      stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
+      partition_router: builderStreamPartitionRouterToManifest(values, stream.partitionRouter, [
+        ...visitedStreams,
+        stream.id,
+      ]),
     },
+    incremental_sync: stream.incrementalSync,
   };
 
   return merge({}, declarativeStream, stream.unsupportedFields);
@@ -655,7 +618,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     validCheckStreamNames.length > 0 ? validCheckStreamNames : streamNames.length > 0 ? [streamNames[0]] : [];
 
   return merge({
-    version: values.version,
+    version: CDK_VERSION,
     type: "DeclarativeSource",
     check: {
       type: "CheckStream",
