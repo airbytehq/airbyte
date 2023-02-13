@@ -85,10 +85,16 @@ def check_connector_icon_is_available(connector: Connector) -> bool:
     return connector.icon_path.exists()
 
 
-def read_all_files_in_directory(directory: Path, ignored_directories: Optional[Set[str]] = None) -> Iterable[Tuple[str, str]]:
+def read_all_files_in_directory(
+    directory: Path, ignored_directories: Optional[Set[str]] = None, ignored_filename_patterns: Optional[Set[str]] = None
+) -> Iterable[Tuple[str, str]]:
     ignored_directories = ignored_directories if ignored_directories is not None else {}
+    ignored_filename_patterns = ignored_filename_patterns if ignored_filename_patterns is not None else {}
+
     for path in directory.rglob("*"):
-        ignore = any([ignored_directory in path.parts for ignored_directory in ignored_directories])
+        ignore_directory = any([ignored_directory in path.parts for ignored_directory in ignored_directories])
+        ignore_filename = any([path.match(ignored_filename_pattern) for ignored_filename_pattern in ignored_filename_patterns])
+        ignore = ignore_directory or ignore_filename
         if path.is_file() and not ignore:
             try:
                 for line in open(path, "r"):
@@ -97,7 +103,8 @@ def read_all_files_in_directory(directory: Path, ignored_directories: Optional[S
                 continue
 
 
-IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {".venv", "tests", "unit_tests", "integration_tests", "build", "source-file"}
+IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {".venv", "tests", "unit_tests", "integration_tests", "build", "source-file", ".pytest_cache"}
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java"}
 IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
 
 
@@ -111,7 +118,9 @@ def check_connector_https_url_only(connector: Connector) -> bool:
         bool: Wether the connector code contains only https url.
     """
     files_with_http_url = set()
-    for filename, line in read_all_files_in_directory(connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS):
+    for filename, line in read_all_files_in_directory(
+        connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
+    ):
         if any([prefix in line.lower() for prefix in IGNORED_URLS_PREFIX]):
             continue
         if "http://" in line.lower():

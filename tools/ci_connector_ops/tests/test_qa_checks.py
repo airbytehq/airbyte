@@ -112,7 +112,7 @@ def test_run_qa_checks_error(capsys, mocker):
 
 def test_check_connector_https_url_only(capsys, tmp_path, mocker):
     file_with_http_url_path = Path(tmp_path / "file_with_http_url.foo")
-    qa_checks.IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = set()
+    mocker.patch.object(qa_checks, "IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS", set())
     Path(tmp_path / "file_without_https_url.foo").touch()
     Path(tmp_path / "my_directory").mkdir()
     nested_file_with_http_url_path = Path(tmp_path / "my_directory/nested_file_with_http_url.foo")
@@ -126,3 +126,24 @@ def test_check_connector_https_url_only(capsys, tmp_path, mocker):
     assert "file_with_http_url.foo" in stdout
     assert "nested_file_with_http_url.foo" in stdout
     assert "file_without_https_url" not in stdout
+
+
+@pytest.mark.skip(reason="This should only be run when we want to test all connectors for their https url only compliance")
+def test_check_connector_https_url_only_all_connectors():
+    failing_connectors = []
+    for raw_connector in utils.OSS_CATALOG["sources"] + utils.OSS_CATALOG["destinations"]:
+        technical_name = raw_connector["dockerRepository"].replace("airbyte/", "")
+        connector = utils.Connector(technical_name)
+        if not qa_checks.check_connector_https_url_only(connector):
+            failing_connectors.append(connector)
+    if failing_connectors:
+        by_release_stage = {}
+        for failing_connector in failing_connectors:
+            by_release_stage.setdefault(failing_connector.release_stage, [])
+            by_release_stage[failing_connector.release_stage].append(failing_connector)
+        failure_message = ""
+        for release_stage in by_release_stage.keys():
+            failure_message += f"\nFailing {release_stage} connectors:\n"
+            for connector in by_release_stage[release_stage]:
+                failure_message += f"\t- {connector.technical_name}\n"
+        pytest.fail(failure_message)
