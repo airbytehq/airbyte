@@ -44,6 +44,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
+        "airbyte-protocol-models==1.0.0",
         "backoff",
         # pinned to the last working version for us temporarily while we fix
         "dataclasses-jsonschema==2.15.1",
