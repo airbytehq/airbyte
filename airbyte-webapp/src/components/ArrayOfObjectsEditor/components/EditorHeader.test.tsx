@@ -8,8 +8,8 @@ describe("<ArrayOfObjectsEditor />", () => {
     it("renders only relevant items for the mode", async () => {
       const renderResult = await render(
         <EditorHeader
-          mainTitle={<div data-testid="mainTitle">"This is the main title"</div>}
-          addButtonText={<div data-testid="addButtonText">"button text"</div>}
+          mainTitle={<div data-testid="main-title">"This is the main title"</div>}
+          addButtonText={<div data-testid="add-button-text">"button text"</div>}
           itemsCount={0}
           onAddItem={() => {
             return null;
@@ -18,8 +18,8 @@ describe("<ArrayOfObjectsEditor />", () => {
         />
       );
       container = renderResult.container;
-      const mainTitle = container.querySelector("div[data-testid='mainTitle']");
-      const addButtonText = container.querySelector("div[data-testid='addButtonText']");
+      const mainTitle = container.querySelector("div[data-testid='main-title']");
+      const addButtonText = container.querySelector("div[data-testid='add-button-text']");
       expect(mainTitle).toBeInTheDocument();
       expect(addButtonText).toBeInTheDocument();
     });
@@ -28,8 +28,8 @@ describe("<ArrayOfObjectsEditor />", () => {
     it("renders only relevant items for the mode", async () => {
       const renderResult = await render(
         <EditorHeader
-          mainTitle={<div data-testid="mainTitle">"This is the main title"</div>}
-          addButtonText={<div data-testid="addButtonText">"button text"</div>}
+          mainTitle={<div data-testid="main-title">"This is the main title"</div>}
+          addButtonText={<div data-testid="add-button-text">"button text"</div>}
           itemsCount={0}
           onAddItem={() => {
             return null;
@@ -38,9 +38,9 @@ describe("<ArrayOfObjectsEditor />", () => {
         />
       );
       container = renderResult.container;
-      const mainTitle = container.querySelector("div[data-testid='mainTitle']");
+      const mainTitle = container.querySelector("div[data-testid='main-title']");
       expect(mainTitle).toBeInTheDocument();
-      expect(container.querySelector("div[data-testid='addButtonText']")).not.toBeInTheDocument();
+      expect(container.querySelector("div[data-testid='add-button-text']")).not.toBeInTheDocument();
     });
   });
 });

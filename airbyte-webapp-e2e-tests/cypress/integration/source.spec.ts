@@ -48,7 +48,7 @@ describe("Unsaved changes modal", () => {
     openHomepage();
 
     cy.url().should("include", "/connections");
-    cy.get("[data-testid='confirmationModal']").should("not.exist");
+    cy.get("[data-testid='confirmation-modal']").should("not.exist");
   });
 
   it("Check leaving Source page without any changes after selection type", () => {
@@ -59,7 +59,7 @@ describe("Unsaved changes modal", () => {
     openHomepage();
 
     cy.url().should("include", "/connections");
-    cy.get("[data-testid='confirmationModal']").should("not.exist");
+    cy.get("[data-testid='confirmation-modal']").should("not.exist");
   });
 
   it("Check leaving Source page without any changes", () => {
@@ -69,9 +69,9 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.get("[data-testid='confirmationModal']").should("exist");
-    cy.get("[data-testid='confirmationModal']").contains("Discard changes");
-    cy.get("[data-testid='confirmationModal']").contains(
+    cy.get("[data-testid='confirmation-modal']").should("exist");
+    cy.get("[data-testid='confirmation-modal']").contains("Discard changes");
+    cy.get("[data-testid='confirmation-modal']").contains(
       "There are unsaved changes. Are you sure you want to discard your changes?"
     );
   });
@@ -88,9 +88,9 @@ describe("Unsaved changes modal", () => {
 
     openHomepage();
 
-    cy.get("[data-testid='confirmationModal']").should("exist");
-    cy.get("[data-testid='confirmationModal']").contains("Discard changes");
-    cy.get("[data-testid='confirmationModal']").contains(
+    cy.get("[data-testid='confirmation-modal']").should("exist");
+    cy.get("[data-testid='confirmation-modal']").contains("Discard changes");
+    cy.get("[data-testid='confirmation-modal']").contains(
       "There are unsaved changes. Are you sure you want to discard your changes?"
     );
   });

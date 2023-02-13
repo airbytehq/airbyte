@@ -34,7 +34,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
 
   return (
-    <Modal onClose={onClose} title={<FormattedMessage id={title} />} testId="confirmationModal">
+    <Modal onClose={onClose} title={<FormattedMessage id={title} />} testId="confirmation-modal">
       <div className={styles.content}>
         <FormattedMessage id={text} values={textValues} />
         {additionalContent}

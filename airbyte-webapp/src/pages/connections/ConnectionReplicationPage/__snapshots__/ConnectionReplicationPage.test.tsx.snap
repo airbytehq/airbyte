@@ -824,7 +824,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                           </div>
                           <div
                             class="<removed-for-snapshot-test>"
-                            data-testid="streamNameCell"
+                            data-testid="stream-name-cell"
                             title="pokemon"
                           >
                             pokemon
@@ -834,7 +834,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                           >
                             <div
                               class="<removed-for-snapshot-test>"
-                              data-testid="syncSettingsDropdown"
+                              data-testid="sync-settings-dropdown"
                               role="combobox"
                             >
                               <span

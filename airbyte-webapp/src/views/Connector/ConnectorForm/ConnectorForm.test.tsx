@@ -48,7 +48,7 @@ const useAddPriceListItem = (container: HTMLElement) => {
   let index = 0;
 
   return async (name: string, price: string) => {
-    const addButton = getByTestId(priceList, "addItemButton");
+    const addButton = getByTestId(priceList, "add-item-button");
     await waitFor(() => userEvent.click(addButton));
 
     const arrayOfObjectsEditModal = getByTestId(document.body, "array-of-objects-edit-modal");
@@ -244,7 +244,7 @@ describe("Service Form", () => {
 
     it("should display array of objects field", () => {
       const priceList = container.querySelector("div[data-testid='connectionConfiguration.priceList']");
-      const addButton = priceList?.querySelector("button[data-testid='addItemButton']");
+      const addButton = priceList?.querySelector("button[data-testid='add-item-button']");
       expect(priceList).toBeInTheDocument();
       expect(addButton).toBeInTheDocument();
     });

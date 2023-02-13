@@ -28,7 +28,7 @@ const EditorHeader: React.FC<EditorHeaderProps> = ({
     <div className={styles.editorHeader}>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
       {mode !== "readonly" && (
-        <Button variant="secondary" type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
+        <Button variant="secondary" type="button" onClick={onAddItem} data-testid="add-item-button" disabled={disabled}>
           {addButtonText || <FormattedMessage id="form.addItems" />}
         </Button>
       )}

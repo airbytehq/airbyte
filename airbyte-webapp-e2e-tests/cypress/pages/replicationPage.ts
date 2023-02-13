@@ -9,14 +9,14 @@ const destinationNamespaceCustom = "div[data-testid='namespaceDefinition-customf
 const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destination']";
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
-const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
+const syncModeDropdown = "div[data-testid='sync-settings-dropdown'] input";
 const getFieldDropdownContainer = (streamName: string, type: Dropdown) => `div[id='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownButton = (streamName: string, type: Dropdown) =>
   `button[data-testid='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownOption = (value: string) => `div[data-testid='${value}']`;
 const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
-const streamNameCell = "[data-testid='nameCell']";
-const streamDataTypeCell = "[data-testid='dataTypeCell']";
+const streamNameCell = "[data-testid='name-cell']";
+const streamDataTypeCell = "[data-testid='data-type-cell']";
 const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
 const getPreFilledPrimaryKeyText = (streamName: string) => `[data-testid='${streamName}_primaryKey_pathPopout_text']`;
 const successResult = "div[data-id='success-result']";

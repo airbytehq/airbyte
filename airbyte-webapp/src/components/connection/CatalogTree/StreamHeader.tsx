@@ -132,7 +132,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             </span>
           )}
         </HeaderCell>
-        <HeaderCell ellipsis title={stream.stream?.name || ""} data-testid="streamNameCell">
+        <HeaderCell ellipsis title={stream.stream?.name || ""} data-testid="stream-name-cell">
           {stream.stream?.name}
         </HeaderCell>
         <Cell flex={1.5}>

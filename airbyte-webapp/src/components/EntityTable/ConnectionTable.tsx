@@ -193,7 +193,7 @@ const ConnectionTable: React.FC<ConnectionTableProps> = ({ data, entity, onClick
     [columnHelper, sortBy, sortOrder, onSortClick, entity, allowAutoDetectSchema]
   );
 
-  return <NextTable columns={columns} data={sortingData} onClickRow={onClickRow} testId="connectionsTable" />;
+  return <NextTable columns={columns} data={sortingData} onClickRow={onClickRow} testId="connections-table" />;
 };
 
 export default ConnectionTable;

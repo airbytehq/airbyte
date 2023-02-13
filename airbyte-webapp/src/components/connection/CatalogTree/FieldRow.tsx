@@ -98,19 +98,19 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
       )}
       {isColumnSelectionEnabled && (
         <Cell ellipsis flex={1.5}>
-          <span title={name} data-testid="nameCell">
+          <span title={name} data-testid="name-cell">
             {name}
           </span>
         </Cell>
       )}
       {!isColumnSelectionEnabled && (
         <FirstCell ellipsis flex={1.5}>
-          <NameContainer title={name} data-testid="nameCell">
+          <NameContainer title={name} data-testid="name-cell">
             {name}
           </NameContainer>
         </FirstCell>
       )}
-      <DataTypeCell data-testid="dataTypeCell">{dataType}</DataTypeCell>
+      <DataTypeCell data-testid="data-type-cell">{dataType}</DataTypeCell>
       <Cell>
         {shouldDefineCursor && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}
       </Cell>

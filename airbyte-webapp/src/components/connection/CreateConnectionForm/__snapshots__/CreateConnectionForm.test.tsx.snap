@@ -893,7 +893,7 @@ exports[`CreateConnectionForm should render 1`] = `
                           </div>
                           <div
                             class="<removed-for-snapshot-test>"
-                            data-testid="streamNameCell"
+                            data-testid="stream-name-cell"
                             title="pokemon"
                           >
                             pokemon
@@ -903,7 +903,7 @@ exports[`CreateConnectionForm should render 1`] = `
                           >
                             <div
                               class="<removed-for-snapshot-test>"
-                              data-testid="syncSettingsDropdown"
+                              data-testid="sync-settings-dropdown"
                               role="combobox"
                             >
                               <span
@@ -1101,7 +1101,7 @@ exports[`CreateConnectionForm should render 1`] = `
                   No custom transformation
                   <button
                     class="<removed-for-snapshot-test>"
-                    data-testid="addItemButton"
+                    data-testid="add-item-button"
                     type="button"
                   >
                     <div
