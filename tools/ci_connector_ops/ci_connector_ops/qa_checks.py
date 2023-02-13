@@ -103,7 +103,16 @@ def read_all_files_in_directory(
                 continue
 
 
-IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {".venv", "tests", "unit_tests", "integration_tests", "build", "source-file", ".pytest_cache"}
+IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
+    ".venv",
+    "tests",
+    "unit_tests",
+    "integration_tests",
+    "build",
+    "source-file",
+    ".pytest_cache",
+    "acceptance_tests_logs",
+}
 IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java"}
 IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
 
