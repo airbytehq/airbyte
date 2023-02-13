@@ -6,16 +6,17 @@ package io.airbyte.integrations.destination.s3.util;
 
 public enum FlatteningType {
 
-    NO("No flattening"),
-    ROOT_LEVEL("Root level flattening");
-    private final String value;
+  NO("No flattening"),
+  ROOT_LEVEL("Root level flattening");
 
-    FlatteningType(final String value) {
-        this.value = value;
-    }
+  private final String value;
 
-    public String getValue() {
-        return value;
-    }
+  FlatteningType(final String value) {
+    this.value = value;
+  }
+
+  public String getValue() {
+    return value;
+  }
 
 }

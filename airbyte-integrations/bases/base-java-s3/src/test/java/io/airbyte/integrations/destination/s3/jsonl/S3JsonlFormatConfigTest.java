@@ -15,6 +15,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.ConfigTestUtils;
+import io.airbyte.integrations.destination.s3.util.FlatteningType;
+import io.airbyte.integrations.destination.s3.util.FlatteningTypeHelper;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.DisplayName;
@@ -26,10 +28,10 @@ public class S3JsonlFormatConfigTest {
   @Test
   @DisplayName("Flattening enums can be created from value string")
   public void testFlatteningCreationFromString() {
-    assertEquals(S3JsonlFormatConfig.Flattening.NO, S3JsonlFormatConfig.Flattening.fromValue("no flattening"));
-    assertEquals(S3JsonlFormatConfig.Flattening.ROOT_LEVEL, S3JsonlFormatConfig.Flattening.fromValue("root level flattening"));
+    assertEquals(FlatteningType.NO, FlatteningTypeHelper.fromValue("no flattening"));
+    assertEquals(FlatteningType.ROOT_LEVEL, FlatteningTypeHelper.fromValue("root level flattening"));
     try {
-      S3JsonlFormatConfig.Flattening.fromValue("invalid flattening value");
+      FlatteningTypeHelper.fromValue("invalid flattening value");
     } catch (final Exception e) {
       assertTrue(e instanceof IllegalArgumentException);
     }

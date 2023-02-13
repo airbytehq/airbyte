@@ -4,7 +4,8 @@
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
@@ -12,42 +13,11 @@ import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
 import io.airbyte.integrations.destination.s3.util.FlatteningType;
 import io.airbyte.integrations.destination.s3.util.FlatteningTypeHelper;
-
 import java.util.Objects;
-
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.*;
 
 public class S3JsonlFormatConfig implements S3FormatConfig {
 
   public static final String JSONL_SUFFIX = ".jsonl";
-
-//  public enum Flattening {
-//
-//    // These values must match the format / jsonl_flattening enum values in spec.json.
-//    NO("No flattening"),
-//    ROOT_LEVEL("Root level flattening");
-//
-//    private final String value;
-//
-//    Flattening(final String value) {
-//      this.value = value;
-//    }
-//
-//    @JsonCreator
-//    public static S3JsonlFormatConfig.Flattening fromValue(final String value) {
-//      for (final S3JsonlFormatConfig.Flattening f : S3JsonlFormatConfig.Flattening.values()) {
-//        if (f.value.equalsIgnoreCase(value)) {
-//          return f;
-//        }
-//      }
-//      throw new IllegalArgumentException("Unexpected value: " + value);
-//    }
-//
-//    public String getValue() {
-//      return value;
-//    }
-//
-//  }
 
   private final FlatteningType flatteningType;
 
@@ -56,7 +26,7 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
   public S3JsonlFormatConfig(final JsonNode formatConfig) {
     this(
         formatConfig.has(FLATTENING_TYPE_ARG_NAME)
-            ? FlatteningTypeHelper.parseFlatteningType(formatConfig.get(FLATTENING_TYPE_ARG_NAME))
+            ? FlatteningTypeHelper.fromValue(formatConfig.get(FLATTENING_TYPE_ARG_NAME).asText())
             : DEFAULT_FLATTENING_TYPE,
         formatConfig.has(COMPRESSION_ARG_NAME)
             ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))

@@ -79,8 +79,8 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
           ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
           : config.getCompressionType();
       final FlatteningType flatteningType = config == null
-              ? S3DestinationConstants.DEFAULT_FLATTENING_TYPE
-              : config.getFlatteningType();
+          ? S3DestinationConstants.DEFAULT_FLATTENING_TYPE
+          : config.getFlatteningType();
       return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION,
           flatteningType != FlatteningType.NO);
     };
