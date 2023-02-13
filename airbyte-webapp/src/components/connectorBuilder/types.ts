@@ -638,12 +638,12 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
 
   const spec: Spec = {
     connection_specification: specSchema,
-    documentation_url: "",
+    documentation_url: "https://example.org",
     type: "Spec",
   };
 
   const streamNames = values.streams.map((s) => s.name);
-  const validCheckStreamNames = values.checkStreams.filter((checkStream) => streamNames.includes(checkStream));
+  const validCheckStreamNames = (values.checkStreams ?? []).filter((checkStream) => streamNames.includes(checkStream));
   const correctedCheckStreams =
     validCheckStreamNames.length > 0 ? validCheckStreamNames : streamNames.length > 0 ? [streamNames[0]] : [];
 
