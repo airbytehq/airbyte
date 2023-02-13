@@ -7,6 +7,10 @@ import {
   webBackendUpdateConnection,
 } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
+import {
+  FilterConnectionRequestBody,
+  webBackendListFilteredConnectionsForWorkspace,
+} from "../../request/DaspireClient";
 
 export class WebBackendConnectionService extends AirbyteRequestService {
   public getConnection(connectionId: string, withRefreshedCatalog?: boolean) {
@@ -15,6 +19,10 @@ export class WebBackendConnectionService extends AirbyteRequestService {
 
   public list(workspaceId: string) {
     return webBackendListConnectionsForWorkspace({ workspaceId }, this.requestOptions);
+  }
+
+  public filteredList(filters: FilterConnectionRequestBody) {
+    return webBackendListFilteredConnectionsForWorkspace(filters, this.requestOptions);
   }
 
   public update(payload: WebBackendConnectionUpdate) {

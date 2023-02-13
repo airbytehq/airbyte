@@ -7,6 +7,7 @@ import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
+import { FilterConnectionRequestBody, WebBackendFilteredConnectionReadList } from "core/request/DaspireClient";
 import { useInitService } from "services/useInitService";
 
 // import { useConfig } from "../../config";
@@ -31,6 +32,7 @@ export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
+  filteredList: (filters: FilterConnectionRequestBody) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
   getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
@@ -231,6 +233,12 @@ const useConnectionList = (): ListConnection => {
   return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
+const useFilteredConnectionList = (filters: FilterConnectionRequestBody): WebBackendFilteredConnectionReadList => {
+  const service = useWebConnectionService();
+
+  return useSuspenseQuery(connectionsKeys.filteredList(filters), () => service.filteredList(filters));
+};
+
 const invalidateConnectionsList = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries(connectionsKeys.lists());
 };
@@ -243,6 +251,7 @@ const useGetConnectionState = (connectionId: string) => {
 
 export {
   useConnectionList,
+  useFilteredConnectionList,
   useGetConnection,
   useUpdateConnection,
   useCreateConnection,

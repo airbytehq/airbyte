@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
+import { DropDownRow } from "components";
+
 import { Action, Namespace } from "core/analytics";
 import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
@@ -62,6 +64,13 @@ const useSourceList = (): SourceList => {
   const service = useSourceService();
 
   return useSuspenseQuery(sourcesKeys.lists(), () => service.list(workspace.workspaceId));
+};
+
+const useSourceOptionList = (): DropDownRow.IDataItem[] => {
+  const { sources } = useSourceList();
+  const sourceOptions = sources.map((source) => ({ label: source.sourceName, value: source.sourceDefinitionId }));
+
+  return [{ label: "All Sources", value: "" }, ...sourceOptions];
 };
 
 const useGetSource = <T extends string | undefined | null>(
@@ -223,6 +232,7 @@ const useDiscoverSchema = (
 
 export {
   useSourceList,
+  useSourceOptionList,
   useGetSource,
   useCreateSource,
   useDeleteSource,
