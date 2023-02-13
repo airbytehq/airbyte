@@ -92,7 +92,8 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     }
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(IP_NOT_IN_WHITE_LIST_ERR_MSG)) {
       return Optional.of(new ConfigErrorException(
-          "Encountered Error with Snowflake Configuration: Database is not configured to access from your IP",
+          "Encountered Error with Snowflake Configuration: Database is not configured to access from Airbyte IPs. Please visit"
+              + " this page for more details: https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses",
           e));
     }
     return Optional.empty();
