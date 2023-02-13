@@ -10,7 +10,6 @@ import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 
 import styles from "./ConnectionInfoCard.module.scss";
@@ -24,8 +23,6 @@ export const ConnectionInfoCard: React.FC = () => {
   } = useConnectionEditService();
   const { hasSchemaChanges, hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
   const { sourceDefinition, destDefinition } = useConnectionFormService();
-
-  const hasAllowSyncFeature = useFeature(FeatureItem.AllowSync);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
@@ -72,7 +69,7 @@ export const ConnectionInfoCard: React.FC = () => {
       {!isConnectionReadOnly && (
         <>
           <div className={styles.enabledControlContainer}>
-            <EnabledControl disabled={!hasAllowSyncFeature || hasBreakingSchemaChange} />
+            <EnabledControl disabled={hasBreakingSchemaChange} />
           </div>
           {hasSchemaChanges && <SchemaChangesDetected />}
         </>
