@@ -424,6 +424,7 @@
   "connection.canceling": "Canceling...",
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
+  "connection.updateFailed": "Failed to update connection",
 
   "connection.progress.percentage": "{percent} percent progress",
   "connection.progress.minutesRemaining": "~{value, plural, one {# minute remaining} other {# minutes remaining}}",

@@ -4,6 +4,7 @@ import { ReleaseStage } from "core/request/AirbyteClient";
 
 import styles from "./FreeTag.module.scss";
 import { useFreeConnectorProgram } from "./hooks/useFreeConnectorProgram";
+import { freeReleaseStages } from "./lib/model";
 
 interface FreeTagProps {
   releaseStage: ReleaseStage;
@@ -16,7 +17,7 @@ export const FreeTag: React.FC<FreeTagProps> = ({ releaseStage }) => {
   const { isEnrolled } = enrollmentStatusQuery.data || {};
   const { formatMessage } = useIntl();
 
-  return isEnrolled && ["alpha", "beta"].includes(releaseStage) ? (
+  return isEnrolled && freeReleaseStages.includes(releaseStage) ? (
     <span className={styles.freeTag}>{formatMessage({ id: "freeConnectorProgram.releaseStageBadge.free" })}</span>
   ) : null;
 };
