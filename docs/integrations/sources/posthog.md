@@ -52,7 +52,7 @@ Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see
 
 | Version | Date       | Pull Request | Subject                                                                                                            |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------------|
-| 0.1.9   | 2023-02-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification   |
+| 0.1.9   | 2023-02-13 | [22906](https://github.com/airbytehq/airbyte/pull/22906) | Specified date formatting in specification   |
 | 0.1.8   | 2022-11-11 | [18993](https://github.com/airbytehq/airbyte/pull/18993) | connector migrated to low-code, added projects,insights streams, added project based slicing for all other streams |
 | 0.1.7   | 2022-07-26 | [14585](https://github.com/airbytehq/airbyte/pull/14585) | Add missing 'properties' field to event attributes                                                                 |
 | 0.1.6   | 2022-01-20 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description                                                                          |
