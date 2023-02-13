@@ -48,7 +48,7 @@ public class V0_41_00_001__AddConnectorBuilderProjectTable extends BaseJavaMigra
         DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
     ctx.createTableIfNotExists("connector_builder_project").columns(id, workspaceId, name, manifestDraft, actorDefinitionId, createdAt, updatedAt).constraints(primaryKey(id)).execute();
-
+    ctx.createIndexIfNotExists("connector_builder_project_workspace_idx").on("connector_builder_project", "workspace_id").execute();
   }
 
 }
