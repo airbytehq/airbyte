@@ -1084,6 +1084,7 @@ exports[`CreateConnectionForm should render 1`] = `
                       <a
                         class="<removed-for-snapshot-test>"
                         href="https://docs.airbyte.com/understanding-airbyte/connections#airbyte-basic-normalization"
+                        rel="noopener noreferrer"
                         target="_blank"
                       >
                         Learn more

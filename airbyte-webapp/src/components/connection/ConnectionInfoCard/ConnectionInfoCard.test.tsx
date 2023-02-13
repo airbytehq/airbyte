@@ -50,8 +50,8 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
     expect(getByTestId("enabledControl-switch")).toBeEnabled();
 
     // schema changes-related
-    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles["connectorLink--breaking"]);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles["connectorLink--nonBreaking"]);
     expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
   });
 
@@ -63,8 +63,8 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
 
     const { getByTestId, queryByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles["connectorLink--breaking"]);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles["connectorLink--nonBreaking"]);
 
     expect(queryByTestId("enabledControl")).toBeFalsy();
     expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
@@ -78,8 +78,8 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
 
     const { getByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles.breaking);
-    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles["connectorLink--breaking"]);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles["connectorLink--nonBreaking"]);
     expect(getByTestId("schemaChangesDetected")).toBeDefined();
 
     expect(getByTestId("enabledControl-switch")).toBeDisabled();
@@ -93,8 +93,8 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
 
     const { getByTestId } = render(<ConnectionInfoCard />, { wrapper: TestWrapperWithAutoDetectSchema });
 
-    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles.nonBreaking);
+    expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles["connectorLink--breaking"]);
+    expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles["connectorLink--nonBreaking"]);
     expect(getByTestId("schemaChangesDetected")).toBeDefined();
 
     expect(getByTestId("enabledControl-switch")).toBeEnabled();
