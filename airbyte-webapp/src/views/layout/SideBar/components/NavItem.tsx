@@ -46,7 +46,7 @@ export const NavItem: React.FC<NavItemProps> = ({
 }) => {
   const location = useLocation();
 
-  const navLinkStyle = (isActive: { isActive: boolean }) => {
+  const menuItemStyle = (isActive?: boolean) => {
     const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
 
     return classNames(styles.menuItem, className, {
@@ -69,7 +69,7 @@ export const NavItem: React.FC<NavItemProps> = ({
     );
   }
   return (
-    <NavLink className={(isActive) => navLinkStyle(isActive)} to={to} data-testid={testId}>
+    <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={to} data-testid={testId}>
       <NavItemInner label={label} icon={icon} withNotification={withNotification} />
     </NavLink>
   );
