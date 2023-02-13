@@ -14,7 +14,7 @@ const getFieldDropdownContainer = (streamName: string, type: Dropdown) => `div[i
 const getFieldDropdownButton = (streamName: string, type: Dropdown) =>
   `button[data-testid='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownOption = (value: string) => `div[data-testid='${value}']`;
-const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
+const dropDownOverlayContainer = "div[data-testid='overlay-container']";
 const streamNameCell = "[data-testid='name-cell']";
 const streamDataTypeCell = "[data-testid='data-type-cell']";
 const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
