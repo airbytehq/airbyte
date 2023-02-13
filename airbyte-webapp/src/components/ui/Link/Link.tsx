@@ -1,12 +1,13 @@
-import classNames from "classnames";
 import { PropsWithChildren } from "react";
+// eslint-disable-next-line no-restricted-imports
 import { Link as ReactRouterLink, To } from "react-router-dom";
 
-import styles from "./Link.module.scss";
+import { getLinkClassNames } from "./getLinkClassNames";
 
 export interface LinkProps {
   className?: string;
   opensInNewTab?: boolean;
+  variant?: "default" | "primary";
 }
 
 interface InternalLinkProps extends LinkProps {
@@ -18,12 +19,13 @@ export const Link: React.FC<PropsWithChildren<InternalLinkProps>> = ({
   className,
   to,
   opensInNewTab = false,
+  variant = "default",
   ...props
 }) => {
   return (
     <ReactRouterLink
       {...props}
-      className={classNames(styles.link, className)}
+      className={getLinkClassNames({ className, variant })}
       rel={opensInNewTab ? "noopener noreferrer" : undefined}
       target={opensInNewTab ? "_blank" : "_self"}
       to={to}

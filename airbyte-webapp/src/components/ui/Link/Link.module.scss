@@ -3,4 +3,13 @@
 .link {
   color: colors.$grey-300;
   text-underline-offset: 2px;
+
+  &--primary {
+    color: colors.$blue-400;
+    text-decoration: none;
+
+    &:hover {
+      color: colors.$blue-300;
+    }
+  }
 }
