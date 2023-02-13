@@ -112,7 +112,7 @@ def test_run_qa_checks_error(capsys, mocker):
 
 def test_check_connector_https_url_only(capsys, tmp_path, mocker):
     file_with_http_url_path = Path(tmp_path / "file_with_http_url.foo")
-    qa_checks.PATH_PATTERNS_TO_IGNORE_FOR_HTTPS_CHECKS = set()
+    qa_checks.IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = set()
     Path(tmp_path / "file_without_https_url.foo").touch()
     Path(tmp_path / "my_directory").mkdir()
     nested_file_with_http_url_path = Path(tmp_path / "my_directory/nested_file_with_http_url.foo")

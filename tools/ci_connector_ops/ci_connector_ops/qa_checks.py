@@ -98,6 +98,7 @@ def read_all_files_in_directory(directory: Path, ignored_directories: Optional[S
 
 
 IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {".venv", "tests", "unit_tests", "integration_tests", "build", "source-file"}
+IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
 
 
 def check_connector_https_url_only(connector: Connector) -> bool:
@@ -111,10 +112,11 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     """
     files_with_http_url = set()
     for filename, line in read_all_files_in_directory(connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS):
-        if "http://json-schema.org" or "http://localhost" in line:
+        if any([prefix in line.lower() for prefix in IGNORED_URLS_PREFIX]):
             continue
         if "http://" in line.lower():
             files_with_http_url.add(str(filename))
+
     if files_with_http_url:
         files_with_http_url = "\n\t- ".join(files_with_http_url)
         print(f"The following files have http:// URLs:\n\t- {files_with_http_url}")
