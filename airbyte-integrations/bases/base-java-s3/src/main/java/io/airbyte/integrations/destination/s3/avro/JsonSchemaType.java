@@ -28,6 +28,7 @@ public enum JsonSchemaType {
   OBJECT("object", Schema.Type.RECORD),
   ARRAY("array", Schema.Type.ARRAY),
   COMBINED("combined", Schema.Type.UNION),
+  
   @Deprecated
   STRING_V0("string", null, Schema.Type.STRING),
   @Deprecated
