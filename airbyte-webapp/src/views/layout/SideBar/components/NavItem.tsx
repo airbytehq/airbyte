@@ -34,20 +34,7 @@ const NavItemInner: React.FC<NavItemInnerProps> = ({ icon, label, withNotificati
     </FlexContainer>
   );
 };
-export const useCalculateSidebarStyles = (className?: string) => {
-  const location = useLocation();
 
-  const menuItemStyle = (isActive?: boolean) => {
-    const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
-
-    return classNames(styles.menuItem, className, {
-      [styles.active]: isActive,
-      [styles.activeChild]: isChild && isActive,
-    });
-  };
-
-  return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
-};
 export const NavItem: React.FC<NavItemProps> = ({
   label,
   icon,
@@ -57,7 +44,16 @@ export const NavItem: React.FC<NavItemProps> = ({
   className,
   withNotification = false,
 }) => {
-  const navLinkClassName = useCalculateSidebarStyles(className);
+  const location = useLocation();
+
+  const navLinkStyle = (isActive: { isActive: boolean }) => {
+    const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
+
+    return classNames(styles.menuItem, className, {
+      [styles.active]: isActive,
+      [styles.activeChild]: isChild && isActive,
+    });
+  };
 
   if (as === "a") {
     return (
@@ -73,7 +69,7 @@ export const NavItem: React.FC<NavItemProps> = ({
     );
   }
   return (
-    <NavLink className={navLinkClassName} to={to} data-testid={testId}>
+    <NavLink className={(isActive) => navLinkStyle(isActive)} to={to} data-testid={testId}>
       <NavItemInner label={label} icon={icon} withNotification={withNotification} />
     </NavLink>
   );
