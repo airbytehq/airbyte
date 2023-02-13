@@ -12,6 +12,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINIT
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTOR_BUILDER_PROJECT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
@@ -36,6 +37,7 @@ import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorCatalogWithUpdatedAt;
 import io.airbyte.config.ConfigSchema;
+import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.Geography;
@@ -1598,6 +1600,70 @@ public class ConfigRepository {
         .fetchOneInto(Integer.class);
 
     return countResult > 0;
+  }
+
+  public Optional<ConnectorBuilderProject> getConnectorBuilderProject(final UUID builderProjectId, final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.select(CONNECTOR_BUILDER_PROJECT.asterisk())
+            .from(CONNECTOR_BUILDER_PROJECT)
+            .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
+            .fetch())
+        .map(DbConverter::buildConnectorBuilderProject)
+        .stream()
+        .findFirst();
+  }
+
+  public Stream<ConnectorBuilderProject> getConnectorBuilderProjectsByWorkspace(final UUID workspaceId) throws IOException {
+    final Condition matchByIds = CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID.eq(workspaceId);
+
+    return database.query(ctx -> ctx.select(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME, CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID)
+            .from(CONNECTOR_BUILDER_PROJECT)
+            .where(matchByIds)
+            .fetch())
+        .map(DbConverter::buildConnectorBuilderProjectWithoutManifestDraft)
+        .stream();
+  }
+
+  public boolean deleteBuilderProject(final UUID builderProjectId, final UUID workspaceId) throws IOException {
+    return database.transaction(ctx -> ctx.deleteFrom(CONNECTOR_BUILDER_PROJECT))
+            .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
+            .execute() > 0;
+  }
+
+  public void writeBuilderProject(final ConnectorBuilderProject builderProject) throws IOException {
+    database.transaction(ctx -> {
+      final OffsetDateTime timestamp = OffsetDateTime.now();
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(CONNECTOR_BUILDER_PROJECT)
+          .where(CONNECTOR_BUILDER_PROJECT.ID.eq(builderProject.getBuilderProjectId())));
+
+      if (isExistingConfig) {
+        ctx.update(CONNECTOR_BUILDER_PROJECT)
+            .set(CONNECTOR_BUILDER_PROJECT.ID, builderProject.getBuilderProjectId())
+            .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
+            .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
+            .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,  JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(WORKSPACE.UPDATED_AT, timestamp)
+            .where(getBuilderProjectIdCondition(builderProject.getBuilderProjectId(), builderProject.getWorkspaceId()))
+            .execute();
+      } else {
+        ctx.insertInto(CONNECTOR_BUILDER_PROJECT)
+            .set(CONNECTOR_BUILDER_PROJECT.ID, builderProject.getBuilderProjectId())
+            .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
+            .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
+            .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,  JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(WORKSPACE.CREATED_AT, timestamp)
+            .set(WORKSPACE.UPDATED_AT, timestamp)
+            .execute();
+      }
+      return null;
+    });
+  }
+
+  private Condition getBuilderProjectIdCondition(final UUID builderProjectId, final UUID workspaceId) {
+    return CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId)
+        .and(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID.eq(workspaceId));
   }
 
   /**

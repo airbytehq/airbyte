@@ -1,0 +1,27 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/ConnectorBuilderProject.yaml
+title: ConnectorBuilderProject
+description: low-code cd project editable in the connector builder UI
+type: object
+required:
+  - name
+  - builderProjectId
+  - workspaceId
+additionalProperties: false
+properties:
+  name:
+    type: string
+  builderProjectId:
+    type: string
+    format: uuid
+  workspaceId:
+    type: string
+    format: uuid
+  actorDefinitionId:
+    type: string
+    format: uuid
+  manifestDraft:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
