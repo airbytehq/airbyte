@@ -26,11 +26,6 @@ tests:
       future_state_path: "integration_tests/future_state.json"
       threshold_days: 30
       cursor_paths:
-        attached_item: [ "cbdemo_standard", "updated_at" ]
-        attached_item: [ "cbdemo_advanced", "updated_at" ]
-        attached_item: [ "cbdemo_basic", "updated_at" ]
-        attached_item: [ "cbdemo_intermediary", "updated_at" ]
-        attached_item: [ "cbdemo_lite", "updated_at" ]
         attached_item: [ "cbdemo_premium", "updated_at" ]
   full_refresh:
     - config_path: "secrets/config.json"
