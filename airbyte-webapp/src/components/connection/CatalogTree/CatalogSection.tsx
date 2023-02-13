@@ -59,7 +59,10 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     return traversedFields.sort(naturalComparatorBy((field) => field.cleanedName));
   }, [stream?.jsonSchema, stream?.name]);
 
-  const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
+  // FIXME: Temp fix to return empty object when the json schema does not have .properties
+  // This prevents the table from crashing but still will not render the fields in the stream.
+  const streamProperties = streamNode?.stream?.jsonSchema?.properties ?? {};
+  const numberOfFieldsInStream = Object.keys(streamProperties).length ?? 0;
 
   const {
     destDefinitionSpecification: { supportedDestinationSyncModes },

@@ -5,9 +5,9 @@ import { Button } from "components/ui/Button";
 import { Callout } from "components/ui/Callout";
 
 import { FormBuildError, isFormBuildError } from "core/form/FormBuildError";
-import { EditorView } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConfigMenuErrorBoundary.module.scss";
+import { EditorView } from "../types";
 
 interface ApiErrorBoundaryState {
   error?: string | FormBuildError;

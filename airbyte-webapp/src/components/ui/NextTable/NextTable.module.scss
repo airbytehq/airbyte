@@ -8,6 +8,11 @@
   width: 100%;
   max-width: 100%;
   border-radius: variables.$border-radius-md;
+  box-shadow: 0 2px 4px colors.$cardShadowColor;
+
+  &.light {
+    box-shadow: none;
+  }
 }
 
 .thead {
@@ -18,14 +23,27 @@
 
 // --------- <th/> ---------
 .th {
-  background: colors.$grey-50;
-  color: colors.$grey;
+  background: colors.$dark-blue;
+  color: colors.$white;
   text-transform: uppercase;
   border-bottom: none;
   text-align: left;
   font-size: 10px;
   line-height: 12px;
   font-weight: 600;
+  width: auto;
+  padding: variables.$spacing-md variables.$spacing-lg variables.$spacing-md;
+
+  &.light {
+    color: colors.$grey;
+    background-color: colors.$grey-50;
+    text-transform: capitalize;
+    border-bottom: none;
+    text-align: left;
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: 400;
+  }
 
   &:first-child {
     padding-left: calc(variables.$spacing-2xl + variables.$spacing-sm);
@@ -34,7 +52,7 @@
 
   &:last-child {
     padding-left: variables.$spacing-lg;
-    border-radius: 0 variables.$border-radius-md 0 0;
+    border-radius: 0 variables.$spacing-md 0 0;
   }
 }
 
@@ -42,6 +60,10 @@
 .tr {
   background: colors.$white;
   cursor: auto;
+
+  &.clickable {
+    cursor: pointer;
+  }
 
   &:hover {
     background-color: colors.$grey-50;
@@ -61,6 +83,10 @@
   text-overflow: ellipsis;
   border-bottom: variables.$border-thin solid colors.$grey-100;
   width: auto;
+
+  &.responsive {
+    max-width: 0;
+  }
 
   tr:last-child > & {
     border-bottom: none;
