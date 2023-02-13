@@ -74,7 +74,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.1.16  | 2022-10-06 | [22900](https://github.com/airbytehq/airbyte/pull/22900) | Fix schemas for `coupon` and `subscription`                                                         |
+| 0.2.1   | 2022-10-06 | [22900](https://github.com/airbytehq/airbyte/pull/22900) | Fix schemas for `coupon` and `subscription`                                                         |
 | 0.1.16  | 2022-10-06 | [17661](https://github.com/airbytehq/airbyte/pull/17661) | Make `transaction` stream to be consistent with `S3` by using type transformer                      |
 | 0.1.15  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                        |
 | 0.1.14  | 2022-09-23 | [17056](https://github.com/airbytehq/airbyte/pull/17056) | Add "custom fields" to the relevant Chargebee source data streams                                   |
