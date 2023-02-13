@@ -52,5 +52,5 @@ $spacing: variables.$spacing-xl;
   top: 0;
   z-index: z-indices.$mainPageWithScrollEdge;
   min-height: $blur-height;
-  background: linear-gradient(180deg, colors.$grey-50, rgba(248, 248, 250, 0%) 15px);
+  background: linear-gradient(180deg, colors.$grey-50, rgba(248, 248, 250, 0%) variables.$height-soft-edge);
 }
