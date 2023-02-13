@@ -31,7 +31,7 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <Button variant="danger" onClick={() => logout()} isLoading={isLoggingOut} data-testid="button.signout">
+            <Button variant="danger" onClick={() => logout()} isLoading={isLoggingOut} data-testid="button-sign-out">
               <FormattedMessage id="settings.accountSettings.logoutText" />
             </Button>
           </Header>

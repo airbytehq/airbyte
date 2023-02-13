@@ -31,13 +31,13 @@ describe("OAuthLogin", () => {
 
   it("should call auth service for Google", () => {
     const { getByTestId } = render(<OAuthLogin />, { wrapper: TestWrapper });
-    userEvents.click(getByTestId("googleOauthLogin"));
+    userEvents.click(getByTestId("google-oauth-login"));
     expect(mockLoginWithOAuth).toHaveBeenCalledWith("google");
   });
 
   it("should call auth service for GitHub", () => {
     const { getByTestId } = render(<OAuthLogin />, { wrapper: TestWrapper });
-    userEvents.click(getByTestId("githubOauthLogin"));
+    userEvents.click(getByTestId("github-oauth-login"));
     expect(mockLoginWithOAuth).toHaveBeenCalledWith("github");
   });
 });

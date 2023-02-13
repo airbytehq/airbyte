@@ -37,7 +37,7 @@ export const TextInputContainer: React.FC<React.PropsWithChildren<TextInputConta
         setFocused(false);
         onBlur?.(event);
       }}
-      data-testid="textInputContainer"
+      data-testid="text-input-container"
     >
       {children}
     </div>

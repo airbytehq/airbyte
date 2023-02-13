@@ -12,14 +12,14 @@ const TestComponent: React.FC<{ onModalResult?: (result: ModalResult<unknown>) =
     openModal({
       title: "Test Modal Title",
       content: ({ onCancel, onClose }) => (
-        <div data-testid="testModalContent">
+        <div data-testid="test-modal-content">
           <button onClick={onCancel} data-testid="cancel">
             Cancel
           </button>
-          <button onClick={() => onClose("reason1")} data-testid="close-reason1">
+          <button onClick={() => onClose("reason1")} data-testid="close-reason-one">
             Close Reason 1
           </button>
-          <button onClick={() => onClose("reason2")} data-testid="close-reason2">
+          <button onClick={() => onClose("reason2")} data-testid="close-reason-two">
             Close Reason 2
           </button>
         </div>
@@ -46,7 +46,7 @@ describe("ModalService", () => {
     const rendered = renderModal();
 
     expect(rendered.getByText("Test Modal Title")).toBeTruthy();
-    expect(rendered.getByTestId("testModalContent")).toBeTruthy();
+    expect(rendered.getByTestId("test-modal-content")).toBeTruthy();
   });
 
   it("should close the modal with escape and emit a cancel result", async () => {
@@ -56,7 +56,7 @@ describe("ModalService", () => {
 
     await waitFor(() => userEvent.keyboard("{Escape}"));
 
-    expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
+    expect(rendered.queryByTestId("test-modal-content")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "canceled" });
   });
 
@@ -67,7 +67,7 @@ describe("ModalService", () => {
 
     await waitFor(() => userEvent.click(rendered.getByTestId("cancel")));
 
-    expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
+    expect(rendered.queryByTestId("test-modal-content")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "canceled" });
   });
 
@@ -76,17 +76,17 @@ describe("ModalService", () => {
 
     let rendered = renderModal(resultCallback);
 
-    await waitFor(() => userEvent.click(rendered.getByTestId("close-reason1")));
+    await waitFor(() => userEvent.click(rendered.getByTestId("close-reason-one")));
 
-    expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
+    expect(rendered.queryByTestId("test-modal-content")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "closed", reason: "reason1" });
 
     resultCallback.mockReset();
     rendered = renderModal(resultCallback);
 
-    await waitFor(() => userEvent.click(rendered.getByTestId("close-reason2")));
+    await waitFor(() => userEvent.click(rendered.getByTestId("close-reason-two")));
 
-    expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
+    expect(rendered.queryByTestId("test-modal-content")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "closed", reason: "reason2" });
   });
 });

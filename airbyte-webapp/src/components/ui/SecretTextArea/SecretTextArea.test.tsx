@@ -32,7 +32,7 @@ describe("SecretTextArea", () => {
   it("renders disabled when disabled is set", async () => {
     const { getByTestId } = await render(<SecretTextArea disabled />);
 
-    expect(getByTestId("textInputContainer")).toHaveClass("disabled");
+    expect(getByTestId("text-input-container")).toHaveClass("disabled");
     expect(getByTestId("secretTextArea-textarea")).toBeDisabled();
   });
 
@@ -40,7 +40,7 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { getByTestId } = await render(<SecretTextArea value={value} onChange={emptyFn} disabled />);
 
-    expect(getByTestId("textInputContainer")).toHaveClass("disabled");
+    expect(getByTestId("text-input-container")).toHaveClass("disabled");
     expect(getByTestId("secretTextArea-visibilityButton")).toBeDisabled();
   });
 

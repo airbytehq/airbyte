@@ -14,7 +14,7 @@ import styles from "./OAuthLogin.module.scss";
 
 const GitHubButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
-    <button className={styles.github} onClick={onClick} data-testid="githubOauthLogin">
+    <button className={styles.github} onClick={onClick} data-testid="github-oauth-login">
       <img src={githubLogo} alt="" />
       <FormattedMessage id="login.oauth.github" tagName="span" />
     </button>
@@ -23,7 +23,7 @@ const GitHubButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
 
 const GoogleButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   return (
-    <button className={styles.google} onClick={onClick} data-testid="googleOauthLogin">
+    <button className={styles.google} onClick={onClick} data-testid="google-oauth-login">
       <img src={googleLogo} alt="" />
       <FormattedMessage id="login.oauth.google" tagName="span" />
     </button>

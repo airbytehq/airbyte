@@ -115,7 +115,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
+              <Button type="submit" isLoading={isSubmitting} data-testid="login-reset-password">
                 <FormattedMessage id="login.resetPassword" />
               </Button>
             </BottomBlock>
