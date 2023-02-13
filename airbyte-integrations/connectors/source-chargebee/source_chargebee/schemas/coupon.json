@@ -33,6 +33,9 @@
       "type": ["string", "null"],
       "enum": ["one_time", "forever", "limited_period"]
     },
+    "duration_month": {
+      "type": ["integer", "null"]
+    },
     "valid_till": {
       "type": ["integer", "null"]
     },
@@ -42,6 +45,9 @@
     "status": {
       "type": ["string", "null"],
       "enum": ["active", "expired", "archived", "deleted"]
+    },
+    "apply_discount_on": {
+      "type": ["string", "null"]
     },
     "apply_on": {
       "type": ["string", "null"],
