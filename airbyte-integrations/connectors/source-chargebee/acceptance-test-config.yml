@@ -12,7 +12,7 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.16"
+        disable_for_version: "0.2.0"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/product_catalog_v2_configured_catalog.json"
@@ -24,8 +24,14 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/product_catalog_v2_configured_catalog.json"
       future_state_path: "integration_tests/future_state.json"
+      threshold_days: 30
       cursor_paths:
         attached_item: [ "cbdemo_standard", "updated_at" ]
+        attached_item: [ "cbdemo_advanced", "updated_at" ]
+        attached_item: [ "cbdemo_basic", "updated_at" ]
+        attached_item: [ "cbdemo_intermediary", "updated_at" ]
+        attached_item: [ "cbdemo_lite", "updated_at" ]
+        attached_item: [ "cbdemo_premium", "updated_at" ]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/product_catalog_v2_configured_catalog.json"
