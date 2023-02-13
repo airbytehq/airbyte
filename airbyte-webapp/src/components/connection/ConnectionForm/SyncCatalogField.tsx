@@ -50,7 +50,7 @@ const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProp
           {newTable && (
             <Button type="button" variant="clear" className={styles.feedback}>
               <a href="https://forms.gle/5wDQHf6hL5sCvLgK7" target="_blank" rel="noreferrer">
-                <FormattedMessage id="form.leaveFeedback" />
+                <FormattedMessage id="form.shareFeedback" />
               </a>
             </Button>
           )}
