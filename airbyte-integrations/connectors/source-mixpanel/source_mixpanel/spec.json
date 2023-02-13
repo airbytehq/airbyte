@@ -7,7 +7,6 @@
     "properties": {
       "credentials": {
         "title": "Authentication *",
-        "description": "Choose how to authenticate to Mixpanel",
         "type": "object",
         "order": 0,
         "oneOf": [
