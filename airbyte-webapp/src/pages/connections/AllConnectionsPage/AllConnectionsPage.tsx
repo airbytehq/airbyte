@@ -13,8 +13,8 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 
-import ConnectionsTable from "./ConnectionsTable";
 import { RoutePaths } from "../../routePaths";
+import ConnectionsTable from "./ConnectionsTable";
 
 export const AllConnectionsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,6 +39,7 @@ export const AllConnectionsPage: React.FC = () => {
                   variant="primary"
                   size="sm"
                   onClick={() => onCreateClick()}
+                  data-testid="new-connection-button"
                 >
                   <FormattedMessage id="connection.newConnection" />
                 </Button>

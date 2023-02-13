@@ -12,10 +12,6 @@ import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
-import { useAnalyticsService } from "./Analytics";
-import { useAppMonitoringService } from "./AppMonitoringService";
-import { useNotificationService } from "./Notification";
-import { useCurrentWorkspace } from "./useWorkspace";
 import { useConfig } from "../../config";
 import {
   ConnectionScheduleData,
@@ -35,6 +31,10 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useAnalyticsService } from "./Analytics";
+import { useAppMonitoringService } from "./AppMonitoringService";
+import { useNotificationService } from "./Notification";
+import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
@@ -84,7 +84,7 @@ export const useSyncConnection = () => {
   const { trackError } = useAppMonitoringService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
-  const notificationService = useNotificationService();
+  const { registerNotification } = useNotificationService();
   const workspaceId = useCurrentWorkspaceId();
   const { formatMessage } = useIntl();
 
@@ -104,7 +104,7 @@ export const useSyncConnection = () => {
     {
       onError: (error: Error) => {
         trackError(error);
-        notificationService.registerNotification({
+        registerNotification({
           id: `tables.startSyncError.${error.message}`,
           text: `${formatMessage({ id: "connection.startSyncError" })}: ${error.message}`,
           type: ToastType.ERROR,
@@ -230,12 +230,23 @@ const useUpdateConnection = () => {
  */
 export const useEnableConnection = () => {
   const analyticsService = useAnalyticsService();
+  const { trackError } = useAppMonitoringService();
+  const { registerNotification } = useNotificationService();
+  const { formatMessage } = useIntl();
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   return useMutation(
     ({ connectionId, enable }: { connectionId: WebBackendConnectionUpdate["connectionId"]; enable: boolean }) =>
       updateConnection({ connectionId, status: enable ? ConnectionStatus.active : ConnectionStatus.inactive }),
     {
+      onError: (error: Error) => {
+        trackError(error);
+        registerNotification({
+          id: `tables.updateFailed.${error.message}`,
+          text: `${formatMessage({ id: "connection.updateFailed" })}: ${error.message}`,
+          type: ToastType.ERROR,
+        });
+      },
       onSuccess: (connection) => {
         const action = connection.status === ConnectionStatus.active ? Action.REENABLE : Action.DISABLE;
 

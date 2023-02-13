@@ -220,6 +220,26 @@ spec:
                 secretKeyRef:
                   name: airbyte-secrets
                   key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+            - name: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: STATE_STORAGE_S3_SECRET_ACCESS_KEY
+            - name: STATE_STORAGE_S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: STATE_STORAGE_S3_ACCESS_KEY
+            - name: STATE_STORAGE_S3_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STATE_STORAGE_S3_REGION
+            - name: STATE_STORAGE_S3_BUCKET_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STATE_STORAGE_S3_BUCKET_NAME
             - name: CONTAINER_ORCHESTRATOR_ENABLED
               valueFrom:
                 configMapKeyRef:
@@ -280,6 +300,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: USE_STREAM_CAPABLE_STATE
+            - name: STRICT_COMPARISON_NORMALIZATION_TAG
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STRICT_COMPARISON_NORMALIZATION_TAG
+            - name: STRICT_COMPARISON_NORMALIZATION_WORKSPACES
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: STRICT_COMPARISON_NORMALIZATION_WORKSPACES
             - name: SHOULD_RUN_NOTIFY_WORKFLOWS
               valueFrom:
                 configMapKeyRef:

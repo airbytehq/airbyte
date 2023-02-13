@@ -459,7 +459,6 @@ subprojects { subproj ->
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
@@ -498,11 +497,6 @@ subprojects {
             flakeCheck.dependsOn licenseTask
         }
         blackFormat.dependsOn licenseTask
-
-        def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
-        if (generateFilesTask != null) {
-            licenseTask.dependsOn generateFilesTask
-        }
 
         def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
         if (generateManifestFilesTask != null) {

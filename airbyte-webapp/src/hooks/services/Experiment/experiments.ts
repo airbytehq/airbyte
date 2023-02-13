@@ -17,12 +17,8 @@ export interface Experiments {
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;
   "authPage.signup.hideCompanyName": boolean;
-  "authPage.oauth.google": boolean;
-  "authPage.oauth.github": boolean;
-  "authPage.oauth.google.signUpPage": boolean;
-  "authPage.oauth.github.signUpPage": boolean;
   "onboarding.speedyConnection": boolean;
-  "authPage.oauth.position": "top" | "bottom";
+  "authPage.signup.simplifyLeftSide": boolean;
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
   "connection.autoDetectSchemaChanges": boolean;

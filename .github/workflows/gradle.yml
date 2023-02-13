@@ -84,6 +84,8 @@ jobs:
               - 'airbyte-db/**'
             frontend:
               - 'airbyte-api/src/main/openapi/config.yaml'
+              - 'airbyte-connector-builder-server/CDK_VERSION'
+              - 'airbyte-connector-builder-server/src/main/openapi/openapi.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
 
@@ -1212,7 +1214,7 @@ jobs:
           AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-        timeout-minutes: 20
+        timeout-minutes: 40
         uses: Wandalen/wretry.action@master
         with:
           command: CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
