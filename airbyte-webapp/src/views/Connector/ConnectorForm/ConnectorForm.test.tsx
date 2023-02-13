@@ -51,7 +51,7 @@ const useAddPriceListItem = (container: HTMLElement) => {
     const addButton = getByTestId(priceList, "addItemButton");
     await waitFor(() => userEvent.click(addButton));
 
-    const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
+    const arrayOfObjectsEditModal = getByTestId(document.body, "array-of-objects-edit-modal");
     const getPriceListInput = (index: number, key: string) =>
       arrayOfObjectsEditModal.querySelector(`input[name='connectionConfiguration.priceList\\[${index}\\].${key}']`);
 

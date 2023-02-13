@@ -1,4 +1,4 @@
-const selectTypeDropdown = "div[data-testid='serviceType']";
+const selectTypeDropdown = "div[data-testid='service-type']";
 const getServiceTypeDropdownOption = (serviceName: string) => `div[data-testid='${serviceName}']`;
 const nameInput = "input[name=name]";
 const hostInput = "input[name='connectionConfiguration.host']";

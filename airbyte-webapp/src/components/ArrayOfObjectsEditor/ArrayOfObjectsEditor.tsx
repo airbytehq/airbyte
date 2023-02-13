@@ -55,7 +55,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
       <Modal
         title={<FormattedMessage id={item ? "form.edit" : "form.add"} />}
         size={editModalSize}
-        testId="arrayOfObjects-editModal"
+        testId="array-of-objects-edit-modal"
         onClose={onCancel}
       >
         {renderItemEditorForm(item)}

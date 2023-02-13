@@ -42,15 +42,15 @@ export const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, 
               id: requireFullReset ? "connection.saveWithFullReset" : "connection.saveWithReset",
             })}
             checkbox
-            data-testid="resetModal-reset-checkbox"
+            data-testid="reset-modal-reset-checkbox"
           />
         </p>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onCancel} variant="secondary" data-testid="resetModal-cancel">
+        <Button onClick={onCancel} variant="secondary" data-testid="reset-modal-cancel">
           <FormattedMessage id="form.cancel" />
         </Button>
-        <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">
+        <Button onClick={() => onClose(withReset)} data-testid="reset-modal-save">
           <FormattedMessage id="connection.save" />
         </Button>
       </ModalFooter>

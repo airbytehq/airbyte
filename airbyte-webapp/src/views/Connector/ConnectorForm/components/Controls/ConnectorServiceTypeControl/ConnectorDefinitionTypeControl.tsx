@@ -201,7 +201,7 @@ export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeCon
           onChange={handleSelect}
           onMenuOpen={() => trackMenuOpen()}
           noOptionsMessage={getNoOptionsMessage}
-          data-testid="serviceType"
+          data-testid="service-type"
         />
       </ControlLabels>
       {selectedConnectorDefinition &&

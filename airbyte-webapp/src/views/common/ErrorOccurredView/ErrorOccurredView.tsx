@@ -23,7 +23,7 @@ export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({
   docLink,
 }) => {
   return (
-    <div className={styles.errorOccurredView} data-testid="errorView">
+    <div className={styles.errorOccurredView} data-testid="error-view">
       <div className={styles.content}>
         <img src="/images/octavia/biting-nails.png" alt="" className={styles.octavia} />
         <Heading as="h2" size="lg" centered>
