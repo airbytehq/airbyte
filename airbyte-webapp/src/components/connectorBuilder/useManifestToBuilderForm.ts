@@ -29,6 +29,7 @@ import {
   DEFAULT_BUILDER_FORM_VALUES,
   DEFAULT_BUILDER_STREAM_VALUES,
   isInterpolatedConfigKey,
+  RequestOptionOrPathInject,
 } from "./types";
 import { formatJson } from "./utils";
 
@@ -240,7 +241,7 @@ function manifestStreamSlicerToBuilder(
 }
 
 function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): BuilderStream["primaryKey"] {
-  if (!isEqual(manifestStream.primary_key, manifestStream.retriever.primary_key)) {
+  if (!isEqual(manifestStream.primary_key, manifestStream.primary_key)) {
     throw new ManifestCompatibilityError(
       manifestStream.name,
       "primary_key is not consistent across stream and retriever levels"
@@ -248,14 +249,14 @@ function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): Builder
   }
   if (manifestStream.primary_key === undefined) {
     return [];
-  } else if (Array.isArray(manifestStream.retriever.primary_key)) {
-    if (manifestStream.retriever.primary_key.length > 0 && Array.isArray(manifestStream.retriever.primary_key[0])) {
+  } else if (Array.isArray(manifestStream.primary_key)) {
+    if (manifestStream.primary_key.length > 0 && Array.isArray(manifestStream.primary_key[0])) {
       throw new ManifestCompatibilityError(manifestStream.name, "primary_key contains nested arrays");
     } else {
-      return manifestStream.retriever.primary_key as string[];
+      return manifestStream.primary_key as string[];
     }
   } else {
-    return [manifestStream.retriever.primary_key];
+    return [manifestStream.primary_key];
   }
 }
 
@@ -275,9 +276,20 @@ function manifestPaginatorToBuilder(
     throw new ManifestCompatibilityError(streamName, "paginator.pagination_strategy uses a CustomPaginationStrategy");
   }
 
+  let pageTokenOption: RequestOptionOrPathInject | undefined = undefined;
+
+  if (manifestPaginator.page_token_option.type === "RequestPath") {
+    pageTokenOption = { inject_into: "path" };
+  } else {
+    pageTokenOption = {
+      inject_into: manifestPaginator.page_token_option.inject_into,
+      field_name: manifestPaginator.page_token_option.field_name,
+    };
+  }
+
   return {
     strategy: manifestPaginator.pagination_strategy,
-    pageTokenOption: manifestPaginator.page_token_option,
+    pageTokenOption,
     pageSizeOption: manifestPaginator.page_size_option,
   };
 }

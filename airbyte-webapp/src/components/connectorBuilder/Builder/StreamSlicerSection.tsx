@@ -11,7 +11,7 @@ import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderList } from "./BuilderList";
 import { BuilderOneOf, OneOfOption } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
-import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
+import { RequestOptionFields } from "./RequestOptionFields";
 import { StreamReferenceField } from "./StreamReferenceField";
 import { ToggleGroupField } from "./ToggleGroupField";
 
@@ -69,11 +69,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
               field_name: "",
             }}
           >
-            <InjectRequestOptionFields
-              path={buildPath("request_option")}
-              descriptor="slice value"
-              excludeInjectIntoValues={["path"]}
-            />
+            <RequestOptionFields path={buildPath("request_option")} descriptor="slice value" excludePathInjection />
           </ToggleGroupField>
         </>
       ),
@@ -136,10 +132,10 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
               field_name: "",
             }}
           >
-            <InjectRequestOptionFields
+            <RequestOptionFields
               path={buildPath("start_time_option")}
               descriptor="start datetime"
-              excludeInjectIntoValues={["path"]}
+              excludePathInjection
             />
           </ToggleGroupField>
           <ToggleGroupField<RequestOption>
@@ -152,11 +148,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
               field_name: "",
             }}
           >
-            <InjectRequestOptionFields
-              path={buildPath("end_time_option")}
-              descriptor="end datetime"
-              excludeInjectIntoValues={["path"]}
-            />
+            <RequestOptionFields path={buildPath("end_time_option")} descriptor="end datetime" excludePathInjection />
           </ToggleGroupField>
           <BuilderOptional>
             <BuilderFieldWithInputs

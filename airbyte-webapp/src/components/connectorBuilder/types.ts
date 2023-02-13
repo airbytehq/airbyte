@@ -23,6 +23,8 @@ import {
   PageIncrement,
   OffsetIncrement,
   CursorPagination,
+  SimpleRetrieverPaginator,
+  DefaultPaginatorPageTokenOption,
 } from "core/request/ConnectorManifest";
 
 export type EditorView = "ui" | "yaml";
@@ -57,9 +59,11 @@ export interface BuilderFormValues {
   version: string;
 }
 
+export type RequestOptionOrPathInject = Omit<RequestOption, "type"> | { inject_into: "path" };
+
 export interface BuilderPaginator {
   strategy: PageIncrement | OffsetIncrement | CursorPagination;
-  pageTokenOption: RequestOption;
+  pageTokenOption: RequestOptionOrPathInject;
   pageSizeOption?: RequestOption;
 }
 
@@ -504,6 +508,29 @@ function builderAuthenticatorToManifest(globalSettings: BuilderFormValues["globa
   return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
+function builderPaginatorToManifest(paginator: BuilderStream["paginator"]): SimpleRetrieverPaginator {
+  if (!paginator) {
+    return { type: "NoPagination" };
+  }
+
+  let pageTokenOption: DefaultPaginatorPageTokenOption;
+  if (paginator?.pageTokenOption.inject_into === "path") {
+    pageTokenOption = { type: "RequestPath" };
+  } else {
+    pageTokenOption = {
+      type: "RequestOption",
+      inject_into: paginator.pageTokenOption.inject_into,
+      field_name: paginator.pageTokenOption.field_name,
+    };
+  }
+  return {
+    type: "DefaultPaginator",
+    page_token_option: pageTokenOption,
+    page_size_option: paginator.pageSizeOption,
+    pagination_strategy: paginator.strategy,
+  };
+}
+
 function builderStreamSlicerToManifest(
   values: BuilderFormValues,
   slicer: BuilderStream["streamSlicer"],
@@ -593,20 +620,7 @@ function builderStreamToDeclarativeSteam(
           field_path: stream.fieldPointer,
         },
       },
-      paginator: stream.paginator
-        ? {
-            type: "DefaultPaginator",
-            page_token_option: {
-              ...stream.paginator.pageTokenOption,
-              // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
-              field_name: stream.paginator.pageTokenOption?.field_name
-                ? stream.paginator.pageTokenOption?.field_name
-                : undefined,
-            },
-            page_size_option: stream.paginator.pageSizeOption,
-            pagination_strategy: stream.paginator.strategy,
-          }
-        : { type: "NoPagination" },
+      paginator: builderPaginatorToManifest(stream.paginator),
       stream_slicer: builderStreamSlicerToManifest(values, stream.streamSlicer, [...visitedStreams, stream.id]),
     },
   };
