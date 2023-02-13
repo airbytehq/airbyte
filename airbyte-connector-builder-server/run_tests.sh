@@ -7,7 +7,6 @@ set -e
 
 # Install dependencies
 pip install -q -e .
-pip install -q -e '.[main]'
 pip install -q -e '.[tests]'
 
 # Run the tests
