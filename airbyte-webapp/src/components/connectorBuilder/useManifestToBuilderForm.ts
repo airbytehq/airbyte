@@ -11,8 +11,6 @@ import {
   DpathExtractor,
   HttpRequester,
   HttpRequesterAuthenticator,
-  InlineSchemaLoader,
-  ListStreamSlicer,
   SimpleRetriever,
   SimpleRetrieverPaginator,
   SimpleRetrieverStreamSlicer,
@@ -155,7 +153,6 @@ const manifestStreamToBuilder = (
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
     unsupportedFields: {
       transformations: stream.transformations,
-      checkpoint_interval: stream.checkpoint_interval,
       retriever: {
         requester: {
           error_handler: stream.retriever.requester.error_handler,

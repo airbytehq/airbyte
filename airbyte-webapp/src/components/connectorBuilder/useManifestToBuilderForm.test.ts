@@ -382,7 +382,6 @@ describe("Conversion successfully results in", () => {
               fields: ["id"],
             },
           ],
-          checkpoint_interval: 123,
           retriever: {
             requester: {
               error_handler: {
@@ -403,7 +402,6 @@ describe("Conversion successfully results in", () => {
     const formValues = await convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
     expect(formValues.streams[0].unsupportedFields).toEqual({
       transformations: manifest.streams[0].transformations,
-      checkpoint_interval: manifest.streams[0].checkpoint_interval,
       retriever: {
         requester: {
           error_handler: manifest.streams[0].retriever.requester.error_handler,
