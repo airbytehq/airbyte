@@ -1,34 +1,29 @@
 import classNames from "classnames";
 import { PropsWithChildren } from "react";
-import { Link as ReactRouterLink, To } from "react-router-dom";
 
+import { LinkProps } from "./Link";
 import styles from "./Link.module.scss";
 
-export interface LinkProps {
-  className?: string;
-  opensInNewTab?: boolean;
+interface ExternalLinkProps extends LinkProps {
+  href: string;
 }
 
-interface InternalLinkProps extends LinkProps {
-  to: To;
-}
-
-export const Link: React.FC<PropsWithChildren<InternalLinkProps>> = ({
+export const ExternalLink: React.FC<PropsWithChildren<ExternalLinkProps>> = ({
   children,
   className,
-  to,
-  opensInNewTab = false,
+  opensInNewTab = true,
+  href,
   ...props
 }) => {
   return (
-    <ReactRouterLink
+    <a
       {...props}
       className={classNames(styles.link, className)}
+      href={href}
       rel={opensInNewTab ? "noopener noreferrer" : undefined}
       target={opensInNewTab ? "_blank" : "_self"}
-      to={to}
     >
       {children}
-    </ReactRouterLink>
+    </a>
   );
 };
