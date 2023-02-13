@@ -110,7 +110,7 @@ class PlandayStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json().get("data", [])
-        print(data)
+        print(response.url)
         print(response.json())
         yield from data if isinstance(data, list) else [data]
 
@@ -172,7 +172,7 @@ class TimeAndCosts(HttpSubStream, PlandayStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {
-            "from": self.sync_from,
+            "from": self.uri_params.get("from"),
             "to": self.get_today_string(),
         }
 
