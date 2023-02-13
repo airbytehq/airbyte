@@ -99,6 +99,11 @@ module.exports = {
             name: "lodash",
             message: 'Please use `import [function] from "lodash/[function]";` instead.',
           },
+          {
+            name: "react-router-dom",
+            importNames: ["Link"],
+            message: 'Please use `import { Link, ExternalLink } from "components/ui/Link";` instead.',
+          },
         ],
         patterns: ["!lodash/*"],
       },
