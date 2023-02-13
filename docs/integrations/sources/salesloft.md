@@ -65,6 +65,7 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.4   | 2023-02-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification |
 | 0.1.3   | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
 | 0.1.2   | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream |
 | 0.1.1   | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
