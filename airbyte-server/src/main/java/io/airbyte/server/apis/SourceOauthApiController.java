@@ -10,7 +10,6 @@ import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
 import io.airbyte.api.generated.SourceOauthApi;
 import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
 import io.airbyte.api.model.generated.OAuthConsentRead;
-import io.airbyte.api.model.generated.SecretId;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
 import io.airbyte.commons.auth.SecuredWorkspace;
@@ -42,10 +41,9 @@ public class SourceOauthApiController implements SourceOauthApi {
   public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     final Map<String, Object> oAuthTokens = ApiHelper
         .execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
-    if (completeSourceOauthRequest.getReturnSecretCoordinate()){
-      return ApiHelper.execute(() -> oAuthHandler.writeOAuthSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens));
-    }
-    else {
+    if (completeSourceOauthRequest.getReturnSecretCoordinate()) {
+      return ApiHelper.execute(() -> oAuthHandler.writeOAuthResponseSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens));
+    } else {
       return oAuthTokens;
     }
   }

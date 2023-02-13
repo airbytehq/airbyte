@@ -4737,6 +4737,7 @@ components:
         returnSecretCoordinate:
           type: boolean
           description: If set to true, returns a secret coordinate which references the stored tokens. By default, returns raw tokens.
+          default: false
         sourceId:
           $ref: "#/components/schemas/SourceId"
     CompleteDestinationOAuthRequest:
