@@ -66,7 +66,7 @@ public class RecordSchemaValidator {
 
   /**
    * Takes an AirbyteRecordMessage and uses the JsonSchemaValidator to validate that its data conforms
-   * to the stream's schema If it does not, an error is added to the validationErrors map.
+   * to the stream's schema. If it does not, an error is added to the validationErrors map.
    */
   public void validateSchema(
                              final AirbyteRecordMessage message,

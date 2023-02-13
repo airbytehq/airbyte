@@ -17,7 +17,6 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.featureflag.TestClient;
 import io.airbyte.metrics.lib.NotImplementedMetricClient;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -84,7 +83,6 @@ public class ReplicationWorkerPerformanceTest {
     final var validator = new RecordSchemaValidator(Map.of(
         new AirbyteStreamNameNamespacePair("s1", null),
         CatalogHelpers.fieldsToJsonSchema(io.airbyte.protocol.models.Field.of("data", JsonSchemaType.STRING))), false);
-    final var featureFlagClient = new TestClient();
 
     final IntegrationLauncher integrationLauncher = new LimitedIntegrationLauncher();
     final var serDeProvider = new AirbyteMessageSerDeProvider(
