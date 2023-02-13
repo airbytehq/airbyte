@@ -95,7 +95,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
     [styles.purpleBackground]: isSelected,
     [styles.redBorder]: hasError,
   });
-  const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
+  const checkboxCellCustomStyle = classnames(styles.checkboxCell, { [styles.streamRowCheckboxCell]: true });
 
   return (
     <Row className={styles.catalogSectionRow}>
