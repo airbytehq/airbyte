@@ -1,6 +1,6 @@
 import { submitButtonClick } from "commands/common";
 
-const scheduleDropdown = "div[data-testid='scheduleData']";
+const scheduleDropdown = "div[data-testid='schedule-data']";
 const scheduleValue = (value: string) => `div[data-testid='${value}']`;
 const destinationPrefix = "input[data-testid='prefix-input']";
 const replicationTab = "div[data-id='replication-step']";
