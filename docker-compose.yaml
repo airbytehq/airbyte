@@ -109,6 +109,8 @@ services:
       - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
       - APPLY_FIELD_SELECTION=${APPLY_FIELD_SELECTION}
       - FIELD_SELECTION_WORKSPACES=${FIELD_SELECTION_WORKSPACES}
+      - STRICT_COMPARISON_NORMALIZATION_WORKSPACES=${STRICT_COMPARISON_NORMALIZATION_WORKSPACES}
+      - STRICT_COMPARISON_NORMALIZATION_TAG=${STRICT_COMPARISON_NORMALIZATION_TAG}
     configs:
       - flags
     volumes:
@@ -279,7 +281,7 @@ volumes:
     name: ${DB_DOCKER_MOUNT}
 configs:
   flags:
-    file: ./configs/flags.yml
+    file: ./flags.yml
 networks:
   airbyte_public:
   airbyte_internal:
