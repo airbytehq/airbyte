@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - client_id
     - refresh_token
+    - sync_from
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     client_id:

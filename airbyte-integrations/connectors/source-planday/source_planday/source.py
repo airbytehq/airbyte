@@ -68,6 +68,7 @@ class PlandayStream(HttpStream, ABC):
         self.uri_params = {
             "offset": 0,
             "limit": 50,
+            "from": self.sync_from,
         }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -103,8 +104,6 @@ class PlandayStream(HttpStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        print(response.json().get("data", []))
-        print("WAS IST DAS?")
         data = response.json().get("data", [])
         yield from data if isinstance(data, list) else [data]
 
@@ -129,6 +128,10 @@ class Departments(PlandayStream):
 class Employees(PlandayStream):
 
     primary_key = "id"
+
+    @property
+    def use_cache(self) -> bool:
+        return True
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -171,6 +174,26 @@ class TimeAndCosts(HttpSubStream, PlandayStream):
         }
 
 
+class EmployeeDetails(HttpSubStream, PlandayStream):
+    # TODO: How to get this to work with department ID
+    primary_key = "id"
+
+    def __init__(self, parent: Employees, config: Mapping[str, Any]):
+        super().__init__(parent=parent, config=config)
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"hr/v1/employees/{stream_slice['parent']['id']}"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {
+            "special": "BankAccount,BirthDate,Ssn"
+        }
+
+
 class Shifts(PlandayStream):
 
     primary_key = "id"
@@ -178,7 +201,7 @@ class Shifts(PlandayStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return "scheduling/v1/shifts?from="
+        return "scheduling/v1/shifts"
 
 
 class ShiftTypes(PlandayStream):
@@ -211,5 +234,5 @@ class SourcePlanday(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-
-        return [Departments(config), Employees(config), EmployeeGroups(config), TimeAndCosts(parent=Departments(config), config=config), Shifts(config), ShiftTypes(config)]
+        employees = Employees(config)
+        return [Departments(config), employees, EmployeeGroups(config), TimeAndCosts(parent=Departments(config), config=config), Shifts(config), ShiftTypes(config), EmployeeDetails(parent=Employees(config), config=config)]
