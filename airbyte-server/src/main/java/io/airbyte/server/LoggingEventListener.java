@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -30,4 +34,5 @@ public class LoggingEventListener implements ApplicationEventListener<ServiceRea
     LogClientSingleton.getInstance().setWorkspaceMdc(workerEnvironment, logConfigs.orElseThrow(),
         LogClientSingleton.getInstance().getServerLogsRoot(Path.of(workspaceRoot)));
   }
+
 }
