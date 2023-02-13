@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-commons-cli')
     implementation project(':airbyte-json-validation')
