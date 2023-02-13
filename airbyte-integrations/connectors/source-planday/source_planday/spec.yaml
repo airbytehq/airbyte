@@ -18,5 +18,8 @@ connectionSpecification:
     sync_from:
       type: string
       description: Original date to sync [%Y-%m-%d]
+    loockback_window:
+      type: integer
+      description: If set to a number, sync_from is irrelevant and data from today()-loocback_window days will be fetched.
     
     

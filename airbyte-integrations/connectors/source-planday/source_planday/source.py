@@ -64,12 +64,17 @@ class PlandayStream(HttpStream, ABC):
                                                            client_id=config["client_id"], client_secret="", refresh_token=config["refresh_token"]))
         self.client_id = config["client_id"]
         self.sync_from = config["sync_from"]
+        self.loockback_window = config.get("loockback_window")
 
         self.uri_params = {
             "offset": 0,
             "limit": 50,
-            "from": self.sync_from,
+            "from": self.sync_from if self.loockback_window is None else self.get_today_string(delta=self.loockback_window),
         }
+
+    @staticmethod
+    def get_today_string(delta: int = 0):
+        return (datetime.datetime.now()-datetime.timedelta(days=delta)).strftime("%Y-%m-%d")
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -105,6 +110,8 @@ class PlandayStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json().get("data", [])
+        print(data)
+        print(response.json())
         yield from data if isinstance(data, list) else [data]
 
     def request_headers(
@@ -160,10 +167,6 @@ class TimeAndCosts(HttpSubStream, PlandayStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"scheduling/v1/timeandcost/{stream_slice['parent']['id']}"
-
-    @staticmethod
-    def get_today_string():
-        return datetime.datetime.now().strftime("%Y-%m-%d")
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
