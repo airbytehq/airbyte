@@ -11,30 +11,29 @@ import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
-import io.airbyte.integrations.destination.s3.util.FlatteningType;
-import io.airbyte.integrations.destination.s3.util.FlatteningTypeHelper;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import java.util.Objects;
 
 public class S3JsonlFormatConfig implements S3FormatConfig {
 
   public static final String JSONL_SUFFIX = ".jsonl";
 
-  private final FlatteningType flatteningType;
+  private final Flattening flattening;
 
   private final CompressionType compressionType;
 
   public S3JsonlFormatConfig(final JsonNode formatConfig) {
     this(
-        formatConfig.has(FLATTENING_TYPE_ARG_NAME)
-            ? FlatteningTypeHelper.fromValue(formatConfig.get(FLATTENING_TYPE_ARG_NAME).asText())
+        formatConfig.has(FLATTENING_ARG_NAME)
+            ? Flattening.fromValue(formatConfig.get(FLATTENING_ARG_NAME).asText())
             : DEFAULT_FLATTENING_TYPE,
         formatConfig.has(COMPRESSION_ARG_NAME)
             ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
             : DEFAULT_COMPRESSION_TYPE);
   }
 
-  public S3JsonlFormatConfig(final FlatteningType flatteningType, final CompressionType compressionType) {
-    this.flatteningType = flatteningType;
+  public S3JsonlFormatConfig(final Flattening flattening, final CompressionType compressionType) {
+    this.flattening = flattening;
     this.compressionType = compressionType;
   }
 
@@ -52,15 +51,15 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
     return compressionType;
   }
 
-  public FlatteningType getFlatteningType() {
-    return flatteningType;
+  public Flattening getFlatteningType() {
+    return flattening;
   }
 
   @Override
   public String toString() {
     return "S3JsonlFormatConfig{" +
         "compressionType=" + compressionType +
-        ", flattening=" + flatteningType +
+        ", flattening=" + flattening +
         '}';
   }
 
@@ -73,13 +72,13 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
       return false;
     }
     final S3JsonlFormatConfig that = (S3JsonlFormatConfig) o;
-    return flatteningType == that.flatteningType
+    return flattening == that.flattening
         && Objects.equals(compressionType, that.compressionType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(flatteningType, compressionType);
+    return Objects.hash(flattening, compressionType);
   }
 
 }

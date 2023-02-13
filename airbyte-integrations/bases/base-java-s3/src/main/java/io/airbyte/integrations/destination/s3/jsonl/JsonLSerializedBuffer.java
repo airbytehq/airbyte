@@ -17,7 +17,7 @@ import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
-import io.airbyte.integrations.destination.s3.util.FlatteningType;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -78,11 +78,11 @@ public class JsonLSerializedBuffer extends BaseSerializedBuffer {
       final CompressionType compressionType = config == null
           ? S3DestinationConstants.DEFAULT_COMPRESSION_TYPE
           : config.getCompressionType();
-      final FlatteningType flatteningType = config == null
+      final Flattening flattening = config == null
           ? S3DestinationConstants.DEFAULT_FLATTENING_TYPE
           : config.getFlatteningType();
       return new JsonLSerializedBuffer(createStorageFunction.call(), compressionType != CompressionType.NO_COMPRESSION,
-          flatteningType != FlatteningType.NO);
+          flattening != Flattening.NO);
     };
 
   }

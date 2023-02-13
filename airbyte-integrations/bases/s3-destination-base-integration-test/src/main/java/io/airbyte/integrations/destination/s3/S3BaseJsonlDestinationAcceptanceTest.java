@@ -9,7 +9,7 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.util.FlatteningType;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,7 +28,7 @@ public abstract class S3BaseJsonlDestinationAcceptanceTest extends S3Destination
   protected JsonNode getFormatConfig() {
     return Jsons.jsonNode(Map.of(
         "format_type", outputFormat,
-        "flattening", FlatteningType.NO.getValue(),
+        "flattening", Flattening.NO.getValue(),
         "compression", Jsons.jsonNode(Map.of("compression_type", "No Compression"))));
   }
 
