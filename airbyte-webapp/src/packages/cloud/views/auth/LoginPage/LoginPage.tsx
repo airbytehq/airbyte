@@ -4,10 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { NavigateOptions, To, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link } from "components";
+import { LabeledInput } from "components";
 import { HeadTitle } from "components/common/HeadTitle";
 import { Button } from "components/ui/Button";
 import { FlexContainer } from "components/ui/Flex";
+import { Link } from "components/ui/Link";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useQuery } from "hooks/useQuery";
@@ -103,7 +104,6 @@ export const LoginPage: React.FC = () => {
                 <Link
                   to={CloudRoutes.ResetPassword}
                   className={styles.forgotPassword}
-                  $light
                   data-testid="reset-password-link"
                 >
                   <FormattedMessage id="login.forgotPassword" />

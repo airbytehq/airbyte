@@ -2,9 +2,9 @@ import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
-import { Link } from "react-router-dom";
 
 import { ConnectorCard } from "components";
+import { Link } from "components/ui/Link";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
@@ -33,8 +33,8 @@ export const ConnectionInfoCard: React.FC = () => {
     isConnectionReadOnly || schemaHasBeenRefreshed
       ? undefined
       : {
-          [styles.breaking]: hasBreakingSchemaChange,
-          [styles.nonBreaking]: hasNonBreakingSchemaChange,
+          [styles["connectorLink--breaking"]]: hasBreakingSchemaChange,
+          [styles["connectorLink--nonBreaking"]]: hasNonBreakingSchemaChange,
         };
 
   return (

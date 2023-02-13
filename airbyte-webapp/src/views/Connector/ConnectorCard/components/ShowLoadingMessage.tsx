@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Link } from "components";
+import { ExternalLink } from "components/ui/Link";
 
 import { links } from "utils/links";
 
@@ -24,11 +24,7 @@ const ShowLoadingMessage: React.FC<ShowLoadingMessageProps> = ({ connector }) =>
     <FormattedMessage
       id="form.tooLong"
       values={{
-        lnk: (...lnk: React.ReactNode[]) => (
-          <Link target="_blank" href={links.technicalSupport} as="a">
-            {lnk}
-          </Link>
-        ),
+        lnk: (...lnk: React.ReactNode[]) => <ExternalLink href={links.technicalSupport}>{lnk}</ExternalLink>,
       }}
     />
   ) : (

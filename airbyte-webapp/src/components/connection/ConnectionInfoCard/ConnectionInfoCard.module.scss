@@ -8,12 +8,20 @@
 
   &:hover {
     background-color: colors.$grey-50;
+  }
 
-    &.breaking {
+  &--breaking {
+    background: colors.$red-50;
+
+    &:hover {
       background-color: colors.$red-100;
     }
+  }
 
-    &.nonBreaking {
+  &--nonBreaking {
+    background: colors.$yellow-50;
+
+    &:hover {
       background-color: colors.$yellow-100;
     }
   }
@@ -45,12 +53,4 @@
 .enabledControlContainer {
   display: flex;
   justify-content: space-around;
-}
-
-.breaking {
-  background: colors.$red-50;
-}
-
-.nonBreaking {
-  background: colors.$yellow-50;
 }

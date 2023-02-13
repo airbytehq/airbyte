@@ -5,8 +5,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link } from "components";
+import { LabeledInput } from "components";
 import { Button } from "components/ui/Button";
+import { Link } from "components/ui/Link";
 import { ToastType } from "components/ui/Toast";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
@@ -21,7 +22,7 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
   newPassword: yup.string().required("form.empty.error"),
 });
 
-const ResetPasswordConfirmPage: React.FC = () => {
+export const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
   const navigate = useNavigate();
@@ -112,7 +113,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={CloudRoutes.Login} $light>
+              <Link to={CloudRoutes.Login}>
                 <FormattedMessage id="login.backLogin" />
               </Link>
               <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
@@ -125,5 +126,3 @@ const ResetPasswordConfirmPage: React.FC = () => {
     </div>
   );
 };
-
-export { ResetPasswordConfirmPage };

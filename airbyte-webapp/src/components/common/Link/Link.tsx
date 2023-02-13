@@ -1,4 +1,5 @@
 import {
+  // eslint-disable-next-line no-restricted-imports
   Link as ReactLink,
   // LinkProps as ReactLinkProps,
 } from "react-router-dom";
@@ -10,7 +11,7 @@ export interface LinkProps {
   $light?: boolean;
 }
 
-// TODO: fix typings
+/** @deprecated Use components/ui/Link instead */
 export const Link = styled(ReactLink)<LinkProps /* & ReactLinkProps */>`
   color: ${({ theme, $light }) => ($light ? theme.darkGreyColor : theme.primaryColor)};
 
