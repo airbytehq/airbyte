@@ -25,6 +25,8 @@ import {
   CursorPagination,
 } from "core/request/ConnectorManifest";
 
+export type EditorView = "ui" | "yaml";
+
 export interface BuilderFormInput {
   key: string;
   required: boolean;
@@ -99,7 +101,7 @@ export interface BuilderStream {
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   global: {
-    connectorName: "",
+    connectorName: "Untitled",
     urlBase: "",
     authenticator: { type: "NoAuth" },
   },
@@ -636,12 +638,12 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
 
   const spec: Spec = {
     connection_specification: specSchema,
-    documentation_url: "",
+    documentation_url: "https://example.org",
     type: "Spec",
   };
 
   const streamNames = values.streams.map((s) => s.name);
-  const validCheckStreamNames = values.checkStreams.filter((checkStream) => streamNames.includes(checkStream));
+  const validCheckStreamNames = (values.checkStreams ?? []).filter((checkStream) => streamNames.includes(checkStream));
   const correctedCheckStreams =
     validCheckStreamNames.length > 0 ? validCheckStreamNames : streamNames.length > 0 ? [streamNames[0]] : [];
 
@@ -656,3 +658,5 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     spec,
   });
 };
+
+export const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = convertToManifest(DEFAULT_BUILDER_FORM_VALUES);

@@ -2,7 +2,7 @@
 @use "scss/_variables";
 @forward "./CatalogTreeTableRow.module.scss";
 
-.cellText {
+.headerCellText {
   color: colors.$grey;
 }
 

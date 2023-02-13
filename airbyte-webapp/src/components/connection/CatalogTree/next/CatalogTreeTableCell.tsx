@@ -1,6 +1,7 @@
 import classNames from "classnames";
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useWindowSize } from "react-use";
+import React, { useEffect, useRef, useState } from "react";
+import { useInView } from "react-intersection-observer";
+import { debounceTime, fromEvent } from "rxjs";
 
 import { Tooltip } from "components/ui/Tooltip";
 
@@ -12,10 +13,11 @@ export interface CatalogTreeTableCellProps {
   size?: Sizes;
   className?: string;
   withTooltip?: boolean;
+  withOverflow?: boolean;
 }
 
 // This lets us avoid the eslint complaint about unused styles
-const STYLES_BY_SIZE: Record<Sizes, string> = {
+const STYLES_BY_SIZE: Readonly<Record<Sizes, string>> = {
   xsmall: styles.xsmall,
   small: styles.small,
   medium: styles.medium,
@@ -23,71 +25,70 @@ const STYLES_BY_SIZE: Record<Sizes, string> = {
   fixed: styles.fixed,
 };
 
-const TooltipText: React.FC<{ textNodes: Element[] }> = ({ textNodes }) => {
-  if (!textNodes.length) {
-    return null;
-  }
-  const text = textNodes.map((t) => decodeURIComponent(t.innerHTML)).join(" | ");
-  // This is not a safe use, and need to be removed still.
-  // https://github.com/airbytehq/airbyte/issues/22196
-  // eslint-disable-next-line react/no-danger
-  return <div dangerouslySetInnerHTML={{ __html: text }} />;
-};
-
 export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({
   size = "medium",
+  withOverflow,
   withTooltip,
   className,
   children,
 }) => {
   const [tooltipDisabled, setTooltipDisabled] = useState(true);
-  const [textNodes, setTextNodes] = useState<Element[]>([]);
-  const cell = useRef<HTMLDivElement | null>(null);
+  const cellContent = useRef<HTMLSpanElement | null>(null);
 
-  const { width: windowWidth } = useWindowSize();
-
-  const getTextNodes = useCallback(() => {
-    if (withTooltip && cell.current) {
-      setTextNodes(Array.from(cell.current.querySelectorAll(`[data-type="text"]`)));
-    }
-  }, [withTooltip]);
+  const { inView, ref: inViewRef } = useInView({ delay: 500 });
 
   useEffect(() => {
-    // windowWidth is only here so this functionality changes based on window width
-    if (textNodes.length && windowWidth) {
-      const [scrollWidths, clientWidths] = textNodes.reduce(
-        ([scrollWidths, clientWidths], textNode) => {
-          if (textNode) {
-            scrollWidths += textNode.scrollWidth;
-            clientWidths += textNode.clientWidth;
-          }
-          return [scrollWidths, clientWidths];
-        },
-        [0, 0]
-      );
-
-      if (scrollWidths > clientWidths) {
-        setTooltipDisabled(false);
-      } else {
-        setTooltipDisabled(true);
-      }
+    if (!inView || !withTooltip) {
+      // Only handle resize events on the window for this cell (to determine if the tooltip)
+      // needs to be shown if the cell is actually in view
+      return;
     }
-  }, [textNodes, windowWidth]);
+
+    // Calculate based on any potentially truncated `<Text>` element inside this cell, whether
+    // the tooltip should show.
+    const calculateTooltipVisible = () => {
+      const hasEllipsisedElement = Array.from(cellContent.current?.querySelectorAll(`[data-type="text"]`) ?? []).some(
+        (el) => el.scrollWidth > el.clientWidth
+      );
+      setTooltipDisabled(!hasEllipsisedElement);
+    };
+
+    // Recalculate if tooltips should be visible for this cell if the (debounced) window size changes
+    const subscription = fromEvent(window, "resize", { passive: false })
+      // Debounce, since the resize event fires constantly while a user's still resizing the window
+      .pipe(debounceTime(500))
+      .subscribe(() => {
+        calculateTooltipVisible();
+      });
+
+    calculateTooltipVisible();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [inView, withTooltip]);
 
   return (
     <div
-      ref={cell}
-      className={classNames(styles.tableCell, className, STYLES_BY_SIZE[size])}
-      onMouseEnter={getTextNodes}
+      className={classNames(styles.tableCell, className, STYLES_BY_SIZE[size], { [styles.withOverflow]: withOverflow })}
     >
       {withTooltip ? (
         <Tooltip
           className={classNames(styles.noEllipsis, styles.fullWidthTooltip)}
-          control={children}
+          control={
+            <span
+              ref={(el) => {
+                inViewRef(el);
+                cellContent.current = el;
+              }}
+            >
+              {children}
+            </span>
+          }
           placement="bottom-start"
           disabled={tooltipDisabled}
         >
-          <TooltipText textNodes={textNodes} />
+          {cellContent.current?.textContent}
         </Tooltip>
       ) : (
         children

@@ -32,8 +32,8 @@ import {
 } from "../../DestinationStreamNamesModal/DestinationStreamNamesModal";
 
 const HeaderCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({ children, ...tableCellProps }) => (
-  <CatalogTreeTableCell {...tableCellProps}>
-    <Text size="sm" className={styles.cellText}>
+  <CatalogTreeTableCell {...tableCellProps} withOverflow>
+    <Text size="sm" className={styles.headerCellText}>
       {children}
     </Text>
   </CatalogTreeTableCell>

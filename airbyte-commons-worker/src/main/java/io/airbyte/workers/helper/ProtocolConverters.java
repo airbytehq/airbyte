@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -24,6 +24,11 @@ public class ProtocolConverters {
   public static io.airbyte.protocol.models.StreamDescriptor streamDescriptorToProtocol(final StreamDescriptor apiStreamDescriptor) {
     return new io.airbyte.protocol.models.StreamDescriptor().withName(apiStreamDescriptor.getName())
         .withNamespace(apiStreamDescriptor.getNamespace());
+  }
+
+  public static io.airbyte.protocol.models.StreamDescriptor clientStreamDescriptorToProtocol(final io.airbyte.api.client.model.generated.StreamDescriptor clientStreamDescriptor) {
+    return new io.airbyte.protocol.models.StreamDescriptor().withName(clientStreamDescriptor.getName())
+        .withNamespace(clientStreamDescriptor.getNamespace());
   }
 
 }

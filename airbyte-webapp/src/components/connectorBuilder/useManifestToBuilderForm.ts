@@ -1,3 +1,4 @@
+import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
@@ -57,7 +58,7 @@ export const convertToBuilderFormValues = async (
   }
   const resolvedManifest = resolveResult.manifest as ConnectorManifest;
 
-  const builderFormValues = DEFAULT_BUILDER_FORM_VALUES;
+  const builderFormValues = cloneDeep(DEFAULT_BUILDER_FORM_VALUES);
   builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
   builderFormValues.checkStreams = resolvedManifest.check.stream_names;
 

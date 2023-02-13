@@ -9,7 +9,7 @@ $large: 200px;
     flex-shrink: 0;
   }
 
-  [data-type="text"] {
+  &:not(.withOverflow) [data-type="text"] {
     word-break: break-word;
     overflow: hidden;
     text-overflow: ellipsis;
