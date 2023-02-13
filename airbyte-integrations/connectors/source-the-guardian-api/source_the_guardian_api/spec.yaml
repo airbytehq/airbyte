@@ -20,6 +20,7 @@ connectionSpecification:
       pattern: ^([1-9][0-9]{3})\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$
       examples:
         - YYYY-MM-DD
+      format: date
     query:
       title: Query
       type: string
