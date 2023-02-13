@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.acceptance;
@@ -37,6 +37,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -104,6 +105,7 @@ class ContainerOrchestratorAcceptanceTests {
   // This test is flaky. Warnings are suppressed until that condition us understood
   // See: https://github.com/airbytehq/airbyte/issues/19948
   @Test
+  @Disabled("Flaky test, to be investigated before re-enabling")
   @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
   void testDowntimeDuringSync() throws Exception {
     // NOTE: PMD assert warning suppressed because the assertion was flaky. The test will throw if the
