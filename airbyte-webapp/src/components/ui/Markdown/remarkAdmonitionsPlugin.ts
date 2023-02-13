@@ -1,4 +1,3 @@
-import { Root } from "mdast";
 import { Plugin } from "unified";
 import { Node } from "unist";
 import { visit } from "unist-util-visit";
@@ -11,7 +10,7 @@ import styles from "./admonitions.module.scss";
 const SUPPORTED_ADMONITION_NAMES: Readonly<string[]> = ["note", "tip", "info", "caution", "warning", "danger"];
 const SUPPORTED_NODE_TYPES: Readonly<string[]> = ["textDirective", "leafDirective", "containerDirective"];
 
-export const remarkAdmonitionsPlugin: Plugin<[], Root> = () => (tree) => {
+export const remarkAdmonitionsPlugin: Plugin<[]> = () => (tree) => {
   visit<Node & { name?: string }>(tree, (node) => {
     if (!node.name || !SUPPORTED_ADMONITION_NAMES.includes(node.name) || !SUPPORTED_NODE_TYPES.includes(node.type)) {
       return;

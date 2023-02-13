@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.acceptance;
@@ -85,7 +85,9 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class CdcAcceptanceTests {
 
-  record DestinationCdcRecordMatcher(JsonNode sourceRecord, Instant minUpdatedAt, Optional<Instant> minDeletedAt) {}
+  record DestinationCdcRecordMatcher(JsonNode sourceRecord, Instant minUpdatedAt, Optional<Instant> minDeletedAt) {
+
+  }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
@@ -583,16 +585,17 @@ class CdcAcceptanceTests {
     Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
     LOGGER.info("Printing source tables");
     for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+      final Result<Record> result = sourceDb.query(
+          context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName(), pair.tableName())));
+      LOGGER.info("{}.{} contents:\n{}", pair.schemaName(), pair.tableName(), result);
     }
 
     final Database destDb = testHarness.getDestinationDatabase();
     pairs = testHarness.listAllTables(destDb);
     LOGGER.info("Printing destination tables");
     for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName(), pair.tableName())));
+      LOGGER.info("{}.{} contents:\n{}", pair.schemaName(), pair.tableName(), result);
     }
   }
 
