@@ -1,6 +1,6 @@
 import React from "react";
 
-import { Link } from "components";
+import { Link } from "components/ui/Link";
 
 import styles from "./Breadcrumbs.module.scss";
 
@@ -19,7 +19,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ data }) => {
       {data.map((item, index) => (
         <span key={index}>
           {item.to ? (
-            <Link to={item.to} $clear className={styles.item}>
+            <Link to={item.to} variant="primary" className={styles.item}>
               {item.label}
             </Link>
           ) : (

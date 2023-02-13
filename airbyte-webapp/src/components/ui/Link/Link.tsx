@@ -27,7 +27,7 @@ export const Link: React.FC<PropsWithChildren<InternalLinkProps>> = ({
       {...props}
       className={getLinkClassNames({ className, variant })}
       rel={opensInNewTab ? "noopener noreferrer" : undefined}
-      target={opensInNewTab ? "_blank" : "_self"}
+      target={opensInNewTab ? "_blank" : undefined}
       to={to}
     >
       {children}

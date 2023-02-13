@@ -8,9 +8,10 @@ import { useSearchParams } from "react-router-dom";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link } from "components";
+import { LabeledInput } from "components";
 import { Button } from "components/ui/Button";
 import { FlexContainer } from "components/ui/Flex";
+import { ExternalLink } from "components/ui/Link";
 import { Text } from "components/ui/Text";
 
 import { useExperiment } from "hooks/services/Experiment";
@@ -169,14 +170,14 @@ export const Disclaimer: React.FC = () => {
         id="login.disclaimer"
         values={{
           terms: (terms: React.ReactNode) => (
-            <Link $clear target="_blank" href={links.termsLink} as="a">
+            <ExternalLink href={links.termsLink} variant="primary">
               {terms}
-            </Link>
+            </ExternalLink>
           ),
           privacy: (privacy: React.ReactNode) => (
-            <Link $clear target="_blank" href={links.privacyLink} as="a">
+            <ExternalLink href={links.privacyLink} variant="primary">
               {privacy}
-            </Link>
+            </ExternalLink>
           ),
         }}
       />

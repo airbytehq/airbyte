@@ -2,13 +2,14 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 import { EmptyResourceBlock } from "components/common/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
+import { Link } from "components/ui/Link";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { Action, Namespace } from "core/analytics";

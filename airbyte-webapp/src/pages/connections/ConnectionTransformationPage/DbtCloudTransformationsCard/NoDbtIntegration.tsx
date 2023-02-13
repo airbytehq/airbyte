@@ -1,9 +1,9 @@
 import classNames from "classnames";
 import { ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
-import { Link } from "react-router-dom";
 
 import { Card } from "components/ui/Card";
+import { Link } from "components/ui/Link";
 import { Text } from "components/ui/Text";
 
 import { RoutePaths } from "pages/routePaths";

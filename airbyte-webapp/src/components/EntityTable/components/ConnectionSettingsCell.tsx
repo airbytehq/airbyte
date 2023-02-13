@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
 
-import { Link } from "components";
+import { Link } from "components/ui/Link";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { ConnectionRoutePaths } from "pages/connections/types";

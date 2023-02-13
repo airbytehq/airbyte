@@ -2,10 +2,11 @@ import { Field, FieldInputProps, FieldProps, FormikProps, useField } from "formi
 import { ChangeEvent, useCallback, useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
-import { ControlLabels, Link } from "components";
+import { ControlLabels } from "components";
 import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 import { FlexContainer } from "components/ui/Flex";
 import { Input } from "components/ui/Input";
+import { ExternalLink } from "components/ui/Link";
 import { Text } from "components/ui/Text";
 
 import availableCronTimeZones from "config/availableCronTimeZones.json";
@@ -175,11 +176,7 @@ export const ScheduleField: React.FC = () => {
                       id: "form.cronExpression.message",
                     },
                     {
-                      lnk: (lnk: React.ReactNode) => (
-                        <Link target="_blank" href={links.cronReferenceLink} as="a">
-                          {lnk}
-                        </Link>
-                      ),
+                      lnk: (lnk: React.ReactNode) => <ExternalLink href={links.cronReferenceLink}>{lnk}</ExternalLink>,
                     }
                   )}
                 />

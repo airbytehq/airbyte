@@ -1,10 +1,11 @@
 import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { Link, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
+import { Link } from "components/ui/Link";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
 import { useExperimentSpeedyConnection } from "packages/cloud/components/experiments/SpeedyConnection/hooks/useExperimentSpeedyConnection";

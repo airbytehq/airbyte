@@ -1,7 +1,7 @@
 import classnames from "classnames";
 import { FormattedMessage } from "react-intl";
-import { Link } from "react-router-dom";
 
+import { Link } from "components/ui/Link";
 import { Text } from "components/ui/Text";
 
 import { CountDownTimer } from "packages/cloud/components/experiments/SpeedyConnection/CountDownTimer";

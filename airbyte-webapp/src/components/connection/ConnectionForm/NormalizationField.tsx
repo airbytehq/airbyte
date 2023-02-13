@@ -2,7 +2,8 @@ import { FieldProps } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { LabeledRadioButton, Link } from "components";
+import { LabeledRadioButton } from "components";
+import { ExternalLink } from "components/ui/Link";
 
 import { NormalizationType } from "core/domain/connection/operation";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -37,11 +38,7 @@ export const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, fi
             <FormattedMessage
               id="form.basicNormalization.message"
               values={{
-                lnk: (lnk: React.ReactNode) => (
-                  <Link target="_blank" href={links.normalizationLink} as="a">
-                    {lnk}
-                  </Link>
-                ),
+                lnk: (lnk: React.ReactNode) => <ExternalLink href={links.normalizationLink}>{lnk}</ExternalLink>,
               }}
             />
           )
