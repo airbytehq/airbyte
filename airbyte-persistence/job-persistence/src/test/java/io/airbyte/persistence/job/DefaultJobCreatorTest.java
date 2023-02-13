@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -34,9 +34,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
-import io.airbyte.config.State;
-import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -47,7 +44,6 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,7 +74,6 @@ class DefaultJobCreatorTest {
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
 
   private JobPersistence jobPersistence;
-  private StatePersistence statePersistence;
   private JobCreator jobCreator;
   private ResourceRequirements workerResourceRequirements;
 
@@ -163,13 +158,12 @@ class DefaultJobCreatorTest {
   @BeforeEach
   void setup() {
     jobPersistence = mock(JobPersistence.class);
-    statePersistence = mock(StatePersistence.class);
     workerResourceRequirements = new ResourceRequirements()
         .withCpuLimit("0.2")
         .withCpuRequest("0.2")
         .withMemoryLimit("200Mi")
         .withMemoryRequest("200Mi");
-    jobCreator = new DefaultJobCreator(jobPersistence, workerResourceRequirements, statePersistence);
+    jobCreator = new DefaultJobCreator(jobPersistence, workerResourceRequirements);
   }
 
   @Test
@@ -178,10 +172,8 @@ class DefaultJobCreatorTest {
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
@@ -222,10 +214,8 @@ class DefaultJobCreatorTest {
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withDestinationProtocolVersion(SOURCE_PROTOCOL_VERSION)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
@@ -270,10 +260,8 @@ class DefaultJobCreatorTest {
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
@@ -319,10 +307,8 @@ class DefaultJobCreatorTest {
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
@@ -375,10 +361,8 @@ class DefaultJobCreatorTest {
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withSourceConfiguration(SOURCE_CONNECTION.getConfiguration())
         .withSourceDockerImage(SOURCE_IMAGE_NAME)
         .withSourceProtocolVersion(SOURCE_PROTOCOL_VERSION)
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(STANDARD_SYNC.getCatalog())
@@ -417,22 +401,16 @@ class DefaultJobCreatorTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
-    final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
-    when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
-        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
-
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
-        .withState(connectionState)
         .withIsSourceCustomConnector(false)
         .withIsDestinationCustomConnector(false);
 
@@ -475,22 +453,16 @@ class DefaultJobCreatorTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
-    final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
-    when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
-        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
-
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
         .withNamespaceFormat(STANDARD_SYNC.getNamespaceFormat())
         .withPrefix(STANDARD_SYNC.getPrefix())
-        .withDestinationConfiguration(DESTINATION_CONNECTION.getConfiguration())
         .withDestinationDockerImage(DESTINATION_IMAGE_NAME)
         .withDestinationProtocolVersion(DESTINATION_PROTOCOL_VERSION)
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
-        .withState(connectionState)
         .withIsSourceCustomConnector(false)
         .withIsDestinationCustomConnector(false);
 

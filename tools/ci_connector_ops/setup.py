@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
+    "click~=8.1.3",
     "requests",
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
@@ -12,7 +13,7 @@ MAIN_REQUIREMENTS = [
     "pandas-gbq~=0.19.0",
     "pydantic~=1.10.4",
     "fsspec~=2023.1.0",
-    "gcsfs~=2023.1.0"
+    "gcsfs~=2023.1.0",
 ]
 
 TEST_REQUIREMENTS = [
@@ -21,7 +22,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    version="0.1.10",
+    version="0.1.11",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
@@ -40,7 +41,7 @@ setup(
             "print-mandatory-reviewers = ci_connector_ops.acceptance_test_config_checks:print_mandatory_reviewers",
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
-            "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks"
+            "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
         ],
     },
 )
