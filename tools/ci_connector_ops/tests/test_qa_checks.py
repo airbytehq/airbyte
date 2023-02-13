@@ -6,87 +6,75 @@
 from pathlib import Path
 
 import pytest
-
 from ci_connector_ops import qa_checks, utils
 
 
-@pytest.mark.parametrize("connector, expect_exists", [
-    (utils.Connector("source-faker"), True),
-    (utils.Connector("source-foobar"), False),
-])
+@pytest.mark.parametrize(
+    "connector, expect_exists",
+    [
+        (utils.Connector("source-faker"), True),
+        (utils.Connector("source-foobar"), False),
+    ],
+)
 def test_check_documentation_file_exists(connector, expect_exists):
     assert qa_checks.check_documentation_file_exists(connector) == expect_exists
 
+
 def test_check_changelog_entry_is_updated_missing_doc(mocker):
-    mocker.patch.object(
-        qa_checks, 
-        "check_documentation_file_exists", 
-        mocker.Mock(return_value=False)
-    )
+    mocker.patch.object(qa_checks, "check_documentation_file_exists", mocker.Mock(return_value=False))
     assert qa_checks.check_changelog_entry_is_updated(qa_checks.Connector("source-foobar")) is False
+
 
 def test_check_changelog_entry_is_updated_no_changelog_section(mocker, tmp_path):
     mock_documentation_file_path = Path(tmp_path / "doc.md")
     mock_documentation_file_path.touch()
-    
-    mocker.patch.object(
-        qa_checks.Connector, 
-        "documentation_file_path", 
-        mock_documentation_file_path
-    )
+
+    mocker.patch.object(qa_checks.Connector, "documentation_file_path", mock_documentation_file_path)
     assert qa_checks.check_changelog_entry_is_updated(qa_checks.Connector("source-foobar")) is False
+
 
 def test_check_changelog_entry_is_updated_version_not_in_changelog(mocker, tmp_path):
     mock_documentation_file_path = Path(tmp_path / "doc.md")
     with open(mock_documentation_file_path, "w") as f:
         f.write("# Changelog")
-    
-    mocker.patch.object(
-        qa_checks.Connector, 
-        "documentation_file_path", 
-        mock_documentation_file_path
-    )
 
-    mocker.patch.object(
-        qa_checks.Connector, 
-        "version", 
-        "0.0.0"
-    )
+    mocker.patch.object(qa_checks.Connector, "documentation_file_path", mock_documentation_file_path)
+
+    mocker.patch.object(qa_checks.Connector, "version", "0.0.0")
 
     assert qa_checks.check_changelog_entry_is_updated(qa_checks.Connector("source-foobar")) is False
+
 
 def test_check_changelog_entry_is_updated_version_in_changelog(mocker, tmp_path):
     mock_documentation_file_path = Path(tmp_path / "doc.md")
     with open(mock_documentation_file_path, "w") as f:
         f.write("# Changelog\n0.0.0")
-    
-    mocker.patch.object(
-        qa_checks.Connector, 
-        "documentation_file_path", 
-        mock_documentation_file_path
-    )
 
-    mocker.patch.object(
-        qa_checks.Connector, 
-        "version", 
-        "0.0.0"
-    )
+    mocker.patch.object(qa_checks.Connector, "documentation_file_path", mock_documentation_file_path)
+
+    mocker.patch.object(qa_checks.Connector, "version", "0.0.0")
     assert qa_checks.check_changelog_entry_is_updated(qa_checks.Connector("source-foobar"))
 
 
-@pytest.mark.parametrize("connector, expect_exists", [
-    (utils.Connector("source-faker"), True),
-    (utils.Connector("source-foobar"), False),
-])
+@pytest.mark.parametrize(
+    "connector, expect_exists",
+    [
+        (utils.Connector("source-faker"), True),
+        (utils.Connector("source-foobar"), False),
+    ],
+)
 def test_check_connector_icon_is_available(connector, expect_exists):
     assert qa_checks.check_connector_icon_is_available(connector) == expect_exists
 
-@pytest.mark.parametrize("user_input, expect_qa_checks_to_run",
-[
-    ("not-a-connector", False),
-    ("connectors/source-faker", True),
-    ("source-faker", True),
-])
+
+@pytest.mark.parametrize(
+    "user_input, expect_qa_checks_to_run",
+    [
+        ("not-a-connector", False),
+        ("connectors/source-faker", True),
+        ("source-faker", True),
+    ],
+)
 def test_run_qa_checks_success(capsys, mocker, user_input, expect_qa_checks_to_run):
     mocker.patch.object(qa_checks.sys, "argv", ["", user_input])
     mocker.patch.object(qa_checks, "Connector")
@@ -120,3 +108,21 @@ def test_run_qa_checks_error(capsys, mocker):
     stdout, _ = capsys.readouterr()
     assert "QA checks failed for source-faker" in stdout
     assert "❌ - mock_qa_check" in stdout
+
+
+def test_check_connector_https_url_only(capsys, tmp_path, mocker):
+    file_with_http_url_path = Path(tmp_path / "file_with_http_url.foo")
+    qa_checks.PATH_PATTERNS_TO_IGNORE_FOR_HTTPS_CHECKS = set()
+    Path(tmp_path / "file_without_https_url.foo").touch()
+    Path(tmp_path / "my_directory").mkdir()
+    nested_file_with_http_url_path = Path(tmp_path / "my_directory/nested_file_with_http_url.foo")
+    with open(file_with_http_url_path, "w") as f:
+        f.write("http://foo.bar")
+    with open(nested_file_with_http_url_path, "w") as f:
+        f.write("http://foo.bar")
+    connector = mocker.Mock(code_directory=tmp_path)
+    assert not qa_checks.check_connector_https_url_only(connector)
+    stdout, _ = capsys.readouterr()
+    assert "file_with_http_url.foo" in stdout
+    assert "nested_file_with_http_url.foo" in stdout
+    assert "file_without_https_url" not in stdout

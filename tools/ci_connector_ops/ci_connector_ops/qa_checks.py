@@ -4,6 +4,8 @@
 
 
 import sys
+from pathlib import Path
+from typing import Iterable, Optional, Set, Tuple
 
 from ci_connector_ops.utils import Connector
 
@@ -21,15 +23,17 @@ def check_documentation_file_exists(connector: Connector) -> bool:
 
     return connector.documentation_file_path.exists()
 
+
 def check_documentation_follows_guidelines(connector: Connector) -> bool:
     """Documentation guidelines are defined here https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw"""
     follows_guidelines = True
     with open(connector.documentation_file_path) as f:
-        doc_lines = [l.lower() for l in f.read().splitlines()]
+        doc_lines = [line.lower() for line in f.read().splitlines()]
     if not doc_lines[0].startswith("# "):
         print("The connector name is not used as the main header in the documentation.")
         follows_guidelines = False
-    if connector.definition: # We usually don't have a definition if the connector is not published.
+    # We usually don't have a definition if the connector is not published.
+    if connector.definition:
         if doc_lines[0].strip() != f"# {connector.definition['name'].lower()}":
             print("The connector name is not used as the main header in the documentation.")
             follows_guidelines = False
@@ -37,19 +41,14 @@ def check_documentation_follows_guidelines(connector: Connector) -> bool:
         print("The connector name is not used as the main header in the documentation.")
         follows_guidelines = False
 
-    expected_sections = [
-        "## Prerequisites",
-        "## Setup guide",
-        "## Supported sync modes",
-        "## Supported streams",
-        "## Changelog"
-    ]
+    expected_sections = ["## Prerequisites", "## Setup guide", "## Supported sync modes", "## Supported streams", "## Changelog"]
 
     for expected_section in expected_sections:
         if expected_section.lower() not in doc_lines:
             print(f"Connector documentation is missing a '{expected_section.replace('#', '').strip()}' section.")
             follows_guidelines = False
     return follows_guidelines
+
 
 def check_changelog_entry_is_updated(connector: Connector) -> bool:
     """Check that the changelog entry is updated for the latest connector version
@@ -72,6 +71,7 @@ def check_changelog_entry_is_updated(connector: Connector) -> bool:
                 return True
     return False
 
+
 def check_connector_icon_is_available(connector: Connector) -> bool:
     """Check an SVG icon exists for a connector in
     in airbyte-config/init/src/main/resources/icons/<connector-name>.svg
@@ -84,6 +84,22 @@ def check_connector_icon_is_available(connector: Connector) -> bool:
     """
     return connector.icon_path.exists()
 
+
+def read_all_files_in_directory(directory: Path, ignored_directories: Optional[Set[str]] = None) -> Iterable[Tuple[str, str]]:
+    ignored_directories = ignored_directories if ignored_directories is not None else {}
+    for path in directory.rglob("*"):
+        ignore = any([ignored_directory in path.parts for ignored_directory in ignored_directories])
+        if path.is_file() and not ignore:
+            try:
+                for line in open(path, "r"):
+                    yield path, line
+            except UnicodeDecodeError:
+                continue
+
+
+IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {".venv", "tests", "unit_tests", "integration_tests", "build", "source-file"}
+
+
 def check_connector_https_url_only(connector: Connector) -> bool:
     """Check a connector code contains only https url.
 
@@ -93,8 +109,18 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     Returns:
         bool: Wether the connector code contains only https url.
     """
-    # TODO implement
+    files_with_http_url = set()
+    for filename, line in read_all_files_in_directory(connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS):
+        if "http://json-schema.org" or "http://localhost" in line:
+            continue
+        if "http://" in line:
+            files_with_http_url.add(str(filename))
+    if files_with_http_url:
+        files_with_http_url = "\n\t- ".join(files_with_http_url)
+        print(f"The following files have http:// URLs:\n\t- {files_with_http_url}")
+        return False
     return True
+
 
 def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> bool:
     """Check if the connector image is free of critical Snyk vulnerabilities.
@@ -109,6 +135,7 @@ def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> boo
     # TODO implement
     return True
 
+
 QA_CHECKS = [
     check_documentation_file_exists,
     # Disabling the following check because it's likely to not pass on a lot of connectors.
@@ -116,8 +143,9 @@ QA_CHECKS = [
     check_changelog_entry_is_updated,
     check_connector_icon_is_available,
     check_connector_https_url_only,
-    check_connector_has_no_critical_vulnerabilities
+    check_connector_has_no_critical_vulnerabilities,
 ]
+
 
 def run_qa_checks():
     connector_technical_name = sys.argv[1].split("/")[-1]
