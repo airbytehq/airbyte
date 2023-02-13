@@ -65,7 +65,7 @@ const useDestinationOptionList = (): DropDownRow.IDataItem[] => {
   const { destinations } = useDestinationList();
   const destinationOptions = destinations.map((destination) => ({
     label: destination.destinationName,
-    value: destination.destinationId,
+    value: destination.destinationDefinitionId,
   }));
 
   return [{ label: "All Destinations", value: "" }, ...destinationOptions];

@@ -68,7 +68,7 @@ const useSourceList = (): SourceList => {
 
 const useSourceOptionList = (): DropDownRow.IDataItem[] => {
   const { sources } = useSourceList();
-  const sourceOptions = sources.map((source) => ({ label: source.sourceName, value: source.sourceId }));
+  const sourceOptions = sources.map((source) => ({ label: source.sourceName, value: source.sourceDefinitionId }));
 
   return [{ label: "All Sources", value: "" }, ...sourceOptions];
 };

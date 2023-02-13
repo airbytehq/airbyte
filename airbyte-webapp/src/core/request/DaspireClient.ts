@@ -16,8 +16,8 @@ export interface FilterConnectionRequestBody {
   workspaceId: string;
   pageSize: number;
   pageCurrent: number;
-  sourceId: string;
-  destinationId: string;
+  sourceDefinitionId: string;
+  destinationDefinitionId: string;
   status: string;
 }
 

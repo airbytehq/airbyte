@@ -1,6 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -65,7 +65,8 @@ const Footer = styled.div`
 `;
 
 const AllConnectionsPage: React.FC = () => {
-  const { push } = useRouter();
+  const { push, pathname, query } = useRouter();
+  const { pageCurrent } = query;
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
@@ -81,20 +82,32 @@ const AllConnectionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterConnectionRequestBody>({
     workspaceId: workspace.workspaceId,
     pageSize: 10,
-    pageCurrent: 1,
+    pageCurrent: pageCurrent ? JSON.parse(pageCurrent) : 1,
     status: statusOptions[0].value,
-    sourceId: sourceOptions[0].value,
-    destinationId: destinationOptions[0].value,
+    sourceDefinitionId: sourceOptions[0].value,
+    destinationDefinitionId: destinationOptions[0].value,
   });
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
 
   const onSelectFilter = (
-    filterType: "pageCurrent" | "status" | "sourceId" | "destinationId",
+    filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId",
     filterValue: number | string
   ) => {
-    setFilters({ ...filters, [filterType]: filterValue });
+    if (filterType === "status" || filterType === "sourceDefinitionId" || filterType === "destinationDefinitionId") {
+      setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
+    } else if (filterType === "pageCurrent") {
+      setFilters({ ...filters, [filterType]: filterValue as number });
+    }
   };
+
+  useEffect(() => {
+    push({ pathname, search: `?pageCurrent=${filters.pageCurrent}` });
+  }, [filters.pageCurrent]);
+
+  useEffect(() => {
+    setFilters({ ...filters, pageCurrent: JSON.parse(pageCurrent) });
+  }, [pageCurrent]);
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
@@ -137,18 +150,18 @@ const AllConnectionsPage: React.FC = () => {
               <DropDown
                 $withBorder
                 $background="white"
-                value={filters.sourceId}
+                value={filters.sourceDefinitionId}
                 options={sourceOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceId", option.value)}
+                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
               />
             </DDContainer>
             <DDContainer>
               <DropDown
                 $withBorder
                 $background="white"
-                value={filters.destinationId}
+                value={filters.destinationDefinitionId}
                 options={destinationOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationId", option.value)}
+                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationDefinitionId", option.value)}
               />
             </DDContainer>
           </DDsContainer>
@@ -156,7 +169,11 @@ const AllConnectionsPage: React.FC = () => {
           <ConnectionsTable connections={connections} />
           <Separator height="54px" />
           <Footer>
-            <Pagination pages={total / pageSize} onChange={(value: number) => onSelectFilter("pageCurrent", value)} />
+            <Pagination
+              pages={total / pageSize}
+              value={filters.pageCurrent}
+              onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+            />
           </Footer>
         </MainPageWithScroll>
       ) : (

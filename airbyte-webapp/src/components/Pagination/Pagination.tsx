@@ -7,6 +7,7 @@ import { StartIcon, PrevIcon, NextIcon, EndIcon } from "./Icons";
 
 interface IProps {
   pages: number;
+  value?: number;
   onChange?: (value: number) => void;
 }
 
@@ -58,7 +59,7 @@ const PageButton = styled(Button)<ButtonProps>`
   margin: ${(props) => getMargin(props)};
 `;
 
-export const Pagination: React.FC<IProps> = ({ pages, onChange }) => {
+export const Pagination: React.FC<IProps> = ({ pages, value, onChange }) => {
   const formPages = (numberOfPages: number): number[] => {
     const myPages = [];
     for (let index = 0; index < numberOfPages; index++) {
@@ -70,6 +71,8 @@ export const Pagination: React.FC<IProps> = ({ pages, onChange }) => {
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   useEffect(() => onChange?.(currentPage), [currentPage]);
+
+  useEffect(() => setCurrentPage(value as number), [value]);
 
   const onPrev = () => {
     setCurrentPage((prev) => {
@@ -91,7 +94,10 @@ export const Pagination: React.FC<IProps> = ({ pages, onChange }) => {
 
   const onStart = () => setCurrentPage(1);
 
-  const onEnd = () => setCurrentPage(pages);
+  const onEnd = () => setCurrentPage(formPages(pages).at(-1) as number);
+  if (pages <= 1) {
+    return null;
+  }
   return (
     <Container>
       <PageButton onClick={onStart} buttonType="start">
