@@ -25,7 +25,10 @@ const DestinationOverviewPage = React.lazy(() => import("./destination/Destinati
 const DestinationSettingsPage = React.lazy(() => import("./destination/DestinationSettingsPage"));
 const PreferencesPage = React.lazy(() => import("./PreferencesPage"));
 const SettingsPage = React.lazy(() => import("./SettingsPage"));
-const SourcesPage = React.lazy(() => import("./SourcesPage"));
+
+const AllSourcesPage = React.lazy(() => import("./SourcesPage/pages/AllSourcesPage"));
+const CreateSourcePage = React.lazy(() => import("./SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
+const SourceItemPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
@@ -53,7 +56,12 @@ const MainViewRoutes: React.FC = () => {
               <Route index element={<DestinationOverviewPage />} />
             </Route>
           </Route>
-          <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+          <Route path={`${RoutePaths.Source}/*`}>
+            <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
+            <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
+            <Route path=":id/*" element={<SourceItemPage />} />
+            <Route index element={<AllSourcesPage />} />
+          </Route>
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
 

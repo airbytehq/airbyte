@@ -31,8 +31,10 @@ const CreateDestinationPage = React.lazy(() => import("pages/destination/CreateD
 const DestinationItemPage = React.lazy(() => import("pages/destination/DestinationItemPage"));
 const DestinationOverviewPage = React.lazy(() => import("pages/destination/DestinationOverviewPage"));
 const DestinationSettingsPage = React.lazy(() => import("pages/destination/DestinationSettingsPage"));
-const SourcesPage = React.lazy(() => import("pages/SourcesPage"));
 const SpeakeasyRedirectPage = React.lazy(() => import("pages/SpeakeasyRedirectPage"));
+const AllSourcesPage = React.lazy(() => import("pages/SourcesPage/pages/AllSourcesPage"));
+const CreateSourcePage = React.lazy(() => import("pages/SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
+const SourceItemPage = React.lazy(() => import("pages/SourcesPage/pages/SourceItemPage"));
 
 const CloudSettingsPage = React.lazy(() => import("./views/settings/CloudSettingsPage"));
 const DefaultView = React.lazy(() => import("./views/DefaultView"));
@@ -61,7 +63,12 @@ const MainRoutes: React.FC = () => {
             <Route index element={<DestinationOverviewPage />} />
           </Route>
         </Route>
-        <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+        <Route path={`${RoutePaths.Source}/*`}>
+          <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
+          <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
+          <Route path=":id/*" element={<SourceItemPage />} />
+          <Route index element={<AllSourcesPage />} />
+        </Route>
         <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
