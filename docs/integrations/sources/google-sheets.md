@@ -76,6 +76,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 0.2.32  | 2023-02-13 | [](https://github.com/airbytehq/airbyte/pull/)           | Do not consume http spreadsheets.                            |
 | 0.2.31  | 2022-10-09 | [](https://github.com/airbytehq/airbyte/pull/)           | Revert 'Add row_id to rows and use as primary key'                            |
 | 0.2.30  | 2022-10-09 | [](https://github.com/airbytehq/airbyte/pull/)           | Add row_id to rows and use as primary key                                     |
 | 0.2.21  | 2022-10-04 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
