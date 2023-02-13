@@ -153,11 +153,11 @@ class BenchmarkSourceTest {
         .withStream("stream1")
         .withEmittedAt(Instant.EPOCH.toEpochMilli())
         .withData(Jsons.jsonNode(ImmutableMap.of(
-        "field1", "valuevaluevaluevaluevalue" + recordNumber,
-        "field2", "valuevaluevaluevaluevalue" + recordNumber,
-        "field3", "valuevaluevaluevaluevalue" + recordNumber,
-        "field4", "valuevaluevaluevaluevalue" + recordNumber,
-        "field5", "valuevaluevaluevaluevalue" + recordNumber
+        "field1", "valuevaluevaluevaluevalue1",
+        "field2", "valuevaluevaluevaluevalue1",
+        "field3", "valuevaluevaluevaluevalue1",
+        "field4", "valuevaluevaluevaluevalue1",
+        "field5", "valuevaluevaluevaluevalue1"
     ))));
   }
 }

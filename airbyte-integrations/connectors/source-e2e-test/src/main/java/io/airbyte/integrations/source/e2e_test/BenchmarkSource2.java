@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.e2e_test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -21,13 +20,12 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
-import java.util.Iterator;
 import javax.annotation.CheckForNull;
 
 /**
  * This source is optimized for creating records very fast. It optimizes for speed over flexibility.
  */
-public class BenchmarkSource extends BaseConnector implements Source {
+public class BenchmarkSource2 extends BaseConnector implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode jsonConfig) {
@@ -45,38 +43,38 @@ public class BenchmarkSource extends BaseConnector implements Source {
     return sourceConfig.getCatalog();
   }
 
-  static class NumRecordsIteratorFast implements Iterator<AirbyteMessage> {
+  static class NumRecordsIterator extends AbstractIterator<AirbyteMessage> {
+    private static final String fieldBase = "field";
+    private static final String valueBase = "valuevaluevaluevaluevalue";
     private static final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.RECORD)
-        .withRecord(new AirbyteRecordMessage()
-            .withEmittedAt(Instant.EPOCH.toEpochMilli())
-            .withStream("stream1")
-            .withData(Jsons.jsonNode(ImmutableMap.of(
-                "field1", "valuevaluevaluevaluevalue1",
-                "field2", "valuevaluevaluevaluevalue1",
-                "field3", "valuevaluevaluevaluevalue1",
-                "field4", "valuevaluevaluevaluevalue1",
-                "field5", "valuevaluevaluevaluevalue1"
-            ))));
+        .withRecord(new AirbyteRecordMessage().withEmittedAt(Instant.EPOCH.toEpochMilli()).withStream("stream1"));
     private static final JsonNode jsonNode = Jsons.emptyObject();
 
     private final long maxRecords;
     private long numRecordsEmitted;
 
-    public NumRecordsIteratorFast(final long maxRecords) {
+    public NumRecordsIterator(final long maxRecords) {
       this.maxRecords = maxRecords;
       numRecordsEmitted = 0;
     }
 
+    @CheckForNull
     @Override
-    public boolean hasNext() {
-      return numRecordsEmitted != maxRecords;
-    }
+    protected AirbyteMessage computeNext() {
+      if(numRecordsEmitted == maxRecords) {
+        return endOfData();
+      }
 
-    @Override
-    public AirbyteMessage next() {
       numRecordsEmitted++;
-      return message;
+
+      for (int j = 1; j <= 5; ++j) {
+        // do % 10 so that all records are same length.
+        ((ObjectNode)jsonNode).put(fieldBase + j, valueBase + numRecordsEmitted % 10);
+      }
+
+      message.getRecord().withData(jsonNode);
+      return Jsons.clone(message);
     }
   }
 
@@ -84,9 +82,7 @@ public class BenchmarkSource extends BaseConnector implements Source {
   public AutoCloseableIterator<AirbyteMessage> read(final JsonNode jsonConfig, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
       throws Exception {
     final BenchmarkConfig sourceConfig = BenchmarkConfig.parseFromConfig(jsonConfig);
-    return AutoCloseableIterators.fromIterator(new NumRecordsIteratorFast(sourceConfig.maxRecords()));
-
-
+    return AutoCloseableIterators.fromIterator(new NumRecordsIterator(sourceConfig.maxRecords()));
   }
 
 }
