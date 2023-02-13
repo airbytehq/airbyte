@@ -121,7 +121,7 @@ class UserLifetimeInsights(InstagramStream):
                 "page_id": account["page_id"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
-                "date": insight["values"][0]["end_time"],
+                "date": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S+0000"),
                 "value": insight["values"][0]["value"],
             }
 
