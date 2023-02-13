@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React from "react";
 import { useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 
