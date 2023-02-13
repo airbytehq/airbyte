@@ -30,7 +30,7 @@ export const CreateConnectionNameField = () => {
               <Input
                 {...field}
                 error={!!meta.error}
-                data-testid="connectionName"
+                data-testid="connection-name"
                 placeholder={formatMessage({
                   id: "form.connectionName.placeholder",
                 })}

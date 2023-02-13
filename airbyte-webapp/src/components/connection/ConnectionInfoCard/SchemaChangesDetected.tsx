@@ -44,7 +44,7 @@ export const SchemaChangesDetected: React.FC = () => {
   };
 
   return (
-    <div className={classNames(styles.container, schemaChangeClassNames)} data-testid="schemaChangesDetected">
+    <div className={classNames(styles.container, schemaChangeClassNames)} data-testid="schema-changes-detected">
       <Text size="lg">
         <FormattedMessage id={`connection.schemaChange.${hasBreakingSchemaChange ? "breaking" : "nonBreaking"}`} />
       </Text>
@@ -52,7 +52,7 @@ export const SchemaChangesDetected: React.FC = () => {
         variant="dark"
         onClick={onReviewActionButtonClick}
         isLoading={schemaRefreshing}
-        data-testid="schemaChangesReviewButton"
+        data-testid="schema-changes-review-button"
       >
         <FormattedMessage id="connection.schemaChange.reviewAction" />
       </Button>

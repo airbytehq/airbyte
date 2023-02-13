@@ -162,7 +162,7 @@ export const ConnectionOnboarding: React.FC<ConnectionOnboardingProps> = ({ onCr
             placement="right"
             control={
               <button
-                data-testid="onboardingSource-more"
+                data-testid="onboarding-source-more"
                 className={styles.connectorButton}
                 onClick={() => onCreate()}
                 onMouseEnter={() => setHighlightedSource(3)}

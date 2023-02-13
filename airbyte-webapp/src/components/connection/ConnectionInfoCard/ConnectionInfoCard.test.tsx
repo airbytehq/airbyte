@@ -46,13 +46,13 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
 
     expect(getByTestId("connectionInfo")).toBeDefined();
 
-    expect(getByTestId("enabledControl")).toBeDefined();
-    expect(getByTestId("enabledControl-switch")).toBeEnabled();
+    expect(getByTestId("enabled-control")).toBeDefined();
+    expect(getByTestId("enabled-control-switch")).toBeEnabled();
 
     // schema changes-related
     expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
     expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
-    expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
+    expect(queryByTestId("schema-changes-detected")).toBeFalsy();
   });
 
   it("renders controls features when readonly", () => {
@@ -67,7 +67,7 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
     expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
 
     expect(queryByTestId("enabledControl")).toBeFalsy();
-    expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
+    expect(queryByTestId("schema-changes-detected")).toBeFalsy();
   });
 
   it("renders with breaking schema changes", () => {
@@ -80,9 +80,9 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
 
     expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles.breaking);
     expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
-    expect(getByTestId("schemaChangesDetected")).toBeDefined();
+    expect(getByTestId("schema-changes-detected")).toBeDefined();
 
-    expect(getByTestId("enabledControl-switch")).toBeDisabled();
+    expect(getByTestId("enabled-control-switch")).toBeDisabled();
   });
 
   it("renders with non-breaking schema changes", () => {
@@ -95,8 +95,8 @@ describe(`<${ConnectionInfoCard.name} />`, () => {
 
     expect(getByTestId("connectionInfo-sourceLink")).not.toHaveClass(styles.breaking);
     expect(getByTestId("connectionInfo-sourceLink")).toHaveClass(styles.nonBreaking);
-    expect(getByTestId("schemaChangesDetected")).toBeDefined();
+    expect(getByTestId("schema-changes-detected")).toBeDefined();
 
-    expect(getByTestId("enabledControl-switch")).toBeEnabled();
+    expect(getByTestId("enabled-control-switch")).toBeEnabled();
   });
 });

@@ -52,7 +52,7 @@ export const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const isSwitchDisabled = disabled || connectionUpdating;
 
   return (
-    <div className={styles.container} data-testid="enabledControl">
+    <div className={styles.container} data-testid="enabled-control">
       <label
         htmlFor="toggle-enabled-source"
         className={classNames(styles.label, { [styles.disabled]: isSwitchDisabled })}
@@ -65,7 +65,7 @@ export const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
         checked={connection.status === ConnectionStatus.active}
         loading={loading}
         id="toggle-enabled-source"
-        data-testid="enabledControl-switch"
+        data-testid="enabled-control-switch"
       />
     </div>
   );

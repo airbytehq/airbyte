@@ -12,7 +12,7 @@ describe("SecretTextArea", () => {
     const { queryByTestId, container } = await render(<SecretTextArea />);
 
     expect(container.querySelector("textarea")).toBeInTheDocument();
-    expect(queryByTestId("secretTextArea-visibilityButton")).not.toBeInTheDocument();
+    expect(queryByTestId("secret-text-area-visibility-button")).not.toBeInTheDocument();
     expect(container.querySelector('input[type="password"]')).not.toBeInTheDocument();
   });
 
@@ -21,9 +21,9 @@ describe("SecretTextArea", () => {
     const { getByTestId, queryByTestId, container } = await render(<SecretTextArea value={value} onChange={emptyFn} />);
 
     expect(container.querySelector("textarea")).not.toBeInTheDocument();
-    expect(queryByTestId("secretTextArea-visibilityButton")).toBeInTheDocument();
+    expect(queryByTestId("secret-text-area-visibility-button")).toBeInTheDocument();
 
-    const input = getByTestId("secretTextArea-input");
+    const input = getByTestId("secret-text-area-input");
     expect(input).toHaveAttribute("type", "password");
     expect(input).toHaveAttribute("aria-hidden");
     expect(input).toHaveValue(value);
@@ -33,7 +33,7 @@ describe("SecretTextArea", () => {
     const { getByTestId } = await render(<SecretTextArea disabled />);
 
     expect(getByTestId("text-input-container")).toHaveClass("disabled");
-    expect(getByTestId("secretTextArea-textarea")).toBeDisabled();
+    expect(getByTestId("secret-text-area-text-area")).toBeDisabled();
   });
 
   it("renders disabled when disabled is set and with initial value", async () => {
@@ -41,7 +41,7 @@ describe("SecretTextArea", () => {
     const { getByTestId } = await render(<SecretTextArea value={value} onChange={emptyFn} disabled />);
 
     expect(getByTestId("text-input-container")).toHaveClass("disabled");
-    expect(getByTestId("secretTextArea-visibilityButton")).toBeDisabled();
+    expect(getByTestId("secret-text-area-visibility-button")).toBeDisabled();
   });
 
   it("calls onChange handler when typing", async () => {
@@ -49,7 +49,7 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { getByTestId } = await render(<SecretTextArea onChange={onChange} />);
 
-    const textarea = getByTestId("secretTextArea-textarea");
+    const textarea = getByTestId("secret-text-area-text-area");
 
     userEvent.type(textarea, value);
 
@@ -60,10 +60,10 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { getByTestId, container } = await render(<SecretTextArea value={value} onChange={emptyFn} />);
 
-    userEvent.click(getByTestId("secretTextArea-visibilityButton"));
+    userEvent.click(getByTestId("secret-text-area-visibility-button"));
 
-    expect(getByTestId("secretTextArea-textarea")).toHaveFocus();
-    expect(getByTestId("secretTextArea-textarea")).toHaveValue(value);
+    expect(getByTestId("secret-text-area-text-area")).toHaveFocus();
+    expect(getByTestId("secret-text-area-text-area")).toHaveValue(value);
     expect(container.querySelector('input[type="password"]')).not.toBeInTheDocument();
   });
 
@@ -71,15 +71,15 @@ describe("SecretTextArea", () => {
     const value = "Here is my secret text";
     const { queryByTestId, getByTestId, container } = await render(<SecretTextArea value={value} onChange={emptyFn} />);
 
-    userEvent.click(getByTestId("secretTextArea-visibilityButton"));
-    expect(getByTestId("secretTextArea-textarea")).toHaveFocus();
+    userEvent.click(getByTestId("secret-text-area-visibility-button"));
+    expect(getByTestId("secret-text-area-text-area")).toHaveFocus();
 
     act(() => {
-      getByTestId("secretTextArea-textarea").blur();
+      getByTestId("secret-text-area-text-area").blur();
     });
 
     expect(container.querySelector("textarea")).not.toBeInTheDocument();
-    expect(queryByTestId("secretTextArea-visibilityButton")).toBeInTheDocument();
+    expect(queryByTestId("secret-text-area-visibility-button")).toBeInTheDocument();
     expect(container.querySelector('input[type="password"]')).toHaveValue(value);
   });
 });

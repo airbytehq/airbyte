@@ -58,7 +58,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({
           }}
           style={{ height: textAreaHeightRef.current }}
           value={value}
-          data-testid="secretTextArea-textarea"
+          data-testid="secret-text-area-text-area"
         />
       ) : (
         <>
@@ -72,7 +72,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({
               height: textAreaHeightRef.current,
             }}
             disabled={disabled}
-            data-testid="secretTextArea-visibilityButton"
+            data-testid="secret-text-area-visibility-button"
           >
             <FontAwesomeIcon icon={faEye} fixedWidth /> <FormattedMessage id="ui.secretTextArea.hidden" />
           </button>
@@ -84,7 +84,7 @@ export const SecretTextArea: React.FC<SecretTextAreaProps> = ({
             className={styles.passwordInput}
             readOnly
             aria-hidden
-            data-testid="secretTextArea-input"
+            data-testid="secret-text-area-input"
           />
         </>
       )}

@@ -48,7 +48,7 @@ describe("<SchemaChangesDetected />", () => {
 
     const { queryByTestId } = renderComponent();
 
-    expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
+    expect(queryByTestId("schema-changes-detected")).toBeFalsy();
   });
 
   it("renders with breaking changes", () => {
@@ -60,9 +60,9 @@ describe("<SchemaChangesDetected />", () => {
 
     const { getByTestId } = renderComponent();
 
-    expect(getByTestId("schemaChangesDetected")).toHaveClass(styles.breaking);
-    expect(getByTestId("schemaChangesDetected")).not.toHaveClass(styles.nonBreaking);
-    expect(getByTestId("schemaChangesDetected")).toHaveTextContent(en["connection.schemaChange.breaking"]);
+    expect(getByTestId("schema-changes-detected")).toHaveClass(styles.breaking);
+    expect(getByTestId("schema-changes-detected")).not.toHaveClass(styles.nonBreaking);
+    expect(getByTestId("schema-changes-detected")).toHaveTextContent(en["connection.schemaChange.breaking"]);
   });
 
   it("renders with non-breaking changes", () => {
@@ -74,9 +74,9 @@ describe("<SchemaChangesDetected />", () => {
 
     const { getByTestId } = renderComponent();
 
-    expect(getByTestId("schemaChangesDetected")).toHaveClass(styles.nonBreaking);
-    expect(getByTestId("schemaChangesDetected")).not.toHaveClass(styles.breaking);
-    expect(getByTestId("schemaChangesDetected")).toHaveTextContent(en["connection.schemaChange.nonBreaking"]);
+    expect(getByTestId("schema-changes-detected")).toHaveClass(styles.nonBreaking);
+    expect(getByTestId("schema-changes-detected")).not.toHaveClass(styles.breaking);
+    expect(getByTestId("schema-changes-detected")).toHaveTextContent(en["connection.schemaChange.nonBreaking"]);
   });
 
   it("calls refresh schema after review button click", () => {

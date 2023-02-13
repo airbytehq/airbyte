@@ -27,8 +27,8 @@ const refreshSourceSchemaButton = "button[data-testid='refresh-source-schema-btn
 const streamSyncEnabledSwitch = (streamName: string) => `[data-testid='${streamName}-stream-sync-switch']`;
 const streamNameInput = "input[data-testid='input']";
 const resetModalSaveButton = "[data-testid='reset-modal-save']";
-const schemaChangesDetectedBanner = "[data-testid='schemaChangesDetected']";
-const schemaChangesReviewButton = "[data-testid='schemaChangesReviewButton']";
+const schemaChangesDetectedBanner = "[data-testid='schema-changes-detected']";
+const schemaChangesReviewButton = "[data-testid='schema-changes-review-button']";
 const schemaChangesBackdrop = "[data-testid='schemaChangesBackdrop']";
 const nonBreakingChangesPreference = "[data-testid='nonBreakingChangesPreference']";
 const nonBreakingChangesPreferenceValue = (value: string) => `div[data-testid='nonBreakingChangesPreference-${value}']`;

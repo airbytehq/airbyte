@@ -68,7 +68,7 @@ exports[`CreateConnectionForm should render 1`] = `
                 >
                   <input
                     class="<removed-for-snapshot-test>"
-                    data-testid="connectionName"
+                    data-testid="connection-name"
                     name="name"
                     placeholder="Name"
                     value="Scrafty <> Heroku Postgres"

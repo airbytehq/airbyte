@@ -1,7 +1,7 @@
 import { Connection } from "commands/api/types";
 import { getWorkspaceId } from "commands/api/workspace";
 
-const syncEnabledSwitch = "[data-testid='enabledControl-switch']";
+const syncEnabledSwitch = "[data-testid='enabled-control-switch']";
 
 export const visitConnectionPage = (connection: Connection, tab = "") => {
   cy.intercept("**/web_backend/connections/get").as("getConnection");
