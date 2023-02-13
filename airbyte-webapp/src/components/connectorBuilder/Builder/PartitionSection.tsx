@@ -139,7 +139,7 @@ export const PartitionSection: React.FC<PartitionSectionProps> = ({ streamFieldP
         {({ buildPath }) => (
           <BuilderOneOf
             path={buildPath("")}
-            label="Sub router"
+            label="Partition router"
             tooltip="Method to use on this router"
             options={getSlicingOptions(buildPath)}
           />
