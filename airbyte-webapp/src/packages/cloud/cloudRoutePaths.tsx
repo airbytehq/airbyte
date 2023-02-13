@@ -3,7 +3,6 @@ export enum CloudRoutes {
   AuthFlow = "/auth_flow",
 
   Metrics = "metrics",
-  SelectWorkspace = "workspaces",
   Credits = "credits",
 
   // Auth routes

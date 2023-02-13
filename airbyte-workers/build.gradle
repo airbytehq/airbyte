@@ -55,10 +55,10 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-commons-server')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:init')
@@ -67,7 +67,7 @@ dependencies {
     implementation project(':airbyte-featureflag')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-notification')
     implementation(project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
@@ -92,9 +92,10 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-
-    testImplementation project(':airbyte-commons-docker')
     testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
+    testImplementation project(':airbyte-api')
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
