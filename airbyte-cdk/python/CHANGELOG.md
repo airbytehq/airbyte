@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.28.0
+Low-Code: improve day_delta macro and MinMaxDatetime component
+
 ## 0.27.0
 Make HttpAvailabilityStrategy default for HttpStreams
 

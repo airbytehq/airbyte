@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -391,7 +391,8 @@ class SchedulerHandlerTest {
     final DestinationConnection submittedDestination = new DestinationConnection()
         .withDestinationId(destination.getDestinationId())
         .withDestinationDefinitionId(destination.getDestinationDefinitionId())
-        .withConfiguration(destination.getConfiguration());
+        .withConfiguration(destination.getConfiguration())
+        .withWorkspaceId(destination.getWorkspaceId());
     when(synchronousSchedulerClient.createDestinationCheckConnectionJob(submittedDestination, DESTINATION_DOCKER_IMAGE,
         new Version(DESTINATION_PROTOCOL_VERSION), false))
             .thenReturn((SynchronousResponse<StandardCheckConnectionOutput>) jobResponse);
