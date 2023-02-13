@@ -18,6 +18,7 @@ export interface Experiments {
   "authPage.signup.hideName": boolean;
   "authPage.signup.hideCompanyName": boolean;
   "onboarding.speedyConnection": boolean;
+  "authPage.signup.simplifyLeftSide": boolean;
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
   "connection.autoDetectSchemaChanges": boolean;

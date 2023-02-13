@@ -32,6 +32,7 @@
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
   "form.email.error": "Enter a valid email",
+  "form.workEmail.error": "Enter a valid work email",
   "form.empty.error": "Required",
   "form.selectConnector": "Type to search for a connector",
   "form.searchName": "search by name...",
@@ -424,6 +425,7 @@
   "connection.canceling": "Canceling...",
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
+  "connection.updateFailed": "Failed to update connection",
 
   "connection.progress.percentage": "{percent} percent progress",
   "connection.progress.minutesRemaining": "~{value, plural, one {# minute remaining} other {# minutes remaining}}",

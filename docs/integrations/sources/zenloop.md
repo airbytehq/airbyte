@@ -71,6 +71,7 @@ The Zenloop connector should not run into Zenloop API limitations under normal u
 
 | Version | Date       | Pull Request                                             | Subject                       |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------- |
+| 0.1.5   | 2023-02-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix unhashable type in ZenloopSubstreamSlicer component          |
 | 0.1.4   | 2022-11-18 | [19624](https://github.com/airbytehq/airbyte/pull/19624) | Migrate to low code           |
 | 0.1.3   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states |
 | 0.1.2   | 2022-08-22 | [15843](https://github.com/airbytehq/airbyte/pull/15843) | Adds Properties stream        |
