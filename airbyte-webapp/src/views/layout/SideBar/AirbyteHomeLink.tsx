@@ -7,7 +7,7 @@ import { RoutePaths } from "pages/routePaths";
 import styles from "./AirbyteHomeLink.module.scss";
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 
-export const AirbyteHomeLink: React.FC<PropsWithChildren<unknown>> = () => {
+export const AirbyteHomeLink: React.FC = () => {
   const { formatMessage } = useIntl();
 
   return (
