@@ -121,7 +121,6 @@ def records_with_state(records, state, stream_mapping, state_cursor_paths) -> It
                     try:
                         for stream_state in state["streams"]:
                             if stream_state["stream_name"] == stream_name:
-                                print({stream_state["cursor_field"][0]: stream_state["cursor"]})
                                 state_value = cursor_field.parse(
                                     record={stream_state["cursor_field"][0]: stream_state["cursor"]}
                                 )
