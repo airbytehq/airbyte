@@ -72,5 +72,4 @@ data:
   WORKER_STATE_STORAGE_TYPE:  {{ .Values.global.state.storage.type | quote }}
   SHOULD_RUN_NOTIFY_WORKFLOWS: "false"
   MAX_NOTIFY_WORKERS: {{ .Values.worker.maxNotifyWorkers | default "5" | quote }}
-
 {{- end }}

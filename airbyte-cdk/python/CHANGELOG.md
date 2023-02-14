@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.28.1
+Low-Code CDK: fix signature _parse_records_and_emit_request_and_responses
+
 ## 0.28.0
 Low-Code: improve day_delta macro and MinMaxDatetime component
 
