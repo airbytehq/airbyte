@@ -71,6 +71,6 @@ The connector is restricted by Insightly [requests limitation](https://api.na1.i
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------- |
-| 0.1.2   | 2023-02-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000)    | Specified date formatting in specification                            |
+| 0.1.2   | 2023-02-14 | [22981](https://github.com/airbytehq/airbyte/pull/22981)    | Specified date formatting in specification                            |
 | 0.1.1   | 2022-11-11 |    | Fix state date parse bug                            |
 | 0.1.0   | 2022-10-19 |    | Release Insightly CDK Connector                     |
