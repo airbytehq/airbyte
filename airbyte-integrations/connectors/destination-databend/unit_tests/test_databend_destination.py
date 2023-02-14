@@ -28,6 +28,7 @@ def logger() -> MagicMock:
 @fixture
 def config() -> Dict[str, str]:
     args = {
+        "protocol": "http",
         "database": "default",
         "username": "root",
         "password": "root",

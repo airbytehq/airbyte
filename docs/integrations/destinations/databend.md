@@ -56,9 +56,9 @@ If your databend version >= v0.9.0 or later, you need to use databend-sqlalchemy
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.2   | 2023-02-11 | [22855](https://github.com/airbytehq/airbyte/pull/22855) | Fix compatibility issue with databend-query 0.9 |
-| 0.1.1   | 2022-01-09 | [21182](https://github.com/airbytehq/airbyte/pull/21182) | Remove protocol option and enforce HTTPS        |
-| 0.1.0   | 2022-01-09 | [20909](https://github.com/airbytehq/airbyte/pull/20909) | Destination Databend                            |
+| Version | Date       | Pull Request                                             | Subject                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.1.2   | 2023-02-11 | [22855](https://github.com/airbytehq/airbyte/pull/22855) | Fix compatibility issue with databend-query 0.9 and add protocol field |
+| 0.1.1   | 2022-01-09 | [21182](https://github.com/airbytehq/airbyte/pull/21182) | Remove protocol option and enforce HTTPS                               |
+| 0.1.0   | 2022-01-09 | [20909](https://github.com/airbytehq/airbyte/pull/20909) | Destination Databend                                                   |
 

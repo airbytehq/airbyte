@@ -22,6 +22,16 @@
         "type" : "string",
         "order" : 0
       },
+      "protocol" : {
+        "title" : "Protocol",
+        "description" : "Protocol of the host.",
+        "type" : "string",
+        "examples" : [
+          "https"
+        ],
+        "default" : "https",
+        "order" : 1
+      },
       "port" : {
         "title" : "Port",
         "description" : "Port of the database.",

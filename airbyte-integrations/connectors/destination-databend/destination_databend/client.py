@@ -6,7 +6,8 @@ from databend_sqlalchemy import connector
 
 
 class DatabendClient:
-    def __init__(self, host: str, port: int, database: str, table: str, username: str, password: str = None):
+    def __init__(self, protocol: str, host: str, port: int, database: str, table: str, username: str, password: str = None):
+        self.protocol = protocol
         self.host = host
         self.port = port
         self.database = database
@@ -15,6 +16,6 @@ class DatabendClient:
         self.password = password
 
     def open(self):
-        handle = connector.connect(f"https://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}").cursor()
+        handle = connector.connect(f"{self.protocol}://{self.username}:{self.password}@{self.host}:{self.port}/{self.database}").cursor()
 
         return handle
