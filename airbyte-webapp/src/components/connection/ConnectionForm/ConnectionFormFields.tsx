@@ -127,7 +127,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             </Field>
           </Section>
         )}
-        <Section className={styles.flush}>
+        <Section flush>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}

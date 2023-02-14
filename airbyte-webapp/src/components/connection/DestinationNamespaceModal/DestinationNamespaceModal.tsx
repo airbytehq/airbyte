@@ -133,13 +133,13 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
               </div>
             </div>
             <div className={styles.description}>
-              {values.namespaceDefinition === NamespaceDefinitionType.source && (
-                <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source.description" />
-              )}
-              {(values.namespaceDefinition === NamespaceDefinitionType.destination ||
-                values.namespaceDefinition === NamespaceDefinitionType.customformat) && (
-                <FormattedMessage id="connectionForm.modal.destinationNamespace.option.destination.description" />
-              )}
+              <FormattedMessage
+                id={`connectionForm.modal.destinationNamespace.option.${
+                  values.namespaceDefinition === NamespaceDefinitionType.customformat
+                    ? "customFormat"
+                    : values.namespaceDefinition
+                }.description`}
+              />
               <Text className={styles.generalInfo}>
                 <FormattedMessage id="connectionForm.modal.destinationNamespace.description" />
               </Text>

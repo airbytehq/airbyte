@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.config;
@@ -9,9 +9,12 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.DestinationApi;
+import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.StateApi;
 import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -26,6 +29,7 @@ import java.io.FileInputStream;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.security.interfaces.RSAPrivateKey;
+import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +56,8 @@ public class ApiClientBeanFactory {
         .setPort(parsePort(airbyteApiHost))
         .setBasePath("/api")
         .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
+        .setConnectTimeout(Duration.ofSeconds(30))
+        .setReadTimeout(Duration.ofSeconds(30))
         .setRequestInterceptor(builder -> {
           builder.setHeader("User-Agent", "WorkerApp");
           // internalApiAuthToken is in BeanProvider because we want to create a new token each
@@ -73,6 +79,11 @@ public class ApiClientBeanFactory {
   }
 
   @Singleton
+  public JobsApi jobsApi(@Named("apiClient") final ApiClient apiClient) {
+    return new JobsApi(apiClient);
+  }
+
+  @Singleton
   public DestinationApi destinationApi(final ApiClient apiClient) {
     return new DestinationApi(apiClient);
   }
@@ -85,6 +96,16 @@ public class ApiClientBeanFactory {
   @Singleton
   public WorkspaceApi workspaceApi(final ApiClient apiClient) {
     return new WorkspaceApi(apiClient);
+  }
+
+  @Singleton
+  public AttemptApi attemptApi(final ApiClient apiClient) {
+    return new AttemptApi(apiClient);
+  }
+
+  @Singleton
+  public StateApi stateApi(final ApiClient apiClient) {
+    return new StateApi(apiClient);
   }
 
   @Singleton

@@ -1,26 +1,24 @@
+import classNames from "classnames";
 import React from "react";
 import { FormattedRelativeTime } from "react-intl";
-import styled from "styled-components";
 
-const Content = styled.div<{ enabled?: boolean }>`
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
-`;
+import { Text } from "components/ui/Text";
 
-interface IProps {
-  timeInSecond: number;
+import styles from "./LastSyncCell.module.scss";
+
+interface LastSyncCellProps {
+  timeInSeconds?: number | null;
   enabled?: boolean;
 }
 
-const LastSyncCell: React.FC<IProps> = ({ timeInSecond, enabled }) => {
-  if (!timeInSecond) {
-    return null;
-  }
-
+export const LastSyncCell: React.FC<LastSyncCellProps> = ({ timeInSeconds, enabled }) => {
   return (
-    <Content enabled={enabled}>
-      <FormattedRelativeTime value={timeInSecond - Date.now() / 1000} updateIntervalInSeconds={60} />
-    </Content>
+    <>
+      {timeInSeconds ? (
+        <Text className={classNames(styles.text, { [styles.enabled]: enabled })} size="sm">
+          <FormattedRelativeTime value={timeInSeconds - Date.now() / 1000} updateIntervalInSeconds={60} />
+        </Text>
+      ) : null}
+    </>
   );
 };
-
-export default LastSyncCell;

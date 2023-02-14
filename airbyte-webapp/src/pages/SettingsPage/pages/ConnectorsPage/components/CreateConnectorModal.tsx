@@ -1,13 +1,12 @@
 import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 import * as yup from "yup";
 
-import { LabeledInput, Link } from "components";
+import { LabeledInput } from "components";
 import { Button } from "components/ui/Button";
-import { Modal } from "components/ui/Modal";
-import { StatusIcon } from "components/ui/StatusIcon";
+import { FlexContainer } from "components/ui/Flex";
+import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 import { Text } from "components/ui/Text";
 
 import { isCloudApp } from "utils/app";
@@ -25,60 +24,6 @@ export interface CreateConnectorModalProps {
     dockerRepository: string;
   }) => Promise<void>;
 }
-
-const Content = styled.div`
-  width: 585px;
-  padding: 19px 41px 30px 36px;
-`;
-
-const ButtonContent = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 40px;
-`;
-
-const FieldContainer = styled.div`
-  margin-bottom: 21px;
-`;
-
-const Subtitle = styled.div`
-  margin-bottom: 26px;
-  font-size: 14px;
-  line-height: 21px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-`;
-
-const DocLink = styled(Link).attrs({ as: "a" })`
-  text-decoration: none;
-  display: inline-block;
-`;
-
-const Error = styled(StatusIcon)`
-  padding-top: 4px;
-  padding-left: 1px;
-  font-size: 17px;
-  width: 26px;
-  min-width: 26px;
-  height: 26px;
-`;
-
-const ErrorBlock = styled.div`
-  display: flex;
-  justify-content: right;
-  align-items: center;
-  font-weight: 600;
-  font-size: 12px;
-  line-height: 18px;
-  color: ${({ theme }) => theme.darkPrimaryColor};
-  max-width: 320px;
-`;
-
-const ErrorText = styled.div`
-  font-weight: normal;
-  color: ${({ theme }) => theme.dangerColor};
-  max-width: 400px;
-`;
 const validationSchema = yup.object().shape({
   name: yup.string().trim().required("form.empty.error"),
   documentationUrl: yup.string().trim().url("form.url.error").notRequired(),
@@ -98,36 +43,36 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
   const { formatMessage } = useIntl();
 
   return (
-    <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>
-      <Content>
-        <Subtitle>
-          <FormattedMessage
-            id="admin.learnMore"
-            values={{
-              lnk: (lnk: React.ReactNode) => (
-                <DocLink target="_blank" href={links.docsLink} as="a">
-                  {lnk}
-                </DocLink>
-              ),
-            }}
-          />
-        </Subtitle>
-        <Formik
-          initialValues={{
-            name: "",
-            documentationUrl: "",
-            dockerImageTag: "",
-            dockerRepository: "",
-          }}
-          validationSchema={validationSchema}
-          onSubmit={async (values, { setSubmitting }) => {
-            await onSubmit(values);
-            setSubmitting(false);
-          }}
-        >
-          {({ isSubmitting, isValid, dirty }) => (
-            <Form>
-              <FieldContainer>
+    <Formik
+      initialValues={{
+        name: "",
+        documentationUrl: "",
+        dockerImageTag: "",
+        dockerRepository: "",
+      }}
+      validationSchema={validationSchema}
+      onSubmit={async (values, { setSubmitting }) => {
+        await onSubmit(values);
+        setSubmitting(false);
+      }}
+    >
+      {({ isSubmitting, isValid, dirty }) => (
+        <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />} wrapIn={Form}>
+          <ModalBody>
+            <FlexContainer direction="column" gap="xl">
+              <Text>
+                <FormattedMessage
+                  id="admin.learnMore"
+                  values={{
+                    lnk: (lnk: React.ReactNode) => (
+                      <a className={styles.docLink} target="_blank" href={links.docsLink} rel="noreferrer">
+                        {lnk}
+                      </a>
+                    ),
+                  }}
+                />
+              </Text>
+              <FlexContainer direction="column">
                 <Field name="name">
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
@@ -152,8 +97,6 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                     />
                   )}
                 </Field>
-              </FieldContainer>
-              <FieldContainer>
                 <Field name="dockerRepository">
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
@@ -181,8 +124,6 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                     />
                   )}
                 </Field>
-              </FieldContainer>
-              <FieldContainer>
                 <Field name="dockerImageTag">
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
@@ -208,8 +149,6 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                     />
                   )}
                 </Field>
-              </FieldContainer>
-              <FieldContainer>
                 <Field name="documentationUrl">
                   {({ field, meta }: FieldProps<string>) => (
                     <LabeledInput
@@ -229,36 +168,22 @@ const CreateConnectorModal: React.FC<CreateConnectorModalProps> = ({ onClose, on
                     />
                   )}
                 </Field>
-              </FieldContainer>
-              <ButtonContent>
-                {errorMessage ? (
-                  <ErrorBlock>
-                    <Error />
-                    <ErrorText>{errorMessage}</ErrorText>
-                  </ErrorBlock>
-                ) : (
-                  <div />
-                )}
-                <div>
-                  <Button
-                    className={styles.buttonWithMargin}
-                    onClick={onClose}
-                    type="button"
-                    variant="secondary"
-                    disabled={isSubmitting}
-                  >
-                    <FormattedMessage id="form.cancel" />
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
-                    <FormattedMessage id="form.add" />
-                  </Button>
-                </div>
-              </ButtonContent>
-            </Form>
-          )}
-        </Formik>
-      </Content>
-    </Modal>
+
+                {errorMessage && <div className={styles.errorMessage}>{errorMessage}</div>}
+              </FlexContainer>
+            </FlexContainer>
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose} type="button" variant="secondary" disabled={isSubmitting}>
+              <FormattedMessage id="form.cancel" />
+            </Button>
+            <Button type="submit" disabled={isSubmitting || !dirty || !isValid} isLoading={isSubmitting}>
+              <FormattedMessage id="form.add" />
+            </Button>
+          </ModalFooter>
+        </Modal>
+      )}
+    </Formik>
   );
 };
 

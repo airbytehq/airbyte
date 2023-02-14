@@ -9,10 +9,8 @@ import { ConnectorCard } from "components";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { RoutePaths } from "pages/routePaths";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import styles from "./ConnectionInfoCard.module.scss";
 import { EnabledControl } from "./EnabledControl";
@@ -24,10 +22,7 @@ export const ConnectionInfoCard: React.FC = () => {
     schemaHasBeenRefreshed,
   } = useConnectionEditService();
   const { hasSchemaChanges, hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
-  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
-  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
-
-  const hasAllowSyncFeature = useFeature(FeatureItem.AllowSync);
+  const { sourceDefinition, destDefinition } = useConnectionFormService();
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
@@ -52,7 +47,7 @@ export const ConnectionInfoCard: React.FC = () => {
         >
           <ConnectorCard
             connectionName={source.sourceName}
-            icon={sourceDefinition?.icon}
+            icon={source?.icon}
             connectorName={source.name}
             releaseStage={sourceDefinition?.releaseStage}
           />
@@ -65,16 +60,16 @@ export const ConnectionInfoCard: React.FC = () => {
         >
           <ConnectorCard
             connectionName={destination.destinationName}
-            icon={destinationDefinition?.icon}
+            icon={destination?.icon}
             connectorName={destination.name}
-            releaseStage={destinationDefinition?.releaseStage}
+            releaseStage={destDefinition?.releaseStage}
           />
         </Link>
       </div>
       {!isConnectionReadOnly && (
         <>
           <div className={styles.enabledControlContainer}>
-            <EnabledControl disabled={!hasAllowSyncFeature || hasBreakingSchemaChange} />
+            <EnabledControl disabled={hasBreakingSchemaChange} />
           </div>
           {hasSchemaChanges && <SchemaChangesDetected />}
         </>

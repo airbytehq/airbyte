@@ -18,10 +18,10 @@ import { useGetSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
-import { RoutePaths } from "../../../routePaths";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
+import { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
+import { RoutePaths } from "../../../routePaths";
 
 const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);

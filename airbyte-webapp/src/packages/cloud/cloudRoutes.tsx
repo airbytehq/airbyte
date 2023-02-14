@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo } from "react";
+import React, { Suspense, useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
@@ -6,21 +6,18 @@ import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
-import { FeatureItem, FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { useApiHealthPoll } from "hooks/services/Health";
+import { useBuildUpdateCheck } from "hooks/services/useBuildUpdateCheck";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
-import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
-import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 import { CloudRoutes } from "./cloudRoutePaths";
-import { CreditStatus } from "./lib/domain/cloudWorkspaces/types";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
-import { useGetCloudWorkspace } from "./services/workspaces/CloudWorkspacesService";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
+import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 
 const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
 const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));
@@ -41,21 +38,7 @@ const CloudSettingsPage = React.lazy(() => import("./views/settings/CloudSetting
 const DefaultView = React.lazy(() => import("./views/DefaultView"));
 
 const MainRoutes: React.FC = () => {
-  const { setWorkspaceFeatures } = useFeatureService();
   const workspace = useCurrentWorkspace();
-  const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-
-  useEffect(() => {
-    const outOfCredits =
-      cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD ||
-      cloudWorkspace.creditStatus === CreditStatus.NEGATIVE_MAX_THRESHOLD;
-    // If the workspace is out of credits it doesn't allow creation of new connections
-    // or syncing existing connections.
-    setWorkspaceFeatures(outOfCredits ? ({ [FeatureItem.AllowSync]: false } as FeatureSet) : []);
-    return () => {
-      setWorkspaceFeatures(undefined);
-    };
-  }, [cloudWorkspace.creditStatus, setWorkspaceFeatures]);
 
   const analyticsContext = useMemo(
     () => ({
@@ -98,7 +81,7 @@ const MainViewRoutes = () => {
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
         <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}
-      <Route path={CloudRoutes.SelectWorkspace} element={<WorkspacesPage />} />
+      <Route path={RoutePaths.Workspaces} element={<WorkspacesPage />} />
       <Route path={CloudRoutes.AuthFlow} element={<CompleteOauthRequest />} />
       <Route
         path={`${RoutePaths.Workspaces}/:workspaceId/*`}
@@ -118,8 +101,9 @@ export const Routing: React.FC = () => {
 
   const { search } = useLocation();
 
+  useBuildUpdateCheck();
+
   useEffectOnce(() => {
-    storeUtmFromQuery(search);
     setSegmentAnonymousId(search);
   });
 

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
@@ -49,6 +50,7 @@ public interface ProcessFactory {
                  final Map<String, String> files,
                  final String entrypoint,
                  final ResourceRequirements resourceRequirements,
+                 final AllowedHosts allowedHosts,
                  final Map<String, String> labels,
                  final Map<String, String> jobMetadata,
                  final Map<Integer, Integer> portMapping,
@@ -64,11 +66,8 @@ public interface ProcessFactory {
    * can be used by the factories implementing this interface for easier operations.
    */
   static String createProcessName(final String fullImagePath, final String jobType, final String jobId, final int attempt, final int lenLimit) {
-    final var noVersion = fullImagePath.split(VERSION_DELIMITER)[0];
 
-    final var nameParts = noVersion.split(DOCKER_DELIMITER);
-    var imageName = nameParts[nameParts.length - 1];
-
+    var imageName = extractShortImageName(fullImagePath);
     final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
     final String suffix = jobType + "-" + jobId + "-" + attempt + "-" + randSuffix;
 
@@ -88,6 +87,22 @@ public interface ProcessFactory {
     // If the image name is a no-op, this function should always return `sync-UUID` at the minimum.
     m.find();
     return processName.substring(m.start());
+  }
+
+  /**
+   * Docker image names are by convention separated by slashes. The last portion is the image's name.
+   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
+   * gcr.io/my-project/my-project:v2.
+   *
+   * @param fullImagePath the image name with repository and version ex
+   *        gcr.io/my-project/image-name:v2
+   * @return the image name without the repo and version, ex. image-name
+   */
+  static String extractShortImageName(final String fullImagePath) {
+    final var noVersion = fullImagePath.split(VERSION_DELIMITER)[0];
+
+    final var nameParts = noVersion.split(DOCKER_DELIMITER);
+    return nameParts[nameParts.length - 1];
   }
 
 }

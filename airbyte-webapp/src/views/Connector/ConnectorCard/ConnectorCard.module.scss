@@ -1,9 +1,5 @@
 @use "scss/variables";
 
-.cardForm {
-  padding: 22px 27px 23px 24px;
-}
-
 .connectorSelectControl {
   margin-bottom: variables.$spacing-xl;
 }
@@ -18,8 +14,4 @@
 .loadingMessage {
   margin-top: variables.$spacing-md;
   margin-left: variables.$spacing-lg;
-}
-
-.connectionTestLogs {
-  margin-top: variables.$spacing-lg;
 }

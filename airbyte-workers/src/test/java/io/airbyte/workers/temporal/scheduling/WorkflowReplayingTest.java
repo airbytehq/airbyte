@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling;
@@ -41,8 +41,10 @@ class WorkflowReplayingTest {
 
     final BeanRegistration shortActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("shortActivityOptions", activityOptions);
     final BeanRegistration longActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("longRunActivityOptions", activityOptions);
+    final BeanRegistration discoveryActivityOptionsBeanRegistration = getActivityOptionBeanRegistration("discoveryActivityOptions", activityOptions);
 
-    temporalProxyHelper = new TemporalProxyHelper(List.of(shortActivityOptionsBeanRegistration, longActivityOptionsBeanRegistration));
+    temporalProxyHelper = new TemporalProxyHelper(
+        List.of(shortActivityOptionsBeanRegistration, longActivityOptionsBeanRegistration, discoveryActivityOptionsBeanRegistration));
   }
 
   @Test
