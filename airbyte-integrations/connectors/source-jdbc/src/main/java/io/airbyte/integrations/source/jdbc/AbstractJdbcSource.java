@@ -152,12 +152,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
   }
 
-  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   /**
    * Configures a list of operations that can be used to check the connection to the source.
    *
    * @return list of consumers that run queries for the check command.
    */
+  @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");

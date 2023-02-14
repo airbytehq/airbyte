@@ -113,6 +113,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   @Override
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     try {
       final Database database = createDatabaseInternal(config);
@@ -541,7 +542,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of table/data structure info
    * @throws Exception might throw an error during connection to database
    */
-  private List<TableInfo<Field>> getTables(final Database database) throws Exception {
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
+  public List<TableInfo<Field>> getTables(final Database database) throws Exception {
     final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
     final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
         database, tableInfos);
@@ -620,6 +622,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @param config database implementation-specific configuration.
    * @return database spec config
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   public abstract JsonNode toDatabaseConfig(JsonNode config);
 
   /**
@@ -629,6 +632,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return database instance
    * @throws Exception might throw an error during connection to database
    */
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
   protected abstract Database createDatabase(JsonNode config) throws Exception;
 
   /**
@@ -661,7 +665,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return list of the source tables
    * @throws Exception access to the database might lead to an exceptions.
    */
-  protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
+  @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
+  public abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
                                                                              final Database database)
       throws Exception;
 

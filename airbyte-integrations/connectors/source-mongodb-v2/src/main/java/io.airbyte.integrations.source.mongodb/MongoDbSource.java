@@ -97,7 +97,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database)
+  public List<TableInfo<CommonField<BsonType>>> discoverInternal(final MongoDatabase database)
       throws Exception {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
