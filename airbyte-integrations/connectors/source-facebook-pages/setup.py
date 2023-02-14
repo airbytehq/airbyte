@@ -9,11 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-    "pytest-mock~=3.6.1",
-    "connector-acceptance-test",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6.1", "connector-acceptance-test", "requests-mock"]
 
 setup(
     name="source_facebook_pages",

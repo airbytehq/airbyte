@@ -13,6 +13,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
+from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
+
 STRIPE_ERROR_CODES: List = [
     # stream requires additional permissions
     "more_permissions_required",
@@ -31,10 +33,6 @@ class StripeStream(HttpStream, ABC):
         self.account_id = account_id
         self.start_date = start_date
         self.slice_range = slice_range or self.DEFAULT_SLICE_RANGE
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -318,6 +316,10 @@ class StripeSubStream(SingleEmptySliceMixin, StripeStream, ABC):
           If the stream has no primary keys, return None.
         """
 
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return StripeSubStreamAvailabilityStrategy()
+
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
 
@@ -327,8 +329,11 @@ class StripeSubStream(SingleEmptySliceMixin, StripeStream, ABC):
 
         return params
 
+    def get_parent_stream_instance(self):
+        return self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+
     def read_records(self, sync_mode: SyncMode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        parent_stream = self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
+        parent_stream = self.get_parent_stream_instance()
         slices = parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
             for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
