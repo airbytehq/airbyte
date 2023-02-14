@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+
+import org.opensearch.action.bulk.BulkResponse;
+import org.opensearch.client.opensearch._types.ErrorCause;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
