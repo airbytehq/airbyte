@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import codecs
@@ -11,6 +11,8 @@ from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO,
 import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pyarrow import csv as pa_csv
 from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
@@ -51,22 +53,54 @@ class CsvParser(AbstractFileParser):
             self.format_model = CsvFormat.parse_obj(self._format)
         return self.format_model
 
-    def _validate_field_len(self, config: Mapping[str, Any], field_name: str):
-        if len(config.get("format", {}).get(field_name)) != 1:
-            raise ValueError(f"{field_name} should contain 1 character only")
+    @staticmethod
+    def _validate_field(
+        format_: Mapping[str, Any], field_name: str, allow_empty: bool = False, disallow_values: Optional[Tuple[Any, ...]] = None
+    ) -> Optional[str]:
+        disallow_values = disallow_values or ()
+        field_value = format_.get(field_name)
+        if not field_value and allow_empty:
+            return
+        if len(field_value) != 1:
+            return f"{field_name} should contain 1 character only"
+        if field_value in disallow_values:
+            return f"{field_name} can not be {field_value}"
+
+    @classmethod
+    def _validate_options(cls, validator: Callable, options_name: str, format_: Mapping[str, Any]) -> Optional[str]:
+        options = format_.get(options_name, "{}")
+        try:
+            options = json.loads(options)
+            validator(**options)
+        except json.decoder.JSONDecodeError:
+            return "Malformed advanced read options!"
+        except TypeError as e:
+            return f"One or more read options are invalid: {str(e)}"
+
+    @classmethod
+    def _validate_read_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ReadOptions, "advanced_options", format_)
+
+    @classmethod
+    def _validate_convert_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ConvertOptions, "additional_reader_options", format_)
 
     def _validate_config(self, config: Mapping[str, Any]):
-        if config.get("format", {}).get("filetype") == "csv":
-            self._validate_field_len(config, "delimiter")
-            if config.get("format", {}).get("delimiter") in ("\r", "\n"):
-                raise ValueError("Delimiter cannot be \r or \n")
+        format_ = config.get("format", {})
+        for error_message in (
+            self._validate_field(format_, "delimiter", disallow_values=("\r", "\n")),
+            self._validate_field(format_, "quote_char"),
+            self._validate_field(format_, "escape_char", allow_empty=True),
+            self._validate_read_options(format_),
+            self._validate_convert_options(format_),
+        ):
+            if error_message:
+                raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
 
-            self._validate_field_len(config, "quote_char")
-
-            if config.get("format", {}).get("escape_char"):
-                self._validate_field_len(config, "escape_char")
-
-            codecs.lookup(config.get("format", {}).get("encoding"))
+        try:
+            codecs.lookup(format_.get("encoding"))
+        except LookupError:
+            raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
 
     def _read_options(self) -> Mapping[str, str]:
         """
