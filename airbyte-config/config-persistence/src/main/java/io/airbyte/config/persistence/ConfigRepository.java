@@ -107,17 +107,21 @@ public class ConfigRepository {
   private final ExceptionWrappingDatabase database;
   private final ActorDefinitionMigrator actorDefinitionMigrator;
   private final StandardSyncPersistence standardSyncPersistence;
+  private final long defaultMaxSecondsBetweenMessages;
 
-  public ConfigRepository(final Database database) {
-    this(database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)), new StandardSyncPersistence(database));
+  public ConfigRepository(final Database database, final long defaultMaxSecondsBetweenMessages) {
+    this(database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)), new StandardSyncPersistence(database),
+        defaultMaxSecondsBetweenMessages);
   }
 
   ConfigRepository(final Database database,
                    final ActorDefinitionMigrator actorDefinitionMigrator,
-                   final StandardSyncPersistence standardSyncPersistence) {
+                   final StandardSyncPersistence standardSyncPersistence,
+                   final long defaultMaxSecondsBetweenMessages) {
     this.database = new ExceptionWrappingDatabase(database);
     this.actorDefinitionMigrator = actorDefinitionMigrator;
     this.standardSyncPersistence = standardSyncPersistence;
+    this.defaultMaxSecondsBetweenMessages = defaultMaxSecondsBetweenMessages;
   }
 
   /**
@@ -299,7 +303,7 @@ public class ConfigRepository {
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
         .fetch())
         .stream()
-        .map(DbConverter::buildStandardSourceDefinition)
+        .map(record -> DbConverter.buildStandardSourceDefinition(record, defaultMaxSecondsBetweenMessages))
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
   }
@@ -311,7 +315,7 @@ public class ConfigRepository {
   public List<StandardSourceDefinition> listPublicSourceDefinitions(final boolean includeTombstone) throws IOException {
     return listStandardActorDefinitions(
         ActorType.source,
-        DbConverter::buildStandardSourceDefinition,
+        record -> DbConverter.buildStandardSourceDefinition(record, defaultMaxSecondsBetweenMessages),
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstone),
         ACTOR_DEFINITION.PUBLIC.eq(true));
   }
@@ -322,7 +326,7 @@ public class ConfigRepository {
         workspaceId,
         JoinType.JOIN,
         ActorType.source,
-        DbConverter::buildStandardSourceDefinition,
+        record -> DbConverter.buildStandardSourceDefinition(record, defaultMaxSecondsBetweenMessages),
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
 
@@ -333,7 +337,7 @@ public class ConfigRepository {
         workspaceId,
         JoinType.LEFT_OUTER_JOIN,
         ActorType.source,
-        record -> actorDefinitionWithGrantStatus(record, DbConverter::buildStandardSourceDefinition),
+        record -> actorDefinitionWithGrantStatus(record, entry -> DbConverter.buildStandardSourceDefinition(entry, defaultMaxSecondsBetweenMessages)),
         ACTOR_DEFINITION.CUSTOM.eq(false),
         includeTombstones(ACTOR_DEFINITION.TOMBSTONE, includeTombstones));
   }
@@ -1256,7 +1260,7 @@ public class ConfigRepository {
 
     for (final Record record : records) {
       final SourceConnection source = DbConverter.buildSourceConnection(record);
-      final StandardSourceDefinition definition = DbConverter.buildStandardSourceDefinition(record);
+      final StandardSourceDefinition definition = DbConverter.buildStandardSourceDefinition(record, defaultMaxSecondsBetweenMessages);
       sourceAndDefinitions.add(new SourceAndDefinition(source, definition));
     }
 

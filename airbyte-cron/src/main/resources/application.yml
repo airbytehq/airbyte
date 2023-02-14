@@ -29,6 +29,8 @@ airbyte:
       ports: ${TEMPORAL_WORKER_PORTS:}
   tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
   version: ${AIRBYTE_VERSION}
+  worker:
+    max-seconds-between-messages: ${MAX_SECONDS_BETWEEN_MESSAGES:10800}
   workflow:
     failure:
       restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}

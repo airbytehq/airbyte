@@ -65,8 +65,9 @@ public class DatabaseBeanFactory {
   }
 
   @Singleton
-  public ConfigRepository configRepository(@Named("configDatabase") final Database configDatabase) {
-    return new ConfigRepository(configDatabase);
+  public ConfigRepository configRepository(@Named("configDatabase") final Database configDatabase,
+                                           @Value("${airbyte.worker.max-seconds-between-messages}") final long maxSecondsBetweenMessages) {
+    return new ConfigRepository(configDatabase, maxSecondsBetweenMessages);
   }
 
   @Singleton

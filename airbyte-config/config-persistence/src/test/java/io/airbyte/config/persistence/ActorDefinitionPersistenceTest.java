@@ -43,7 +43,8 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     configRepository = spy(new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        mock(StandardSyncPersistence.class)));
+        mock(StandardSyncPersistence.class),
+        10800));
   }
 
   @Test
@@ -272,7 +273,8 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
         .withDockerImageTag("0.0.1")
         .withSourceDefinitionId(id)
         .withProtocolVersion("0.2.0")
-        .withTombstone(false);
+        .withTombstone(false)
+        .withMaxSecondsBetweenMessages(10800L);
   }
 
   private static StandardDestinationDefinition createBaseDestDef() {

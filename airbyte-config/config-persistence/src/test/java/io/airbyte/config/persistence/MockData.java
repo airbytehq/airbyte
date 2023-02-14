@@ -202,7 +202,8 @@ public class MockData {
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)
-        .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
+        .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")))
+        .withMaxSecondsBetweenMessages(10800L);
   }
 
   public static StandardSourceDefinition grantableSourceDefinition1() {
@@ -216,7 +217,8 @@ public class MockData {
         .withIcon("icon-2")
         .withTombstone(false)
         .withPublic(false)
-        .withCustom(false);
+        .withCustom(false)
+        .withMaxSecondsBetweenMessages(10800L);
   }
 
   public static StandardSourceDefinition grantableSourceDefinition2() {
@@ -231,7 +233,8 @@ public class MockData {
         .withIcon("icon-3")
         .withTombstone(false)
         .withPublic(false)
-        .withCustom(false);
+        .withCustom(false)
+        .withMaxSecondsBetweenMessages(10800L);
   }
 
   public static StandardSourceDefinition customSourceDefinition() {
@@ -246,7 +249,8 @@ public class MockData {
         .withIcon("icon-4")
         .withTombstone(false)
         .withPublic(false)
-        .withCustom(true);
+        .withCustom(true)
+        .withMaxSecondsBetweenMessages(10800L);
   }
 
   public static List<StandardSourceDefinition> standardSourceDefinitions() {

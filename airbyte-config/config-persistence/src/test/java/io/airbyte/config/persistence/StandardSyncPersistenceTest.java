@@ -79,7 +79,7 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
     standardSyncPersistence = new StandardSyncPersistence(database);
 
     // only used for creating records that sync depends on.
-    configRepository = new ConfigRepository(database);
+    configRepository = new ConfigRepository(database, 10800);
   }
 
   @Test

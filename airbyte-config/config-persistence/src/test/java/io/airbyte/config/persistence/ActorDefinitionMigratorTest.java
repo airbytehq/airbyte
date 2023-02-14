@@ -78,7 +78,7 @@ class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
     truncateAllTables();
 
     migrator = new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database));
-    configRepository = new ConfigRepository(database, migrator, null);
+    configRepository = new ConfigRepository(database, migrator, null, 10800);
   }
 
   private void writeSource(final StandardSourceDefinition source) throws Exception {
@@ -154,7 +154,8 @@ class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
         .withDockerImageTag("0.1.2")
         .withName("random-name")
         .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withMaxSecondsBetweenMessages(10800L);
     writeSource(sourceDef);
     assertEquals(sourceDef, configRepository.getStandardSourceDefinition(sourceDef.getSourceDefinitionId()));
   }

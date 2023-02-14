@@ -49,7 +49,8 @@ class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
     configRepository = spy(new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        null));
+        null,
+        10800));
   }
 
   @Test
