@@ -14,7 +14,7 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import { MessageBox } from "./components/MessageBox";
-// import AccountSettingsPage from "./pages/AccountSettingsPage";
+import AccountSettingsPage from "./pages/AccountSettingsPage";
 import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
@@ -98,12 +98,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               ? true
               : false,
         },
-        // {
-        //   path: `${SettingsRoute.AccountSettings}`,
-        //   name: <FormattedMessage id="settings.account.settings" />,
-        //   component: <AccountSettingsPage />,
-        //   show: true,
-        // },
+        {
+          path: `${SettingsRoute.AccountSettings}`,
+          name: <FormattedMessage id="settings.account.settings" />,
+          component: <AccountSettingsPage />,
+          show: true,
+        },
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
@@ -161,7 +161,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                     .flatMap((menuItem) => menuItem.routes)
                     .map(
                       ({ path, component: Component, show }) =>
-                        show && <Route key={path} path={path} element={Component} />
+                        show && <Route key={path} path={`${path}/*`} element={Component} />
                     )}
                   <Route path="*" element={<Navigate to={firstRoute()} replace />} />
                 </Routes>
