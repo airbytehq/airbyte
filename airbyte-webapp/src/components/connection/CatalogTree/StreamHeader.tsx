@@ -156,7 +156,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             />
           )}
         </HeaderCell>
-        <HeaderCell ellipsis>
+        {/* HACK: Set width to 0 to prevent the multi PathPopout
+        from overflowing the row  when there are too many items. */}
+        <HeaderCell ellipsis style={{ width: 0 }}>
           {pkType && (
             <PathPopout
               pathType={pkType}

@@ -22,7 +22,7 @@ export const PathPopoutButton: React.FC<React.PropsWithChildren<PathPopoutButton
   <Tooltip
     control={
       <button className={styles.button} onClick={onClick} data-testid={testId}>
-        <Text size="sm" className={styles.text}>
+        <Text as="span" size="sm" className={styles.text}>
           {children}
         </Text>
         <FontAwesomeIcon className={styles.arrow} icon={faCaretDown} />
