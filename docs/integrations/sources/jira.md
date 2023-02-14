@@ -126,6 +126,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 0.3.4   | 2023-02-14 | [000000](https://github.com/airbytehq/airbyte/pull/00000)  | Specified date formatting in specification                                                                  |
 | 0.3.3   | 2023-01-04 | [\#20739](https://github.com/airbytehq/airbyte/pull/20739)  | fix: check_connection fails if no projects are defined                                                                  |
 | 0.3.2   | 2022-12-23 | [\#20859](https://github.com/airbytehq/airbyte/pull/20859)  | Fixed pagination for streams `issue_remote_links`, `sprints`                                                            |
 | 0.3.1   | 2022-12-14 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128)  | Improved code to become beta                                                                                            |
