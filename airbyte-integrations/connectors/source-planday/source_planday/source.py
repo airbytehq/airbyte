@@ -3,9 +3,10 @@
 #
 
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import dateutil.parser
 import requests
 import datetime
 from airbyte_cdk.sources import AbstractSource
@@ -56,7 +57,6 @@ class PlandayStream(HttpStream, ABC):
     See the reference docs for the full list of configurable options.
     """
 
-    # TODO: Fill in the url base. Required.
     url_base = "https://openapi.planday.com/"
 
     def __init__(self, config: Mapping[str, Any]):
@@ -123,6 +123,44 @@ class PlandayStream(HttpStream, ABC):
         return {"X-ClientId": self.client_id}
 
 
+class IncrementalPlandayStream(PlandayStream, ABC):
+    state_checkpoint_interval = 5
+
+    def __init__(self, config: Mapping[str, Any]):
+        super().__init__(config)
+
+    @property
+    @abstractmethod
+    def cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def fallback_cursor_field(self) -> str:
+        """
+        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
+        and define a cursor field.
+        """
+        pass
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
+        and returning an updated state object.
+        """
+        old_state = current_stream_state.get(self.cursor_field)
+        date = latest_record.get(
+            self.cursor_field, latest_record.get(self.fallback_cursor_field))
+        print("--updated--state")
+        print(latest_record)
+        print(current_stream_state)
+        return {self.cursor_field: max(dateutil.parser.isoparse(date).date(), old_state if old_state else datetime.datetime.now(datetime.timezone.utc).date())}
+
+
 class Departments(PlandayStream):
     primary_key = "id"
 
@@ -157,7 +195,7 @@ class EmployeeGroups(PlandayStream):
 
 
 class TimeAndCosts(HttpSubStream, PlandayStream):
-    # TODO: How to get this to work with department ID
+
     primary_key = "id"
 
     def __init__(self, parent: Departments, config: Mapping[str, Any]):
@@ -178,7 +216,7 @@ class TimeAndCosts(HttpSubStream, PlandayStream):
 
 
 class EmployeeDetails(HttpSubStream, PlandayStream):
-    # TODO: How to get this to work with department ID
+
     primary_key = "id"
 
     def __init__(self, parent: Employees, config: Mapping[str, Any]):
@@ -197,9 +235,12 @@ class EmployeeDetails(HttpSubStream, PlandayStream):
         }
 
 
-class Shifts(PlandayStream):
+class Shifts(IncrementalPlandayStream):
 
     primary_key = "id"
+    cursor_field = "date"
+    fallback_cursor_field = "dateTimeModified"
+    state_checkpoint_interval = 5
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
