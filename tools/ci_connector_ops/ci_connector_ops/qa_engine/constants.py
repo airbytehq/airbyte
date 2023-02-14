@@ -29,3 +29,4 @@ GITHUB_API_COMMON_HEADERS = {
     "X-GitHub-Api-Version": "2022-11-28",
     "Authorization": f"Bearer {GITHUB_API_TOKEN}",
 }
+GIT_USERNAME = "octavia-squidington-iii"

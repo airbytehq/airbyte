@@ -18,6 +18,7 @@ from .constants import (
     AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME,
     AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT,
     AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER,
+    GIT_USERNAME,
     GITHUB_API_COMMON_HEADERS,
     GITHUB_API_TOKEN,
 )
@@ -28,9 +29,7 @@ logger = logging.getLogger(__name__)
 
 def clone_airbyte_cloud_repo(local_repo_path: Path) -> git.Repo:
     logger.info(f"Cloning {AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL} to {local_repo_path}")
-    authenticated_repo_url = AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL.replace(
-        "https://", f"https://octavia-squidington-iii:{GITHUB_API_TOKEN}"
-    )
+    authenticated_repo_url = AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL.replace("https://", f"https://{GIT_USERNAME}:{GITHUB_API_TOKEN}@")
     return git.Repo.clone_from(authenticated_repo_url, local_repo_path, branch=AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
 
 
