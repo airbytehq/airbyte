@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
@@ -17,7 +18,6 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.featureflag.TestClient;
 import io.airbyte.metrics.lib.NotImplementedMetricClient;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;

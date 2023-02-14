@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
+import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -18,7 +19,6 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
