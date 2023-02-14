@@ -2,22 +2,186 @@ version: 0.1.0
 type: DeclarativeSource
 check:
   type: CheckStream
-  stream_names: []
+  stream_names:
+    - Conversations
 streams:
   - type: DeclarativeStream
     name: Conversations
-    primary_key: &ref_0
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _embedded:
+            properties:
+              threads:
+                type: array
+            type: object
+          _links:
+            properties:
+              closedBy:
+                properties:
+                  href:
+                    type: string
+                type: object
+              createdByCustomer:
+                properties:
+                  href:
+                    type: string
+                type: object
+              mailbox:
+                properties:
+                  href:
+                    type: string
+                type: object
+              primaryCustomer:
+                properties:
+                  href:
+                    type: string
+                type: object
+              self:
+                properties:
+                  href:
+                    type: string
+                type: object
+              threads:
+                properties:
+                  href:
+                    type: string
+                type: object
+              web:
+                properties:
+                  href:
+                    type: string
+                type: object
+            type: object
+          bcc:
+            type: array
+          cc:
+            type: array
+          closedBy:
+            type: integer
+          closedByUser:
+            properties:
+              email:
+                type: string
+              first:
+                type: string
+              id:
+                type: integer
+              last:
+                type: string
+              type:
+                type: string
+            type: object
+          createdAt:
+            type: string
+          createdBy:
+            properties:
+              email:
+                type: string
+              first:
+                type: string
+              id:
+                type: integer
+              last:
+                type: string
+              photoUrl:
+                type: string
+              type:
+                type: string
+            type: object
+          customFields:
+            items:
+              properties:
+                id:
+                  type: integer
+                name:
+                  type: string
+                text:
+                  type: string
+                value:
+                  type: string
+              type: object
+            type: array
+          customerWaitingSince:
+            properties:
+              friendly:
+                type: string
+              time:
+                type: string
+            type: object
+          folderId:
+            type: integer
+          id:
+            type: integer
+          mailboxId:
+            type: integer
+          number:
+            type: integer
+          preview:
+            type: string
+          primaryCustomer:
+            properties:
+              email:
+                type: string
+              first:
+                type: string
+              id:
+                type: integer
+              last:
+                type: string
+              photoUrl:
+                type: string
+              type:
+                type: string
+            type: object
+          source:
+            properties:
+              type:
+                type: string
+              via:
+                type: string
+            type: object
+          state:
+            type: string
+          status:
+            type: string
+          subject:
+            type: string
+          tags:
+            items:
+              properties:
+                color:
+                  type: string
+                id:
+                  type: integer
+                tag:
+                  type: string
+              type: object
+            type: array
+          threads:
+            type: integer
+          type:
+            type: string
+          userUpdatedAt:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Conversations
-      primary_key: *ref_0
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Conversations
         url_base: https://api.helpscout.net/v2
         path: conversations
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters:
             mailbox: '{{ config[''mailbox''] }}'
             embed: '{{ config[''embed''] }}'
@@ -59,18 +223,57 @@ streams:
         url_base: https://api.helpscout.net/v2
   - type: DeclarativeStream
     name: Mailboxes
-    primary_key: &ref_1
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              fields:
+                properties:
+                  href:
+                    type: string
+                type: object
+              folders:
+                properties:
+                  href:
+                    type: string
+                type: object
+              self:
+                properties:
+                  href:
+                    type: string
+                type: object
+            type: object
+          createdAt:
+            type: string
+          email:
+            type: string
+          id:
+            type: integer
+          name:
+            type: string
+          slug:
+            type: string
+          updatedAt:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Mailboxes
-      primary_key: *ref_1
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Mailboxes
         url_base: https://api.helpscout.net/v2
         path: mailboxes
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters: {}
           request_headers: {}
           request_body_json: {}
@@ -101,84 +304,138 @@ streams:
           start_from_page: 1
         url_base: https://api.helpscout.net/v2
   - type: DeclarativeStream
-    name: Properties
-    primary_key: &ref_2 []
-    retriever:
-      type: SimpleRetriever
-      name: Properties
-      primary_key: *ref_2
-      requester:
-        type: HttpRequester
-        name: Properties
-        url_base: https://api.helpscout.net/v2
-        path: customer-properties
-        request_options_provider:
-          request_parameters: {}
-          request_headers: {}
-          request_body_json: {}
-        authenticator:
-          type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
-          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
-          grant_type: client_credentials
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_pointer: []
-      paginator:
-        type: NoPagination
-  - type: DeclarativeStream
-    name: Ratings
-    primary_key: &ref_3
-      - id
-    retriever:
-      type: SimpleRetriever
-      name: Ratings
-      primary_key: *ref_3
-      requester:
-        type: HttpRequester
-        name: Ratings
-        url_base: https://api.helpscout.net/v2
-        path: ratings/{{ config['ratingid'] }}
-        request_options_provider:
-          request_parameters: {}
-          request_headers: {}
-          request_body_json: {}
-        authenticator:
-          type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
-          token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
-          grant_type: client_credentials
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_pointer:
-            - _embedded
-            - ratings
-      paginator:
-        type: NoPagination
-  - type: DeclarativeStream
     name: Conversation Threads
-    primary_key: &ref_4
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _embedded:
+            properties:
+              attachments:
+                type: array
+            type: object
+          _links:
+            properties:
+              assignedTo:
+                properties:
+                  href:
+                    type: string
+                type: object
+              createdByCustomer:
+                properties:
+                  href:
+                    type: string
+                type: object
+              createdByUser:
+                properties:
+                  href:
+                    type: string
+                type: object
+              customer:
+                properties:
+                  href:
+                    type: string
+                type: object
+            type: object
+          action:
+            properties:
+              associatedEntities:
+                properties:
+                  user:
+                    type: integer
+                type: object
+              text:
+                type: string
+              type:
+                type: string
+            type: object
+          assignedTo:
+            properties:
+              email:
+                type: string
+              first:
+                type: string
+              id:
+                type: integer
+              last:
+                type: string
+              type:
+                type: string
+            type: object
+          bcc:
+            type: array
+          body:
+            type: string
+          cc:
+            type: array
+          createdAt:
+            type: string
+          createdBy:
+            properties:
+              email:
+                type: string
+              first:
+                type: string
+              id:
+                type: integer
+              last:
+                type: string
+              photoUrl:
+                type: string
+              type:
+                type: string
+            type: object
+          customer:
+            properties:
+              email:
+                type: string
+              first:
+                type: string
+              id:
+                type: integer
+              last:
+                type: string
+              photoUrl:
+                type: string
+            type: object
+          id:
+            type: integer
+          openedAt:
+            type: string
+          savedReplyId:
+            type: integer
+          source:
+            properties:
+              type:
+                type: string
+              via:
+                type: string
+            type: object
+          state:
+            type: string
+          status:
+            type: string
+          to:
+            type: array
+          type:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Conversation Threads
-      primary_key: *ref_4
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Conversation Threads
         url_base: https://api.helpscout.net/v2
         path: conversations/{{ config['conversationid'] }}/threads
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters: {}
           request_headers: {}
           request_body_json: {}
@@ -201,18 +458,142 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: Customers
-    primary_key: &ref_5
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _embedded:
+            properties:
+              address:
+                properties:
+                  city:
+                    type: string
+                  country:
+                    type: string
+                  lines:
+                    items:
+                      type: string
+                    type: array
+                  postalCode:
+                    type: string
+                  state:
+                    type: string
+                type: object
+              chats:
+                type: array
+              emails:
+                items:
+                  properties:
+                    id:
+                      type: integer
+                    type:
+                      type: string
+                    value:
+                      type: string
+                  type: object
+                type: array
+              phones:
+                type: array
+              properties:
+                type: array
+              social_profiles:
+                items:
+                  properties:
+                    id:
+                      type: integer
+                    type:
+                      type: string
+                    value:
+                      type: string
+                  type: object
+                type: array
+              websites:
+                items:
+                  properties:
+                    id:
+                      type: integer
+                    value:
+                      type: string
+                  type: object
+                type: array
+            type: object
+          _links:
+            properties:
+              address:
+                properties:
+                  href:
+                    type: string
+                type: object
+              chats:
+                properties:
+                  href:
+                    type: string
+                type: object
+              emails:
+                properties:
+                  href:
+                    type: string
+                type: object
+              phones:
+                properties:
+                  href:
+                    type: string
+                type: object
+              self:
+                properties:
+                  href:
+                    type: string
+                type: object
+              social-profiles:
+                properties:
+                  href:
+                    type: string
+                type: object
+              websites:
+                properties:
+                  href:
+                    type: string
+                type: object
+            type: object
+          background:
+            type: string
+          createdAt:
+            type: string
+          draft:
+            type: boolean
+          firstName:
+            type: string
+          gender:
+            type: string
+          id:
+            type: integer
+          lastName:
+            type: string
+          organization:
+            type: string
+          photoType:
+            type: string
+          photoUrl:
+            type: string
+          updatedAt:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Customers
-      primary_key: *ref_5
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Customers
         url_base: https://api.helpscout.net/v2
         path: customers
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters:
             mailbox: '{{ config[''mailbox''] }}'
             firstName: '{{ config[''firstname''] }}'
@@ -241,18 +622,48 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: Mailbox Fields
-    primary_key: &ref_6
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          options:
+            items:
+              properties:
+                id:
+                  type: integer
+                label:
+                  type: string
+                order:
+                  type: integer
+              type: object
+            type: array
+          order:
+            type: integer
+          required:
+            type: boolean
+          type:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Mailbox Fields
-      primary_key: *ref_6
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Mailbox Fields
         url_base: https://api.helpscout.net/v2
         path: mailboxes/{{ config['mailbox'] }}/fields
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters: {}
           request_headers: {}
           request_body_json: {}
@@ -275,18 +686,41 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: Mailbox Folders
-    primary_key: &ref_7
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          activeCount:
+            type: integer
+          id:
+            type: integer
+          name:
+            type: string
+          totalCount:
+            type: integer
+          type:
+            type: string
+          updatedAt:
+            type: string
+          userId:
+            type: integer
+        type: object
     retriever:
       type: SimpleRetriever
       name: Mailbox Folders
-      primary_key: *ref_7
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Mailbox Folders
         url_base: https://api.helpscout.net/v2
         path: mailboxes/{{ config['mailbox'] }}/folders
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters: {}
           request_headers: {}
           request_body_json: {}
@@ -309,18 +743,59 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: Users
-    primary_key: &ref_8
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              self:
+                properties:
+                  href:
+                    type: string
+                type: object
+            type: object
+          alternateEmails:
+            type: array
+          createdAt:
+            type: string
+          email:
+            type: string
+          firstName:
+            type: string
+          id:
+            type: integer
+          initials:
+            type: string
+          lastName:
+            type: string
+          mention:
+            type: string
+          role:
+            type: string
+          timezone:
+            type: string
+          type:
+            type: string
+          updatedAt:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Users
-      primary_key: *ref_8
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Users
         url_base: https://api.helpscout.net/v2
         path: users
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters:
             email: '{{ config[''email''] }}'
             mailbox: '{{ config[''mailbox''] }}'
@@ -345,21 +820,54 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     name: Workflows
-    primary_key: &ref_9
+    primary_key:
       - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          _links:
+            properties:
+              self:
+                properties:
+                  href:
+                    type: string
+                type: object
+            type: object
+          createdAt:
+            type: string
+          id:
+            type: integer
+          mailboxId:
+            type: integer
+          modifiedAt:
+            type: string
+          name:
+            type: string
+          order:
+            type: integer
+          status:
+            type: string
+          type:
+            type: string
+        type: object
     retriever:
       type: SimpleRetriever
       name: Workflows
-      primary_key: *ref_9
+      primary_key:
+        - id
       requester:
         type: HttpRequester
         name: Workflows
         url_base: https://api.helpscout.net/v2
         path: workflows
+        http_method: GET
         request_options_provider:
+          type: InterpolatedRequestOptionsProvider
           request_parameters:
             mailboxId: '{{ config[''mailbox''] }}'
-            type: '{{ config[''type''] }}'
+            '[object Object]': '{{ config[''type''] }}'
           request_headers: {}
           request_body_json: {}
         authenticator:
@@ -395,14 +903,8 @@ spec:
     required:
       - client_id
       - client_secret
-      - refresh_token
+      - client_refresh_token
     properties:
-      mailboxes:
-        title: mailboxes
-        type: string
-        description: >-
-          Filters conversations from a specific mailbox id. Use comma separated
-          values for more mailboxes
       embed:
         title: embed
         description: ' Allows embedding/loading of sub-entities, allowed values are: threads'
@@ -447,7 +949,7 @@ spec:
         description: Sort order
         type: string
       conversationid:
-        title: conversationID
+        title: conversationId
         description: Numeric ID of the conversation
         type: number
       ratingid:
@@ -484,7 +986,7 @@ spec:
         type: string
         title: Client secret
         airbyte_secret: true
-      refresh_token:
+      client_refresh_token:
         type: string
         title: Refresh token
         airbyte_secret: true

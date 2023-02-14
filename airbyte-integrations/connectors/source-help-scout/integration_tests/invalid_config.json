@@ -1,3 +1,8 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "client_id": "DnGIBWcQvoLekpts3zWMGQasdapbVrd4Ka",
+  "client_secret": "0odbuZzH4OXasdhYZzTUk7GzdKdde0m",
+  "client_refresh_token": "419hcirasdDFRqM8ZNHgDTXGDSTTwev",
+  "conversationid": 2136448,
+  "mailbox": 29184,
+  "ratingid": 1512
 }
