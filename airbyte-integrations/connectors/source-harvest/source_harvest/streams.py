@@ -9,6 +9,7 @@ from urllib.parse import parse_qsl, urlparse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -16,6 +17,7 @@ class HarvestStream(HttpStream, ABC):
     url_base = "https://api.harvestapp.com/v2/"
     per_page = 50
     primary_key = "id"
+    raise_on_http_errors = True
 
     @property
     def data_field(self) -> str:
@@ -23,6 +25,10 @@ class HarvestStream(HttpStream, ABC):
         :return: Default field name to get data from response
         """
         return self.name
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response):
         if "Retry-After" in response.headers:
@@ -70,6 +76,12 @@ class HarvestStream(HttpStream, ABC):
             yield from stream_data
         else:
             yield stream_data
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == requests.codes.FORBIDDEN:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warn(f"Stream `{self.name}` is not available. Please check required permissions. {response.text}")
+        return super().should_retry(response)
 
 
 class IncrementalHarvestStream(HarvestStream, ABC):
