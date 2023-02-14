@@ -54,13 +54,14 @@ class CustomQueryMixin:
             "DATE": "string",
         }
         fields = list(self.config["query"].fields)
-        fields.append(self.cursor_field)
+        if self.cursor_field:
+            fields.append(self.cursor_field)
         google_schema = self.google_ads_client.get_fields_metadata(fields)
 
         for field in fields:
             node = google_schema.get(field)
             # Data type return in enum format: "GoogleAdsFieldDataType.<data_type>"
-            google_data_type = str(node.data_type).replace("GoogleAdsFieldDataType.", "")
+            google_data_type = node.data_type.name
             if google_data_type == "ENUM":
                 field_value = {"type": "string", "enum": list(node.enum_values)}
             elif google_data_type == "MESSAGE":
