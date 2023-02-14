@@ -3,11 +3,10 @@
 .catalogTreeTable {
   flex: 1;
   padding: variables.$spacing-lg variables.$spacing-xl 0;
-  overflow-y: auto;
   margin-bottom: variables.$spacing-xl;
 
   &.scrollable {
-    overflow: auto;
+    overflow-y: auto;
   }
 
   &.newCatalogTreeTable {

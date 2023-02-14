@@ -1,5 +1,15 @@
+@use "scss/colors";
+@use "scss/z-indices";
+
 .container {
   &.fixedHeight {
     max-height: 600px;
   }
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: z-indices.$mainPageWithScrollEdge;
+  background: colors.$white;
 }

@@ -47,18 +47,20 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
 
   return (
     <div className={classNames(styles.container, { [styles.fixedHeight]: mode === "create" })}>
-      {isNewTableDesignEnabled ? (
-        <>
-          <StreamConnectionHeader />
-          <CatalogTreeTableHeader />
-        </>
-      ) : (
-        <>
-          <CatalogTreeHeader />
-          <CatalogTreeSubheader />
-          <BulkHeader />
-        </>
-      )}
+      <div className={styles.header}>
+        {isNewTableDesignEnabled ? (
+          <>
+            <StreamConnectionHeader />
+            <CatalogTreeTableHeader />
+          </>
+        ) : (
+          <>
+            <CatalogTreeHeader />
+            <CatalogTreeSubheader />
+            <BulkHeader />
+          </>
+        )}
+      </div>
       {streams.map((streamNode) => (
         <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
           {({ form }: FieldProps<FormikConnectionFormValues>) => (
