@@ -34,6 +34,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Check images exist
         run: ./tools/bin/check_images_exist.sh all
@@ -56,6 +58,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: dorny/paths-filter@v2
         id: filter
         with:
@@ -111,6 +115,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -189,6 +195,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -211,6 +219,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -340,6 +350,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -371,6 +383,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -391,6 +405,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         # We need to fetch at least one more commmit for the Chromatic action not to fail
         # but since we don't do screenshot comparison we don't need to fetch the full history.
         with:
@@ -461,6 +477,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -492,6 +510,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -514,6 +534,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -575,6 +597,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -606,6 +630,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -627,6 +653,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -822,6 +850,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -852,6 +882,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -876,6 +908,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -1044,6 +1078,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -1074,6 +1110,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -1274,6 +1312,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -1302,6 +1342,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user

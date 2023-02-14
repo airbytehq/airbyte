@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Install Java
         uses: actions/setup-java@v3
         with:
@@ -35,6 +37,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Install Java
         uses: actions/setup-java@v3
         with:

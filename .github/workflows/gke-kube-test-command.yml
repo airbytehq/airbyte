@@ -28,6 +28,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Check PAT rate limits
@@ -59,6 +61,8 @@ jobs:
 
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           repository: ${{ github.event.inputs.repo || "airbytehq/airbyte" }}
           ref: ${{ github.event.inputs.gitref || "master" }}
@@ -144,6 +148,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}

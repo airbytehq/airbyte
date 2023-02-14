@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -44,6 +46,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           ref: ${{ github.event.inputs.oss_ref || github.ref }}
       - name: Generate Outputs
@@ -80,6 +84,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           ref: ${{ github.event.inputs.oss_ref || github.ref }}
 
@@ -176,6 +182,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \

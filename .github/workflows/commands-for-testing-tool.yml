@@ -90,6 +90,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{  needs.set-params.outputs.repo }}
           ref: ${{  needs.set-params.outputs.ref }}
       - name: Set up Docker Buildx

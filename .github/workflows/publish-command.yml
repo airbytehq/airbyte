@@ -42,6 +42,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Check PAT rate limits
@@ -67,6 +69,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
@@ -94,6 +98,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Check PAT rate limits
@@ -120,6 +126,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Check PAT rate limits
@@ -145,6 +153,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
@@ -237,6 +247,8 @@ jobs:
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
@@ -427,6 +439,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -482,6 +496,8 @@ jobs:
           aws-region: us-east-2
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \

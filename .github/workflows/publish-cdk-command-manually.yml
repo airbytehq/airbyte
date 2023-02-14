@@ -41,6 +41,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
           token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
@@ -101,6 +103,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+        with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Build CDK Package
@@ -140,6 +144,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
