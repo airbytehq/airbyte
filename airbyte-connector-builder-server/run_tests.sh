@@ -6,9 +6,7 @@ cd $1
 set -e
 
 # Install dependencies
-pip install -e .
-pip install -e '.[main]'
-pip install -e '.[tests]'
+pip install -r requirements-tests.txt
 
 # Run the tests
 python -m coverage run -m pytest unit_tests -c pytest.ini

@@ -6,7 +6,7 @@ RUN apt-get upgrade \
 WORKDIR /home/connector-builder-server
 COPY . ./
 
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ["uvicorn", "connector_builder.entrypoint:app", "--host", "0.0.0.0", "--port", "80"]
 

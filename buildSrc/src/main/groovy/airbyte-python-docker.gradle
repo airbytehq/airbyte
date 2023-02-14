@@ -5,7 +5,7 @@ import org.gradle.api.tasks.Exec
 /*
 This plugin exists to build & test a python module via Gradle without requiring the developer to install Python on their machine. It achieves this by mounting the module into a Python Docker image and running the tests. 
 
-Modules consuming this plugin must define two scripts `run_tests.sh` and `run_format.sh`. 
+Modules consuming this plugin must define two scripts `run_tests.sh`.
 */
 
 class AirbytePythonDockerPlugin implements Plugin<Project> {
@@ -20,6 +20,7 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
             // This doesn't take into account dependencies if you don't have a lock file. We strongly recommend using a
             // lock file in other to ensure that given no file changes and two "pip install", you have the same output
             inputs.dir project.projectDir.getAbsolutePath()
+            outputs.cacheIf { true }
             outputs.upToDateWhen { true }
 
             commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_tests.sh /home"
