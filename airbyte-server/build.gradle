@@ -45,7 +45,7 @@ dependencies {
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-notification')
     implementation project(':airbyte-oauth')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-persistence:job-persistence')
 
     implementation 'com.github.slugify:slugify:2.4'
