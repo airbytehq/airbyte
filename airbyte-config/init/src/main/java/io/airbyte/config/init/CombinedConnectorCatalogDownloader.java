@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -15,6 +15,7 @@ public class CombinedConnectorCatalogDownloader {
     final Path outputRoot = Path.of(args[0]);
     final String outputFileName = args[1];
 
+    // TODO (ben) - get url from config
     final RemoteDefinitionsProvider remoteDefinitionsProvider =
         new RemoteDefinitionsProvider("https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json", 10000);
     final CombinedConnectorCatalog combinedCatalog = remoteDefinitionsProvider.getRemoteDefinitionCatalog();

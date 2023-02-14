@@ -89,5 +89,6 @@ class IconValidationTask extends DefaultTask {
 }
 
 task validateIcons(type: IconValidationTask)
+// TODO (ben): perhaps allow developers to opt out of download in the case of local development on the catalog.
 check.dependsOn downloadCombinedConnectorCatalog
 check.dependsOn validateIcons
