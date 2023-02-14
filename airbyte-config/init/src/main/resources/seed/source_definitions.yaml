@@ -2048,9 +2048,6 @@
   icon: zendesk-support.svg
   sourceType: api
   releaseStage: generally_available
-  allowedHosts:
-    hosts:
-      - "${subdomain}.zendesk.com"
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
