@@ -35,6 +35,8 @@ import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionAc
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.GetMaxAttemptOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
+import io.airbyte.workers.temporal.scheduling.activities.FeatureFlagFetchActivity;
+import io.airbyte.workers.temporal.scheduling.activities.FeatureFlagFetchActivity.FeatureFlagFetchOutput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
@@ -74,6 +76,7 @@ import io.temporal.worker.Worker;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -127,6 +130,8 @@ class ConnectionManagerWorkflowTest {
       mock(WorkflowConfigActivity.class, Mockito.withSettings().withoutAnnotations());
   private static final RouteToSyncTaskQueueActivity mRouteToSyncTaskQueueActivity =
       mock(RouteToSyncTaskQueueActivity.class, Mockito.withSettings().withoutAnnotations());
+  private static final FeatureFlagFetchActivity mFeatureFlagFetchActivity =
+      mock(FeatureFlagFetchActivity.class, Mockito.withSettings().withoutAnnotations());
   private static final String EVENT = "event = ";
 
   private TestWorkflowEnvironment testEnv;
@@ -156,6 +161,7 @@ class ConnectionManagerWorkflowTest {
     Mockito.reset(mRecordMetricActivity);
     Mockito.reset(mWorkflowConfigActivity);
     Mockito.reset(mRouteToSyncTaskQueueActivity);
+    Mockito.reset(mFeatureFlagFetchActivity);
 
     // default is to wait "forever"
     when(mConfigFetchActivity.getTimeToWait(Mockito.any())).thenReturn(new ScheduleRetrieverOutput(
@@ -191,6 +197,9 @@ class ConnectionManagerWorkflowTest {
     // to a different task queue
     when(mRouteToSyncTaskQueueActivity.route(Mockito.any()))
         .thenReturn(new RouteToSyncTaskQueueOutput(TemporalJobType.SYNC.name()));
+
+    when(mFeatureFlagFetchActivity.getFeatureFlags(Mockito.any()))
+        .thenReturn(new FeatureFlagFetchOutput(Map.of()));
 
     activityOptions = ActivityOptions.newBuilder()
         .setHeartbeatTimeout(Duration.ofSeconds(30))
@@ -896,7 +905,7 @@ class ConnectionManagerWorkflowTest {
       managerWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
       managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mCheckConnectionActivity, mGenerateInputActivityImpl,
           mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity, mRecordMetricActivity,
-          mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity);
+          mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity, mFeatureFlagFetchActivity);
 
       client = testEnv.getWorkflowClient();
       workflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
@@ -994,7 +1003,7 @@ class ConnectionManagerWorkflowTest {
       managerWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
       managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mCheckConnectionActivity, mGenerateInputActivityImpl,
           mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity, mRecordMetricActivity,
-          mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity);
+          mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity, mFeatureFlagFetchActivity);
 
       client = testEnv.getWorkflowClient();
       workflow = client.newWorkflowStub(ConnectionManagerWorkflow.class,
@@ -1582,7 +1591,7 @@ class ConnectionManagerWorkflowTest {
     managerWorker.registerWorkflowImplementationTypes(temporalProxyHelper.proxyWorkflowClass(ConnectionManagerWorkflowImpl.class));
     managerWorker.registerActivitiesImplementations(mConfigFetchActivity, mCheckConnectionActivity, mGenerateInputActivityImpl,
         mJobCreationAndStatusUpdateActivity, mAutoDisableConnectionActivity, mRecordMetricActivity,
-        mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity);
+        mWorkflowConfigActivity, mRouteToSyncTaskQueueActivity, mFeatureFlagFetchActivity);
 
     client = testEnv.getWorkflowClient();
     testEnv.start();
