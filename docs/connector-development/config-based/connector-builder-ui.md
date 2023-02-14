@@ -72,12 +72,15 @@ The UI contains two main components: the Builder UI where you can fill out input
 8. **Results view**: Displays information based on the selected tab
 9. **Page selector** Displays the selected page
 10. **Logs view**: Displays the logs emitted by the connector while running
+<!-- 
+
+TODO: update this video, see https://github.com/airbytehq/airbyte/issues/23019
 
 The following demo video demonstrates these components on a very simple API:
 
 <div style={{position: "relative", "padding-bottom": "64.90384615384616%", height: 0}}>
 <iframe src="https://www.loom.com/embed/acf899938ef74dec8dd61ba012bc872f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe>
-</div>
+</div> -->
 
 ## Upgrading
 
