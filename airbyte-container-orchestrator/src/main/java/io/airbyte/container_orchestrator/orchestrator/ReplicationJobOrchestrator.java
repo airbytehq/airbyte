@@ -6,11 +6,13 @@ package io.airbyte.container_orchestrator.orchestrator;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
-import static io.airbyte.workers.internal.DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.SourceDefinitionApi;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -45,6 +47,7 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -63,6 +66,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final JobRunConfig jobRunConfig;
   private final SourceApi sourceApi;
   private final DestinationApi destinationApi;
+  private final SourceDefinitionApi sourceDefinitionApi;
 
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
@@ -72,7 +76,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                     final JobRunConfig jobRunConfig,
                                     final SourceApi sourceApi,
-                                    final DestinationApi destinationApi) {
+                                    final DestinationApi destinationApi,
+                                    final SourceDefinitionApi sourceDefinitionApi) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
@@ -82,6 +87,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     this.jobRunConfig = jobRunConfig;
     this.sourceApi = sourceApi;
     this.destinationApi = destinationApi;
+    this.sourceDefinitionApi = sourceDefinitionApi;
   }
 
   @Override
@@ -139,8 +145,14 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         featureFlags);
 
     log.info("Setting up source...");
+
+    final UUID sourceDefinitionId = sourceApi.getSource(new SourceIdRequestBody().sourceId(syncInput.getSourceId())).getSourceDefinitionId();
+
+    final long maxSecondsBetweenMessages = sourceDefinitionApi
+        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
+        .getMaxSecondsBetweenMessages();
     // reset jobs use an empty source to induce resetting all data in destination.
-    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION);
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofSeconds(maxSecondsBetweenMessages));
 
     final var airbyteSource =
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(

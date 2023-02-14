@@ -9,13 +9,7 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.generated.AttemptApi;
-import io.airbyte.api.client.generated.ConnectionApi;
-import io.airbyte.api.client.generated.DestinationApi;
-import io.airbyte.api.client.generated.JobsApi;
-import io.airbyte.api.client.generated.SourceApi;
-import io.airbyte.api.client.generated.StateApi;
-import io.airbyte.api.client.generated.WorkspaceApi;
+import io.airbyte.api.client.generated.*;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.micronaut.context.BeanProvider;
@@ -106,6 +100,11 @@ public class ApiClientBeanFactory {
   @Singleton
   public StateApi stateApi(final ApiClient apiClient) {
     return new StateApi(apiClient);
+  }
+
+  @Singleton
+  public SourceDefinitionApi sourceDefinitionApi(final ApiClient apiClient) {
+    return new SourceDefinitionApi(apiClient);
   }
 
   @Singleton
