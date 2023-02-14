@@ -11,16 +11,21 @@ import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneFi
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Resources;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.yaml.Yamls;
+import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,22 +52,55 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
     this.seedResourceClass = seedResourceClass;
 
     // TODO remove this call once dependency injection framework manages object creation
-    initialize();
+//    initialize();
   }
 
   // TODO will be called automatically by the dependency injection framework on object creation
-  public void initialize() throws IOException {
-    this.sourceDefinitions =
-        parseDefinitions(this.seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION.getResourcePath(), SeedType.SOURCE_SPEC.getResourcePath(),
-            SeedType.STANDARD_SOURCE_DEFINITION.getIdName(), SeedType.SOURCE_SPEC.getIdName(), StandardSourceDefinition.class);
-    this.destinationDefinitions = parseDefinitions(this.seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION.getResourcePath(),
-        SeedType.DESTINATION_SPEC.getResourcePath(), SeedType.STANDARD_DESTINATION_DEFINITION.getIdName(), SeedType.DESTINATION_SPEC.getIdName(),
-        StandardDestinationDefinition.class);
+//  public void initialize() throws IOException {
+//    this.sourceDefinitions =
+//        parseDefinitions(this.seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION.getResourcePath(), SeedType.SOURCE_SPEC.getResourcePath(),
+//            SeedType.STANDARD_SOURCE_DEFINITION.getIdName(), SeedType.SOURCE_SPEC.getIdName(), StandardSourceDefinition.class);
+//    this.destinationDefinitions = parseDefinitions(this.seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION.getResourcePath(),
+//        SeedType.DESTINATION_SPEC.getResourcePath(), SeedType.STANDARD_DESTINATION_DEFINITION.getIdName(), SeedType.DESTINATION_SPEC.getIdName(),
+//        StandardDestinationDefinition.class);
+//  }
+
+  // TODO (ben): finish this 😅 and write tests
+  public CombinedConnectorCatalog getLocalDefinitionCatalog(final Path root, final String fileName) {
+    // 1. get file path of the local catalog
+    // TODO get the root and filename from config
+    // TODO add logs
+    // TODO add tests
+
+    try {
+      // 2. read the file
+      final String jsonString = IOs.readFile(root, fileName);
+      // 3. deserialize the file as JSON into a CombinedConnectorCatalog object
+      return Jsons.deserialize(jsonString, CombinedConnectorCatalog.class);
+    } catch (final Exception e) {
+      throw new RuntimeException("Failed to fetch local catalog definitions", e);
+    }
+  }
+
+  public Map<UUID, StandardSourceDefinition> getSourceDefinitionsMap() {
+    final CombinedConnectorCatalog catalog = getLocalDefinitionCatalog();
+    return catalog.getSources().stream().collect(Collectors.toMap(
+        StandardSourceDefinition::getSourceDefinitionId,
+        source -> source.withProtocolVersion(
+            AirbyteProtocolVersion.getWithDefault(source.getSpec() != null ? source.getSpec().getProtocolVersion() : null).serialize())));
+  }
+
+  public Map<UUID, StandardDestinationDefinition> getDestinationDefinitionsMap() {
+    final CombinedConnectorCatalog catalog = getLocalDefinitionCatalog();
+    return catalog.getDestinations().stream().collect(Collectors.toMap(
+        StandardDestinationDefinition::getDestinationDefinitionId,
+        destination -> destination.withProtocolVersion(
+            AirbyteProtocolVersion.getWithDefault(destination.getSpec() != null ? destination.getSpec().getProtocolVersion() : null).serialize())));
   }
 
   @Override
   public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    final StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
+    final StandardSourceDefinition definition = getSourceDefinitionsMap().get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
     }
@@ -71,12 +109,12 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public List<StandardSourceDefinition> getSourceDefinitions() {
-    return new ArrayList<>(this.sourceDefinitions.values());
+    return new ArrayList<>(getSourceDefinitionsMap().values());
   }
 
   @Override
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
-    final StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
+    final StandardDestinationDefinition definition = getDestinationDefinitionsMap().get(definitionId);
     if (definition == null) {
       throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
     }
@@ -85,8 +123,35 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   @Override
   public List<StandardDestinationDefinition> getDestinationDefinitions() {
-    return new ArrayList<>(this.destinationDefinitions.values());
-  }
+    return new ArrayList<>(getDestinationDefinitionsMap().values());
+
+//  @Override
+//  public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
+//    final StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
+//    if (definition == null) {
+//      throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
+//    }
+//    return definition;
+//  }
+//
+//  @Override
+//  public List<StandardSourceDefinition> getSourceDefinitions() {
+//    return new ArrayList<>(this.sourceDefinitions.values());
+//  }
+//
+//  @Override
+//  public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
+//    final StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
+//    if (definition == null) {
+//      throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
+//    }
+//    return definition;
+//  }
+//
+//  @Override
+//  public List<StandardDestinationDefinition> getDestinationDefinitions() {
+//    return new ArrayList<>(this.destinationDefinitions.values());
+//  }
 
   @SuppressWarnings("UnstableApiUsage")
   private static <T> Map<UUID, T> parseDefinitions(final Class<?> seedDefinitionsResourceClass,
