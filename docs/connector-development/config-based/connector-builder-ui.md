@@ -72,6 +72,7 @@ The UI contains two main components: the Builder UI where you can fill out input
 8. **Results view**: Displays information based on the selected tab
 9. **Page selector** Displays the selected page
 10. **Logs view**: Displays the logs emitted by the connector while running
+
 <!-- 
 
 TODO: update this video, see https://github.com/airbytehq/airbyte/issues/23019
