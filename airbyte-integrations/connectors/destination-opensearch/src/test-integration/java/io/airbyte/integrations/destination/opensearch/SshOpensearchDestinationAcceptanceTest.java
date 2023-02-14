@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.elasticsearch;
+package io.airbyte.integrations.destination.opensearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,14 +12,13 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.containers.Network;
-import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.opensearch.testcontainers.OpensearchContainer;
 
-public abstract class SshElasticsearchDestinationAcceptanceTest extends ElasticsearchDestinationAcceptanceTest {
+public abstract class SshOpensearchDestinationAcceptanceTest extends OpensearchDestinationAcceptanceTest {
 
   private static final Network network = Network.newNetwork();
   private static final SshBastionContainer bastion = new SshBastionContainer();
-  private static ElasticsearchContainer container;
+  private static OpensearchContainer container;
   private ObjectMapper mapper = new ObjectMapper();
   private final static String ELASTIC_PASSWORD = "MagicWord";
 
@@ -55,7 +54,7 @@ public abstract class SshElasticsearchDestinationAcceptanceTest extends Elastics
   @BeforeAll
   public static void beforeAll() {
     bastion.initAndStartBastion(network);
-    container = new ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+    container = new OpensearchContainer("opensearchproject/opensearch:2.5.0")
         .withNetwork(network)
         .withPassword(ELASTIC_PASSWORD);
     container.start();

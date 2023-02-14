@@ -28,9 +28,9 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.opensearch.testcontainers.OpensearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.opensearch.OpensearchContainer;
 
 public class OpensearchDestinationTest {
 
@@ -38,11 +38,11 @@ public class OpensearchDestinationTest {
 
   private static OpensearchContainer container;
   private static JsonNode config;
-
+  private static final DockerImageName OPENSEARCH_IMAGE = DockerImageName.parse("opensearchproject/opensearch:2.0.0");
   @BeforeAll
   public static void beforeAll() {
     // TODO: 컨테이너 이미지 수정 및 오픈서치 이미지 변경 (인스턴스 생성 -> Opensearch)
-    container = new OpensearchContainer("docker.elastic.co/elasticsearch/elasticsearch:7.15.1")
+    container = new OpensearchContainer("opensearchproject/opensearch:2.5.0")
         .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
         .withEnv("discovery.type", "single-node")
         .withEnv("network.host", "0.0.0.0")

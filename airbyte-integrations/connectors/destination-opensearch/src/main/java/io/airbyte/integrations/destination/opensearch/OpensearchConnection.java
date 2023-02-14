@@ -4,17 +4,18 @@
 
 package io.airbyte.integrations.destination.opensearch;
 
-import org.opensearch.client.base.RestClientTransport;
-import org.opensearch.client.base.Transport;
+import org.opensearch.client.Node;
+import org.opensearch.client.RestClient;
+import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
-import org.opensearch.client.opensearch._global.IndexRequest;
-import org.opensearch.client.opensearch._global.IndexResponse;
-import org.opensearch.client.opensearch._global.SearchResponse;
 import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch.cat.indices.IndicesRecord;
 import org.opensearch.client.opensearch.core.CreateResponse;
+import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.search.Hit;
+import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.indices.*;
-import org.opensearch.client.opensearch.indices.put_settings.IndexSettingsBody;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,9 +31,9 @@ import java.util.stream.Collectors;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
-import org.opensearch.client.RestClient;
-import org.opensearch.client.RestClientBuilder;
+import org.opensearch.client.transport.Transport;
 import org.opensearch.client.transport.endpoints.BooleanResponse;
+import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +177,6 @@ public class OpensearchConnection {
         }
     }
 
-    // TODO: Can we do something like this?
     private String extractPrimaryKey(AirbyteRecordMessage doc, OpensearchWriteConfig config) {
         if (!config.hasPrimaryKey()) {
             return UUID.randomUUID().toString();
