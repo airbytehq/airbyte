@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import copy
+import datetime
 import logging
 from collections import defaultdict
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -329,6 +330,63 @@ def test_valid_full_refresh_read_with_slices(mocker):
     messages = _fix_emitted_at(list(src.read(logger, {}, catalog)))
 
     assert expected == messages
+
+
+@pytest.mark.parametrize(
+    "slices",
+    [
+        [{"1": "1"}, {"2": "2"}],
+        [{"date": datetime.date(year=2023, month=1, day=1)}, {"date": datetime.date(year=2023, month=1, day=1)}]
+    ]
+)
+def test_read_full_refresh_with_slices_sends_slice_messages(mocker, slices):
+    """Given the logger is debug and a full refresh, AirbyteMessages are sent for slices"""
+    debug_logger = logging.getLogger("airbyte.debug")
+    debug_logger.setLevel(logging.DEBUG)
+    stream = MockStream(
+        [({"sync_mode": SyncMode.full_refresh, "stream_slice": s}, [s]) for s in slices],
+        name="s1",
+    )
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+
+    src = MockSource(streams=[stream])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(stream, SyncMode.full_refresh),
+        ]
+    )
+
+    messages = src.read(debug_logger, {}, catalog)
+
+    assert 2 == len(list(filter(lambda message: message.log and message.log.message.startswith("slice:"), messages)))
+
+
+def test_read_incremental_with_slices_sends_slice_messages(mocker):
+    """Given the logger is debug and a incremental, AirbyteMessages are sent for slices"""
+    debug_logger = logging.getLogger("airbyte.debug")
+    debug_logger.setLevel(logging.DEBUG)
+    slices = [{"1": "1"}, {"2": "2"}]
+    stream = MockStream(
+        [({"sync_mode": SyncMode.incremental, "stream_slice": s, 'stream_state': {}}, [s]) for s in slices],
+        name="s1",
+    )
+
+    MockStream.supports_incremental = mocker.PropertyMock(return_value=True)
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+    mocker.patch.object(MockStream, "stream_slices", return_value=slices)
+
+    src = MockSource(streams=[stream])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            _configured_stream(stream, SyncMode.incremental),
+        ]
+    )
+
+    messages = src.read(debug_logger, {}, catalog)
+
+    assert 2 == len(list(filter(lambda message: message.log and message.log.message.startswith("slice:"), messages)))
 
 
 class TestIncrementalRead:

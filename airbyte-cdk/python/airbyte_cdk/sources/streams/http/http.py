@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,9 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
@@ -112,6 +114,10 @@ class HttpStream(Stream, ABC):
     @property
     def authenticator(self) -> HttpAuthenticator:
         return self._authenticator
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:

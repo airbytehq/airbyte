@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.bigquery;
@@ -79,7 +79,7 @@ public class BigQueryDatabase extends SqlDatabase {
     }
   }
 
-  private String getUserAgentHeader(String connectorVersion) {
+  private String getUserAgentHeader(final String connectorVersion) {
     return String.format(AGENT_TEMPLATE, connectorVersion);
   }
 

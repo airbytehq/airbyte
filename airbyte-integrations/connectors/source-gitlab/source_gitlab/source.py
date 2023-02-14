@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,9 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
+from requests.auth import AuthBase
 
 from .streams import (
     Branches,
@@ -40,6 +42,12 @@ from .streams import (
 )
 
 
+def get_authenticator(config: MutableMapping) -> AuthBase:
+    if config["credentials"]["auth_type"] == "access_token":
+        return TokenAuthenticator(token=config["credentials"]["access_token"])
+    return SingleUseRefreshTokenOauth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
+
+
 class SourceGitlab(AbstractSource):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -67,7 +75,7 @@ class SourceGitlab(AbstractSource):
 
     def _auth_params(self, config: MutableMapping[str, Any]) -> Mapping[str, Any]:
         if not self.__auth_params:
-            auth = TokenAuthenticator(token=config["private_token"])
+            auth = get_authenticator(config)
             self.__auth_params = dict(authenticator=auth, api_url=config["api_url"])
         return self.__auth_params
 

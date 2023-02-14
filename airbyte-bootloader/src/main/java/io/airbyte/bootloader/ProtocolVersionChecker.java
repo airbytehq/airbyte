@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.bootloader;
@@ -9,12 +9,12 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorType;
-import io.airbyte.config.Configs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,24 +26,34 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Validates that all connectors support the desired target Airbyte protocol version.
+ */
+@Singleton
 @Slf4j
 public class ProtocolVersionChecker {
 
   private final JobPersistence jobPersistence;
-  private final Configs configs;
+  private final AirbyteProtocolVersionRange airbyteProtocolTargetVersionRange;
   private final ConfigRepository configRepository;
   private final Optional<DefinitionsProvider> definitionsProvider;
 
-  // Dependencies could be simplified once we break some pieces up:
-  // * JobPersistence for accessing the airbyte_metadata table.
-  // * Configs for getting the new Airbyte Protocol Range from the env vars.
-  // * ConfigRepository for accessing ActorDefinitions
+  /**
+   * Constructs a new protocol version checker that verifies all connectors are within the provided
+   * target protocol version range.
+   *
+   * @param jobPersistence A {@link JobPersistence} instance.
+   * @param airbyteProtocolTargetVersionRange The target Airbyte protocol version range.
+   * @param configRepository A {@link ConfigRepository} instance
+   * @param definitionsProvider An {@link Optional} that may contain a {@link DefinitionsProvider}
+   *        instance.
+   */
   public ProtocolVersionChecker(final JobPersistence jobPersistence,
-                                final Configs configs,
+                                final AirbyteProtocolVersionRange airbyteProtocolTargetVersionRange,
                                 final ConfigRepository configRepository,
                                 final Optional<DefinitionsProvider> definitionsProvider) {
     this.jobPersistence = jobPersistence;
-    this.configs = configs;
+    this.airbyteProtocolTargetVersionRange = airbyteProtocolTargetVersionRange;
     this.configRepository = configRepository;
     this.definitionsProvider = definitionsProvider;
   }
@@ -124,7 +134,7 @@ public class ProtocolVersionChecker {
   }
 
   protected AirbyteProtocolVersionRange getTargetProtocolVersionRange() {
-    return new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
+    return airbyteProtocolTargetVersionRange;
   }
 
   protected Map<ActorType, Set<UUID>> getConflictingActorDefinitions(final AirbyteProtocolVersionRange targetRange) throws IOException {
@@ -165,17 +175,21 @@ public class ProtocolVersionChecker {
       return Stream.empty();
     }
 
-    Stream<Entry<UUID, Version>> stream;
-    if (actorType == ActorType.SOURCE) {
-      stream = definitionsProvider.get().getSourceDefinitions()
-          .stream()
-          .map(def -> Map.entry(def.getSourceDefinitionId(), AirbyteProtocolVersion.getWithDefault(def.getSpec().getProtocolVersion())));
-    } else {
-      stream = definitionsProvider.get().getDestinationDefinitions()
-          .stream()
-          .map(def -> Map.entry(def.getDestinationDefinitionId(), AirbyteProtocolVersion.getWithDefault(def.getSpec().getProtocolVersion())));
+    return getActorVersions(actorType);
+  }
+
+  private Stream<Entry<UUID, Version>> getActorVersions(final ActorType actorType) {
+    switch (actorType) {
+      case SOURCE:
+        return definitionsProvider.get().getSourceDefinitions()
+            .stream()
+            .map(def -> Map.entry(def.getSourceDefinitionId(), AirbyteProtocolVersion.getWithDefault(def.getSpec().getProtocolVersion())));
+      case DESTINATION:
+      default:
+        return definitionsProvider.get().getDestinationDefinitions()
+            .stream()
+            .map(def -> Map.entry(def.getDestinationDefinitionId(), AirbyteProtocolVersion.getWithDefault(def.getSpec().getProtocolVersion())));
     }
-    return stream;
   }
 
   private Stream<String> formatActorDefinitionForLogging(final Set<UUID> remainingDestConflicts, final Set<UUID> remainingSourceConflicts) {
@@ -186,7 +200,7 @@ public class ProtocolVersionChecker {
             sourceDef = configRepository.getStandardSourceDefinition(defId);
             return String.format("Source: %s: %s: protocol version: %s",
                 sourceDef.getSourceDefinitionId(), sourceDef.getName(), sourceDef.getProtocolVersion());
-          } catch (Exception e) {
+          } catch (final Exception e) {
             log.info("Failed to getStandardSourceDefinition for {}", defId, e);
             return String.format("Source: %s: Failed to fetch details...", defId);
           }
@@ -196,7 +210,7 @@ public class ProtocolVersionChecker {
             final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(defId);
             return String.format("Destination: %s: %s: protocol version: %s",
                 destDef.getDestinationDefinitionId(), destDef.getName(), destDef.getProtocolVersion());
-          } catch (Exception e) {
+          } catch (final Exception e) {
             log.info("Failed to getStandardDestinationDefinition for {}", defId, e);
             return String.format("Source: %s: Failed to fetch details...", defId);
           }

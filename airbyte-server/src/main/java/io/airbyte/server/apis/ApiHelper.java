@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.apis;
 
+import io.airbyte.commons.server.errors.BadObjectSchemaKnownException;
+import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.server.errors.BadObjectSchemaKnownException;
-import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import org.slf4j.LoggerFactory;

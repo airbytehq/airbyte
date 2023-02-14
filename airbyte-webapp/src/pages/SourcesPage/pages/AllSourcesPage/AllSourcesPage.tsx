@@ -12,8 +12,8 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
 
-import { RoutePaths } from "../../../routePaths";
 import SourcesTable from "./components/SourcesTable";
+import { RoutePaths } from "../../../routePaths";
 
 const AllSourcesPage: React.FC = () => {
   const navigate = useNavigate();

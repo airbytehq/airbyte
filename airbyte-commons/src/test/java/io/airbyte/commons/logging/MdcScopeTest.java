@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.logging;
@@ -25,7 +25,7 @@ class MdcScopeTest {
   @Test
   @DisplayName("The MDC context is properly overrided")
   void testMDCModified() {
-    try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {
+    try (final MdcScope ignored = new MdcScope(modificationInMDC)) {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
       Assertions.assertThat(mdcState).containsExactlyInAnyOrderEntriesOf(
@@ -36,7 +36,7 @@ class MdcScopeTest {
   @Test
   @DisplayName("The MDC context is properly restored")
   void testMDCRestore() {
-    try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {}
+    try (final MdcScope ignored = new MdcScope(modificationInMDC)) {}
 
     final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 

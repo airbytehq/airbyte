@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job.models;
 
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.JobOutput;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -13,29 +14,35 @@ import javax.annotation.Nullable;
 
 public class Attempt {
 
-  private final long id;
+  private final int attemptNumber;
   private final long jobId;
   private final JobOutput output;
   private final AttemptStatus status;
+  private final String processingTaskQueue;
   private final AttemptFailureSummary failureSummary;
+  private final AttemptSyncConfig syncConfig;
   private final Path logPath;
   private final long updatedAtInSecond;
   private final long createdAtInSecond;
   private final Long endedAtInSecond;
 
-  public Attempt(final long id,
+  public Attempt(final int attemptNumber,
                  final long jobId,
                  final Path logPath,
+                 final @Nullable AttemptSyncConfig syncConfig,
                  final @Nullable JobOutput output,
                  final AttemptStatus status,
+                 final String processingTaskQueue,
                  final @Nullable AttemptFailureSummary failureSummary,
                  final long createdAtInSecond,
                  final long updatedAtInSecond,
                  final @Nullable Long endedAtInSecond) {
-    this.id = id;
+    this.attemptNumber = attemptNumber;
     this.jobId = jobId;
+    this.syncConfig = syncConfig;
     this.output = output;
     this.status = status;
+    this.processingTaskQueue = processingTaskQueue;
     this.failureSummary = failureSummary;
     this.logPath = logPath;
     this.updatedAtInSecond = updatedAtInSecond;
@@ -43,12 +50,16 @@ public class Attempt {
     this.endedAtInSecond = endedAtInSecond;
   }
 
-  public long getId() {
-    return id;
+  public int getAttemptNumber() {
+    return attemptNumber;
   }
 
   public long getJobId() {
     return jobId;
+  }
+
+  public Optional<AttemptSyncConfig> getSyncConfig() {
+    return Optional.ofNullable(syncConfig);
   }
 
   public Optional<JobOutput> getOutput() {
@@ -57,6 +68,10 @@ public class Attempt {
 
   public AttemptStatus getStatus() {
     return status;
+  }
+
+  public String getProcessingTaskQueue() {
+    return processingTaskQueue;
   }
 
   public Optional<AttemptFailureSummary> getFailureSummary() {
@@ -92,10 +107,11 @@ public class Attempt {
       return false;
     }
     final Attempt attempt = (Attempt) o;
-    return id == attempt.id &&
+    return attemptNumber == attempt.attemptNumber &&
         jobId == attempt.jobId &&
         updatedAtInSecond == attempt.updatedAtInSecond &&
         createdAtInSecond == attempt.createdAtInSecond &&
+        Objects.equals(syncConfig, attempt.syncConfig) &&
         Objects.equals(output, attempt.output) &&
         status == attempt.status &&
         Objects.equals(failureSummary, attempt.failureSummary) &&
@@ -105,14 +121,16 @@ public class Attempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, jobId, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
+    return Objects.hash(attemptNumber, jobId, syncConfig, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond,
+        endedAtInSecond);
   }
 
   @Override
   public String toString() {
     return "Attempt{" +
-        "id=" + id +
+        "id=" + attemptNumber +
         ", jobId=" + jobId +
+        ", syncConfig=" + syncConfig +
         ", output=" + output +
         ", status=" + status +
         ", failureSummary=" + failureSummary +

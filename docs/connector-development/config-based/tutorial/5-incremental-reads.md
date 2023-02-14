@@ -104,8 +104,9 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-    step: "1d"
+    step: "P1D"
     datetime_format: "%Y-%m-%d"
+    cursor_granularity: "P1D"
     cursor_field: "{{ options['stream_cursor_field'] }}"
 ```
 
@@ -182,8 +183,9 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-    step: "1d"
+    step: "P1D"
     datetime_format: "%Y-%m-%d"
+    cursor_granularity: "P1D"
     cursor_field: "{{ options['stream_cursor_field'] }}"
   retriever:
     record_selector:
@@ -314,7 +316,7 @@ There shouldn't be any data read if the state is today's date:
 
 ## Next steps:
 
-Next, we'll run the [Source Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
+Next, we'll run the [Connector Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
 
 ## More readings
 

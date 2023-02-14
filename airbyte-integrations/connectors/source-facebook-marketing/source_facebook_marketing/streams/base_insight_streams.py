@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -119,7 +119,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        self._next_cursor_value = self._get_start_date()
         try:
             for obj in job.get_result():
                 yield obj.export_all_data()
@@ -197,6 +196,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
+        self._next_cursor_value = self._get_start_date()
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
                 continue

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -7,6 +7,7 @@ package io.airbyte.workers.internal;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
@@ -15,8 +16,13 @@ import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,25 +40,49 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteStreamFactory.class);
+  private final double MAX_SIZE_RATIO = 0.8;
 
   private final MdcScope.Builder containerLogMdcBuilder;
   private final AirbyteProtocolPredicate protocolValidator;
   protected final Logger logger;
+  private final long maxMemory;
+  private final Optional<Class<? extends RuntimeException>> exceptionClass;
 
   public DefaultAirbyteStreamFactory() {
     this(MdcScope.DEFAULT_BUILDER);
   }
 
   public DefaultAirbyteStreamFactory(final MdcScope.Builder containerLogMdcBuilder) {
-    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder);
+    this(new AirbyteProtocolPredicate(), LOGGER, containerLogMdcBuilder, Optional.empty());
   }
 
+  /**
+   * Create a default airbyte stream, if a `messageSizeExceptionClass` is not empty, the message size
+   * will be checked and if it more than the available memory * MAX_SIZE_RATIO the sync will be failed
+   * by throwing the exception provided. The exception must have a constructor that accept a string.
+   */
   DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
                               final Logger logger,
-                              final MdcScope.Builder containerLogMdcBuilder) {
+                              final MdcScope.Builder containerLogMdcBuilder,
+                              final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass) {
     protocolValidator = protocolPredicate;
     this.logger = logger;
     this.containerLogMdcBuilder = containerLogMdcBuilder;
+    this.exceptionClass = messageSizeExceptionClass;
+    this.maxMemory = Runtime.getRuntime().maxMemory();
+  }
+
+  @VisibleForTesting
+  DefaultAirbyteStreamFactory(final AirbyteProtocolPredicate protocolPredicate,
+                              final Logger logger,
+                              final MdcScope.Builder containerLogMdcBuilder,
+                              final Optional<Class<? extends RuntimeException>> messageSizeExceptionClass,
+                              final long maxMemory) {
+    protocolValidator = protocolPredicate;
+    this.logger = logger;
+    this.containerLogMdcBuilder = containerLogMdcBuilder;
+    this.exceptionClass = messageSizeExceptionClass;
+    this.maxMemory = maxMemory;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -61,7 +91,24 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     return bufferedReader
         .lines()
-        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.length()))
+        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.getBytes(StandardCharsets.UTF_8).length))
+        .peek(str -> {
+          if (exceptionClass.isPresent()) {
+            final long messageSize = str.getBytes(StandardCharsets.UTF_8).length;
+            if (messageSize > maxMemory * MAX_SIZE_RATIO) {
+              try {
+                final String errorMessage = String.format(
+                    "Airbyte has received a message at %s UTC which is larger than %s (size: %s). The sync has been failed to prevent running out of memory.",
+                    DateTime.now(),
+                    humanReadableByteCountSI(maxMemory),
+                    humanReadableByteCountSI(messageSize));
+                throw exceptionClass.get().getConstructor(String.class).newInstance(errorMessage);
+              } catch (final InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+              }
+            }
+          }
+        })
         .flatMap(this::parseJson)
         .filter(this::validate)
         .flatMap(this::toAirbyteMessage)
@@ -119,6 +166,21 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
       case TRACE -> logger.trace(combinedMessage);
       default -> logger.info(combinedMessage);
     }
+  }
+
+  // Human-readable byte size from
+  // https://stackoverflow.com/questions/3758606/how-can-i-convert-byte-size-into-a-human-readable-format-in-java
+  @SuppressWarnings("PMD.AvoidReassigningParameters")
+  private String humanReadableByteCountSI(long bytes) {
+    if (-1000 < bytes && bytes < 1000) {
+      return bytes + " B";
+    }
+    final CharacterIterator ci = new StringCharacterIterator("kMGTPE");
+    while (bytes <= -999_950 || bytes >= 999_950) {
+      bytes /= 1000;
+      ci.next();
+    }
+    return String.format("%.1f %cB", bytes / 1000.0, ci.current());
   }
 
 }

@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import Mock
 
 import pytest
@@ -9,9 +10,10 @@ from airbyte_cdk.models import SyncMode
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
 from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
+from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import ClickView
+from source_google_ads.streams import ClickView, cyclic_sieve
 
 from .common import MockGoogleAdsClient as MockGoogleAdsClient
 
@@ -193,3 +195,38 @@ def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, con
 
     stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"})
     assert stream.get_query.call_count == 1
+
+
+@pytest.mark.parametrize("error_cls", (ResourceExhausted, TooManyRequests, InternalServerError, DataLoss))
+def test_retry_transient_errors(mocker, config, customers, error_cls):
+    mocker.patch("time.sleep")
+    credentials = config["credentials"]
+    credentials.update(use_proto_plus=True)
+    api = GoogleAds(credentials=credentials)
+    mocked_search = mocker.patch.object(api.ga_service, "search", side_effect=error_cls("Error message"))
+    incremental_stream_config = dict(
+        api=api,
+        conversion_window_days=config["conversion_window_days"],
+        start_date=config["start_date"],
+        end_date="2021-04-04",
+        customers=customers,
+    )
+    stream = ClickView(**incremental_stream_config)
+    customer_id = next(iter(customers)).id
+    stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"}
+    records = []
+    with pytest.raises(error_cls):
+        records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
+    assert mocked_search.call_count == 5
+    assert records == []
+
+
+def test_cyclic_sieve(caplog):
+    original_logger = logging.getLogger("test")
+    sieve = cyclic_sieve(original_logger, fraction=10)
+    for _ in range(20):
+        sieve.info("Ground Control to Major Tom")
+        sieve.info("Your circuit's dead, there's something wrong")
+        sieve.info("Can you hear me, Major Tom?")
+        sieve.bump()
+    assert len(caplog.records) == 6  # 20 * 3 / 10

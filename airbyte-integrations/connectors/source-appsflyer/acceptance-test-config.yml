@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-appsflyer:dev
 tests:
@@ -15,12 +15,12 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#      expect_records:
-#        path: "integration_tests/expected_records.txt"
-#        extra_fields: no
-#        exact_order: no
-#        extra_records: yes
+  # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
+  #      expect_records:
+  #        path: "integration_tests/expected_records.jsonl"
+  #        extra_fields: no
+  #        exact_order: no
+  #        extra_records: yes
   incremental: # TODO if your connector does not implement incremental sync, remove this block
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

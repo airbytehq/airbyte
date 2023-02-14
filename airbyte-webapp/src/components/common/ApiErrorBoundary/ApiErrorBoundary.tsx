@@ -5,7 +5,9 @@ import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useLocation } from "react-use";
 import { LocationSensorState } from "react-use/lib/useLocation";
 
+import { isFormBuildError } from "core/form/FormBuildError";
 import { isVersionError } from "core/request/VersionError";
+import { TrackErrorFn, useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
@@ -21,6 +23,7 @@ interface ApiErrorBoundaryState {
 
 enum ErrorId {
   VersionMismatch = "version.mismatch",
+  FormBuild = "form.build",
   ServerUnavailable = "server.unavailable",
   UnknownError = "unknown",
 }
@@ -29,6 +32,7 @@ interface ApiErrorBoundaryHookProps {
   location: LocationSensorState;
   onRetry?: () => void;
   navigate: NavigateFunction;
+  trackError: TrackErrorFn;
 }
 
 interface ApiErrorBoundaryProps {
@@ -49,6 +53,10 @@ class ApiErrorBoundaryComponent extends React.Component<
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
+    }
+
+    if (isFormBuildError(error)) {
+      return { errorId: ErrorId.FormBuild, message: error.message };
     }
 
     const isNetworkBoundaryMessage = error.message === "Failed to fetch";
@@ -72,6 +80,15 @@ class ApiErrorBoundaryComponent extends React.Component<
     }
   }
 
+  componentDidCatch(error: { message: string; status?: number; __type?: string }) {
+    if (isFormBuildError(error)) {
+      this.props.trackError(error, {
+        id: "formBuildError",
+        connectorDefinitionId: error.connectorDefinitionId,
+      });
+    }
+  }
+
   retry = () => {
     this.setState((state) => ({
       didRetry: true,
@@ -87,6 +104,21 @@ class ApiErrorBoundaryComponent extends React.Component<
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
+    }
+
+    if (errorId === ErrorId.FormBuild) {
+      return (
+        <ErrorOccurredView
+          message={
+            <>
+              <FormattedMessage id={message} />
+              <br />
+              <FormattedMessage id="errorView.upgradeConnectors" />
+            </>
+          }
+          docLink="https://docs.airbyte.com/connector-development/connector-specification-reference/#airbyte-modifications-to-jsonschema"
+        />
+      );
     }
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
@@ -111,9 +143,16 @@ export const ApiErrorBoundary: React.FC<React.PropsWithChildren<ApiErrorBoundary
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
   const navigate = useNavigate();
+  const { trackError } = useAppMonitoringService();
 
   return (
-    <ApiErrorBoundaryComponent {...props} location={location} navigate={navigate} onRetry={reset}>
+    <ApiErrorBoundaryComponent
+      {...props}
+      location={location}
+      navigate={navigate}
+      onRetry={reset}
+      trackError={trackError}
+    >
       {children}
     </ApiErrorBoundaryComponent>
   );

@@ -6,8 +6,6 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - sourceConfiguration
-  - destinationConfiguration
   - configuredAirbyteCatalog
   - sourceDockerImage
   - destinationDockerImage
@@ -21,14 +19,6 @@ properties:
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
-  sourceConfiguration:
-    description: Integration specific blob. Must be a valid JSON string.
-    type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  destinationConfiguration:
-    description: Integration specific blob. Must be a valid JSON string.
-    type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   configuredAirbyteCatalog:
     description: the configured airbyte catalog
     type: object
@@ -64,9 +54,6 @@ properties:
     description: The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml.
     type: object
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  state:
-    description: optional state of the previous run. this object is defined per integration.
-    "$ref": State.yaml
   resourceRequirements:
     type: object
     description: optional resource requirements to run sync workers - this is used for containers other than the source/dest containers
@@ -77,3 +64,7 @@ properties:
   isDestinationCustomConnector:
     description: determine if the destination running image is a custom connector.
     type: boolean
+  workspaceId:
+    description: The id of the workspace associated with the sync
+    type: string
+    format: uuid

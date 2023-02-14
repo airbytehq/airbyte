@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.controller;
@@ -12,12 +12,15 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import io.micronaut.http.annotation.Options;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import java.util.Map;
 
 /**
  * Heartbeat controller
  */
 @Controller("/")
+@Secured(SecurityRule.IS_ANONYMOUS)
 public class HeartbeatController {
 
   private static final Map<String, String> CORS_FILTER_MAP = Map.of(

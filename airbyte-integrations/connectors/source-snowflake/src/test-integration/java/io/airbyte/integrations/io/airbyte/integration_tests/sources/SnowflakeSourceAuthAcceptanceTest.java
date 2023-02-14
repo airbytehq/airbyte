@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -26,11 +26,10 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:snowflake://%s/?", config.get(JdbcUtils.HOST_KEY).asText()));
     jdbcUrl.append(String.format(
-        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
+        "role=%s&warehouse=%s&database=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
         config.get("role").asText(),
         config.get("warehouse").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText(),
-        config.get(JdbcUtils.SCHEMA_KEY).asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",

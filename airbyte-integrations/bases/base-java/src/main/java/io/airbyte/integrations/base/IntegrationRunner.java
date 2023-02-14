@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -284,6 +284,7 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
+
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
       consumer.accept(messageOptional.get());

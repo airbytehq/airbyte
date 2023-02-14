@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -71,6 +71,7 @@ public class SecretsHelpersTest {
 
   @ParameterizedTest
   @MethodSource(PROVIDE_TEST_CASES)
+  @SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
   public void validateTestCases(final SecretsTestCase testCase) throws JsonValidationException {
     final var validator = new JsonSchemaValidator();
     final var spec = testCase.getSpec().getConnectionSpecification();

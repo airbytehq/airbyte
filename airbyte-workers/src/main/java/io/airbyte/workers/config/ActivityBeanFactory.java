@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.config;
@@ -58,8 +58,8 @@ public class ActivityBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("notifyActivities")
   public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity,
-                                       SlackConfigActivity slackConfigActivity,
-                                       ConfigFetchActivity configFetchActivity) {
+                                       final SlackConfigActivity slackConfigActivity,
+                                       final ConfigFetchActivity configFetchActivity) {
     return List.of(notifySchemaChangeActivity, slackConfigActivity, configFetchActivity);
   }
 
