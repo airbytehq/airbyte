@@ -58,7 +58,7 @@ import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.converters.ConnectionHelper;
+import io.airbyte.commons.converters.ConnectionHelper;
 import io.airbyte.db.Database;
 import io.airbyte.db.check.DatabaseCheckException;
 import io.airbyte.db.factory.DatabaseCheckFactory;

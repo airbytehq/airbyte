@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
-import static io.airbyte.converters.StateConverter.convertClientStateTypeToInternal;
+import static io.airbyte.commons.converters.StateConverter.convertClientStateTypeToInternal;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
@@ -21,7 +21,7 @@ import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.converters.StateConverter;
+import io.airbyte.commons.converters.StateConverter;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;

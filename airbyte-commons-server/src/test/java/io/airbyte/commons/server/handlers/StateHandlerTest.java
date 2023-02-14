@@ -19,7 +19,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
-import io.airbyte.converters.ProtocolConverters;
+import io.airbyte.commons.converters.ProtocolConverters;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;

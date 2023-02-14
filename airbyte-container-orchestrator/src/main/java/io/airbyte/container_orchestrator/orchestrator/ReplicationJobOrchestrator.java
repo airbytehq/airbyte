@@ -23,7 +23,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.converters.ConnectorConfigUpdater;
+import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.FieldSelectionEnabled;
 import io.airbyte.featureflag.Workspace;
