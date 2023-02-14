@@ -17,7 +17,7 @@ dependencies {
     implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation 'org.mockito:mockito-core:4.6.1'
 
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
