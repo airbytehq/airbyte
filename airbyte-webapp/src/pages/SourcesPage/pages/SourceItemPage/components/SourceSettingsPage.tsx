@@ -3,10 +3,9 @@ import { FormattedMessage } from "react-intl";
 import { useOutletContext } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceRead } from "core/request/AirbyteClient";
+import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useDeleteSource, useInvalidateSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useDeleteModal } from "hooks/useDeleteModal";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -23,11 +22,11 @@ const SourceSettingsPage: React.FC = () => {
   const formId = useUniqueFormId();
   const { clearFormChange } = useFormChangeTrackerService();
 
-  const { source } = useOutletContext<{ source: SourceRead }>();
+  const { source, connections } = useOutletContext<{
+    source: SourceRead;
+    connections: WebBackendConnectionListItem[];
+  }>();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
-
-  // We load only connections attached to this source to be shown in the connections grid
-  const { connections } = useConnectionList({ sourceId: [source.sourceId] });
 
   useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {

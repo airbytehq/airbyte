@@ -6,8 +6,7 @@ import { TableItemTitle } from "components/ConnectorBlocks";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
-import { SourceRead } from "core/request/AirbyteClient";
-import { useConnectionList } from "hooks/services/useConnectionHook";
+import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { RoutePaths } from "pages/routePaths";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -15,10 +14,11 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import SourceConnectionTable from "./SourceConnectionTable";
 
 const SourceOverviewPage = () => {
-  const { source } = useOutletContext<{ source: SourceRead }>();
+  const { source, connections } = useOutletContext<{
+    source: SourceRead;
+    connections: WebBackendConnectionListItem[];
+  }>();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
-  // We load only connections attached to this source to be shown in the connections grid
-  const { connections } = useConnectionList({ sourceId: [source.sourceId] });
   // We load all destinations so the add destination button has a pre-filled list of options.
   const { destinations } = useDestinationList();
 

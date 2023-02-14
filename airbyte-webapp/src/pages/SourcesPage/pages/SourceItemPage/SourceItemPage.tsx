@@ -10,6 +10,7 @@ import { Breadcrumbs } from "components/ui/Breadcrumbs";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetSource } from "hooks/services/useSourceHook";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
@@ -24,6 +25,8 @@ const SourceItemPage: React.FC = () => {
   );
 
   const source = useGetSource(params.id || "");
+  // We load only connections attached to this source to be shown in the connections grid
+  const { connections } = useConnectionList({ sourceId: [source.sourceId] });
 
   const breadcrumbsData = [
     {
@@ -48,7 +51,7 @@ const SourceItemPage: React.FC = () => {
 
       <Suspense fallback={<LoadingPage />}>
         <ApiErrorBoundary>
-          <Outlet context={{ source }} />
+          <Outlet context={{ source, connections }} />
         </ApiErrorBoundary>
       </Suspense>
     </ConnectorDocumentationWrapper>
