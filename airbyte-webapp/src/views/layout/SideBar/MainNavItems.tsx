@@ -36,7 +36,12 @@ export const MainNavItems: React.FC = () => {
         to={RoutePaths.Destination}
       />
       {showBuilderNavigationLinks && (
-        <NavItem label="sidebar.builder" icon={<BuilderIcon />} testId="builderLink" to={RoutePaths.ConnectorBuilder} />
+        <NavItem
+          label={<FormattedMessage id="sidebar.builder" />}
+          icon={<BuilderIcon />}
+          testId="builderLink"
+          to={RoutePaths.ConnectorBuilder}
+        />
       )}
     </MenuContent>
   );
