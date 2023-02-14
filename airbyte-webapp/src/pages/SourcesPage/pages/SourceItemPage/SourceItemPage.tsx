@@ -1,5 +1,3 @@
-import type { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
-
 import React, { Suspense, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { Route, Routes, useNavigate, useParams } from "react-router-dom";
@@ -11,6 +9,7 @@ import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks
 import LoadingPage from "components/LoadingPage";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import type { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
