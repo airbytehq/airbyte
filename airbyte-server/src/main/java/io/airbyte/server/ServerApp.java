@@ -18,6 +18,7 @@ import io.airbyte.commons.server.scheduler.EventRunner;
 import io.airbyte.commons.server.scheduler.TemporalEventRunner;
 import io.airbyte.commons.server.services.AirbyteGithubStore;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
+import io.airbyte.commons.temporal.NotificationUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
@@ -49,6 +50,7 @@ import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -213,14 +215,17 @@ public class ServerApp implements ServerRunnable {
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
     final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
     final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
+    final NotificationUtils notificationUtils = new NotificationUtils();
     final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
+    final WorkflowClient workflowClient = TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
     final TemporalClient temporalClient = new TemporalClient(
         configs.getWorkspaceRoot(),
-        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
+        workflowClient,
         temporalService,
         streamResetPersistence,
         connectionManagerUtils,
+        notificationUtils,
         streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
@@ -265,7 +270,8 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner,
         connectionsHandler,
-        envVariableFeatureFlags);
+        envVariableFeatureFlags,
+        webUrlHelper);
 
     final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
         configs.getAirbyteProtocolVersionMax());
