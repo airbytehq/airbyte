@@ -16,12 +16,12 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpenSearchDestination extends BaseConnector implements Destination {
+public class OpensearchDestination extends BaseConnector implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OpensearchDestination.class);
 
   public static void main(String[] args) throws Exception {
-    new IntegrationRunner(new OpenSearchDestination()).run(args);
+    new IntegrationRunner(new OpensearchDestination()).run(args);
   }
 
   @Override

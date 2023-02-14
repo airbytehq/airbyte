@@ -30,8 +30,8 @@ dependencies {
 
     // MIT
     // https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers.elasticsearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
+    testImplementation libs.connectors.testcontainers.opensearch
+    integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-opensearch')

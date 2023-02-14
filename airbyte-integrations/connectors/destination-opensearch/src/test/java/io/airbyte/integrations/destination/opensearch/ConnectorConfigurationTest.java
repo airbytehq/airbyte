@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.elasticsearch;
+package io.airbyte.integrations.destination.opensearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,7 +20,7 @@ public class ConnectorConfigurationTest {
     ObjectNode authNode = mapper.createObjectNode();
 
     String endpoint = "http://localhost:123";
-    String authMethod = ElasticsearchAuthenticationMethod.secret.toString();
+    String authMethod = OpensearchAuthenticationMethod.secret.toString();
     String apiKeyId = "foo";
     String apiKeySecret = "bar";
 
@@ -48,7 +48,7 @@ public class ConnectorConfigurationTest {
     ObjectNode authNode = mapper.createObjectNode();
 
     String endpoint = "http://localhost:123";
-    String authMethod = ElasticsearchAuthenticationMethod.basic.toString();
+    String authMethod = OpensearchAuthenticationMethod.basic.toString();
     String username = "foo";
     String password = "bar";
 
@@ -76,7 +76,7 @@ public class ConnectorConfigurationTest {
     ObjectNode authNode = mapper.createObjectNode();
 
     String endpoint = "http://localhost:123";
-    String authMethod = ElasticsearchAuthenticationMethod.none.toString();
+    String authMethod = OpensearchAuthenticationMethod.none.toString();
 
     node
         .put("endpoint", endpoint)
