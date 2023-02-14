@@ -105,10 +105,12 @@ class SourceGoogleAds(AbstractSource):
                             f"Metrics are not available for manager account {customer.id}. "
                             f"Please remove metrics fields in your custom query: {query}."
                         )
-                    if IncrementalCustomQuery.cursor_field in query.fields:
-                        return False, f"Custom query should not contain {IncrementalCustomQuery.cursor_field}"
-                    req_q = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
-                    response = google_api.send_request(str(req_q), customer_id=customer.id)
+                    if query.resource_name not in FULL_REFRESH_CUSTOM_TABLE:
+                        if IncrementalCustomQuery.cursor_field in query.fields:
+                            return False, f"Custom query should not contain {IncrementalCustomQuery.cursor_field}"
+                        query = IncrementalCustomQuery.insert_segments_date_expr(query, "1980-01-01", "1980-01-01")
+                    query = query.set_limit(1)
+                    response = google_api.send_request(str(query), customer_id=customer.id)
                     # iterate over the response otherwise exceptions will not be raised!
                     for _ in response:
                         pass
