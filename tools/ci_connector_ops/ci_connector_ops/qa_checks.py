@@ -100,6 +100,7 @@ def read_all_files_in_directory(
                 for line in open(path, "r"):
                     yield path, line
             except UnicodeDecodeError:
+                print(f"{path} could not be decoded as it is not UTF8.")
                 continue
 
 
@@ -112,9 +113,28 @@ IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS = {
     "source-file",
     ".pytest_cache",
     "acceptance_tests_logs",
+    ".hypothesis",
 }
-IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java"}
+
+IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS = {"*Test.java", "*.pyc", "*.gz"}
 IGNORED_URLS_PREFIX = {"http://json-schema.org", "http://localhost"}
+
+
+def is_comment(line: str, file_path: Path):
+    language_comments = {
+        ".py": "#",
+        ".yml": "#",
+        ".yaml": "#",
+        ".java": "//",
+        ".md": "<!--",
+    }
+
+    denote_comment = language_comments.get(file_path.suffix)
+    if not denote_comment:
+        return False
+
+    trimmed_line = line.lstrip()
+    return trimmed_line.startswith(denote_comment)
 
 
 def check_connector_https_url_only(connector: Connector) -> bool:
@@ -130,9 +150,12 @@ def check_connector_https_url_only(connector: Connector) -> bool:
     for filename, line in read_all_files_in_directory(
         connector.code_directory, IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS, IGNORED_FILENAME_PATTERN_FOR_HTTPS_CHECKS
     ):
-        if any([prefix in line.lower() for prefix in IGNORED_URLS_PREFIX]):
+        line = line.lower()
+        if is_comment(line, filename):
             continue
-        if "http://" in line.lower():
+        for prefix in IGNORED_URLS_PREFIX:
+            line = line.replace(prefix, "")
+        if "http://" in line:
             files_with_http_url.add(str(filename))
 
     if files_with_http_url:

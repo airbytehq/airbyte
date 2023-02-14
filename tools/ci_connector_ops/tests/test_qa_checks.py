@@ -110,22 +110,31 @@ def test_run_qa_checks_error(capsys, mocker):
     assert "❌ - mock_qa_check" in stdout
 
 
-def test_check_connector_https_url_only(capsys, tmp_path, mocker):
-    file_with_http_url_path = Path(tmp_path / "file_with_http_url.foo")
+@pytest.mark.parametrize(
+    "file_name, file_line, expected_in_stdout",
+    [
+        ("file_with_http_url.foo", "http://foo.bar", True),
+        ("file_without_https_url.foo", "", False),
+        ("file_with_https_url.foo", "https://airbyte.com", False),
+        ("file_with_http_url_and_ignored.foo", "http://localhost http://airbyte.com", True),
+        ("file_with_ignored_url.foo", "http://localhost", False),
+        ("file_with_http_url_in_comment.py", "# http://dev.foo", False),
+        ("file_with_http_url_in_comment.yml", "# http://dev.foo", False),
+        ("file_with_http_url_in_comment.yaml", "# http://dev.foo", False),
+        ("file_with_http_url_in_comment.java", "// http://dev.foo", False),
+        ("file_with_http_url_in_comment.md", "<!-- http://dev.foo", False),
+    ],
+)
+def test_check_connector_https_url_only(capsys, tmp_path, mocker, file_name, file_line, expected_in_stdout):
+    file_with_url = Path(tmp_path / file_name)
     mocker.patch.object(qa_checks, "IGNORED_DIRECTORIES_FOR_HTTPS_CHECKS", set())
-    Path(tmp_path / "file_without_https_url.foo").touch()
-    Path(tmp_path / "my_directory").mkdir()
-    nested_file_with_http_url_path = Path(tmp_path / "my_directory/nested_file_with_http_url.foo")
-    with open(file_with_http_url_path, "w") as f:
-        f.write("http://foo.bar")
-    with open(nested_file_with_http_url_path, "w") as f:
-        f.write("http://foo.bar")
+    with open(file_with_url, "w") as f:
+        f.write(file_line)
     connector = mocker.Mock(code_directory=tmp_path)
-    assert not qa_checks.check_connector_https_url_only(connector)
+    assert expected_in_stdout != qa_checks.check_connector_https_url_only(connector)
     stdout, _ = capsys.readouterr()
-    assert "file_with_http_url.foo" in stdout
-    assert "nested_file_with_http_url.foo" in stdout
-    assert "file_without_https_url" not in stdout
+    if expected_in_stdout:
+        assert file_name in stdout
 
 
 @pytest.mark.skip(reason="This should only be run when we want to test all connectors for their https url only compliance")
@@ -147,3 +156,28 @@ def test_check_connector_https_url_only_all_connectors():
             for connector in by_release_stage[release_stage]:
                 failure_message += f"\t- {connector.technical_name}\n"
         pytest.fail(failure_message)
+
+
+@pytest.mark.parametrize(
+    "file_name, line, expect_is_comment",
+    [
+        ("foo.py", "# I'm a comment", True),
+        ("foo.py", "   # I'm a comment", True),
+        ("foo.py", "I'm not # a comment", False),
+        ("foo.yaml", "# I'm a comment", True),
+        ("foo.yaml", "   # I'm a comment", True),
+        ("foo.yaml", "I'm not # a comment", False),
+        ("foo.yml", "# I'm a comment", True),
+        ("foo.yml", "   # I'm a comment", True),
+        ("foo.yml", "I'm not # a comment", False),
+        ("foo.java", "// I'm a comment", True),
+        ("foo.java", "   // I'm a comment", True),
+        ("foo.java", "I'm not // a comment", False),
+        ("foo.md", "<!-- I'm a comment", True),
+        ("foo.md", "   <!-- I'm a comment", True),
+        ("foo.md", "I'm not <!-- a comment", False),
+    ],
+)
+def test_is_comment(tmp_path, file_name, line, expect_is_comment):
+    file_path = tmp_path / file_name
+    assert qa_checks.is_comment(line, file_path) is expect_is_comment
