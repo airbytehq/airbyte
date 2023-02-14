@@ -76,6 +76,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
       <HeaderCell size="fixed" className={styles.syncCell}>
         <FormattedMessage id="sources.sync" />
       </HeaderCell>
+      {/* TODO: Replace with actual header column selection field count */}
       {/* <HeaderCell size="fixed" className={styles.fieldsCell}>
         Fields
         <InfoTooltip>

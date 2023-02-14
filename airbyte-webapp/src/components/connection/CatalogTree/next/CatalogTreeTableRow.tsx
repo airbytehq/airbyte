@@ -66,6 +66,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       <CatalogTreeTableCell size="fixed" className={styles.syncCell}>
         <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </CatalogTreeTableCell>
+      {/* TODO: Replace with actual field count for column selection */}
       {/* <CatalogTreeTableCell size="fixed" className={styles.fieldsCell}>
         <Text size="sm" className={styles.cellText}>
           124567
