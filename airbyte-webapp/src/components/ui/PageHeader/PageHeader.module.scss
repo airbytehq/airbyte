@@ -1,8 +1,9 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
 
 .container {
-  z-index: 2;
+  z-index: z-indices.$pageHeader;
   position: relative;
   display: flex;
   flex-direction: row;
