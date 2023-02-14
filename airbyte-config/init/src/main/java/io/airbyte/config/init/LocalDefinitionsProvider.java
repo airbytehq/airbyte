@@ -46,11 +46,9 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   // TODO inject via dependency injection framework
   // QUESTION: Is this nessesary?
   // TODO remove if not
-  private final Class<?> seedResourceClass;
   private final String localCatalogPath;
 
-  public LocalDefinitionsProvider(final Class<?> seedResourceClass) throws IOException {
-    this.seedResourceClass = seedResourceClass;
+  public LocalDefinitionsProvider() throws IOException {
 
     // TODO get the filename from config
     this.localCatalogPath = "seed/oss_catalog.json";

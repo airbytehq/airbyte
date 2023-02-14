@@ -135,7 +135,7 @@ public abstract class DestinationAcceptanceTest {
 
   private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
     try {
-      final LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+      final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
       return provider.getDestinationDefinitions().stream()
           .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
           .findFirst();
