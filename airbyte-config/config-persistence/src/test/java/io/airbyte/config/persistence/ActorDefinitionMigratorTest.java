@@ -78,7 +78,7 @@ class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
     truncateAllTables();
 
     migrator = new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database));
-    configRepository = new ConfigRepository(database, migrator, null, 10800);
+    configRepository = new ConfigRepository(database, migrator, null, MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   private void writeSource(final StandardSourceDefinition source) throws Exception {
@@ -155,7 +155,7 @@ class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
         .withName("random-name")
         .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
         .withTombstone(false)
-        .withMaxSecondsBetweenMessages(10800L);
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
     writeSource(sourceDef);
     assertEquals(sourceDef, configRepository.getStandardSourceDefinition(sourceDef.getSourceDefinitionId()));
   }

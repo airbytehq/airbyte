@@ -50,7 +50,7 @@ class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
         null,
-        10800));
+            MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES));
   }
 
   @Test

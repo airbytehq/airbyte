@@ -101,6 +101,7 @@ public class MockData {
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_1 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_2 = UUID.randomUUID();
   private static final UUID ACTOR_CATALOG_FETCH_EVENT_ID_3 = UUID.randomUUID();
+  public static final long DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES = 10800;
 
   public static final String MOCK_SERVICE_ACCOUNT_1 = "{\n"
       + "  \"type\" : \"service_account\",\n"
@@ -203,7 +204,7 @@ public class MockData {
         .withPublic(true)
         .withCustom(false)
         .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")))
-        .withMaxSecondsBetweenMessages(10800L);
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   public static StandardSourceDefinition grantableSourceDefinition1() {
@@ -218,7 +219,7 @@ public class MockData {
         .withTombstone(false)
         .withPublic(false)
         .withCustom(false)
-        .withMaxSecondsBetweenMessages(10800L);
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   public static StandardSourceDefinition grantableSourceDefinition2() {
@@ -234,7 +235,7 @@ public class MockData {
         .withTombstone(false)
         .withPublic(false)
         .withCustom(false)
-        .withMaxSecondsBetweenMessages(10800L);
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   public static StandardSourceDefinition customSourceDefinition() {
@@ -250,7 +251,7 @@ public class MockData {
         .withTombstone(false)
         .withPublic(false)
         .withCustom(true)
-        .withMaxSecondsBetweenMessages(10800L);
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   public static List<StandardSourceDefinition> standardSourceDefinitions() {

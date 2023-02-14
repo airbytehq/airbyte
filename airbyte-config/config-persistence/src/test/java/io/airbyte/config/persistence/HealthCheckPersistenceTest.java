@@ -25,7 +25,7 @@ class HealthCheckPersistenceTest {
   void beforeEach() throws Exception {
 
     database = mock(Database.class);
-    configRepository = new ConfigRepository(database, 10800);
+    configRepository = new ConfigRepository(database, MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   @Test

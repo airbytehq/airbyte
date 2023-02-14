@@ -44,7 +44,7 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
         mock(StandardSyncPersistence.class),
-        10800));
+            MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES));
   }
 
   @Test
@@ -274,7 +274,7 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
         .withSourceDefinitionId(id)
         .withProtocolVersion("0.2.0")
         .withTombstone(false)
-        .withMaxSecondsBetweenMessages(10800L);
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   private static StandardDestinationDefinition createBaseDestDef() {
