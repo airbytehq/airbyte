@@ -4,11 +4,13 @@
 
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import dateutil.parser
+import math
 import requests
 import datetime
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
@@ -65,16 +67,27 @@ class PlandayStream(HttpStream, ABC):
         self.client_id = config["client_id"]
         self.sync_from = config["sync_from"]
         self.loockback_window = config.get("loockback_window")
+        self.use_lookback = self.loockback_window is not None
 
         self.uri_params = {
             "offset": 0,
             "limit": 50,
-            "from": self.sync_from if self.loockback_window is None else self.get_today_string(delta=self.loockback_window),
+            "from": self.sync_from if self.use_lookback else self.get_today_string(delta=self.loockback_window),
         }
 
     @staticmethod
     def get_today_string(delta: int = 0):
         return (datetime.datetime.now()-datetime.timedelta(days=delta)).strftime("%Y-%m-%d")
+
+    @staticmethod
+    def get_today_date():
+        return datetime.datetime.now().date()
+
+    def get_date(self):
+        sync_from = self.sync_from
+        if self.use_lookback:
+            sync_from = self.get_today_string(delta=self.loockback_window)
+        return dateutil.parser.isoparse(sync_from).date()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -106,6 +119,10 @@ class PlandayStream(HttpStream, ABC):
         params = self.uri_params
         if next_page_token:
             params.update(next_page_token)
+        if stream_slice is not None:
+            for key in ("from", "to"):
+                if key in stream_slice:
+                    params.update({key: stream_slice[key]})
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -124,7 +141,8 @@ class PlandayStream(HttpStream, ABC):
 
 
 class IncrementalPlandayStream(PlandayStream, ABC):
-    state_checkpoint_interval = 5
+    state_checkpoint_interval = math.inf
+    slice_range = 35
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config)
@@ -138,27 +156,48 @@ class IncrementalPlandayStream(PlandayStream, ABC):
         """
         pass
 
-    @property
-    @abstractmethod
-    def fallback_cursor_field(self) -> str:
-        """
-        Defining a cursor field indicates that a stream is incremental, so any incremental stream must extend this class
-        and define a cursor field.
-        """
-        pass
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        old_state = current_stream_state.get(self.cursor_field)
-        date = latest_record.get(
-            self.cursor_field, latest_record.get(self.fallback_cursor_field))
+        old_state_date = current_stream_state.get(
+            self.cursor_field, self.get_date())
+        if isinstance(old_state_date, str):
+            old_state_date = dateutil.parser.isoparse(old_state_date).date()
+        latest_record_date = latest_record.get(self.cursor_field)
         print("--updated--state")
         print(latest_record)
         print(current_stream_state)
-        return {self.cursor_field: max(dateutil.parser.isoparse(date).date(), old_state if old_state else datetime.datetime.now(datetime.timezone.utc).date())}
+        return {self.cursor_field: max(dateutil.parser.isoparse(latest_record_date).date(), old_state_date)}
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_ts = self.get_start_timestamp(stream_state)
+        print(f"Start state: {stream_state}")
+        for start, end in self.chunk_dates(start_ts):
+            yield {"from": start, "to": end}
+
+    def get_start_timestamp(self, stream_state) -> datetime.date:
+        start_point = self.get_date()
+        if stream_state and self.cursor_field in stream_state:
+            state_start = stream_state[self.cursor_field]
+            if isinstance(stream_state[self.cursor_field], str):
+                state_start = dateutil.parser.isoparse(state_start).date()
+            start_point = max(start_point, state_start)
+
+        return start_point
+
+    def chunk_dates(self, start_date_ts: datetime.date) -> Iterable[Tuple[datetime.date, Union[datetime.date, None]]]:
+        today = self.get_today_date()
+        step = datetime.timedelta(days=self.slice_range)
+        after_ts = start_date_ts
+        while after_ts < today:
+            before_ts = min(today, after_ts + step)
+            yield after_ts, before_ts
+            after_ts = before_ts + datetime.timedelta(days=1)
+        yield after_ts, None
 
 
 class Departments(PlandayStream):
@@ -239,8 +278,6 @@ class Shifts(IncrementalPlandayStream):
 
     primary_key = "id"
     cursor_field = "date"
-    fallback_cursor_field = "dateTimeModified"
-    state_checkpoint_interval = 5
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
