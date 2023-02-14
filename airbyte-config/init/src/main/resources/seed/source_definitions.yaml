@@ -1462,6 +1462,7 @@
   dockerRepository: airbyte/source-railz
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/railz
+  icon: railz.svg
   sourceType: api
   releaseStage: alpha
 - name: Recharge
