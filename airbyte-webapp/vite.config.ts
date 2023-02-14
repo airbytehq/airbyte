@@ -8,7 +8,7 @@ import checker from "vite-plugin-checker";
 import svgrPlugin from "vite-plugin-svgr";
 import viteTsconfigPaths from "vite-tsconfig-paths";
 
-import { docMiddleware, patchReactVirtualized } from "./packages/vite-plugins";
+import { buildInfo, docMiddleware } from "./packages/vite-plugins";
 
 export default defineConfig(({ mode }) => {
   // Load variables from all .env files
@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       basicSsl(),
       react(),
+      buildInfo(),
       viteTsconfigPaths(),
       svgrPlugin(),
       checker({
@@ -42,7 +43,7 @@ export default defineConfig(({ mode }) => {
           // Align error popover button with the react-query dev tool button
           badgeStyle: "transform: translate(-135px,-11px)",
         },
-        eslint: { lintCommand: `eslint --max-warnings=0 --ext js,ts,tsx src` },
+        eslint: { lintCommand: `eslint --max-warnings=0 --ext .js,.ts,.tsx src` },
         stylelint: {
           lintCommand: 'stylelint "src/**/*.{css,scss}"',
           // We need to overwrite this during development, since otherwise `files` are wrongly
@@ -51,11 +52,11 @@ export default defineConfig(({ mode }) => {
         },
         typescript: true,
       }),
-      patchReactVirtualized(),
       docMiddleware(),
     ],
     // Use `REACT_APP_` as a prefix for environment variables that should be accessible from within FE code.
     envPrefix: ["REACT_APP_"],
+    clearScreen: false,
     build: {
       outDir: "build/app",
     },

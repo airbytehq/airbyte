@@ -9,5 +9,5 @@ set -e
 pip install -r requirements-tests.txt
 
 # Run the tests
-python -m coverage run -m pytest unit_tests -c pytest.ini
-python -m coverage run -m pytest integration_tests -c pytest.ini
+python -m coverage run -m pytest -p no:logging --disable-warnings unit_tests -c pytest.ini
+python -m coverage run -m pytest -p no:logging --disable-warnings integration_tests -c pytest.ini

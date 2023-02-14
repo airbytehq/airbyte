@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -10,6 +10,11 @@ import jakarta.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * The web backend is an abstraction that allows the frontend to structure data in such a way that
+ * it is easier for a react frontend to consume. It should NOT have direct access to the database.
+ * It should operate exclusively by calling other endpoints that are exposed in the API.
+ **/
 @Singleton
 public class WebBackendGeographiesHandler {
 

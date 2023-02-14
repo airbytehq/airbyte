@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job.models;
@@ -130,6 +130,13 @@ public class Job {
     return getAttempts()
         .stream()
         .max(Comparator.comparing(Attempt::getCreatedAtInSecond));
+  }
+
+  public Optional<Attempt> getAttemptByNumber(final int attemptNumber) {
+    return getAttempts()
+        .stream()
+        .filter(a -> a.getAttemptNumber() == attemptNumber)
+        .findFirst();
   }
 
   public boolean hasRunningAttempt() {
