@@ -35,7 +35,7 @@ $spacing: variables.$spacing-xl;
 
 .content {
   padding: 0 $spacing $spacing;
-  min-width: variables.$main-page-content-min-width;
+  min-width: variables.$min-width-main-page-content;
 
   &.cloud {
     padding-bottom: variables.$spacing-page-bottom-cloud;

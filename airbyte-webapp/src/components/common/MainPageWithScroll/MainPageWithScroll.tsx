@@ -26,7 +26,7 @@ export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({
     <>
       {headTitle}
       <div className={styles.container}>
-        <div>{pageTitle}</div>
+        {pageTitle && <div>{pageTitle}</div>}
         <div
           className={classNames(styles.contentContainer, {
             [styles.softScrollEdge]: softScrollEdge,

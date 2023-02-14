@@ -7,24 +7,27 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import styles from "./CatalogTreeTableCell.module.scss";
 
-type Sizes = "xsmall" | "small" | "medium" | "large";
+type Sizes = "xsmall" | "small" | "medium" | "large" | "fixed";
 
-interface CatalogTreeTableCellProps {
+export interface CatalogTreeTableCellProps {
   size?: Sizes;
   className?: string;
   withTooltip?: boolean;
+  withOverflow?: boolean;
 }
 
 // This lets us avoid the eslint complaint about unused styles
-const sizeMap: Record<Sizes, string> = {
+const STYLES_BY_SIZE: Readonly<Record<Sizes, string>> = {
   xsmall: styles.xsmall,
   small: styles.small,
   medium: styles.medium,
   large: styles.large,
+  fixed: styles.fixed,
 };
 
 export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({
   size = "medium",
+  withOverflow,
   withTooltip,
   className,
   children,
@@ -66,7 +69,9 @@ export const CatalogTreeTableCell: React.FC<React.PropsWithChildren<CatalogTreeT
   }, [inView, withTooltip]);
 
   return (
-    <div className={classNames(styles.tableCell, className, sizeMap[size])}>
+    <div
+      className={classNames(styles.tableCell, className, STYLES_BY_SIZE[size], { [styles.withOverflow]: withOverflow })}
+    >
       {withTooltip ? (
         <Tooltip
           className={classNames(styles.noEllipsis, styles.fullWidthTooltip)}

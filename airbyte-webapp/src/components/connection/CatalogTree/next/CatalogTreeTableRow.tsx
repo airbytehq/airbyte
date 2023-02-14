@@ -55,18 +55,23 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
-      <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
+      <CatalogTreeTableCell size="fixed" className={styles.streamRowCheckboxCell}>
         {!disabled && (
           <>
             <CatalogTreeTableRowIcon stream={stream} />
-            <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+            <CheckBox checkboxSize="sm" checked={isSelected} onChange={selectForBulkEdit} />
           </>
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="small">
+      <CatalogTreeTableCell size="fixed" className={styles.syncCell}>
         <Switch size="sm" checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </CatalogTreeTableCell>
-      {/* <Cell>{fieldCount}</Cell> */}
+      {/* TODO: Replace with actual field count for column selection */}
+      {/* <CatalogTreeTableCell size="fixed" className={styles.fieldsCell}>
+        <Text size="sm" className={styles.cellText}>
+          124567
+        </Text>
+      </CatalogTreeTableCell> */}
       <CatalogTreeTableCell withTooltip>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
@@ -77,13 +82,12 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="large">
+      <CatalogTreeTableCell size="fixed" className={styles.syncModeCell}>
         {disabled ? (
           <Text size="md" className={styles.cellText}>
             {syncSchema.syncMode}
           </Text>
         ) : (
-          // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect
             options={availableSyncModes}
             onChange={onSelectSyncMode}
@@ -92,7 +96,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell>
+      <CatalogTreeTableCell withTooltip>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -117,7 +121,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="xsmall">
+      <CatalogTreeTableCell size="fixed" className={styles.arrowCell}>
         <ArrowRightIcon />
       </CatalogTreeTableCell>
       <CatalogTreeTableCell withTooltip>
