@@ -24,4 +24,5 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
+| 0.1.1   | 2023-02-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification |
 | 0.1.0   | 2022-10-06 | [17559](https://github.com/airbytehq/airbyte/pull/17559) | The Genesys Source is created |
