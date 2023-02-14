@@ -5,36 +5,95 @@
 package io.airbyte.integrations.destination.opensearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.IOException;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.time.Duration;
 import java.util.List;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
+  private static final String IMAGE_NAME = "docker.elastic.co/elasticsearch/elasticsearch:8.3.3";
   private static final Logger LOGGER = LoggerFactory.getLogger(OpensearchDestinationAcceptanceTest.class);
 
-  private JsonNode configJson;
+  private ObjectMapper mapper = new ObjectMapper();
+  private static OpensearchContainer container;
 
-  @Override
-  protected String getImageName() {
-    return "airbyte/destination-opensearch:dev";
+  @BeforeAll
+  public static void beforeAll() {
+    container = new OpensearchContainer(IMAGE_NAME)
+            .withEnv("discovery.type", "single-node")
+            .withEnv("network.host", "0.0.0.0")
+            .withEnv("logger.org.elasticsearch", "INFO")
+            .withEnv("ingest.geoip.downloader.enabled", "false")
+            .withPassword("s3cret")
+            .withExposedPorts(9200)
+            .withEnv("xpack.security.enabled", "false")
+            .withStartupTimeout(Duration.ofSeconds(60));
+    container.start();
+  }
+
+  @AfterAll
+  public static void afterAll() {
+    container.stop();
+    container.close();
   }
 
   @Override
-  protected JsonNode getConfig() {
-    // TODO: Generate the configuration JSON file to be used for running the destination during the test
-    // configJson can either be static and read from secrets/config.json directly
-    // or created in the setup method
+  protected String getImageName() {
+    return "airbyte/destination-elasticsearch:dev";
+  }
+
+  @Override
+  protected int getMaxRecordValueLimit() {
+    return 2000000;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    // TODO: Enable supportArrayDataTypeTest after ticket 14568 will be done
+    return false;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected JsonNode getConfig() throws Exception {
+    var configJson = mapper.createObjectNode();
+    configJson.put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
+  protected JsonNode getFailCheckConfig() throws Exception {
     // should result in a failed connection check
-    return null;
+    var configJson = mapper.createObjectNode();
+    configJson.put("endpoint", String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
+    return configJson;
   }
 
   @Override
@@ -42,21 +101,26 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-      throws IOException {
-    // TODO Implement this method to retrieve records which written to the destination by the connector.
+          throws Exception {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
-    return null;
+    final String indexName = new ElasticsearchWriteConfig()
+            .setNamespace(namespace)
+            .setStreamName(streamName)
+            .getIndexName();
+
+    ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    return connection.getRecords(indexName);
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any setup actions needed before every test case
-  }
+  protected void setup(TestDestinationEnv testEnv) throws Exception {}
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any cleanup actions needed after every test case
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    ElasticsearchConnection connection = new ElasticsearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    connection.allIndices().forEach(connection::deleteIndexIfPresent);
+    connection.close();
   }
 
 }
