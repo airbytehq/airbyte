@@ -22,8 +22,6 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -46,37 +44,28 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   private Map<UUID, StandardDestinationDefinition> destinationDefinitions;
 
   // TODO inject via dependency injection framework
+  // QUESTION: Is this nessesary?
+  // TODO remove if not
   private final Class<?> seedResourceClass;
+  private final String localCatalogPath;
 
   public LocalDefinitionsProvider(final Class<?> seedResourceClass) throws IOException {
     this.seedResourceClass = seedResourceClass;
 
-    // TODO remove this call once dependency injection framework manages object creation
-//    initialize();
+    // TODO get the filename from config
+    this.localCatalogPath = "seed/oss_catalog.json";
   }
 
-  // TODO will be called automatically by the dependency injection framework on object creation
-//  public void initialize() throws IOException {
-//    this.sourceDefinitions =
-//        parseDefinitions(this.seedResourceClass, SeedType.STANDARD_SOURCE_DEFINITION.getResourcePath(), SeedType.SOURCE_SPEC.getResourcePath(),
-//            SeedType.STANDARD_SOURCE_DEFINITION.getIdName(), SeedType.SOURCE_SPEC.getIdName(), StandardSourceDefinition.class);
-//    this.destinationDefinitions = parseDefinitions(this.seedResourceClass, SeedType.STANDARD_DESTINATION_DEFINITION.getResourcePath(),
-//        SeedType.DESTINATION_SPEC.getResourcePath(), SeedType.STANDARD_DESTINATION_DEFINITION.getIdName(), SeedType.DESTINATION_SPEC.getIdName(),
-//        StandardDestinationDefinition.class);
-//  }
-
   // TODO (ben): finish this 😅 and write tests
-  public CombinedConnectorCatalog getLocalDefinitionCatalog(final Path root, final String fileName) {
-    // 1. get file path of the local catalog
-    // TODO get the root and filename from config
+  public CombinedConnectorCatalog getLocalDefinitionCatalog() {
     // TODO add logs
     // TODO add tests
-
     try {
-      // 2. read the file
-      final String jsonString = IOs.readFile(root, fileName);
-      // 3. deserialize the file as JSON into a CombinedConnectorCatalog object
-      return Jsons.deserialize(jsonString, CombinedConnectorCatalog.class);
+      final URL url = Resources.getResource(this.localCatalogPath);
+      final String jsonString = Resources.toString(url, StandardCharsets.UTF_8);
+      final CombinedConnectorCatalog catalog = Jsons.deserialize(jsonString, CombinedConnectorCatalog.class);
+      return catalog;
+
     } catch (final Exception e) {
       throw new RuntimeException("Failed to fetch local catalog definitions", e);
     }
@@ -92,10 +81,15 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
   public Map<UUID, StandardDestinationDefinition> getDestinationDefinitionsMap() {
     final CombinedConnectorCatalog catalog = getLocalDefinitionCatalog();
-    return catalog.getDestinations().stream().collect(Collectors.toMap(
-        StandardDestinationDefinition::getDestinationDefinitionId,
-        destination -> destination.withProtocolVersion(
-            AirbyteProtocolVersion.getWithDefault(destination.getSpec() != null ? destination.getSpec().getProtocolVersion() : null).serialize())));
+    return catalog.getDestinations().stream().collect(
+        Collectors.toMap(
+            StandardDestinationDefinition::getDestinationDefinitionId,
+            destination -> destination.withProtocolVersion(
+                AirbyteProtocolVersion.getWithDefault(
+                    destination.getSpec() != null
+                        ? destination.getSpec().getProtocolVersion()
+                        : null)
+                    .serialize())));
   }
 
   @Override
@@ -124,88 +118,6 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   @Override
   public List<StandardDestinationDefinition> getDestinationDefinitions() {
     return new ArrayList<>(getDestinationDefinitionsMap().values());
-
-//  @Override
-//  public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
-//    final StandardSourceDefinition definition = this.sourceDefinitions.get(definitionId);
-//    if (definition == null) {
-//      throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
-//    }
-//    return definition;
-//  }
-//
-//  @Override
-//  public List<StandardSourceDefinition> getSourceDefinitions() {
-//    return new ArrayList<>(this.sourceDefinitions.values());
-//  }
-//
-//  @Override
-//  public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
-//    final StandardDestinationDefinition definition = this.destinationDefinitions.get(definitionId);
-//    if (definition == null) {
-//      throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
-//    }
-//    return definition;
-//  }
-//
-//  @Override
-//  public List<StandardDestinationDefinition> getDestinationDefinitions() {
-//    return new ArrayList<>(this.destinationDefinitions.values());
-//  }
-
-  @SuppressWarnings("UnstableApiUsage")
-  private static <T> Map<UUID, T> parseDefinitions(final Class<?> seedDefinitionsResourceClass,
-                                                   final String definitionsYamlPath,
-                                                   final String specYamlPath,
-                                                   final String definitionIdField,
-                                                   final String specIdField,
-                                                   final Class<T> definitionModel)
-      throws IOException {
-    final Map<String, JsonNode> rawDefinitions = getJsonElements(seedDefinitionsResourceClass, definitionsYamlPath, definitionIdField);
-    final Map<String, JsonNode> rawSpecs = getJsonElements(seedDefinitionsResourceClass, specYamlPath, specIdField);
-
-    return rawDefinitions.entrySet().stream()
-        .collect(Collectors.toMap(e -> UUID.fromString(e.getKey()), e -> {
-          final JsonNode withMissingFields = addMissingFields(e.getValue());
-          final ObjectNode withSpec = (ObjectNode) mergeSpecIntoDefinition(withMissingFields, rawSpecs);
-          final String protocolVersion =
-              withSpec.has(SPEC) && withSpec.get(SPEC).has(PROTOCOL_VERSION) ? withSpec.get(SPEC).get(PROTOCOL_VERSION).asText() : null;
-          withSpec.put("protocolVersion", AirbyteProtocolVersion.getWithDefault(protocolVersion).serialize());
-          return Jsons.object(withSpec, definitionModel);
-        }));
-
-  }
-
-  private static Map<String, JsonNode> getJsonElements(final Class<?> seedDefinitionsResourceClass, final String resourcePath, final String idName)
-      throws IOException {
-    final URL url = Resources.getResource(seedDefinitionsResourceClass, resourcePath);
-    final String yamlString = Resources.toString(url, StandardCharsets.UTF_8);
-    final JsonNode configList = Yamls.deserialize(yamlString);
-    return MoreIterators.toList(configList.elements()).stream().collect(Collectors.toMap(
-        json -> json.get(idName).asText(),
-        json -> json));
-  }
-
-  /**
-   * Merges the corresponding spec JSON into the definition JSON. This is necessary because specs are
-   * stored in a separate resource file from definitions.
-   *
-   * @param definitionJson JSON of connector definition that is missing a spec
-   * @param specConfigs map of docker image to JSON of docker image/connector spec pair
-   * @return JSON of connector definition including the connector spec
-   */
-  private static JsonNode mergeSpecIntoDefinition(final JsonNode definitionJson, final Map<String, JsonNode> specConfigs) {
-    final String dockerImage = definitionJson.get("dockerRepository").asText() + ":" + definitionJson.get("dockerImageTag").asText();
-    final JsonNode specConfigJson = specConfigs.get(dockerImage);
-    if (specConfigJson == null || specConfigJson.get(SPEC) == null) {
-      throw new UnsupportedOperationException(String.format("There is no seed spec for docker image %s", dockerImage));
-    }
-    ((ObjectNode) definitionJson).set(SPEC, specConfigJson.get(SPEC));
-    return definitionJson;
-  }
-
-  private static JsonNode addMissingFields(final JsonNode element) {
-    return addMissingPublicField(addMissingCustomField(addMissingTombstoneField(element)));
   }
 
 }
