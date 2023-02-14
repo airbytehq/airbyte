@@ -1,19 +1,5 @@
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
-/*
-TODOs for making incremental: 
-1. make generateOpenApiPythonServer incremental 
-    1a. ~~Verify if we need to make the copy task inputs/outputs explicitly declared~~
-        Any textual changes to doFirst and doLast will cause the task to be out-of-date
-2. make airbyte-python-docker incremental
-3. make airbyte-docker incremental
-4. make anything else incremental
-
-Bonus: attach unit tests to the Gradle-defined project “test” task 
-
-*/
-
-
 plugins {
     id "org.openapi.generator" version "6.3.0"
     id 'airbyte-python-docker'
@@ -22,7 +8,6 @@ plugins {
 
 task generateOpenApiPythonServer(type: GenerateTask) {
     def generatedCodeDir = "$buildDir/airbyte_connector_builder_server"
-    // TODO this openapi file doesn't need to be nested in 3 empty folders
     inputSpec = "$rootDir.absolutePath/airbyte-connector-builder-server/src/main/openapi/openapi.yaml"
     generatorName = "python-fastapi"
     configFile = "$projectDir/openapi/generator_config.yaml"
