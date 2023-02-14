@@ -1,3 +1,4 @@
+import { faDocker } from "@fortawesome/free-brands-svg-icons";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
@@ -5,16 +6,19 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
+import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
+import { useExperiment } from "hooks/services/Experiment";
 import { RoutePaths, DestinationPaths } from "pages/routePaths";
 import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
+import { ReactComponent as BuilderIcon } from "./builder-icon.svg";
 import CreateConnectorModal from "./CreateConnectorModal";
 
 interface IProps {
-  type: string;
+  type: "sources" | "destinations";
 }
 
 interface ICreateProps {
@@ -33,6 +37,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setIsModalOpen(!isModalOpen);
     setErrorMessage("");
   };
+  const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
 
   const { formatMessage } = useIntl();
 
@@ -77,16 +82,48 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
 
   return (
     <>
-      {type === "configuration" ? null : (
-        <Button size="xs" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onChangeModalState}>
-          <FormattedMessage id="admin.newConnector" />
-        </Button>
+      {type === "sources" && showBuilderNavigationLinks ? (
+        <DropdownMenu
+          placement="bottom"
+          options={[
+            {
+              as: "a",
+              href: `../../${RoutePaths.ConnectorBuilder}`,
+              icon: <BuilderIcon />,
+              displayName: formatMessage({ id: "admin.newConnector.build" }),
+              internal: true,
+            },
+            {
+              as: "button",
+              icon: <FontAwesomeIcon icon={faDocker} color="#0091E2" size="xs" />,
+              value: "docker",
+              displayName: formatMessage({ id: "admin.newConnector.docker" }),
+            },
+          ]}
+          onChange={(data: DropdownMenuOptionType) => data.value === "docker" && onChangeModalState()}
+        >
+          {() => <NewConnectorButton />}
+        </DropdownMenu>
+      ) : (
+        <NewConnectorButton onClick={onChangeModalState} />
       )}
 
       {isModalOpen && (
         <CreateConnectorModal onClose={onChangeModalState} onSubmit={onSubmit} errorMessage={errorMessage} />
       )}
     </>
+  );
+};
+
+interface NewConnectorButtonProps {
+  onClick?: () => void;
+}
+
+const NewConnectorButton: React.FC<NewConnectorButtonProps> = ({ onClick }) => {
+  return (
+    <Button size="xs" icon={<FontAwesomeIcon icon={faPlus} />} onClick={onClick}>
+      <FormattedMessage id="admin.newConnector" />
+    </Button>
   );
 };
 
