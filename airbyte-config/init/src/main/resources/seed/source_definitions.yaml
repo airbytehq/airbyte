@@ -468,7 +468,7 @@
 - name: DynamoDB
   sourceDefinitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
   dockerRepository: airbyte/source-dynamodb
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   icon: dynamodb.svg
   sourceType: api
@@ -508,7 +508,7 @@
 - name: Facebook Pages
   sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   dockerRepository: airbyte/source-facebook-pages
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   icon: facebook.svg
   sourceType: api
@@ -728,7 +728,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.31
+  dockerImageTag: 0.2.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -1376,7 +1376,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.44
+  dockerImageTag: 1.0.45
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
