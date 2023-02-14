@@ -67,7 +67,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/get_by_slug")
-  @Secured({AUTHENTICATED_USER})
+  @Secured({READER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead getWorkspaceBySlug(@Body final SlugRequestBody slugRequestBody) {
