@@ -16,7 +16,6 @@ interface StepMenuProps {
   activeStep?: string;
   onSelect?: (id: string) => void;
   disabled?: boolean;
-  hidden?: boolean;
 }
 
 const Content = styled.div`
@@ -26,7 +25,7 @@ const Content = styled.div`
   font-family: ${({ theme }) => theme.regularFont};
 `;
 
-export const StepsMenu: React.FC<StepMenuProps> = ({ data, onSelect, activeStep, lightMode, disabled, hidden }) => {
+export const StepsMenu: React.FC<StepMenuProps> = ({ data, onSelect, activeStep, lightMode, disabled }) => {
   return (
     <Content>
       {data.map((item, key) => (
@@ -40,7 +39,6 @@ export const StepsMenu: React.FC<StepMenuProps> = ({ data, onSelect, activeStep,
           onClick={item.onSelect || onSelect}
           isActive={activeStep === item.id}
           disabled={disabled}
-          hidden={hidden}
         />
       ))}
     </Content>

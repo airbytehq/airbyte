@@ -1,7 +1,7 @@
 import pick from "lodash/pick";
 import { useContext, useState, createContext, useCallback } from "react";
 import { useIntl } from "react-intl";
-import { useAsyncFn } from "react-use";
+import { useMutation } from "react-query";
 
 import {
   AirbyteCatalog,
@@ -27,7 +27,7 @@ export interface ConnectionCatalog {
 interface ConnectionEditHook {
   connection: WebBackendConnectionRead;
   connectionUpdating: boolean;
-  schemaError?: Error;
+  schemaError?: SchemaError | null;
   schemaRefreshing: boolean;
   schemaHasBeenRefreshed: boolean;
   updateConnection: (connectionUpdates: WebBackendConnectionUpdate) => Promise<void>;
@@ -46,7 +46,11 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEdi
   const [catalog, setCatalog] = useState<ConnectionCatalog>(() => getConnectionCatalog(connection));
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
-  const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
+  const {
+    isLoading: schemaRefreshing,
+    error: schemaError,
+    mutateAsync: refreshSchema,
+  } = useMutation<void, SchemaError>(async () => {
     unregisterNotificationById("connection.noDiff");
 
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
@@ -64,7 +68,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEdi
         text: formatMessage({ id: "connection.updateSchema.noDiff" }),
       });
     }
-  }, [connectionId]);
+  });
 
   const discardRefreshedSchema = useCallback(() => {
     setConnection((connection) => ({
@@ -132,7 +136,7 @@ export const ConnectionEditServiceProvider: React.FC<React.PropsWithChildren<Con
       <ConnectionFormServiceProvider
         mode={data.connection.status === ConnectionStatus.deprecated ? "readonly" : "edit"}
         connection={data.connection}
-        schemaError={schemaError as SchemaError}
+        schemaError={schemaError}
         refreshSchema={refreshSchema}
       >
         {children}

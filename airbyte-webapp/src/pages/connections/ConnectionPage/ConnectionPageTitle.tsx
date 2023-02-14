@@ -82,14 +82,7 @@ export const ConnectionPageTitle: React.FC = () => {
           {fcpEnabled && <InlineEnrollmentCallout />}
         </FlexContainer>
       </div>
-      <StepsMenu
-        lightMode
-        data={steps}
-        onSelect={onSelectStep}
-        activeStep={currentStep}
-        disabled={schemaRefreshing}
-        hidden={schemaRefreshing}
-      />
+      <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} disabled={schemaRefreshing} />
     </div>
   );
 };
