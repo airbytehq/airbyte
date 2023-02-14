@@ -10,12 +10,14 @@ interface StepProps {
   icon?: React.ReactNode;
   num: number;
   disabled?: boolean;
+  hidden?: boolean;
 }
 
 const StepView = styled.div<{
   isActive?: boolean;
   lightMode?: boolean;
   nonClickable?: boolean;
+  hidden?: boolean;
 }>`
   width: ${({ lightMode }) => (lightMode ? "auto" : "212px")};
   min-width: ${({ lightMode }) => (lightMode ? "100px" : "auto")};
@@ -24,6 +26,7 @@ const StepView = styled.div<{
   border-radius: 28px;
   pointer-events: ${({ isActive, nonClickable }) => (isActive || nonClickable ? "none" : "all")};
   cursor: ${({ nonClickable }) => (nonClickable ? "default" : "pointer")};
+  visibility: ${({ hidden }) => (hidden ? "hidden" : "initial")};
   text-align: center;
   background: ${({ theme, isActive }) => (isActive ? theme.primaryColor12 : "none")};
   color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
@@ -52,7 +55,7 @@ const Num = styled.div<{ isActive?: boolean }>`
   box-shadow: 0 1px 2px 0 ${({ theme }) => theme.shadowColor};
 `;
 
-export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon, disabled }) => {
+export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, lightMode, icon, disabled, hidden }) => {
   const onItemClickItem = () => {
     if (onClick && !disabled) {
       onClick(id);
@@ -66,6 +69,7 @@ export const Step: React.FC<StepProps> = ({ name, id, isActive, onClick, num, li
       onClick={onItemClickItem}
       isActive={isActive}
       lightMode={lightMode}
+      hidden={hidden}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
       {icon}
