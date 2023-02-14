@@ -89,7 +89,7 @@ public class ReadController {
       new DefaultSynchronousScheduler(temporalClient, jobTracker, jobErrorReporter); // fixme
 
   @Post(produces = MediaType.APPLICATION_JSON)
-  public String manifest(final StreamReadRequestBody body) throws IOException, InterruptedException {
+  public String read(final StreamReadRequestBody body) throws IOException, InterruptedException {
     LOGGER.info("read receive: " + ConnectorBuilderEntryPoint.toJsonString(body));
     final String response = ConnectorBuilderEntryPoint.read(body);
     LOGGER.info("read send: " + response);
