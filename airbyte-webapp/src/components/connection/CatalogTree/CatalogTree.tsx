@@ -81,7 +81,6 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
         <div
           className={classNames(styles.catalogTreeTable, {
-            [styles.newCatalogTreeTable]: isNewTableDesignEnabled,
             [styles.scrollable]: mode === "create",
           })}
         >

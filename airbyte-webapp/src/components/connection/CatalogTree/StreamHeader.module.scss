@@ -40,6 +40,7 @@ $icon-size: 20px;
 }
 
 .catalogSectionRow {
+  margin: 0 variables.$spacing-xl 1px;
   height: 100%;
   white-space: nowrap;
   font-size: 12px;
