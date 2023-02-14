@@ -2,15 +2,19 @@ import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useNavigate, useMatch } from "react-router-dom";
 
-import { Workspace, WorkspaceService } from "core/domain/workspace";
+import { Workspace } from "core/domain/workspace";
+import {
+  getWorkspace,
+  listWorkspaces,
+  updateWorkspace,
+  webBackendGetWorkspaceState,
+  WorkspaceUpdate,
+} from "core/request/AirbyteClient";
+import { useRequestOptions } from "core/request/useRequestOptions";
 import { RoutePaths } from "pages/routePaths";
 
-import { useConfig } from "../../config";
-import { WorkspaceUpdate } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
-import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
-import { useInitService } from "../useInitService";
 
 export const workspaceKeys = {
   all: [SCOPE_USER, "workspaces"] as const,
@@ -69,12 +73,6 @@ export const useWorkspaceService = (): Context => {
   return workspaceService;
 };
 
-function useWorkspaceApiService() {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-  return useInitService(() => new WorkspaceService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
-}
-
 export const useCurrentWorkspaceId = () => {
   const match = useMatch(`/${RoutePaths.Workspaces}/:workspaceId/*`);
   return match?.params.workspaceId || "";
@@ -90,20 +88,23 @@ export const useCurrentWorkspace = () => {
 
 export const useCurrentWorkspaceState = () => {
   const workspaceId = useCurrentWorkspaceId();
-  const service = useWorkspaceApiService();
+  const requestOptions = useRequestOptions();
 
-  return useSuspenseQuery(workspaceKeys.state(workspaceId), () => service.getState({ workspaceId }), {
-    // We want to keep this query only shortly in cache, so we refetch
-    // the data whenever the user might have changed sources/destinations/connections
-    // without requiring to manually invalidate that query on each change.
-    cacheTime: 5 * 1000,
-  });
+  return useSuspenseQuery(
+    workspaceKeys.state(workspaceId),
+    () => webBackendGetWorkspaceState({ workspaceId }, requestOptions),
+    {
+      // We want to keep this query only shortly in cache, so we refetch
+      // the data whenever the user might have changed sources/destinations/connections
+      // without requiring to manually invalidate that query on each change.
+      cacheTime: 5 * 1000,
+    }
+  );
 };
 
 export const useListWorkspaces = () => {
-  const service = useWorkspaceApiService();
-
-  return useSuspenseQuery(workspaceKeys.lists(), () => service.list()).workspaces;
+  const requestOptions = useRequestOptions();
+  return useSuspenseQuery(workspaceKeys.lists(), () => listWorkspaces(requestOptions)).workspaces;
 };
 
 export const useGetWorkspace = (
@@ -112,15 +113,19 @@ export const useGetWorkspace = (
     staleTime: number;
   }
 ) => {
-  const service = useWorkspaceApiService();
-  return useSuspenseQuery(workspaceKeys.detail(workspaceId), () => service.get({ workspaceId }), options);
+  const requestOptions = useRequestOptions();
+  return useSuspenseQuery(
+    workspaceKeys.detail(workspaceId),
+    () => getWorkspace({ workspaceId }, requestOptions),
+    options
+  );
 };
 
 export const useUpdateWorkspace = () => {
-  const service = useWorkspaceApiService();
+  const requestOptions = useRequestOptions();
   const queryClient = useQueryClient();
 
-  return useMutation((workspace: WorkspaceUpdate) => service.update(workspace), {
+  return useMutation((workspace: WorkspaceUpdate) => updateWorkspace(workspace, requestOptions), {
     onSuccess: (data) => {
       queryClient.setQueryData(workspaceKeys.detail(data.workspaceId), data);
     },

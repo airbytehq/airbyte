@@ -3,6 +3,9 @@ import { defineConfig } from "orval";
 export default defineConfig({
   api: {
     input: "../airbyte-api/src/main/openapi/config.yaml",
+    hooks: {
+      afterAllFilesWrite: "eslint --fix --no-eslintrc --config .eslintrc.orval.js --no-inline-config",
+    },
     output: {
       target: "./src/core/request/AirbyteClient.ts",
       prettier: true,

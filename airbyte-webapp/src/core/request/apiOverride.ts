@@ -38,12 +38,8 @@ export const apiOverride = async <T, U = unknown>(
     responseType?: "blob";
     signal?: AbortSignal;
   },
-  options?: ApiOverrideRequestOptions
+  options: ApiOverrideRequestOptions
 ): Promise<typeof responseType extends "blob" ? Blob : T> => {
-  if (!options) {
-    throw new Error("Please provide middlewares and config!");
-  }
-
   const { apiUrl } = options.config;
   // Remove the `v1/` in the end of the apiUrl for now, during the transition period
   // to get rid of it from all environment variables.
