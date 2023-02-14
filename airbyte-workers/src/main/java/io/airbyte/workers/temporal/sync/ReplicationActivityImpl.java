@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
@@ -26,7 +26,14 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.featureflag.FeatureFlagClient;
-import io.airbyte.metrics.lib.*;
+import io.airbyte.featureflag.FieldSelectionEnabled;
+import io.airbyte.featureflag.Workspace;
+import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.metrics.lib.MetricAttribute;
+import io.airbyte.metrics.lib.MetricClient;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.MetricEmittingApps;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.*;
@@ -288,6 +295,13 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
       final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor,
           HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, featureFlagClient, syncInput.getWorkspaceId());
+      final UUID workspaceId = syncInput.getWorkspaceId();
+      // NOTE: we apply field selection if the feature flag client says so (recommended) or the old
+      // environment-variable flags say so (deprecated).
+      // The latter FeatureFlagHelper will be removed once the flag client is fully deployed.
+      final boolean fieldSelectionEnabled = workspaceId != null &&
+          (featureFlagClient.enabled(FieldSelectionEnabled.INSTANCE, new Workspace(workspaceId))
+              || FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
@@ -305,7 +319,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter,
           new ConnectorConfigUpdater(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()),
-          FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()), heartbeatTimeoutChaperone);
+          fieldSelectionEnabled,
+          heartbeatTimeoutChaperone);
     };
   }
 

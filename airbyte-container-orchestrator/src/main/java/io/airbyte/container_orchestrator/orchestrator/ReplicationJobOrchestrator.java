@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.container_orchestrator.orchestrator;
@@ -23,6 +23,8 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.FieldSelectionEnabled;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -45,6 +47,7 @@ import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,6 +160,13 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION, featureFlagClient, syncInput.getWorkspaceId());
 
     log.info("Setting up replication worker...");
+    final UUID workspaceId = syncInput.getWorkspaceId();
+    // NOTE: we apply field selection if the feature flag client says so (recommended) or the old
+    // environment-variable flags say so (deprecated).
+    // The latter FeatureFlagHelper will be removed once the flag client is fully deployed.
+    final boolean fieldSelectionEnabled = workspaceId != null &&
+        (featureFlagClient.enabled(FieldSelectionEnabled.INSTANCE, new Workspace(workspaceId))
+            || FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
     final var replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -172,7 +182,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
-        FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()),
+        fieldSelectionEnabled,
         heartbeatTimeoutChaperone);
 
     log.info("Running replication worker...");
