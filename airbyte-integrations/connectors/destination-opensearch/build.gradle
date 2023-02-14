@@ -12,12 +12,14 @@ application {
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'org.opensearch.client:opensearch-rest-client: 2.5.0'
     implementation 'org.opensearch.client:opensearch-java:2.0.0'
+    implementation 'org.opensearch.client:opensearch-rest-high-level-client:2.5.0'
+    testImplementation 'org.opensearch:opensearch-testcontainers:2.0.0'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
     // https://eclipse-ee4j.github.io/jsonp/

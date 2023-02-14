@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.Opensearch;
+package io.airbyte.integrations.destination.opensearch;
 
 import java.nio.charset.Charset;
 import java.util.Base64;
