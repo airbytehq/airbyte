@@ -6,6 +6,7 @@ const BASE_DOCS_LINK = "https://docs.airbyte.com";
 
 export const links = {
   dbtCommandsReference: "https://docs.getdbt.com/reference/dbt-commands",
+  dbtCloudIntegrationDocs: `${BASE_DOCS_LINK}/cloud/dbt-cloud-integration`,
   technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
   termsLink: "https://airbyte.com/terms",
   privacyLink: "https://airbyte.com/privacy-policy",
