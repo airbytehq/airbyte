@@ -44,7 +44,7 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
         mock(StandardSyncPersistence.class),
-            MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES));
+        MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES));
   }
 
   @Test
