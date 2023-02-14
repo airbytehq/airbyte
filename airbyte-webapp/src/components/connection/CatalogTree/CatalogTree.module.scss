@@ -3,9 +3,8 @@
 .catalogTreeTable {
   flex: 1;
   padding: variables.$spacing-lg variables.$spacing-xl 0;
-  overflow-x: auto;
-  border-radius: variables.$border-radius-lg;
-  margin-bottom: variables.$card-border-radius;
+  overflow-y: auto;
+  margin-bottom: variables.$spacing-xl;
 
   &.scrollable {
     overflow: auto;

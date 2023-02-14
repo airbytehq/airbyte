@@ -19,7 +19,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { useModalService } from "hooks/services/Modal";
 import { links } from "utils/links";
 
-import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
+import { CatalogTreeTableCell, CatalogTreeTableCellProps } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableHeader.module.scss";
 import {
   DestinationNamespaceFormValueType,
@@ -31,18 +31,13 @@ import {
   StreamNameDefinitionValueType,
 } from "../../DestinationStreamNamesModal/DestinationStreamNamesModal";
 
-const HeaderCell: React.FC<React.PropsWithChildren<Parameters<typeof CatalogTreeTableCell>[0]>> = ({
-  size,
-  children,
-}) => {
-  return (
-    <CatalogTreeTableCell size={size}>
-      <Text size="sm" className={styles.cellText}>
-        {children}
-      </Text>
-    </CatalogTreeTableCell>
-  );
-};
+const HeaderCell: React.FC<React.PropsWithChildren<CatalogTreeTableCellProps>> = ({ children, ...tableCellProps }) => (
+  <CatalogTreeTableCell {...tableCellProps} withOverflow>
+    <Text size="sm" className={styles.headerCellText}>
+      {children}
+    </Text>
+  </CatalogTreeTableCell>
+);
 
 export const CatalogTreeTableHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
@@ -68,21 +63,26 @@ export const CatalogTreeTableHeader: React.FC = () => {
 
   return (
     <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewTableDesignEnabled })}>
-      <CatalogTreeTableCell size="small" className={styles.checkboxCell}>
+      <CatalogTreeTableCell size="fixed" className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
+            checkboxSize="sm"
             onChange={onCheckAll}
             indeterminate={selectedBatchNodeIds.length > 0 && !allChecked}
             checked={allChecked}
           />
         )}
       </CatalogTreeTableCell>
-      <HeaderCell size="small">
+      <HeaderCell size="fixed" className={styles.syncCell}>
         <FormattedMessage id="sources.sync" />
       </HeaderCell>
-      {/* <TextCell>
-        <FormattedMessage id="form.fields" />
-      </TextCell> */}
+      {/* TODO: Replace with actual header column selection field count */}
+      {/* <HeaderCell size="fixed" className={styles.fieldsCell}>
+        Fields
+        <InfoTooltip>
+          <FormattedMessage id="connectionForm.sourceNamespace.info" />
+        </InfoTooltip>
+      </HeaderCell> */}
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
         <InfoTooltip>
@@ -95,7 +95,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
           <FormattedMessage id="connectionForm.sourceStreamName.info" />
         </InfoTooltip>
       </HeaderCell>
-      <HeaderCell size="large">
+      <HeaderCell size="fixed" className={styles.syncModeCell}>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
@@ -114,7 +114,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
           <FormattedMessage id="connectionForm.primaryKey.info" />
         </InfoTooltip>
       </HeaderCell>
-      <CatalogTreeTableCell size="xsmall" />
+      <CatalogTreeTableCell size="fixed" className={styles.arrowCell} />
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
         <Button

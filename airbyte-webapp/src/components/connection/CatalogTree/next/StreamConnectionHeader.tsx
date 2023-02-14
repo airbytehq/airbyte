@@ -23,11 +23,11 @@ export const StreamConnectionHeader: React.FC = () => {
           <ConnectorHeaderGroupIcon type="source" icon={source.icon} />
         </Heading>
       </div>
-      <div className={styles.destinationSection}>
+      <div className={styles.destination}>
         <div className={styles.arrowContainer}>
           <ArrowRightIcon />
         </div>
-        <div className={classnames(styles.connector, styles.destination)}>
+        <div className={styles.connector}>
           <Heading as="h5" size="sm">
             <ConnectorHeaderGroupIcon type="destination" icon={destination.icon} />
           </Heading>

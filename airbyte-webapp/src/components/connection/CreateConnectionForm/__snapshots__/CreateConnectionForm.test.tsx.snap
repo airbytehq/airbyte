@@ -986,6 +986,7 @@ exports[`CreateConnectionForm should render 1`] = `
                           />
                           <div
                             class="<removed-for-snapshot-test>"
+                            style="width: 0px;"
                           />
                           <div
                             class="<removed-for-snapshot-test>"

@@ -108,6 +108,10 @@
   white-space: nowrap;
 }
 
+.multi .labelContainer:first-child {
+  max-width: 85px;
+}
+
 .divider {
   height: 100%;
   min-width: 1px;

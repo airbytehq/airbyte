@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { LoadingPage } from "components";
+import { LoadingPage, MainPageWithScroll } from "components";
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
 import { HeadTitle } from "components/common/HeadTitle";
 import { ConnectionBlock } from "components/connection/ConnectionBlock";
@@ -216,16 +216,29 @@ export const CreateConnectionPage: React.FC = () => {
           } as Record<EntityStepsTypes, string>
         )[type];
 
+  const headTitle = <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />;
+  const pageHeader = (
+    <PageHeader
+      title={<FormattedMessage id={titleId} />}
+      middleComponent={<StepsIndicator steps={steps} activeStep={currentStep} />}
+    />
+  );
+
+  if (currentStep === StepsTypes.CREATE_CONNECTION) {
+    return (
+      <MainPageWithScroll headTitle={headTitle} pageTitle={pageHeader}>
+        {renderStep()}
+      </MainPageWithScroll>
+    );
+  }
+
   return (
     <>
-      <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
+      {headTitle}
       <ConnectorDocumentationWrapper>
-        <PageHeader
-          title={<FormattedMessage id={titleId} />}
-          middleComponent={<StepsIndicator steps={steps} activeStep={currentStep} />}
-        />
-        <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
-          {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
+        {pageHeader}
+        <FormPageContent>
+          {(!!source || !!destination) && (
             <ConnectionBlock
               itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
               itemTo={
