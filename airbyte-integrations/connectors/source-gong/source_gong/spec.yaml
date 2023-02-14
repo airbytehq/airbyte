@@ -27,3 +27,4 @@ connectionSpecification:
         For web-conference calls recorded by Gong, the date denotes its scheduled time, otherwise, it denotes its actual start time.
       examples:
         - "2018-02-18T08:00:00Z"
+      format: date-time
