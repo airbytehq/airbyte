@@ -46,6 +46,7 @@ You will need to choose an existing database or create a new database that will 
 You should now have all the requirements needed to configure Databend as a destination in the UI. You'll need the following information to configure the Databend destination:
 
 * **Host**
+* **Protocol**
 * **Port**
 * **Username**
 * **Password**
