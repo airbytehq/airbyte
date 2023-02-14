@@ -61,7 +61,8 @@ definitions:
       record_selector:
         $ref: "*ref(definitions.selector)"
         record_filter:
-          condition: "{{ record.status in ['active', 'disconnected', 'expired'] and record.serviceName in options.serviceNames }}"
+          # every stream defines in options which services it is needed
+          condition: "{{ record.status in ['active', 'expired'] and record.serviceName in options.serviceNames }}"
     $options:
       name: "connections_slice"
       path: "/connections"
