@@ -70,6 +70,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -81,8 +82,10 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 
 @Singleton
+@Slf4j
 public class SchedulerHandler {
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
@@ -100,6 +103,7 @@ public class SchedulerHandler {
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
   private final FeatureFlags envVariableFeatureFlags;
+  private final WebUrlHelper webUrlHelper;
 
   // TODO: Convert to be fully using micronaut
   public SchedulerHandler(final ConfigRepository configRepository,
@@ -111,7 +115,8 @@ public class SchedulerHandler {
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
-                          final FeatureFlags envVariableFeatureFlags) {
+                          final FeatureFlags envVariableFeatureFlags,
+                          final WebUrlHelper webUrlHelper) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -122,7 +127,8 @@ public class SchedulerHandler {
         eventRunner,
         new JobConverter(workerEnvironment, logConfigs),
         connectionsHandler,
-        envVariableFeatureFlags);
+        envVariableFeatureFlags,
+        webUrlHelper);
   }
 
   @VisibleForTesting
@@ -135,7 +141,8 @@ public class SchedulerHandler {
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
-                   final FeatureFlags envVariableFeatureFlags) {
+                   final FeatureFlags envVariableFeatureFlags,
+                   final WebUrlHelper webUrlHelper) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -146,6 +153,7 @@ public class SchedulerHandler {
     this.jobConverter = jobConverter;
     this.connectionsHandler = connectionsHandler;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
+    this.webUrlHelper = webUrlHelper;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -272,7 +280,7 @@ public class SchedulerHandler {
 
       if (persistedCatalogId.isSuccess() && discoverSchemaRequestBody.getConnectionId() != null) {
         // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
-        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
+        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody, source.getWorkspaceId());
       }
 
       return discoveredSchema;
@@ -394,9 +402,10 @@ public class SchedulerHandler {
   // determine whether 1. the source schema change resulted in a broken connection or 2. the user
   // wants the connection disabled when non-breaking changes are detected. If so, disable that
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
-  // containsBreakingChange paramter, and connectionStatus parameter.
+  // containsBreakingChange parameter, and connectionStatus parameter.
   private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
-                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody,
+                                                                 final UUID workspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
@@ -418,10 +427,21 @@ public class SchedulerHandler {
       }
       updateObject.status(connectionStatus);
       connectionsHandler.updateConnection(updateObject);
+      if (shouldNotifySchemaChange(diff, connectionRead, discoverSchemaRequestBody)) {
+        final String url = webUrlHelper.getConnectionUrl(workspaceId, connectionRead.getConnectionId());
+        eventRunner.sendSchemaChangeNotification(connectionRead.getConnectionId(), url);
+      }
       if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
         discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
       }
     }
+  }
+
+  private boolean shouldNotifySchemaChange(final CatalogDiff diff,
+                                           final ConnectionRead connectionRead,
+                                           final SourceDiscoverSchemaRequestBody requestBody) {
+    return !diff.getTransforms().isEmpty() && connectionRead.getNotifySchemaChanges() && requestBody.getNotifySchemaChange() != null
+        && requestBody.getNotifySchemaChange();
   }
 
   private boolean shouldDisableConnection(final boolean containsBreakingChange,

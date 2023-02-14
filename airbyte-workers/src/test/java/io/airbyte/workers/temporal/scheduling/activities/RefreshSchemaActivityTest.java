@@ -71,7 +71,7 @@ class RefreshSchemaActivityTest {
     UUID connectionId = UUID.randomUUID();
     refreshSchemaActivity.refreshSchema(sourceId, connectionId);
     SourceDiscoverSchemaRequestBody requestBody =
-        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true).connectionId(connectionId);
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true).connectionId(connectionId).notifySchemaChange(true);
     verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);
   }
 
