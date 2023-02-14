@@ -24,6 +24,7 @@ export const AllDestinationsPage: React.FC = () => {
 
   return destinations.length ? (
     <MainPageWithScroll
+      softScrollEdge={false}
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
         <PageHeader
