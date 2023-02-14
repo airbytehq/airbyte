@@ -16,7 +16,7 @@ import java.util.UUID;
 public interface ConnectionNotificationWorkflow {
 
   @WorkflowMethod
-  boolean sendSchemaChangeNotification(UUID connectionId)
+  boolean sendSchemaChangeNotification(UUID connectionId, String url)
       throws IOException, InterruptedException, ApiException, ConfigNotFoundException, JsonValidationException;
 
 }
