@@ -40,7 +40,7 @@ class DentclinicIncrementalStream(HttpStream, ABC):
             days=self.fetch_interval_days)
 
         self.clinic_ids = self.get_clinic_ids()
-        self.clinic_id = '1'#next(self.clinic_ids)
+        self.clinic_id = '1'
 
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

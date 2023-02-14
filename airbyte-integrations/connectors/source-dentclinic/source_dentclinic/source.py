@@ -36,6 +36,7 @@ class BookingsFr(DentclinicIncrementalStream):
     def http_method(self) -> str:
         return "POST"
 
+
 class Bookings(DentclinicIncrementalStream):
     primary_key = "Id"
     endpoint_data_path = ['soap:Envelope', 'soap:Body', 'GetBookingsResponse',
@@ -58,7 +59,7 @@ class Bookings(DentclinicIncrementalStream):
 
 
 class UtilizationReportFr(DentclinicIncrementalStream):
-    # state_checkpoint_interval = 1
+
     primary_key = "Id"
     endpoint_data_path = ['soap:Envelope', 'soap:Body',
                           'GetUtilizationReportResponse', 'GetUtilizationReportResult']
@@ -78,8 +79,9 @@ class UtilizationReportFr(DentclinicIncrementalStream):
     def http_method(self) -> str:
         return "POST"
 
+
 class UtilizationReport(DentclinicIncrementalStream):
-    # state_checkpoint_interval = 1
+
     primary_key = "Id"
     endpoint_data_path = ['soap:Envelope', 'soap:Body',
                           'GetUtilizationReportResponse', 'GetUtilizationReportResult']
@@ -101,7 +103,7 @@ class UtilizationReport(DentclinicIncrementalStream):
 
 
 class TreatmentsReportFr(DentclinicIncrementalStream):
-    # state_checkpoint_interval = 1
+
     primary_key = "Id"
     endpoint_data_path = ['soap:Envelope', 'soap:Body',
                           'GetTreatmentsReportResponse', 'GetTreatmentsReportResult', 'ExecutedTreatmentModel']
@@ -121,8 +123,9 @@ class TreatmentsReportFr(DentclinicIncrementalStream):
     def http_method(self) -> str:
         return "POST"
 
+
 class TreatmentsReport(DentclinicIncrementalStream):
-    # state_checkpoint_interval = 1
+
     primary_key = "Id"
     endpoint_data_path = ['soap:Envelope', 'soap:Body',
                           'GetTreatmentsReportResponse', 'GetTreatmentsReportResult', 'ExecutedTreatmentModel']
