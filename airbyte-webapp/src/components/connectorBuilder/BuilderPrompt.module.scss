@@ -1,0 +1,10 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.icon {
+  flex-shrink: 0;
+}
+
+.description {
+  color: colors.$grey-400;
+}
