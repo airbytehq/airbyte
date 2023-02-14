@@ -54,8 +54,8 @@ const MainViewRoutes: React.FC = () => {
             <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
             <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
-              <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
               <Route index element={<DestinationOverviewPage />} />
+              <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
             </Route>
           </Route>
           <Route path={RoutePaths.Source}>
