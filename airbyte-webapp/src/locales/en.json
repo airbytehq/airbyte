@@ -25,6 +25,7 @@
   "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
   "sidebar.demo": "Explore our demo",
+  "sidebar.builder": "Builder",
 
   "form.continue": "Continue",
   "form.error": "Error: {message}",
@@ -424,6 +425,7 @@
   "connection.canceling": "Canceling...",
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
+  "connection.updateFailed": "Failed to update connection",
 
   "connection.progress.percentage": "{percent} percent progress",
   "connection.progress.minutesRemaining": "~{value, plural, one {# minute remaining} other {# minutes remaining}}",
@@ -503,6 +505,8 @@
   "admin.export": "Export",
   "admin.import": "Import",
   "admin.newConnector": "New connector",
+  "admin.newConnector.build": "Build a new connector",
+  "admin.newConnector.docker": "Add a new Docker connector",
   "admin.manageSource": "Manage your source connectors",
   "admin.availableSource": "Available source connectors",
   "admin.manageDestination": "Manage your destination connectors",
@@ -752,6 +756,7 @@
   "connectorBuilder.interUserInputValue": "Insert a user input value",
   "connectorBuilder.yamlUpload.error": "The YAML you provided is invalid: {reason} (line {line})",
   "connectorBuilder.landingPage.title": "Connector Builder",
+  "connectorBuilder.editPage.title": "Connector Builder",
   "connectorBuilder.landingPage.prompt": "How do you want to start building your connector?",
   "connectorBuilder.landingPage.importYaml.title": "Import a YAML manifest",
   "connectorBuilder.landingPage.importYaml.description": "Select an existing low-code YAML manifest from your computer to import into the Connector Builder",
@@ -762,6 +767,12 @@
   "connectorBuilder.loadingStreamList": "Loading",
   "connectorBuilder.noStreamSelected": "No stream selected",
   "connectorBuilder.streamListUrlError": "Could not load URL",
+  "connectorBuilder.streamTestLimitReached": "Stream testing limit reached. During testing only at max 5 stream slices with 5 pages each will be returned.",
+  "connectorBuilder.builderPrompt.button": "Build your connector",
+  "connectorBuilder.builderPrompt.title": "Need to build your own source?",
+  "connectorBuilder.builderPrompt.description": "Build your source with our {adjective} {noun}",
+  "connectorBuilder.builderPrompt.adjective": "low-code",
+  "connectorBuilder.builderPrompt.noun": "connector builder",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
