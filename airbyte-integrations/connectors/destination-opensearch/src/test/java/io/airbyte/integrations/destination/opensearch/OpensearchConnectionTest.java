@@ -2,14 +2,14 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.elasticsearch;
+package io.airbyte.integrations.destination.Opensearch;
 
 import java.nio.charset.Charset;
 import java.util.Base64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ElasticsearchConnectionTest {
+public class OpensearchConnectionTest {
 
   String endpoint = "https:qwerty:123";
 
@@ -17,8 +17,8 @@ public class ElasticsearchConnectionTest {
   public void testDefaultHeadersAuthNone() {
     final var config = new ConnectorConfiguration();
     config.setEndpoint(endpoint);
-    config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.none);
-    final var connection = new ElasticsearchConnection(config);
+    config.getAuthenticationMethod().setMethod(OpensearchAuthenticationMethod.none);
+    final var connection = new OpensearchConnection(config);
     final var headers = connection.configureHeaders(config);
     Assertions.assertEquals(0, headers.length);
   }
@@ -29,8 +29,8 @@ public class ElasticsearchConnectionTest {
     config.setEndpoint(endpoint);
     config.getAuthenticationMethod().setUsername("user");
     config.getAuthenticationMethod().setPassword("password");
-    config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.basic);
-    final var connection = new ElasticsearchConnection(config);
+    config.getAuthenticationMethod().setMethod(OpensearchAuthenticationMethod.basic);
+    final var connection = new OpensearchConnection(config);
     final var headers = connection.configureHeaders(config);
     Assertions.assertEquals(1, headers.length);
 
@@ -46,8 +46,8 @@ public class ElasticsearchConnectionTest {
     config.setEndpoint(endpoint);
     config.getAuthenticationMethod().setApiKeyId("id");
     config.getAuthenticationMethod().setApiKeySecret("secret");
-    config.getAuthenticationMethod().setMethod(ElasticsearchAuthenticationMethod.secret);
-    final var connection = new ElasticsearchConnection(config);
+    config.getAuthenticationMethod().setMethod(OpensearchAuthenticationMethod.secret);
+    final var connection = new OpensearchConnection(config);
     final var headers = connection.configureHeaders(config);
     Assertions.assertEquals(1, headers.length);
 
