@@ -62,9 +62,26 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     assertReturnsSrcDef(createBaseSourceDef().withTombstone(false));
   }
 
+  @Test
+  void testSourceDefinitionDefaultMaxSeconds() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSrcDefDefaultMaxSecondsBetweenMessages(createBaseSourceDefWithoutMaxSecondsBetweenMessages());
+  }
+
+  @Test
+  void testSourceDefinitionMaxSeconds() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSrcDef(createBaseSourceDefWithoutMaxSecondsBetweenMessages().withMaxSecondsBetweenMessages(1L));
+  }
+
   private void assertReturnsSrcDef(final StandardSourceDefinition srcDef) throws ConfigNotFoundException, IOException, JsonValidationException {
     configRepository.writeStandardSourceDefinition(srcDef);
     assertEquals(srcDef, configRepository.getStandardSourceDefinition(srcDef.getSourceDefinitionId()));
+  }
+
+  private void assertReturnsSrcDefDefaultMaxSecondsBetweenMessages(final StandardSourceDefinition srcDef)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    configRepository.writeStandardSourceDefinition(srcDef);
+    assertEquals(srcDef.withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES),
+        configRepository.getStandardSourceDefinition(srcDef.getSourceDefinitionId()));
   }
 
   @Test
@@ -275,6 +292,18 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
         .withProtocolVersion("0.2.0")
         .withTombstone(false)
         .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
+  }
+
+  private static StandardSourceDefinition createBaseSourceDefWithoutMaxSecondsBetweenMessages() {
+    final UUID id = UUID.randomUUID();
+
+    return new StandardSourceDefinition()
+        .withName("source-def-" + id)
+        .withDockerRepository("source-image-" + id)
+        .withDockerImageTag("0.0.1")
+        .withSourceDefinitionId(id)
+        .withProtocolVersion("0.2.0")
+        .withTombstone(false);
   }
 
   private static StandardDestinationDefinition createBaseDestDef() {
