@@ -185,6 +185,9 @@ QA_CHECKS = [
     # check_documentation_follows_guidelines,
     check_changelog_entry_is_updated,
     check_connector_icon_is_available,
+    # TODO - check_connector_https_url_only might be redundant once the following issues are closed
+    # https://github.com/airbytehq/airbyte/issues/20552
+    # https://github.com/airbytehq/airbyte/issues/21606
     check_connector_https_url_only,
     check_connector_has_no_critical_vulnerabilities,
 ]
