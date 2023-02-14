@@ -397,4 +397,15 @@ public class OAuthHandler {
     return new SecretCoordinate(coordinateBase, 1);
   }
 
+  public Map<String, Object> completeSourceOAuthHandleReturnSecret(final CompleteSourceOauthRequest completeSourceOauthRequest)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Map<String, Object> oAuthTokens = completeSourceOAuth(completeSourceOauthRequest);
+    if (completeSourceOauthRequest.getReturnSecretCoordinate()) {
+      return writeOAuthResponseSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens);
+    } else {
+      return oAuthTokens;
+    }
+  }
+
+
 }
