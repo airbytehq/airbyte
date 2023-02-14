@@ -25,3 +25,10 @@ export enum DestinationPaths {
   NewDestination = "new-destination",
   NewConnection = "new-connection",
 }
+
+export enum SourcePaths {
+  Root = ":id/*", // currently our tabs rely on this * wildcard to detect which tab is currently active
+  Settings = "settings",
+  NewSource = "new-source",
+  NewConnection = "new-connection",
+}

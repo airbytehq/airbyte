@@ -17,24 +17,30 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import { CloudRoutes } from "./cloudRoutePaths";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
+import { RoutePaths, DestinationPaths, SourcePaths } from "../../pages/routePaths";
 
 const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
 const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));
 const Auth = React.lazy(() => import("packages/cloud/views/auth"));
 const CreditsPage = React.lazy(() => import("packages/cloud/views/credits"));
+const SpeakeasyRedirectPage = React.lazy(() => import("pages/SpeakeasyRedirectPage"));
 
 const ConnectionsRoutes = React.lazy(() => import("pages/connections/ConnectionsRoutes"));
 const CreateConnectionPage = React.lazy(() => import("pages/connections/CreateConnectionPage"));
+
 const AllDestinationsPage = React.lazy(() => import("pages/destination/AllDestinationsPage"));
 const CreateDestinationPage = React.lazy(() => import("pages/destination/CreateDestinationPage"));
 const DestinationItemPage = React.lazy(() => import("pages/destination/DestinationItemPage"));
 const DestinationOverviewPage = React.lazy(() => import("pages/destination/DestinationOverviewPage"));
 const DestinationSettingsPage = React.lazy(() => import("pages/destination/DestinationSettingsPage"));
-const SpeakeasyRedirectPage = React.lazy(() => import("pages/SpeakeasyRedirectPage"));
+
 const AllSourcesPage = React.lazy(() => import("pages/SourcesPage/pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("pages/SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("pages/SourcesPage/pages/SourceItemPage"));
+const SourceOverviewPage = React.lazy(
+  () => import("pages/SourcesPage/pages/SourceItemPage/components/SourceOverviewPage")
+);
+const SourceSettings = React.lazy(() => import("pages/SourcesPage/pages/SourceItemPage/components/SourceSettings"));
 
 const CloudSettingsPage = React.lazy(() => import("./views/settings/CloudSettingsPage"));
 const DefaultView = React.lazy(() => import("./views/DefaultView"));
@@ -63,11 +69,14 @@ const MainRoutes: React.FC = () => {
             <Route index element={<DestinationOverviewPage />} />
           </Route>
         </Route>
-        <Route path={`${RoutePaths.Source}/*`}>
-          <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
-          <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
-          <Route path=":id/*" element={<SourceItemPage />} />
+        <Route path={RoutePaths.Source}>
           <Route index element={<AllSourcesPage />} />
+          <Route path={SourcePaths.NewSource} element={<CreateSourcePage />} />
+          <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
+          <Route path={SourcePaths.Root} element={<SourceItemPage />}>
+            <Route index element={<SourceOverviewPage />} />
+            <Route path={SourcePaths.Settings} element={<SourceSettings />} />
+          </Route>
         </Route>
         <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />

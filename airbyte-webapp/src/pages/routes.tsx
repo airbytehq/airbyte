@@ -11,7 +11,7 @@ import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { RoutePaths, DestinationPaths } from "./routePaths";
+import { RoutePaths, DestinationPaths, SourcePaths } from "./routePaths";
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 
 const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
@@ -29,6 +29,8 @@ const SettingsPage = React.lazy(() => import("./SettingsPage"));
 const AllSourcesPage = React.lazy(() => import("./SourcesPage/pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("./SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage"));
+const SourceSettings = React.lazy(() => import("./SourcesPage/pages/SourceItemPage/components/SourceSettings"));
+const SourceOverviewPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage/components/SourceOverviewPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
@@ -56,11 +58,14 @@ const MainViewRoutes: React.FC = () => {
               <Route index element={<DestinationOverviewPage />} />
             </Route>
           </Route>
-          <Route path={`${RoutePaths.Source}/*`}>
-            <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
-            <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
-            <Route path=":id/*" element={<SourceItemPage />} />
+          <Route path={RoutePaths.Source}>
             <Route index element={<AllSourcesPage />} />
+            <Route path={SourcePaths.NewSource} element={<CreateSourcePage />} />
+            <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
+            <Route path={SourcePaths.Root} element={<SourceItemPage />}>
+              <Route index element={<SourceOverviewPage />} />
+              <Route path={SourcePaths.Settings} element={<SourceSettings />} />
+            </Route>
           </Route>
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
