@@ -140,10 +140,12 @@
 
   "credits.date": "Date",
   "credits.amount": "Credits",
+  "credits.connection": "Connection",
+  "credits.source": "Source",
+  "credits.destination": "Destination",
 
   "credits.loadingCreditsUsage": "Loading credits usage …",
   "credits.usagePerConnection": "Usage per connection",
-  "credits.connection": "Connection",
   "credits.usage": "Usage",
   "credits.noData": "Data is empty",
   "credits.creditsProblem.negative_within_grace_period": "Your workspace is out of credits! Please add more credits to make sure your syncs with GA connectors keep running!",
@@ -184,6 +186,7 @@
   "inviteUsersHint.cta": "Invite users",
 
   "sidebar.credits": "Credits",
+  "sidebar.billing": "Billing",
 
   "freeConnectorProgram.title": "Free Connector Program",
   "freeConnectorProgram.enrollNow": "Enroll now!",

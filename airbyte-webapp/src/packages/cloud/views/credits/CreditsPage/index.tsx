@@ -1,3 +1,3 @@
-import CreditsPage from "./CreditsPage";
+import { BillingPage } from "./BillingPage";
 
-export default CreditsPage;
+export default BillingPage;

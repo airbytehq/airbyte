@@ -5,11 +5,15 @@ import React, { useCallback } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
+import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { SortOrderEnum } from "components/EntityTable/types";
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
+import { FlexContainer } from "components/ui/Flex";
 import { NextTable } from "components/ui/NextTable";
 import { SortableTableHeader } from "components/ui/Table";
 import { Text } from "components/ui/Text";
 
+import { useExperiment } from "hooks/services/Experiment";
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
@@ -30,6 +34,10 @@ type FullTableProps = CreditConsumptionByConnector & {
 };
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
+  // TODO: this is not targeting "true" when expected
+  const isBillingInsightsEnabled = useExperiment("billingPage.billingInsights", false);
+  // const isBillingInsightsEnabled = true;
+
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const navigate = useNavigate();
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -105,6 +113,113 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
 
   const columnHelper = createColumnHelper<FullTableProps>();
 
+  /**
+   * TODO:
+   * [ ] only calculate this if the flag is on!
+   * [ ] should cells truncate + show a tooltip?
+   * [ ] links!
+   * [ ] sizing of columns
+   * [ ] alignment of headers/cells
+   *
+   * */
+
+  const billingInsightsColumns = React.useMemo(
+    () => [
+      columnHelper.accessor("connectionName", {
+        header: () => (
+          <SortableTableHeader
+            onClick={() => onSortClick("connection")}
+            isActive={sortBy === "connection"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
+            <FormattedMessage id="credits.connection" />
+          </SortableTableHeader>
+        ),
+        meta: {
+          thClassName: classNames(styles.thConnection, styles.light),
+        },
+        cell: (props) => (
+          <FlexContainer>
+            <Text size="sm">{props.cell.getValue()}</Text>
+          </FlexContainer>
+        ),
+      }),
+      columnHelper.accessor("sourceDefinitionName", {
+        header: () => (
+          <SortableTableHeader
+            onClick={() => onSortClick("source")}
+            isActive={sortBy === "source"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
+            <FormattedMessage id="credits.source" />
+          </SortableTableHeader>
+        ),
+        meta: {
+          thClassName: classNames(styles.thConnection, styles.light),
+        },
+        cell: (props) => (
+          <FlexContainer>
+            <ConnectorIcon icon={props.row.original.sourceIcon} />
+            <Text size="sm">{props.cell.getValue()}</Text>
+          </FlexContainer>
+        ),
+      }),
+      columnHelper.display({
+        id: "arrow",
+        cell: () => <ArrowRightIcon />,
+        meta: {
+          thClassName: classNames(styles.thConnection, styles.light),
+        },
+      }),
+      columnHelper.accessor("destinationDefinitionName", {
+        header: () => (
+          <SortableTableHeader
+            onClick={() => onSortClick("destination")}
+            isActive={sortBy === "destination"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
+            <FormattedMessage id="credits.destination" />
+          </SortableTableHeader>
+        ),
+        meta: {
+          thClassName: classNames(styles.thConnection, styles.light),
+        },
+        cell: (props) => (
+          <FlexContainer>
+            <ConnectorIcon icon={props.row.original.destinationIcon} />
+            <Text size="sm">{props.cell.getValue()}</Text>
+          </FlexContainer>
+        ),
+      }),
+      columnHelper.accessor("creditsConsumedPercent", {
+        header: "",
+        meta: {
+          thClassName: classNames(styles.thCreditsConsumedPercent, styles.light),
+        },
+        cell: (props) => <UsageCell percent={props.cell.getValue()} />,
+      }),
+      columnHelper.accessor("creditsConsumed", {
+        header: () => (
+          <SortableTableHeader
+            onClick={() => onSortClick("usage")}
+            isActive={sortBy === "usage"}
+            isAscending={sortOrder === SortOrderEnum.ASC}
+          >
+            <FormattedMessage id="credits.usage" />
+          </SortableTableHeader>
+        ),
+        meta: {
+          thClassName: classNames(styles.thCreditsConsumed, styles.light),
+        },
+        cell: (props) => (
+          <Text className={styles.usageValue} size="lg">
+            <FormattedNumber value={props.cell.getValue()} maximumFractionDigits={2} minimumFractionDigits={2} />
+          </Text>
+        ),
+      }),
+    ],
+    [columnHelper, onSortClick, sortBy, sortOrder]
+  );
   const columns = React.useMemo(
     () => [
       columnHelper.accessor("sourceDefinitionName", {
@@ -168,7 +283,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
 
   return (
     <div className={styles.content}>
-      <NextTable columns={columns} data={sortingData} light />
+      <NextTable columns={isBillingInsightsEnabled ? billingInsightsColumns : columns} data={sortingData} light />
     </div>
   );
 };

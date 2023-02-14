@@ -14,6 +14,7 @@ import { Indicator } from "components/Indicator/Indicator";
 import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
+import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
@@ -42,6 +43,7 @@ const SideBar: React.FC = () => {
   const { show } = useIntercom();
   const { formatMessage } = useIntl();
   const handleChatUs = (data: DropdownMenuOptionType) => data.value === "chatUs" && show();
+  const isBillingInsightsEnabled = useExperiment("billingPage.billingInsights", false);
 
   return (
     <nav className={styles.nav}>
@@ -91,7 +93,11 @@ const SideBar: React.FC = () => {
             )}
             <CreditsIcon />
             <Text className={styles.text} size="sm">
-              <FormattedMessage id="sidebar.credits" />
+              {isBillingInsightsEnabled ? (
+                <FormattedMessage id="sidebar.billing" />
+              ) : (
+                <FormattedMessage id="sidebar.credits" />
+              )}
             </Text>
           </NavLink>
         </li>
