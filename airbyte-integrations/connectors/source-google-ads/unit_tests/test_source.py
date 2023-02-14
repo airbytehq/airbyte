@@ -61,11 +61,12 @@ def mocked_gads_api(mocker):
 
 @pytest.fixture()
 def mock_fields_meta_data():
+    DataType = namedtuple("DataType", ["name"])
     Node = namedtuple("Node", ["data_type", "name", "enum_values", "is_repeated"])
     nodes = (
-        Node("RESOURCE_NAME", "campaign.accessible_bidding_strategy", [], False),
+        Node(DataType("RESOURCE_NAME"), "campaign.accessible_bidding_strategy", [], False),
         Node(
-            "ENUM",
+            DataType("ENUM"),
             "segments.ad_destination_type",
             [
                 "APP_DEEP_LINK",
@@ -84,22 +85,22 @@ def mock_fields_meta_data():
             ],
             False,
         ),
-        Node("DATE", "campaign.start_date", [], is_repeated=False),
-        Node("DATE", "campaign.end_date", [], False),
-        Node("DATE", "segments.date", [], False),
+        Node(DataType("DATE"), "campaign.start_date", [], is_repeated=False),
+        Node(DataType("DATE"), "campaign.end_date", [], False),
+        Node(DataType("DATE"), "segments.date", [], False),
         Node(
-            "ENUM",
+            DataType("ENUM"),
             "accessible_bidding_strategy.target_impression_share.location",
             ["ABSOLUTE_TOP_OF_PAGE", "ANYWHERE_ON_PAGE", "TOP_OF_PAGE", "UNKNOWN", "UNSPECIFIED"],
             False,
         ),
-        Node("STRING", "campaign.name", [], False),
-        Node("DOUBLE", "campaign.optimization_score", [], False),
-        Node("RESOURCE_NAME", "campaign.resource_name", [], False),
-        Node("INT32", "campaign.shopping_setting.campaign_priority", [], False),
-        Node("INT64", "campaign.shopping_setting.merchant_id", [], False),
-        Node("BOOLEAN", "campaign_budget.explicitly_shared", [], False),
-        Node("MESSAGE", "bidding_strategy.enhanced_cpc", [], False),
+        Node(DataType("STRING"), "campaign.name", [], False),
+        Node(DataType("DOUBLE"), "campaign.optimization_score", [], False),
+        Node(DataType("RESOURCE_NAME"), "campaign.resource_name", [], False),
+        Node(DataType("INT32"), "campaign.shopping_setting.campaign_priority", [], False),
+        Node(DataType("INT64"), "campaign.shopping_setting.merchant_id", [], False),
+        Node(DataType("BOOLEAN"), "campaign_budget.explicitly_shared", [], False),
+        Node(DataType("MESSAGE"), "bidding_strategy.enhanced_cpc", [], False),
     )
     return Mock(get_fields_metadata=Mock(return_value={node.name: node for node in nodes}))
 
