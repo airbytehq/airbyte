@@ -16,7 +16,7 @@ import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumenta
 
 import styles from "./SourceSettings.module.scss";
 
-const SourceSettings: React.FC = () => {
+const SourceSettingsPage: React.FC = () => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
@@ -93,4 +93,4 @@ const SourceSettings: React.FC = () => {
   );
 };
 
-export default SourceSettings;
+export default SourceSettingsPage;

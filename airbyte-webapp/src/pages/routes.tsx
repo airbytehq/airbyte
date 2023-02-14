@@ -29,7 +29,7 @@ const SettingsPage = React.lazy(() => import("./SettingsPage"));
 const AllSourcesPage = React.lazy(() => import("./SourcesPage/pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("./SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage"));
-const SourceSettings = React.lazy(() => import("./SourcesPage/pages/SourceItemPage/components/SourceSettings"));
+const SourceSettingsPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage/components/SourceSettingsPage"));
 const SourceOverviewPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage/components/SourceOverviewPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
@@ -64,7 +64,7 @@ const MainViewRoutes: React.FC = () => {
             <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={SourcePaths.Root} element={<SourceItemPage />}>
               <Route index element={<SourceOverviewPage />} />
-              <Route path={SourcePaths.Settings} element={<SourceSettings />} />
+              <Route path={SourcePaths.Settings} element={<SourceSettingsPage />} />
             </Route>
           </Route>
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />

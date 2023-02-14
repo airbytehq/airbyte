@@ -40,7 +40,9 @@ const SourceItemPage = React.lazy(() => import("pages/SourcesPage/pages/SourceIt
 const SourceOverviewPage = React.lazy(
   () => import("pages/SourcesPage/pages/SourceItemPage/components/SourceOverviewPage")
 );
-const SourceSettings = React.lazy(() => import("pages/SourcesPage/pages/SourceItemPage/components/SourceSettings"));
+const SourceSettingsPage = React.lazy(
+  () => import("pages/SourcesPage/pages/SourceItemPage/components/SourceSettingsPage")
+);
 
 const CloudSettingsPage = React.lazy(() => import("./views/settings/CloudSettingsPage"));
 const DefaultView = React.lazy(() => import("./views/DefaultView"));
@@ -75,7 +77,7 @@ const MainRoutes: React.FC = () => {
           <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
           <Route path={SourcePaths.Root} element={<SourceItemPage />}>
             <Route index element={<SourceOverviewPage />} />
-            <Route path={SourcePaths.Settings} element={<SourceSettings />} />
+            <Route path={SourcePaths.Settings} element={<SourceSettingsPage />} />
           </Route>
         </Route>
         <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
