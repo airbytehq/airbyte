@@ -54,4 +54,5 @@ acceptance_tests:
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        # stream "accounting_transactions" too volatile
+        configured_catalog_path: "integration_tests/configured_catalog_skip_accounting_transactions.json"
