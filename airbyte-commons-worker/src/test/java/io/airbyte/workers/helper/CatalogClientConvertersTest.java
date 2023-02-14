@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -63,6 +63,12 @@ class CatalogClientConvertersTest {
   void testConvertToClientAPI() {
     assertEquals(EXPECTED_CLIENT_CATALOG,
         CatalogClientConverters.toAirbyteCatalogClientApi(BASIC_MODEL_CATALOG));
+  }
+
+  @Test
+  void testConvertToProtocol() {
+    assertEquals(BASIC_MODEL_CATALOG,
+        CatalogClientConverters.toAirbyteProtocol(EXPECTED_CLIENT_CATALOG));
   }
 
 }

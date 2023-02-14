@@ -5,7 +5,6 @@ import { Subscription } from "rxjs";
 
 import { Spinner } from "components/ui/Spinner";
 
-import { useExperiment } from "hooks/services/Experiment";
 import { OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -31,34 +30,16 @@ const GoogleButton: React.FC<{ onClick: () => void }> = ({ onClick }) => {
   );
 };
 
-interface OAuthLoginProps {
-  isSignUpPage?: boolean;
-}
-
-export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
+export const OAuthLogin: React.FC = () => {
   const { formatMessage } = useIntl();
   const { loginWithOAuth } = useAuthService();
   const stateSubscription = useRef<Subscription>();
   const [errorCode, setErrorCode] = useState<string>();
   const [isLoading, setLoading] = useState(false);
 
-  const isGitHubLoginEnabled = useExperiment("authPage.oauth.github", true);
-  const isGoogleLoginEnabled = useExperiment("authPage.oauth.google", true);
-  const isGitHubEnabledOnSignUp = useExperiment("authPage.oauth.github.signUpPage", true);
-  const isGoogleEnabledOnSignUp = useExperiment("authPage.oauth.google.signUpPage", true);
-
-  const showGoogleLogin = isGoogleLoginEnabled && (!isSignUpPage || isGoogleEnabledOnSignUp);
-  const showGitHubLogin = isGitHubLoginEnabled && (!isSignUpPage || isGitHubEnabledOnSignUp);
-
-  const isAnyOauthEnabled = showGoogleLogin || showGitHubLogin;
-
   useUnmount(() => {
     stateSubscription.current?.unsubscribe();
   });
-
-  if (!isAnyOauthEnabled) {
-    return null;
-  }
 
   const getErrorMessage = (error: string): string | undefined => {
     switch (error) {
@@ -107,8 +88,8 @@ export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
       )}
       {!isLoading && (
         <div className={styles.buttons}>
-          {showGoogleLogin && <GoogleButton onClick={() => login("google")} />}
-          {showGitHubLogin && <GitHubButton onClick={() => login("github")} />}
+          <GoogleButton onClick={() => login("google")} />
+          <GitHubButton onClick={() => login("github")} />
         </div>
       )}
       {errorMessage && <div className={styles.error}>{errorMessage}</div>}

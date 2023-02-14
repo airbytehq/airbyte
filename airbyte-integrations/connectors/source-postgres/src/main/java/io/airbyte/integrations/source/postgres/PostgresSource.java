@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -200,6 +200,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+  }
+
+  @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
   }
 
   @Override

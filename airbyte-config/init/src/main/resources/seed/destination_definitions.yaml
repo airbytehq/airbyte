@@ -40,7 +40,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.13
+  dockerImageTag: 1.2.14
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationConfig:
@@ -58,7 +58,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.11
+  dockerImageTag: 1.2.14
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   resourceRequirements:
@@ -334,7 +334,7 @@
 - name: S3 Glue
   destinationDefinitionId: 471e5cab-8ed1-49f3-ba11-79c687784737
   dockerRepository: airbyte/destination-s3-glue
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
   icon: s3-glue.svg
   releaseStage: alpha
@@ -442,4 +442,11 @@
   dockerRepository: airbyte/destination-weaviate
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
+  releaseStage: alpha
+- name: DuckDB
+  destinationDefinitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
+  dockerRepository: airbyte/destination-duckdb
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/duckdb
+  icon: duckdb.svg
   releaseStage: alpha

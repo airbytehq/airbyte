@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -83,7 +83,7 @@ def configured_catalog_for_incremental_fixture(configured_catalog) -> Configured
     return catalog
 
 
-def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any]]:
+def records_with_state(records, state, stream_mapping, state_cursor_paths) -> Iterable[Tuple[Any, Any, Any]]:
     """Iterate over records and return cursor value with corresponding cursor value from state"""
     for record in records:
         stream_name = record.record.stream
@@ -180,7 +180,13 @@ class TestIncremental(BaseTest):
             latest_state = states_1[-1].state.data
             state_input = states_1[-1].state.data
 
-        for record_value, state_value, stream_name in records_with_state(records_1, latest_state, stream_mapping, cursor_paths):
+        parsed_records_1 = list(records_with_state(records_1, latest_state, stream_mapping, cursor_paths))
+
+        # This catches the case of a connector that emits an invalid state that is not compatible with the schema
+        # See https://github.com/airbytehq/airbyte/issues/21863 to understand more
+        assert parsed_records_1, "At least one valid state should be produced, given a cursor path"
+
+        for record_value, state_value, stream_name in parsed_records_1:
             assert (
                 record_value <= state_value
             ), f"First incremental sync should produce records younger or equal to cursor value from the state. Stream: {stream_name}"
@@ -197,7 +203,7 @@ class TestIncremental(BaseTest):
         self, inputs: IncrementalConfig, connector_config, configured_catalog_for_incremental, cursor_paths, docker_runner: ConnectorRunner
     ):
         """
-        Incremental test that makes calls the read method without a state checkpoint. Then we partition the results by stream and
+        Incremental test that makes calls to the read method without a state checkpoint. Then we partition the results by stream and
         slice checkpoints.
         Then we make additional read method calls using the state message and verify the correctness of the
         messages in the response.
