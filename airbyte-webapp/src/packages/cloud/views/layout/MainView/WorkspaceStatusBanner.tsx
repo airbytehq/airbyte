@@ -9,10 +9,10 @@ import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-interface WorkspaceCreditsBannerProps {
+interface WorkspaceStatusBannerProps {
   setHasWorkspaceCreditsBanner: (hasWorkspaceCreditsBanner: boolean) => void;
 }
-export const WorkspaceCreditsBanner: React.FC<WorkspaceCreditsBannerProps> = ({ setHasWorkspaceCreditsBanner }) => {
+export const WorkspaceStatusBanner: React.FC<WorkspaceStatusBannerProps> = ({ setHasWorkspaceCreditsBanner }) => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
@@ -39,12 +39,16 @@ export const WorkspaceCreditsBanner: React.FC<WorkspaceCreditsBannerProps> = ({ 
     if (negativeCreditsStatus) {
       return (
         <FormattedMessage
-          id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`}
+          id="credits.creditsProblem"
           values={{
             lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
           }}
         />
       );
+    }
+    // TODO: wait for this endpoint to be merged and add it to the types :)
+    if (cloudWorkspace.workspaceTrialStatus === "pre_trial") {
+      return <FormattedMessage id="trial.preTrialAlertMessage" />;
     }
 
     // TODO: wait for this endpoint to be merged and add it to the types :)
@@ -60,10 +64,6 @@ export const WorkspaceCreditsBanner: React.FC<WorkspaceCreditsBannerProps> = ({ 
       const trialRemainingDays = Math.ceil(trialRemainingMilliseconds / (1000 * 60 * 60 * 24));
 
       return <FormattedMessage id="trial.alertMessage" values={{ value: trialRemainingDays }} />;
-    }
-
-    if (cloudWorkspace.workspaceTrialStatus === "pre_trial") {
-      return <FormattedMessage id="trial.preTrialAlertMessage" />;
     }
 
     // otherwise, show nothing

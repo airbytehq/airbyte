@@ -16,7 +16,7 @@ import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsErrorBoundary";
 import styles from "./MainView.module.scss";
-import { WorkspaceCreditsBanner } from "./WorkspaceCreditsBanner";
+import { WorkspaceStatusBanner } from "./WorkspaceStatusBanner";
 
 const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   useIntercom();
@@ -43,7 +43,7 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
         >
           {showExperimentBanner && <SpeedyConnectionBanner />}
           {/* todo: passing this setter feels like a weird pattern, re-evaluate... is this causing an odd render loop? */}
-          <WorkspaceCreditsBanner setHasWorkspaceCreditsBanner={setHasCreditsBanner} />
+          <WorkspaceStatusBanner setHasWorkspaceCreditsBanner={setHasCreditsBanner} />
           <div className={styles.dataBlock}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
