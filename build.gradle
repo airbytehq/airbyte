@@ -39,12 +39,19 @@ plugins {
     id 'maven-publish'
 }
 
-apply from: "$rootDir/publish-repositories.gradle"
-
 repositories {
     mavenCentral()
     maven {
         url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+    }
+
+    maven {
+        name = 'cloudrepo'
+        url = 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+        credentials {
+            username System.getenv('CLOUDREPO_USER')
+            password System.getenv('CLOUDREPO_PASSWORD')
+        }
     }
 }
 
