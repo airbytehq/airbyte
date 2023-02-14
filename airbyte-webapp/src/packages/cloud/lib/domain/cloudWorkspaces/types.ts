@@ -7,12 +7,20 @@ export enum CreditStatus {
   "NEGATIVE_MAX_THRESHOLD" = "negative_max_threshold",
 }
 
+export enum WorkspaceTrialStatus {
+  "PRE_TRIAL" = "pre_trial",
+  "IN_TRIAL" = "in_trial",
+  "OUT_OF_TRIAL" = "out_of_trial",
+  "CREDIT_PURCHASED" = "credit_purchased",
+}
+
 export interface CloudWorkspace {
   name: string;
   workspaceId: string;
   creatorUserId: string;
   remainingCredits: number;
   creditStatus?: CreditStatus;
+  workspaceTrialStatus: WorkspaceTrialStatus;
   lastCreditPurchaseIncrementTimestamp?: number | null;
   trialExpiryTimestamp?: number | null;
 }

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
 
 import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
-import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { CreditStatus, WorkspaceTrialStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -26,16 +26,7 @@ export const WorkspaceStatusBanner: React.FC<WorkspaceStatusBannerProps> = ({ se
       ].includes(cloudWorkspace.creditStatus)
     );
   }, [cloudWorkspace.creditStatus]);
-
-  /**
-   * Priority for showing banners in the UI:
-   * 1. Are credits 0 or negative?  Show the credits banner
-   * 2. Are they in a trial?  Show the trial countdown banner
-   * 3. Are they pre-trial? Show the pre-trial banner
-   * 4. Otherwise, no banner about credits
-   */
   const workspaceCreditsBannerContent = useMemo(() => {
-    // TODO: are all of these statuses/messages valid now that we've changed our grace period policy?
     if (negativeCreditsStatus) {
       return (
         <FormattedMessage
@@ -46,13 +37,12 @@ export const WorkspaceStatusBanner: React.FC<WorkspaceStatusBannerProps> = ({ se
         />
       );
     }
-    // TODO: wait for this endpoint to be merged and add it to the types :)
-    if (cloudWorkspace.workspaceTrialStatus === "pre_trial") {
+
+    if (cloudWorkspace.workspaceTrialStatus === WorkspaceTrialStatus.PRE_TRIAL) {
       return <FormattedMessage id="trial.preTrialAlertMessage" />;
     }
 
-    // TODO: wait for this endpoint to be merged and add it to the types :)
-    if (cloudWorkspace.workspaceTrialStatus === "in_trial") {
+    if (cloudWorkspace.workspaceTrialStatus === WorkspaceTrialStatus.IN_TRIAL) {
       const { trialExpiryTimestamp } = cloudWorkspace;
 
       // calculate difference between timestamp (in epoch milliseconds) and now (in epoch milliseconds)
@@ -66,7 +56,6 @@ export const WorkspaceStatusBanner: React.FC<WorkspaceStatusBannerProps> = ({ se
       return <FormattedMessage id="trial.alertMessage" values={{ value: trialRemainingDays }} />;
     }
 
-    // otherwise, show nothing
     return null;
   }, [cloudWorkspace, negativeCreditsStatus]);
 
