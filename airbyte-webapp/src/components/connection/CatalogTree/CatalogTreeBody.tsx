@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import { Field, FieldProps, setIn } from "formik";
 import React, { useCallback } from "react";
 
@@ -46,7 +45,7 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
   );
 
   return (
-    <div className={classNames(styles.container, { [styles.fixedHeight]: mode === "create" })}>
+    <div>
       <div className={styles.header}>
         {isNewTableDesignEnabled ? (
           <>
