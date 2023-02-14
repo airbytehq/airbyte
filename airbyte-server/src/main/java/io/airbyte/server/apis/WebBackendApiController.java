@@ -102,6 +102,7 @@ public class WebBackendApiController implements WebBackendApi {
 
   @Post("/connections/update")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
