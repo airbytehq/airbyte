@@ -5,7 +5,7 @@
 from functools import lru_cache
 from typing import Any, Dict, Mapping
 
-from .streams import IncrementalGoogleAdsStream
+from .streams import GoogleAdsStream, IncrementalGoogleAdsStream
 from .utils import GAQL
 
 
@@ -106,3 +106,8 @@ class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
         if query.where:
             return query.set_where(query.where + " AND " + condition)
         return query.set_where(condition)
+
+
+class CustomQuery(CustomQueryMixin, GoogleAdsStream):
+    def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
+        return str(self.config["query"])

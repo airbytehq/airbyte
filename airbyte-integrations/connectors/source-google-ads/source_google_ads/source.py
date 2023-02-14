@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from google.ads.googleads.errors import GoogleAdsException
 from pendulum import parse, today
 
-from .custom_query_stream import IncrementalCustomQuery
+from .custom_query_stream import CustomQuery, IncrementalCustomQuery
 from .google_ads import GoogleAds
 from .models import Customer
 from .streams import (
@@ -36,6 +36,8 @@ from .streams import (
     UserLocationReport,
 )
 from .utils import GAQL
+
+FULL_REFRESH_CUSTOM_TABLE = ["geo_target_constant"]
 
 
 class SourceGoogleAds(AbstractSource):
@@ -152,7 +154,13 @@ class SourceGoogleAds(AbstractSource):
             query = single_query_config["query"]
             if self.is_metrics_in_custom_query(query):
                 if non_manager_accounts:
-                    streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
+                    if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                        streams.append(CustomQuery(config=single_query_config, api=google_api, customers=non_manager_accounts))
+                    else:
+                        streams.append(IncrementalCustomQuery(config=single_query_config, **non_manager_incremental_config))
                 continue
-            streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
+            if query.resource_name in FULL_REFRESH_CUSTOM_TABLE:
+                streams.append(CustomQuery(config=single_query_config, api=google_api, customers=customers))
+            else:
+                streams.append(IncrementalCustomQuery(config=single_query_config, **incremental_config))
         return streams
