@@ -11,20 +11,18 @@ Modules consuming this plugin must define two scripts `run_tests.sh` and `run_fo
 class AirbytePythonDockerPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        // TODO define inputs and outputs for these
 
         project.task('airbytePythonDockerApply', type: Exec) {
             /*
             Install the dependencies and run the tests from a docker container
              */
-            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_tests.sh /home"
-        }
 
-        project.task('blackFormat', type: Exec) {
-            /*
-            Run formatter and static analysis from a docker container
-             */
-            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_format.sh /home"
+            // This doesn't take into account dependencies if you don't have a lock file. We strongly recommend using a
+            // lock file in other to ensure that given no file changes and two "pip install", you have the same output
+            inputs.dir project.projectDir.getAbsolutePath()
+            outputs.upToDateWhen { true }
+
+            commandLine "docker", "run", "-v", "${project.projectDir.getAbsolutePath()}:/home", "--entrypoint", "/bin/bash", "python:3.9-slim", "-c", "chmod +x /home/run_tests.sh && /home/run_tests.sh /home"
         }
 
         project.assemble.dependsOn project.airbytePythonDockerApply
