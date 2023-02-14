@@ -8,7 +8,7 @@ $container-padding-bottom: 28px; // (intercom height + margins (88px) - button h
   z-index: 1;
   bottom: 0;
   margin-left: -#{variables.$spacing-xl};
-  padding: variables.$height-soft-edge variables.$spacing-lg $container-padding-bottom;
+  padding: variables.$height-soft-edge variables.$spacing-xl $container-padding-bottom;
   width: calc(100% + variables.$spacing-xl * 2);
   overflow: hidden;
   background: linear-gradient(180deg, rgba(248, 248, 250, 0%), colors.$grey-50 variables.$height-soft-edge);
