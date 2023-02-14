@@ -605,6 +605,7 @@ exports[`CreateConnectionForm should render 1`] = `
                 >
                   <div
                     class="<removed-for-snapshot-test>"
+                    data-testid="catalog-tree-table-body"
                   >
                     <div
                       class="<removed-for-snapshot-test>"
