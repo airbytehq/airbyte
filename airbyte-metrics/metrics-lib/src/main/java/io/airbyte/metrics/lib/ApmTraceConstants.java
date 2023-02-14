@@ -15,6 +15,11 @@ public final class ApmTraceConstants {
   public static final String ACTIVITY_TRACE_OPERATION_NAME = "activity";
 
   /**
+   * Operation name for an APM trace of API endpoint execution.
+   */
+  public static final String ENDPOINT_EXECUTION_OPERATION_NAME = "execute";
+
+  /**
    * Operation name for an APM trace of a job orchestrator.
    */
   public static final String JOB_ORCHESTRATOR_OPERATION_NAME = "job.orchestrator";
