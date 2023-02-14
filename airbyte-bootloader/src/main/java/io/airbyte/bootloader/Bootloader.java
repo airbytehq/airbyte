@@ -28,7 +28,7 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Ensures that the databases are migrated to the appropriate level.
+ * Ensure that the databases are migrated to the appropriate level.
  */
 @Singleton
 @Slf4j
