@@ -218,7 +218,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           Workflow.getVersion(GET_FEATURE_FLAGS_TAG, Workflow.DEFAULT_VERSION, GET_FEATURE_FLAGS_CURRENT_VERSION);
 
       Map<Flag, Boolean> featureFlags = Map.of();
-      if (getFeatureFlagsVersion < GET_FEATURE_FLAGS_CURRENT_VERSION) {
+      if (getFeatureFlagsVersion >= GET_FEATURE_FLAGS_CURRENT_VERSION) {
         // TODO (pedroslopez): The feature flags will actually be used in a future PR
         featureFlags = getFeatureFlags(connectionUpdaterInput.getConnectionId());
       }
