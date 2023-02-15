@@ -34,7 +34,7 @@ export const SourceOverviewPage = () => {
   );
 
   const onSelect = (data: DropdownMenuOptionType) => {
-    const path = `../../${SourcePaths.NewConnection}`;
+    const path = `../${SourcePaths.NewConnection}`;
     const state =
       data.value === "create-new-item"
         ? { sourceId: source.sourceId }

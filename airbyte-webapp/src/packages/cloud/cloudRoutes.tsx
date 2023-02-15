@@ -61,18 +61,18 @@ const MainRoutes: React.FC = () => {
         <Route path={RoutePaths.Destination}>
           <Route index element={<AllDestinationsPage />} />
           <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-          <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
           <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
             <Route index element={<DestinationOverviewPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
           </Route>
         </Route>
         <Route path={RoutePaths.Source}>
           <Route index element={<AllSourcesPage />} />
           <Route path={SourcePaths.NewSource} element={<CreateSourcePage />} />
-          <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
           <Route path={SourcePaths.Root} element={<SourceItemPage />}>
             <Route index element={<SourceOverviewPage />} />
+            <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={SourcePaths.Settings} element={<SourceSettingsPage />} />
           </Route>
         </Route>
