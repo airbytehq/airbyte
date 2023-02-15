@@ -43,6 +43,7 @@ connectionSpecification:
       description: The start date in ISO 8601 format.
       examples:
         - "2019-01-01T00:00:00"
+      format: date-time
     end_date:
       type: string
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
