@@ -64,6 +64,7 @@ import org.bson.types.Symbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mongodb.client.MongoCursor;
 public class MongoUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
@@ -73,6 +74,7 @@ public class MongoUtils {
   public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
   public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
   public static final String USER = "user";
+  public static int MAX_LEVEL_FROM_CONFIG=2;
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
   public static final String CLUSTER_URL = "cluster_url";
@@ -255,7 +257,7 @@ public class MongoUtils {
       final var type = getUniqueType(types);
       final var fieldNode = new TreeNode<>(new CommonField<>(transformName(types, key), type));
       if (type.equals(DOCUMENT)) {
-        setSubFields(collection, fieldNode, key);
+        setSubFields(collection, fieldNode, key, MAX_LEVEL_FROM_CONFIG);
       }
       return fieldNode;
     }).toList();
@@ -275,33 +277,39 @@ public class MongoUtils {
 
   private static void setSubFields(final MongoCollection<Document> collection,
                                    final TreeNode<CommonField<BsonType>> parentNode,
-                                   final String pathToField) {
+                                   final String pathToField,int maxLevel) {
     final var nestedKeys = getFieldsName(collection, pathToField);
-    nestedKeys.forEach(key -> {
+    if (maxLevel<=0) return ;
+    for (String key : nestedKeys) {
+      // if empty field process them as '-'
+      if (key == null || key.length() == 0) key = "-";
       final var types = getTypes(collection, pathToField + "." + key);
       final var nestedType = getUniqueType(types);
       final var childNode = parentNode.addChild(new CommonField<>(transformName(types, key), nestedType));
       if (nestedType.equals(DOCUMENT)) {
-        setSubFields(collection, childNode, pathToField + "." + key);
+        setSubFields(collection, childNode, pathToField + "." + key, maxLevel--);
       }
-    });
+    }
   }
 
   private static List<String> getFieldsName(final MongoCollection<Document> collection) {
     return getFieldsName(collection, "$ROOT");
   }
-
   private static List<String> getFieldsName(final MongoCollection<Document> collection, final String fieldName) {
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
         new Document("$unwind", "$arrayofkeyvalue"),
-        new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
-    if (output.cursor().hasNext()) {
-      return (List) output.cursor().next().get("allkeys");
-    } else {
-      return Collections.emptyList();
-    }
+        new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))
+        ));
+    // cursor based approach for saving memory
+      List<String> allKeys = new ArrayList<>();
+      try (MongoCursor<Document> cursor = output.cursor()) {
+          while (cursor.hasNext()) {
+              allKeys.addAll((List<String>) cursor.next().get("allkeys"));
+          }
+        }
+      return allKeys;
   }
 
   private static List<String> getTypes(final MongoCollection<Document> collection, final String name) {
