@@ -38,12 +38,14 @@ export const SchemaUpdateNotifications: React.FC = () => {
         label={<FormattedMessage id="connection.schemaUpdateNotifications.title" />}
         message={<FormattedMessage id="connection.schemaUpdateNotifications.info" />}
       />
-      <Switch
-        checked={connection.notifySchemaChanges}
-        onChange={(event) => onChange(event.target.checked)}
-        disabled={connectionUpdating}
-        loading={loading}
-      />
+      <div>
+        <Switch
+          checked={connection.notifySchemaChanges}
+          onChange={(event) => onChange(event.target.checked)}
+          disabled={connectionUpdating}
+          loading={loading}
+        />
+      </div>
     </Card>
   );
 };
