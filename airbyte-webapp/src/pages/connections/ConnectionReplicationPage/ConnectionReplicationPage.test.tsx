@@ -46,7 +46,7 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
 }));
 
 const expandConfigurationSection = (renderResult: RenderResult) => {
-  const expandArrowButton = renderResult.getByTestId("section-expand-arrow");
+  const expandArrowButton = renderResult.getByTestId("configuration-section-expand-arrow");
   fireEvent.click(expandArrowButton);
 };
 

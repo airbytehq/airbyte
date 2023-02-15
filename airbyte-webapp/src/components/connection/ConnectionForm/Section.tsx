@@ -15,6 +15,7 @@ export interface SectionProps {
   collapsible?: boolean;
   collapsedPreviewInfo?: React.ReactNode;
   collapsedInitially?: boolean;
+  testId?: string;
 }
 
 export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
@@ -25,6 +26,7 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
   collapsible = false,
   collapsedPreviewInfo,
   collapsedInitially = false,
+  testId,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(collapsedInitially);
 
@@ -42,7 +44,7 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
               className={classNames(styles.arrow, { [styles.collapsed]: isCollapsed })}
               icon={faChevronRight}
               onClick={() => setIsCollapsed((prevState) => !prevState)}
-              data-testid="section-expand-arrow"
+              data-testid={`${testId}-section-expand-arrow`}
             />
           )}
         </div>

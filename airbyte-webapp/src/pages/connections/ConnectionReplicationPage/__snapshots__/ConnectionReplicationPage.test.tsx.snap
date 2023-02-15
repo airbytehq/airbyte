@@ -31,7 +31,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                   class="<removed-for-snapshot-test>"
                   data-icon="chevron-right"
                   data-prefix="fas"
-                  data-testid="section-expand-arrow"
+                  data-testid="configuration-section-expand-arrow"
                   focusable="false"
                   role="img"
                   viewBox="0 0 384 512"
@@ -93,7 +93,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                   >
                     <span
                       class="<removed-for-snapshot-test>"
-                      id="react-select-4-live-region"
+                      id="react-select-6-live-region"
                     />
                     <span
                       aria-atomic="false"
@@ -126,7 +126,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                           aria-haspopup="true"
                           aria-readonly="true"
                           class="<removed-for-snapshot-test>"
-                          id="react-select-4-input"
+                          id="react-select-6-input"
                           inputmode="none"
                           role="combobox"
                           tabindex="0"
@@ -215,7 +215,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                   >
                     <span
                       class="<removed-for-snapshot-test>"
-                      id="react-select-5-live-region"
+                      id="react-select-7-live-region"
                     />
                     <span
                       aria-atomic="false"
@@ -248,7 +248,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                           aria-haspopup="true"
                           aria-readonly="true"
                           class="<removed-for-snapshot-test>"
-                          id="react-select-5-input"
+                          id="react-select-7-input"
                           inputmode="none"
                           role="combobox"
                           tabindex="0"
@@ -357,7 +357,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                     >
                       <span
                         class="<removed-for-snapshot-test>"
-                        id="react-select-2-live-region"
+                        id="react-select-4-live-region"
                       />
                       <span
                         aria-atomic="false"
@@ -390,7 +390,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                             aria-haspopup="true"
                             aria-readonly="true"
                             class="<removed-for-snapshot-test>"
-                            id="react-select-2-input"
+                            id="react-select-4-input"
                             inputmode="none"
                             role="combobox"
                             tabindex="0"
@@ -871,7 +871,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                             >
                               <span
                                 class="<removed-for-snapshot-test>"
-                                id="react-select-3-live-region"
+                                id="react-select-5-live-region"
                               />
                               <span
                                 aria-atomic="false"
@@ -910,7 +910,7 @@ exports[`ConnectionReplicationPage should expand configuration section 1`] = `
                                     aria-haspopup="true"
                                     aria-readonly="true"
                                     class="<removed-for-snapshot-test>"
-                                    id="react-select-3-input"
+                                    id="react-select-5-input"
                                     inputmode="none"
                                     role="combobox"
                                     tabindex="0"
@@ -1038,7 +1038,7 @@ exports[`ConnectionReplicationPage should render 1`] = `
                   class="<removed-for-snapshot-test>"
                   data-icon="chevron-right"
                   data-prefix="fas"
-                  data-testid="section-expand-arrow"
+                  data-testid="configuration-section-expand-arrow"
                   focusable="false"
                   role="img"
                   viewBox="0 0 384 512"

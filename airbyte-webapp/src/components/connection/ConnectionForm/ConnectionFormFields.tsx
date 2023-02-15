@@ -67,6 +67,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           collapsible
           collapsedInitially={mode === "edit"}
           collapsedPreviewInfo={<ConnectionConfigurationFormPreview />}
+          testId="configuration"
         >
           <ScheduleField />
           {allowAutoDetectSchema && (
