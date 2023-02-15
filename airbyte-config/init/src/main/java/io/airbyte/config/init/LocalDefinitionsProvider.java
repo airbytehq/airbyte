@@ -8,14 +8,12 @@ import com.google.common.io.Resources;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.CombinedConnectorCatalog;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.constants.CatalogDefinitions;
+import io.airbyte.config.CatalogDefinitionsConfig;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
  */
 final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
-  private static final String LOCAL_CONNECTOR_CATALOG_PATH = CatalogDefinitions.getLocalConnectorCatalogPath();
+  private static final String LOCAL_CONNECTOR_CATALOG_PATH = CatalogDefinitionsConfig.getLocalConnectorCatalogPath();
 
   public CombinedConnectorCatalog getLocalDefinitionCatalog() {
     try {
