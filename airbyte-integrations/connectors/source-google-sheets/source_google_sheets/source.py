@@ -20,6 +20,7 @@ from airbyte_cdk.models.airbyte_protocol import (
 from airbyte_cdk.sources.source import Source
 from apiclient import errors
 from requests.status_codes import codes as status_codes
+from slugify import slugify
 
 from .client import GoogleSheetsClient
 from .helpers import Helpers
@@ -71,6 +72,8 @@ class SourceGoogleSheets(Source):
         for sheet_name in grid_sheets:
             try:
                 header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+                if config.get("names_conversion"):
+                    header_row_data = [slugify(h) for h in header_row_data]
                 _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
                 if duplicate_headers:
                     duplicate_headers_in_sheet[sheet_name] = duplicate_headers
@@ -108,6 +111,8 @@ class SourceGoogleSheets(Source):
             for sheet_name in grid_sheets:
                 try:
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
+                    if config.get("names_conversion"):
+                        header_row_data = [slugify(h) for h in header_row_data]
                     stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
                     streams.append(stream)
                 except Exception as err:
@@ -139,7 +144,9 @@ class SourceGoogleSheets(Source):
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
-        sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(client, spreadsheet_id, sheet_to_column_name)
+        sheet_to_column_index_to_name = Helpers.get_available_sheets_to_column_index_to_name(
+            client, spreadsheet_id, sheet_to_column_name, config.get("names_conversion")
+        )
         sheet_row_counts = Helpers.get_sheet_row_count(client, spreadsheet_id)
         logger.info(f"Row counts: {sheet_row_counts}")
         for sheet in sheet_to_column_index_to_name.keys():
