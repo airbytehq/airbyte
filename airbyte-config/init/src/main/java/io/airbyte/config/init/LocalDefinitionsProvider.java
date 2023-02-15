@@ -11,6 +11,7 @@ import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.constants.CatalogDefinitions;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -26,12 +27,9 @@ import java.util.stream.Collectors;
  */
 final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
-  private static final String LOCAL_CONNECTOR_CATALOG_PATH = new EnvConfigs().getLocalConnectorCatalogPath();
+  private static final String LOCAL_CONNECTOR_CATALOG_PATH = CatalogDefinitions.getLocalConnectorCatalogPath();
 
-  // TODO (ben): finish this 😅 and write tests
   public CombinedConnectorCatalog getLocalDefinitionCatalog() {
-    // TODO add logs
-    // TODO add tests
     try {
       final URL url = Resources.getResource(LOCAL_CONNECTOR_CATALOG_PATH);
       final String jsonString = Resources.toString(url, StandardCharsets.UTF_8);
@@ -82,6 +80,7 @@ final public class LocalDefinitionsProvider implements DefinitionsProvider {
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
     final StandardDestinationDefinition definition = getDestinationDefinitionsMap().get(definitionId);
     if (definition == null) {
+      // TODO remove the reference to the enum
       throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
     }
     return definition;

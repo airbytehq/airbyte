@@ -47,7 +47,6 @@ public class EnvConfigs implements Configs {
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
-  public static final String LOCAL_CONNECTOR_CATALOG_PATH = "LOCAL_CONNECTOR_CATALOG_PATH";
   public static final String GITHUB_STORE_BRANCH = "GITHUB_STORE_BRANCH";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -222,7 +221,6 @@ public class EnvConfigs implements Configs {
   private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("0.3.0");
   private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN = new Version("0.0.0");
 
-  private static final String DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH = "seed/oss_catalog.json";
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
   private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
   private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
@@ -345,10 +343,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getSpecCacheBucket() {
     return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
-  }
-
-  public String getLocalConnectorCatalogPath() {
-    return getEnvOrDefault(LOCAL_CONNECTOR_CATALOG_PATH, DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH);
   }
 
   @Override
