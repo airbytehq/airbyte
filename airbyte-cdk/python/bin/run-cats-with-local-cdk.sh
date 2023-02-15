@@ -19,7 +19,7 @@ fi
 
 connectors=$(echo $connectors | tr ',' ' ')
 
-echo "Running CATs"
+echo "Running CATs for ${connectors}"
 echo ""
 
 echo '
