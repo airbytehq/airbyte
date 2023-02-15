@@ -2555,7 +2555,7 @@ components:
     ConnectorBuilderProjectId:
       type: string
       format: uuid
-    ConnectorBuilderProject:
+    ConnectorBuilderProjectDetails:
       type: object
       required:
         - name
@@ -2587,7 +2587,7 @@ components:
         builderProjectId:
           $ref: "#/components/schemas/ConnectorBuilderProjectId"
         builderProject:
-          $ref: "#/components/schemas/ConnectorBuilderProject"
+          $ref: "#/components/schemas/ConnectorBuilderProjectDetails"
     ConnectorBuilderProjectWithWorkspaceId:
       type: object
       required:
@@ -2597,7 +2597,7 @@ components:
         workspaceId:
           $ref: "#/components/schemas/WorkspaceId"
         builderProject:
-          $ref: "#/components/schemas/ConnectorBuilderProject"
+          $ref: "#/components/schemas/ConnectorBuilderProjectDetails"
     # SourceDefinition
     SourceDefinitionId:
       type: string

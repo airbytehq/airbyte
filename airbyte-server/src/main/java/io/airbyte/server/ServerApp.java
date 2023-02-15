@@ -20,6 +20,7 @@ import io.airbyte.commons.server.errors.NotFoundExceptionMapper;
 import io.airbyte.commons.server.errors.UncaughtExceptionMapper;
 import io.airbyte.commons.server.handlers.AttemptHandler;
 import io.airbyte.commons.server.handlers.ConnectionsHandler;
+import io.airbyte.commons.server.handlers.ConnectorBuilderProjectsHandler;
 import io.airbyte.commons.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.commons.server.handlers.DestinationHandler;
 import io.airbyte.commons.server.handlers.HealthCheckHandler;
@@ -323,6 +324,9 @@ public class ServerApp implements ServerRunnable {
         new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteGithubStore, sourceHandler,
             airbyteProtocolVersionRange);
 
+    final ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler =
+        new ConnectorBuilderProjectsHandler(configRepository, () -> UUID.randomUUID());
+
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,
         configs.getWorkerEnvironment(),
@@ -396,6 +400,7 @@ public class ServerApp implements ServerRunnable {
         schedulerHandler,
         sourceHandler,
         sourceDefinitionsHandler,
+        connectorBuilderProjectsHandler,
         stateHandler,
         workspacesHandler,
         webBackendConnectionsHandler,
