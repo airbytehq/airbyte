@@ -30,11 +30,6 @@ public class HttpPostBuilder {
         return this;
     }
 
-    public HttpPostBuilder addCommonHeader() {
-        header.put(HttpHeaders.EXPECT, "100-continue");
-        return this;
-    }
-
     public HttpPostBuilder baseAuth(String user, String password) {
         final String authInfo = user + ":" + password;
         byte[] encoded = Base64.encodeBase64(authInfo.getBytes(StandardCharsets.UTF_8));

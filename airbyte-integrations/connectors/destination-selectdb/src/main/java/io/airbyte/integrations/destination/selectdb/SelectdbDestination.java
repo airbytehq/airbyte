@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -43,13 +41,9 @@ public class SelectdbDestination extends BaseConnector implements Destination {
   private static final Logger LOGGER = LoggerFactory.getLogger(SelectdbDestination.class);
 
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
-  private static Connection conn = null;
   private static HttpUtil http = new HttpUtil();
   static final String DESTINATION_TEMP_PATH_FIELD = "destination_temp_path";
-  private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
-  private static final String DB_URL_PATTERN = "jdbc:mysql://%s/%s?rewriteBatchedStatements=true&useUnicode=true&characterEncoding=utf8";
-
-
+  private SelectdbOperations selectdbOperations;
 
   public static void main(String[] args) throws Exception {
     new IntegrationRunner(new SelectdbDestination()).run(args);
@@ -60,7 +54,8 @@ public class SelectdbDestination extends BaseConnector implements Destination {
     try {
       Preconditions.checkNotNull(config);
       FileUtils.forceMkdir(getTempPathDir(config).toFile());
-      checkSelectdbAndConnect(config);
+      this.selectdbOperations = new SelectdbOperations(config);
+      selectdbOperations.getConn();
     } catch (final Exception e) {
       return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage());
     }
@@ -87,12 +82,11 @@ public class SelectdbDestination extends BaseConnector implements Destination {
         final String tableName = namingResolver.getIdentifier(streamName);
         final String tmpTableName = namingResolver.getTmpTableName(streamName);
         final Path tmpPath = destinationDir.resolve(tmpTableName + ".csv");
-        if (conn == null)
-          checkSelectdbAndConnect(config);
-        Statement stmt = conn.createStatement();
-        stmt.execute(createTableQuery(tableName));
+
+        Statement stmt = selectdbOperations.getConn().createStatement();
+        stmt.execute(selectdbOperations.createTableQuery(tableName));
         if (syncMode == DestinationSyncMode.OVERWRITE) {
-          stmt.execute(truncateTable(tableName));
+          stmt.execute(selectdbOperations.truncateTable(tableName));
         }
         CSVFormat csvFormat = CSVFormat.DEFAULT
                 .withSkipHeaderRecord()
@@ -121,37 +115,10 @@ public class SelectdbDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception while handling temporary csv files : ", e);
       throw new IOException(e);
     } finally {
-      if (conn != null)
-        conn.close();
+      selectdbOperations.closeConn();
     }
     return new SelectdbConsumer(writeConfigs, configuredCatalog, outputRecordCollector);
   }
-
-
-  protected void checkSelectdbAndConnect(JsonNode config) throws ClassNotFoundException, SQLException {
-    SelectdbConnectionOptions selectdbConnection = SelectdbConnectionOptions.getSelectdbConnection(config, "");
-    String dbUrl = String.format(DB_URL_PATTERN, selectdbConnection.getJdbcUrl(), selectdbConnection.getDb());
-    Class.forName(JDBC_DRIVER);
-    conn = DriverManager.getConnection(dbUrl, selectdbConnection.getUser(), selectdbConnection.getPwd());
-  }
-
-  protected String createTableQuery(String tableName) {
-    String s = "CREATE TABLE IF NOT EXISTS `" + tableName + "` ( \n"
-            + "`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "` varchar(40),\n"
-            + "`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "` BIGINT,\n"
-            + "`" + JavaBaseConstants.COLUMN_NAME_DATA + "` String)\n"
-            + "DUPLICATE KEY(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`,`" + JavaBaseConstants.COLUMN_NAME_EMITTED_AT + "`) \n"
-            + "DISTRIBUTED BY HASH(`" + JavaBaseConstants.COLUMN_NAME_AB_ID + "`) BUCKETS 16 ;";
-    LOGGER.info("create selectdb table SQL :  \n " + s);
-    return s;
-  }
-
-  protected String truncateTable(String tableName) {
-    String s = "TRUNCATE TABLE `" + tableName + "`;";
-    LOGGER.info("truncate selectdb table SQL :  \n " + s);
-    return s;
-  }
-
 
   protected Path getTempPathDir(final JsonNode config) {
     Path path = Paths.get(DESTINATION_TEMP_PATH_FIELD);

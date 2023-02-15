@@ -20,19 +20,19 @@ public class SelectdbConnectionOptions {
     private static final String TABLE_KEY = "table";
 
     private String user;
-    private static final String USER_KEY = "username";
+    private static final String USER_KEY = "user_name";
 
     private String pwd;
     private static final String PWD_KEY = "password";
 
     private String loadUrl;
-    private static final String LOAD_URL_KEY = "loadURL";
+    private static final String LOAD_URL_KEY = "load_url";
 
     private String jdbcUrl;
-    private static final String JDBC_URL_KEY = "jdbcURL";
+    private static final String JDBC_URL_KEY = "jdbc_url";
 
     private String clusterName;
-    private static final String CLUSTER_NAME_KEY = "clustername";
+    private static final String CLUSTER_NAME_KEY = "cluster_name";
 
 
     public static SelectdbConnectionOptions getSelectdbConnection(final JsonNode config, String table) {

@@ -28,7 +28,7 @@ public class HttpPutBuilder {
         return this;
     }
 
-    public HttpPutBuilder addFileName(String fileName){
+    public HttpPutBuilder setFileName(String fileName){
         header.put("fileName", fileName);
         return this;
     }
@@ -42,7 +42,7 @@ public class HttpPutBuilder {
         return this;
     }
 
-    public HttpPutBuilder addCommonHeader() {
+    public HttpPutBuilder setCommonHeader() {
         header.put(HttpHeaders.EXPECT, "100-continue");
         return this;
     }

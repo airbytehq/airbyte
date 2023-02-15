@@ -9,28 +9,28 @@
     "title": "SelectDB Destination Spec",
     "type": "object",
     "required": [
-      "loadURL", "jdbcURL", "clustername", "username", "password", "database"
+      "load_url", "jdbc_url", "cluster_name", "user_name", "password", "database"
     ],
     "properties": {
-      "loadURL": {
+      "load_url": {
         "title": "loadURL",
         "description": "load host and port: xxx.privatelink.aliyun.com:47057",
         "type": "string",
         "order": 0
       },
-      "jdbcURL": {
+      "jdbc_url": {
         "title": "jdbcURL",
         "description": "jdbc host and port: xxx.privatelink.aliyun.com:30523",
         "type": "string",
         "order": 1
       },
-      "clustername": {
-        "title": "clusterName",
+      "cluster_name": {
+        "title": "ClusterName",
         "description": "clusterName of SelectDB",
         "type": "string",
         "order": 2
       },
-      "username": {
+      "user_name": {
         "title": "UserName",
         "description": "Username to use to access the database.",
         "type": "string",

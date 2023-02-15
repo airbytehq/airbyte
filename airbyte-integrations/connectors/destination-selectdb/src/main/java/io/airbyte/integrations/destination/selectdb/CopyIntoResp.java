@@ -15,6 +15,10 @@ public class CopyIntoResp extends BaseResponse{
 
     private Map<String,String> result;
 
+    public CopyIntoResp(int code, String msg, Object data, int count) {
+        super(code, msg, data, count);
+    }
+
     public String getDataCode() {
         return code;
     }

@@ -12,7 +12,6 @@ import io.airbyte.integrations.destination.selectdb.exception.UploadException;
 import io.airbyte.integrations.destination.selectdb.http.HttpPostBuilder;
 import io.airbyte.integrations.destination.selectdb.http.HttpPutBuilder;
 import io.airbyte.integrations.destination.selectdb.utils.ResponseUtils;
-import io.airbyte.integrations.destination.selectdb.utils.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -27,23 +26,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.Future;
 
 public class SelectdbCopyInto {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SelectdbCopyInto.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private final LabelInfo labelInfo;
   private static final String UPLOAD_URL_PATTERN = "http://%s/copy/upload";
   private static final String COPY_URL_PATTERN = "http://%s/copy/query";
-  private static final String LINE_DELIMITER_DEFAULT = "\n";
   public static final Character CSV_COLUMN_SEPARATOR = '\t';
 
   private final String tableName;
   private final String db;
   private final String clusterName;
   private final String loadUrl;
-  private final String jdbcUrl;
   private final String uploadUrlStr;
   private final String jdbcUrlStr;
   private final String user;
@@ -51,7 +46,6 @@ public class SelectdbCopyInto {
   private final Integer maxRetry;
   private Boolean isUpload = false;
   private final Path path;
-  private Future<CloseableHttpResponse> pendingLoadFuture;
   private final CloseableHttpClient httpClient;
 
   private static final int SUCCESS = 0;
@@ -70,8 +64,6 @@ public class SelectdbCopyInto {
                          CloseableHttpClient httpClient,
                          String... head) {
     this.loadUrl = selectdbOptions.getLoadUrl();
-    this.jdbcUrl = selectdbOptions.getJdbcUrl();
-    this.labelInfo = labelInfo;
     this.db = selectdbOptions.getDb();
     this.tableName = selectdbOptions.getTable();
     this.clusterName = selectdbOptions.getClusterName();
@@ -79,14 +71,6 @@ public class SelectdbCopyInto {
     this.passwd = selectdbOptions.getPwd();
     this.uploadUrlStr = String.format(UPLOAD_URL_PATTERN, loadUrl);
     this.jdbcUrlStr = String.format(COPY_URL_PATTERN, loadUrl);
-
-//    StringBuilder stringBuilder = new StringBuilder();
-//    for (String s : head) {
-//      if (!stringBuilder.isEmpty())
-//        stringBuilder.append(",");
-//      stringBuilder.append(s);
-//    }
-
     this.copyIntoSqlProp = new Properties();
     this.maxRetry = 3;
     this.path = path;
@@ -98,12 +82,6 @@ public class SelectdbCopyInto {
     this.COPY_INTO_SQL = buildCopyIntoSql(files);
   }
 
-
-//curl
-// -u {user}:{password}
-// -H "fileName: {file_name_in_storage}"
-// -T {local_file_path}
-// -L '{selectdb_host}:{selectdb_copy_port}/copy/upload'
   public void firstCommit() throws IOException {
     Path pathChecked = Preconditions.checkNotNull(path, "upload temp CSV file is empty.");
     String uploadAddress = getUploadAddress();
@@ -112,7 +90,7 @@ public class SelectdbCopyInto {
     InputStreamEntity entity = new InputStreamEntity(new FileInputStream(pathChecked.toFile()));
     HttpPutBuilder putBuilder = new HttpPutBuilder();
     putBuilder.setUrl(uploadAddress)
-            .addCommonHeader()
+            .setCommonHeader()
             .setEntity(entity);
 
       CloseableHttpResponse execute = httpClient.execute(putBuilder.build());
@@ -127,8 +105,8 @@ public class SelectdbCopyInto {
   private String getUploadAddress() throws IOException{
     HttpPutBuilder putBuilder = new HttpPutBuilder();
     putBuilder.setUrl(uploadUrlStr)
-            .addFileName(this.internalSatgeFileName)
-            .addCommonHeader()
+            .setFileName(this.internalSatgeFileName)
+            .setCommonHeader()
             .setEmptyEntity()
             .baseAuth(user,passwd);
 
@@ -226,7 +204,7 @@ public class SelectdbCopyInto {
       final int statusCode = response.getStatusLine().getStatusCode();
       if (statusCode == 200 && response.getEntity() != null) {
         String loadResult = EntityUtils.toString(response.getEntity());
-        if(StringUtils.isNullOrWhitespaceOnly(loadResult)){
+        if(loadResult == null || loadResult.isBlank()){
           return ;
         }
         LOGGER.info("response result {}", loadResult);
