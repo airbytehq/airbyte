@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React, { useState } from "react";
 
+import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Heading } from "components/ui/Heading";
 
@@ -25,7 +26,7 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
   className,
   collapsible = false,
   collapsedPreviewInfo,
-  collapsedInitially = false,
+  collapsedInitially = collapsible,
   testId,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(collapsedInitially);
@@ -40,12 +41,16 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
             </Heading>
           )}
           {collapsible && (
-            <FontAwesomeIcon
-              className={classNames(styles.arrow, { [styles.collapsed]: isCollapsed })}
-              icon={faChevronRight}
+            <Button
+              variant="clear"
               onClick={() => setIsCollapsed((prevState) => !prevState)}
               data-testid={`${testId}-section-expand-arrow`}
-            />
+            >
+              <FontAwesomeIcon
+                className={classNames(styles.arrow, { [styles.expanded]: !isCollapsed })}
+                icon={faChevronRight}
+              />
+            </Button>
           )}
         </div>
         {collapsible && isCollapsed ? collapsedPreviewInfo : children}

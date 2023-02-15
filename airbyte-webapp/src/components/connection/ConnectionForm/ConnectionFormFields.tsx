@@ -64,8 +64,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section
           title={firstSectionTitle}
-          collapsible
-          collapsedInitially={mode === "edit"}
+          collapsible={mode === "edit"}
           collapsedPreviewInfo={<ConnectionConfigurationFormPreview />}
           testId="configuration"
         >
