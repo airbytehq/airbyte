@@ -116,5 +116,3 @@ export const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
     </>
   );
 };
-
-export default JobLogs;

@@ -114,7 +114,7 @@ requester:
   <...>
   error_handler:
     response_filters:
-        - error_message_contains: "ignorethisresponse"
+        - error_message_contain: "ignorethisresponse"
           action: IGNORE
 ```
 

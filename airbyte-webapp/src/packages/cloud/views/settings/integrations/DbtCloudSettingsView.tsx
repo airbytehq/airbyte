@@ -4,11 +4,9 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { LabeledInput } from "components/LabeledInput";
 import { Button } from "components/ui/Button";
-import { Text } from "components/ui/Text";
 
 import { useSubmitDbtCloudIntegrationConfig } from "packages/cloud/services/dbtCloud";
-import { SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
-import { links } from "utils/links";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import styles from "./DbtCloudSettingsView.module.scss";
 
@@ -19,7 +17,7 @@ export const DbtCloudSettingsView: React.FC = () => {
   const [validationMessage, setValidationMessage] = useState("");
   return (
     <SettingsCard title={<FormattedMessage id="settings.integrationSettings.dbtCloudSettings" />}>
-      <div className={styles.cardContent}>
+      <Content>
         <Formik
           initialValues={{
             serviceToken: "",
@@ -43,18 +41,6 @@ export const DbtCloudSettingsView: React.FC = () => {
           }}
         >
           <Form>
-            <Text className={styles.description}>
-              <FormattedMessage
-                id="settings.integrationSettings.dbtCloudSettings.form.description"
-                values={{
-                  lnk: (node: React.ReactNode) => (
-                    <a href={links.dbtCloudIntegrationDocs} target="_blank" rel="noreferrer">
-                      {node}
-                    </a>
-                  ),
-                }}
-              />
-            </Text>
             <Field name="serviceToken">
               {({ field }: FieldProps<string>) => (
                 <LabeledInput
@@ -73,7 +59,7 @@ export const DbtCloudSettingsView: React.FC = () => {
             </div>
           </Form>
         </Formik>
-      </div>
+      </Content>
     </SettingsCard>
   );
 };

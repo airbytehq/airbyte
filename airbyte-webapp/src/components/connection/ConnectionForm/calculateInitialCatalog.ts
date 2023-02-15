@@ -21,47 +21,42 @@ const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChanges
     return nodeStream;
   }
 
-  const { primaryKey, cursorField } = nodeStream.config;
-
   let clearPrimaryKey = false;
   let clearCursorField = false;
 
   for (const streamTransformation of breakingChangesByStream) {
-    if (!streamTransformation.updateStream || !streamTransformation.updateStream?.length) {
+    // get all of the removed field paths for this transformation
+    const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName);
+
+    if (!removedFieldPaths?.length) {
       continue;
     }
 
-    // get all of the removed field paths for this transformation
-    const breakingFieldPaths = streamTransformation.updateStream
-      .filter(({ breaking }) => breaking)
-      .map((update) => update.fieldName);
-
     // if there is a primary key in the config, and any of its field paths were removed, we'll be clearing it
     if (
-      !!primaryKey?.length &&
-      primaryKey?.some((primaryKeyPath) => breakingFieldPaths.some((path) => isEqual(primaryKeyPath, path)))
+      !!nodeStream.config?.primaryKey?.length &&
+      nodeStream.config?.primaryKey?.some((key) => removedFieldPaths.some((removedPath) => isEqual(key, removedPath)))
     ) {
       clearPrimaryKey = true;
     }
 
     // if there is a cursor field, and any of its field path was removed, we'll be clearing it
-    if (!!cursorField?.length && breakingFieldPaths.some((path) => isEqual(path, cursorField))) {
+    if (
+      !!nodeStream.config?.cursorField?.length &&
+      removedFieldPaths.some((removedPath) => isEqual(removedPath, nodeStream?.config?.cursorField))
+    ) {
       clearCursorField = true;
     }
   }
 
-  if (clearPrimaryKey || clearCursorField) {
-    return {
-      ...nodeStream,
-      config: {
-        ...nodeStream.config,
-        primaryKey: clearPrimaryKey ? [] : nodeStream.config.primaryKey,
-        cursorField: clearCursorField ? [] : nodeStream.config.cursorField,
-      },
-    };
-  }
-
-  return nodeStream;
+  return {
+    ...nodeStream,
+    config: {
+      ...nodeStream.config,
+      primaryKey: clearPrimaryKey ? [] : nodeStream.config.primaryKey,
+      cursorField: clearCursorField ? [] : nodeStream.config.cursorField,
+    },
+  };
 };
 
 const verifySourceDefinedProperties = (streamNode: SyncSchemaStream, isEditMode: boolean) => {
@@ -192,19 +187,19 @@ const calculateInitialCatalog = (
           streamIdFromDiff.namespace === nodeStream.stream?.namespace
       );
 
+      // narrow down the breaking field changes from this connection to only those relevant to this stream
+      const breakingChangesByStream =
+        streamsWithBreakingFieldChanges && streamsWithBreakingFieldChanges.length > 0
+          ? streamsWithBreakingFieldChanges.filter((streamTransformFromDiff) => {
+              return (
+                streamTransformFromDiff.streamDescriptor.name === nodeStream.stream?.name &&
+                streamTransformFromDiff.streamDescriptor.namespace === nodeStream.stream?.namespace
+              );
+            })
+          : [];
+
       // if we're in edit or readonly mode and the stream is not new, check for breaking changes then return
       if (isNotCreateMode && !isStreamNew) {
-        // narrow down the breaking field changes from this connection to only those relevant to this stream
-        const breakingChangesByStream =
-          streamsWithBreakingFieldChanges && streamsWithBreakingFieldChanges.length > 0
-            ? streamsWithBreakingFieldChanges.filter(({ streamDescriptor }) => {
-                return (
-                  streamDescriptor.name === nodeStream.stream?.name &&
-                  streamDescriptor.namespace === nodeStream.stream?.namespace
-                );
-              })
-            : [];
-
         return clearBreakingFieldChanges(nodeStream, breakingChangesByStream);
       }
 

@@ -107,7 +107,6 @@ public class TemporalClientTest {
   private WorkflowServiceBlockingStub workflowServiceBlockingStub;
   private StreamResetPersistence streamResetPersistence;
   private ConnectionManagerUtils connectionManagerUtils;
-  private NotificationUtils notificationUtils;
   private StreamResetRecordsHelper streamResetRecordsHelper;
   private Path workspaceRoot;
 
@@ -124,10 +123,9 @@ public class TemporalClientTest {
     streamResetPersistence = mock(StreamResetPersistence.class);
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
     connectionManagerUtils = spy(new ConnectionManagerUtils());
-    notificationUtils = spy(new NotificationUtils());
     streamResetRecordsHelper = mock(StreamResetRecordsHelper.class);
     temporalClient =
-        spy(new TemporalClient(workspaceRoot, workflowClient, workflowServiceStubs, streamResetPersistence, connectionManagerUtils, notificationUtils,
+        spy(new TemporalClient(workspaceRoot, workflowClient, workflowServiceStubs, streamResetPersistence, connectionManagerUtils,
             streamResetRecordsHelper));
   }
 
@@ -135,15 +133,13 @@ public class TemporalClientTest {
   class RestartPerStatus {
 
     private ConnectionManagerUtils mConnectionManagerUtils;
-    private NotificationUtils mNotificationUtils;
 
     @BeforeEach
     void init() {
       mConnectionManagerUtils = mock(ConnectionManagerUtils.class);
-      mNotificationUtils = mock(NotificationUtils.class);
 
       temporalClient = spy(
-          new TemporalClient(workspaceRoot, workflowClient, workflowServiceStubs, streamResetPersistence, mConnectionManagerUtils, mNotificationUtils,
+          new TemporalClient(workspaceRoot, workflowClient, workflowServiceStubs, streamResetPersistence, mConnectionManagerUtils,
               streamResetRecordsHelper));
     }
 

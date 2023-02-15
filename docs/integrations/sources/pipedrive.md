@@ -1,49 +1,42 @@
 # Pipedrive
 
-This page contains the setup guide and reference information for the Pipedrive connector.
+## Overview
 
-## Prerequisites
+The Pipedrive connector can be used to sync your Pipedrive data. It supports full refresh sync for Deals, Leads, Activities, ActivityFields, Persons, Pipelines, Stages, Users streams and incremental sync for Activities, Deals, Persons, Pipelines, Stages, Users streams.
 
-* A Pipedrive account;
-* An `API token`;
-* A `client_id`, `client_secret`, and `refresh_token`. 
+There was a priority to include at least a single stream of each stream type which is present on Pipedrive, so the list of the supported streams is meant to be easily extendable. By the way, we can only support incremental stream support for the streams listed [there](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents).
 
-## Setup guide
+### Output schema
 
-The Pipedrive connector accepts two authentication flows:
+Several output streams are available from this source:
 
-### Via API Token Authentication
+* [Activities](https://developers.pipedrive.com/docs/api/v1/Activities#getActivities), 
 
-Step 1 - Enable API Token:
+  retrieved by [getRecents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) \(incremental\)
 
-If you don't see API next to the `Your companies` section, it's due to the permission sets handled by the company's admin. The company's admin can give you access to your API token by enabling it for you from the Settings in Pipedrive web app.
+* [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
+* [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals),
 
-For more information, access [enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
+  retrieved by [getRecents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) \(incremental\)
 
+* [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
+* [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons),
 
-Step 2 - Find the API Token:
+  retrieved by [getRecents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) \(incremental\)
 
-You can get the API Token manually from the Pipedrive web app by going to account name (on the top right) > Company settings > Personal preferences > API.
+* [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines),
 
-See [How to find the API Token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for detailed information.
+  retrieved by [getRecents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) \(incremental\)
 
-### Via OAuth
+* [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages),
 
-Step 1 - Register a Pipedrive app:
+  retrieved by [getRecents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) \(incremental\)
 
-Pipedrive allows integrations with its API through **registered apps**. So, to authenticate Airbyte, first you need to create a Pipedrive private app in the marketplace. Follow these [instructions](https://pipedrive.readme.io/docs/marketplace-registering-the-app) to register your integration.
+* [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers),
 
-Step 2 - Follow the Oauth Authorization flow:
+  retrieved by [getRecents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) \(incremental\)
 
-With the registered app, you can follow the authorization flow to obtain the `client_id`, `client_secret`, and `refresh_token` secrets. Pipedrive has documentation about it: https://pipedrive.readme.io/docs/marketplace-oauth-authorization.
-
-Step 3 - Configure Airbyte:
-
-Now you can fill the fields Client ID, Client Secret, and Refresh Token. Your Pipedrive connector is set up to work with the OAuth authentication.
-
-## Supported sync modes
-
-The Pipedrive connector supports the following sync modes:
+### Features
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -53,38 +46,42 @@ The Pipedrive connector supports the following sync modes:
 | SSL connection                | Yes        |
 | Namespaces                    | No         |
 
-
-## Supported Streams
-
-Apart from `Fields` streams, all other streams support incremental.
-
-* [Activities](https://developers.pipedrive.com/docs/api/v1/Activities#getActivities)
-
-* [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
-
-* [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
-
-* [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
-
-* [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
-
-* [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)
-
-* [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
-
-* [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
-
-* [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)
-
-* [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines)
-
-* [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
-
-* [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers)
-
-## Performance considerations
+### Performance considerations
 
 The Pipedrive connector will gracefully handle rate limits. For more information, see [the Pipedrive docs for rate limitations](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+
+## Getting started
+
+### Requirements
+
+* Pipedrive Account with wright to generate API Token
+
+### Setup guide
+
+This connector supports only authentication with API Token. To obtain API Token follow the instructions below:
+
+#### Enable API:
+
+1. Click Manage users from the left-side menu.
+2. Click on the Permission sets tab.
+3. Choose the set where the user \(who needs the API enabled\) belongs to.
+4. Lastly, click on "use API" on the right-hand side section \(you need to scroll down a bit\). 
+
+   Now all users who belong in the set that has the API enabled can find their API token under 
+
+   Settings &gt; Personal Preferences &gt; API in their Pipedrive web app.
+
+See [Enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users) for more info.
+
+#### How to find the API token:
+
+1. Account name \(on the top right\)
+2. Company settings
+3. Personal preferences
+4. API
+5. Copy API Token
+
+See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for more info.
 
 ## Changelog
 
@@ -102,4 +99,4 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 | 0.1.3   | 2021-08-26 | [5642](https://github.com/airbytehq/airbyte/pull/5642)   | Remove date-time from deals stream                             |
 | 0.1.2   | 2021-07-23 | [4912](https://github.com/airbytehq/airbyte/pull/4912)   | Update money type to support floating point                    |
 | 0.1.1   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | Update spec.json                                               |
-| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | 🎉 New source: Pipedrive connector                                   |
+| 0.1.0   | 2021-07-19 | [4686](https://github.com/airbytehq/airbyte/pull/4686)   | Release Pipedrive connector!                                   |

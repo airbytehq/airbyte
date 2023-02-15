@@ -6,9 +6,10 @@ cd $1
 set -e
 
 # Install dependencies
-pip install -q -e .
-pip install -q -e '.[tests]'
+pip install -e .
+pip install -e '.[main]'
+pip install -e '.[tests]'
 
 # Run the tests
-python -m coverage run -m pytest -p no:logging --disable-warnings unit_tests -c pytest.ini
-python -m coverage run -m pytest -p no:logging --disable-warnings integration_tests -c pytest.ini
+python -m coverage run -m pytest unit_tests -c pytest.ini
+python -m coverage run -m pytest integration_tests -c pytest.ini

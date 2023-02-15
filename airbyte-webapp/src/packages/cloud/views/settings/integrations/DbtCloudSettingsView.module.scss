@@ -1,4 +1,3 @@
-@use "scss/colors";
 @use "scss/variables";
 
 .controlGroup {
@@ -8,20 +7,5 @@
 
   .button {
     margin-left: variables.$spacing-md;
-  }
-}
-
-.cardContent {
-  padding: variables.$spacing-xl;
-}
-
-.description {
-  color: colors.$grey-300;
-  margin-bottom: variables.$spacing-xl;
-  font-size: 12px;
-
-  a:link,
-  a:visited {
-    color: colors.$grey-300;
   }
 }

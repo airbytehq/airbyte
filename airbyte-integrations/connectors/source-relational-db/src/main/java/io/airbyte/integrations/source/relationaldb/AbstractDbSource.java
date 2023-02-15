@@ -31,7 +31,6 @@ import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.Invalid
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -99,7 +98,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage()));
+          .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
     } finally {
       close();
     }

@@ -1,12 +1,3 @@
-@use "scss/variables";
-
 .submitButton {
   margin-left: auto;
-}
-
-.form {
-  padding: variables.$spacing-xl;
-  display: flex;
-  flex-direction: column;
-  gap: variables.$spacing-xl;
 }

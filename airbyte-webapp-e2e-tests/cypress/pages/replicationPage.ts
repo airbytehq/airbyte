@@ -178,10 +178,6 @@ export const searchStream = (value: string) => {
   cy.get(streamNameInput).type(value);
 };
 
-export const clearStreamSearch = () => {
-  cy.get(streamNameInput).clear();
-};
-
 export const clickSaveReplication = ({ reset = false, confirm = true } = {}) => {
   cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 

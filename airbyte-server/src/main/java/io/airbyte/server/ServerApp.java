@@ -7,41 +7,17 @@ package io.airbyte.server;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.converters.ConnectionHelper;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.server.RequestLogger;
-import io.airbyte.commons.server.errors.InvalidInputExceptionMapper;
-import io.airbyte.commons.server.errors.InvalidJsonExceptionMapper;
-import io.airbyte.commons.server.errors.InvalidJsonInputExceptionMapper;
-import io.airbyte.commons.server.errors.KnownExceptionMapper;
-import io.airbyte.commons.server.errors.NotFoundExceptionMapper;
-import io.airbyte.commons.server.errors.UncaughtExceptionMapper;
-import io.airbyte.commons.server.handlers.AttemptHandler;
-import io.airbyte.commons.server.handlers.ConnectionsHandler;
-import io.airbyte.commons.server.handlers.DestinationDefinitionsHandler;
-import io.airbyte.commons.server.handlers.DestinationHandler;
-import io.airbyte.commons.server.handlers.HealthCheckHandler;
-import io.airbyte.commons.server.handlers.JobHistoryHandler;
-import io.airbyte.commons.server.handlers.LogsHandler;
-import io.airbyte.commons.server.handlers.OAuthHandler;
-import io.airbyte.commons.server.handlers.OpenApiConfigHandler;
-import io.airbyte.commons.server.handlers.OperationsHandler;
-import io.airbyte.commons.server.handlers.SchedulerHandler;
-import io.airbyte.commons.server.handlers.SourceDefinitionsHandler;
-import io.airbyte.commons.server.handlers.SourceHandler;
-import io.airbyte.commons.server.handlers.StateHandler;
-import io.airbyte.commons.server.handlers.WebBackendCheckUpdatesHandler;
-import io.airbyte.commons.server.handlers.WebBackendConnectionsHandler;
-import io.airbyte.commons.server.handlers.WebBackendGeographiesHandler;
-import io.airbyte.commons.server.handlers.WorkspacesHandler;
+import io.airbyte.commons.server.errors.*;
+import io.airbyte.commons.server.handlers.*;
 import io.airbyte.commons.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.commons.server.scheduler.EventRunner;
 import io.airbyte.commons.server.scheduler.TemporalEventRunner;
 import io.airbyte.commons.server.services.AirbyteGithubStore;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
-import io.airbyte.commons.temporal.NotificationUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
@@ -72,7 +48,7 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReportingClientFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.temporal.client.WorkflowClient;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -237,21 +213,18 @@ public class ServerApp implements ServerRunnable {
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
     final WorkflowServiceStubs temporalService = temporalUtils.createTemporalService();
     final ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
-    final NotificationUtils notificationUtils = new NotificationUtils();
     final StreamResetRecordsHelper streamResetRecordsHelper = new StreamResetRecordsHelper(jobPersistence, streamResetPersistence);
 
-    final WorkflowClient workflowClient = TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace());
     final TemporalClient temporalClient = new TemporalClient(
         configs.getWorkspaceRoot(),
-        workflowClient,
+        TemporalWorkflowUtils.createWorkflowClient(temporalService, temporalUtils.getNamespace()),
         temporalService,
         streamResetPersistence,
         connectionManagerUtils,
-        notificationUtils,
         streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
-    final RouterService routerService = new RouterService(configRepository, taskQueueMapper);
+    RouterService routerService = new RouterService(configRepository, taskQueueMapper);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
@@ -292,8 +265,7 @@ public class ServerApp implements ServerRunnable {
         configs.getLogConfigs(),
         eventRunner,
         connectionsHandler,
-        envVariableFeatureFlags,
-        webUrlHelper);
+        envVariableFeatureFlags);
 
     final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
         configs.getAirbyteProtocolVersionMax());

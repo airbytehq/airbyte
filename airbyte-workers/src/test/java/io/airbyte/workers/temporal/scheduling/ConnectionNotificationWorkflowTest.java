@@ -14,6 +14,7 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.scheduling.ConnectionNotificationWorkflow;
 import io.airbyte.config.SlackNotificationConfiguration;
 import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.notification.SlackNotificationClient;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivityImpl;
@@ -66,9 +67,7 @@ class ConnectionNotificationWorkflowTest {
         .build();
 
     mNotifySchemaChangeActivity = mock(NotifySchemaChangeActivityImpl.class);
-    when(mNotifySchemaChangeActivity.notifySchemaChange(any(UUID.class), any(boolean.class), any(SlackNotificationConfiguration.class),
-        any(String.class)))
-            .thenReturn(true);
+    when(mNotifySchemaChangeActivity.notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class))).thenReturn(true);
 
     mSlackConfigActivity = mock(SlackConfigActivityImpl.class);
     when(mSlackConfigActivity.fetchSlackConfiguration(any(UUID.class))).thenReturn(
@@ -101,13 +100,11 @@ class ConnectionNotificationWorkflowTest {
         client.newWorkflowStub(ConnectionNotificationWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(NOTIFICATIONS_QUEUE).build());
 
     final UUID connectionId = UUID.randomUUID();
-    final String connectionUrl = "connection_url";
 
     when(mConfigFetchActivity.getBreakingChange(connectionId)).thenReturn(Optional.of(false));
-    workflow.sendSchemaChangeNotification(connectionId, connectionUrl);
+    workflow.sendSchemaChangeNotification(connectionId);
 
-    verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(UUID.class), any(boolean.class),
-        any(SlackNotificationConfiguration.class), any(String.class));
+    verify(mNotifySchemaChangeActivity, times(1)).notifySchemaChange(any(SlackNotificationClient.class), any(UUID.class), any(boolean.class));
   }
 
 }

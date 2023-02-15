@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.SlackNotificationConfiguration;
+import io.airbyte.notification.SlackNotificationClient;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface NotifySchemaChangeActivity {
 
   @ActivityMethod
-  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration config, String url)
+  public boolean notifySchemaChange(SlackNotificationClient notificationClient, UUID connectionId, boolean isBreaking)
       throws IOException, InterruptedException;
 
 }

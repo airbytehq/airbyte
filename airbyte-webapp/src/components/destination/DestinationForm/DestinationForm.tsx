@@ -10,11 +10,7 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { ConnectorIds } from "utils/connectors";
 import { FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ConnectorCardValues } from "views/Connector/ConnectorForm";
-
-const FrequentlyUsedConnectors = React.lazy(
-  () => import("views/Connector/ConnectorForm/components/FrequentlyUsedConnectors")
-);
+import { ConnectorCardValues, FrequentlyUsedConnectors } from "views/Connector/ConnectorForm";
 
 interface DestinationFormProps {
   onSubmit: (values: {

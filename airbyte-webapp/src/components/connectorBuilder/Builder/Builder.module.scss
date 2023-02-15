@@ -8,18 +8,15 @@
 }
 
 .sidebar {
-  @include mixins.shadow;
+  @include mixins.right-shadow;
 
-  width: 220px;
+  width: 200px;
   flex: 0 0 auto;
   background-color: colors.$white;
-  border-left: 1px solid colors.$grey-100;
 }
 
 .form {
   flex: 1;
   padding: variables.$spacing-xl;
   overflow: auto;
-  display: flex;
-  justify-content: center;
 }

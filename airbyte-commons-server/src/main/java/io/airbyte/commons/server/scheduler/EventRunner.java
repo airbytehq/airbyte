@@ -28,6 +28,4 @@ public interface EventRunner {
 
   void update(final UUID connectionId);
 
-  void sendSchemaChangeNotification(final UUID connectionId, final String url);
-
 }

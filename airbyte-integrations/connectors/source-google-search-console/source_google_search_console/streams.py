@@ -239,13 +239,13 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         {
           "stream": {
-            "https://domain1.com": {
+            "http://domain1.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},
               "video": {"date": "2022-01-03"}
             },
-            "https://domain2.com": {
+            "http://domain2.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},

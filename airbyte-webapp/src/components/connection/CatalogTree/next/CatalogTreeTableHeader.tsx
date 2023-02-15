@@ -67,10 +67,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   };
 
   return (
-    <Header
-      className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewTableDesignEnabled })}
-      data-testid="catalog-tree-table-header"
-    >
+    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewTableDesignEnabled })}>
       <CatalogTreeTableCell size="small" className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
