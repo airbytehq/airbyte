@@ -11,12 +11,9 @@ import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
-import io.debezium.engine.ChangeEvent;
-import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +53,9 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
 
-    if (SnapshotMetadata.TRUE == snapshotMetadata) {
+    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
       return false;
     } else if (SnapshotMetadata.LAST == snapshotMetadata) {
       LOGGER.info("Signalling close because Snapshot is complete");
@@ -73,30 +70,9 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
     }
   }
 
-  private boolean isHeartbeatEvent(final ChangeEvent<String, String> event) {
-    return Objects.nonNull(event) && !event.value().contains("source");
-  }
-
-  @Override
-  public Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    if (isHeartbeatEvent(heartbeatEvent)) {
-      try {
-        final Field f = heartbeatEvent.getClass().getDeclaredField("sourceRecord");
-        f.setAccessible(true);
-        final SourceRecord sr = (SourceRecord) f.get(heartbeatEvent);
-        final Long hbLsn = (Long) sr.sourceOffset().get("lsn");
-        LOGGER.debug("Found heartbeat lsn: {}", hbLsn);
-        return hbLsn;
-      } catch (final NoSuchFieldException | IllegalAccessException e) {
-        LOGGER.info("failed to get heartbeat lsn");
-      }
-    }
-    return null;
-  }
-
   @Override
   public boolean reachedTargetPosition(final Long lsn) {
-    return (lsn == null) ? false : lsn.compareTo(targetLsn.asLong()) >= 0;
+    return lsn != null && lsn.compareTo(targetLsn.asLong()) >= 0;
   }
 
   private PgLsn extractLsn(final JsonNode valueAsJson) {

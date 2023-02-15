@@ -88,6 +88,8 @@ public class DebeziumPropertiesManager {
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
     props.setProperty("decimal.handling.mode", "string");
 
+    props.setProperty("topic.prefix", config.get(JdbcUtils.DATABASE_KEY).asText());
+
     // table selection
     props.setProperty("table.include.list", getTableIncludelist(catalog));
     // column selection

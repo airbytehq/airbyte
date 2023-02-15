@@ -17,6 +17,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -59,12 +60,30 @@ public class AirbyteFileOffsetBackingStore {
   public void persist(final JsonNode cdcState) {
     final Map<String, String> mapAsString =
         cdcState != null ? Jsons.object(cdcState, Map.class) : Collections.emptyMap();
-    final Map<ByteBuffer, ByteBuffer> mappedAsStrings = mapAsString.entrySet().stream().collect(Collectors.toMap(
+
+    final Map<String, String> updatedMap = updateStateForDebezium2_1(mapAsString);
+
+    final Map<ByteBuffer, ByteBuffer> mappedAsStrings = updatedMap.entrySet().stream().collect(Collectors.toMap(
         e -> stringToByteBuffer(e.getKey()),
         e -> stringToByteBuffer(e.getValue())));
 
     FileUtils.deleteQuietly(offsetFilePath.toFile());
     save(mappedAsStrings);
+  }
+
+  private Map<String, String> updateStateForDebezium2_1(final Map<String, String> mapAsString) {
+    final Map<String, String> updatedMap = new LinkedHashMap<>();
+    if (mapAsString.size() == 1) {
+      String key = mapAsString.keySet().stream().toList().get(0);
+      final int i = key.indexOf('[');
+      final int i1 = key.lastIndexOf(']');
+      final String newKey = key.substring(i, i1 + 1);
+      final String value = mapAsString.get(key);
+      updatedMap.put(newKey, value);
+    } else if(mapAsString.size() > 1) {
+      throw new RuntimeException("Not expecting size to be greater than 1");
+    }
+    return updatedMap;
   }
 
   private static String byteBufferToString(final ByteBuffer byteBuffer) {

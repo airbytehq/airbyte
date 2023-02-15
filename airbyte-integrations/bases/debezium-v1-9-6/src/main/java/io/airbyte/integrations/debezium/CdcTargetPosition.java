@@ -25,16 +25,6 @@ public interface CdcTargetPosition {
   boolean reachedTargetPosition(JsonNode valueAsJson);
 
   /**
-   * Returns a position value (lsn) from a heartbeat event.
-   *
-   * @param heartbeatEvent a heartbeat change event
-   * @return the lsn value in a heartbeat change event or null
-   */
-  default Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    throw new UnsupportedOperationException();
-  }
-
-  /**
    * Checks if a specified lsn has reached the target lsn.
    *
    * @param lsn an lsn value

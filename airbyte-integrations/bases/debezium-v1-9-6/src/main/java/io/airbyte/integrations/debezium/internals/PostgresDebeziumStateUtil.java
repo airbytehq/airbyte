@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import static io.debezium.connector.postgresql.PostgresOffsetContext.LAST_COMMIT_LSN_KEY;
 import static io.debezium.connector.postgresql.SourceInfo.LSN_KEY;
+import static io.debezium.relational.RelationalDatabaseConnectorConfig.DATABASE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -34,6 +35,7 @@ import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.kafka.connect.json.JsonConverter;
+import org.apache.kafka.connect.json.JsonConverterConfig;
 import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
@@ -199,20 +201,18 @@ public class PostgresDebeziumStateUtil {
       fileOffsetBackingStore.configure(new StandaloneConfig(propertiesMap));
       fileOffsetBackingStore.start();
 
+      final Map<String, String> internalConverterConfig = Collections.singletonMap(JsonConverterConfig.SCHEMAS_ENABLE_CONFIG, "false");
       final JsonConverter keyConverter = new JsonConverter();
-      keyConverter.configure(Configuration.from(properties).subset("internal.key.converter" + ".", true).asMap(), true);
+      keyConverter.configure(internalConverterConfig, true);
       final JsonConverter valueConverter = new JsonConverter();
-      // Make sure that the JSON converter is configured to NOT enable schemas ...
-      final Configuration valueConverterConfig = Configuration.from(properties).edit().with("internal.value.converter" + ".schemas.enable", false)
-          .build();
-      valueConverter.configure(valueConverterConfig.subset("internal.value.converter" + ".", true).asMap(), false);
+      valueConverter.configure(internalConverterConfig, false);
 
-      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
-          valueConverter);
       final PostgresConnectorConfig postgresConnectorConfig = new PostgresConnectorConfig(Configuration.from(properties));
       final PostgresCustomLoader loader = new PostgresCustomLoader(postgresConnectorConfig);
+      final Set<Partition> partitions = Collections.singleton(new PostgresPartition(postgresConnectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
+      offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
+          valueConverter);
       final OffsetReader<Partition, PostgresOffsetContext, Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);
-      final Set<Partition> partitions = Collections.singleton(new PostgresPartition(postgresConnectorConfig.getLogicalName()));
       final Map<Partition, PostgresOffsetContext> offsets = offsetReader.offsets(partitions);
 
       return extractLsn(partitions, offsets, loader);

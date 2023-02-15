@@ -71,6 +71,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
         })
         .using((success, message, error) -> {
           LOGGER.info("Debezium engine shutdown.");
+          LOGGER.info(message);
           thrownError.set(error);
           engineLatch.countDown();
         })

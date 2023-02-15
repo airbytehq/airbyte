@@ -309,8 +309,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 null,
                 // Double#toString method is necessary here because sometimes the output
                 // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
-                "999.99", "1001.01", Double.toString(-1000),
-                "999.99", "1001.01", Double.toString(-1000)
+                "999.99", "1001.01", Double.toString(-1000.00),
+                "999.99", "1001.01", Double.toString(-1000.00)
             /* "-92233720368547758.08", "92233720368547758.07" */)
             .build());
 
