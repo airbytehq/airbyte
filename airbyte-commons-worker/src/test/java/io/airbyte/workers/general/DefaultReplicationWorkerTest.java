@@ -72,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -80,6 +81,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -934,6 +937,39 @@ class DefaultReplicationWorkerTest {
         false,
         heartbeatTimeoutChaperone);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
+  }
+
+  @Test
+  void testSourceFailingTimeout() throws Exception {
+    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
+    when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
+    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor, Duration.ofMillis(1), new TestClient(Map.of("heartbeat.failSync", true)), UUID.randomUUID());
+
+    final AirbyteSource source = mock(AirbyteSource.class);
+    when(source.isFinished()).thenReturn(false);
+    when(source.attemptRead()).thenAnswer((Answer<Optional<AirbyteMessage>>) invocation -> {
+      sleep(100);
+      return Optional.of(RECORD_MESSAGE1);
+    });
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+            JOB_ID,
+            JOB_ATTEMPT,
+            source,
+            mapper,
+            destination,
+            messageTracker,
+            recordSchemaValidator,
+            workerMetricReporter,
+            connectorConfigUpdater,
+            false,
+            heartbeatTimeoutChaperone);
+
+    final ReplicationOutput actual = worker.run(syncInput, jobRoot);
+
+    assertEquals(1, actual.getFailures().size());
+    assertEquals(FailureOrigin.SOURCE, actual.getFailures().get(0).getFailureOrigin());
+    assertEquals(FailureReason.FailureType.HEARTBEAT_TIMEOUT, actual.getFailures().get(0).getFailureType());
   }
 
 }
