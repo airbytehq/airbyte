@@ -55,7 +55,7 @@ object ShouldFailSyncIfHeartbeatFailure : Temporary(key = "heartbeat.failSync")
  * @param [attrs] optional attributes associated with this flag
  */
 sealed class Flag(
-    internal val key: String,
+    val key: String,
     internal val default: Boolean = false,
     internal val attrs: Map<String, String> = mapOf(),
 )
