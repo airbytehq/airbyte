@@ -119,7 +119,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   public NormalizationSummary normalize(final JobRunConfig jobRunConfig,
                                         final IntegrationLauncherConfig destinationLauncherConfig,
                                         final NormalizationInput input) {
-
     ApmTraceUtils.addTagsToTrace(
         Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
             destinationLauncherConfig.getDockerImage()));
