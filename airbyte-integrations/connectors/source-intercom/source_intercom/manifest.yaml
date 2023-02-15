@@ -210,7 +210,6 @@ definitions:
               response_filters:
                 - http_codes: [ 400, 500 ]
                   action: RETRY
-              max_retries: 3
               backoff_strategies:
                 - type: ConstantBackoffStrategy
                   backoff_time_in_seconds: 60
@@ -250,7 +249,7 @@ definitions:
       - type: AddFields
         fields:
           - path: ["conversation_id"]
-            value: "{{ stream_slice.id }}"
+            value: "'{{ stream_slice.id }}'"
     retriever:
       $ref: "*ref(definitions.substream_semi_incremental.retriever)"
       record_selector:
