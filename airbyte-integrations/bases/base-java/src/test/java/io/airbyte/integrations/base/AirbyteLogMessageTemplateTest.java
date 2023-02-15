@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,32 +31,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 public class AirbyteLogMessageTemplateTest {
+
   private static final ByteArrayOutputStream outputContent = new ByteArrayOutputStream();
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteLogMessageTemplateTest.class);
+  public static final String OUTPUT_STREAM_APPENDER = "OutputStreamAppender";
+  public static final String CONSOLE_JSON_APPENDER = "ConsoleJSONAppender";
   private static OutputStreamAppender outputStreamAppender;
   private static LoggerConfig rootLoggerConfig;
 
-  // LOG_LEVEL className(methodName):LineNumber logMessage
-  private final String connectorLogMessageRegex = "^INFO [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$";
-  private final Pattern pattern = Pattern.compile(connectorLogMessageRegex);
-
   @BeforeAll
   static void init() {
-    // we are creating a log appender with the same output pattern
-    // as the console appender defined in this project's log4j2.xml file.
-    // this log appender stores logs in an output stream,
-    // so that we can check after tests and validate formats.
+    // We are creating a log appender with the same output pattern
+    // as the console json appender defined in this project's log4j2.xml file.
+    // We then attach this log appender with the LOGGER instance so that we can validate the logs
+    // produced by code and assert that it matches the expected format.
     final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
     final Configuration configuration = loggerContext.getConfiguration();
-
     rootLoggerConfig = configuration.getLoggerConfig("");
 
     outputStreamAppender = OutputStreamAppender.createAppender(
-        rootLoggerConfig.getAppenders().get("ConsoleJSONAppender").getLayout(),
-        null, outputContent, "OutputStreamAppender", false, true);
-
+        rootLoggerConfig.getAppenders().get(CONSOLE_JSON_APPENDER).getLayout(),
+        null, outputContent, OUTPUT_STREAM_APPENDER, false, true);
     outputStreamAppender.start();
+
     rootLoggerConfig.addAppender(outputStreamAppender, Level.ALL, null);
   }
 
@@ -64,16 +67,27 @@ public class AirbyteLogMessageTemplateTest {
   @AfterAll
   static void cleanUp() {
     outputStreamAppender.stop();
-    rootLoggerConfig.removeAppender("OutputStreamAppender");
+    rootLoggerConfig.removeAppender(OUTPUT_STREAM_APPENDER);
   }
+
   @Test
   public void testAirbyteLogMessageFormat() throws java.io.IOException {
     LOGGER.info("hello");
-    outputContent.flush();
 
+    outputContent.flush();
     final String logMessage = outputContent.toString();
     final AirbyteMessage airbyteMessage = validateLogIsAirbyteMessage(logMessage);
-    validateAirbyteMessageIsLog(airbyteMessage);
+    final AirbyteLogMessage airbyteLogMessage = validateAirbyteMessageIsLog(airbyteMessage);
+
+    final String connectorLogMessage = airbyteLogMessage.getMessage();
+    // validate that the message inside AirbyteLogMessage matches the pattern.
+    // pattern to check for is: LOG_LEVEL className(methodName):LineNumber logMessage
+    final String connectorLogMessageRegex =
+        "^INFO [\\w+.]*.AirbyteLogMessageTemplateTest\\(testAirbyteLogMessageFormat\\):\\d+ hello$";
+    final Pattern pattern = Pattern.compile(connectorLogMessageRegex);
+
+    final Matcher matcher = pattern.matcher(connectorLogMessage);
+    assertTrue(matcher.matches(), connectorLogMessage);
   }
 
   private AirbyteMessage validateLogIsAirbyteMessage(final String logMessage) {
@@ -86,15 +100,9 @@ public class AirbyteLogMessageTemplateTest {
   }
 
   private AirbyteLogMessage validateAirbyteMessageIsLog(final AirbyteMessage airbyteMessage) {
-    assertEquals(Type.LOG,airbyteMessage.getType());
+    assertEquals(Type.LOG, airbyteMessage.getType());
     assertNotNull(airbyteMessage.getLog());
-
-    final String logMessage  = airbyteMessage.getLog().getMessage();
-    assertFalse(StringUtils.isBlank(logMessage));
-
-    final Matcher matcher = pattern.matcher(logMessage);
-    assertTrue(matcher.matches(), logMessage);
-
+    assertFalse(StringUtils.isBlank(airbyteMessage.getLog().getMessage()));
     return airbyteMessage.getLog();
   }
 }
