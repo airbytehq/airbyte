@@ -116,9 +116,11 @@ class PlandayStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = self.uri_params
+        params = self.uri_params.copy()
         if next_page_token:
             params.update(next_page_token)
+        else:
+            params.update(self.uri_params)
         if stream_slice is not None:
             for key in ("from", "to"):
                 if key in stream_slice:
