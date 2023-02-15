@@ -33,7 +33,7 @@ public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
-  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(1, ChronoUnit.SECONDS);
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.ofMinutes(1);
 
   private final HeartbeatMonitor heartbeatMonitor;
   private final Duration timeoutCheckDuration;
