@@ -15,6 +15,7 @@ import type { Experiments } from "hooks/services/Experiment/experiments";
 import { FeatureSet, FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { rejectAfter } from "utils/promises";
 
 /**
@@ -51,19 +52,29 @@ type LDInitState = "initializing" | "failed" | "initialized";
  */
 const INITIALIZATION_TIMEOUT = 5000;
 
-function mapUserToLDUser(user: User | null, locale: string): LDClient.LDUser {
-  return user
-    ? {
-        key: user.userId,
-        email: user.email,
-        name: user.name,
-        custom: { intercomHash: user.intercomHash, locale },
-        anonymous: false,
-      }
-    : {
-        anonymous: true,
-        custom: { locale },
-      };
+function mapUserToLDUser(user: User | null, locale: string, workspaceId: string | null): LDClient.LDUser {
+  if (!user) {
+    return {
+      anonymous: true,
+      custom: { locale },
+    };
+  }
+  /**
+   * Currently we can identify that a user is in a workspace with an optional workspaceId custom attribute.
+   * Once the LD Contexts feature is GA, we can upgrade the SDK and refactor this to support contexts:
+   * https://docs.launchdarkly.com/sdk/client-side/javascript/migration-2-to-3
+   */
+  const custom: Record<string, string> = { intercomHash: user.intercomHash, locale };
+  if (workspaceId) {
+    custom.workspace = workspaceId;
+  }
+  return {
+    key: user.userId,
+    email: user.email,
+    name: user.name,
+    custom,
+    anonymous: false,
+  };
 }
 
 const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string }>> = ({ children, apiKey }) => {
@@ -75,6 +86,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   const { locale } = useIntl();
   const { setMessageOverwrite } = useI18nContext();
   const { trackAction } = useAppMonitoringService();
+  const workspaceId = useCurrentWorkspaceId();
 
   /**
    * This function checks for all experiments to find the ones beginning with "i18n_{locale}_"
@@ -111,7 +123,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   };
 
   if (!ldClient.current) {
-    ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user, locale));
+    ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user, locale, null));
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
@@ -150,10 +162,10 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
     return () => ldClient.current?.off("change", onFeatureFlagsChanged);
   });
 
-  // Whenever the user should change (e.g. login/logout) we need to reidentify the changes with the LD client
+  // Whenever the user, locale or workspaceId changes, we need to re-identify with launchdarkly
   useEffect(() => {
-    ldClient.current?.identify(mapUserToLDUser(user, locale));
-  }, [locale, user]);
+    ldClient.current?.identify(mapUserToLDUser(user, locale, workspaceId || null));
+  }, [workspaceId, locale, user]);
 
   // Show the loading page while we're still waiting for the initial set of feature flags (or them to time out)
   if (state === "initializing") {

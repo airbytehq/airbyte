@@ -95,6 +95,7 @@ include ':airbyte-test-utils'
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
+include ':airbyte-commons-converters'
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
 include ':airbyte-featureflag'
@@ -147,6 +148,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
     include ':airbyte-integrations:connectors:destination-tidb'
+    include ':airbyte-integrations:connectors:destination-duckdb'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
