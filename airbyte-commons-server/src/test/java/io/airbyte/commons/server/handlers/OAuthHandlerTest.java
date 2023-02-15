@@ -182,15 +182,15 @@ class OAuthHandlerTest {
   void testGetOAuthInputConfiguration() {
     final JsonNode hydratedConfig = Jsons.deserialize(
         """
-        {
-          "field1": "1",
-          "field2": "2",
-          "field3": {
-            "field3_1": "3_1",
-            "field3_2": "3_2"
-          }
-        }
-        """);
+            {
+              "field1": "1",
+              "field2": "2",
+              "field3": {
+                "field3_1": "3_1",
+                "field3_2": "3_2"
+              }
+            }
+            """);
 
     final Map<String, String> pathsToGet = Map.ofEntries(
         Map.entry("field1", "$.field1"),
@@ -200,12 +200,12 @@ class OAuthHandlerTest {
 
     final JsonNode expected = Jsons.deserialize(
         """
-        {
-          "field1": "1",
-          "field3_1": "3_1",
-          "field3_2": "3_2"
-        }
-        """);
+            {
+              "field1": "1",
+              "field3_1": "3_1",
+              "field3_2": "3_2"
+            }
+            """);
 
     assertEquals(expected, handler.getOAuthInputConfiguration(hydratedConfig, pathsToGet));
   }
@@ -214,30 +214,30 @@ class OAuthHandlerTest {
   void testGetOauthFromDBIfNeeded() {
     final JsonNode fromInput = Jsons.deserialize(
         """
-        {
-          "testMask": "**********",
-          "testNotMask": "this",
-          "testOtherType": true
-        }
-        """);
+            {
+              "testMask": "**********",
+              "testNotMask": "this",
+              "testOtherType": true
+            }
+            """);
 
     final JsonNode fromDb = Jsons.deserialize(
         """
-        {
-          "testMask": "mask",
-          "testNotMask": "notThis",
-          "testOtherType": true
-        }
-        """);
+            {
+              "testMask": "mask",
+              "testNotMask": "notThis",
+              "testOtherType": true
+            }
+            """);
 
     final JsonNode expected = Jsons.deserialize(
         """
-        {
-          "testMask": "mask",
-          "testNotMask": "this",
-          "testOtherType": true
-        }
-        """);
+            {
+              "testMask": "mask",
+              "testNotMask": "this",
+              "testOtherType": true
+            }
+            """);
 
     assertEquals(expected, handler.getOauthFromDBIfNeeded(fromDb, fromInput));
   }
@@ -249,8 +249,7 @@ class OAuthHandlerTest {
 
     final CompleteSourceOauthRequest completeSourceOauthRequest = new CompleteSourceOauthRequest()
         .sourceDefinitionId(sourceDefinitionId)
-        .workspaceId(workspaceId)
-        .returnSecretCoordinate(false);
+        .workspaceId(workspaceId);
 
     final OAuthHandler handlerSpy = Mockito.spy(handler);
 
@@ -267,6 +266,13 @@ class OAuthHandlerTest {
     handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
 
     verify(handlerSpy, times(2)).completeSourceOAuth(completeSourceOauthRequest);
+    verify(handlerSpy).writeOAuthResponseSecret(any(), any());
+
+    completeSourceOauthRequest.returnSecretCoordinate(false);
+
+    handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
+
+    verify(handlerSpy, times(3)).completeSourceOAuth(completeSourceOauthRequest);
     verify(handlerSpy).writeOAuthResponseSecret(any(), any());
   }
 }
