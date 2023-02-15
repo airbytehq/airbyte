@@ -36,8 +36,6 @@ Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", 
 task downloadCombinedConnectorCatalog(type: JavaExec, dependsOn: compileJava) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'io.airbyte.config.init.CombinedConnectorCatalogDownloader'
-
-    args = ['src/main/resources/seed/','oss_catalog.json']
 }
 
 
