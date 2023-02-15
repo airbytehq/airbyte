@@ -1734,6 +1734,9 @@
   icon: stripe.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "api.stripe.com"
 - name: SurveyCTO
   sourceDefinitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
   dockerRepository: airbyte/source-surveycto
