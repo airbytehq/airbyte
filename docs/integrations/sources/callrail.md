@@ -35,5 +35,5 @@ This Source is capable of syncing the following core Streams:
 
 | Version | Date       | Pull Request                                            | Subject                           |
 | :--- |:-----------|:--------------------------------------------------------|:----------------------------------|
-| 0.1.1 | 2023-02-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification                  |
+| 0.1.1 | 2023-02-15 | [23080](https://github.com/airbytehq/airbyte/pull/23080) | Specified date formatting in specification                  |
 | 0.1.0 | 2022-10-31 | [18739](https://github.com/airbytehq/airbyte/pull/18739) | 🎉 New Source: CallRail                  |
