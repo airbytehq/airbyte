@@ -465,6 +465,8 @@ class Stream(HttpStream, ABC):
             return field_value
 
         try:
+            if target_type == int:
+                field_value = float(field_value)
             casted_value = target_type(field_value)
         except ValueError:
             logger.exception(f"Could not cast `{field_value}` to `{target_type}`")
