@@ -151,18 +151,16 @@ class SourceBambooHr(AbstractSource):
         if not config.get("custom_reports_fields") and not config.get("custom_reports_include_default_fields"):
             return False, NullFieldsError()
 
-        available_fields = MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh)
+        available_fields = list(MetaFieldsStream(config).read_records(sync_mode=SyncMode.full_refresh))
+        if not available_fields:
+            return False, AvailableFieldsAccessDeniedError()
+
         custom_fields = convert_custom_reports_fields_to_list(config.get("custom_reports_fields", ""))
         denied_fields = validate_custom_fields(custom_fields, available_fields)
-
         if denied_fields:
             return False, CustomFieldsAccessDeniedError(denied_fields)
 
-        try:
-            next(available_fields)
-            return True, None
-        except StopIteration:
-            return False, AvailableFieldsAccessDeniedError()
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = SourceBambooHr.add_authenticator_to_config(config)

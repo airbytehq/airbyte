@@ -20,5 +20,6 @@ class AvailableFieldsAccessDeniedError(BambooHrError):
 
 class CustomFieldsAccessDeniedError(Exception):
     def __init__(self, denied_fields):
-        self.message = f"Access to fields: {', '.join(denied_fields)} - denied. Please check your access level."
+        denied_fields = [f"`{field}`" for field in denied_fields]
+        self.message = f"Unable to read the following fields, please check your permissions: {', '.join(denied_fields)}"
         super().__init__(self.message)
