@@ -76,7 +76,8 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 0.2.32  | 2023-02-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Change min spreadsheet id size to 20 symbols                                  |
+| 0.2.33  | 2023-02-15 | [23071](https://github.com/airbytehq/airbyte/pull/23071) | Change min spreadsheet id size to 20 symbols                                  |
+| 0.2.32  | 2023-02-13 | [22884](https://github.com/airbytehq/airbyte/pull/22884) | Do not consume http spreadsheets.                                             |
 | 0.2.31  | 2022-10-09 | [19574](https://github.com/airbytehq/airbyte/pull/19574) | Revert 'Add row_id to rows and use as primary key'                            |
 | 0.2.30  | 2022-10-09 | [19215](https://github.com/airbytehq/airbyte/pull/19215) | Add row_id to rows and use as primary key                                     |
 | 0.2.21  | 2022-10-04 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
