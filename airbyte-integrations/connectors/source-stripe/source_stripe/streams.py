@@ -180,17 +180,19 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         """
         # Get an iterator and pull the first value.
         it = iter(iterable)
-        last = next(it)
+        last = next(it, None)
+        if not last:
+            return
         # Run the iterator to exhaustion (starting from the second value).
         for val in it:
             yield last
             last = val
         self.completed = True
         yield last
-    def shouldFetchFromOriginalResource (self,stream_state):
+    def shouldFetchFromOriginalResource (self,stream_state = None):
         durationInDaysFromLastSync = 0
         hasState = bool(stream_state)
-        self.completed = stream_state.get(self.state_completed_key) or False
+        self.completed = stream_state and stream_state.get(self.state_completed_key) or False
         if hasState and self.completed:
             then = datetime.fromtimestamp(stream_state.get(self.state_lastSync_key)) 
             now  = datetime.utcnow()
@@ -200,7 +202,7 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         # Fetch data from original stream else fetch data from events
         shouldResetState = durationInDaysFromLastSync >= 30
         return hasState == False or self.completed is False or shouldResetState
-    def read_records(self, stream_slice, stream_state, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice, stream_state = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         shouldFetchFromOriginalResource = self.shouldFetchFromOriginalResource(stream_state)
         if shouldFetchFromOriginalResource:
             # Set completed 
@@ -301,7 +303,7 @@ class CustomerBalanceTransactions(SingleEmptySliceMixin, StripeStream):
         slices = customers_stream.stream_slices(sync_mode=SyncMode.full_refresh)
         for _slice in slices:
             for customer in customers_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=_slice):
-                yield from super().read_records(stream_slice={"customer_id": customer["id"]}, **kwargs)
+                yield from super().read_records(stream_slice={"customer_id": customer["record_id"]}, **kwargs)
 
 
 class Coupons(IncrementalStripeStream):
@@ -459,13 +461,13 @@ class StripeSubStream(SingleEmptySliceMixin, StripeStream, ABC):
                 # get next pages
                 items_next_pages = []
                 if items_obj.get("has_more") and items:
-                    stream_slice = {self.parent_id: record["id"], "starting_after": items[-1]["id"]}
+                    stream_slice = {self.parent_id: record["record_id"], "starting_after": items[-1]["id"]}
                     items_next_pages = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, **kwargs)
 
                 for item in chain(items, items_next_pages):
                     if self.add_parent_id:
                         # add reference to parent object when item doesn't have it already
-                        item[self.parent_id] = record["id"]
+                        item[self.parent_id] = record["record_id"]
                     yield item
 
 
