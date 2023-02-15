@@ -1635,9 +1635,10 @@ public class ConfigRepository {
   public void writeBuilderProject(final ConnectorBuilderProject builderProject) throws IOException {
     database.transaction(ctx -> {
       final OffsetDateTime timestamp = OffsetDateTime.now();
+      final Condition matchId = CONNECTOR_BUILDER_PROJECT.ID.eq(builderProject.getBuilderProjectId());
       final boolean isExistingConfig = ctx.fetchExists(select()
           .from(CONNECTOR_BUILDER_PROJECT)
-          .where(CONNECTOR_BUILDER_PROJECT.ID.eq(builderProject.getBuilderProjectId())));
+          .where(matchId));
 
       if (isExistingConfig) {
         ctx.update(CONNECTOR_BUILDER_PROJECT)
@@ -1647,7 +1648,7 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
             .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.UPDATED_AT, timestamp)
-            .where(getBuilderProjectIdCondition(builderProject.getBuilderProjectId(), builderProject.getWorkspaceId()))
+            .where(matchId)
             .execute();
       } else {
         ctx.insertInto(CONNECTOR_BUILDER_PROJECT)
