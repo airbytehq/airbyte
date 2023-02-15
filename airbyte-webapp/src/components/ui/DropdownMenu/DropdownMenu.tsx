@@ -2,6 +2,7 @@ import { autoUpdate, useFloating, offset } from "@floating-ui/react-dom";
 import { Menu } from "@headlessui/react";
 import classNames from "classnames";
 import React, { AnchorHTMLAttributes } from "react";
+// eslint-disable-next-line no-restricted-imports
 import { Link, LinkProps } from "react-router-dom";
 
 import { Text } from "components/ui/Text";
