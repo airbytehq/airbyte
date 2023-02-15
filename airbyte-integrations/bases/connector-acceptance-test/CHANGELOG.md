@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.0
+Allow passing custom environment variables to the connector under test. [#22937](https://github.com/airbytehq/airbyte/pull/22937).
+
 ## 0.5.3
 Spec tests: Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
 
