@@ -134,10 +134,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
-      final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
-      return provider.getDestinationDefinitions().stream()
-          .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
-          .findFirst();
+    final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
+    return provider.getDestinationDefinitions().stream()
+        .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
+        .findFirst();
   }
 
   protected String getNormalizationImageName() {

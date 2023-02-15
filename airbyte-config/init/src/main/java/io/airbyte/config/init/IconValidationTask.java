@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Simple task that checks if all icons in the seed definition files exist as well as
- * that no icon in the icons folder is unused.
+ * Simple task that checks if all icons in the seed definition files exist as well as that no icon
+ * in the icons folder is unused.
  */
 public class IconValidationTask {
 
@@ -78,7 +78,8 @@ public class IconValidationTask {
 
     final List<String> errorMessages = List.of();
     if (!missingIcons.isEmpty()) {
-      errorMessages.add("The following icon files have been referenced inside the seed files, but don't exist:\n\n" + String.join(", ", missingIcons));
+      errorMessages
+          .add("The following icon files have been referenced inside the seed files, but don't exist:\n\n" + String.join(", ", missingIcons));
     }
 
     if (!unusedIcons.isEmpty()) {
