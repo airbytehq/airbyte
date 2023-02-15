@@ -2,6 +2,8 @@
 # for more information about how to configure these tests
 connector_image: airbyte/source-postgres:dev
 test_strictness_level: high
+custom_environment_variables:
+  USE_STREAM_CAPABLE_STATE: true
 acceptance_tests:
   spec:
     tests:
