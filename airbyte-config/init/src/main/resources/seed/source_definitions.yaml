@@ -1678,6 +1678,10 @@
   icon: snapchat.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - accounts.snapchat.com
+      - adsapi.snapchat.com
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
