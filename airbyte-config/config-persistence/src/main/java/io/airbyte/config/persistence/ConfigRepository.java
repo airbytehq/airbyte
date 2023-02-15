@@ -1602,14 +1602,26 @@ public class ConfigRepository {
     return countResult > 0;
   }
 
-  public Optional<ConnectorBuilderProject> getConnectorBuilderProject(final UUID builderProjectId, final UUID workspaceId) throws IOException {
-    return database.query(ctx -> ctx.select(CONNECTOR_BUILDER_PROJECT.asterisk())
+  public ConnectorBuilderProject getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
+      throws IOException, ConfigNotFoundException {
+    final Optional<ConnectorBuilderProject> project = database.query(ctx -> {
+      final List columnsToFetch = Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
+          CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID);
+      if (fetchManifestDraft) {
+        columnsToFetch.add(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT);
+      }
+      return ctx.select(columnsToFetch)
         .from(CONNECTOR_BUILDER_PROJECT)
-        .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
-        .fetch())
-        .map(DbConverter::buildConnectorBuilderProject)
+        .where(CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId))
+        .fetch()
+        .map(fetchManifestDraft ? DbConverter::buildConnectorBuilderProject : DbConverter::buildConnectorBuilderProjectWithoutManifestDraft)
         .stream()
         .findFirst();
+    });
+    if (project.isEmpty()) {
+      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, builderProjectId.toString());
+    }
+    return project.get();
   }
 
   public Stream<ConnectorBuilderProject> getConnectorBuilderProjectsByWorkspace(final UUID workspaceId) throws IOException {

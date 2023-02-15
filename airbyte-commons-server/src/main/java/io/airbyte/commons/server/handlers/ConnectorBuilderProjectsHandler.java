@@ -11,6 +11,7 @@ import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspa
 import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
@@ -24,19 +25,23 @@ public class ConnectorBuilderProjectsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
+  private final WorkspaceHelper workspaceHelper;
 
   @Inject
   public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository,
+      final WorkspaceHelper workspaceHelper,
                                          final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
+    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = uuidSupplier;
   }
 
   // This should be deleted when cloud is migrated to micronaut
   @Deprecated(forRemoval = true)
   public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository,
-                                         final SourceHandler sourceHandler) {
+      final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
+    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = UUID::randomUUID;
   }
 
@@ -70,6 +75,7 @@ public class ConnectorBuilderProjectsHandler {
   public void updateConnectorBuilderProject(final ExistingConnectorBuilderProjectWithWorkspaceId projectUpdate)
       throws IOException {
     final ConnectorBuilderProject project = builderProjectFromUpdate(projectUpdate);
+    workspaceHelper.
     final Optional<ConnectorBuilderProject> storedProject =
         configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), project.getWorkspaceId());
 
