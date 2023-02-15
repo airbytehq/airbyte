@@ -27,7 +27,7 @@ from airbyte_cdk.models import (
 )
 from destination_weaviate import DestinationWeaviate
 from destination_weaviate.client import Client, WeaviatePartialBatchError
-from destination_weaviate.utils import stream_to_class_name, get_schema_from_catalog
+from destination_weaviate.utils import get_schema_from_catalog, stream_to_class_name
 
 
 @pytest.fixture(name="config")
@@ -514,7 +514,7 @@ def test_missing_fields(config: Mapping, client: Client):
     class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
-    assert actual["properties"].get("arr") == None
+    assert actual["properties"].get("arr") is None
 
 
 def test_record_additional_properties(config: Mapping, client: Client):
