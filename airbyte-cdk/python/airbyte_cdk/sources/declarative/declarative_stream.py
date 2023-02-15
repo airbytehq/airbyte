@@ -6,6 +6,7 @@ from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -25,7 +26,7 @@ class DeclarativeStream(Stream):
         schema_loader (SchemaLoader): The schema loader
         retriever (Retriever): The retriever
         config (Config): The user-provided configuration as specified by the source's spec
-        stream_cursor_field (Optional[List[str]]): The cursor field
+        stream_cursor_field (Optional[Union[InterpolatedString, str]]): The cursor field
         transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the
         stream. Transformations are applied in the order in which they are defined.
     """
@@ -39,11 +40,11 @@ class DeclarativeStream(Stream):
     _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
     _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
-    stream_cursor_field: Optional[Union[List[str], str]] = None
+    stream_cursor_field: Optional[Union[InterpolatedString, str]] = None
     transformations: List[RecordTransformation] = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        self.stream_cursor_field = self.stream_cursor_field or []
+        self.stream_cursor_field = InterpolatedString.create(self.stream_cursor_field, parameters=parameters)
         self.transformations = self.transformations or []
         self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, parameters=parameters)
 
@@ -86,7 +87,8 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        return self.stream_cursor_field
+        cursor = self.stream_cursor_field.eval(self.config)
+        return cursor if cursor else []
 
     def read_records(
         self,

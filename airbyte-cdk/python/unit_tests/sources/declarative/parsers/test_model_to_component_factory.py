@@ -185,7 +185,7 @@ spec:
     assert isinstance(stream, DeclarativeStream)
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert stream.stream_cursor_field == "created"
+    assert stream.stream_cursor_field.string == "created"
 
     assert isinstance(stream.schema_loader, JsonFileSchemaLoader)
     assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"

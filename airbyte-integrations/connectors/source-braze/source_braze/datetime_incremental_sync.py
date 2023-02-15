@@ -38,8 +38,8 @@ class DatetimeIncrementalSyncComponent(DatetimeBasedCursor):
         """
         Puts a step to each stream slice. `step` is a difference between start/end date in days.
         """
-        get_start_time = operator.itemgetter(self.stream_slice_field_start.eval(self.config))
-        get_end_time = operator.itemgetter(self.stream_slice_field_end.eval(self.config))
+        get_start_time = operator.itemgetter(self.partition_field_start.eval(self.config))
+        get_end_time = operator.itemgetter(self.partition_field_end.eval(self.config))
         date_range = [
             dr
             for dr in super(DatetimeIncrementalSyncComponent, self)._partition_daterange(start, end, step)

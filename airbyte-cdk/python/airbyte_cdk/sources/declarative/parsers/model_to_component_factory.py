@@ -455,10 +455,10 @@ class ModelToComponentFactory:
             primary_key=primary_key,
             retriever=retriever,
             schema_loader=schema_loader,
-            stream_cursor_field=cursor_field or [],
+            stream_cursor_field=cursor_field or "",
             transformations=transformations,
             config=config,
-            parameters={},
+            parameters=model.parameters,
         )
 
     def _merge_stream_slicers(self, model: DeclarativeStreamModel, config: Config) -> Optional[StreamSlicer]:

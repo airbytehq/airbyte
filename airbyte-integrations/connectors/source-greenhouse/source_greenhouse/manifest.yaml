@@ -57,10 +57,11 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
-      partition_router:
-        request_cursor_field: "updated_after"
-        cursor_field: "updated_at"
-        class_name: source_greenhouse.components.GreenHouseSlicer
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_greenhouse.components.GreenHouseSlicer
+      request_cursor_field: "updated_after"
+      cursor_field: "updated_at"
   applications_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -69,10 +70,11 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
       requester: "#/definitions/requester"
-      partition_router:
-        request_cursor_field: "created_after"
-        cursor_field: "applied_at"
-        class_name: source_greenhouse.components.GreenHouseSlicer
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_greenhouse.components.GreenHouseSlicer
+      request_cursor_field: "created_after"
+      cursor_field: "applied_at"
   candidates_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -125,13 +127,14 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "applications/{{ stream_slice.parent_id }}/demographics/answers"
-      partition_router:
-        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
-        parent_stream: "#/definitions/applications_stream"
-        request_cursor_field: "updated_after"
-        stream_slice_field: "parent_id"
-        cursor_field: "updated_at"
-        parent_key: "id"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+      parent_stream: "#/definitions/applications_stream"
+      request_cursor_field: "updated_after"
+      stream_slice_field: "parent_id"
+      cursor_field: "updated_at"
+      parent_key: "id"
   applications_interviews_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -141,13 +144,14 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "applications/{{ stream_slice.parent_id }}/scheduled_interviews"
-      partition_router:
-        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
-        parent_stream: "#/definitions/applications_stream"
-        request_cursor_field: "updated_after"
-        stream_slice_field: "parent_id"
-        cursor_field: "updated_at"
-        parent_key: "id"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+      parent_stream: "#/definitions/applications_stream"
+      request_cursor_field: "updated_after"
+      stream_slice_field: "parent_id"
+      cursor_field: "updated_at"
+      parent_key: "id"
   custom_fields_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -222,13 +226,14 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         path: "jobs/{{ stream_slice.parent_id }}/stages"
-      partition_router:
-        class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
-        parent_stream: "#/definitions/jobs_stream"
-        request_cursor_field: "updated_after"
-        stream_slice_field: "parent_id"
-        cursor_field: "updated_at"
-        parent_key: "id"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_greenhouse.components.GreenHouseSubstreamSlicer
+      parent_stream: "#/definitions/jobs_stream"
+      request_cursor_field: "updated_after"
+      stream_slice_field: "parent_id"
+      cursor_field: "updated_at"
+      parent_key: "id"
   offers_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:

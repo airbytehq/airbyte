@@ -156,6 +156,7 @@ definitions:
       end_time_option:
         field_name: before
         inject_into: request_parameter
+      cursor_field: "date_created_gmt"
     retriever:
       $ref: "#/definitions/retriever"
     $parameters:
