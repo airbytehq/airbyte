@@ -66,3 +66,23 @@ export const createCarsTableQuery = createTable("public.cars", [
 ]);
 
 export const dropCarsTableQuery = dropTable("public.cars");
+
+// Dummy tables - used only for populating stream table with a lot of streams(tables)
+// NOTE: Not for testing stream functionality!
+export const createDummyTablesQuery = (amountOfTables: number) =>
+  Array.from({ length: amountOfTables }, (_, index) => {
+    const tableName = `public.dummy_table_${index + 1}`;
+    const columns = [
+      "id serial PRIMARY KEY",
+      "column_1 INTEGER NOT NULL",
+      "column_2 VARCHAR(100) NOT NULL",
+      "column_3 DECIMAL(10, 2) NOT NULL",
+    ];
+    return createTable(tableName, columns);
+  }).join("\n");
+
+export const dropDummyTablesQuery = (amountOfTables: number) => {
+  // postgres doesn't allow to drop multiple tables using wildcard, so need to compose the list of table names
+  const tables = Array.from({ length: amountOfTables }, (_, index) => `public.dummy_table_${index + 1}`).join(", ");
+  return dropTable(tables);
+};
