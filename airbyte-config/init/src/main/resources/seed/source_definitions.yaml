@@ -2049,11 +2049,15 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.21
+  dockerImageTag: 0.2.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${subdomain}.zendesk.com"
+      - zendesk.com
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
