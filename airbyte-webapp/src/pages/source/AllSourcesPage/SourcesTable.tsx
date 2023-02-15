@@ -12,7 +12,7 @@ interface SourcesTableProps {
   sources: SourceRead[];
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
+export const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
   const navigate = useNavigate();
 
   const { connections } = useConnectionList({ sourceId: sources.map(({ sourceId }) => sourceId) });
@@ -23,5 +23,3 @@ const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
 
   return <ImplementationTable data={data} onClickRow={clickRow} entity="source" />;
 };
-
-export default SourcesTable;

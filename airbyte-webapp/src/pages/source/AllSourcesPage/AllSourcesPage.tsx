@@ -12,7 +12,7 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useSourceList } from "hooks/services/useSourceHook";
 
-import SourcesTable from "./SourcesTable";
+import { SourcesTable } from "./SourcesTable";
 import { RoutePaths } from "../../routePaths";
 
 const AllSourcesPage: React.FC = () => {
