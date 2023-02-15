@@ -58,6 +58,8 @@ import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.general.DefaultReplicationWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
@@ -67,8 +69,6 @@ import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
-import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
@@ -308,12 +308,12 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           destinationLauncherConfig.getIsCustomConnector(),
           featureFlags);
 
-
-      final UUID sourceDefinitionId = airbyteApiClient.getSourceApi().getSource(new SourceIdRequestBody().sourceId(syncInput.getSourceId())).getSourceDefinitionId();
+      final UUID sourceDefinitionId =
+          airbyteApiClient.getSourceApi().getSource(new SourceIdRequestBody().sourceId(syncInput.getSourceId())).getSourceDefinitionId();
 
       final long maxSecondsBetweenMessages = airbyteApiClient.getSourceDefinitionApi()
-              .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
-              .getMaxSecondsBetweenMessages();
+          .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
+          .getMaxSecondsBetweenMessages();
 
       LOGGER.error("Legacy Worker: " + maxSecondsBetweenMessages);
       final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(maxSecondsBetweenMessages));

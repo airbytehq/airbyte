@@ -115,9 +115,9 @@ public class FailureHelper {
 
   public static FailureReason sourceHeartbeatFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
     return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
-            .withFailureOrigin(FailureOrigin.SOURCE)
-            .withFailureType(FailureType.HEARTBEAT_TIMEOUT)
-            .withExternalMessage("The source was unresponsive");
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.HEARTBEAT_TIMEOUT)
+        .withExternalMessage("The source was unresponsive");
   }
 
   public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {

@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record4;
