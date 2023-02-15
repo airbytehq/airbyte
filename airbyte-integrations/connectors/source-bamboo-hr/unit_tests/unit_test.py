@@ -35,7 +35,7 @@ def test_source_bamboo_hr_client_wrong_credentials():
             "Test",
             True,
             [{"name": "NewTest"}],
-            "CustomFieldsAccessDeniedError('Access to fields: Test - denied. Please check your access level.')",
+            "CustomFieldsAccessDeniedError('Unable to read the following fields, please check your permissions: `Test`')",
         ),
     ],
 )
