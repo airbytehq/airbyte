@@ -56,7 +56,7 @@ repositories {
 }
 
 Properties env = new Properties()
-file('.env').withInputStream { env.load(it) }
+rootProject.file('.env').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -154,9 +154,9 @@ spotless {
 
         importOrder()
 
-        eclipse('4.21.0').configFile(file('tools/gradle/codestyle/java-google-style.xml'))
+        eclipse('4.21.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createJavaLicenseWith(file('LICENSE_SHORT'))
+        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -166,7 +166,7 @@ spotless {
     sql {
         target createSpotlessTarget('**/*.sql')
 
-        dbeaver().configFile(file('tools/gradle/codestyle/sql-dbeaver.properties'))
+        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
