@@ -55,6 +55,7 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-converters')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
@@ -67,7 +68,7 @@ dependencies {
     implementation project(':airbyte-featureflag')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-notification')
     implementation(project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
