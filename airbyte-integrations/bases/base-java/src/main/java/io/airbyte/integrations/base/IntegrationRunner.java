@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
@@ -92,6 +93,7 @@ public class IntegrationRunner {
     validator = jsonSchemaValidator;
   }
 
+  @Trace(operationName = "runOperation", resourceName = "runResource")
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
     try {
