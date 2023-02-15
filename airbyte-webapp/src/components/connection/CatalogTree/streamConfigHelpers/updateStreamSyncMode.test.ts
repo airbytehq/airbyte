@@ -71,7 +71,7 @@ describe(`${updateStreamSyncMode.name}`, () => {
       );
     });
 
-    it("automatically selects the compose primary key fields", () => {
+    it("automatically selects the composite primary key fields", () => {
       const syncModes: SyncModeValue = {
         syncMode: "incremental",
         destinationSyncMode: "append_dedup",
