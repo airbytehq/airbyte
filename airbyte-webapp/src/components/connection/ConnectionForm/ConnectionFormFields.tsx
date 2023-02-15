@@ -53,9 +53,6 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
   });
 
   const isNewTableDesignEnabled = useNewTableDesignExperiment();
-  const firstSectionTitle = (
-    <FormattedMessage id={isNewTableDesignEnabled ? "form.configuration" : "connection.transfer"} />
-  );
 
   return (
     <>
@@ -63,7 +60,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
         <Section
-          title={firstSectionTitle}
+          title={<FormattedMessage id="form.configuration" />}
           collapsible={mode === "edit"}
           collapsedPreviewInfo={<ConnectionConfigurationFormPreview />}
           testId="configuration"
