@@ -15,11 +15,15 @@ exports[`CreateConnectionForm should render 1`] = `
           <div
             class="<removed-for-snapshot-test>"
           >
-            <h2
+            <div
               class="<removed-for-snapshot-test>"
             >
-              Connection
-            </h2>
+              <h2
+                class="<removed-for-snapshot-test>"
+              >
+                Connection
+              </h2>
+            </div>
             <div
               class="<removed-for-snapshot-test>"
             >
@@ -87,11 +91,31 @@ exports[`CreateConnectionForm should render 1`] = `
             <div
               class="<removed-for-snapshot-test>"
             >
-              <h2
+              <div
                 class="<removed-for-snapshot-test>"
               >
-                Transfer
-              </h2>
+                <h2
+                  class="<removed-for-snapshot-test>"
+                >
+                  Transfer
+                </h2>
+                <svg
+                  aria-hidden="true"
+                  class="<removed-for-snapshot-test>"
+                  data-icon="chevron-right"
+                  data-prefix="fas"
+                  data-testid="section-expand-arrow"
+                  focusable="false"
+                  role="img"
+                  viewBox="0 0 384 512"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M342.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L274.7 256 105.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
               <div
                 class="<removed-for-snapshot-test>"
               >
@@ -345,11 +369,15 @@ exports[`CreateConnectionForm should render 1`] = `
             <div
               class="<removed-for-snapshot-test>"
             >
-              <h2
+              <div
                 class="<removed-for-snapshot-test>"
               >
-                Streams
-              </h2>
+                <h2
+                  class="<removed-for-snapshot-test>"
+                >
+                  Streams
+                </h2>
+              </div>
               <span
                 class=""
               >
@@ -548,6 +576,9 @@ exports[`CreateConnectionForm should render 1`] = `
             <div
               class="<removed-for-snapshot-test>"
             >
+              <div
+                class="<removed-for-snapshot-test>"
+              />
               <div
                 class="<removed-for-snapshot-test>"
               >
@@ -1022,6 +1053,9 @@ exports[`CreateConnectionForm should render 1`] = `
             <div
               class="<removed-for-snapshot-test>"
             >
+              <div
+                class="<removed-for-snapshot-test>"
+              />
               <h2
                 class="<removed-for-snapshot-test>"
               >
