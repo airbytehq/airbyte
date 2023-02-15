@@ -10,7 +10,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-persistence:job-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation libs.lombok
     implementation libs.micronaut.cache.caffeine
