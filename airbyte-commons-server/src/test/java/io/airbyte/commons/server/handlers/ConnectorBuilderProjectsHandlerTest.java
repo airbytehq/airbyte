@@ -76,17 +76,14 @@ class ConnectorBuilderProjectsHandlerTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setUp() {
+  void setUp() throws JsonProcessingException {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
     workspaceId = UUID.randomUUID();
 
-    sourceDefinition = generateSourceDefinition();
+    builderProject = generateBuilderProject();
 
-    protocolVersionRange = new AirbyteProtocolVersionRange(new Version("0.0.0"), new Version("0.3.0"));
-
-    sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, uuidSupplier, schedulerSynchronousClient, githubStore, sourceHandler,
-        protocolVersionRange);
+    connectorBuilderProjectsHandler = new ConnectorBuilderProjectsHandler(configRepository, uuidSupplier);
   }
 
   private ConnectorBuilderProject generateBuilderProject() throws JsonProcessingException {
