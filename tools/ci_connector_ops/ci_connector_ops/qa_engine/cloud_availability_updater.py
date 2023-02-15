@@ -109,11 +109,11 @@ def pr_already_created_for_branch(head_branch: str) -> bool:
     return len(response.json()) > 0
 
 
-def add_labels_to_pr(pr_id: str, labels_to_add: List) -> requests.Response:
-    url = AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT + f"/{pr_id}/labels"
+def add_labels_to_pr(pr_number: str, labels_to_add: List) -> requests.Response:
+    url = AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT + f"/{pr_number}/labels"
     response = requests.post(url, headers=GITHUB_API_COMMON_HEADERS, json={"labels": labels_to_add})
     response.raise_for_status()
-    logger.info(f"Labels {labels_to_add} added to PR {pr_id}")
+    logger.info(f"Labels {labels_to_add} added to PR {pr_number}")
     return response
 
 
@@ -135,9 +135,9 @@ def create_pr(connector: ConnectorQAReport, branch: str) -> Optional[requests.Re
         response = requests.post(AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT, headers=GITHUB_API_COMMON_HEADERS, json=data)
         response.raise_for_status()
         pr_url = response.json().get("url")
-        pr_id = response.json().get("id")
+        pr_number = response.json().get("number")
         logger.info(f"A PR was opened for {connector.connector_technical_name}: {pr_url}")
-        add_labels_to_pr(pr_id, PR_LABELS)
+        add_labels_to_pr(pr_number, PR_LABELS)
         return response
     else:
         logger.warning(f"A PR already exists for branch {branch}")

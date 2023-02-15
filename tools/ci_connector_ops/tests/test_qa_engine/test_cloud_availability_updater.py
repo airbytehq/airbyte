@@ -174,7 +174,7 @@ def test_create_pr(mocker, pr_already_created):
         report_generation_datetime=datetime.utcnow(),
     )
     mocker.patch.object(cloud_availability_updater, "requests")
-    pr_post_response = mocker.Mock(json=mocker.Mock(return_value={"url": "pr_url", "id": "pr_id"}))
+    pr_post_response = mocker.Mock(json=mocker.Mock(return_value={"url": "pr_url", "number": "pr_number"}))
     cloud_availability_updater.requests.post.side_effect = [pr_post_response, mocker.Mock()]
     mocker.patch.object(cloud_availability_updater, "pr_already_created_for_branch", mocker.Mock(return_value=pr_already_created))
     mocker.patch.object(cloud_availability_updater, "GITHUB_API_COMMON_HEADERS", {"common": "headers"})
@@ -193,7 +193,7 @@ def test_create_pr(mocker, pr_already_created):
         "head": "my_awesome_branch",
         "base": "master",
     }
-    expected_issue_url = "https://api.github.com/repos/airbytehq/airbyte-platform-internal/issues/pr_id/labels"
+    expected_issue_url = "https://api.github.com/repos/airbytehq/airbyte-platform-internal/issues/pr_number/labels"
     expected_issue_data = {"labels": cloud_availability_updater.PR_LABELS}
     if not pr_already_created:
         expected_post_calls = [
