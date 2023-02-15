@@ -13,7 +13,7 @@ import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { RequestOptionFields } from "./RequestOptionFields";
 import { ToggleGroupField } from "./ToggleGroupField";
-import { BuilderPaginator } from "../types";
+import { BuilderPaginator, CURSOR_PAGINATION, OFFSET_INCREMENT, PAGE_INCREMENT } from "../types";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
@@ -30,7 +30,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
     if (newToggleValue) {
       helpers.setValue({
         strategy: {
-          type: "OffsetIncrement",
+          type: OFFSET_INCREMENT,
           page_size: "",
         },
         pageTokenOption: {
@@ -70,7 +70,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         options={[
           {
             label: "Offset Increment",
-            typeValue: "OffsetIncrement",
+            typeValue: OFFSET_INCREMENT,
             children: (
               <>
                 <BuilderField
@@ -86,7 +86,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
           },
           {
             label: "Page Increment",
-            typeValue: "PageIncrement",
+            typeValue: PAGE_INCREMENT,
             children: (
               <>
                 <BuilderField
@@ -109,7 +109,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
           },
           {
             label: "Cursor Pagination",
-            typeValue: "CursorPagination",
+            typeValue: CURSOR_PAGINATION,
             children: (
               <>
                 <BuilderFieldWithInputs

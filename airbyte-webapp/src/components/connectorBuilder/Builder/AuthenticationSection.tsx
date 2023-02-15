@@ -7,7 +7,14 @@ import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
 import { KeyValueListField } from "./KeyValueListField";
-import { inferredAuthValues } from "../types";
+import {
+  API_KEY_AUTHENTICATOR,
+  BASIC_AUTHENTICATOR,
+  BEARER_AUTHENTICATOR,
+  inferredAuthValues,
+  OAUTH_AUTHENTICATOR,
+  SESSION_TOKEN_AUTHENTICATOR,
+} from "../types";
 
 export const AuthenticationSection: React.FC = () => {
   const analyticsService = useAnalyticsService();
@@ -28,7 +35,7 @@ export const AuthenticationSection: React.FC = () => {
           { label: "No Auth", typeValue: "NoAuth" },
           {
             label: "API Key",
-            typeValue: "ApiKeyAuthenticator",
+            typeValue: API_KEY_AUTHENTICATOR,
             default: {
               ...inferredAuthValues("ApiKeyAuthenticator"),
               header: "",
@@ -53,7 +60,7 @@ export const AuthenticationSection: React.FC = () => {
           },
           {
             label: "Bearer",
-            typeValue: "BearerAuthenticator",
+            typeValue: BEARER_AUTHENTICATOR,
             default: {
               ...inferredAuthValues("BearerAuthenticator"),
             },
@@ -69,7 +76,7 @@ export const AuthenticationSection: React.FC = () => {
           },
           {
             label: "Basic HTTP",
-            typeValue: "BasicHttpAuthenticator",
+            typeValue: BASIC_AUTHENTICATOR,
             default: {
               ...inferredAuthValues("BasicHttpAuthenticator"),
             },
@@ -94,7 +101,7 @@ export const AuthenticationSection: React.FC = () => {
           },
           {
             label: "OAuth",
-            typeValue: "OAuthAuthenticator",
+            typeValue: OAUTH_AUTHENTICATOR,
             default: {
               ...inferredAuthValues("OAuthAuthenticator"),
               refresh_request_body: [],
@@ -176,7 +183,7 @@ export const AuthenticationSection: React.FC = () => {
           },
           {
             label: "Session token",
-            typeValue: "SessionTokenAuthenticator",
+            typeValue: SESSION_TOKEN_AUTHENTICATOR,
             default: {
               ...inferredAuthValues("SessionTokenAuthenticator"),
             },

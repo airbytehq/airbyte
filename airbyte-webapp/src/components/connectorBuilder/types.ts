@@ -26,6 +26,15 @@ import {
   ListPartitionRouter,
   SubstreamPartitionRouterType,
   SubstreamPartitionRouter,
+  ListPartitionRouterType,
+  ApiKeyAuthenticatorType,
+  SessionTokenAuthenticatorType,
+  OAuthAuthenticatorType,
+  CursorPaginationType,
+  OffsetIncrementType,
+  PageIncrementType,
+  BearerAuthenticatorType,
+  BasicHttpAuthenticatorType,
 } from "core/request/ConnectorManifest";
 
 export type EditorView = "ui" | "yaml";
@@ -96,10 +105,11 @@ export interface BuilderStream {
 }
 
 // TODO pull in CDK version to ensure it's consistent across all components
-export const CDK_VERSION = "1.0.0";
+export const CDK_VERSION = "0.28.0";
 
 export function versionSupported(version: string) {
-  return semver.satisfies(version, `>= 1.0.0 <=${CDK_VERSION}`);
+  // 0.28.0 is the version where breaking changes got introduced - older states can't be supported
+  return semver.satisfies(version, `>= 0.28.0 <=${CDK_VERSION}`);
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -127,6 +137,19 @@ export const DEFAULT_BUILDER_STREAM_VALUES: Omit<BuilderStream, "id"> = {
     requestBody: [],
   },
 };
+
+export const LIST_PARTITION_ROUTER: ListPartitionRouterType = "ListPartitionRouter";
+export const SUBSTREAM_PARTITION_ROUTER: SubstreamPartitionRouterType = "SubstreamPartitionRouter";
+
+export const API_KEY_AUTHENTICATOR: ApiKeyAuthenticatorType = "ApiKeyAuthenticator";
+export const BEARER_AUTHENTICATOR: BearerAuthenticatorType = "BearerAuthenticator";
+export const BASIC_AUTHENTICATOR: BasicHttpAuthenticatorType = "BasicHttpAuthenticator";
+export const SESSION_TOKEN_AUTHENTICATOR: SessionTokenAuthenticatorType = "SessionTokenAuthenticator";
+export const OAUTH_AUTHENTICATOR: OAuthAuthenticatorType = "OAuthAuthenticator";
+
+export const CURSOR_PAGINATION: CursorPaginationType = "CursorPagination";
+export const OFFSET_INCREMENT: OffsetIncrementType = "OffsetIncrement";
+export const PAGE_INCREMENT: PageIncrementType = "PageIncrement";
 
 export const authTypeToKeyToInferredInput: Record<string, Record<string, BuilderFormInput>> = {
   NoAuth: {},
@@ -309,27 +332,27 @@ export const builderFormValidationSchema = yup.object().shape({
     urlBase: yup.string().required("form.empty.error"),
     authenticator: yup.object({
       header: yup.mixed().when("type", {
-        is: (type: string) => type === "ApiKeyAuthenticator" || type === "SessionTokenAuthenticator",
+        is: (type: string) => type === API_KEY_AUTHENTICATOR || type === SESSION_TOKEN_AUTHENTICATOR,
         then: yup.string().required("form.empty.error"),
         otherwise: (schema) => schema.strip(),
       }),
       token_refresh_endpoint: yup.mixed().when("type", {
-        is: "OAuthAuthenticator",
+        is: OAUTH_AUTHENTICATOR,
         then: yup.string().required("form.empty.error"),
         otherwise: (schema) => schema.strip(),
       }),
       session_token_response_key: yup.mixed().when("type", {
-        is: "SessionTokenAuthenticator",
+        is: SESSION_TOKEN_AUTHENTICATOR,
         then: yup.string().required("form.empty.error"),
         otherwise: (schema) => schema.strip(),
       }),
       login_url: yup.mixed().when("type", {
-        is: "SessionTokenAuthenticator",
+        is: SESSION_TOKEN_AUTHENTICATOR,
         then: yup.string().required("form.empty.error"),
         otherwise: (schema) => schema.strip(),
       }),
       validate_session_url: yup.mixed().when("type", {
-        is: "SessionTokenAuthenticator",
+        is: SESSION_TOKEN_AUTHENTICATOR,
         then: yup.string().required("form.empty.error"),
         otherwise: (schema) => schema.strip(),
       }),
@@ -376,22 +399,22 @@ export const builderFormValidationSchema = yup.object().shape({
           strategy: yup
             .object({
               page_size: yup.mixed().when("type", {
-                is: (val: string) => ["OffsetIncrement", "PageIncrement"].includes(val),
+                is: (val: string) => ([OFFSET_INCREMENT, PAGE_INCREMENT] as string[]).includes(val),
                 then: yup.number().required("form.empty.error"),
                 otherwise: yup.number(),
               }),
               cursor_value: yup.mixed().when("type", {
-                is: "CursorPagination",
+                is: CURSOR_PAGINATION,
                 then: yup.string().required("form.empty.error"),
                 otherwise: (schema) => schema.strip(),
               }),
               stop_condition: yup.mixed().when("type", {
-                is: "CursorPagination",
+                is: CURSOR_PAGINATION,
                 then: yup.string(),
                 otherwise: (schema) => schema.strip(),
               }),
               start_from_page: yup.mixed().when("type", {
-                is: "PageIncrement",
+                is: PAGE_INCREMENT,
                 then: yup.string(),
                 otherwise: (schema) => schema.strip(),
               }),
@@ -405,28 +428,28 @@ export const builderFormValidationSchema = yup.object().shape({
         .array(
           yup.object().shape({
             cursor_field: yup.mixed().when("type", {
-              is: (val: string) => val === "ListPartitionRouter",
+              is: (val: string) => val === LIST_PARTITION_ROUTER,
               then: yup.string().required("form.empty.error"),
               otherwise: (schema) => schema.strip(),
             }),
             values: yup.mixed().when("type", {
-              is: "ListPartitionRouter",
+              is: LIST_PARTITION_ROUTER,
               then: yup.array().of(yup.string()),
               otherwise: (schema) => schema.strip(),
             }),
             request_option: nonPathRequestOptionSchema,
             parent_key: yup.mixed().when("type", {
-              is: "SubstreamPartitionRouter",
+              is: SUBSTREAM_PARTITION_ROUTER,
               then: yup.string().required("form.empty.error"),
               otherwise: (schema) => schema.strip(),
             }),
             parentStreamReference: yup.mixed().when("type", {
-              is: "SubstreamPartitionRouter",
+              is: SUBSTREAM_PARTITION_ROUTER,
               then: yup.string().required("form.empty.error"),
               otherwise: (schema) => schema.strip(),
             }),
             partition_field: yup.mixed().when("type", {
-              is: "SubstreamPartitionRouter",
+              is: SUBSTREAM_PARTITION_ROUTER,
               then: yup.string().required("form.empty.error"),
               otherwise: (schema) => schema.strip(),
             }),

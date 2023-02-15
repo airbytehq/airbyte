@@ -63,7 +63,7 @@ export const convertToBuilderFormValues = async (
   if (!versionSupported(resolvedManifest.version)) {
     throw new ManifestCompatibilityError(
       undefined,
-      `Connector builder UI only supports manifests version >= 1.0.0 and <= ${CDK_VERSION}, encountered ${resolvedManifest.version}`
+      `Connector builder UI only supports manifests version >= 0.28.0 and <= ${CDK_VERSION}, encountered ${resolvedManifest.version}`
     );
   }
 

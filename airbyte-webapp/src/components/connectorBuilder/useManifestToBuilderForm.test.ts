@@ -7,7 +7,7 @@ import { convertToBuilderFormValues } from "./useManifestToBuilderForm";
 
 const baseManifest: ConnectorManifest = {
   type: "DeclarativeSource",
-  version: "0.1.0",
+  version: "0.28.0",
   check: {
     type: "CheckStream",
     stream_names: [],

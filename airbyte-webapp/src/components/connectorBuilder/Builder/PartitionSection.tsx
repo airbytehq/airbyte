@@ -13,7 +13,7 @@ import { BuilderOneOf, OneOfOption } from "./BuilderOneOf";
 import { RequestOptionFields } from "./RequestOptionFields";
 import { StreamReferenceField } from "./StreamReferenceField";
 import { ToggleGroupField } from "./ToggleGroupField";
-import { BuilderStream } from "../types";
+import { BuilderStream, LIST_PARTITION_ROUTER, SUBSTREAM_PARTITION_ROUTER } from "../types";
 
 interface PartitionSectionProps {
   streamFieldPath: (fieldPath: string) => string;
@@ -28,7 +28,7 @@ export const PartitionSection: React.FC<PartitionSectionProps> = ({ streamFieldP
     if (newToggleValue) {
       helpers.setValue([
         {
-          type: "ListPartitionRouter",
+          type: LIST_PARTITION_ROUTER,
           values: [],
           cursor_field: "",
         },
@@ -42,7 +42,7 @@ export const PartitionSection: React.FC<PartitionSectionProps> = ({ streamFieldP
   const getSlicingOptions = (buildPath: (path: string) => string): OneOfOption[] => [
     {
       label: "List",
-      typeValue: "ListPartitionRouter",
+      typeValue: LIST_PARTITION_ROUTER,
       default: {
         values: [],
         cursor_field: "",
@@ -78,7 +78,7 @@ export const PartitionSection: React.FC<PartitionSectionProps> = ({ streamFieldP
     },
     {
       label: "Substream",
-      typeValue: "SubstreamPartitionRouter",
+      typeValue: SUBSTREAM_PARTITION_ROUTER,
       default: {
         parent_key: "",
         partition_field: "",
@@ -131,7 +131,7 @@ export const PartitionSection: React.FC<PartitionSectionProps> = ({ streamFieldP
       <BuilderList
         basePath={streamFieldPath("partitionRouter")}
         emptyItem={{
-          type: "ListPartitionRouter",
+          type: LIST_PARTITION_ROUTER,
           values: [],
           cursor_field: "",
         }}
