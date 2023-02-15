@@ -22,10 +22,6 @@ jobs:
           export_default_credentials: true
       - name: Preparing Runner to the Build process
         uses: ./.github/actions/runner-prepare-for-build
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
       - name: Install ci-connector-ops package
         run: pip install --quiet -e ./tools/ci_connector_ops
       - name: Run QA Engine
