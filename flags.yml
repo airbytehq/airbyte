@@ -3,3 +3,5 @@ flags:
     enabled: false
   - name: heartbeat.failSync
     enabled: false
+  - name: platform.commitStatesAsap
+    enabled: false

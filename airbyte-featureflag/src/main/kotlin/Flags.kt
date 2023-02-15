@@ -19,6 +19,8 @@ object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
 object PerfBackgroundJsonValidation : Temporary(key = "performance.backgroundJsonSchemaValidation")
 
+object CommitStatesAsap : Temporary(key = "platform.commitStatesAsap")
+
 object FieldSelectionEnabled : Temporary(key="connection.columnSelection")
 
 // NOTE: this is deprecated in favor of FieldSelectionEnabled and will be removed once that flag is fully deployed.
