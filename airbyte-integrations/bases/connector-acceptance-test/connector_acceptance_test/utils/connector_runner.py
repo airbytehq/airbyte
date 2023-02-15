@@ -17,7 +17,13 @@ from pydantic import ValidationError
 
 
 class ConnectorRunner:
-    def __init__(self, image_name: str, volume: Path, connector_configuration_path: Optional[Path] = None):
+    def __init__(
+        self,
+        image_name: str,
+        volume: Path,
+        connector_configuration_path: Optional[Path] = None,
+        custom_environment_variables: Optional[Mapping] = {},
+    ):
         self._client = docker.from_env()
         try:
             self._image = self._client.images.get(image_name)
@@ -28,6 +34,7 @@ class ConnectorRunner:
         self._runs = 0
         self._volume_base = volume
         self._connector_configuration_path = connector_configuration_path
+        self._custom_environment_variables = custom_environment_variables
 
     @property
     def output_folder(self) -> Path:
@@ -106,6 +113,7 @@ class ConnectorRunner:
             volumes=volumes,
             network_mode="host",
             detach=True,
+            environment=self._custom_environment_variables,
             **kwargs,
         )
         with open(self.output_folder / "raw", "wb+") as f:

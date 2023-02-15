@@ -21,15 +21,15 @@ const ErrorSection: React.FC<{
   </Callout>
 );
 
-const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({ errorMessage }) => (
+export const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({ errorMessage }) => (
   <ErrorSection errorTitle={<FormattedMessage id="form.failedTests" />} errorMessage={errorMessage} />
 );
 
-const FetchingConnectorError: React.FC = () => (
+export const FetchingConnectorError: React.FC = () => (
   <ErrorSection
     errorTitle={<FormattedMessage id="form.failedFetchingConnector" />}
     errorMessage={<FormattedMessage id="form.tryAgain" />}
   />
 );
 
-export { TestingConnectionError, FetchingConnectorError };
+export default FetchingConnectorError;
