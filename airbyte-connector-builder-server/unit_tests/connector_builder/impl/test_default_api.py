@@ -31,31 +31,31 @@ MANIFEST = {
     "version": "0.1.0",
     "type": "DeclarativeSource",
     "definitions": {
-        "selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+        "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
         "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
         "retriever": {
             "type": "DeclarativeSource",
-            "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+            "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "hashiras", "path": "/hashiras"},
+            "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         "breathing_techniques_stream": {
             "retriever": {
                 "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
+            "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     },
     "streams": [
@@ -63,21 +63,21 @@ MANIFEST = {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "hashiras", "path": "/hashiras"},
+            "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         {
             "type": "DeclarativeStream",
             "retriever": {
                 "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
+            "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     ],
     "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
@@ -126,7 +126,7 @@ def test_list_streams_with_interpolated_urls():
                 "type": "DeclarativeStream",
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                    "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
                     "requester": {
                         "url_base": "https://{{ config['rank'] }}.muzan.com/api/v1/",
@@ -134,7 +134,7 @@ def test_list_streams_with_interpolated_urls():
                         "type": "HttpRequester",
                     },
                 },
-                "$parameters": {"name": "demons", "path": "/demons"},
+                "$options": {"name": "demons", "path": "/demons"},
             }
         ],
         "check": {"stream_names": ["demons"], "type": "CheckStream"},
@@ -159,7 +159,7 @@ def test_list_streams_with_unresolved_interpolation():
                 "type": "DeclarativeStream",
                 "retriever": {
                     "type": "SimpleRetriever",
-                    "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                    "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                     "paginator": {"type": "NoPagination"},
                     "requester": {
                         "url_base": "https://{{ config['not_in_config'] }}.muzan.com/api/v1/",
@@ -167,7 +167,7 @@ def test_list_streams_with_unresolved_interpolation():
                         "type": "HttpRequester",
                     },
                 },
-                "$parameters": {"name": "demons", "path": "/demons"},
+                "$options": {"name": "demons", "path": "/demons"},
             }
         ],
         "check": {"stream_names": ["demons"], "type": "CheckStream"},
@@ -487,20 +487,20 @@ def test_invalid_manifest():
     invalid_manifest = {
         "version": "0.1.0",
         "definitions": {
-            "selector": {"extractor": {"field_path": ["items"]}},
+            "selector": {"extractor": {"field_pointer": ["items"]}},
             "requester": {"http_method": "GET"},
             "retriever": {
-                "record_selector": {"extractor": {"field_path": ["items"]}},
+                "record_selector": {"extractor": {"field_pointer": ["items"]}},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"http_method": "GET"},
             },
             "hashiras_stream": {
                 "retriever": {
-                    "record_selector": {"extractor": {"field_path": ["items"]}},
+                    "record_selector": {"extractor": {"field_pointer": ["items"]}},
                     "paginator": {"type": "NoPagination"},
                     "requester": {"http_method": "GET"},
                 },
-                "$parameters": {"name": "hashiras", "path": "/hashiras"},
+                "$options": {"name": "hashiras", "path": "/hashiras"},
             },
         },
         "check": {"stream_names": ["hashiras"], "class_name": "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"},
@@ -676,12 +676,19 @@ def test_read_stream_with_many_slices():
     assert len(stream_read.slices[1].pages[2].records) == 0
 
 
+
 def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached():
     maximum_number_of_slices = 5
     request = {}
     response = {"status_code": 200}
     mock_source_adapter_cls = make_mock_adapter_factory(
-        iter([slice_message(), request_log_message(request), response_log_message(response)] * maximum_number_of_slices)
+        iter(
+            [
+                slice_message(),
+                request_log_message(request),
+                response_log_message(response)
+            ] * maximum_number_of_slices
+        )
     )
 
     api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -699,7 +706,9 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
     request = {}
     response = {"status_code": 200}
     mock_source_adapter_cls = make_mock_adapter_factory(
-        iter([slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice)
+        iter(
+            [slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice
+        )
     )
 
     api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -727,23 +736,23 @@ def test_resolve_manifest():
                     "type": "DefaultPaginator",
                     "page_size": 10,
                     "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                    "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                    "page_token_option": {"inject_into": "path"},
                     "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                 },
                 "requester": {
                     "path": "/v3/marketing/lists",
                     "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                    "request_parameters": {"page_size": "10"},
+                    "request_parameters": {"page_size": 10},
                 },
-                "record_selector": {"extractor": {"field_path": ["result"]}},
+                "record_selector": {"extractor": {"field_pointer": ["result"]}},
             },
         },
         "streams": [
             {
                 "type": "DeclarativeStream",
-                "$parameters": _stream_options,
-                "schema_loader": {"$ref": "#/definitions/schema_loader"},
-                "retriever": "#/definitions/retriever",
+                "$options": _stream_options,
+                "schema_loader": {"$ref": "*ref(definitions.schema_loader)"},
+                "retriever": "*ref(definitions.retriever)",
             },
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
@@ -759,15 +768,15 @@ def test_resolve_manifest():
                     "type": "DefaultPaginator",
                     "page_size": 10,
                     "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
-                    "page_token_option": {"inject_into": "path", "type": "RequestPath"},
+                    "page_token_option": {"inject_into": "path"},
                     "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}"},
                 },
                 "requester": {
                     "path": "/v3/marketing/lists",
                     "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config.apikey }}"},
-                    "request_parameters": {"page_size": "10"},
+                    "request_parameters": {"page_size": 10},
                 },
-                "record_selector": {"extractor": {"field_path": ["result"]}},
+                "record_selector": {"extractor": {"field_pointer": ["result"]}},
             },
         },
         "streams": [
@@ -779,7 +788,7 @@ def test_resolve_manifest():
                     "file_path": "./source_sendgrid/schemas/{{ options.name }}.yaml",
                     "primary_key": _stream_primary_key,
                     "url_base": _stream_url_base,
-                    "$parameters": _stream_options,
+                    "$options": _stream_options,
                 },
                 "retriever": {
                     "type": "SimpleRetriever",
@@ -793,15 +802,15 @@ def test_resolve_manifest():
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,
-                            "$parameters": _stream_options,
+                            "$options": _stream_options,
                         },
                         "page_token_option": {
-                            "type": "RequestPath",
+                            "type": "RequestOption",
                             "inject_into": "path",
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,
-                            "$parameters": _stream_options,
+                            "$options": _stream_options,
                         },
                         "pagination_strategy": {
                             "type": "CursorPagination",
@@ -809,12 +818,12 @@ def test_resolve_manifest():
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,
-                            "$parameters": _stream_options,
+                            "$options": _stream_options,
                         },
                         "name": _stream_name,
                         "primary_key": _stream_primary_key,
                         "url_base": _stream_url_base,
-                        "$parameters": _stream_options,
+                        "$options": _stream_options,
                     },
                     "requester": {
                         "type": "HttpRequester",
@@ -825,38 +834,38 @@ def test_resolve_manifest():
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,
-                            "$parameters": _stream_options,
+                            "$options": _stream_options,
                         },
-                        "request_parameters": {"page_size": "10"},
+                        "request_parameters": {"page_size": 10},
                         "name": _stream_name,
                         "primary_key": _stream_primary_key,
                         "url_base": _stream_url_base,
-                        "$parameters": _stream_options,
+                        "$options": _stream_options,
                     },
                     "record_selector": {
                         "type": "RecordSelector",
                         "extractor": {
                             "type": "DpathExtractor",
-                            "field_path": ["result"],
+                            "field_pointer": ["result"],
                             "name": _stream_name,
                             "primary_key": _stream_primary_key,
                             "url_base": _stream_url_base,
-                            "$parameters": _stream_options,
+                            "$options": _stream_options,
                         },
                         "name": _stream_name,
                         "primary_key": _stream_primary_key,
                         "url_base": _stream_url_base,
-                        "$parameters": _stream_options,
+                        "$options": _stream_options,
                     },
                     "name": _stream_name,
                     "primary_key": _stream_primary_key,
                     "url_base": _stream_url_base,
-                    "$parameters": _stream_options,
+                    "$options": _stream_options,
                 },
                 "name": _stream_name,
                 "primary_key": _stream_primary_key,
                 "url_base": _stream_url_base,
-                "$parameters": _stream_options,
+                "$options": _stream_options,
             },
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
@@ -876,7 +885,7 @@ def test_resolve_manifest_unresolvable_references():
         "version": "version",
         "definitions": {},
         "streams": [
-            {"type": "DeclarativeStream", "retriever": "#/definitions/retriever"},
+            {"type": "DeclarativeStream", "retriever": "*ref(definitions.retriever)"},
         ],
         "check": {"type": "CheckStream", "stream_names": ["lists"]},
     }
@@ -886,7 +895,7 @@ def test_resolve_manifest_unresolvable_references():
     with pytest.raises(HTTPException) as actual_exception:
         loop.run_until_complete(api.resolve_manifest(ResolveManifestRequestBody(manifest=invalid_manifest)))
 
-    assert "Undefined reference #/definitions/retriever" in actual_exception.value.detail
+    assert "Undefined reference *ref(definitions.retriever)" in actual_exception.value.detail
     assert actual_exception.value.status_code == expected_status_code
 
 

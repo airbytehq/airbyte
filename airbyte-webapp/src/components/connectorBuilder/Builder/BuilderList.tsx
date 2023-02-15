@@ -47,7 +47,7 @@ export const BuilderList: React.FC<BuilderListProps> = ({ children, emptyItem, b
             helpers.setValue([...list.value, { ...emptyItem }]);
           }}
         >
-          <FormattedMessage id="connectorBuilder.addNewPartitionRouter" />
+          <FormattedMessage id="connectorBuilder.addNewSlicer" />
         </Button>
       </div>
     </>

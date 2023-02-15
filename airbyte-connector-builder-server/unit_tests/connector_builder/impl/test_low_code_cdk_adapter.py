@@ -10,10 +10,11 @@ import pytest
 import requests
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, Type
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
 from airbyte_cdk.sources.declarative.requesters.paginators import PaginatorTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetrieverTestReadDecorator
+from airbyte_cdk.sources.declarative.parsers.custom_exceptions import UndefinedReferenceException
 from airbyte_cdk.sources.streams.http import HttpStream
+
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
 
 
@@ -53,55 +54,55 @@ class MockConcreteStream(HttpStream, ABC):
 
 MANIFEST = {
     "version": "0.1.0",
-    "type": "DeclarativeSource",
+    "type" : "DeclarativeSource",
     "definitions": {
-        "selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
-        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "DeclarativeSource"},
+        "selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+        "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type" : "DeclarativeSource" },
         "retriever": {
-            "type": "DeclarativeSource",
-            "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "type" : "DeclarativeSource",
+            "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
             "paginator": {"type": "NoPagination"},
             "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
         },
         "hashiras_stream": {
             "retriever": {
-                "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "type" : "DeclarativeSource",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "hashiras", "path": "/hashiras"},
+            "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         "breathing_techniques_stream": {
             "retriever": {
-                "type": "DeclarativeSource",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "type" : "DeclarativeSource",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
+            "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     },
     "streams": [
         {
-            "type": "DeclarativeStream",
+            "type" : "DeclarativeStream",
             "retriever": {
-                "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "type" : "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "hashiras", "path": "/hashiras"},
+            "$options": {"name": "hashiras", "path": "/hashiras"},
         },
         {
-            "type": "DeclarativeStream",
+            "type" : "DeclarativeStream",
             "retriever": {
-                "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "type" : "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {"type": "NoPagination"},
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "breathing-techniques", "path": "/breathing_techniques"},
+            "$options": {"name": "breathing-techniques", "path": "/breathing_techniques"},
         },
     ],
     "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
@@ -109,26 +110,56 @@ MANIFEST = {
 
 MANIFEST_WITH_REFERENCES = {
     "version": "0.1.0",
-    "type": "DeclarativeSource",
+    "type" : "DeclarativeSource",
     "definitions": {
-        "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
+        "selector": {
+            "type": "RecordSelector",
+            "extractor": {
+                "type": "DpathExtractor",
+                "field_pointer": []
+            }
+        },
         "requester": {
             "type": "HttpRequester",
             "url_base": "https://demonslayers.com/api/v1/",
             "http_method": "GET",
-            "authenticator": {"type": "BearerAuthenticator", "api_token": "{{ config['api_key'] }}"},
+            "authenticator": {
+                "type": "BearerAuthenticator",
+                "api_token": "{{ config['api_key'] }}"
+            }
         },
         "retriever": {
             "type": "SimpleRetriever",
-            "record_selector": {"$ref": "#/definitions/selector"},
-            "paginator": {"type": "NoPagination"},
-            "requester": {"$ref": "#/definitions/requester"},
+            "record_selector": {
+                "$ref": "*ref(definitions.selector)"
+            },
+            "paginator": {
+                "type": "NoPagination"
+            },
+            "requester": {
+                "$ref": "*ref(definitions.requester)"
+            }
         },
-        "base_stream": {"type": "DeclarativeStream", "retriever": {"$ref": "#/definitions/retriever"}},
-        "ranks_stream": {"$ref": "#/definitions/base_stream", "$parameters": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
+        "base_stream": {
+            "type": "DeclarativeStream",
+            "retriever": {
+                "$ref": "*ref(definitions.retriever)"
+            }
+        },
+        "ranks_stream": {
+            "$ref": "*ref(definitions.base_stream)",
+            "$options": {
+                "name": "ranks",
+                "primary_key": "id",
+                "path": "/ranks"
+            }
+        }
     },
-    "streams": ["#/definitions/ranks_stream"],
-    "check": {"type": "CheckStream", "stream_names": ["ranks"]},
+    "streams": ["*ref(definitions.ranks_stream)"],
+    "check": {
+        "type": "CheckStream",
+        "stream_names": ["ranks"]
+    },
     "spec": {
         "type": "Spec",
         "documentation_url": "https://docsurl.com",
@@ -137,34 +168,42 @@ MANIFEST_WITH_REFERENCES = {
             "type": "object",
             "required": ["api_key"],
             "additionalProperties": True,
-            "properties": {"api_key": {"type": "string", "description": "API Key"}},
-        },
-    },
+            "properties": {
+                "api_key": {
+                    "type": "string",
+                    "description": "API Key"
+                }
+            }
+        }
+    }
 }
 
 MANIFEST_WITH_PAGINATOR = {
     "version": "0.1.0",
-    "type": "DeclarativeSource",
-    "definitions": {},
+    "type" : "DeclarativeSource",
+    "definitions": {
+    },
     "streams": [
         {
-            "type": "DeclarativeStream",
+            "type" : "DeclarativeStream",
             "retriever": {
-                "type": "SimpleRetriever",
-                "record_selector": {"extractor": {"field_path": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
+                "type" : "SimpleRetriever",
+                "record_selector": {"extractor": {"field_pointer": ["items"], "type": "DpathExtractor"}, "type": "RecordSelector"},
                 "paginator": {
                     "type": "DefaultPaginator",
-                    "pagination_strategy": {"type": "OffsetIncrement", "page_size": 10},
-                    "url_base": "https://demonslayers.com/api/v1/",
+                    "pagination_strategy": {
+                        "type": "OffsetIncrement",
+                        "page_size": 10
+                    },
+                    "url_base": "https://demonslayers.com/api/v1/"
                 },
                 "requester": {"url_base": "https://demonslayers.com/api/v1/", "http_method": "GET", "type": "HttpRequester"},
             },
-            "$parameters": {"name": "hashiras", "path": "/hashiras"},
+            "$options": {"name": "hashiras", "path": "/hashiras"},
         },
     ],
     "check": {"stream_names": ["hashiras"], "type": "CheckStream"},
 }
-
 
 def test_get_http_streams():
     expected_urls = {"https://demonslayers.com/api/v1/breathing_techniques", "https://demonslayers.com/api/v1/hashiras"}
@@ -179,7 +218,6 @@ def test_get_http_streams():
 
 MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
 MAXIMUM_NUMBER_OF_SLICES = 5
-
 
 def test_get_http_manifest_with_references():
     expected_urls = {"https://demonslayers.com/api/v1/ranks"}
@@ -205,9 +243,8 @@ def test_get_http_streams_non_declarative_streams():
 
 
 def test_get_http_streams_non_http_stream():
-    declarative_stream_non_http_retriever = DeclarativeStream(
-        name="hashiras", primary_key="id", retriever=MagicMock(), config={}, parameters={}
-    )
+    declarative_stream_non_http_retriever = DeclarativeStream(name="hashiras", primary_key="id", retriever=MagicMock(), config={},
+                                                              options={})
 
     mock_source = MagicMock()
     mock_source.streams.return_value = [declarative_stream_non_http_retriever]
@@ -219,32 +256,26 @@ def test_get_http_streams_non_http_stream():
 
 
 def test_read_streams():
-    expected_messages = iter(
-        [
-            AirbyteMessage(
-                type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
+    expected_messages = iter([
+        AirbyteMessage(
+            type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
+        ),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="response:{'status': 200}")),
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(data={"name": "Tengen Uzui", "breathing_technique": "sound"}, emitted_at=1234, stream="hashiras"),
+        ),
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(
+                data={"name": "Kyojuro Rengoku", "breathing_technique": "fire"}, emitted_at=1234, stream="hashiras"
             ),
-            AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="response:{'status': 200}")),
-            AirbyteMessage(
-                type=Type.RECORD,
-                record=AirbyteRecordMessage(
-                    data={"name": "Tengen Uzui", "breathing_technique": "sound"}, emitted_at=1234, stream="hashiras"
-                ),
-            ),
-            AirbyteMessage(
-                type=Type.RECORD,
-                record=AirbyteRecordMessage(
-                    data={"name": "Kyojuro Rengoku", "breathing_technique": "fire"}, emitted_at=1234, stream="hashiras"
-                ),
-            ),
-            AirbyteMessage(
-                type=Type.RECORD,
-                record=AirbyteRecordMessage(
-                    data={"name": "Giyu Tomioka", "breathing_technique": "water"}, emitted_at=1234, stream="hashiras"
-                ),
-            ),
-        ]
-    )
+        ),
+        AirbyteMessage(
+            type=Type.RECORD,
+            record=AirbyteRecordMessage(data={"name": "Giyu Tomioka", "breathing_technique": "water"}, emitted_at=1234, stream="hashiras"),
+        ),
+    ])
     mock_source = MagicMock()
     mock_source.read.return_value = expected_messages
 
@@ -284,13 +315,29 @@ def test_read_streams_with_error():
 def test_read_streams_invalid_reference():
     invalid_reference_manifest = {
         "version": "0.1.0",
-        "type": "DeclarativeSource",
+        "type" : "DeclarativeSource",
         "definitions": {
-            "selector": {"type": "RecordSelector", "extractor": {"type": "DpathExtractor", "field_path": []}},
-            "ranks_stream": {"$ref": "#/definitions/base_stream", "$parameters": {"name": "ranks", "primary_key": "id", "path": "/ranks"}},
+            "selector": {
+                "type": "RecordSelector",
+                "extractor": {
+                    "type": "DpathExtractor",
+                    "field_pointer": []
+                }
+            },
+            "ranks_stream": {
+                "$ref": "*ref(definitions.base_stream)",
+                "$options": {
+                    "name": "ranks",
+                    "primary_key": "id",
+                    "path": "/ranks"
+                }
+            }
         },
-        "streams": ["#/definitions/ranks_stream"],
-        "check": {"type": "CheckStream", "stream_names": ["ranks"]},
+        "streams": ["*ref(definitions.ranks_stream)"],
+        "check": {
+            "type": "CheckStream",
+            "stream_names": ["ranks"]
+        }
     }
 
     with pytest.raises(UndefinedReferenceException):
