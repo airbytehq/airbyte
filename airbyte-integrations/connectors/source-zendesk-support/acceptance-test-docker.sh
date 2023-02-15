@@ -1,15 +1,8 @@
 #!/usr/bin/env sh
-image_name=$(cat acceptance-test-config.yml | grep "connector_image" | head -n 1 | cut -d: -f2-)
-# Build latest connector image
-echo "try to build: ${image_name}"
-docker build . -t ${image_name}
 
-# Pull latest acctest image
-docker pull airbyte/connector-acceptance-test:latest
+set -e
 
-docker run --rm -it \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /tmp:/tmp \
-    -v $(pwd):/test_input \
-    airbyte/connector-acceptance-test \
-    --acceptance-test-config /test_input
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+CONFIG_PATH="$(readlink -f acceptance-test-config.yml)"
+
+LOCAL_CDK="$LOCAL_CDK" CONFIG_PATH="$CONFIG_PATH" "$ROOT_DIR/airbyte-integrations/bases/connector-acceptance-test/acceptance-test-docker.sh"

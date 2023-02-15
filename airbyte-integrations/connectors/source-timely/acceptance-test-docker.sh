@@ -1,13 +1,8 @@
 #!/usr/bin/env sh
 
-# Build latest connector image
-docker build . -t $(cat acceptance-test-config.yml | grep "connector_image" | head -n 1 | cut -d: -f2-)
+set -e
 
-# Run
-docker run --rm -it \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /tmp:/tmp \
-    -v $(pwd):/test_input \
-    airbyte/connector-acceptance-test:dev \
-    --acceptance-test-config /test_input
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+CONFIG_PATH="$(readlink -f acceptance-test-config.yml)"
 
+LOCAL_CDK="$LOCAL_CDK" CONFIG_PATH="$CONFIG_PATH" "$ROOT_DIR/airbyte-integrations/bases/connector-acceptance-test/acceptance-test-docker.sh"
