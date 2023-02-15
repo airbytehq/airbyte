@@ -27,11 +27,10 @@ import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderTitle } from "./BuilderTitle";
-import { IncrementalSection } from "./IncrementalSection";
 import { KeyValueListField } from "./KeyValueListField";
 import { PaginationSection } from "./PaginationSection";
-import { PartitionSection } from "./PartitionSection";
 import styles from "./StreamConfigView.module.scss";
+import { StreamSlicerSection } from "./StreamSlicerSection";
 import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
 import { BuilderStream } from "../types";
 import { formatJson } from "../utils";
@@ -94,8 +93,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
             />
           </BuilderCard>
           <PaginationSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
-          <IncrementalSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
-          <PartitionSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
+          <StreamSlicerSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
           <BuilderCard>
             <KeyValueListField
               path={streamFieldPath("requestOptions.requestParameters")}

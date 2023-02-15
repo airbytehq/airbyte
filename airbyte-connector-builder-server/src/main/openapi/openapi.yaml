@@ -71,7 +71,7 @@ paths:
                 description: Connector manifest template string
   /v1/manifest/resolve:
     post:
-      summary: Given a JSON manifest, returns a JSON manifest with all of the $refs and $parameters resolved and flattened
+      summary: Given a JSON manifest, returns a JSON manifest with all of the $refs and $options resolved and flattened
       operationId: resolveManifest
       requestBody:
         content:
@@ -219,6 +219,8 @@ components:
           type: object
           description: The headers of the HTTP response, if any
     # --- Commenting out for now since they do not work with our orval openapi client generator ---
+    # ConnectorManifest:
+    #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     # AirbyteProtocol:
     #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
@@ -275,7 +277,7 @@ components:
       properties:
         manifest:
           type: object
-          description: The config-based connector manifest contents with $refs and $parameters resolved
+          description: The config-based connector manifest contents with $refs and $options resolved
 
     # The following exception structs were copied from airbyte-api/src/main/openapi/config.yaml
     InvalidInputProperty:
