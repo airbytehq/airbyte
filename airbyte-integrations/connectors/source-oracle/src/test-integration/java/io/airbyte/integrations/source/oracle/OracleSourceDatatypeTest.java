@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -147,7 +147,10 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "1", "123.45", "power(10, -130)", "9.99999999999999999999 * power(10, 125)")
             /* The 999990000… below is the plain string representation of 9.999 * power(10, 125) */
-            /* because normalization expects a plain integer strings whereas `Math.pow(10, 125)` returns a scientific notation */
+            /*
+             * because normalization expects a plain integer strings whereas `Math.pow(10, 125)` returns a
+             * scientific notation
+             */
             .addExpectedValues(null, "1", "123.45", String.valueOf(Math.pow(10, -130)),
                 "999999999999999999999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
             .build());

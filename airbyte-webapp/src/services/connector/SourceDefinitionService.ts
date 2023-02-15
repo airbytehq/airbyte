@@ -7,9 +7,10 @@ import { useInitService } from "services/useInitService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { connectorDefinitionKeys } from "./ConnectorDefinitions";
+import { useSuspenseQuery } from "./useSuspenseQuery";
 import { SourceDefinitionCreate, SourceDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
-import { useSuspenseQuery } from "./useSuspenseQuery";
 
 export const sourceDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "sourceDefinition"] as const,
@@ -114,6 +115,8 @@ const useUpdateSourceDefinition = () => {
             [],
         })
       );
+
+      queryClient.invalidateQueries(connectorDefinitionKeys.count());
     },
   });
 };

@@ -1,12 +1,11 @@
-@use "../../../scss/variables" as vars;
+@use "scss/variables";
 
 .modalBody {
-  overflow: unset;
   min-width: 500px;
 }
 
 .controlLabel {
-  margin-bottom: vars.$spacing-xl;
+  margin-bottom: variables.$spacing-xl;
 }
 
 .requestButton {

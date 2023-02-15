@@ -1,0 +1,128 @@
+version: "0.1.0"
+
+definitions:
+  page_size: 100
+  step: "P100D"
+
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_callrail/schemas/{{ options['name'] }}.json"
+
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "Authorization"
+      api_token: "Token token={{ config.api_key }}"
+
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
+    start_datetime:
+      datetime: "{{ config.start_date }}"
+      datetime_format: "%Y-%m-%d"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "*ref(definitions.step)"
+    cursor_field: "{{ options.stream_cursor_field }}"
+    start_time_option:
+      field_name: "start_date"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "PT0.000001S"
+
+  retriever:
+    type: SimpleRetriever
+    $options:
+      url_base: "https://api.callrail.com/v3/a/"
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+    record_selector:
+      extractor:
+        type: DpathExtractor
+        field_pointer: ["{{ options['name'] }}"]
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ headers['link']['next']['url'] }}"
+        stop_condition: "{{ 'next' not in headers['link'] }}"
+        page_size: 100
+      page_size_option:
+        field_name: "per_page"
+        inject_into: "request_parameter"
+      page_token_option:
+        inject_into: "path"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+
+  calls_stream:
+    $options:
+      name: "calls"
+      stream_cursor_field: "start_time"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ config['account_id'] }}/calls.json?"
+        request_options_provider:
+          request_parameters:
+            fields: "call_type,company_id,company_name,company_time_zone,created_at,device_type,first_call,formatted_call_type,formatted_customer_location,formatted_business_phone_number,formatted_customer_name,prior_calls,formatted_customer_name_or_phone_number,formatted_customer_phone_number,formatted_duration,formatted_tracking_phone_number,formatted_tracking_source,formatted_value,good_lead_call_id,good_lead_call_time,lead_status,note,source,source_name,tags,total_calls,value,waveforms,tracker_id,speaker_percent,keywords,medium,campaign,referring_url,landing_page_url,last_requested_url,referrer_domain,utm_source,utm_medium,utm_term,utm_content,utm_campaign,utma,utmb,utmc,utmv,utmz,ga,gclid,fbclid,msclkid,milestones,timeline_url,keywords_spotted,call_highlights,agent_email,keypad_entries"
+
+  conversations_stream:
+    $options:
+      name: "conversations"
+      stream_cursor_field: "last_message_at"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ config['account_id'] }}/text-messages.json?"
+        request_options_provider:
+          request_parameters:
+            fields: "id,company_id,initial_tracker_id,current_tracker_id,customer_name,customer_phone_number,initial_tracking_number,current_tracking_number,last_message_at,state,company_time_zone,formatted_customer_phone_number,formatted_initial_tracking_number,formatted_current_tracking_number,formatted_customer_name,recent_messages"
+
+  users_stream:
+    $options:
+      name: "users"
+      stream_cursor_field: "created_at"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ config['account_id'] }}/users.json?"
+
+  companies_stream:
+    $options:
+      name: "companies"
+      stream_cursor_field: "created_at"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "{{ config['account_id'] }}/companies.json?"
+
+streams:
+  - "*ref(definitions.calls_stream)"
+  - "*ref(definitions.conversations_stream)"
+  - "*ref(definitions.users_stream)"
+  - "*ref(definitions.companies_stream)"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users

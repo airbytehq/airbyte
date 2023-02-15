@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.temporal.scheduling;
@@ -9,7 +9,6 @@ import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
 import io.temporal.workflow.WorkflowMethod;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -83,23 +82,5 @@ public interface ConnectionManagerWorkflow {
    */
   @QueryMethod
   JobInformation getJobInformation();
-
-  @Data
-  @NoArgsConstructor
-  @AllArgsConstructor
-  class QuarantinedInformation {
-
-    private UUID connectionId;
-    private long jobId;
-    private int attemptId;
-    private boolean isQuarantined;
-
-  }
-
-  /**
-   * Return if a job is stuck or not with the job information
-   */
-  @QueryMethod
-  QuarantinedInformation getQuarantinedInformation();
 
 }

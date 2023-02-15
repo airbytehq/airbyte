@@ -1,30 +1,31 @@
 import React, { useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { useEffectOnce } from "react-use";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
+import { useBuildUpdateCheck } from "hooks/services/useBuildUpdateCheck";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
-import { storeUtmFromQuery } from "utils/utmStorage";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { WorkspaceRead } from "../core/request/AirbyteClient";
-import ConnectionPage from "./ConnectionPage";
-import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
-import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
-import { AllDestinationsPage } from "./destination/AllDestinationsPage";
-import CreateDestinationPage from "./destination/CreateDestinationPage";
-import { DestinationItemPage } from "./destination/DestinationItemPage";
-import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
-import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
-import PreferencesPage from "./PreferencesPage";
 import { RoutePaths, DestinationPaths } from "./routePaths";
-import SettingsPage from "./SettingsPage";
-import SourcesPage from "./SourcesPage";
+import { WorkspaceRead } from "../core/request/AirbyteClient";
+
+const ConnectionsRoutes = React.lazy(() => import("./connections/ConnectionsRoutes"));
+const CreateConnectionPage = React.lazy(() => import("./connections/CreateConnectionPage"));
+const ConnectorBuilderRoutes = React.lazy(() => import("./connectorBuilder/ConnectorBuilderRoutes"));
+
+const AllDestinationsPage = React.lazy(() => import("./destination/AllDestinationsPage"));
+const CreateDestinationPage = React.lazy(() => import("./destination/CreateDestinationPage"));
+const DestinationItemPage = React.lazy(() => import("./destination/DestinationItemPage"));
+const DestinationOverviewPage = React.lazy(() => import("./destination/DestinationOverviewPage"));
+const DestinationSettingsPage = React.lazy(() => import("./destination/DestinationSettingsPage"));
+const PreferencesPage = React.lazy(() => import("./PreferencesPage"));
+const SettingsPage = React.lazy(() => import("./SettingsPage"));
+const SourcesPage = React.lazy(() => import("./SourcesPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(
@@ -46,15 +47,16 @@ const MainViewRoutes: React.FC = () => {
           <Route path={RoutePaths.Destination}>
             <Route index element={<AllDestinationsPage />} />
             <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
               <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
               <Route index element={<DestinationOverviewPage />} />
             </Route>
           </Route>
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+          <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderRoutes />} />
 
           <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
         </Routes>
@@ -83,20 +85,16 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
   );
 };
 
-const RoutingWithWorkspace: React.FC = () => {
+const RoutingWithWorkspace: React.FC<{ element?: JSX.Element }> = ({ element }) => {
   const workspace = useCurrentWorkspace();
   useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
 
-  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
+  return workspace.initialSetupComplete ? element ?? <MainViewRoutes /> : <PreferencesRoutes />;
 };
 
 export const Routing: React.FC = () => {
-  const { search } = useLocation();
-
-  useEffectOnce(() => {
-    storeUtmFromQuery(search);
-  });
+  useBuildUpdateCheck();
 
   // TODO: Remove this after it is verified there are no problems with current routing
   const OldRoutes = useMemo(
@@ -108,7 +106,6 @@ export const Routing: React.FC = () => {
   );
   return (
     <Routes>
-      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />

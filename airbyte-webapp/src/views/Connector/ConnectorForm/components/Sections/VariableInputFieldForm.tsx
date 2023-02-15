@@ -1,5 +1,4 @@
 import { useField } from "formik";
-import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useAsync, useEffectOnce } from "react-use";
 import * as yup from "yup";
@@ -9,8 +8,8 @@ import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
-import { useConnectorForm } from "../../connectorFormContext";
 import { FormSection } from "./FormSection";
+import { useConnectorForm } from "../../connectorFormContext";
 
 interface VariableInputFormProps {
   formField: FormObjectArrayItem;
@@ -29,16 +28,10 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
   onDone,
   onCancel,
 }) => {
-  // This form creates a temporary field for Formik to prevent the field from rendering in
-  // the service form while it's being created or edited since it reuses the FormSection component.
-  // The temp field is cleared when this form is done or canceled.
-  const variableInputFieldPath = useMemo(() => `__temp__${path.replace(/\./g, "_").replace(/\[|\]/g, "")}`, [path]);
-  const [field, , fieldHelper] = useField(variableInputFieldPath);
+  const [field, , fieldHelper] = useField(path);
   const { validationSchema } = useConnectorForm();
 
   // Copy the validation from the original field to ensure that the form has all the required values field out correctly.
-  // One side effect of this is that validation errors will not be shown in this form because the validationSchema does not
-  // contain info about the temp field.
   const { value: isValid } = useAsync(
     async (): Promise<boolean> => yup.reach(validationSchema, path).isValid(field.value),
     [field.value, path, validationSchema]
@@ -63,7 +56,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
   return (
     <>
       <ModalBody maxHeight={300}>
-        <FormSection blocks={formField.properties} path={variableInputFieldPath} disabled={disabled} skipAppend />
+        <FormSection blocks={formField.properties} path={path} disabled={disabled} skipAppend />
       </ModalBody>
       <ModalFooter>
         <Button
@@ -71,7 +64,6 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
           variant="secondary"
           onClick={() => {
             onCancel();
-            fieldHelper.setValue(undefined, false);
           }}
         >
           <FormattedMessage id="form.cancel" />
@@ -81,7 +73,6 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
           disabled={disabled || !isValid}
           onClick={() => {
             onDone(field.value);
-            fieldHelper.setValue(undefined, false);
           }}
         >
           <FormattedMessage id="form.done" />

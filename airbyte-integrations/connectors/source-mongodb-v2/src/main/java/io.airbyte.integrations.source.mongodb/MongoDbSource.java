@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mongodb;
@@ -87,7 +87,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  protected JsonSchemaType getType(final BsonType fieldType) {
+  protected JsonSchemaType getAirbyteType(final BsonType fieldType) {
     return MongoUtils.getType(fieldType);
   }
 

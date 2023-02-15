@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.temporal;
@@ -203,11 +203,6 @@ public class ConnectionManagerUtils {
       // A non-deleted workflow being in a COMPLETED state is unexpected, and should be corrected
       throw new UnreachableWorkflowException(
           String.format("ConnectionManagerWorkflow for connection %s is unreachable due to having COMPLETED status.", connectionId));
-    }
-
-    if (workflowState.isQuarantined()) {
-      throw new UnreachableWorkflowException(
-          String.format("ConnectionManagerWorkflow for connection %s is unreachable due to being in a quarantined state.", connectionId));
     }
 
     return connectionManagerWorkflow;

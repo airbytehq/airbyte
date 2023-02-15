@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.commons.converters.StateConverter.convertClientStateTypeToInternal;
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
-import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
@@ -15,6 +15,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
+import io.airbyte.commons.converters.StateConverter;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -25,7 +26,6 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.workers.helper.StateConverter;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
@@ -57,14 +57,8 @@ public class PersistStateActivityImpl implements PersistStateActivity {
               AirbyteApiClient.retryWithJitter(
                   () -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)),
                   "get state");
-          if (featureFlags.needStateValidation() && previousState != null) {
-            final StateType newStateType = maybeStateWrapper.get().getStateType();
-            final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
 
-            if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
-              validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
-            }
-          }
+          validate(configuredCatalog, maybeStateWrapper, previousState);
 
           AirbyteApiClient.retryWithJitter(
               () -> {
@@ -83,6 +77,42 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Validates whether it is safe to persist the new state based on the previously saved state.
+   *
+   * @param configuredCatalog The configured catalog of streams for the connection.
+   * @param newState The new state.
+   * @param previousState The previous state.
+   */
+  private void validate(final ConfiguredAirbyteCatalog configuredCatalog,
+                        final Optional<StateWrapper> newState,
+                        final ConnectionState previousState) {
+    /**
+     * If state validation is enabled and the previous state exists and is not empty, make sure that
+     * state will not be lost as part of the migration from legacy -> per stream.
+     *
+     * Otherwise, it is okay to update if the previous state is missing or empty.
+     */
+    if (featureFlags.needStateValidation() && !isStateEmpty(previousState)) {
+      final StateType newStateType = newState.get().getStateType();
+      final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
+
+      if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
+        validateStreamStates(newState.get(), configuredCatalog);
+      }
+    }
+  }
+
+  /**
+   * Test whether the connection state is empty.
+   *
+   * @param connectionState The connection state.
+   * @return {@code true} if the connection state is null or empty, {@code false} otherwise.
+   */
+  private boolean isStateEmpty(final ConnectionState connectionState) {
+    return connectionState == null || connectionState.getState() == null || connectionState.getState().isEmpty();
   }
 
   @VisibleForTesting

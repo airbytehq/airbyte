@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -70,7 +70,10 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
             extracted = response_body
         else:
             pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted = dpath.util.get(response_body, pointer, default=[])
+            if "*" in pointer:
+                extracted = dpath.util.values(response_body, pointer)
+            else:
+                extracted = dpath.util.get(response_body, pointer, default=[])
         if isinstance(extracted, list):
             return extracted
         elif extracted:

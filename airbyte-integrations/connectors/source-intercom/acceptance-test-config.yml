@@ -1,33 +1,40 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-intercom:dev
-tests:
+test_strictness_level: high
+acceptance_tests:
   spec:
-    - spec_path: "source_intercom/spec.json"
+    tests:
+      - spec_path: "source_intercom/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_records.txt"
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      threshold_days: 365
-      cursor_paths:
-        companies: ["updated_at"]
-        company_segments: ["updated_at"]
-        conversations: ["updated_at"]
-        conversation_parts: ["updated_at"]
-        contacts: ["updated_at"]
-        segments: ["updated_at"]
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+        threshold_days: 365
+        cursor_paths:
+          companies: ["updated_at"]
+          company_segments: ["updated_at"]
+          conversations: ["updated_at"]
+          conversation_parts: ["updated_at"]
+          contacts: ["updated_at"]
+          segments: ["updated_at"]
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"

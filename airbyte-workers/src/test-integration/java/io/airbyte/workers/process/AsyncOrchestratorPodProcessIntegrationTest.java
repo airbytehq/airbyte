@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -114,7 +114,9 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
-        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true", EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, "false"),
+        null,
+        null,
+        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true", EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, "true"),
         serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(

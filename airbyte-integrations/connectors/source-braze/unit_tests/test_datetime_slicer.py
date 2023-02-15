@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.models import SyncMode
@@ -18,9 +18,10 @@ def test_datetime_slicer():
     slicer = DatetimeStreamSlicerComponent(
         start_datetime="2022-12-01",
         end_datetime="2022-12-08",
-        step="3d",
+        step="P3D",
         cursor_field="time",
         datetime_format="%Y-%m-%d",
+        cursor_granularity="P1D",
         config={},
         options={},
         step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, options={})

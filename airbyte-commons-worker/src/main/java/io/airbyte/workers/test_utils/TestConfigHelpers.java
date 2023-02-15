@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.test_utils;
@@ -128,11 +128,14 @@ public class TestConfigHelpers {
     final StandardSyncInput syncInput = new StandardSyncInput()
         .withNamespaceDefinition(standardSync.getNamespaceDefinition())
         .withPrefix(standardSync.getPrefix())
+        .withSourceId(sourceId)
+        .withDestinationId(destinationId)
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
         .withCatalog(standardSync.getCatalog())
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
         .withState(state)
-        .withOperationSequence(List.of(normalizationOperation, customDbtOperation));
+        .withOperationSequence(List.of(normalizationOperation, customDbtOperation))
+        .withWorkspaceId(workspaceId);
 
     return new ImmutablePair<>(standardSync, syncInput);
   }

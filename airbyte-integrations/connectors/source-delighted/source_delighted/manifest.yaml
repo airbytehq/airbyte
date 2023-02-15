@@ -1,0 +1,130 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://api.delighted.com/v1/"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+    error_handler:
+      type: "DefaultErrorHandler"
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+  stream_slicer:
+    cursor_field: "{{ options['stream_cursor_field'] }}"
+    datetime_format: "%s"
+    cursor_granularity: "PT1S"
+    start_datetime:
+      datetime: "{{ config['since'] }}"
+      datetime_format: "%Y-%m-%d %H:%M:%S"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1W"
+    end_time_option:
+      field_name: "until"
+      inject_into: "request_parameter"
+    start_time_option:
+      field_name: "since"
+      inject_into: "request_parameter"
+    type: DatetimeStreamSlicer
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 100
+        start_from_page: 1
+      page_size_option:
+        field_name: "per_page"
+        inject_into: "request_parameter"
+      page_token_option:
+        field_name: "page"
+        inject_into: "request_parameter"
+      url_base: "*ref(definitions.requester.url_base)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+  base_stream:
+    primary_key: "id"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  people:
+    $ref: "*ref(definitions.base_stream)"
+    stream_cursor_field: "created_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ headers['link']['next']['url'] }}"
+          stop_condition: "{{ 'next' not in headers['link'] }}"
+          page_size: 100
+        page_size_option:
+          field_name: "per_page"
+          inject_into: "request_parameter"
+        page_token_option:
+          inject_into: "path"
+        url_base: "*ref(definitions.requester.url_base)"
+    $options:
+      name: "people"
+      path: "people.json"
+      stream_cursor_field: "created_at"
+  bounces:
+    $ref: "*ref(definitions.base_stream)"
+    primary_key: "person_id"
+    stream_cursor_field: "bounced_at"
+    $options:
+      stream_cursor_field: "bounced_at"
+      name: "bounces"
+      path: "bounces.json"
+  unsubscribes:
+    $ref: "*ref(definitions.base_stream)"
+    primary_key: "person_id"
+    stream_cursor_field: "unsubscribed_at"
+    $options:
+      stream_cursor_field: "unsubscribed_at"
+      name: "unsubscribes"
+      path: "unsubscribes.json"
+  survey_responses:
+    $ref: "*ref(definitions.base_stream)"
+    stream_cursor_field: "updated_at"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      stream_slicer:
+        $ref: "*ref(definitions.stream_slicer)"
+        end_time_option:
+          field_name: "updated_until"
+          inject_into: "request_parameter"
+        start_time_option:
+          field_name: "updated_since"
+          inject_into: "request_parameter"
+    $options:
+      stream_cursor_field: "updated_at"
+      name: "survey_responses"
+      path: "survey_responses.json"
+
+streams:
+  - "*ref(definitions.people)"
+  - "*ref(definitions.unsubscribes)"
+  - "*ref(definitions.bounces)"
+  - "*ref(definitions.survey_responses)"
+
+check:
+  type: CheckStream
+  stream_names: ["survey_responses"]

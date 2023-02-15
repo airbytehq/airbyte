@@ -1,20 +1,21 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import math
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class MailChimpStream(HttpStream, ABC):
     primary_key = "id"
-    page_size = 100
+    page_size = 1000
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -24,6 +25,10 @@ class MailChimpStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return f"https://{self.data_center}.api.mailchimp.com/3.0/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -72,6 +77,14 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         """
         pass
 
+    @property
+    def filter_field(self):
+        return f"since_{self.cursor_field}"
+
+    @property
+    def sort_field(self):
+        return self.cursor_field
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -81,13 +94,21 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         current_state = current_stream_state.get(self.cursor_field) or latest_state
         return {self.cursor_field: max(latest_state, current_state)}
 
-    def request_params(self, stream_state=None, **kwargs):
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        slice_ = {}
         stream_state = stream_state or {}
-        params = super().request_params(stream_state=stream_state, **kwargs)
-        default_params = {"sort_field": self.cursor_field, "sort_dir": "ASC"}
-        since_value = stream_state.get(self.cursor_field)
-        if since_value:
-            default_params[f"since_{self.cursor_field}"] = since_value
+        cursor_value = stream_state.get(self.cursor_field)
+        if cursor_value:
+            slice_[self.filter_field] = cursor_value
+        yield slice_
+
+    def request_params(self, stream_state=None, stream_slice=None, **kwargs):
+        stream_state = stream_state or {}
+        stream_slice = stream_slice or {}
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
 
@@ -110,13 +131,30 @@ class Campaigns(IncrementalMailChimpStream):
 
 class EmailActivity(IncrementalMailChimpStream):
     cursor_field = "timestamp"
+    filter_field = "since"
+    sort_field = "create_time"
     data_field = "emails"
     primary_key = ["timestamp", "email_id", "action"]
 
-    def stream_slices(self, **kwargs):
-        campaign_stream = Campaigns(authenticator=self.authenticator)
-        for campaign in campaign_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"campaign_id": campaign["id"]}
+    def __init__(self, campaign_id: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.campaign_id = campaign_id
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        stream_state = stream_state or {}
+        if self.campaign_id:
+            # this is a workaround to speed up SATs and enable incremental tests
+            campaigns = [{"id": self.campaign_id}]
+        else:
+            campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        for campaign in campaigns:
+            slice_ = {"campaign_id": campaign["id"]}
+            cursor_value = stream_state.get(campaign["id"], {}).get(self.cursor_field)
+            if cursor_value:
+                slice_[self.filter_field] = cursor_value
+            yield slice_
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
@@ -139,17 +177,6 @@ class EmailActivity(IncrementalMailChimpStream):
 
         current_stream_state[campaign_id] = new_value
         return current_stream_state
-
-    def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
-        stream_state = stream_state or {}
-        params = MailChimpStream.request_params(self, stream_state=stream_state, **kwargs)
-
-        since_value_camp = stream_state.get(stream_slice["campaign_id"])
-        if since_value_camp:
-            since_value = since_value_camp.get(self.cursor_field)
-            if since_value:
-                params["since"] = since_value
-        return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()

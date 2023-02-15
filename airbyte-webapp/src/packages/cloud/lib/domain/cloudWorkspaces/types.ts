@@ -1,3 +1,5 @@
+import { ConnectionStatus } from "core/request/AirbyteClient";
+
 export enum CreditStatus {
   "POSITIVE" = "positive",
   "NEGATIVE_WITHIN_GRACE_PERIOD" = "negative_within_grace_period",
@@ -8,7 +10,7 @@ export enum CreditStatus {
 export interface CloudWorkspace {
   name: string;
   workspaceId: string;
-  billingUserId: string;
+  creatorUserId: string;
   remainingCredits: number;
   creditStatus?: CreditStatus;
   lastCreditPurchaseIncrementTimestamp?: number | null;
@@ -17,6 +19,8 @@ export interface CloudWorkspace {
 
 export interface CreditConsumptionByConnector {
   connectionId: string;
+  connectionName: string;
+  status: ConnectionStatus;
   creditsConsumed: number;
   destinationConnectionName: string;
   destinationDefinitionId: string;

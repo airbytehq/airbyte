@@ -5,14 +5,14 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
-import { ConnectorSpecification } from "core/domain/connector";
+import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { ConnectorIds } from "utils/connectors";
 
-import { useConnectorForm } from "../../../connectorFormContext";
-import { useAuthentication } from "../../../useAuthentication";
 import styles from "./AuthButton.module.scss";
 import GoogleAuthButton from "./GoogleAuthButton";
 import { useFormikOauthAdapter } from "./useOauthFlowAdapter";
+import { useConnectorForm } from "../../../connectorFormContext";
+import { useAuthentication } from "../../../useAuthentication";
 
 function isGoogleConnector(connectorDefinitionId: string): boolean {
   return (
@@ -46,16 +46,18 @@ function getAuthenticateMessageId(connectorDefinitionId: string): string {
   return "connectorForm.authenticate";
 }
 
-export const AuthButton: React.FC = () => {
-  const { selectedConnectorDefinition, selectedConnectorDefinitionSpecification } = useConnectorForm();
+export const AuthButton: React.FC<{
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+}> = ({ selectedConnectorDefinitionSpecification }) => {
+  const { selectedConnectorDefinition } = useConnectorForm();
   const { hiddenAuthFieldErrors } = useAuthentication();
   const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnectorDefinitionSpecification);
 
-  if (!selectedConnectorDefinitionSpecification) {
-    console.error("Entered non-auth flow while no connector is selected");
+  if (!selectedConnectorDefinition) {
+    console.error("Entered non-auth flow while no supported connector is selected");
     return null;
   }
 

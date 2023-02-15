@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from collections import namedtuple
@@ -526,15 +526,15 @@ def test_invalid_custom_query_handled(mocked_gads_api, config):
 
 
 @pytest.mark.parametrize(
-    ("cls", "error", "failure_code", "raise_expected", "log_expected"),
+    ("cls", "error", "failure_code", "raise_expected"),
     (
-        (AdGroupLabels, "authorization_error", AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED, False, True),
-        (AdGroupLabels, "internal_error", 1, True, False),
-        (ServiceAccounts, "authentication_error", 1, True, False),
-        (ServiceAccounts, "internal_error", 1, True, False),
+        (AdGroupLabels, "authorization_error", AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED, False),
+        (AdGroupLabels, "internal_error", 1, True),
+        (ServiceAccounts, "authentication_error", 1, True),
+        (ServiceAccounts, "internal_error", 1, True),
     ),
 )
-def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, cls, error, failure_code, raise_expected, log_expected):
+def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, cls, error, failure_code, raise_expected):
     error_msg = "Some unexpected error"
     mocked_gads_api(failure_code=failure_code, failure_msg=error_msg, error_type=error)
     google_api = GoogleAds(credentials=config["credentials"])
@@ -546,8 +546,6 @@ def test_read_record_error_handling(config, customers, caplog, mocked_gads_api, 
     else:
         for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
             pass
-    error_in_log = error_msg in caplog.text
-    assert error_in_log is log_expected
 
 
 def test_stream_slices(config, customers):

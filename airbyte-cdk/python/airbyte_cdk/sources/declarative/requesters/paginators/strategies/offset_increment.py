@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -42,10 +42,11 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._offset = 0
-        self.page_size = InterpolatedString(self.page_size, options=options)
+        page_size = str(self.page_size) if isinstance(self.page_size, int) else self.page_size
+        self._page_size = InterpolatedString(page_size, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        if len(last_records) < self.page_size.eval(self.config):
+        if len(last_records) < self._page_size.eval(self.config):
             return None
         else:
             self._offset += len(last_records)
@@ -55,7 +56,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         self._offset = 0
 
     def get_page_size(self) -> Optional[int]:
-        page_size = self.page_size.eval(self.config)
+        page_size = self._page_size.eval(self.config)
         if not isinstance(page_size, int):
             raise Exception(f"{page_size} is of type {type(page_size)}. Expected {int}")
         return page_size

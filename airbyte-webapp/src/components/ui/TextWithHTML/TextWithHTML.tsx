@@ -26,5 +26,8 @@ export const TextWithHTML: React.FC<TextWithHTMLProps> = ({ text, className }) =
     },
   });
 
+  // Since we use `sanitize-html` above to sanitize this string from all dangerous HTML, we're safe to
+  // set this here via `dangerouslySetInnerHTML`
+  // eslint-disable-next-line react/no-danger
   return <span className={className} dangerouslySetInnerHTML={{ __html: sanitizedHtmlText }} />;
 };

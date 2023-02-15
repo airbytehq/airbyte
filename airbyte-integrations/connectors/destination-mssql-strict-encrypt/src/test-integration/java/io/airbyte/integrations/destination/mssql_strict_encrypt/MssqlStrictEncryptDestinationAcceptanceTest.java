@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql_strict_encrypt;
@@ -48,16 +48,6 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected String getImageName() {
     return "airbyte/destination-mssql-strict-encrypt:dev";
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
