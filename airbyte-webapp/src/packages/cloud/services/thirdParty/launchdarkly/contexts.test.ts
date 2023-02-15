@@ -21,7 +21,7 @@ describe(`${createUserContext.name}`, () => {
       userId: uuidV4(),
       name: "John Doe",
       email: "john.doe@airbyte.io",
-      intercomHash: "intercome_hash_string",
+      intercomHash: "intercom_hash_string",
       authUserId: "auth_user_id_string",
     };
     const context = createUserContext(mockUser, mockLocale);
