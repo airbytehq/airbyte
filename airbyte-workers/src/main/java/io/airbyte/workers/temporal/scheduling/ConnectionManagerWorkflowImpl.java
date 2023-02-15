@@ -213,14 +213,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
       }
 
-      final int getFeatureFlagsVersion =
-          Workflow.getVersion(GET_FEATURE_FLAGS_TAG, Workflow.DEFAULT_VERSION, GET_FEATURE_FLAGS_CURRENT_VERSION);
-
-      Map<String, Boolean> featureFlags = Map.of();
-      if (getFeatureFlagsVersion >= GET_FEATURE_FLAGS_CURRENT_VERSION) {
-        // TODO (pedroslopez): The feature flags will actually be used in a future PR
-        featureFlags = getFeatureFlags(connectionUpdaterInput.getConnectionId());
-      }
+      // TODO (pedroslopez): The feature flags will actually be used in a future PR
+      Map<String, Boolean> featureFlags = getFeatureFlags(connectionUpdaterInput.getConnectionId());
 
       workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
       workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
@@ -656,6 +650,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private Map<String, Boolean> getFeatureFlags(final UUID connectionId) {
+    final int getFeatureFlagsVersion =
+        Workflow.getVersion(GET_FEATURE_FLAGS_TAG, Workflow.DEFAULT_VERSION, GET_FEATURE_FLAGS_CURRENT_VERSION);
+
+    if (getFeatureFlagsVersion < GET_FEATURE_FLAGS_CURRENT_VERSION) {
+      return Map.of();
+    }
+
     final FeatureFlagFetchOutput getFlagsOutput =
         runMandatoryActivityWithOutput(featureFlagFetchActivity::getFeatureFlags, new FeatureFlagFetchInput(connectionId));
     return getFlagsOutput.getFeatureFlags();
