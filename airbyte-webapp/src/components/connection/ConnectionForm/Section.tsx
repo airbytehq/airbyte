@@ -42,6 +42,7 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
               className={classNames(styles.arrow, { [styles.collapsed]: isCollapsed })}
               icon={faChevronRight}
               onClick={() => setIsCollapsed((prevState) => !prevState)}
+              data-testid="section-expand-arrow"
             />
           )}
         </div>
