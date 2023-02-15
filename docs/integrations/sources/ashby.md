@@ -45,5 +45,5 @@ The Ashby connector should not run into Ashby API limitations under normal usage
 
 | Version | Date       | Pull Request                                         | Subject                    |
 | :------ | :--------- | :--------------------------------------------------- | :------------------------- |
-| 0.1.1   | 2023-02-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification |
+| 0.1.1   | 2023-02-15 | [23090](https://github.com/airbytehq/airbyte/pull/23090) | Specified date formatting in specification |
 | 0.1.0   | 2022-10-22 | [18334](https://github.com/airbytehq/airbyte/pull/18334) | Add Ashby Source Connector |
