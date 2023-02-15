@@ -5,37 +5,35 @@
   padding: 0 variables.$spacing-lg;
 }
 
-.usageValue {
-  padding-right: variables.$spacing-md;
-  min-width: 53px;
-}
+.header {
+  // border: red 1px solid !important;
+  padding-left: variables.$spacing-sm;
 
-%lightBackgroundOverride {
+  &:first-child {
+    padding-left: variables.$spacing-sm;
+  }
+
+  &:last-child {
+    padding-left: variables.$spacing-sm;
+  }
+
   &.light {
     background-color: colors.$white;
   }
 }
 
-.thConnection {
-  @extend %lightBackgroundOverride;
-
-  width: 30%;
+.usageValue {
+  padding-right: variables.$spacing-md;
+  min-width: 53px;
 }
 
-.thCreditsConsumed {
-  @extend %lightBackgroundOverride;
-
-  padding-right: 0;
+.cell {
+  min-width: 0;
 }
 
-.thCreditsConsumedPercent {
-  @extend %lightBackgroundOverride;
-
-  padding-left: 0;
-}
-
-.thConnectionId {
-  @extend %lightBackgroundOverride;
-
-  width: 20%;
+.cellText {
+  width: min-width 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
