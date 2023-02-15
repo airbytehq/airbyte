@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.featureflag.Flag;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.Map;
