@@ -31,7 +31,7 @@ $icon-size: 16px;
     transition: 0.3s;
     cursor: pointer;
 
-    &.collapsed {
+    &.expanded {
       transform: rotate(90deg);
     }
   }
