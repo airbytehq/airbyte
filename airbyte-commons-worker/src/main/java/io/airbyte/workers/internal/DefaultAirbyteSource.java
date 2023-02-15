@@ -40,7 +40,6 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
 
-  public static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
   static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
       0, // Normal exit

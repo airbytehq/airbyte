@@ -4,7 +4,9 @@
 
 package io.airbyte.workers.general;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,11 +15,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.config.*;
+import io.airbyte.config.FailureReason;
+import io.airbyte.config.ReplicationAttemptSummary;
+import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.State;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.AirbyteControlMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -34,7 +48,16 @@ import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -220,6 +243,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
               } else if (ex.getCause() instanceof DestinationException) {
                 replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+              } else if (ex.getCause() instanceof HeartbeatTimeoutChaperone.HeartbeatTimeoutException) {
+                replicationRunnableFailureRef.set(FailureHelper.sourceHeartbeatFailure(ex, Long.valueOf(jobId), attempt));
               } else {
                 replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
               }

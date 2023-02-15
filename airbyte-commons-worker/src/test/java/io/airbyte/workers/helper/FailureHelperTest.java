@@ -115,6 +115,22 @@ class FailureHelperTest {
   }
 
   @Test
+  void testSourceHeartbeatFailure() {
+    final Throwable t = new RuntimeException();
+    final Long jobId = 12345L;
+    final Integer attemptNumber = 1;
+    final FailureReason failureReason = FailureHelper.sourceFailure(t, jobId, attemptNumber);
+    assertEquals(FailureOrigin.SOURCE, failureReason.getFailureOrigin());
+    // assertEquals(FailureType.);
+
+    final Map<String, Object> metadata = failureReason.getMetadata().getAdditionalProperties();
+    assertEquals("read", metadata.get(CONNECTOR_COMMAND_KEY));
+    assertNull(metadata.get(FROM_TRACE_MESSAGE_KEY));
+    assertEquals(jobId, metadata.get(JOB_ID_KEY));
+    assertEquals(attemptNumber, metadata.get(ATTEMPT_NUMBER_KEY));
+  }
+
+  @Test
   void testSourceFailureFromTrace() {
     final Long jobId = 12345L;
     final Integer attemptNumber = 1;

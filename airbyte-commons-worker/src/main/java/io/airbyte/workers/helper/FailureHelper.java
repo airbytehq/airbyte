@@ -113,6 +113,13 @@ public class FailureHelper {
         .withExternalMessage("Something went wrong within the source connector");
   }
 
+  public static FailureReason sourceHeartbeatFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
+            .withFailureOrigin(FailureOrigin.SOURCE)
+            .withFailureType(FailureType.HEARTBEAT_TIMEOUT)
+            .withExternalMessage("The source was unresponsive");
+  }
+
   public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
     return connectorCommandFailure(m, jobId, attemptNumber, ConnectorCommand.READ)
         .withFailureOrigin(FailureOrigin.SOURCE);

@@ -27,6 +27,7 @@ properties:
       - system_error
       - manual_cancellation
       - refresh_schema
+      - heartbeat_timeout
   internalMessage:
     description: Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
     type: string

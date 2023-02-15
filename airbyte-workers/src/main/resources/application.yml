@@ -79,6 +79,10 @@ airbyte:
     jobs:
       initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
       minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  feature-flag:
+    client: ${FEATURE_FLAG_CLIENT:config}
+    path: ${FEATURE_FLAG_PATH:/flags}
+    api-key: ${LAUNCHDARKLY_KEY:}
   internal:
     api:
       auth-header:

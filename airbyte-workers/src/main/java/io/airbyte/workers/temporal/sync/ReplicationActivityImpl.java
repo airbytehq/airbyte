@@ -5,8 +5,14 @@
 package io.airbyte.workers.temporal.sync;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
-import static io.airbyte.workers.internal.DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_BYTES_SYNCED_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_RECORDS_SYNCED_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.REPLICATION_STATUS_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -23,8 +29,15 @@ import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.TemporalUtils;
-import io.airbyte.config.*;
+import io.airbyte.config.AirbyteConfigValidator;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ReplicationAttemptSummary;
+import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.featureflag.FeatureFlagClient;
@@ -38,10 +51,24 @@ import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
-import io.airbyte.workers.*;
+import io.airbyte.workers.ContainerOrchestratorConfig;
+import io.airbyte.workers.RecordSchemaValidator;
+import io.airbyte.workers.Worker;
+import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerMetricReporter;
+import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.DefaultAirbyteDestination;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
+import io.airbyte.workers.internal.EmptyAirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
-import io.airbyte.workers.internal.*;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.internal.exception.DestinationException;
 import io.airbyte.workers.internal.exception.SourceException;
@@ -284,7 +311,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
       final UUID sourceDefinitionId = airbyteApiClient.getSourceApi().getSource(new SourceIdRequestBody().sourceId(syncInput.getSourceId())).getSourceDefinitionId();
 
-      LOGGER.error("Getting conf for: " + sourceDefinitionId + " _____________________________________");
       final long maxSecondsBetweenMessages = airbyteApiClient.getSourceDefinitionApi()
               .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
               .getMaxSecondsBetweenMessages();

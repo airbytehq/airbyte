@@ -20,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
  *
  * It is ThreadSafe.
  */
-@Slf4j
 public class HeartbeatMonitor {
 
   public static final Duration DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD = Duration.of(1, ChronoUnit.MILLIS);
@@ -54,7 +53,6 @@ public class HeartbeatMonitor {
    *         heartBeatFreshDuration. otherwise, false.
    */
   public Optional<Boolean> isBeating() {
-    log.error("Beating");
     return getTimeSinceLastBeat().map(timeSinceLastBeat -> timeSinceLastBeat.compareTo(heartbeatFreshnessThreshold) < 0);
   }
 

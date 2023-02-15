@@ -4194,6 +4194,7 @@ components:
         - system_error
         - manual_cancellation
         - refresh_schema
+        - heartbeat_timeout
     AttemptStatus:
       type: string
       enum:

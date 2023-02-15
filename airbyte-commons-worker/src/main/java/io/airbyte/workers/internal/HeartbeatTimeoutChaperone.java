@@ -97,7 +97,6 @@ public class HeartbeatTimeoutChaperone {
     while (true) {
       try {
         sleep(timeoutCheckDuration.toMillis());
-        LOGGER.error("Monitoring");
       } catch (final InterruptedException e) {
         LOGGER.info("Heartbeat thread has been interrupted (this is expected; the heartbeat was healthy the whole time).");
         return;
