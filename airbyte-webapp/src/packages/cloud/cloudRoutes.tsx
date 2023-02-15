@@ -38,9 +38,7 @@ const AllSourcesPage = React.lazy(() => import("pages/SourcesPage/pages/AllSourc
 const CreateSourcePage = React.lazy(() => import("pages/SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("pages/SourcesPage/pages/SourceItemPage"));
 const SourceOverviewPage = React.lazy(() => import("pages/SourcesPage/pages/SourceOverviewPage"));
-const SourceSettingsPage = React.lazy(
-  () => import("pages/SourcesPage/pages/SourceItemPage/components/SourceSettingsPage")
-);
+const SourceSettingsPage = React.lazy(() => import("pages/SourcesPage/pages/SourceSettingsPage"));
 
 const CloudSettingsPage = React.lazy(() => import("./views/settings/CloudSettingsPage"));
 const DefaultView = React.lazy(() => import("./views/DefaultView"));

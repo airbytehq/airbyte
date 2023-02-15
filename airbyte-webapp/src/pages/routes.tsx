@@ -29,7 +29,7 @@ const SettingsPage = React.lazy(() => import("./SettingsPage"));
 const AllSourcesPage = React.lazy(() => import("./SourcesPage/pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("./SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage"));
-const SourceSettingsPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage/components/SourceSettingsPage"));
+const SourceSettingsPage = React.lazy(() => import("./SourcesPage/pages/SourceSettingsPage"));
 const SourceOverviewPage = React.lazy(() => import("./SourcesPage/pages/SourceOverviewPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {

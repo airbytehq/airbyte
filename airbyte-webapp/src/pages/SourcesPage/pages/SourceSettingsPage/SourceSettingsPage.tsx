@@ -13,9 +13,9 @@ import { useGetSourceDefinitionSpecification } from "services/connector/SourceDe
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-import styles from "./SourceSettings.module.scss";
+import styles from "./SourceSettingsPage.module.scss";
 
-const SourceSettingsPage: React.FC = () => {
+export const SourceSettingsPage: React.FC = () => {
   const { mutateAsync: updateSource } = useUpdateSource();
   const { mutateAsync: deleteSource } = useDeleteSource();
   const { setDocumentationPanelOpen } = useDocumentationPanelContext();
@@ -91,5 +91,3 @@ const SourceSettingsPage: React.FC = () => {
     </div>
   );
 };
-
-export default SourceSettingsPage;
