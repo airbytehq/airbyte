@@ -28,11 +28,10 @@ ROOT_DIR="$(git rev-parse --show-toplevel)"
 CONNECTOR_DIR=$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME
 OUTPUT_DIR=/tmp/cat-output
 CONNECTOR_OUTPUT_DIR=$OUTPUT_DIR/$CONNECTOR_NAME
-if [ -f $CONNECTOR_DIR/acceptance-test-docker.sh ] && [ -f $CONNECTOR_DIR/setup.py ] && grep -q "airbyte-cdk" $CONNECTOR_DIR/setup.py; then
+cd $CONNECTOR_DIR
+if [ -f acceptance-test-docker.sh ] && [ -f setup.py ] && grep -q "airbyte-cdk" setup.py; then
     mkdir $CONNECTOR_OUTPUT_DIR
-    VERSION=dev $ROOT_DIR/tools/.venv/bin/ci_credentials $CONNECTOR_NAME write-to-storage > /dev/null 2> $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.err
-    cd $CONNECTOR_DIR
-    LOCAL_CDK=1 sh acceptance-test-docker.sh > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.out 2> $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.err
+    LOCAL_CDK=1 FETCH_SECRETS=1 sh acceptance-test-docker.sh > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.out 2> $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.err
     echo $? > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.exit-code
 fi
 ' > "$SCRIPT"

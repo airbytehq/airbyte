@@ -18,6 +18,13 @@ CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
 CONNECTOR_SUBDIR="$CONNECTOR_DIR/$(echo $CONNECTOR_NAME | sed 's/-/_/g')"
 BUILD_DIR=$(mktemp -d)
 
+if [ -n "$FETCH_SECRETS" ]; then
+  # Fetch secrets
+  cd $ROOT_DIR
+  VERSION=dev $ROOT_DIR/tools/.venv/bin/ci_credentials $CONNECTOR_NAME write-to-storage || true
+  cd -
+fi
+
 if [ -n "$LOCAL_CDK" ] && [ -f "$CONNECTOR_DIR/setup.py" ]; then
   # Copy the connector files & CDK to the build directory
   cd "$BUILD_DIR"
