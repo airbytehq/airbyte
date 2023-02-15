@@ -1,5 +1,5 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import { ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 
 import { NextTable, TableProps } from "./NextTable";
 
@@ -27,17 +27,17 @@ const data: Item[] = [
   { name: "2021", value: 200 },
 ];
 
-const columns: Array<ColumnDef<Item>> = [
-  {
+const columnHelper = createColumnHelper<Item>();
+
+const columns = [
+  columnHelper.accessor("name", {
     header: "Name",
-    accessorKey: "name",
     cell: ({ getValue }) => <strong>{getValue<string>()}</strong>,
-  },
-  {
+  }),
+  columnHelper.accessor("value", {
     header: "Value",
-    accessorKey: "value",
     cell: ({ getValue }) => getValue<string>(),
-  },
+  }),
 ];
 
 export const Primary = Template<Item>().bind({});

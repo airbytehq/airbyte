@@ -14,9 +14,14 @@ import styles from "./LargeEnrollmentCallout.module.scss";
 
 export const LargeEnrollmentCallout: React.FC = () => {
   const { showEnrollmentModal } = useShowEnrollmentModal();
-  const { userDidEnroll } = useFreeConnectorProgram();
+  const { userDidEnroll, enrollmentStatusQuery } = useFreeConnectorProgram();
+  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
 
-  return userDidEnroll ? null : (
+  if (userDidEnroll || !showEnrollmentUi) {
+    return null;
+  }
+
+  return (
     <Callout variant="boldInfo" className={styles.container}>
       <FlexContainer direction="row" alignItems="center" className={styles.flexRow}>
         <FlexItem grow={false} alignSelf="center">

@@ -1,0 +1,12 @@
+@use "scss/colors";
+
+.indicator {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  background: colors.$red;
+}
+
+.hidden {
+  background-color: transparent;
+}

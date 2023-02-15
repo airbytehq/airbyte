@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -122,7 +122,7 @@ public class DockerProcessFactory implements ProcessFactory {
           "--log-driver",
           "none");
       final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
-      LOGGER.info("Creating docker container = {} with resources {} and allowed hosts {}", containerName, resourceRequirements, allowedHosts);
+      LOGGER.info("Creating docker container = {} with resources {} and allowedHosts {}", containerName, resourceRequirements, allowedHosts);
       cmd.add("--name");
       cmd.add(containerName);
       cmd.addAll(localDebuggingOptions(containerName));

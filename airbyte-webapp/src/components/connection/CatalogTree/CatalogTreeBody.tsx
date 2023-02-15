@@ -33,6 +33,11 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
       if (streamNode) {
         const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
 
+        // config.selectedFields must be removed if fieldSelection is disabled
+        if (!newStreamNode.config.fieldSelectionEnabled) {
+          delete newStreamNode.config.selectedFields;
+        }
+
         onStreamChanged(newStreamNode);
       }
     },
@@ -40,7 +45,7 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
   );
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid="catalog-tree-table-body">
       {isNewTableDesignEnabled ? (
         <>
           <StreamConnectionHeader />

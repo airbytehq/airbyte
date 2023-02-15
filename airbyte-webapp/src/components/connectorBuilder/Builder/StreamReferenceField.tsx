@@ -6,8 +6,8 @@ import { ControlLabels } from "components/LabeledControl";
 import { DropDown } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 
-import { BuilderStream } from "../types";
 import styles from "./BuilderField.module.scss";
+import { BuilderStream } from "../types";
 
 interface StreamReferenceFieldProps {
   // path to the location in the Connector Manifest schema which should be set by this component

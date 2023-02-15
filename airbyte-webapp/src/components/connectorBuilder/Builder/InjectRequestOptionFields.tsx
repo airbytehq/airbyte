@@ -2,9 +2,9 @@ import { useField } from "formik";
 
 import { RequestOption } from "core/request/ConnectorManifest";
 
-import { injectIntoValues } from "../types";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
+import { injectIntoValues } from "../types";
 
 interface InjectRequestOptionFieldsProps {
   path: string;

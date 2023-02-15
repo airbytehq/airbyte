@@ -8,21 +8,21 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.40.29
+    newTag: 0.40.32
   - name: airbyte/bootloader
-    newTag: 0.40.29
+    newTag: 0.40.32
   - name: airbyte/server
-    newTag: 0.40.29
+    newTag: 0.40.32
   - name: airbyte/webapp
-    newTag: 0.40.29
+    newTag: 0.40.32
   - name: airbyte/worker
-    newTag: 0.40.29
+    newTag: 0.40.32
   - name: airbyte/temporal-auto-setup
     newTag: 1.13.0
   - name: airbyte/cron
-    newTag: 0.40.29
+    newTag: 0.40.32
   - name: airbyte/connector-builder-server
-    newTag: 0.40.29
+    newTag: 0.40.32
 
 configMapGenerator:
   - name: airbyte-env

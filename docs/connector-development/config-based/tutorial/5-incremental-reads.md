@@ -7,7 +7,7 @@ According to the API documentation, we can read the exchange rate for a specific
 
 We'll now add a `start_date` property to the connector.
 
-First we'll update the spec block in `source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
+First we'll update the spec block in `source_exchange_rates_tutorial/manifest.yaml`
 
 ```yaml
 spec: 
@@ -156,7 +156,7 @@ definitions:
       stream_cursor_field: "date"
 ```
 
-The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
+The full connector definition should now look like `./source_exchange_rates_tutorial/manifest.yaml`:
 
 ```yaml
 version: "0.1.0"
@@ -316,7 +316,7 @@ There shouldn't be any data read if the state is today's date:
 
 ## Next steps:
 
-Next, we'll run the [Source Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
+Next, we'll run the [Connector Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
 
 ## More readings
 

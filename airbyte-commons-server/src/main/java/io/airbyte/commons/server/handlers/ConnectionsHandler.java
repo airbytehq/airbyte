@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -24,6 +24,7 @@ import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.converters.ConnectionHelper;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.server.converters.ApiPojoConverters;
@@ -55,7 +56,6 @@ import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.ConnectionHelper;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
@@ -519,8 +519,9 @@ public class ConnectionsHandler {
       return Optional.empty();
     }
     final ActorCatalog catalog = configRepository.getActorCatalogById(connection.getSourceCatalogId());
-    return Optional.of(CatalogConverter.toApi(Jsons.object(catalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class)));
+    final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromSource(connection.getSourceId());
+    final io.airbyte.protocol.models.AirbyteCatalog jsonCatalog = Jsons.object(catalog.getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+    return Optional.of(CatalogConverter.toApi(jsonCatalog, sourceDefinition));
   }
 
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)

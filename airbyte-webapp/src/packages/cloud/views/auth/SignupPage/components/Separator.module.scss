@@ -1,9 +1,9 @@
-@use "../../../../../../scss/variables" as vars;
-@use "../../../../../../scss/colors";
+@use "scss/variables";
+@use "scss/colors";
 
 .separator {
   display: flex;
-  padding: vars.$spacing-md 0;
+  padding: variables.$spacing-md 0;
   font-size: 16px;
   text-align: center;
   font-weight: bold;
@@ -19,10 +19,10 @@
   }
 
   &::before {
-    margin-right: vars.$spacing-md;
+    margin-right: variables.$spacing-md;
   }
 
   &::after {
-    margin-left: vars.$spacing-md;
+    margin-left: variables.$spacing-md;
   }
 }

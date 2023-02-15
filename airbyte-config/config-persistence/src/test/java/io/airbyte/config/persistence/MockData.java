@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -594,6 +594,19 @@ public class MockData {
             io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER),
             io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER),
             io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+    return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+  }
+
+  public static ConfiguredAirbyteCatalog getConfiguredCatalogWithV1DataTypes() {
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            "models",
+            "models_schema",
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER_V1),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER_V1),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);

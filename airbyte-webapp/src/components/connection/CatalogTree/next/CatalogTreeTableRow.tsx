@@ -9,13 +9,13 @@ import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { StreamHeaderProps } from "../StreamHeader";
 import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
+import { StreamHeaderProps } from "../StreamHeader";
 
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
@@ -54,7 +54,11 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   return (
-    <Row onClick={onRowClick} className={streamHeaderContentStyle}>
+    <Row
+      onClick={onRowClick}
+      className={streamHeaderContentStyle}
+      data-testid={`catalog-tree-table-row-${stream.stream?.namespace || "no-namespace"}-${stream.stream?.name}`}
+    >
       <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
         {!disabled && (
           <>
@@ -77,7 +81,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="large" withTooltip>
+      <CatalogTreeTableCell size="large">
         {disabled ? (
           <Text size="md" className={styles.cellText}>
             {syncSchema.syncMode}
