@@ -59,7 +59,7 @@ Download the Airbyte repository and deploy it on the VM:
 	```bash
 	mkdir airbyte && cd airbyte
 
-	wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+	wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}
 	```
 
 2. Run the following commands to get Airbyte running on your OCI VM instance using Docker compose:

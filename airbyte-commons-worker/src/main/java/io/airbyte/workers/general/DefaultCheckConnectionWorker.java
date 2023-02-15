@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.general;
@@ -7,7 +7,9 @@ package io.airbyte.workers.general;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
+import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -25,7 +27,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -64,13 +65,16 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
     LineGobbler.startSection("CHECK");
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ROOT_KEY, jobRoot));
+
     try {
+      final JsonNode inputConfig = input.getConnectionConfiguration();
       process = integrationLauncher.check(
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-          Jsons.serialize(input.getConnectionConfiguration()));
+          Jsons.serialize(inputConfig));
 
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput()
+          .withOutputType(OutputType.CHECK_CONNECTION);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
@@ -82,17 +86,17 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       if (input.getActorId() != null && input.getActorType() != null) {
         final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
-        optionalConfigMsg.ifPresent(
-            configMessage -> {
-              switch (input.getActorType()) {
-                case SOURCE -> connectorConfigUpdater.updateSource(
-                    input.getActorId(),
-                    configMessage.getConfig());
-                case DESTINATION -> connectorConfigUpdater.updateDestination(
-                    input.getActorId(),
-                    configMessage.getConfig());
-              }
-            });
+        if (optionalConfigMsg.isPresent() && WorkerUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+          switch (input.getActorType()) {
+            case SOURCE -> connectorConfigUpdater.updateSource(
+                input.getActorId(),
+                optionalConfigMsg.get().getConfig());
+            case DESTINATION -> connectorConfigUpdater.updateDestination(
+                input.getActorId(),
+                optionalConfigMsg.get().getConfig());
+          }
+          jobOutput.setConnectorConfigurationUpdated(true);
+        }
       }
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);

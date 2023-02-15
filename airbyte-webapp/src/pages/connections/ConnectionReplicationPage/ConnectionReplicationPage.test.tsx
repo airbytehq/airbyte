@@ -10,6 +10,7 @@ import {
   mockDestinationDefinition,
   mockDestinationDefinitionSpecification,
 } from "test-utils/mock-data/mockDestination";
+import { mockSourceDefinition, mockSourceDefinitionSpecification } from "test-utils/mock-data/mockSource";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { mockWorkspaceId } from "test-utils/mock-data/mockWorkspaceId";
 import { TestWrapper } from "test-utils/testutils";
@@ -20,6 +21,14 @@ import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 import * as connectionHook from "hooks/services/useConnectionHook";
 
 import { ConnectionReplicationPage } from "./ConnectionReplicationPage";
+
+jest.mock("services/connector/SourceDefinitionService", () => ({
+  useSourceDefinition: () => mockSourceDefinition,
+}));
+
+jest.mock("services/connector/SourceDefinitionSpecificationService", () => ({
+  useGetSourceDefinitionSpecification: () => mockSourceDefinitionSpecification,
+}));
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,

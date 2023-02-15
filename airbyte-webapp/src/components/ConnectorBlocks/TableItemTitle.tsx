@@ -7,9 +7,10 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
+import { getIcon } from "utils/imageUtils";
 
-import { Button } from "../ui/Button";
 import styles from "./TableItemTitle.module.scss";
+import { Button } from "../ui/Button";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
@@ -17,7 +18,7 @@ interface TableItemTitleProps {
   onSelect: (data: DropdownMenuOptionType) => void;
   entity: string;
   entityName: string;
-  entityIcon?: React.ReactNode;
+  entityIcon?: string;
   releaseStage?: ReleaseStage;
 }
 
@@ -35,7 +36,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   return (
     <>
       <div className={styles.entityInfo}>
-        {entityIcon && <div className={styles.entityIcon}>{entityIcon}</div>}
+        {entityIcon && <div className={styles.entityIcon}>{getIcon(entityIcon)}</div>}
         <div>
           <Heading as="h2">{entityName}</Heading>
           <Text size="lg" bold className={styles.entityType}>

@@ -4,23 +4,27 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Modal } from "components/ui/Modal";
 
-import useLoadingState from "../../../hooks/useLoadingState";
 import styles from "./ConfirmationModal.module.scss";
+import useLoadingState from "../../../hooks/useLoadingState";
 
 export interface ConfirmationModalProps {
   onClose: () => void;
   title: string;
   text: string;
+  textValues?: Record<string, string>;
   submitButtonText: string;
   onSubmit: () => void;
   submitButtonDataId?: string;
   cancelButtonText?: string;
+  additionalContent?: React.ReactNode;
 }
 
 export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onClose,
   title,
   text,
+  additionalContent,
+  textValues,
   onSubmit,
   submitButtonText,
   submitButtonDataId,
@@ -32,7 +36,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   return (
     <Modal onClose={onClose} title={<FormattedMessage id={title} />} testId="confirmationModal">
       <div className={styles.content}>
-        <FormattedMessage id={text} />
+        <FormattedMessage id={text} values={textValues} />
+        {additionalContent}
         <div className={styles.buttonContent}>
           <Button
             className={styles.buttonWithMargin}

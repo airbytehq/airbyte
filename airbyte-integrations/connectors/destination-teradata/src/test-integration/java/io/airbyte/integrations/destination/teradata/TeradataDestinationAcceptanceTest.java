@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.teradata;
@@ -122,16 +122,6 @@ public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptance
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {}
-
-  @Override
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
-  }
 
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = destination.toJdbcConfig(config);

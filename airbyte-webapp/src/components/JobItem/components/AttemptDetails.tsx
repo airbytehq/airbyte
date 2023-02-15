@@ -6,8 +6,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { AttemptRead, AttemptStatus } from "core/request/AirbyteClient";
 import { formatBytes } from "utils/numberHelper";
 
-import { getFailureFromAttempt, isCancelledAttempt } from "../utils";
 import styles from "./AttemptDetails.module.scss";
+import { getFailureFromAttempt, isCancelledAttempt } from "../utils";
 
 interface AttemptDetailsProps {
   className?: string;

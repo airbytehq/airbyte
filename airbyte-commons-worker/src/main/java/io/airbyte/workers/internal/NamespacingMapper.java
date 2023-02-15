@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -59,9 +59,8 @@ public class NamespacingMapper implements AirbyteMapper {
   }
 
   @Override
-  public AirbyteMessage mapMessage(final AirbyteMessage inputMessage) {
-    if (inputMessage.getType() == Type.RECORD) {
-      final AirbyteMessage message = Jsons.clone(inputMessage);
+  public AirbyteMessage mapMessage(final AirbyteMessage message) {
+    if (message.getType() == Type.RECORD) {
       // Default behavior if namespaceDefinition is not set is to follow SOURCE
       if (namespaceDefinition != null) {
         if (namespaceDefinition.equals(NamespaceDefinitionType.DESTINATION)) {
@@ -73,7 +72,7 @@ public class NamespacingMapper implements AirbyteMapper {
       message.getRecord().setStream(transformStreamName(message.getRecord().getStream(), streamPrefix));
       return message;
     }
-    return inputMessage;
+    return message;
   }
 
   private static String formatNamespace(final String sourceNamespace, final String namespaceFormat) {

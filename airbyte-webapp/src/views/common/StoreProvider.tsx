@@ -15,7 +15,11 @@ const queryClient = new QueryClient({
 
 const StoreProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
   <QueryClientProvider client={queryClient}>
-    <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
+    <ReactQueryDevtools
+      initialIsOpen={false}
+      position="bottom-right"
+      toggleButtonProps={{ style: { transform: "translateX(-75px)" } }}
+    />
     {children}
   </QueryClientProvider>
 );

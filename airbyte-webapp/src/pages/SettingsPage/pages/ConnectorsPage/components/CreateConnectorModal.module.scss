@@ -1,5 +1,10 @@
-@use "scss/variables";
+@use "scss/colors";
 
-.buttonWithMargin {
-  margin: 0 variables.$spacing-md;
+.errorMessage {
+  color: colors.$red;
+}
+
+.docLink {
+  text-decoration: none;
+  display: inline-block;
 }

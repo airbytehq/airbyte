@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.normalization;
@@ -134,6 +134,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
+          null,
           Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),

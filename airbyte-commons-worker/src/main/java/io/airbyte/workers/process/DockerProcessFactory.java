@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -12,6 +12,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
@@ -20,9 +21,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,6 +92,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final Map<String, String> files,
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
+                        final AllowedHosts allowedHosts,
                         final Map<String, String> labels,
                         final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
@@ -117,9 +122,10 @@ public class DockerProcessFactory implements ProcessFactory {
           "--log-driver",
           "none");
       final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
-      LOGGER.info("Creating docker container = {} with resources {}", containerName, resourceRequirements);
+      LOGGER.info("Creating docker container = {} with resources {} and allowedHosts {}", containerName, resourceRequirements, allowedHosts);
       cmd.add("--name");
       cmd.add(containerName);
+      cmd.addAll(localDebuggingOptions(containerName));
 
       if (networkName != null) {
         cmd.add("--network");
@@ -166,6 +172,31 @@ public class DockerProcessFactory implements ProcessFactory {
       return new ProcessBuilder(cmd).start();
     } catch (final IOException e) {
       throw new WorkerException(e.getMessage(), e);
+    }
+  }
+
+  /**
+   * !! ONLY FOR DEBUGGING, SHOULD NOT BE USED IN PRODUCTION !! If you set the DEBUG_CONTAINER_IMAGE
+   * environment variable, and it matches the image name of a spawned container, this method will add
+   * the necessary params to connect a debugger. For example, to enable this for
+   * `destination-bigquery` start the services locally with: ``` VERSION="dev"
+   * DEBUG_CONTAINER_IMAGE="destination-bigquery" docker compose -f docker-compose.yaml -f
+   * docker-compose.debug.yaml up ``` Additionally you may have to update the image version of your
+   * target image to 'dev' in the UI of your local airbyte platform. See the
+   * `docker-compose.debug.yaml` file for more context.
+   *
+   * @param containerName the name of the container which could be debugged.
+   * @return A list with debugging arguments or an empty list
+   */
+  static List<String> localDebuggingOptions(final String containerName) {
+    final boolean shouldAddDebuggerOptions =
+        Optional.ofNullable(System.getenv("DEBUG_CONTAINER_IMAGE")).filter(StringUtils::isNotEmpty)
+            .map(ProcessFactory.extractShortImageName(containerName)::equals).orElse(false)
+            && Optional.ofNullable(System.getenv("DEBUG_CONTAINER_JAVA_OPTS")).isPresent();
+    if (shouldAddDebuggerOptions) {
+      return List.of("-e", "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"), "-p5005:5005");
+    } else {
+      return Collections.emptyList();
     }
   }
 

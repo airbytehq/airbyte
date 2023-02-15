@@ -3,10 +3,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "common.names.fullname" . }}-pod-sweeper
+  namespace: {{ .Values.namespace | default .Release.Namespace }}
   labels:
     {{- include "airbyte.labels" . | nindent 4 }}
+    namespace: {{ .Values.namespace | default .Release.Namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "airbyte.selectorLabels" . | nindent 6 }}

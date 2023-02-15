@@ -6,6 +6,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Header } from "components";
+import { SUPPORTED_MODES } from "components/connection/ConnectionForm/formConfig";
 import { Button } from "components/ui/Button";
 import { Switch } from "components/ui/Switch";
 
@@ -13,14 +14,13 @@ import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchem
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
-import { pathDisplayName } from "../PathPopout";
-import { HeaderCell } from "../styles";
-import { flatten, getPathType } from "../utils";
 import styles from "./BulkEditPanel.module.scss";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeOption, SyncModeSelect } from "./SyncModeSelect";
+import { pathDisplayName } from "../PathPopout";
+import { HeaderCell } from "../styles";
+import { flatten, getPathType } from "../utils";
 
 interface SchemaHeaderProps {
   isActive: boolean;
@@ -66,7 +66,7 @@ export const getAvailableSyncModesOptions = (
   syncModes?: DestinationSyncMode[]
 ): SyncModeOption[] =>
   SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
-    const supportableModes = intersection(nodes.flatMap((n) => n.stream?.supportedSyncModes));
+    const supportableModes = intersection(...nodes.map((n) => n.stream?.supportedSyncModes));
     return supportableModes.includes(syncMode) && syncModes?.includes(destinationSyncMode);
   }).map(([syncMode, destinationSyncMode]) => ({
     value: { syncMode, destinationSyncMode },

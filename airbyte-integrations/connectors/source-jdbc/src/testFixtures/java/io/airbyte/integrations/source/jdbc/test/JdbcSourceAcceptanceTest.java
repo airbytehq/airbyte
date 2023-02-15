@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc.test;
@@ -635,8 +635,8 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void incrementalDateCheck() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00Z",
-        "2006-10-19T00:00:00Z",
+        "2005-10-18",
+        "2006-10-19",
         List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -704,13 +704,13 @@ public abstract class JdbcSourceAcceptanceTest {
             .withData(Jsons.jsonNode(Map
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                    COL_UPDATED_AT, "2006-10-19")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(Map
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                    COL_UPDATED_AT, "2006-10-19")))));
     final DbStreamState state = new DbStreamState()
         .withStreamName(streamName)
         .withStreamNamespace(namespace)
@@ -1035,20 +1035,20 @@ public abstract class JdbcSourceAcceptanceTest {
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19T00:00:00Z")))),
+                        COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
-                        "2005-10-19T00:00:00Z")))),
+                        "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+                        COL_UPDATED_AT, "2006-10-19")))));
   }
 
   protected List<AirbyteMessage> createExpectedTestMessages(final List<DbStreamState> states) {

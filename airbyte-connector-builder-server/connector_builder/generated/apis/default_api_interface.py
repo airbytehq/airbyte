@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 # This file was auto-generated from Airbyte's custom OpenAPI templates. Do not edit it manually.
 # coding: utf-8
@@ -27,6 +27,8 @@ from connector_builder.generated.models.extra_models import TokenModel  # noqa: 
 
 from connector_builder.generated.models.invalid_input_exception_info import InvalidInputExceptionInfo
 from connector_builder.generated.models.known_exception_info import KnownExceptionInfo
+from connector_builder.generated.models.resolve_manifest import ResolveManifest
+from connector_builder.generated.models.resolve_manifest_request_body import ResolveManifestRequestBody
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
 from connector_builder.generated.models.streams_list_read import StreamsListRead
@@ -63,6 +65,15 @@ class DefaultApi(ABC):
     ) -> StreamRead:
         """
         Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.
+        """
+
+    @abstractmethod
+    async def resolve_manifest(
+        self, 
+        resolve_manifest_request_body: ResolveManifestRequestBody = Body(None, description=""),
+    ) -> ResolveManifest:
+        """
+        Given a JSON manifest, returns a JSON manifest with all of the $refs and $options resolved and flattened
         """
 
 
@@ -140,6 +151,21 @@ def initialize_router(api: DefaultApi) -> APIRouter:
         },
         tags=["default"],
         summary="Reads a specific stream in the source. TODO in a later phase - only read a single slice of data.",
+        response_model_by_alias=True,
+    )
+
+    _assert_signature_is_set(api.resolve_manifest)
+    router.add_api_route(
+        "/v1/manifest/resolve",
+        endpoint=api.resolve_manifest,
+        methods=["POST"],
+        responses={
+            200: {"model": ResolveManifest, "description": "Successful operation"},
+            400: {"model": KnownExceptionInfo, "description": "Exception occurred; see message for details."},
+            422: {"model": InvalidInputExceptionInfo, "description": "Input failed validation"},
+        },
+        tags=["default"],
+        summary="Given a JSON manifest, returns a JSON manifest with all of the $refs and $options resolved and flattened",
         response_model_by_alias=True,
     )
 

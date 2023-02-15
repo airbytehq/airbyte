@@ -1,11 +1,12 @@
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useField } from "formik";
-import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import React, { ReactNode, useMemo } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { FlexContainer } from "components/ui/Flex";
 import { Text } from "components/ui/Text";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 import { StreamReadInferredSchema, StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
 import {
@@ -13,10 +14,10 @@ import {
   useConnectorBuilderTestState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
-import { formatJson } from "../utils";
 import styles from "./PageDisplay.module.scss";
 import { SchemaDiffView } from "./SchemaDiffView";
+import { SchemaConflictIndicator } from "../SchemaConflictIndicator";
+import { formatJson } from "../utils";
 
 interface PageDisplayProps {
   page: StreamReadSlicesItemPagesItem;
@@ -25,7 +26,7 @@ interface PageDisplayProps {
 }
 
 interface TabData {
-  title: string;
+  title: ReactNode;
   key: string;
   content: string;
 }
@@ -34,7 +35,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   const { formatMessage } = useIntl();
 
   const { editorView } = useConnectorBuilderFormState();
-  const { testStreamIndex } = useConnectorBuilderTestState();
+  const { testStreamIndex, streamRead } = useConnectorBuilderTestState();
   const [field] = useField(`streams[${testStreamIndex}].schema`);
 
   const formattedRecords = useMemo(() => formatJson(page.records), [page.records]);
@@ -45,7 +46,16 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   let defaultTabIndex = 0;
   const tabs: TabData[] = [
     {
-      title: `${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`,
+      title: (
+        <>
+          {`${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`}
+          {!streamRead.isFetching && streamRead.data && streamRead.data.test_read_limit_reached && (
+            <InfoTooltip>
+              <FormattedMessage id="connectorBuilder.streamTestLimitReached" />
+            </InfoTooltip>
+          )}
+        </>
+      ),
       key: "records",
       content: formattedRecords,
     },
@@ -72,41 +82,41 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   return (
     <div className={classNames(className)}>
       <Tab.Group defaultIndex={defaultTabIndex}>
-        <FlexContainer direction="column">
-          <Tab.List className={styles.tabList}>
-            {tabs.map((tab) => (
-              <Tab className={styles.tab} key={tab.key}>
-                {({ selected }) => (
-                  <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })}>{tab.title}</Text>
-                )}
-              </Tab>
-            ))}
-            {inferredSchema && (
-              <Tab className={styles.tab}>
-                {({ selected }) => (
-                  <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div">
-                    <FlexContainer direction="row" justifyContent="center">
-                      {formatMessage({ id: "connectorBuilder.schemaTab" })}
-                      {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}
-                    </FlexContainer>
-                  </Text>
-                )}
-              </Tab>
-            )}
-          </Tab.List>
-          <Tab.Panels className={styles.tabPanelContainer}>
-            {tabs.map((tab) => (
-              <Tab.Panel className={styles.tabPanel} key={tab.key}>
-                <pre>{tab.content}</pre>
-              </Tab.Panel>
-            ))}
-            {inferredSchema && (
-              <Tab.Panel className={styles.tabPanel}>
-                <SchemaDiffView inferredSchema={inferredSchema} />
-              </Tab.Panel>
-            )}
-          </Tab.Panels>
-        </FlexContainer>
+        <Tab.List className={styles.tabList}>
+          {tabs.map((tab) => (
+            <Tab className={styles.tab} key={tab.key}>
+              {({ selected }) => (
+                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} size="xs">
+                  {tab.title}
+                </Text>
+              )}
+            </Tab>
+          ))}
+          {inferredSchema && (
+            <Tab className={styles.tab}>
+              {({ selected }) => (
+                <Text className={classNames(styles.tabTitle, { [styles.selected]: selected })} as="div" size="xs">
+                  <FlexContainer direction="row" justifyContent="center">
+                    {formatMessage({ id: "connectorBuilder.schemaTab" })}
+                    {editorView === "ui" && field.value !== formattedSchema && <SchemaConflictIndicator />}
+                  </FlexContainer>
+                </Text>
+              )}
+            </Tab>
+          )}
+        </Tab.List>
+        <Tab.Panels className={styles.tabPanelContainer}>
+          {tabs.map((tab) => (
+            <Tab.Panel className={styles.tabPanel} key={tab.key}>
+              <pre>{tab.content}</pre>
+            </Tab.Panel>
+          ))}
+          {inferredSchema && (
+            <Tab.Panel className={styles.tabPanel}>
+              <SchemaDiffView inferredSchema={inferredSchema} />
+            </Tab.Panel>
+          )}
+        </Tab.Panels>
       </Tab.Group>
     </div>
   );

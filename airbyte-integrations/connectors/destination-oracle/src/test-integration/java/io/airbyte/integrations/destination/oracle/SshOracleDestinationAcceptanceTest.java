@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -181,11 +181,6 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         });
 
     sshBastionContainer.stopAndCloseContainers(db);
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
   }
 
   @Override

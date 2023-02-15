@@ -9,7 +9,7 @@ import { Notification, NotificationServiceApi, NotificationServiceState } from "
 
 const notificationServiceContext = React.createContext<NotificationServiceApi | null>(null);
 
-const NotificationService = ({ children }: { children: React.ReactNode }) => {
+export const NotificationService = React.memo(({ children }: { children: React.ReactNode }) => {
   const [state, { addNotification, clearAll, deleteNotificationById }] = useTypesafeReducer<
     NotificationServiceState,
     typeof actions
@@ -35,6 +35,9 @@ const NotificationService = ({ children }: { children: React.ReactNode }) => {
         <Toast
           text={firstNotification.text}
           type={firstNotification.type}
+          actionBtnText={firstNotification.actionBtnText}
+          onAction={firstNotification.onAction}
+          data-testid={`notification-${firstNotification.id}`}
           onClose={
             firstNotification.nonClosable
               ? undefined
@@ -47,16 +50,18 @@ const NotificationService = ({ children }: { children: React.ReactNode }) => {
       ) : null}
     </>
   );
-};
+});
 
-export const useNotificationService: (
-  notification?: Notification,
-  dependencies?: []
-) => {
+interface NotificationServiceHook {
   registerNotification: (notification: Notification) => void;
   unregisterAllNotifications: () => void;
   unregisterNotificationById: (notificationId: string | number) => void;
-} = (notification, dependencies) => {
+}
+
+export const useNotificationService: (notification?: Notification, dependencies?: []) => NotificationServiceHook = (
+  notification,
+  dependencies
+) => {
   const notificationService = useContext(notificationServiceContext);
   if (!notificationService) {
     throw new Error("useNotificationService must be used within a NotificationService.");
@@ -80,5 +85,3 @@ export const useNotificationService: (
     unregisterAllNotifications: notificationService.clearAll,
   };
 };
-
-export default React.memo(NotificationService);

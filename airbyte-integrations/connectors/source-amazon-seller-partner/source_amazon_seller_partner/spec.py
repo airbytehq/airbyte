@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, OAuthConfigSpecification
@@ -85,9 +85,10 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     period_in_days: int = Field(
-        30,
+        90,
+        le=90,
+        examples=["1", "10", "30", "60", "90"],
         description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
-        examples=["30", "365"],
         order=10,
     )
     report_options: str = Field(
@@ -99,7 +100,8 @@ class AmazonSellerPartnerConfig(BaseModel):
     max_wait_seconds: int = Field(
         500,
         title="Max wait time for reports (in seconds)",
-        description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
+        description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long "
+        "to wait for a successful report.",
         examples=["500", "1980"],
         order=12,
     )

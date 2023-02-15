@@ -19,11 +19,13 @@ class StreamRead(BaseModel):
 
         logs: The logs of this StreamRead.
         slices: The slices of this StreamRead.
+        test_read_limit_reached: The test_read_limit_reached of this StreamRead.
         inferred_schema: The inferred_schema of this StreamRead [Optional].
     """
 
     logs: List[object]
     slices: List[StreamReadSlices]
+    test_read_limit_reached: bool
     inferred_schema: Optional[Dict[str, Any]] = None
 
 StreamRead.update_forward_refs()
