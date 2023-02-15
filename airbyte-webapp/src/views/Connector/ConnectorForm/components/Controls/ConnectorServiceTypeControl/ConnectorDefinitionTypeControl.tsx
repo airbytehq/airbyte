@@ -5,6 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { components } from "react-select";
 import { MenuListProps } from "react-select";
 
+import { BuilderPrompt } from "components/connectorBuilder/BuilderPrompt";
 import { GAIcon } from "components/icons/GAIcon";
 import { ControlLabels } from "components/LabeledControl";
 import {
@@ -26,6 +27,7 @@ import { useFeature, FeatureItem } from "hooks/services/Feature";
 import { useModalService } from "hooks/services/Modal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { FreeTag } from "packages/cloud/components/experiments/FreeConnectorProgram";
+import { RoutePaths } from "pages/routePaths";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
@@ -37,20 +39,29 @@ import { WarningMessage } from "../../WarningMessage";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MenuWithRequestButtonProps = MenuListProps<DropDownOptionDataItem, false> & { selectProps: any };
 
-const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => (
-  <>
-    <components.MenuList {...props}>{children}</components.MenuList>
-    <div className={styles.connectorListFooter}>
-      <button
-        className={styles.requestNewConnectorBtn}
-        onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
-      >
-        <FontAwesomeIcon icon={faPlus} />
-        <FormattedMessage id="connector.requestConnectorBlock" />
-      </button>
-    </div>
-  </>
-);
+const ConnectorList: React.FC<React.PropsWithChildren<MenuWithRequestButtonProps>> = ({ children, ...props }) => {
+  const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
+
+  return (
+    <>
+      <components.MenuList {...props}>{children}</components.MenuList>
+      <div className={styles.connectorListFooter}>
+        {props.selectProps.selectProps.formType === "source" && showBuilderNavigationLinks && (
+          <div className={styles.builderPromptContainer}>
+            <BuilderPrompt builderRoutePath={`../../${RoutePaths.ConnectorBuilder}`} />
+          </div>
+        )}
+        <button
+          className={styles.requestNewConnectorBtn}
+          onClick={() => props.selectProps.selectProps.onOpenRequestConnectorModal(props.selectProps.inputValue)}
+        >
+          <FontAwesomeIcon icon={faPlus} />
+          <FormattedMessage id="connector.requestConnectorBlock" />
+        </button>
+      </div>
+    </>
+  );
+};
 
 const StageLabel: React.FC<{ releaseStage?: ReleaseStage }> = ({ releaseStage }) => {
   const fcpEnabled = useFeature(FeatureItem.FreeConnectorProgram);
@@ -173,6 +184,7 @@ export const ConnectorDefinitionTypeControl: React.FC<ConnectorDefinitionTypeCon
             />
           ),
         }),
+      formType,
     }),
     [closeModal, formType, formatMessage, openModal, workspace.email]
   );
