@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 [ -z "$ROOT_DIR" ] && exit 1
 
 CONNECTORS_DIR=$ROOT_DIR/airbyte-integrations/connectors
