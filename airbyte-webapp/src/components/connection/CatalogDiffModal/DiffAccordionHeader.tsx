@@ -27,21 +27,21 @@ export const DiffAccordionHeader: React.FC<DiffAccordionHeaderProps> = ({
 }) => {
   const { formatMessage } = useIntl();
 
-  const nameCellStyle = classnames(styles.nameCell, styles.row);
+  const nameCellStyle = classnames(styles.nameCell, styles.row, styles.name);
   const namespaceCellStyles = classnames(styles.nameCell, styles.row, styles.namespace);
 
   return (
     <>
       <ModificationIcon />
       <div className={namespaceCellStyles} aria-labelledby={formatMessage({ id: "connection.updateSchema.namespace" })}>
-        <FontAwesomeIcon icon={open ?  faAngleDown: faAngleRight} fixedWidth /> 
+        <FontAwesomeIcon icon={open ? faAngleDown : faAngleRight} fixedWidth />
         <div title={streamDescriptor.namespace} className={styles.text}>
-        {streamDescriptor.namespace}
+          {streamDescriptor.namespace}
         </div>
       </div>
       <div className={nameCellStyle} aria-labelledby={formatMessage({ id: "connection.updateSchema.streamName" })}>
-      <div title={streamDescriptor.name} className={styles.text}>
-        {streamDescriptor.name}
+        <div title={streamDescriptor.name} className={styles.text}>
+          {streamDescriptor.name}
         </div>
       </div>
       <DiffIconBlock removedCount={removedCount} newCount={newCount} changedCount={changedCount} />
