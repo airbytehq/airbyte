@@ -20,7 +20,7 @@ export const ExternalLink: React.FC<PropsWithChildren<ExternalLinkProps>> = ({
       {...props}
       className={getLinkClassNames({ className, variant })}
       href={href}
-      rel={opensInNewTab ? "noopener noreferrer" : undefined}
+      rel="noreferrer"
       target={opensInNewTab ? "_blank" : undefined}
     >
       {children}
