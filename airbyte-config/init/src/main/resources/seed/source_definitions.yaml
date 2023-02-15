@@ -1568,11 +1568,14 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.salesforce.com"
 - name: SAP Fieldglass
   sourceDefinitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
   dockerRepository: airbyte/source-sap-fieldglass
