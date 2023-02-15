@@ -12,7 +12,7 @@ import io.airbyte.config.constants.CatalogDefinitions;
 import java.nio.file.Path;
 
 public class CombinedConnectorCatalogDownloader {
-  public static void main() throws Exception {
+  public static void main(final String[] args) throws Exception {
     final Path writePath = CatalogDefinitions.getLocalCatalogWritePath();
     final String catalogUrl = CatalogDefinitions.getRemoteOssCatalogUrl();
     final int timeout = 10000;
