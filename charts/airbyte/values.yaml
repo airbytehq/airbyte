@@ -283,6 +283,14 @@ webapp:
     #   hosts:
     #   - chart-example.local
 
+  ## webapp.baseUrl The webapp URL base name.
+  ## When traffic is routed to the webapp service using a non-root base, it is
+  ## necessary to set a baseUrl configuration. This will ensure that resources
+  ## are served correctly.
+  ## Example (when ingress routes traffic to www.example.com/airbyte):
+  ## baseUrl: /airbyte
+  baseUrl: /
+
   ##  webapp.api.url The webapp API url.
   api:
     url: /api/v1/

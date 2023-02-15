@@ -67,6 +67,7 @@ export default defineConfig(({ mode }) => {
         "Content-Security-Policy": "script-src * 'unsafe-inline'; worker-src self blob:;",
       },
     },
+    base: "./",
     define: {
       ...processEnv,
     },

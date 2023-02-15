@@ -67,6 +67,11 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: API_URL
+        - name: BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: BASE_URL
         - name: CONNECTOR_BUILDER_API_URL
           valueFrom:
             configMapKeyRef:

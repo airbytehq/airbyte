@@ -30,9 +30,7 @@ export const useBuildUpdateCheck = () => {
       .subscribe(async () => {
         try {
           // Fetch the buildInfo.json file without using any browser cache
-          const buildInfo: BuildInfo = await fetch("/buildInfo.json", { cache: "no-store" }).then((resp) =>
-            resp.json()
-          );
+          const buildInfo: BuildInfo = await fetch("buildInfo.json", { cache: "no-store" }).then((resp) => resp.json());
 
           if (buildInfo.build !== process.env.BUILD_HASH) {
             registerNotification({

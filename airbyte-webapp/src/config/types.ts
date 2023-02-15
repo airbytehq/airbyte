@@ -2,6 +2,7 @@ declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
+    BASE_URL?: string;
     API_URL?: string;
     CONNECTOR_BUILDER_API_URL?: string;
     CLOUD?: string;
@@ -26,6 +27,7 @@ declare global {
 
 export interface AirbyteWebappConfig {
   segment: { token?: string; enabled: boolean };
+  baseUrl: string;
   apiUrl: string;
   connectorBuilderApiUrl: string;
   version: string;

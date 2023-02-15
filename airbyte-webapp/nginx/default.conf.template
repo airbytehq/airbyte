@@ -20,11 +20,14 @@ server {
         root   /usr/share/nginx/html;
         try_files $uri $uri/ /index.html;
 
+        sub_filter <head>
+                '<head><base href="$BASE_URL/">';
         sub_filter </head>
                 '</head><script language="javascript"\>
                 window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
+                window.BASE_URL = "$BASE_URL";
                 window.CONNECTOR_BUILDER_API_URL = "$CONNECTOR_BUILDER_API_URL";
                 </script>';
         sub_filter_once on;
