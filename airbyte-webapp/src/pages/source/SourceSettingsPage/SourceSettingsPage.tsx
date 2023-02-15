@@ -63,9 +63,9 @@ export const SourceSettingsPage: React.FC = () => {
       <p>
         <FormattedMessage id="tables.affectedConnectionsOnDeletion" values={{ count: connections.length }} />
         {connections.map((connection) => (
-          <>
+          <React.Fragment key={connection.connectionId}>
             - <strong>{`${connection.name}\n`}</strong>
-          </>
+          </React.Fragment>
         ))}
       </p>
     );
