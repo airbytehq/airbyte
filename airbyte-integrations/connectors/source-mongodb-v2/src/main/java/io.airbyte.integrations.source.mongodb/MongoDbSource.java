@@ -70,7 +70,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
     final var dbConfig = toDatabaseConfig(config);
     if(config.get("level")!=null)
-     MongoUtils.MAX_LEVEL_FROM_CONFIG = config.get("level").asInt();
+     MongoUtils.MAX_DEPTH_LEVEL_READ = config.get("level").asInt();
     return new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
   }

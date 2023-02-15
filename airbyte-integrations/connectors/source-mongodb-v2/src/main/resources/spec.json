@@ -108,10 +108,10 @@
         "airbyte_secret": true,
         "order": 3
       },
-      "level": {
-        "title": "Max-Level",
+      "max_depth_level_read": {
+        "title": "Max-Depth-Level",
         "type": "integer",
-        "description": "Max level of depth you want to flatten objects",
+        "description": "Max level of depth you want to flatten objects, by default up to 2 levels",
         "order": 4
       },
       "auth_source": {

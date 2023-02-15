@@ -74,7 +74,7 @@ public class MongoUtils {
   public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
   public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
   public static final String USER = "user";
-  public static int MAX_LEVEL_FROM_CONFIG=2;
+  public static int MAX_DEPTH_LEVEL_READ=2;
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
   public static final String CLUSTER_URL = "cluster_url";
@@ -257,7 +257,7 @@ public class MongoUtils {
       final var type = getUniqueType(types);
       final var fieldNode = new TreeNode<>(new CommonField<>(transformName(types, key), type));
       if (type.equals(DOCUMENT)) {
-        setSubFields(collection, fieldNode, key, MAX_LEVEL_FROM_CONFIG);
+        setSubFields(collection, fieldNode, key, MAX_DEPTH_LEVEL_READ);
       }
       return fieldNode;
     }).toList();
