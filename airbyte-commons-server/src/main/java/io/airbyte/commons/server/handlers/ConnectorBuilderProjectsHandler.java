@@ -9,7 +9,9 @@ import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.commons.server.errors.IdNotFoundKnownException;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConnectorBuilderProject;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WorkspaceHelper;
 import jakarta.inject.Inject;
@@ -25,23 +27,18 @@ public class ConnectorBuilderProjectsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final WorkspaceHelper workspaceHelper;
 
   @Inject
   public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository,
-      final WorkspaceHelper workspaceHelper,
                                          final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
-    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = uuidSupplier;
   }
 
   // This should be deleted when cloud is migrated to micronaut
   @Deprecated(forRemoval = true)
-  public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository,
-      final WorkspaceHelper workspaceHelper) {
+  public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
-    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = UUID::randomUUID;
   }
 
@@ -73,31 +70,26 @@ public class ConnectorBuilderProjectsHandler {
   }
 
   public void updateConnectorBuilderProject(final ExistingConnectorBuilderProjectWithWorkspaceId projectUpdate)
-      throws IOException {
+      throws IOException, ConfigNotFoundException {
     final ConnectorBuilderProject project = builderProjectFromUpdate(projectUpdate);
-    workspaceHelper.
+
     final Optional<ConnectorBuilderProject> storedProject =
-        configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), project.getWorkspaceId());
+        configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false);
 
     if (storedProject.isEmpty()) {
-      throw new IdNotFoundKnownException("Cannot find builder project with the given id for this workspace",
-          projectUpdate.getBuilderProjectId().toString());
+      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, project.getBuilderProjectId().toString());
     }
 
     configRepository.writeBuilderProject(project);
   }
 
   public void deleteConnectorBuilderProject(final ConnectorBuilderProjectIdWithWorkspaceId projectDelete)
-      throws IOException {
-    final Optional<ConnectorBuilderProject> storedProject =
-        configRepository.getConnectorBuilderProject(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
+      throws IOException, ConfigNotFoundException {
+    final boolean didDelete = configRepository.deleteBuilderProject(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
 
-    if (storedProject.isEmpty()) {
-      throw new IdNotFoundKnownException("Cannot find builder project with the given id for this workspace",
-          projectDelete.getBuilderProjectId().toString());
+    if (!didDelete) {
+      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, projectDelete.getBuilderProjectId().toString());
     }
-
-    configRepository.deleteBuilderProject(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
   }
 
 }

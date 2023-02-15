@@ -1602,9 +1602,9 @@ public class ConfigRepository {
     return countResult > 0;
   }
 
-  public ConnectorBuilderProject getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
-      throws IOException, ConfigNotFoundException {
-    final Optional<ConnectorBuilderProject> project = database.query(ctx -> {
+  public Optional<ConnectorBuilderProject> getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
+      throws IOException {
+    return database.query(ctx -> {
       final List columnsToFetch = Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
           CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID);
       if (fetchManifestDraft) {
@@ -1618,10 +1618,6 @@ public class ConfigRepository {
         .stream()
         .findFirst();
     });
-    if (project.isEmpty()) {
-      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, builderProjectId.toString());
-    }
-    return project.get();
   }
 
   public Stream<ConnectorBuilderProject> getConnectorBuilderProjectsByWorkspace(final UUID workspaceId) throws IOException {
