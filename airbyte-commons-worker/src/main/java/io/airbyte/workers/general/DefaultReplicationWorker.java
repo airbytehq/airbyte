@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import datadog.trace.api.Trace;
+import io.airbyte.commons.converters.ConnectorConfigUpdater;
+import io.airbyte.commons.converters.ThreadedTimeTracker;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -37,9 +39,7 @@ import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -606,8 +606,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void validateSchema(final RecordSchemaValidator recordSchemaValidator,
-                                     Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
-                                     Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> streamToAllFields,
+                                     final Map<AirbyteStreamNameNamespacePair, Set<String>> unexpectedFields,
                                      final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors,
                                      final AirbyteMessage message) {
     if (message.getRecord() == null) {
@@ -639,10 +639,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void populateUnexpectedFieldNames(AirbyteRecordMessage record, Set<String> fieldsInCatalog, Set<String> unexpectedFieldNames) {
+  private static void populateUnexpectedFieldNames(final AirbyteRecordMessage record,
+                                                   final Set<String> fieldsInCatalog,
+                                                   final Set<String> unexpectedFieldNames) {
     final JsonNode data = record.getData();
     if (data.isObject()) {
-      Iterator<String> fieldNamesInRecord = data.fieldNames();
+      final Iterator<String> fieldNamesInRecord = data.fieldNames();
       while (fieldNamesInRecord.hasNext()) {
         final String fieldName = fieldNamesInRecord.next();
         if (!fieldsInCatalog.contains(fieldName)) {
