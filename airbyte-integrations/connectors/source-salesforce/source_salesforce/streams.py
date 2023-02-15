@@ -16,6 +16,7 @@ import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -442,6 +443,10 @@ class BulkSalesforceStream(SalesforceStream):
 
     def delete_job(self, url: str):
         self._send_http_request("DELETE", url=url)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
