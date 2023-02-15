@@ -7,6 +7,8 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import Status
 from source_bamboo_hr.source import CustomReportsStream, EmployeesDirectoryStream, SourceBambooHr
 
+from source_bamboo_hr.utils import validate_custom_fields
+
 
 @pytest.fixture
 def config():
@@ -82,3 +84,14 @@ def test_custom_reports_stream_request_body_json(config):
         "title": "Airbyte",
         "fields": ["one", "two"],
     }
+
+
+def test_validate_custom_fields():
+    custom_fields = ["foo", "bar", "baz"]
+    assert validate_custom_fields(
+        custom_fields,
+        [
+            {"id": 1, "name": "foo"},
+            {"id": 2, "name": "boo", "alias": "bar"},
+        ]
+    ) == ["baz"]
