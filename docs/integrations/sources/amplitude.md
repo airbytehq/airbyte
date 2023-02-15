@@ -43,7 +43,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 0.1.22  | 2023-02-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) |Specified date formatting in specification                                        |
+| 0.1.22  | 2023-02-15 | [23087](https://github.com/airbytehq/airbyte/pull/23087) |Specified date formatting in specification                                        |
 | 0.1.21  | TODO       | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.20  | 2023-01-27 | [21957](https://github.com/airbytehq/airbyte/pull/21957) | Handle null values and empty strings in date-time fields                                        |
 | 0.1.19  | 2022-12-09 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Remove `data_region` as required                                                                |
