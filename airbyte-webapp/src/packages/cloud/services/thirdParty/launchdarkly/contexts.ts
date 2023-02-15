@@ -33,12 +33,12 @@ export function createWorkspaceContext(workspaceId: string): LDSingleKindContext
   };
 }
 
-export function createMultiContext(contexts: LDSingleKindContext[]): LDMultiKindContext {
+export function createMultiContext(...args: LDSingleKindContext[]): LDMultiKindContext {
   const multiContext: LDMultiKindContext = {
     kind: "multi",
   };
 
-  contexts.forEach(({ kind, ...context }) => {
+  args.forEach(({ kind, ...context }) => {
     multiContext[kind] = { ...context };
   });
 

@@ -53,7 +53,7 @@ describe(`${createMultiContext.name}`, () => {
     const mockWorkspaceId = uuidV4();
     const userContext = createUserContext(null, mockLocale);
     const workspaceContext = createWorkspaceContext(mockWorkspaceId);
-    const multiContext = createMultiContext([userContext, workspaceContext]);
+    const multiContext = createMultiContext(userContext, workspaceContext);
     const { kind: userKind, ...userContextWithoutKind } = userContext;
     const { kind: workspaceKind, ...workspaceContextWithoutKind } = workspaceContext;
 
