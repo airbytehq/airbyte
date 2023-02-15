@@ -11,6 +11,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,25 +56,27 @@ public class IconValidationTask {
 
     // concat the two lists one
     sourceIcons.addAll(destinationIcons);
+
+    // remove all null values
+    sourceIcons.removeAll(Collections.singleton(null));
+
     return sourceIcons;
+  }
+
+  private static List<String> difference(final List<String> list1, final List<String> list2) {
+    List<String> difference = new ArrayList<>(list1);
+    difference.removeAll(list2);
+    return difference;
   }
 
   public static void main(final String[] args) throws Exception {
     final List<String> catalogIconFileNames = getIconFileNamesFromCatalog();
     final List<String> localIconFileNames = getLocalIconFileNames();
 
-    // Get all icons that are in the catalog but not in the local icons folder
-    final List<String> missingIcons = catalogIconFileNames.stream()
-        .filter(icon -> !localIconFileNames.contains(icon))
-        .toList();
-
-    // Get all icons that are in the local icons folder but not in the catalog
-    final List<String> unusedIcons = localIconFileNames.stream()
-        .filter(icon -> !catalogIconFileNames.contains(icon))
-        .toList();
+    final List<String> missingIcons = difference(catalogIconFileNames, localIconFileNames);
+    final List<String> unusedIcons = difference(localIconFileNames, catalogIconFileNames);
 
     final List<String> errorMessages = List.of();
-
     if (!missingIcons.isEmpty()) {
       errorMessages.add("The following icon files have been referenced inside the seed files, but don't exist:\n\n" + String.join(", ", missingIcons));
     }
