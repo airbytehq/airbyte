@@ -45,6 +45,7 @@ export const Section: React.FC<React.PropsWithChildren<SectionProps>> = ({
               variant="clear"
               onClick={() => setIsCollapsed((prevState) => !prevState)}
               data-testid={`${testId}-section-expand-arrow`}
+              type="button"
             >
               <FontAwesomeIcon
                 className={classNames(styles.arrow, { [styles.expanded]: !isCollapsed })}
