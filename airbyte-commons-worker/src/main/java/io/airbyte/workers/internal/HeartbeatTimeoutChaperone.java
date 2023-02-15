@@ -40,6 +40,8 @@ public class HeartbeatTimeoutChaperone {
   private final FeatureFlagClient featureFlagClient;
   private final UUID workspaceId;
 
+  private boolean hasFailed = false;
+
   public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
                                    final Duration timeoutCheckDuration,
                                    final FeatureFlagClient featureFlagClient,
@@ -104,11 +106,14 @@ public class HeartbeatTimeoutChaperone {
 
       // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
       if (!heartbeatMonitor.isBeating().orElse(true)) {
-        LOGGER.error("Source has stopped heart beating.");
-        if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
-          return;
-        } else {
-          LOGGER.info("Do not return because the feature flag is disable");
+        if (!hasFailed) {
+          LOGGER.error("Source has stopped heart beating.");
+          if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
+            return;
+          } else {
+            LOGGER.info("Do not return because the feature flag is disable");
+          }
+          hasFailed = true;
         }
       }
     }
