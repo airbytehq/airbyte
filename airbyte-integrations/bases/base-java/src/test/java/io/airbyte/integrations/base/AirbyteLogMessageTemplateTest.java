@@ -15,6 +15,7 @@ import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +76,7 @@ public class AirbyteLogMessageTemplateTest {
     LOGGER.info("hello");
 
     outputContent.flush();
-    final String logMessage = outputContent.toString();
+    final String logMessage = outputContent.toString(StandardCharsets.UTF_8);
     final AirbyteMessage airbyteMessage = validateLogIsAirbyteMessage(logMessage);
     final AirbyteLogMessage airbyteLogMessage = validateAirbyteMessageIsLog(airbyteMessage);
 
@@ -105,4 +106,5 @@ public class AirbyteLogMessageTemplateTest {
     assertFalse(StringUtils.isBlank(airbyteMessage.getLog().getMessage()));
     return airbyteMessage.getLog();
   }
+
 }
