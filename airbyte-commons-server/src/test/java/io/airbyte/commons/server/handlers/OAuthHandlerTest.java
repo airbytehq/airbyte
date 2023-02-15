@@ -5,16 +5,23 @@
 package io.airbyte.commons.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -235,4 +242,31 @@ class OAuthHandlerTest {
     assertEquals(expected, handler.getOauthFromDBIfNeeded(fromDb, fromInput));
   }
 
+  @Test
+  void testCompleteSourceOAuthHandleReturnSecret() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final UUID sourceDefinitionId = UUID.randomUUID();
+    final UUID workspaceId = UUID.randomUUID();
+
+    final CompleteSourceOauthRequest completeSourceOauthRequest = new CompleteSourceOauthRequest()
+        .sourceDefinitionId(sourceDefinitionId)
+        .workspaceId(workspaceId)
+        .returnSecretCoordinate(false);
+
+    final OAuthHandler handlerSpy = Mockito.spy(handler);
+
+    doReturn(Map.of("access_token", "access", "refresh_token", "refresh")).when(handlerSpy).completeSourceOAuth(any());
+    doReturn(Map.of("secret_id", "secret")).when(handlerSpy).writeOAuthResponseSecret(any(), any());
+
+    handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
+
+    verify(handlerSpy).completeSourceOAuth(completeSourceOauthRequest);
+    verify(handlerSpy, never()).writeOAuthResponseSecret(any(), any());
+
+    completeSourceOauthRequest.returnSecretCoordinate(true);
+
+    handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
+
+    verify(handlerSpy, times(2)).completeSourceOAuth(completeSourceOauthRequest);
+    verify(handlerSpy).writeOAuthResponseSecret(any(), any());
+  }
 }
