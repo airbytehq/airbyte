@@ -56,7 +56,7 @@ repositories {
 }
 
 Properties env = new Properties()
-rootProject.file('.env').withInputStream { env.load(it) }
+file('.env').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -154,9 +154,9 @@ spotless {
 
         importOrder()
 
-        eclipse('4.21.0').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
+        eclipse('4.21.0').configFile(file('tools/gradle/codestyle/java-google-style.xml'))
 
-        licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
+        licenseHeaderFile createJavaLicenseWith(file('LICENSE_SHORT'))
         removeUnusedImports()
         trimTrailingWhitespace()
     }
@@ -166,7 +166,7 @@ spotless {
     sql {
         target createSpotlessTarget('**/*.sql')
 
-        dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
+        dbeaver().configFile(file('tools/gradle/codestyle/sql-dbeaver.properties'))
     }
     format 'styling', {
         target createSpotlessTarget(['**/*.yaml', '**/*.json'])
@@ -203,9 +203,12 @@ def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
 allprojects {
     apply plugin: 'com.bmuschko.docker-remote-api'
 
-    task copyDocker(type: Sync) {
-        from "${project.projectDir}/Dockerfile"
-        into "build/docker/"
+    // check if the copyDocker task already exists as it may have already been added by cloud
+    if (tasks.findByName('copyDocker') == null) {
+        task copyDocker(type: Sync) {
+            from "${project.projectDir}/Dockerfile"
+            into "build/docker/"
+        }
     }
 }
 
@@ -223,12 +226,9 @@ allprojects {
 
 // Java projects common configurations
 subprojects { subproj ->
-
-
     configurations {
         runtimeClasspath
     }
-
 
     // Common Docker Configuration:
     // If subprojects have the dockerImageName property configured in their gradle.properties file,
@@ -510,7 +510,10 @@ subprojects {
             licenseTask.dependsOn generateManifestFilesTask
         }
     }
-    task listAllDependencies(type: DependencyReportTask) {}
+    // check if the copyDocker task already exists as it may have already been added by cloud
+    if (tasks.findByName('listAllDependencies') == null) {
+        task listAllDependencies(type: DependencyReportTask) {}
+    }
 }
 
 task('generate-docker') {
