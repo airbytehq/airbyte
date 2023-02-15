@@ -152,7 +152,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
         .getMaxSecondsBetweenMessages();
     // reset jobs use an empty source to induce resetting all data in destination.
-    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofSeconds(maxSecondsBetweenMessages));
+    log.error("Timeout is: " + maxSecondsBetweenMessages);
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(maxSecondsBetweenMessages));
 
     final var airbyteSource =
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(

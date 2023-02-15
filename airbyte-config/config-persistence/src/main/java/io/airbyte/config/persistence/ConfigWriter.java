@@ -23,6 +23,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record4;
@@ -36,6 +38,7 @@ import org.jooq.impl.DSL;
  * can be reused/composed in {@link ConfigRepository}.
  */
 @SuppressWarnings("PMD.CognitiveComplexity")
+@Slf4j
 public class ConfigWriter {
 
   /**
@@ -73,6 +76,7 @@ public class ConfigWriter {
   }
 
   static void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {
+    log.error("Writing config!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     final OffsetDateTime timestamp = OffsetDateTime.now();
     configs.forEach((standardSourceDefinition) -> {
       final boolean isExistingConfig = ctx.fetchExists(DSL.select()
