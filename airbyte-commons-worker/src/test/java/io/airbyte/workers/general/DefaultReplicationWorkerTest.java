@@ -81,7 +81,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -943,7 +942,8 @@ class DefaultReplicationWorkerTest {
   void testSourceFailingTimeout() throws Exception {
     final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
     when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
-    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(heartbeatMonitor, Duration.ofMillis(1), new TestClient(Map.of("heartbeat.failSync", true)), UUID.randomUUID());
+    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone =
+        new HeartbeatTimeoutChaperone(heartbeatMonitor, Duration.ofMillis(1), new TestClient(Map.of("heartbeat.failSync", true)), UUID.randomUUID());
 
     final AirbyteSource source = mock(AirbyteSource.class);
     when(source.isFinished()).thenReturn(false);
@@ -953,17 +953,17 @@ class DefaultReplicationWorkerTest {
     });
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
-            JOB_ID,
-            JOB_ATTEMPT,
-            source,
-            mapper,
-            destination,
-            messageTracker,
-            recordSchemaValidator,
-            workerMetricReporter,
-            connectorConfigUpdater,
-            false,
-            heartbeatTimeoutChaperone);
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        connectorConfigUpdater,
+        false,
+        heartbeatTimeoutChaperone);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
