@@ -58,9 +58,9 @@ export const DestinationSettingsPage: React.FC = () => {
           values={{ count: connectionsWithDestination.length }}
         />
         {connectionsWithDestination.map((connection) => (
-          <>
+          <React.Fragment key={connection.connectionId}>
             - <strong>{`${connection.name}\n`}</strong>
-          </>
+          </React.Fragment>
         ))}
       </p>
     );
