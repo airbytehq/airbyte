@@ -27,7 +27,7 @@ import io.airbyte.commons.server.errors.InternalServerKnownException;
 import io.airbyte.commons.server.errors.UnsupportedProtocolVersionException;
 import io.airbyte.commons.server.scheduler.SynchronousResponse;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
-import io.airbyte.commons.server.services.AirbyteGithubStore;
+import io.airbyte.commons.server.services.AirbyteRemoteOssCatalog;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
@@ -59,7 +59,7 @@ public class SourceDefinitionsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final AirbyteGithubStore githubStore;
+  private final AirbyteRemoteOssCatalog githubStore;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final SourceHandler sourceHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
@@ -68,7 +68,7 @@ public class SourceDefinitionsHandler {
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final Supplier<UUID> uuidSupplier,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
-                                  final AirbyteGithubStore githubStore,
+                                  final AirbyteRemoteOssCatalog githubStore,
                                   final SourceHandler sourceHandler,
                                   final AirbyteProtocolVersionRange protocolVersionRange) {
     this.configRepository = configRepository;
@@ -87,7 +87,7 @@ public class SourceDefinitionsHandler {
     this.configRepository = configRepository;
     this.uuidSupplier = UUID::randomUUID;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
-    this.githubStore = AirbyteGithubStore.production();
+    this.githubStore = AirbyteRemoteOssCatalog.production();
     this.sourceHandler = sourceHandler;
     final Configs configs = new EnvConfigs();
     this.protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());

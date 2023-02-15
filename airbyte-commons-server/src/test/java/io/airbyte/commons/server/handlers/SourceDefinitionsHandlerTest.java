@@ -37,7 +37,7 @@ import io.airbyte.commons.server.errors.UnsupportedProtocolVersionException;
 import io.airbyte.commons.server.scheduler.SynchronousJobMetadata;
 import io.airbyte.commons.server.scheduler.SynchronousResponse;
 import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
-import io.airbyte.commons.server.services.AirbyteGithubStore;
+import io.airbyte.commons.server.services.AirbyteRemoteOssCatalog;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -72,7 +72,7 @@ class SourceDefinitionsHandlerTest {
   private SourceDefinitionsHandler sourceDefinitionsHandler;
   private Supplier<UUID> uuidSupplier;
   private SynchronousSchedulerClient schedulerSynchronousClient;
-  private AirbyteGithubStore githubStore;
+  private AirbyteRemoteOssCatalog githubStore;
   private SourceHandler sourceHandler;
   private UUID workspaceId;
   private AirbyteProtocolVersionRange protocolVersionRange;
@@ -83,7 +83,7 @@ class SourceDefinitionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
     schedulerSynchronousClient = spy(SynchronousSchedulerClient.class);
-    githubStore = mock(AirbyteGithubStore.class);
+    githubStore = mock(AirbyteRemoteOssCatalog.class);
     sourceHandler = mock(SourceHandler.class);
     workspaceId = UUID.randomUUID();
 

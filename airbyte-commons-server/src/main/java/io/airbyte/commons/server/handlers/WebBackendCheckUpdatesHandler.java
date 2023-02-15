@@ -5,7 +5,7 @@
 package io.airbyte.commons.server.handlers;
 
 import io.airbyte.api.model.generated.WebBackendCheckUpdatesRead;
-import io.airbyte.commons.server.services.AirbyteGithubStore;
+import io.airbyte.commons.server.services.AirbyteRemoteOssCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -32,9 +32,9 @@ public class WebBackendCheckUpdatesHandler {
   // todo (cgardens) - this handler should NOT have access to the db. only access via handler.
   @Deprecated
   final ConfigRepository configRepositoryDoNotUse;
-  final AirbyteGithubStore githubStore;
+  final AirbyteRemoteOssCatalog githubStore;
 
-  public WebBackendCheckUpdatesHandler(final ConfigRepository configRepositoryDoNotUse, final AirbyteGithubStore githubStore) {
+  public WebBackendCheckUpdatesHandler(final ConfigRepository configRepositoryDoNotUse, final AirbyteRemoteOssCatalog githubStore) {
     this.configRepositoryDoNotUse = configRepositoryDoNotUse;
     this.githubStore = githubStore;
   }

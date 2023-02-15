@@ -19,7 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public class AirbyteGithubStoreTest {
+public class AirbyteRemoteOssCatalogTest {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(1);
   private static final String CONTENT_TYPE = "Content-Type";
@@ -28,12 +28,12 @@ public class AirbyteGithubStoreTest {
   private static final String NO_CACHE = "no-cache";
 
   private MockWebServer webServer;
-  private AirbyteGithubStore githubStore;
+  private AirbyteRemoteOssCatalog githubStore;
 
   @BeforeEach
   public void setUp() {
     webServer = new MockWebServer();
-    githubStore = AirbyteGithubStore.test(webServer.url("/").toString(), TIMEOUT);
+    githubStore = AirbyteRemoteOssCatalog.test(webServer.url("/").toString(), TIMEOUT);
   }
 
   @Nested

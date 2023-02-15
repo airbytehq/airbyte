@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.api.model.generated.WebBackendCheckUpdatesRead;
-import io.airbyte.commons.server.services.AirbyteGithubStore;
+import io.airbyte.commons.server.services.AirbyteRemoteOssCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 class WebBackendCheckUpdatesHandlerTest {
 
   ConfigRepository configRepository;
-  AirbyteGithubStore githubStore;
+  AirbyteRemoteOssCatalog githubStore;
   WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler;
 
   final static boolean INCLUDE_TOMBSTONE = false;
@@ -32,7 +32,7 @@ class WebBackendCheckUpdatesHandlerTest {
   @BeforeEach
   void beforeEach() {
     configRepository = mock(ConfigRepository.class);
-    githubStore = mock(AirbyteGithubStore.class);
+    githubStore = mock(AirbyteRemoteOssCatalog.class);
     webBackendCheckUpdatesHandler = new WebBackendCheckUpdatesHandler(configRepository, githubStore);
   }
 

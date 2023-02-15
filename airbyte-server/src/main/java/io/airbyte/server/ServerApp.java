@@ -39,7 +39,7 @@ import io.airbyte.commons.server.handlers.WorkspacesHandler;
 import io.airbyte.commons.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.commons.server.scheduler.EventRunner;
 import io.airbyte.commons.server.scheduler.TemporalEventRunner;
-import io.airbyte.commons.server.services.AirbyteGithubStore;
+import io.airbyte.commons.server.services.AirbyteRemoteOssCatalog;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.NotificationUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
@@ -298,12 +298,12 @@ public class ServerApp implements ServerRunnable {
     final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
         configs.getAirbyteProtocolVersionMax());
 
-    final AirbyteGithubStore airbyteGithubStore = AirbyteGithubStore.production();
+    final AirbyteRemoteOssCatalog airbyteRemoteOssCatalog = AirbyteRemoteOssCatalog.production();
 
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository,
         () -> UUID.randomUUID(),
         syncSchedulerClient,
-        airbyteGithubStore,
+        airbyteRemoteOssCatalog,
         destinationHandler,
         airbyteProtocolVersionRange);
 
@@ -320,7 +320,7 @@ public class ServerApp implements ServerRunnable {
         oAuthConfigSupplier);
 
     final SourceDefinitionsHandler sourceDefinitionsHandler =
-        new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteGithubStore, sourceHandler,
+        new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteRemoteOssCatalog, sourceHandler,
             airbyteProtocolVersionRange);
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
@@ -362,7 +362,7 @@ public class ServerApp implements ServerRunnable {
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
     final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler =
-        new WebBackendCheckUpdatesHandler(configRepository, AirbyteGithubStore.production());
+        new WebBackendCheckUpdatesHandler(configRepository, AirbyteRemoteOssCatalog.production());
 
     LOGGER.info("Starting server...");
 
