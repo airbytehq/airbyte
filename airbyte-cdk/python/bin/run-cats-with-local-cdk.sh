@@ -1,15 +1,22 @@
 #!/usr/bin/env sh
 
+USAGE="$(basename "$0") [-h] [-c connector1,connector2,...] -- Run connector acceptance tests (CATs) against the local CDK, if relevant.\n
+    -h  show help text\n
+    -c  comma-separated connector names (defaults to all connectors)"
+
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 OUTPUT_DIR=/tmp/cat-output
 SCRIPT=/tmp/run-cats-with-local-cdk.sh
 # Clean up from previous test runs
 rm -rf $OUTPUT_DIR && mkdir $OUTPUT_DIR
 
-while getopts ":c:" opt; do
+while getopts ":hc:" opt; do
     case $opt in
+        h ) echo $USAGE
+            exit 0 ;;
         c ) connectors="${OPTARG}" ;;
-        * ) exit 1
+        * ) echo "Unrecognized argument" 1>&2
+            exit 1 ;;
     esac
 done
 
@@ -38,7 +45,7 @@ fi
 
 chmod +x "$SCRIPT"
 
-echo $connectors | xargs -P 0 -n 1 -I % "$SCRIPT" %
+echo $connectors | xargs -P 0 -n 1 "$SCRIPT"
 
 # Print connectors with CATs that passed
 for directory in $OUTPUT_DIR/*; do
