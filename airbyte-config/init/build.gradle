@@ -43,6 +43,7 @@ task downloadCombinedConnectorCatalog(type: JavaExec, dependsOn: compileJava) {
  * Simple task that checks if all icons in the seed definition files exist as well as
  * that no icon in the icons folder is unused.
  */
+// TODO (ben): Question: This needs to be refactored correct?
 class IconValidationTask extends DefaultTask {
 
     private slurper = new groovy.yaml.YamlSlurper()

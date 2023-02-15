@@ -44,7 +44,7 @@ task generateCombinedConnectorCatalog(type: JavaExec, dependsOn: generateSeedCon
     args 'oss_catalog.json'
 }
 
-// TODO (ben): do we need this?
-// project(":airbyte-config:init").tasks.processResources.dependsOn(generateCombinedConnectorCatalog)
+// TODO (ben): we need to ensure this is called separately in deploy-oss-catalog.yml so as not to overwrite the catalog downloaded by cloud
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateCombinedConnectorCatalog)
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
