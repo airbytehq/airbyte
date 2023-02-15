@@ -18,7 +18,9 @@ from .constants import (
     AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME,
     AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT,
     AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER,
+    GIT_USER_EMAIL,
     GIT_USERNAME,
+    GIT_USERNAME_FOR_AUTH,
     GITHUB_API_COMMON_HEADERS,
     GITHUB_API_TOKEN,
 )
@@ -27,9 +29,17 @@ from .models import ConnectorQAReport
 logger = logging.getLogger(__name__)
 
 
+def set_git_identity(repo: git.repo) -> git.repo:
+    repo.git.config("--global", "user.email", GIT_USER_EMAIL)
+    repo.git.config("--global", "user.name", GIT_USERNAME)
+    return repo
+
+
 def clone_airbyte_cloud_repo(local_repo_path: Path) -> git.Repo:
     logger.info(f"Cloning {AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL} to {local_repo_path}")
-    authenticated_repo_url = AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL.replace("https://", f"https://{GIT_USERNAME}:{GITHUB_API_TOKEN}@")
+    authenticated_repo_url = AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL.replace(
+        "https://", f"https://{GIT_USERNAME_FOR_AUTH}:{GITHUB_API_TOKEN}@"
+    )
     return git.Repo.clone_from(authenticated_repo_url, local_repo_path, branch=AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
 
 
@@ -146,6 +156,7 @@ def deploy_new_connector_to_cloud_repo(airbyte_cloud_repo_path: Path, airbyte_cl
 def deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable):
     cloud_repo_path = Path(tempfile.mkdtemp())
     airbyte_cloud_repo = clone_airbyte_cloud_repo(cloud_repo_path)
+    airbyte_cloud_repo = set_git_identity(airbyte_cloud_repo)
     for connector in eligible_connectors:
         deploy_new_connector_to_cloud_repo(cloud_repo_path, airbyte_cloud_repo, connector)
     shutil.rmtree(cloud_repo_path)
