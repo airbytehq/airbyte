@@ -1,4 +1,7 @@
 @use "scss/variables";
+@use "scss/colors";
+
+$icon-size: 16px;
 
 .section {
   padding: variables.$spacing-xl;
@@ -14,5 +17,22 @@
   &.flush {
     padding: 0;
     gap: 0;
+  }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+
+  .arrow {
+    font-size: $icon-size;
+    line-height: $icon-size;
+    color: colors.$dark-blue;
+    transition: 0.3s;
+    cursor: pointer;
+
+    &.collapsed {
+      transform: rotate(90deg);
+    }
   }
 }
