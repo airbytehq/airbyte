@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,7 +11,7 @@ from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
-from typing import Any, List, MutableMapping, Optional, Set
+from typing import Any, List, Mapping, MutableMapping, Optional, Set
 
 import pytest
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
@@ -53,6 +53,11 @@ def test_strictness_level_fixture(acceptance_test_config: Config) -> Config.Test
 @pytest.fixture(name="cache_discovered_catalog", scope="session")
 def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
     return acceptance_test_config.cache_discovered_catalog
+
+
+@pytest.fixture(name="custom_environment_variables", scope="session")
+def custom_environment_variables_fixture(acceptance_test_config: Config) -> Mapping:
+    return acceptance_test_config.custom_environment_variables
 
 
 @pytest.fixture(name="connector_config_path")
@@ -140,8 +145,13 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
 
 
 @pytest.fixture(name="docker_runner")
-def docker_runner_fixture(image_tag, tmp_path, connector_config_path) -> ConnectorRunner:
-    return ConnectorRunner(image_tag, volume=tmp_path, connector_configuration_path=connector_config_path)
+def docker_runner_fixture(image_tag, tmp_path, connector_config_path, custom_environment_variables) -> ConnectorRunner:
+    return ConnectorRunner(
+        image_tag,
+        volume=tmp_path,
+        connector_configuration_path=connector_config_path,
+        custom_environment_variables=custom_environment_variables,
+    )
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -308,7 +318,7 @@ def detailed_logger() -> Logger:
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename, mode="w")
     fh.setFormatter(formatter)
-    logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
+    logger.log_json_list = lambda line: logger.info(json.dumps(list(line), indent=1))
     logger.handlers = [fh]
     return logger
 

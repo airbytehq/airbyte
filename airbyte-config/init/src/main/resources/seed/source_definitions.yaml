@@ -45,7 +45,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 1.0.43
+  dockerImageTag: 1.0.44
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -468,7 +468,7 @@
 - name: DynamoDB
   sourceDefinitionId: 50401137-8871-4c5a-abb7-1f5fda35545a
   dockerRepository: airbyte/source-dynamodb
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
   icon: dynamodb.svg
   sourceType: api
@@ -508,7 +508,7 @@
 - name: Facebook Pages
   sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   dockerRepository: airbyte/source-facebook-pages
-  dockerImageTag: 0.2.1
+  dockerImageTag: 0.2.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
   icon: facebook.svg
   sourceType: api
@@ -728,7 +728,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.31
+  dockerImageTag: 0.2.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -799,7 +799,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -871,6 +871,9 @@
   icon: iterable.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.iterable.com
 - name: Jenkins
   sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
   dockerRepository: farosai/airbyte-jenkins-source
@@ -882,11 +885,14 @@
 - name: Jira
   sourceDefinitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
   dockerRepository: airbyte/source-jira
-  dockerImageTag: 0.3.3
+  dockerImageTag: 0.3.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/jira
   icon: jira.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${domain}"
 - name: K6 Cloud
   sourceDefinitionId: e300ece7-b073-43a3-852e-8aff36a57f13
   dockerRepository: airbyte/source-k6-cloud
@@ -1376,7 +1382,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.43
+  dockerImageTag: 1.0.45
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1465,6 +1471,9 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.rechargeapps.com
 - name: Recreation
   sourceDefinitionId: 25d7535d-91e0-466a-aa7f-af81578be277
   dockerRepository: airbyte/source-recreation
@@ -1546,7 +1555,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1562,11 +1571,14 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.30
+  dockerImageTag: 2.0.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.salesforce.com"
 - name: SAP Fieldglass
   sourceDefinitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
   dockerRepository: airbyte/source-sap-fieldglass
@@ -1726,11 +1738,14 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 1.0.1
+  dockerImageTag: 2.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "api.stripe.com"
 - name: SurveyCTO
   sourceDefinitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
   dockerRepository: airbyte/source-surveycto
@@ -2037,11 +2052,15 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.21
+  dockerImageTag: 0.2.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${subdomain}.zendesk.com"
+      - zendesk.com
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
@@ -2061,7 +2080,7 @@
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   icon: zenloop.svg
   sourceType: api

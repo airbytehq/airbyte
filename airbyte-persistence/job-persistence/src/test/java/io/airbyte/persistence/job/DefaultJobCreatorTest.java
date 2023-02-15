@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -412,7 +412,8 @@ class DefaultJobCreatorTest {
         .withResourceRequirements(workerResourceRequirements)
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(false);
+        .withIsDestinationCustomConnector(false)
+        .withWorkspaceId(DESTINATION_CONNECTION.getWorkspaceId());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -464,7 +465,8 @@ class DefaultJobCreatorTest {
         .withResourceRequirements(workerResourceRequirements)
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(false);
+        .withIsDestinationCustomConnector(false)
+        .withWorkspaceId(DESTINATION_CONNECTION.getWorkspaceId());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

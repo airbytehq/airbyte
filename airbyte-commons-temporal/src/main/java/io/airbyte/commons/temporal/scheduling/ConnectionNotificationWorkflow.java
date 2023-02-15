@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.temporal.scheduling;
@@ -16,7 +16,7 @@ import java.util.UUID;
 public interface ConnectionNotificationWorkflow {
 
   @WorkflowMethod
-  boolean sendSchemaChangeNotification(UUID connectionId)
+  boolean sendSchemaChangeNotification(UUID connectionId, String url)
       throws IOException, InterruptedException, ApiException, ConfigNotFoundException, JsonValidationException;
 
 }
