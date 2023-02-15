@@ -1,19 +1,17 @@
 import React, { useCallback, useEffect, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { useOutletContext } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useDeleteSource, useInvalidateSource, useUpdateSource } from "hooks/services/useSourceHook";
 import { useDeleteModal } from "hooks/useDeleteModal";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecification } from "services/connector/SourceDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 import styles from "./SourceSettingsPage.module.scss";
+import { useSourceOverviewContext } from "../SourceOverviewPage/sourceOverviewContext";
 
 export const SourceSettingsPage: React.FC = () => {
   const { mutateAsync: updateSource } = useUpdateSource();
@@ -22,11 +20,7 @@ export const SourceSettingsPage: React.FC = () => {
   const formId = useUniqueFormId();
   const { clearFormChange } = useFormChangeTrackerService();
 
-  const { source, connections } = useOutletContext<{
-    source: SourceRead;
-    connections: WebBackendConnectionListItem[];
-  }>();
-  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
+  const { source, sourceDefinition, connections } = useSourceOverviewContext();
 
   useTrackPage(PageTrackingCodes.SOURCE_ITEM_SETTINGS);
   useEffect(() => {

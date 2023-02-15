@@ -1,24 +1,19 @@
 import { useMemo } from "react";
-import { useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { TableItemTitle } from "components/ConnectorBlocks";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
-import { SourceRead, WebBackendConnectionListItem } from "core/request/AirbyteClient";
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { RoutePaths } from "pages/routePaths";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import SourceConnectionTable from "./SourceConnectionTable";
+import { useSourceOverviewContext } from "./sourceOverviewContext";
 
 export const SourceOverviewPage = () => {
-  const { source, connections } = useOutletContext<{
-    source: SourceRead;
-    connections: WebBackendConnectionListItem[];
-  }>();
-  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
+  const { source, sourceDefinition, connections } = useSourceOverviewContext();
   // We load all destinations so the add destination button has a pre-filled list of options.
   const { destinations } = useDestinationList();
 
