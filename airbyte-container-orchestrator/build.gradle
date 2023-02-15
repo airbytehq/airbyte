@@ -30,12 +30,14 @@ dependencies {
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-commons-converters')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:init')
+    implementation project(':airbyte-featureflag')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-worker-models')
 
@@ -47,8 +49,6 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-
-    testImplementation project(':airbyte-commons-docker')
 }
 
 application {

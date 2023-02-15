@@ -54,7 +54,11 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   return (
-    <Row onClick={onRowClick} className={streamHeaderContentStyle}>
+    <Row
+      onClick={onRowClick}
+      className={streamHeaderContentStyle}
+      data-testid={`catalog-tree-table-row-${stream.stream?.namespace || "no-namespace"}-${stream.stream?.name}`}
+    >
       <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
         {!disabled && (
           <>
@@ -77,7 +81,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           {stream.stream?.name}
         </Text>
       </CatalogTreeTableCell>
-      <CatalogTreeTableCell size="large" withTooltip>
+      <CatalogTreeTableCell size="large">
         {disabled ? (
           <Text size="md" className={styles.cellText}>
             {syncSchema.syncMode}

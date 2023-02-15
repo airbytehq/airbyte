@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-airtable:dev
 test_strictness_level: high
@@ -19,6 +19,7 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -26,7 +27,7 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: true
           exact_order: true
-          extra_records: false
+          extra_records: false        
       - config_path: "secrets/config_oauth.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"

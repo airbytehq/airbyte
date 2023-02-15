@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -186,7 +186,7 @@ def split_config(config: Mapping[str, Any]) -> Tuple[dict, InternalConfig]:
      config - Dict object that has been loaded from config file.
 
     :return tuple of user defined config dict with filtered out internal
-    parameters and SAT internal config object.
+    parameters and connector acceptance test internal config object.
     """
     main_config = {}
     internal_config = {}

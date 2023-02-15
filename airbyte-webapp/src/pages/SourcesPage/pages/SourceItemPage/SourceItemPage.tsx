@@ -9,6 +9,7 @@ import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks
 import LoadingPage from "components/LoadingPage";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { Breadcrumbs } from "components/ui/Breadcrumbs";
+import type { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -18,10 +19,10 @@ import { useGetSource } from "hooks/services/useSourceHook";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import SourceConnectionTable from "./components/SourceConnectionTable";
-import SourceSettings from "./components/SourceSettings";
-import { DropdownMenuOptionType } from "../../../../components/ui/DropdownMenu";
 import { RoutePaths } from "../../../routePaths";
+
+const SourceConnectionTable = React.lazy(() => import("./components/SourceConnectionTable"));
+const SourceSettings = React.lazy(() => import("./components/SourceSettings"));
 
 const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
