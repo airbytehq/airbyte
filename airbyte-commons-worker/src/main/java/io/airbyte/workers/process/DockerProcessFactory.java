@@ -191,7 +191,7 @@ public class DockerProcessFactory implements ProcessFactory {
   static List<String> localDebuggingOptions(final String containerName) {
     final boolean shouldAddDebuggerOptions =
         Optional.ofNullable(System.getenv("DEBUG_CONTAINER_IMAGE")).filter(StringUtils::isNotEmpty)
-            .map(ProcessFactory.extractShortImageName(containerName)::equals).orElse(false)
+            .map(imageName -> ProcessFactory.extractShortImageName(containerName).startsWith(imageName)).orElse(false)
             && Optional.ofNullable(System.getenv("DEBUG_CONTAINER_JAVA_OPTS")).isPresent();
     if (shouldAddDebuggerOptions) {
       return List.of("-e", "JAVA_TOOL_OPTIONS=" + System.getenv("DEBUG_CONTAINER_JAVA_OPTS"), "-p5005:5005");
