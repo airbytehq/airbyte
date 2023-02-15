@@ -278,8 +278,9 @@ public class DbConverter {
   }
 
   public static ConnectorBuilderProject buildConnectorBuilderProject(final Record record) {
-    return buildConnectorBuilderProjectWithoutManifestDraft(record).withManifestDraft(record.get(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT) == null ? null
-        : Jsons.deserialize(record.get(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT).data()));
+    return buildConnectorBuilderProjectWithoutManifestDraft(record)
+        .withManifestDraft(record.get(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT) == null ? null
+            : Jsons.deserialize(record.get(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT).data()));
   }
 
   public static ConnectorBuilderProject buildConnectorBuilderProjectWithoutManifestDraft(final Record record) {

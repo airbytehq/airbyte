@@ -54,8 +54,7 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
     project2.setManifestDraft(null);
 
     assertEquals(new ArrayList<>(
-        Arrays.asList(project1, project2)
-    ), configRepository.getConnectorBuilderProjectsByWorkspace(mainWorkspace).toList());
+        Arrays.asList(project1, project2)), configRepository.getConnectorBuilderProjectsByWorkspace(mainWorkspace).toList());
   }
 
   @Test
@@ -76,7 +75,6 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
     assertFalse(configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), mainWorkspace).isPresent());
     assertTrue(configRepository.getConnectorBuilderProject(project2.getBuilderProjectId(), mainWorkspace).isPresent());
   }
-
 
   private void createBaseObjects() throws IOException {
     mainWorkspace = UUID.randomUUID();
@@ -100,4 +98,5 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
     configRepository.writeBuilderProject(project);
     return project;
   }
+
 }
