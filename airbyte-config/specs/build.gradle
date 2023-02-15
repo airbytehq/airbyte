@@ -44,6 +44,7 @@ task generateCombinedConnectorCatalog(type: JavaExec, dependsOn: generateSeedCon
     args 'oss_catalog.json'
 }
 
-project(":airbyte-config:init").tasks.processResources.dependsOn(generateCombinedConnectorCatalog)
+// TODO (ben): do we need this?
+// project(":airbyte-config:init").tasks.processResources.dependsOn(generateCombinedConnectorCatalog)
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

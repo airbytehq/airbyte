@@ -4,26 +4,16 @@
 
 package io.airbyte.config.init;
 
-import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingCustomField;
-import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingPublicField;
-import static io.airbyte.config.init.JsonDefinitionsHelper.addMissingTombstoneField;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.Resources;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
-import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.CombinedConnectorCatalog;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,35 +21,18 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * This provider contains all definitions according to the local yaml files.
+ * This provider contains all definitions according to the local catalog json files.
  */
 final public class LocalDefinitionsProvider implements DefinitionsProvider {
 
-  public static final Class<?> DEFAULT_SEED_DEFINITION_RESOURCE_CLASS = SeedType.class;
-
-  private final static String PROTOCOL_VERSION = "protocol_version";
-  private final static String SPEC = "spec";
-
-  private Map<UUID, StandardSourceDefinition> sourceDefinitions;
-  private Map<UUID, StandardDestinationDefinition> destinationDefinitions;
-
-  // TODO inject via dependency injection framework
-  // QUESTION: Is this nessesary?
-  // TODO remove if not
-  private final String localCatalogPath;
-
-  public LocalDefinitionsProvider() throws IOException {
-
-    // TODO get the filename from config
-    this.localCatalogPath = "seed/oss_catalog.json";
-  }
+  private static final String LOCAL_CONNECTOR_CATALOG_PATH = new EnvConfigs().getLocalConnectorCatalogPath();
 
   // TODO (ben): finish this 😅 and write tests
   public CombinedConnectorCatalog getLocalDefinitionCatalog() {
     // TODO add logs
     // TODO add tests
     try {
-      final URL url = Resources.getResource(this.localCatalogPath);
+      final URL url = Resources.getResource(LOCAL_CONNECTOR_CATALOG_PATH);
       final String jsonString = Resources.toString(url, StandardCharsets.UTF_8);
       final CombinedConnectorCatalog catalog = Jsons.deserialize(jsonString, CombinedConnectorCatalog.class);
       return catalog;
