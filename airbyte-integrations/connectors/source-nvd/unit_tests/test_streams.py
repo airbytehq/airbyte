@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
@@ -31,7 +31,7 @@ def test_request_params(patch_base_class, stream_config):
         "stream_state": None,
         "next_page_token": {"startIndex": 1337},
     }
-    expected_params = {"lastModStartDate": "2022-01-01T00:00:00", "lastModEndDate": "2022-01-02T00:00:00", "startIndex": 1337}
+    expected_params = {"lastModStartDate": "2022-01-01T00:00:00.000000", "lastModEndDate": "2022-01-02T00:00:00.000000", "startIndex": 1337}
     assert stream.request_params(**inputs) == expected_params
 
 
@@ -53,7 +53,7 @@ def test_parse_response_cves(stream_config):
     response.json = lambda: {"vulnerabilities": [{"cve": {"id": "CVE-1999-0095", "lastModified": "2019-06-11T20:29:00.263"}}]}
     expected_parsed_object = {
         "id": "CVE-1999-0095",
-        "last_modified": "2019-06-11T20:29:00.263",
+        "last_modified": "2019-06-11T20:29:00.263+00:00",
         "cve": {"id": "CVE-1999-0095", "lastModified": "2019-06-11T20:29:00.263"},
     }
     assert next(stream.parse_response(response)) == expected_parsed_object
@@ -68,7 +68,7 @@ def test_parse_response_cpes(stream_config):
     }
     expected_parsed_object = {
         "id": "cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*",
-        "last_modified": "2011-01-12T14:35:43.723",
+        "last_modified": "2011-01-12T14:35:43.723+00:00",
         "cpe": {"cpeNameId": "cpe:2.3:a:3com:3cdaemon:-:*:*:*:*:*:*:*", "lastModified": "2011-01-12T14:35:43.723"},
     }
     assert next(stream.parse_response(response)) == expected_parsed_object
@@ -93,8 +93,11 @@ def test_should_retry(patch_base_class, http_status, should_retry, stream_config
 
 def test_stream_slices(patch_base_class, stream_config):
     stream = NvdStream(stream_config)
-    inputs = {"sync_mode": None, "cursor_field": [], "stream_state": {"last_modified": "2022-12-12T00:00:00.000"}}
-    expected_stream_slice = {"start_date": datetime(2022, 12, 12), "end_date": datetime(2022, 12, 13)}
+    inputs = {"sync_mode": None, "cursor_field": [], "stream_state": {"last_modified": "2022-12-12T00:00:00.000+00:00"}}
+    expected_stream_slice = {
+        "start_date": datetime(2022, 12, 12, tzinfo=timezone.utc),
+        "end_date": datetime(2022, 12, 13, tzinfo=timezone.utc),
+    }
     assert expected_stream_slice in stream.stream_slices(**inputs)
 
 

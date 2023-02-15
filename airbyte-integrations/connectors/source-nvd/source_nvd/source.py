@@ -133,7 +133,7 @@ class Cves(NvdStream):
             result["id"] = result["cve"]["id"]
             result["last_modified"] = (
                 datetime.strptime(result["cve"]["lastModified"], TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION)
-                .astimezone(timezone.utc)
+                .replace(tzinfo=timezone.utc)
                 .isoformat(timespec="milliseconds")
             )
             yield result
@@ -160,7 +160,7 @@ class Cpes(NvdStream):
             result["id"] = result["cpe"]["cpeNameId"]
             result["last_modified"] = (
                 datetime.strptime(result["cpe"]["lastModified"], TIME_FORMAT_LAST_MODIFIED_RECORD_WITHOUT_TIMEZONE_INFORMATION)
-                .astimezone(timezone.utc)
+                .replace(tzinfo=timezone.utc)
                 .isoformat(timespec="milliseconds")
             )
             yield result
