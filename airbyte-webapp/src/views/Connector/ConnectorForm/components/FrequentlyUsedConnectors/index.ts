@@ -1,1 +1,1 @@
-export { FrequentlyUsedConnectors } from "./FrequentlyUsedConnectors";
+export { FrequentlyUsedConnectors as default } from "./FrequentlyUsedConnectors";

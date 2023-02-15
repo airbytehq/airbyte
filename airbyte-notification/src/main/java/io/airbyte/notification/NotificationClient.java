@@ -6,6 +6,7 @@ package io.airbyte.notification;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Notification;
+import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -55,7 +56,11 @@ public abstract class NotificationClient {
 
   public abstract boolean notifyFailure(String message) throws IOException, InterruptedException;
 
-  public abstract boolean notifySchemaChange(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException;
+  public abstract boolean notifySchemaChange(final UUID connectionId,
+                                             final boolean isBreaking,
+                                             final SlackNotificationConfiguration config,
+                                             final String url)
+      throws IOException, InterruptedException;
 
   public static NotificationClient createNotificationClient(final Notification notification) {
     return switch (notification.getNotificationType()) {
