@@ -53,6 +53,7 @@
   "form.syncSettings": "Sync settings",
   "form.primaryKey": "Primary key",
   "form.cursorField": "Cursor field",
+  "form.configuration": "Configuration",
   "form.dataSync": "Activate the streams you want to sync",
   "form.dataSync.readonly": "Activated streams",
   "form.apply": "Apply",

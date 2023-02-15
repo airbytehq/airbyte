@@ -19,6 +19,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
+import { ConnectionConfigurationFormPreview } from "./ConnectionConfigurationFormPreview";
 import styles from "./ConnectionFormFields.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
 import { NamespaceDefinitionField } from "./NamespaceDefinitionField";
@@ -52,14 +53,21 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
   });
 
   const isNewTableDesignEnabled = useNewTableDesignExperiment();
-  const firstSectionTitle = isNewTableDesignEnabled ? undefined : <FormattedMessage id="connection.transfer" />;
+  const firstSectionTitle = (
+    <FormattedMessage id={isNewTableDesignEnabled ? "form.configuration" : "connection.transfer"} />
+  );
 
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
-        <Section title={firstSectionTitle}>
+        <Section
+          title={firstSectionTitle}
+          collapsible
+          collapsedInitially={mode === "edit"}
+          collapsedPreviewInfo={<ConnectionConfigurationFormPreview />}
+        >
           <ScheduleField />
           {allowAutoDetectSchema && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
