@@ -12,7 +12,7 @@ import requests_mock
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
-from source_square.components import SquareSubstreamSlicer
+from source_square.components import SquareSubstreamIncrementalSync
 from source_square.source import SourceSquare
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -79,7 +79,7 @@ def test_refresh_access_token(req_mock):
 def test_sub_slicer(last_record, expected, records):
     parent_stream = MagicMock()
     parent_stream.read_records = MagicMock(return_value=records)
-    slicer = SquareSubstreamSlicer(
+    slicer = SquareSubstreamIncrementalSync(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
@@ -114,7 +114,7 @@ def test_sub_slicer(last_record, expected, records):
 def test_sub_slicer_request_body(last_record, records, expected_data):
     parent_stream = MagicMock
     parent_stream.read_records = MagicMock(return_value=records)
-    slicer = SquareSubstreamSlicer(
+    slicer = SquareSubstreamIncrementalSync(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000Z", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000Z", parameters={}),
         step="P1D",

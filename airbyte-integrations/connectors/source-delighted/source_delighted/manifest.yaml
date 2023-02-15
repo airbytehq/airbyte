@@ -20,7 +20,7 @@ definitions:
           header: "Retry-After"
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: "{{ parameters['stream_cursor_field'] }}"
+    cursor_field: "{{ parameters['cursor_field'] }}"
     datetime_format: "%s"
     cursor_granularity: "PT1S"
     start_datetime:

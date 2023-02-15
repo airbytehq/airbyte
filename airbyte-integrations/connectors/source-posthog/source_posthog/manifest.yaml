@@ -103,7 +103,7 @@ definitions:
       type: CustomIncrementalSync
       class_name: source_posthog.components.EventsCartesianProductStreamSlicer
       cursor_field: timestamp
-      partition_routers:
+      stream_slicers:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - stream: "#/definitions/projects_stream"
