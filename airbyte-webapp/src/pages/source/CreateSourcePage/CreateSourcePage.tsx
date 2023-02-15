@@ -13,9 +13,9 @@ import { useCreateSource } from "hooks/services/useSourceHook";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
-import { SourceForm } from "./components/SourceForm";
+import { SourceForm } from "./SourceForm";
 
-const CreateSourcePage: React.FC = () => {
+export const CreateSourcePage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_NEW);
   const navigate = useNavigate();
 
@@ -51,5 +51,3 @@ const CreateSourcePage: React.FC = () => {
     </>
   );
 };
-
-export default CreateSourcePage;

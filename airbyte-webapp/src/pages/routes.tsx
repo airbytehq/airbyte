@@ -26,11 +26,11 @@ const DestinationSettingsPage = React.lazy(() => import("./destination/Destinati
 const PreferencesPage = React.lazy(() => import("./PreferencesPage"));
 const SettingsPage = React.lazy(() => import("./SettingsPage"));
 
-const AllSourcesPage = React.lazy(() => import("./SourcesPage/pages/AllSourcesPage"));
-const CreateSourcePage = React.lazy(() => import("./SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
-const SourceItemPage = React.lazy(() => import("./SourcesPage/pages/SourceItemPage"));
-const SourceSettingsPage = React.lazy(() => import("./SourcesPage/pages/SourceSettingsPage"));
-const SourceOverviewPage = React.lazy(() => import("./SourcesPage/pages/SourceOverviewPage"));
+const AllSourcesPage = React.lazy(() => import("./source/AllSourcesPage"));
+const CreateSourcePage = React.lazy(() => import("./source/CreateSourcePage"));
+const SourceItemPage = React.lazy(() => import("./source/SourceItemPage"));
+const SourceSettingsPage = React.lazy(() => import("./source/SourceSettingsPage"));
+const SourceOverviewPage = React.lazy(() => import("./source/SourceOverviewPage"));
 
 const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   const analyticsContext = useMemo(

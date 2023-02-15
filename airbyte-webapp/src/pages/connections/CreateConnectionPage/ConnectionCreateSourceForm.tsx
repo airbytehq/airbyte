@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { SourceForm } from "pages/source/CreateSourcePage/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
