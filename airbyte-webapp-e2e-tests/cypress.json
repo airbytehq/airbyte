@@ -2,6 +2,7 @@
   "projectId": "916nvw",
   "baseUrl": "https://localhost:3000",
   "testFiles": ["**/*.spec.*"],
+  "supportFile": "cypress/support/e2e.ts",
   "viewportHeight": 800,
   "viewportWidth": 1280,
   "retries": {

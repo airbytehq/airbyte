@@ -18,7 +18,7 @@ const StoreProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children })
     <ReactQueryDevtools
       initialIsOpen={false}
       position="bottom-right"
-      toggleButtonProps={{ style: { transform: "translateX(-75px)" } }}
+      toggleButtonProps={{ style: { transform: "translateX(-75px)" }, id: "react-query-devtool-btn" }}
     />
     {children}
   </QueryClientProvider>
