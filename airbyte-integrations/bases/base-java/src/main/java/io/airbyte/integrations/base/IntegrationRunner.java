@@ -93,7 +93,7 @@ public class IntegrationRunner {
     validator = jsonSchemaValidator;
   }
 
-  @Trace(operationName = "runOperation", resourceName = "runResource")
+  @Trace(operationName = "runOperation")
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
     try {

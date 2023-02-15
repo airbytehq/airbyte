@@ -65,6 +65,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.opencensus.trace.Span;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,9 +77,9 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
 
-  public static final String CHECK_TRACE_OPERATION_NAME = "check";
-  public static final String DISCOVER_TRACE_OPERATION_NAME = "discover";
-  public static final String READ_TRACE_OPERATION_NAME = "read";
+  public static final String CHECK_TRACE_OPERATION_NAME = "check-operation";
+  public static final String DISCOVER_TRACE_OPERATION_NAME = "discover-operation";
+  public static final String READ_TRACE_OPERATION_NAME = "read-operation";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
   // TODO: Remove when the flag is not use anymore
