@@ -6,7 +6,7 @@ import math
 from abc import ABC, abstractmethod
 from itertools import chain
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-
+import uuid
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -26,7 +26,7 @@ class StripeStream(HttpStream, ABC):
     url_base = "https://api.stripe.com/v1/"
     primary_key = "id"
     DEFAULT_SLICE_RANGE = 365
-
+    NOW_TIMESTAMP = pendulum.now().int_timestamp
     def __init__(self, start_date: int, account_id: str, slice_range: int = DEFAULT_SLICE_RANGE, **kwargs):
         super().__init__(**kwargs)
         self.account_id = account_id
@@ -69,7 +69,7 @@ class StripeStream(HttpStream, ABC):
         yield from response_json.get("data", [])  # Stripe puts records in a container array "data"
 
     def chunk_dates(self, start_date_ts: int) -> Iterable[Tuple[int, int]]:
-        now = pendulum.now().int_timestamp
+        now = self.NOW_TIMESTAMP
         step = int(pendulum.duration(days=self.slice_range).total_seconds())
         after_ts = start_date_ts
         while after_ts < now:
@@ -144,7 +144,7 @@ class IncrementalStripeStream(StripeStream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_ts = self.get_start_timestamp(stream_state)
-        if start_ts >= pendulum.now().int_timestamp:
+        if start_ts >= self.NOW_TIMESTAMP:
             # if the state is in the future - this will produce a state message but not make an API request
             yield None
         else:
@@ -173,7 +173,16 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
     state_lastSync_key = "lastSync"
     state_completed_key = "completed"
     completed = False
-    def lookahead(self, iterable):
+    last_stream_slice = None
+    last_record = None
+    def isLastSlice(self,currentSlice):
+        return self.last_stream_slice == currentSlice
+    def setLastSlice(self,stream_state):
+        if(self.last_stream_slice==None):
+            *_, last = self.stream_slices(sync_mode='incremental', stream_state=stream_state)
+            self.last_stream_slice = last
+
+    def lookahead(self,stream_slice, iterable):
         """Pass through all values from the given iterable, to check
         if there are more values to come after the current one,
         or if it is the last value. Helps to define in the last state the completed flag. 
@@ -182,13 +191,19 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
         it = iter(iterable)
         last = next(it, None)
         if not last:
+            if self.last_record and self.completed == False:
+                self.completed = True
+                yield self.last_record
             return
         # Run the iterator to exhaustion (starting from the second value).
         for val in it:
             yield last
             last = val
-        self.completed = True
+        if self.isLastSlice(stream_slice):
+            self.completed = True
+        self.last_record = last
         yield last
+
     def shouldFetchFromOriginalResource (self,stream_state = None):
         durationInDaysFromLastSync = 0
         hasState = bool(stream_state)
@@ -205,10 +220,12 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
     def read_records(self, stream_slice, stream_state = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         shouldFetchFromOriginalResource = self.shouldFetchFromOriginalResource(stream_state)
         if shouldFetchFromOriginalResource:
-            # Set completed 
+            self.logger.info("Fetching from original source")
+            self.setLastSlice(stream_state)
             self.completed = False
-            yield from self.lookahead(super().read_records(stream_slice=stream_slice, stream_state={}, **kwargs))
+            yield from self.lookahead(stream_slice, super().read_records(stream_slice=stream_slice, stream_state=None, **kwargs))
         else:
+            self.logger.info("Fetching from events")
             yield from self.get_updates(stream_state, **kwargs)
 
     def get_updates(self, stream_state, **kwargs)-> Iterable[Mapping[str, Any]]:
@@ -225,8 +242,8 @@ class IncrementalStripeStreamWithUpdates(IncrementalStripeStream):
          the actual id with a unique value
         """
         record["record_id"] = record[self.primary_key]
-        # Delete the original id because is reserved by warehouse and if it is present it gets used for deduplication
-        del record[self.primary_key]
+        # Change the original id to random uuid to avoid warehouse deduplication
+        record[self.primary_key] = uuid.uuid1()
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         for item in super().parse_response(response, **kwargs):
