@@ -29,8 +29,8 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-converters')
     implementation project(':airbyte-commons-temporal')
-    implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
@@ -39,7 +39,7 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-oauth')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-persistence:job-persistence')
 
     implementation 'com.github.slugify:slugify:2.4'

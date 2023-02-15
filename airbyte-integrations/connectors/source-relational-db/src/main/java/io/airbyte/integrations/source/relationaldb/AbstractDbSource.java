@@ -31,6 +31,7 @@ import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.Invalid
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -98,7 +99,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
+          .withMessage(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage()));
     } finally {
       close();
     }
@@ -304,10 +305,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                              final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
+    final Set<String> systemViews = getExcludedViews();
     final List<TableInfo<CommonField<DataType>>> discoveredTables = discoverInternal(database);
     return (systemNameSpaces == null || systemNameSpaces.isEmpty() ? discoveredTables
         : discoveredTables.stream()
-            .filter(table -> !systemNameSpaces.contains(table.getNameSpace())).collect(
+            .filter(table -> !systemNameSpaces.contains(table.getNameSpace()) && !systemViews.contains(table.getName())).collect(
                 Collectors.toList()));
   }
 
@@ -667,11 +669,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected abstract JsonSchemaType getAirbyteType(DataType columnType);
 
   /**
-   * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
+   * Get list of system namespaces(schemas) in order to exclude them from the `discover` result list.
    *
    * @return set of system namespaces(schemas) to be excluded
    */
   protected abstract Set<String> getExcludedInternalNameSpaces();
+
+  /**
+   * Get list of system views in order to exclude them from the `discover` result list.
+   *
+   * @return set of views to be excluded
+   */
+  protected Set<String> getExcludedViews() { return Collections.emptySet(); };
 
   /**
    * Discover all available tables in the source database.
