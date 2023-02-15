@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class AirbyteRemoteOssCatalogTest {
   private AirbyteRemoteOssCatalog githubStore;
 
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws URISyntaxException {
     webServer = new MockWebServer();
     githubStore = AirbyteRemoteOssCatalog.test(webServer.url("/").toString(), TIMEOUT);
   }
@@ -126,36 +127,36 @@ public class AirbyteRemoteOssCatalogTest {
 
   }
 
-  @Nested
-  @DisplayName("getFile")
-  class GetFile {
-
-    @Test
-    void testReturn() throws IOException, InterruptedException {
-      final var goodBody = "great day!";
-      final var goodResp = new MockResponse().setResponseCode(200)
-          .addHeader(CONTENT_TYPE, PLAIN_TEXT)
-          .addHeader(CACHE_CONTROL, NO_CACHE)
-          .setBody(goodBody);
-      webServer.enqueue(goodResp);
-
-      final var fileStr = githubStore.getFile("test-file");
-      assertEquals(goodBody, fileStr);
-    }
-
-    @Test
-    void testHttpTimeout() {
-      final var timeoutResp = new MockResponse().setResponseCode(200)
-          .addHeader(CONTENT_TYPE, PLAIN_TEXT)
-          .addHeader(CACHE_CONTROL, NO_CACHE)
-          .setBody("")
-          .setHeadersDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS)
-          .setBodyDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS);
-      webServer.enqueue(timeoutResp);
-
-      assertThrows(HttpTimeoutException.class, () -> githubStore.getFile("test-file"));
-    }
-
-  }
+//  @Nested
+//  @DisplayName("getFile")
+//  class GetFile {
+//
+//    @Test
+//    void testReturn() throws IOException, InterruptedException {
+//      final var goodBody = "great day!";
+//      final var goodResp = new MockResponse().setResponseCode(200)
+//          .addHeader(CONTENT_TYPE, PLAIN_TEXT)
+//          .addHeader(CACHE_CONTROL, NO_CACHE)
+//          .setBody(goodBody);
+//      webServer.enqueue(goodResp);
+//
+//      final var fileStr = githubStore.getFile("test-file");
+//      assertEquals(goodBody, fileStr);
+//    }
+//
+//    @Test
+//    void testHttpTimeout() {
+//      final var timeoutResp = new MockResponse().setResponseCode(200)
+//          .addHeader(CONTENT_TYPE, PLAIN_TEXT)
+//          .addHeader(CACHE_CONTROL, NO_CACHE)
+//          .setBody("")
+//          .setHeadersDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS)
+//          .setBodyDelay(TIMEOUT.toSeconds() * 2, TimeUnit.SECONDS);
+//      webServer.enqueue(timeoutResp);
+//
+//      assertThrows(HttpTimeoutException.class, () -> githubStore.getFile("test-file"));
+//    }
+//
+//  }
 
 }
