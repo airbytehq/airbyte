@@ -36,7 +36,7 @@ public class FeatureFlagFetchActivityTest {
     final SourceApi sourceApi = mock(SourceApi.class);
     final ConnectionApi connectionApi = mock(ConnectionApi.class);
 
-    featureFlagClient = new TestClient(Map.of("connection.columnSelection", true));
+    featureFlagClient = new TestClient(Map.of(FieldSelectionEnabled.INSTANCE.getKey(), true));
     featureFlagFetchActivity = new FeatureFlagFetchActivityImpl(sourceApi, connectionApi, featureFlagClient);
 
     final UUID sourceId = UUID.randomUUID();
@@ -49,7 +49,7 @@ public class FeatureFlagFetchActivityTest {
     final FeatureFlagFetchActivity.FeatureFlagFetchInput input = new FeatureFlagFetchActivity.FeatureFlagFetchInput(CONNECTION_ID);
 
     final FeatureFlagFetchActivity.FeatureFlagFetchOutput output = featureFlagFetchActivity.getFeatureFlags(input);
-    Assertions.assertEquals(output.getFeatureFlags(), Map.of(FieldSelectionEnabled.INSTANCE, true));
+    Assertions.assertEquals(output.getFeatureFlags(), Map.of(FieldSelectionEnabled.INSTANCE.getKey(), true));
 
   }
 

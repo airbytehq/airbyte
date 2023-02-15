@@ -30,7 +30,7 @@ public interface FeatureFlagFetchActivity {
   @AllArgsConstructor
   class FeatureFlagFetchOutput {
 
-    private Map<Flag, Boolean> featureFlags;
+    private Map<String, Boolean> featureFlags;
 
   }
 

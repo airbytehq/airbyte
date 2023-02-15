@@ -55,11 +55,11 @@ public class FeatureFlagFetchActivityImpl implements FeatureFlagFetchActivity {
     final UUID workspaceId = getWorkspaceId(input.getConnectionId());
 
     final List<Flag> workspaceFlags = List.of(FieldSelectionEnabled.INSTANCE);
-    final Map<Flag, Boolean> featureFlags = new HashMap<>();
+    final Map<String, Boolean> featureFlags = new HashMap<>();
     for (Flag flag : workspaceFlags) {
       // TODO: remove this feature flag from here - not really needed by consumers but in here to get this
       // activity up and running
-      featureFlags.put(flag, featureFlagClient.enabled(flag, new Workspace(workspaceId)));
+      featureFlags.put(flag.getKey(), featureFlagClient.enabled(flag, new Workspace(workspaceId)));
     }
 
     return new FeatureFlagFetchOutput(featureFlags);

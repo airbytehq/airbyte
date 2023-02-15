@@ -217,7 +217,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       final int getFeatureFlagsVersion =
           Workflow.getVersion(GET_FEATURE_FLAGS_TAG, Workflow.DEFAULT_VERSION, GET_FEATURE_FLAGS_CURRENT_VERSION);
 
-      Map<Flag, Boolean> featureFlags = Map.of();
+      Map<String, Boolean> featureFlags = Map.of();
       if (getFeatureFlagsVersion >= GET_FEATURE_FLAGS_CURRENT_VERSION) {
         // TODO (pedroslopez): The feature flags will actually be used in a future PR
         featureFlags = getFeatureFlags(connectionUpdaterInput.getConnectionId());
@@ -656,7 +656,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return jobCreationOutput.getJobId();
   }
 
-  private Map<Flag, Boolean> getFeatureFlags(final UUID connectionId) {
+  private Map<String, Boolean> getFeatureFlags(final UUID connectionId) {
     final FeatureFlagFetchOutput getFlagsOutput =
         runMandatoryActivityWithOutput(featureFlagFetchActivity::getFeatureFlags, new FeatureFlagFetchInput(connectionId));
     return getFlagsOutput.getFeatureFlags();
