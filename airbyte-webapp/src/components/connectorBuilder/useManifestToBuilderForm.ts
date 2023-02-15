@@ -30,6 +30,7 @@ import {
   DEFAULT_BUILDER_FORM_VALUES,
   DEFAULT_BUILDER_STREAM_VALUES,
   isInterpolatedConfigKey,
+  OLDEST_SUPPORTED_CDK_VERSION,
   RequestOptionOrPathInject,
   versionSupported,
 } from "./types";
@@ -63,7 +64,7 @@ export const convertToBuilderFormValues = async (
   if (!versionSupported(resolvedManifest.version)) {
     throw new ManifestCompatibilityError(
       undefined,
-      `Connector builder UI only supports manifests version >= 0.28.0 and <= ${CDK_VERSION}, encountered ${resolvedManifest.version}`
+      `Connector builder UI only supports manifests version >= ${OLDEST_SUPPORTED_CDK_VERSION} and <= ${CDK_VERSION}, encountered ${resolvedManifest.version}`
     );
   }
 
