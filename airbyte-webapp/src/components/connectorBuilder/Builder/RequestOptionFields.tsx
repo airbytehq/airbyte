@@ -1,37 +1,27 @@
 import { useField } from "formik";
 
-import { RequestOption } from "core/request/ConnectorManifest";
-
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
-import { injectIntoValues } from "../types";
+import { injectIntoValues, RequestOptionOrPathInject } from "../types";
 
-interface InjectRequestOptionFieldsProps {
+interface RequestOptionFieldsProps {
   path: string;
   descriptor: string;
-  excludeInjectIntoValues?: string[];
+  excludePathInjection?: boolean;
 }
 
-export const InjectRequestOptionFields: React.FC<InjectRequestOptionFieldsProps> = ({
-  path,
-  descriptor,
-  excludeInjectIntoValues,
-}) => {
-  const [field, , helpers] = useField<RequestOption>(path);
+export const RequestOptionFields: React.FC<RequestOptionFieldsProps> = ({ path, descriptor, excludePathInjection }) => {
+  const [field, , helpers] = useField<RequestOptionOrPathInject>(path);
 
   return (
     <>
       <BuilderField
         type="enum"
         path={`${path}.inject_into`}
-        options={
-          excludeInjectIntoValues
-            ? injectIntoValues.filter((val) => !excludeInjectIntoValues.includes(val))
-            : injectIntoValues
-        }
+        options={excludePathInjection ? injectIntoValues.filter((target) => target !== "path") : injectIntoValues}
         onChange={(newValue) => {
           if (newValue === "path") {
-            helpers.setValue({ inject_into: newValue, field_name: undefined, type: "RequestOption" });
+            helpers.setValue({ inject_into: newValue });
           }
         }}
         label="Inject into"
