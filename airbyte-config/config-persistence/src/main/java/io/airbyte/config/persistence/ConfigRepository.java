@@ -1604,9 +1604,9 @@ public class ConfigRepository {
 
   public Optional<ConnectorBuilderProject> getConnectorBuilderProject(final UUID builderProjectId, final UUID workspaceId) throws IOException {
     return database.query(ctx -> ctx.select(CONNECTOR_BUILDER_PROJECT.asterisk())
-            .from(CONNECTOR_BUILDER_PROJECT)
-            .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
-            .fetch())
+        .from(CONNECTOR_BUILDER_PROJECT)
+        .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
+        .fetch())
         .map(DbConverter::buildConnectorBuilderProject)
         .stream()
         .findFirst();
@@ -1615,7 +1615,10 @@ public class ConfigRepository {
   public Stream<ConnectorBuilderProject> getConnectorBuilderProjectsByWorkspace(final UUID workspaceId) throws IOException {
     final Condition matchByIds = CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID.eq(workspaceId);
 
-    return database.query(ctx -> ctx.select(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME, CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID)
+    return database
+        .query(ctx -> ctx
+            .select(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
+                CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID)
             .from(CONNECTOR_BUILDER_PROJECT)
             .where(matchByIds)
             .fetch())
@@ -1625,8 +1628,8 @@ public class ConfigRepository {
 
   public boolean deleteBuilderProject(final UUID builderProjectId, final UUID workspaceId) throws IOException {
     return database.transaction(ctx -> ctx.deleteFrom(CONNECTOR_BUILDER_PROJECT))
-            .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
-            .execute() > 0;
+        .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
+        .execute() > 0;
   }
 
   public void writeBuilderProject(final ConnectorBuilderProject builderProject) throws IOException {
@@ -1642,7 +1645,7 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
             .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
-            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,  JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .where(getBuilderProjectIdCondition(builderProject.getBuilderProjectId(), builderProject.getWorkspaceId()))
             .execute();
@@ -1652,7 +1655,7 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
             .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
-            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,  JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .execute();
