@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 def test_declarative_stream():
     name = "stream"
     primary_key = "pk"
-    cursor_field = ["created_at"]
+    cursor_field = "created_at"
 
     schema_loader = MagicMock()
     json_schema = {"name": {"type": "string"}}
@@ -46,12 +46,12 @@ def test_declarative_stream():
     stream = DeclarativeStream(
         name=name,
         primary_key=primary_key,
-        stream_cursor_field=cursor_field,
+        stream_cursor_field="{{ parameters['cursor_field'] }}",
         schema_loader=schema_loader,
         retriever=retriever,
         config=config,
         transformations=transformations,
-        parameters={},
+        parameters={"cursor_field": "created_at"},
     )
 
     assert stream.name == name
