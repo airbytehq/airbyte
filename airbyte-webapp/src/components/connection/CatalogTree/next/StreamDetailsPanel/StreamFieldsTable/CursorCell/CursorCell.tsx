@@ -7,8 +7,8 @@ import { Tooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { links } from "utils/links";
 
-import styles from "./CursorCell.module.scss";
 import { TableStream } from "../StreamFieldsTable";
+import styles from "./CursorCell.module.scss";
 
 interface CursorCellProps extends CellContext<TableStream, boolean | undefined> {
   isCursorDefinitionSupported: boolean;

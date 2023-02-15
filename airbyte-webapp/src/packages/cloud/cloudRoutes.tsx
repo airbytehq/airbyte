@@ -14,10 +14,10 @@ import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspac
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 
+import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 import { CloudRoutes } from "./cloudRoutePaths";
 import { LDExperimentServiceProvider } from "./services/thirdParty/launchdarkly";
 import { VerifyEmailAction } from "./views/FirebaseActionRoute";
-import { RoutePaths, DestinationPaths } from "../../pages/routePaths";
 
 const MainView = React.lazy(() => import("packages/cloud/views/layout/MainView"));
 const WorkspacesPage = React.lazy(() => import("packages/cloud/views/workspaces"));
