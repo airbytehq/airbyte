@@ -508,6 +508,55 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connector_builder_projects/create:
+    post:
+      tags:
+        - connector_builder_project
+      summary: Create new connector builder project
+      operationId: createProject
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectorBuilderProjectWithWorkspaceId"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectorBuilderProjectIdWithWorkspaceId"
+  /v1/connector_builder_projects/update:
+    post:
+      tags:
+        - connector_builder_project
+      summary: Update connector builder project
+      operationId: updateProject
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExistingConnectorBuilderProjectWithWorkspaceId"
+        required: true
+      responses:
+        "204":
+          description: Successful operation
+  /v1/connector_builder_projects/delete:
+    post:
+      tags:
+        - connector_builder_project
+      summary: Deletes connector builder project
+      operationId: deleteProject
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectorBuilderProjectIdWithWorkspaceId"
+        required: true
+      responses:
+        "204":
+          description: Successful operation
   /v1/sources/create:
     post:
       tags:
@@ -2502,6 +2551,53 @@ components:
         - auto
         - us
         - eu
+    # BuilderProject
+    ConnectorBuilderProjectId:
+      type: string
+      format: uuid
+    ConnectorBuilderProject:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        draftManifest:
+          type: object
+          additionalProperties: true
+    ConnectorBuilderProjectIdWithWorkspaceId:
+      type: object
+      required:
+        - workspaceId
+        - builderProjectId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        builderProjectId:
+          $ref: "#/components/schemas/ConnectorBuilderProjectId"
+    ExistingConnectorBuilderProjectWithWorkspaceId:
+      type: object
+      required:
+        - workspaceId
+        - builderProjectId
+        - builderProject
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        builderProjectId:
+          $ref: "#/components/schemas/ConnectorBuilderProjectId"
+        builderProject:
+          $ref: "#/components/schemas/ConnectorBuilderProject"
+    ConnectorBuilderProjectWithWorkspaceId:
+      type: object
+      required:
+        - workspaceId
+        - builderProject
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        builderProject:
+          $ref: "#/components/schemas/ConnectorBuilderProject"
     # SourceDefinition
     SourceDefinitionId:
       type: string
