@@ -2,7 +2,7 @@
 @use "scss/colors";
 
 .container {
-  gap: calc(2 * variables.$spacing-2xl);
+  gap: 2 * variables.$spacing-2xl;
 }
 
 .text {
