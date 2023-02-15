@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.apis;
@@ -27,14 +27,25 @@ import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import javax.sql.DataSource;
-import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Condition;
 import org.assertj.core.api.InstanceOfAssertFactory;
 import org.jooq.DSLContext;
 import org.mockito.Mockito;
 
-@Slf4j
+/**
+ * This is the base class for the test of the controllers. This allows to test that:
+ * <ul>
+ * <li>The path defined at the moment of writing the test exists,</li>
+ * <li>The return code is the expected one. It could have help to catch that during the migration to
+ * micronaut, some endpoint return value switch from a 204 NO_CONTENT return code to a 200 OK which
+ * was a regression,</li>
+ * <li>It allow to test that the exception thrown by the handler are properly catch by the exception
+ * handlers and then return an expected HTTP return code,</li>
+ * <li>It could help with testing the authorization by injecting a user and workspace in the header
+ * and check that the authorization is properly applied.</li>
+ * </ul>
+ */
 @MicronautTest
 @Requires(property = "mockito.test.enabled",
           defaultValue = StringUtils.TRUE,
