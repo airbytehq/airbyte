@@ -10,7 +10,7 @@ import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceList } from "hooks/services/useSourceHook";
-import { DestinationPaths } from "pages/routePaths";
+import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
 import { DestinationOutletContext } from "./types";
@@ -40,7 +40,7 @@ export const DestinationOverviewPage = () => {
   );
 
   const onSelect = (data: DropdownMenuOptionType) => {
-    const path = `../${DestinationPaths.NewConnection}`;
+    const path = `../../../${RoutePaths.Connections}/${RoutePaths.ConnectionNew}`;
     const state =
       data.value === "create-new-item"
         ? { destinationId: destination.destinationId }

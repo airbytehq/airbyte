@@ -26,7 +26,6 @@ const CreditsPage = React.lazy(() => import("packages/cloud/views/credits"));
 const SpeakeasyRedirectPage = React.lazy(() => import("pages/SpeakeasyRedirectPage"));
 
 const ConnectionsRoutes = React.lazy(() => import("pages/connections/ConnectionsRoutes"));
-const CreateConnectionPage = React.lazy(() => import("pages/connections/CreateConnectionPage"));
 
 const AllDestinationsPage = React.lazy(() => import("pages/destination/AllDestinationsPage"));
 const CreateDestinationPage = React.lazy(() => import("pages/destination/CreateDestinationPage"));
@@ -63,7 +62,6 @@ const MainRoutes: React.FC = () => {
           <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
           <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
             <Route index element={<DestinationOverviewPage />} />
-            <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
           </Route>
         </Route>
@@ -72,7 +70,6 @@ const MainRoutes: React.FC = () => {
           <Route path={SourcePaths.NewSource} element={<CreateSourcePage />} />
           <Route path={SourcePaths.Root} element={<SourceItemPage />}>
             <Route index element={<SourceOverviewPage />} />
-            <Route path={SourcePaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={SourcePaths.Settings} element={<SourceSettingsPage />} />
           </Route>
         </Route>
