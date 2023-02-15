@@ -13,7 +13,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 
 import SourceConnectionTable from "./SourceConnectionTable";
 
-const SourceOverviewPage = () => {
+export const SourceOverviewPage = () => {
   const { source, connections } = useOutletContext<{
     source: SourceRead;
     connections: WebBackendConnectionListItem[];
@@ -70,5 +70,3 @@ const SourceOverviewPage = () => {
     </>
   );
 };
-
-export default SourceOverviewPage;

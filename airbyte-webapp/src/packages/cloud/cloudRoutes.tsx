@@ -37,9 +37,7 @@ const DestinationSettingsPage = React.lazy(() => import("pages/destination/Desti
 const AllSourcesPage = React.lazy(() => import("pages/SourcesPage/pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("pages/SourcesPage/pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("pages/SourcesPage/pages/SourceItemPage"));
-const SourceOverviewPage = React.lazy(
-  () => import("pages/SourcesPage/pages/SourceItemPage/components/SourceOverviewPage")
-);
+const SourceOverviewPage = React.lazy(() => import("pages/SourcesPage/pages/SourceOverviewPage"));
 const SourceSettingsPage = React.lazy(
   () => import("pages/SourcesPage/pages/SourceItemPage/components/SourceSettingsPage")
 );
