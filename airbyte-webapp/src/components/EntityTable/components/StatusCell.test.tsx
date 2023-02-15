@@ -1,5 +1,5 @@
 import { render, waitFor } from "@testing-library/react";
-import { TestWrapper, TestSuspenseBoundary } from "test-utils";
+import { TestWrapper, TestSuspenseBoundary, mockConnection } from "test-utils";
 
 import { StatusCell } from "./StatusCell";
 
@@ -28,7 +28,7 @@ describe("<StatusCell />", () => {
   it("renders switch when connection has schedule", () => {
     const { getByTestId } = render(
       <TestSuspenseBoundary>
-        <StatusCell id={mockId} allowSync enabled />
+        <StatusCell id={mockId} connection={mockConnection} enabled />
       </TestSuspenseBoundary>,
       {
         wrapper: TestWrapper,
@@ -44,7 +44,7 @@ describe("<StatusCell />", () => {
   it("renders button when connection does not have schedule", async () => {
     const { getByTestId } = render(
       <TestSuspenseBoundary>
-        <StatusCell id={mockId} allowSync enabled isManual />
+        <StatusCell id={mockId} connection={mockConnection} enabled isManual />
       </TestSuspenseBoundary>,
       {
         wrapper: TestWrapper,
@@ -57,7 +57,7 @@ describe("<StatusCell />", () => {
   it("disables switch when hasBreakingChange is true", () => {
     const { getByTestId } = render(
       <TestSuspenseBoundary>
-        <StatusCell id={mockId} allowSync hasBreakingChange />
+        <StatusCell id={mockId} connection={mockConnection} hasBreakingChange />
       </TestSuspenseBoundary>,
       {
         wrapper: TestWrapper,
@@ -70,7 +70,7 @@ describe("<StatusCell />", () => {
   it("disables manual sync button when hasBreakingChange is true", () => {
     const { getByTestId } = render(
       <TestSuspenseBoundary>
-        <StatusCell id={mockId} allowSync hasBreakingChange enabled isManual />
+        <StatusCell id={mockId} connection={mockConnection} hasBreakingChange enabled isManual />
       </TestSuspenseBoundary>,
       {
         wrapper: TestWrapper,
