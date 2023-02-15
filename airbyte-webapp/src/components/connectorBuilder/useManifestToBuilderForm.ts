@@ -4,19 +4,20 @@ import isEqual from "lodash/isEqual";
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import { ResolveManifest } from "core/request/ConnectorBuilderClient";
 import {
+  CartesianProductStreamSlicer,
   ConnectorManifest,
-  DatetimeBasedCursor,
   DeclarativeStream,
-  DeclarativeStreamIncrementalSync,
   DeclarativeStreamSchemaLoader,
   DpathExtractor,
   HttpRequester,
   HttpRequesterAuthenticator,
+  InlineSchemaLoader,
+  ListStreamSlicer,
   SimpleRetriever,
   SimpleRetrieverPaginator,
-  SimpleRetrieverPartitionRouter,
-  SimpleRetrieverPartitionRouterAnyOfItem,
+  SimpleRetrieverStreamSlicer,
   Spec,
+  SubstreamSlicer,
 } from "core/request/ConnectorManifest";
 import { useResolveManifest } from "services/connectorBuilder/ConnectorBuilderApiService";
 
@@ -26,13 +27,10 @@ import {
   BuilderFormValues,
   BuilderPaginator,
   BuilderStream,
-  CDK_VERSION,
+  BuilderSubstreamSlicer,
   DEFAULT_BUILDER_FORM_VALUES,
   DEFAULT_BUILDER_STREAM_VALUES,
   isInterpolatedConfigKey,
-  OLDEST_SUPPORTED_CDK_VERSION,
-  RequestOptionOrPathInject,
-  versionSupported,
 } from "./types";
 import { formatJson } from "./utils";
 
@@ -60,13 +58,6 @@ export const convertToBuilderFormValues = async (
     throw new ManifestCompatibilityError(undefined, errorMessage.trim());
   }
   const resolvedManifest = resolveResult.manifest as ConnectorManifest;
-
-  if (!versionSupported(resolvedManifest.version)) {
-    throw new ManifestCompatibilityError(
-      undefined,
-      `Connector builder UI only supports manifests version >= ${OLDEST_SUPPORTED_CDK_VERSION} and <= ${CDK_VERSION}, encountered ${resolvedManifest.version}`
-    );
-  }
 
   const builderFormValues = cloneDeep(DEFAULT_BUILDER_FORM_VALUES);
   builderFormValues.global.connectorName = currentBuilderFormValues.global.connectorName;
@@ -132,6 +123,13 @@ const manifestStreamToBuilder = (
     throw new ManifestCompatibilityError(stream.name, "url_base does not match the first stream's");
   }
 
+  if (retriever.name !== stream.name || requester.name !== stream.name) {
+    throw new ManifestCompatibilityError(
+      stream.name,
+      "name is not consistent across stream, retriever, and requester levels"
+    );
+  }
+
   if (![undefined, "GET", "POST"].includes(requester.http_method)) {
     throw new ManifestCompatibilityError(stream.name, "http_method is not GET or POST");
   }
@@ -153,11 +151,11 @@ const manifestStreamToBuilder = (
     },
     primaryKey: manifestPrimaryKeyToBuilder(stream),
     paginator: manifestPaginatorToBuilder(retriever.paginator, stream.name),
-    incrementalSync: manifestIncrementalSyncToBuilder(stream.incremental_sync, stream.name),
-    partitionRouter: manifestPartitionRouterToBuilder(retriever.partition_router, serializedStreamToIndex, stream.name),
+    streamSlicer: manifestStreamSlicerToBuilder(retriever.stream_slicer, serializedStreamToIndex, stream.name),
     schema: manifestSchemaLoaderToBuilderSchema(stream.schema_loader),
     unsupportedFields: {
       transformations: stream.transformations,
+      checkpoint_interval: stream.checkpoint_interval,
       retriever: {
         requester: {
           error_handler: stream.retriever.requester.error_handler,
@@ -170,64 +168,82 @@ const manifestStreamToBuilder = (
   };
 };
 
-function manifestPartitionRouterToBuilder(
-  partitionRouter: SimpleRetrieverPartitionRouter | SimpleRetrieverPartitionRouterAnyOfItem | undefined,
+function manifestStreamSlicerToBuilder(
+  manifestStreamSlicer: SimpleRetrieverStreamSlicer | undefined,
   serializedStreamToIndex: Record<string, number>,
   streamName?: string
-): BuilderStream["partitionRouter"] {
-  if (partitionRouter === undefined) {
+): BuilderStream["streamSlicer"] {
+  if (manifestStreamSlicer === undefined) {
     return undefined;
   }
 
-  if (Array.isArray(partitionRouter)) {
-    return partitionRouter.flatMap(
-      (subRouter) => manifestPartitionRouterToBuilder(subRouter, serializedStreamToIndex, streamName) || []
-    );
+  if (manifestStreamSlicer.type === undefined) {
+    throw new ManifestCompatibilityError(streamName, "stream_slicer has no type");
   }
 
-  if (partitionRouter.type === undefined) {
-    throw new ManifestCompatibilityError(streamName, "partition_router has no type");
+  if (manifestStreamSlicer.type === "CustomStreamSlicer") {
+    throw new ManifestCompatibilityError(streamName, "stream_slicer contains a CustomStreamSlicer");
   }
 
-  if (partitionRouter.type === "CustomPartitionRouter") {
-    throw new ManifestCompatibilityError(streamName, "partition_router contains a CustomPartitionRouter");
+  if (manifestStreamSlicer.type === "SingleSlice") {
+    throw new ManifestCompatibilityError(streamName, "stream_slicer contains a SingleSlice");
   }
 
-  if (partitionRouter.type === "ListPartitionRouter") {
-    return [partitionRouter];
-  }
-
-  if (partitionRouter.type === "SubstreamPartitionRouter") {
-    const manifestSubstreamPartitionRouter = partitionRouter;
-
-    if (manifestSubstreamPartitionRouter.parent_stream_configs.length > 1) {
-      throw new ManifestCompatibilityError(streamName, "SubstreamPartitionRouter has more than one parent stream");
+  if (manifestStreamSlicer.type === "DatetimeStreamSlicer") {
+    const datetimeStreamSlicer = manifestStreamSlicer;
+    if (
+      typeof datetimeStreamSlicer.start_datetime !== "string" ||
+      typeof datetimeStreamSlicer.end_datetime !== "string"
+    ) {
+      throw new ManifestCompatibilityError(streamName, "start_datetime or end_datetime are not set to a string value");
     }
-    const parentStreamConfig = manifestSubstreamPartitionRouter.parent_stream_configs[0];
+    return manifestStreamSlicer;
+  }
+
+  if (manifestStreamSlicer.type === "ListStreamSlicer") {
+    return manifestStreamSlicer;
+  }
+
+  if (manifestStreamSlicer.type === "CartesianProductStreamSlicer") {
+    return {
+      type: "CartesianProductStreamSlicer",
+      stream_slicers: manifestStreamSlicer.stream_slicers.map((subSlicer) => {
+        return manifestStreamSlicerToBuilder(subSlicer, serializedStreamToIndex, streamName) as
+          | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
+          | BuilderSubstreamSlicer;
+      }),
+    };
+  }
+
+  if (manifestStreamSlicer.type === "SubstreamSlicer") {
+    const manifestSubstreamSlicer = manifestStreamSlicer;
+
+    if (manifestSubstreamSlicer.parent_stream_configs.length > 1) {
+      throw new ManifestCompatibilityError(streamName, "SubstreamSlicer has more than one parent stream");
+    }
+    const parentStreamConfig = manifestSubstreamSlicer.parent_stream_configs[0];
 
     const matchingStreamIndex = serializedStreamToIndex[JSON.stringify(parentStreamConfig.stream)];
     if (matchingStreamIndex === undefined) {
       throw new ManifestCompatibilityError(
         streamName,
-        "SubstreamPartitionRouter's parent stream doesn't match any other stream"
+        "SubstreamSlicer's parent stream doesn't match any other stream"
       );
     }
 
-    return [
-      {
-        type: "SubstreamPartitionRouter",
-        parent_key: parentStreamConfig.parent_key,
-        partition_field: parentStreamConfig.partition_field,
-        parentStreamReference: matchingStreamIndex.toString(),
-      },
-    ];
+    return {
+      type: "SubstreamSlicer",
+      parent_key: parentStreamConfig.parent_key,
+      stream_slice_field: parentStreamConfig.stream_slice_field,
+      parentStreamReference: matchingStreamIndex.toString(),
+    };
   }
 
-  throw new ManifestCompatibilityError(streamName, "partition_router type is unsupported");
+  throw new ManifestCompatibilityError(streamName, "stream_slicer type is unsupported");
 }
 
 function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): BuilderStream["primaryKey"] {
-  if (!isEqual(manifestStream.primary_key, manifestStream.primary_key)) {
+  if (!isEqual(manifestStream.primary_key, manifestStream.retriever.primary_key)) {
     throw new ManifestCompatibilityError(
       manifestStream.name,
       "primary_key is not consistent across stream and retriever levels"
@@ -235,35 +251,15 @@ function manifestPrimaryKeyToBuilder(manifestStream: DeclarativeStream): Builder
   }
   if (manifestStream.primary_key === undefined) {
     return [];
-  } else if (Array.isArray(manifestStream.primary_key)) {
-    if (manifestStream.primary_key.length > 0 && Array.isArray(manifestStream.primary_key[0])) {
+  } else if (Array.isArray(manifestStream.retriever.primary_key)) {
+    if (manifestStream.retriever.primary_key.length > 0 && Array.isArray(manifestStream.retriever.primary_key[0])) {
       throw new ManifestCompatibilityError(manifestStream.name, "primary_key contains nested arrays");
     } else {
-      return manifestStream.primary_key as string[];
+      return manifestStream.retriever.primary_key as string[];
     }
   } else {
-    return [manifestStream.primary_key];
+    return [manifestStream.retriever.primary_key];
   }
-}
-
-function manifestIncrementalSyncToBuilder(
-  manifestIncrementalSync: DeclarativeStreamIncrementalSync | undefined,
-  streamName?: string
-): DatetimeBasedCursor | undefined {
-  if (!manifestIncrementalSync) {
-    return undefined;
-  }
-  if (manifestIncrementalSync.type === "CustomIncrementalSync") {
-    throw new ManifestCompatibilityError(streamName, "incremental sync uses a custom implementation");
-  }
-  if (
-    typeof manifestIncrementalSync.start_datetime !== "string" ||
-    typeof manifestIncrementalSync.end_datetime !== "string"
-  ) {
-    throw new ManifestCompatibilityError(streamName, "start_datetime or end_datetime are not set to a string value");
-  }
-
-  return manifestIncrementalSync;
 }
 
 function manifestPaginatorToBuilder(
@@ -282,20 +278,9 @@ function manifestPaginatorToBuilder(
     throw new ManifestCompatibilityError(streamName, "paginator.pagination_strategy uses a CustomPaginationStrategy");
   }
 
-  let pageTokenOption: RequestOptionOrPathInject | undefined = undefined;
-
-  if (manifestPaginator.page_token_option.type === "RequestPath") {
-    pageTokenOption = { inject_into: "path" };
-  } else {
-    pageTokenOption = {
-      inject_into: manifestPaginator.page_token_option.inject_into,
-      field_name: manifestPaginator.page_token_option.field_name,
-    };
-  }
-
   return {
     strategy: manifestPaginator.pagination_strategy,
-    pageTokenOption,
+    pageTokenOption: manifestPaginator.page_token_option,
     pageSizeOption: manifestPaginator.page_size_option,
   };
 }

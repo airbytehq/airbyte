@@ -57,7 +57,6 @@ specifiers:
   '@types/react-widgets': ^4.4.7
   '@types/sanitize-html': ^2.6.2
   '@types/segment-analytics': ^0.0.34
-  '@types/semver': ^7.3.13
   '@types/styled-components': ^5.1.25
   '@types/testing-library__jest-dom': ^5.14.5
   '@types/unist': ^2.0.5
@@ -132,7 +131,6 @@ specifiers:
   rxjs: ^7.5.5
   sanitize-html: ^2.7.1
   sass: ^1.52.2
-  semver: ^7.3.8
   storybook: ^7.0.0-beta.36
   styled-components: ^5.3.5
   stylelint: ^14.9.1
@@ -173,7 +171,6 @@ dependencies:
   '@types/diff': 5.0.2
   '@types/node-fetch': 2.6.2
   '@types/segment-analytics': 0.0.34
-  '@types/semver': 7.3.13
   '@types/uuid': 9.0.0
   classnames: 2.3.2
   date-fns: 2.29.3
@@ -216,7 +213,6 @@ dependencies:
   rxjs: 7.8.0
   sanitize-html: 2.8.1
   sass: 1.57.1
-  semver: 7.3.8
   styled-components: 5.3.6_sfoxds7t5ydpegc3knd667wn6m
   typesafe-actions: 5.1.0
   unified: 10.1.2
@@ -5330,6 +5326,7 @@ packages:
 
   /@types/semver/7.3.13:
     resolution: {integrity: sha512-21cFJr9z3g5dW8B0CVI9g2O9beqaThGQ6ZFBqHfwhzLDKUxaqTIy3vnfah/UPkfOiF2pLq+tGz+W8RyCskuslw==}
+    dev: true
 
   /@types/serve-static/1.15.0:
     resolution: {integrity: sha512-z5xyF6uh8CbjAu9760KDKsH2FcDxZ2tFCsA4HIMWE6IkiYMXfVoa+4f9KX+FN0ZLsaMw1WNG2ETLA6N+/YA+cg==}
@@ -10956,6 +10953,7 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       yallist: 4.0.0
+    dev: true
 
   /lz-string/1.4.4:
     resolution: {integrity: sha512-0ckx7ZHRPqb0oUm8zNr+90mtf9DQB60H1wMCjBtfi62Kl3a7JbHob6gA2bC+xRvZoOL+1hzUK8jeuEIQE8svEQ==}
@@ -13871,6 +13869,7 @@ packages:
     hasBin: true
     dependencies:
       lru-cache: 6.0.0
+    dev: true
 
   /send/0.18.0:
     resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
@@ -15924,6 +15923,7 @@ packages:
 
   /yallist/4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
+    dev: true
 
   /yaml-js/0.2.3:
     resolution: {integrity: sha512-6xUQtVKl1qcd0EXtTEzUDVJy9Ji1fYa47LtkDtYKlIjhibPE9knNPmoRyf6SGREFHlOAUyDe9OdYqRP4DuSi5Q==}

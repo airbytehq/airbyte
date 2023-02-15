@@ -11,9 +11,9 @@ import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
 import { BuilderOneOf } from "./BuilderOneOf";
-import { RequestOptionFields } from "./RequestOptionFields";
+import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
 import { ToggleGroupField } from "./ToggleGroupField";
-import { BuilderPaginator, CURSOR_PAGINATION, OFFSET_INCREMENT, PAGE_INCREMENT } from "../types";
+import { BuilderPaginator } from "../types";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
@@ -30,12 +30,12 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
     if (newToggleValue) {
       helpers.setValue({
         strategy: {
-          type: OFFSET_INCREMENT,
+          type: "OffsetIncrement",
           page_size: "",
         },
         pageTokenOption: {
+          type: "RequestOption",
           inject_into: "request_parameter",
-          field_name: "",
         },
       });
     } else {
@@ -70,7 +70,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         options={[
           {
             label: "Offset Increment",
-            typeValue: OFFSET_INCREMENT,
+            typeValue: "OffsetIncrement",
             children: (
               <>
                 <BuilderField
@@ -86,7 +86,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
           },
           {
             label: "Page Increment",
-            typeValue: PAGE_INCREMENT,
+            typeValue: "PageIncrement",
             children: (
               <>
                 <BuilderField
@@ -109,7 +109,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
           },
           {
             label: "Cursor Pagination",
-            typeValue: CURSOR_PAGINATION,
+            typeValue: "CursorPagination",
             children: (
               <>
                 <BuilderFieldWithInputs
@@ -166,7 +166,7 @@ const PageTokenOption = ({
         />
       }
     >
-      <RequestOptionFields path={streamFieldPath("paginator.pageTokenOption")} descriptor={label} />
+      <InjectRequestOptionFields path={streamFieldPath("paginator.pageTokenOption")} descriptor={label} />
     </GroupControls>
   );
 };
@@ -189,7 +189,11 @@ const PageSizeOption = ({
         field_name: "",
       }}
     >
-      <RequestOptionFields path={streamFieldPath("paginator.pageSizeOption")} descriptor={label} excludePathInjection />
+      <InjectRequestOptionFields
+        path={streamFieldPath("paginator.pageSizeOption")}
+        descriptor={label}
+        excludeInjectIntoValues={["path"]}
+      />
     </ToggleGroupField>
   );
 };

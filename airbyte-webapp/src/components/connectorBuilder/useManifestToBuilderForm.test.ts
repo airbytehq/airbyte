@@ -7,7 +7,7 @@ import { convertToBuilderFormValues } from "./useManifestToBuilderForm";
 
 const baseManifest: ConnectorManifest = {
   type: "DeclarativeSource",
-  version: "0.28.0",
+  version: "0.1.0",
   check: {
     type: "CheckStream",
     stream_names: [],
@@ -20,6 +20,7 @@ const stream1: DeclarativeStream = {
   name: "stream1",
   retriever: {
     type: "SimpleRetriever",
+    name: "stream1",
     record_selector: {
       type: "RecordSelector",
       extractor: {
@@ -29,6 +30,7 @@ const stream1: DeclarativeStream = {
     },
     requester: {
       type: "HttpRequester",
+      name: "stream1",
       url_base: "https://url.com",
       path: "/stream-1-path",
     },
@@ -283,47 +285,28 @@ describe("Conversion successfully results in", () => {
     expect(formValues.streams[0].primaryKey).toEqual(["id"]);
   });
 
-  it("multi stream partition router converted to builder partition router", async () => {
+  it("cartesian product stream slicer converted to builder cartesian product slicer", async () => {
     const manifest: ConnectorManifest = {
       ...baseManifest,
       streams: [
         merge({}, stream1, {
           retriever: {
-            partition_router: [
-              {
-                type: "ListPartitionRouter",
-                cursor_field: "id",
-                slice_values: ["slice1", "slice2"],
-              },
-              {
-                type: "ListPartitionRouter",
-                cursor_field: "id2",
-                slice_values: ["slice2", "slice3"],
-              },
-            ],
-          },
-        }),
-      ],
-    };
-    const formValues = await convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
-    expect(formValues.streams[0].partitionRouter).toEqual(manifest.streams[0].retriever.partition_router);
-  });
-
-  it("substream partition router converted to builder partition router", async () => {
-    const manifest: ConnectorManifest = {
-      ...baseManifest,
-      streams: [
-        stream1,
-        merge({}, stream2, {
-          retriever: {
-            partition_router: {
-              type: "SubstreamPartitionRouter",
-              parent_stream_configs: [
+            stream_slicer: {
+              type: "CartesianProductStreamSlicer",
+              stream_slicers: [
                 {
-                  type: "ParentStreamConfig",
-                  parent_key: "key",
-                  stream: stream1,
-                  partition_field: "field",
+                  type: "ListStreamSlicer",
+                  cursor_field: "id",
+                  slice_values: ["slice1", "slice2"],
+                },
+                {
+                  type: "DatetimeStreamSlicer",
+                  cursor_field: "id",
+                  datetime_format: "%Y-%m-%d",
+                  cursor_granularity: "P1D",
+                  end_datetime: "2017-01-25",
+                  start_datetime: "2017-01-30",
+                  step: "P1D",
                 },
               ],
             },
@@ -332,14 +315,38 @@ describe("Conversion successfully results in", () => {
       ],
     };
     const formValues = await convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
-    expect(formValues.streams[1].partitionRouter).toEqual([
-      {
-        type: "SubstreamPartitionRouter",
-        parent_key: "key",
-        partition_field: "field",
-        parentStreamReference: "0",
-      },
-    ]);
+    expect(formValues.streams[0].streamSlicer).toEqual(manifest.streams[0].retriever.stream_slicer);
+  });
+
+  it("substream stream slicer converted to builder substream slicer", async () => {
+    const manifest: ConnectorManifest = {
+      ...baseManifest,
+      streams: [
+        stream1,
+        merge({}, stream2, {
+          retriever: {
+            stream_slicer: {
+              type: "SubstreamSlicer",
+              parent_stream_configs: [
+                {
+                  type: "ParentStreamConfig",
+                  parent_key: "key",
+                  stream: stream1,
+                  stream_slice_field: "field",
+                },
+              ],
+            },
+          },
+        }),
+      ],
+    };
+    const formValues = await convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
+    expect(formValues.streams[1].streamSlicer).toEqual({
+      type: "SubstreamSlicer",
+      parent_key: "key",
+      stream_slice_field: "field",
+      parentStreamReference: "0",
+    });
   });
 
   it("schema loader converted to schema", async () => {
@@ -375,6 +382,7 @@ describe("Conversion successfully results in", () => {
               fields: ["id"],
             },
           ],
+          checkpoint_interval: 123,
           retriever: {
             requester: {
               error_handler: {
@@ -395,6 +403,7 @@ describe("Conversion successfully results in", () => {
     const formValues = await convertToBuilderFormValues(noOpResolve, manifest, DEFAULT_BUILDER_FORM_VALUES);
     expect(formValues.streams[0].unsupportedFields).toEqual({
       transformations: manifest.streams[0].transformations,
+      checkpoint_interval: manifest.streams[0].checkpoint_interval,
       retriever: {
         requester: {
           error_handler: manifest.streams[0].retriever.requester.error_handler,
