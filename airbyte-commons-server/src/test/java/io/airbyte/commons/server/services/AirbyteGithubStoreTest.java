@@ -48,7 +48,7 @@ public class AirbyteGithubStoreTest {
           .addHeader(CACHE_CONTROL, NO_CACHE)
           .setBody(nonjsonBody);
       webServer.enqueue(nonjsonResponse);
-      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+      assertEquals(Collections.emptyList(), githubStore.getSourceDefinitions());
     }
 
     @Test
@@ -59,7 +59,7 @@ public class AirbyteGithubStoreTest {
           .addHeader(CACHE_CONTROL, NO_CACHE)
           .setBody(jsonBody);
       webServer.enqueue(jsonResponse);
-      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+      assertEquals(Collections.emptyList(), githubStore.getSourceDefinitions());
     }
 
     @Test
@@ -70,7 +70,7 @@ public class AirbyteGithubStoreTest {
           .addHeader(CACHE_CONTROL, NO_CACHE)
           .setBody(nonjsonBody);
       webServer.enqueue(nonjsonResponse);
-      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+      assertEquals(Collections.emptyList(), githubStore.getDestinationDefinitions());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class AirbyteGithubStoreTest {
           .addHeader(CACHE_CONTROL, NO_CACHE)
           .setBody(jsonBody);
       webServer.enqueue(jsonResponse);
-      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+      assertEquals(Collections.emptyList(), githubStore.getDestinationDefinitions());
     }
 
   }
@@ -93,13 +93,13 @@ public class AirbyteGithubStoreTest {
     @Test
     void testGetLatestDestinations() throws InterruptedException, IOException {
       webServer.shutdown();
-      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+      assertEquals(Collections.emptyList(), githubStore.getDestinationDefinitions());
     }
 
     @Test
     void testGetLatestSources() throws InterruptedException, IOException {
       webServer.shutdown();
-      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+      assertEquals(Collections.emptyList(), githubStore.getSourceDefinitions());
     }
 
   }
@@ -113,7 +113,7 @@ public class AirbyteGithubStoreTest {
       final var timeoutResp = new MockResponse().setResponseCode(404);
       webServer.enqueue(timeoutResp);
 
-      assertEquals(Collections.emptyList(), githubStore.getLatestDestinations());
+      assertEquals(Collections.emptyList(), githubStore.getDestinationDefinitions());
     }
 
     @Test
@@ -121,7 +121,7 @@ public class AirbyteGithubStoreTest {
       final var timeoutResp = new MockResponse().setResponseCode(404);
       webServer.enqueue(timeoutResp);
 
-      assertEquals(Collections.emptyList(), githubStore.getLatestSources());
+      assertEquals(Collections.emptyList(), githubStore.getSourceDefinitions());
     }
 
   }

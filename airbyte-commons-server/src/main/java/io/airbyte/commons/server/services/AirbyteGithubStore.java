@@ -9,6 +9,7 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.YamlListToStandardDefinitions;
+import io.airbyte.config.init.RemoteDefinitionsProvider;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * Convenience class for retrieving files checked into the Airbyte Github repo.
  */
 @SuppressWarnings("PMD.AvoidCatchingThrowable")
-public class AirbyteGithubStore {
+public class AirbyteGithubStore extends RemoteDefinitionsProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteGithubStore.class);
   private static final EnvConfigs envConfigs = new EnvConfigs();
@@ -36,41 +37,14 @@ public class AirbyteGithubStore {
   private static final HttpClient httpClient = HttpClient.newHttpClient();
 
   private final String baseUrl;
-  private final Duration timeout;
+  private final long timeout;
 
   public static AirbyteGithubStore production() {
-    return new AirbyteGithubStore(GITHUB_BASE_URL, Duration.ofSeconds(30));
+    return new AirbyteGithubStore(GITHUB_BASE_URL, Duration.ofSeconds(30).toMillis());
   }
 
   public static AirbyteGithubStore test(final String testBaseUrl, final Duration timeout) {
-    return new AirbyteGithubStore(testBaseUrl, timeout);
-  }
-
-  public AirbyteGithubStore(final String baseUrl, final Duration timeout) {
-    this.baseUrl = baseUrl;
-    this.timeout = timeout;
-  }
-
-  public List<StandardDestinationDefinition> getLatestDestinations() throws InterruptedException {
-    try {
-      return YamlListToStandardDefinitions.toStandardDestinationDefinitions(getFile(DESTINATION_DEFINITION_LIST_LOCATION_PATH));
-    } catch (final Throwable e) {
-      LOGGER.warn(
-          "Unable to retrieve latest Destination list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
-          e);
-      return Collections.emptyList();
-    }
-  }
-
-  public List<StandardSourceDefinition> getLatestSources() throws InterruptedException {
-    try {
-      return YamlListToStandardDefinitions.toStandardSourceDefinitions(getFile(SOURCE_DEFINITION_LIST_LOCATION_PATH));
-    } catch (final Throwable e) {
-      LOGGER.warn(
-          "Unable to retrieve latest Source list from Github. Using the list bundled with Airbyte. This warning is expected if this Airbyte cluster does not have internet access.",
-          e);
-      return Collections.emptyList();
-    }
+    return new AirbyteGithubStore(testBaseUrl, timeout.toMillis());
   }
 
   @VisibleForTesting

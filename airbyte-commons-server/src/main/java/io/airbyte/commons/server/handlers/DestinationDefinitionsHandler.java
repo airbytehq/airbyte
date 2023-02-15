@@ -147,7 +147,7 @@ public class DestinationDefinitionsHandler {
 
   private List<StandardDestinationDefinition> getLatestDestinations() {
     try {
-      return githubStore.getLatestDestinations();
+      return githubStore.getDestinationDefinitions();
     } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }

@@ -594,7 +594,7 @@ class SourceDefinitionsHandlerTest {
     @DisplayName("should return the latest list")
     void testCorrect() throws IOException, InterruptedException {
       final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
-      when(githubStore.getLatestSources()).thenReturn(Collections.singletonList(sourceDefinition));
+      when(githubStore.getSourceDefinitions()).thenReturn(Collections.singletonList(sourceDefinition));
 
       final var sourceDefinitionReadList = sourceDefinitionsHandler.listLatestSourceDefinitions().getSourceDefinitions();
       assertEquals(1, sourceDefinitionReadList.size());

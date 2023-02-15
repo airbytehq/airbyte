@@ -128,7 +128,7 @@ class WebBackendCheckUpdatesHandlerTest {
   @Test
   void testCheckErrorNoLatestDestinations() throws IOException, InterruptedException {
     setMocksForExceptionCases();
-    when(githubStore.getLatestDestinations()).thenThrow(new InterruptedException("unable to read latest destinations"));
+    when(githubStore.getDestinationDefinitions()).thenThrow(new InterruptedException("unable to read latest destinations"));
 
     final WebBackendCheckUpdatesRead actual = webBackendCheckUpdatesHandler.checkUpdates();
 
@@ -138,7 +138,7 @@ class WebBackendCheckUpdatesHandlerTest {
   @Test
   void testCheckErrorNoLatestSources() throws IOException, InterruptedException {
     setMocksForExceptionCases();
-    when(githubStore.getLatestSources()).thenThrow(new InterruptedException("unable to read latest sources"));
+    when(githubStore.getSourceDefinitions()).thenThrow(new InterruptedException("unable to read latest sources"));
 
     final WebBackendCheckUpdatesRead actual = webBackendCheckUpdatesHandler.checkUpdates();
 
@@ -166,12 +166,12 @@ class WebBackendCheckUpdatesHandlerTest {
       throws IOException, InterruptedException {
     when(configRepository.listStandardSourceDefinitions(INCLUDE_TOMBSTONE))
         .thenReturn(currentSources.stream().map(this::createSourceDef).toList());
-    when(githubStore.getLatestSources())
+    when(githubStore.getSourceDefinitions())
         .thenReturn(latestSources.stream().map(this::createSourceDef).toList());
 
     when(configRepository.listStandardDestinationDefinitions(INCLUDE_TOMBSTONE))
         .thenReturn(currentDestinations.stream().map(this::createDestinationDef).toList());
-    when(githubStore.getLatestDestinations())
+    when(githubStore.getDestinationDefinitions())
         .thenReturn(latestDestinations.stream().map(this::createDestinationDef).toList());
   }
 

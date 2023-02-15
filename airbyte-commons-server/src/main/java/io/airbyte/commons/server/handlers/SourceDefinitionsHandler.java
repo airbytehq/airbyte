@@ -153,7 +153,7 @@ public class SourceDefinitionsHandler {
 
   private List<StandardSourceDefinition> getLatestSources() {
     try {
-      return githubStore.getLatestSources();
+      return githubStore.getSourceDefinitions();
     } catch (final InterruptedException e) {
       throw new InternalServerKnownException("Request to retrieve latest destination definitions failed", e);
     }

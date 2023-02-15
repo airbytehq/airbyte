@@ -653,7 +653,7 @@ class DestinationDefinitionsHandlerTest {
     @DisplayName("should return the latest list")
     void testCorrect() throws InterruptedException {
       final StandardDestinationDefinition destinationDefinition = generateDestinationDefinition();
-      when(githubStore.getLatestDestinations()).thenReturn(Collections.singletonList(destinationDefinition));
+      when(githubStore.getDestinationDefinitions()).thenReturn(Collections.singletonList(destinationDefinition));
 
       final var destinationDefinitionReadList = destinationDefinitionsHandler.listLatestDestinationDefinitions().getDestinationDefinitions();
       assertEquals(1, destinationDefinitionReadList.size());

@@ -64,7 +64,7 @@ public class WebBackendCheckUpdatesHandler {
     }
 
     try {
-      newActorDefToDockerImageTag = githubStore.getLatestDestinations()
+      newActorDefToDockerImageTag = githubStore.getDestinationDefinitions()
           .stream()
           .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getDockerImageTag));
     } catch (final InterruptedException e) {
@@ -90,7 +90,7 @@ public class WebBackendCheckUpdatesHandler {
     }
 
     try {
-      newActorDefToDockerImageTag = githubStore.getLatestSources()
+      newActorDefToDockerImageTag = githubStore.getSourceDefinitions()
           .stream()
           .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getDockerImageTag));
     } catch (final InterruptedException e) {
