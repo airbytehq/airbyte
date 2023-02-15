@@ -28,6 +28,8 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
+import io.airbyte.commons.converters.CatalogClientConverters;
+import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -44,8 +46,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.CatalogClientConverters;
-import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
@@ -138,7 +138,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
-    ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
+    final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
         ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
     verify(mSourceApi).writeDiscoverCatalogResult(argument.capture());
     assertEquals(CatalogClientConverters.toAirbyteCatalogClientApi(CATALOG), argument.getValue().getCatalog());
@@ -172,7 +172,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertNull(output.getFailureReason());
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
-    ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
+    final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
         ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
     verify(mSourceApi).writeDiscoverCatalogResult(argument.capture());
     assertEquals(CatalogClientConverters.toAirbyteCatalogClientApi(CATALOG), argument.getValue().getCatalog());
@@ -204,7 +204,7 @@ class DefaultDiscoverCatalogWorkerTest {
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
     assertFalse(output.getConnectorConfigurationUpdated());
-    ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
+    final ArgumentCaptor<SourceDiscoverSchemaWriteRequestBody> argument =
         ArgumentCaptor.forClass(SourceDiscoverSchemaWriteRequestBody.class);
     verify(mSourceApi).writeDiscoverCatalogResult(argument.capture());
     assertEquals(CatalogClientConverters.toAirbyteCatalogClientApi(CATALOG), argument.getValue().getCatalog());

@@ -92,7 +92,7 @@ specifiers:
   jest-environment-jsdom: ^29.3.1
   js-yaml: ^4.1.0
   json-schema: ^0.4.0
-  launchdarkly-js-client-sdk: ^2.22.1
+  launchdarkly-js-client-sdk: ^3.1.0
   license-checker: ^25.0.1
   lint-staged: ^12.3.7
   lodash: ^4.17.21
@@ -107,12 +107,14 @@ specifiers:
   react-datepicker: ^4.8.0
   react-dom: ^17.0.2
   react-helmet-async: ^1.3.0
+  react-intersection-observer: ^9.4.2
   react-intl: ^6.1.1
   react-lazylog: ^4.5.3
   react-markdown: ^7.0.1
   react-paginate: ^8.1.3
   react-query: ^3.39.1
   react-reflex: ^4.0.9
+  react-resize-detector: ^8.0.3
   react-router-dom: 6.3.0
   react-select: ^5.4.0
   react-select-event: ^5.5.0
@@ -181,7 +183,7 @@ dependencies:
   framer-motion: 6.5.1_sfoxds7t5ydpegc3knd667wn6m
   js-yaml: 4.1.0
   json-schema: 0.4.0
-  launchdarkly-js-client-sdk: 2.24.2
+  launchdarkly-js-client-sdk: 3.1.0
   lodash: 4.17.21
   monaco-editor: 0.34.1
   query-string: 6.14.1
@@ -189,12 +191,14 @@ dependencies:
   react-datepicker: 4.8.0_sfoxds7t5ydpegc3knd667wn6m
   react-dom: 17.0.2_react@17.0.2
   react-helmet-async: 1.3.0_sfoxds7t5ydpegc3knd667wn6m
+  react-intersection-observer: 9.4.2_react@17.0.2
   react-intl: 6.2.5_oatgdhaahtizs2uezdzbohxvne
   react-lazylog: 4.5.3_sfoxds7t5ydpegc3knd667wn6m
   react-markdown: 7.1.2_q5o373oqrklnndq2vhekyuzhxi
   react-paginate: 8.1.4_react@17.0.2
   react-query: 3.39.2_sfoxds7t5ydpegc3knd667wn6m
   react-reflex: 4.0.9_sfoxds7t5ydpegc3knd667wn6m
+  react-resize-detector: 8.0.3_sfoxds7t5ydpegc3knd667wn6m
   react-router-dom: 6.3.0_sfoxds7t5ydpegc3knd667wn6m
   react-select: 5.7.0_dlps62spiehie4hvtd46aaye5u
   react-slick: 0.29.0_sfoxds7t5ydpegc3knd667wn6m
@@ -10692,19 +10696,19 @@ packages:
       language-subtag-registry: 0.3.22
     dev: true
 
-  /launchdarkly-js-client-sdk/2.24.2:
-    resolution: {integrity: sha512-8jrLOia0vfZ4stqQRv9TjAYfRGK2JyWpLIL6PbTl99LqTtJMuYtryFUQp0b8WH1153YN+gVdoqPVI7uwbbzLLQ==}
+  /launchdarkly-js-client-sdk/3.1.0:
+    resolution: {integrity: sha512-8aM3Wp5ZAS/TCIELOYkEs4CFzih/g7sO+YCHNQ5g0k80WDMTmTcGLMLhCKmrzaQnMK21HiBwbkBpAYnyzr5yUQ==}
     dependencies:
       escape-string-regexp: 4.0.0
-      launchdarkly-js-sdk-common: 3.8.2
+      launchdarkly-js-sdk-common: 5.0.1
     dev: false
 
-  /launchdarkly-js-sdk-common/3.8.2:
-    resolution: {integrity: sha512-pEqZ3FTKtYrTaPdbPntFJs87svzcezrkoRWY2GEFmyPC33txOqU788x0yby2+haC/saFPNfXpH6bbiJE/GjMSA==}
+  /launchdarkly-js-sdk-common/5.0.1:
+    resolution: {integrity: sha512-NPPU/9bT4hUCbglCCMAm9XGDWnRKs3aJ1OMhRF8g6xTUWAjOO2FieoGjwVbUVvOYKIiINVVtAWUiuVYbix1lqw==}
     dependencies:
       base64-js: 1.5.1
       fast-deep-equal: 2.0.1
-      uuid: 3.4.0
+      uuid: 8.3.2
     dev: false
 
   /lazy-universal-dotenv/4.0.0:
@@ -12892,6 +12896,14 @@ packages:
       react: 17.0.2
     dev: true
 
+  /react-intersection-observer/9.4.2_react@17.0.2:
+    resolution: {integrity: sha512-AdK+ryzZ7U9ZJYttDUZ8q2Am3nqE0exg5Ryl5Y124KeVsix/1hGZPbdu58EqA98TwnzwDNWHxg/kwNawmIiUig==}
+    peerDependencies:
+      react: ^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 17.0.2
+    dev: false
+
   /react-intl/6.2.5_oatgdhaahtizs2uezdzbohxvne:
     resolution: {integrity: sha512-nz21POTKbE0sPEuEJU4o5YTZYY7VlIYCPNJaD6D2+xKyk6Noj6DoUK0LRO9LXuQNUuQ044IZl3m6ymzZRj8XFQ==}
     peerDependencies:
@@ -13064,6 +13076,17 @@ packages:
 
   /react-resize-detector/7.1.2_sfoxds7t5ydpegc3knd667wn6m:
     resolution: {integrity: sha512-zXnPJ2m8+6oq9Nn8zsep/orts9vQv3elrpA+R8XTcW7DVVUJ9vwDwMXaBtykAYjMnkCIaOoK9vObyR7ZgFNlOw==}
+    peerDependencies:
+      react: ^16.0.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      lodash: 4.17.21
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+    dev: false
+
+  /react-resize-detector/8.0.3_sfoxds7t5ydpegc3knd667wn6m:
+    resolution: {integrity: sha512-c3eqm5BVcluVhxHsBQnhyPO/5uYB3XHIHz6D1ZOHzU2WcnZF0Cr3KLl5OIozRC2RSsdQlu5vn1PHEqrvKRnIYA==}
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
@@ -15402,9 +15425,8 @@ packages:
     resolution: {integrity: sha512-dsNgbLaTrd6l3MMxTtouOCFw4CBFc/3a+GgYA2YyrJvyQ1u6q4pcu3ktLoUZ/VN/Aw9WsauazbgsgdfVWgAKQg==}
     dev: true
 
-  /uuid/3.4.0:
-    resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
-    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+  /uuid/8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
     dev: false
 
