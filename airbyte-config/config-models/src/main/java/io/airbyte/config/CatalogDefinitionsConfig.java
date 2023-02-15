@@ -12,6 +12,8 @@ public class CatalogDefinitionsConfig {
   private static final String LOCAL_CONNECTOR_CATALOG_FILE_NAME = "oss_catalog.json";
   private static final String SEED_SUBDIRECTORY = "seed/";
 
+  private static final String ICON_SUBDIRECTORY = "icons/";
+
   private static final String REMOTE_OSS_CATALOG_URL =
       "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json";
 
@@ -27,6 +29,10 @@ public class CatalogDefinitionsConfig {
 
   public static String getRemoteOssCatalogUrl() {
     return REMOTE_OSS_CATALOG_URL;
+  }
+
+  public static String getIconSubdirectory() {
+    return ICON_SUBDIRECTORY;
   }
 
 }
