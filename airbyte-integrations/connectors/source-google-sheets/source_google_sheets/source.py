@@ -52,8 +52,7 @@ class SourceGoogleSheets(Source):
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
         try:
-            # Attempt to get first row of sheet
-            client.get(spreadsheetId=spreadsheet_id, includeGridData=False, ranges="1:1")
+            spreadsheet = client.get(spreadsheetId=spreadsheet_id, includeGridData=False)
         except errors.HttpError as err:
             reason = str(err)
             # Give a clearer message if it's a common error like 404.
@@ -65,8 +64,7 @@ class SourceGoogleSheets(Source):
             )
 
         # Check for duplicate headers
-        spreadsheet_metadata = Spreadsheet.parse_obj(client.get(spreadsheetId=spreadsheet_id, includeGridData=False))
-
+        spreadsheet_metadata = Spreadsheet.parse_obj(spreadsheet)
         grid_sheets = Helpers.get_grid_sheets(spreadsheet_metadata)
 
         duplicate_headers_in_sheet = {}
