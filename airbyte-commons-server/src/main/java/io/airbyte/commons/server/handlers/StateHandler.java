@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -7,9 +7,9 @@ package io.airbyte.commons.server.handlers;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
+import io.airbyte.commons.converters.StateConverter;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
-import io.airbyte.workers.helper.StateConverter;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Optional;

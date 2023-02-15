@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -1540,6 +1540,14 @@ public class ConfigRepository {
     return database.query(ctx -> ctx.select(CONNECTION.GEOGRAPHY)
         .from(CONNECTION)
         .where(CONNECTION.ID.eq(connectionId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
+  }
+
+  public Geography getGeographyForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.select(WORKSPACE.GEOGRAPHY)
+        .from(WORKSPACE)
+        .where(WORKSPACE.ID.eq(workspaceId))
         .limit(1))
         .fetchOneInto(Geography.class);
   }
