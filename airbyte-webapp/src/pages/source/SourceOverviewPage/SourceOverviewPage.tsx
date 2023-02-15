@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
@@ -9,8 +9,8 @@ import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { RoutePaths } from "pages/routePaths";
 
-import SourceConnectionTable from "./SourceConnectionTable";
 import { useSourceOverviewContext } from "./sourceOverviewContext";
+const SourceConnectionTable = React.lazy(() => import("./SourceConnectionTable"));
 
 export const SourceOverviewPage = () => {
   const { source, sourceDefinition, connections } = useSourceOverviewContext();
