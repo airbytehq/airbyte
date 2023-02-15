@@ -7,7 +7,7 @@ import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { DropdownMenuOptionType } from "components/ui/DropdownMenu";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
-import { RoutePaths } from "pages/routePaths";
+import { SourcePaths } from "pages/routePaths";
 
 import { useSourceOverviewContext } from "./sourceOverviewContext";
 const SourceConnectionTable = React.lazy(() => import("./SourceConnectionTable"));
@@ -34,7 +34,7 @@ export const SourceOverviewPage = () => {
   );
 
   const onSelect = (data: DropdownMenuOptionType) => {
-    const path = `../${RoutePaths.ConnectionNew}`;
+    const path = `../../${SourcePaths.NewConnection}`;
     const state =
       data.value === "create-new-item"
         ? { sourceId: source.sourceId }
