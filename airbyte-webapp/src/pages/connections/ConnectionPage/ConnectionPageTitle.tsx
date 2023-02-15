@@ -14,10 +14,13 @@ import { Text } from "components/ui/Text";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useFeature, FeatureItem } from "hooks/services/Feature";
-import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
 
 import styles from "./ConnectionPageTitle.module.scss";
 import { ConnectionRoutePaths } from "../types";
+
+const InlineEnrollmentCallout = React.lazy(
+  () => import("packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout")
+);
 
 export const ConnectionPageTitle: React.FC = () => {
   const params = useParams<{ id: string; "*": ConnectionRoutePaths }>();
