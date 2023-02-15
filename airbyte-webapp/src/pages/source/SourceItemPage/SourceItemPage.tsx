@@ -14,7 +14,7 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 
 import { useSetupSourceOverviewContext } from "../SourceOverviewPage/sourceOverviewContext";
 
-const SourceItemPage: React.FC = () => {
+export const SourceItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
   const params = useParams<{ "*": StepsTypes | "" | undefined; id: string }>();
   const navigate = useNavigate();
@@ -55,5 +55,3 @@ const SourceItemPage: React.FC = () => {
     </ConnectorDocumentationWrapper>
   );
 };
-
-export default SourceItemPage;
