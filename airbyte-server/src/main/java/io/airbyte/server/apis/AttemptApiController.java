@@ -12,7 +12,6 @@ import io.airbyte.api.model.generated.SaveAttemptSyncConfigRequestBody;
 import io.airbyte.api.model.generated.SaveStatsRequestBody;
 import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.commons.server.handlers.AttemptHandler;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -20,9 +19,7 @@ import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
-@Controller("/api/v1/attempt/")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+@Controller("/api/v1/attempt")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class AttemptApiController implements AttemptApi {
 
