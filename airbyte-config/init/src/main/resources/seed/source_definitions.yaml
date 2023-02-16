@@ -685,6 +685,10 @@
   icon: google-adwords.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - accounts.google.com
+      - googleads.googleapis.com
 - name: Google Analytics (Universal Analytics)
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
