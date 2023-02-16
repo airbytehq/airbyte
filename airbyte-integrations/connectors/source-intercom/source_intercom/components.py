@@ -10,27 +10,26 @@ import dpath.util
 import requests
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class IncrementalSingleSlice(StreamSlicer, JsonSchemaMixin):
+class IncrementalSingleSlice(StreamSlicer):
 
     cursor_field: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(default_factory=dict)
     initial_state: dict = field(default_factory=dict)
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
 
     def get_request_params(
         self,
@@ -75,7 +74,9 @@ class IncrementalSingleSlice(StreamSlicer, JsonSchemaMixin):
         return self._cursor if self._cursor else {}
 
     def _get_max_state_value(
-        self, current_state_value: Optional[Union[int, str]], last_record_value: Optional[Union[int, str]]
+        self,
+        current_state_value: Optional[Union[int, str]],
+        last_record_value: Optional[Union[int, str]],
     ) -> Optional[Union[int, str]]:
         if current_state_value and last_record_value:
             cursor = max(current_state_value, last_record_value)
@@ -85,25 +86,54 @@ class IncrementalSingleSlice(StreamSlicer, JsonSchemaMixin):
             cursor = last_record_value
         return cursor
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+    def _set_initial_state(self, stream_slice: StreamSlice):
         self.initial_state = stream_slice if not self.initial_state else self.initial_state
+
+    def _update_cursor_with_prior_state(self):
         self._cursor["prior_state"] = {self.cursor_field.eval(self.config): self.initial_state.get(self.cursor_field.eval(self.config))}
 
-        stream_state_value = stream_slice.get(self.cursor_field.eval(self.config))
-        last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-        current_state = self._cursor.get(self.cursor_field.eval(self.config)) if self._cursor else None
-        stream_cursor = self._get_max_state_value(stream_state_value, last_record_value)
-        if current_state and stream_cursor:
-            self._cursor.update(**{self.cursor_field.eval(self.config): max(stream_cursor, current_state)})
-        elif stream_cursor:
-            self._cursor.update(**{self.cursor_field.eval(self.config): stream_cursor})
+    def _get_current_state(self, stream_slice: StreamSlice) -> Union[str, float, int]:
+        return stream_slice.get(self.cursor_field.eval(self.config))
+
+    def _get_last_record_value(self, last_record: Optional[Record] = None) -> Union[str, float, int]:
+        return last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+
+    def _get_current_cursor_value(self) -> Union[str, float, int]:
+        return self._cursor.get(self.cursor_field.eval(self.config)) if self._cursor else None
+
+    def _update_current_cursor(
+        self,
+        current_cursor_value: Optional[Union[str, float, int]] = None,
+        updated_cursor_value: Optional[Union[str, float, int]] = None,
+    ):
+        if current_cursor_value and updated_cursor_value:
+            self._cursor.update(**{self.cursor_field.eval(self.config): max(updated_cursor_value, current_cursor_value)})
+        elif updated_cursor_value:
+            self._cursor.update(**{self.cursor_field.eval(self.config): updated_cursor_value})
+
+    def _update_stream_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        self._update_current_cursor(
+            self._get_current_cursor_value(),
+            self._get_max_state_value(
+                self._get_current_state(stream_slice),
+                self._get_last_record_value(last_record),
+            ),
+        )
+
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        # freeze initial state
+        self._set_initial_state(stream_slice)
+        # update the state of the child stream cursor_field value from previous sync,
+        # and freeze it to have an ability to compare the record vs state
+        self._update_cursor_with_prior_state()
+        self._update_stream_cursor(stream_slice, last_record)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         yield {}
 
 
 @dataclass
-class IncrementalSubstreamSlicer(StreamSlicer, JsonSchemaMixin):
+class IncrementalSubstreamSlicer(StreamSlicer):
     """
     Like SubstreamSlicer, but works incrementaly with both parent and substream.
 
@@ -117,24 +147,24 @@ class IncrementalSubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
 
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     cursor_field: Union[InterpolatedString, str]
     parent_stream_configs: List[ParentStreamConfig]
     parent_complete_fetch: bool = field(default=False)
     _cursor: dict = field(default_factory=dict)
     initial_state: dict = field(default_factory=dict)
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
             raise ValueError("IncrementalSubstreamSlicer needs at least 1 parent stream")
-        self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
+        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
         # parent stream parts
         self.parent_config: ParentStreamConfig = self.parent_stream_configs[0]
         self.parent_stream: Stream = self.parent_config.stream
         self.parent_stream_name: str = self.parent_stream.name
         self.parent_cursor_field: str = self.parent_stream.cursor_field
         self.parent_sync_mode: SyncMode = SyncMode.incremental if self.parent_stream.supports_incremental is True else SyncMode.full_refresh
-        self.substream_slice_field: str = self.parent_stream_configs[0].stream_slice_field.eval(self.config)
+        self.substream_slice_field: str = self.parent_stream_configs[0].partition_field.eval(self.config)
         self.parent_field: str = self.parent_stream_configs[0].parent_key.eval(self.config)
 
     def get_request_params(
@@ -176,9 +206,6 @@ class IncrementalSubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     def _get_request_option(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         return {}
 
-    def get_stream_state(self) -> StreamState:
-        return self._cursor if self._cursor else {}
-
     def _get_max_state_value(
         self, current_state_value: Optional[Union[int, str]], last_record_value: Optional[Union[int, str]]
     ) -> Optional[Union[int, str]]:
@@ -190,38 +217,84 @@ class IncrementalSubstreamSlicer(StreamSlicer, JsonSchemaMixin):
             cursor = last_record_value
         return cursor
 
+    def _set_initial_state(self, stream_slice: StreamSlice):
+        self.initial_state = stream_slice if not self.initial_state else self.initial_state
+
+    def _get_last_record_value(self, last_record: Optional[Record] = None, parent: Optional[bool] = False) -> Union[str, float, int]:
+        if parent:
+            return last_record.get(self.parent_cursor_field) if last_record else None
+        else:
+            return last_record.get(self.cursor_field.eval(self.config)) if last_record else None
+
+    def _get_current_cursor_value(self, parent: Optional[bool] = False) -> Union[str, float, int]:
+        if parent:
+            return self._cursor.get(self.parent_stream_name, {}).get(self.parent_cursor_field) if self._cursor else None
+        else:
+            return self._cursor.get(self.cursor_field.eval(self.config)) if self._cursor else None
+
+    def _get_current_state(self, stream_slice: StreamSlice, parent: Optional[bool] = False) -> Union[str, float, int]:
+        if parent:
+            return stream_slice.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
+        else:
+            return stream_slice.get(self.cursor_field.eval(self.config))
+
+    def _update_current_cursor(
+        self,
+        current_cursor_value: Optional[Union[str, float, int]] = None,
+        updated_cursor_value: Optional[Union[str, float, int]] = None,
+        parent: Optional[bool] = False,
+    ):
+        if current_cursor_value and updated_cursor_value:
+            if parent:
+                self._cursor.update(
+                    **{self.parent_stream_name: {self.parent_cursor_field: max(updated_cursor_value, current_cursor_value)}}
+                )
+            else:
+                self._cursor.update(**{self.cursor_field.eval(self.config): max(updated_cursor_value, current_cursor_value)})
+        elif updated_cursor_value:
+            if parent:
+                self._cursor.update(**{self.parent_stream_name: {self.parent_cursor_field: updated_cursor_value}})
+            else:
+                self._cursor.update(**{self.cursor_field.eval(self.config): updated_cursor_value})
+
     def _update_substream_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        substream_state_value = stream_slice.get(self.cursor_field.eval(self.config))
-        last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-        current_state = self._cursor.get(self.cursor_field.eval(self.config)) if self._cursor else None
-        substream_cursor = self._get_max_state_value(substream_state_value, last_record_value)
-        if current_state and substream_cursor:
-            self._cursor.update(**{self.cursor_field.eval(self.config): max(substream_cursor, current_state)})
-        elif substream_cursor:
-            self._cursor.update(**{self.cursor_field.eval(self.config): substream_cursor})
+        self._update_current_cursor(
+            self._get_current_cursor_value(),
+            self._get_max_state_value(
+                self._get_current_state(stream_slice),
+                self._get_last_record_value(last_record),
+            ),
+        )
 
     def _update_parent_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         if self.parent_cursor_field:
-            parent_state_value = stream_slice.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
-            last_record_value = last_record.get(self.parent_cursor_field) if last_record else None
-            current_state = self._cursor.get(self.parent_stream_name, {}).get(self.parent_cursor_field) if self._cursor else None
-            parent_cursor = self._get_max_state_value(parent_state_value, last_record_value)
-            if current_state and parent_cursor:
-                self._cursor.update(**{self.parent_stream_name: {self.parent_cursor_field: max(parent_cursor, current_state)}})
-            elif parent_cursor:
-                self._cursor.update(**{self.parent_stream_name: {self.parent_cursor_field: parent_cursor}})
+            self._update_current_cursor(
+                self._get_current_cursor_value(parent=True),
+                self._get_max_state_value(
+                    self._get_current_state(stream_slice, parent=True),
+                    self._get_last_record_value(last_record, parent=True),
+                ),
+            )
 
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # freeze initial state
-        self.initial_state = stream_slice if not self.initial_state else self.initial_state
-        # update the state of the child stream cursor_field value from previous sync,
-        # and freeze it to have an ability to compare the record vs state
+    def _update_cursor_with_prior_state(self):
         self._cursor["prior_state"] = {
             self.cursor_field.eval(self.config): self.initial_state.get(self.cursor_field.eval(self.config)),
             self.parent_stream_name: {
                 self.parent_cursor_field: self.initial_state.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
             },
         }
+
+    def get_stream_state(self) -> StreamState:
+        return self._cursor if self._cursor else {}
+
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        # freeze initial state
+        self._set_initial_state(stream_slice)
+        # update the state of the child stream cursor_field value from previous sync,
+        # and freeze it to have an ability to compare the record vs state
+        self._update_cursor_with_prior_state()
+        # we focus on updating the substream's cursor in this method,
+        # the parent's cursor is updated while reading parent stream
         self._update_substream_cursor(stream_slice, last_record)
 
     def read_parent_stream(
@@ -257,6 +330,7 @@ class IncrementalSubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                             self.parent_cursor_field: self._cursor.get(self.parent_stream_name, {}).get(self.parent_cursor_field)
                         },
                     }
+                    # track and update the parent cursor
                     self._update_parent_cursor(slice, parent_record)
                     yield slice
 
@@ -276,7 +350,7 @@ class IncrementalSubstreamSlicer(StreamSlicer, JsonSchemaMixin):
 
 
 @dataclass
-class LoadBasedWaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
+class LoadBasedWaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
     To avoid reaching Intercom API Rate Limits, use the 'X-RateLimit-Limit','X-RateLimit-Remaining' header values,
     to determine the current rate limits and load and handle wait_time based on load %.
@@ -301,7 +375,7 @@ class LoadBasedWaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixi
     """
 
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     current_rate_header: Union[InterpolatedString, str]
     total_rate_header: Union[InterpolatedString, str]
     threshold: float = field(default=float)
@@ -309,33 +383,43 @@ class LoadBasedWaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixi
     regex_current_rate_header: Optional[str] = None
     regex_total_rate_header: Optional[str] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.current_rate_header = InterpolatedString.create(self.current_rate_header, options=options)
-        self.total_rate_header = InterpolatedString.create(self.total_rate_header, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.current_rate_header = InterpolatedString.create(self.current_rate_header, parameters=parameters)
+        self.total_rate_header = InterpolatedString.create(self.total_rate_header, parameters=parameters)
         self.regex_current_rate_header = re.compile(self.regex_current_rate_header) if self.regex_current_rate_header else None
         self.regex_total_rate_header = re.compile(self.regex_total_rate_header) if self.regex_total_rate_header else None
+
+    def _define_values_from_headers(
+        self,
+        current_rate_header_value: Optional[float],
+        total_rate_header_value: Optional[float],
+    ) -> tuple[float, Union[float, str]]:
+        # define current load and cutoff from rate_limits
+        if current_rate_header_value and total_rate_header_value:
+            cutoff: float = (total_rate_header_value / 2) / total_rate_header_value
+            load: float = current_rate_header_value / total_rate_header_value
+        else:
+            # to guarantee cutoff value to be exactly 1 sec, based on threshold, if headers are not available
+            cutoff: float = self.threshold * (1 / self.threshold)
+            load = None
+        return cutoff, load
+
+    def _convert_load_to_wait_time(self, cutoff: float, load: Optional[float] = None) -> float:
+        # define wait_time based on load conditions
+        if not load:
+            wait_time = self.wait_on_load.get("unknown")
+        elif load <= self.threshold:
+            wait_time = self.wait_on_load.get("max")
+        elif load <= cutoff:
+            wait_time = self.wait_on_load.get("avg")
+        elif load > cutoff:
+            wait_time = self.wait_on_load.get("min")
+        return wait_time
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         current_rate_header: str = self.current_rate_header.eval(config=self.config)
         total_rate_header: str = self.total_rate_header.eval(config=self.config)
         current_rate_header_value: float = get_numeric_value_from_header(response, current_rate_header, self.regex_current_rate_header)
         total_rate_header_value: float = get_numeric_value_from_header(response, total_rate_header, self.regex_total_rate_header)
-
-        # define current load and mid_load from rate_limits
-        if current_rate_header_value and total_rate_header_value:
-            mid_load: float = (total_rate_header_value / 2) / total_rate_header_value
-            load: float = current_rate_header_value / total_rate_header_value
-        else:
-            # to guarantee mid_load value is 1 sec if headers are not available
-            mid_load: float = self.threshold * (1 / self.threshold)
-            load = None
-        # define wait_time based on load conditions
-        if not load:
-            wait_time = self.wait_on_load.get("unknown")
-        elif load <= self.threshold:
-            wait_time = self.wait_on_load.get("max")
-        elif load <= mid_load:
-            wait_time = self.wait_on_load.get("avg")
-        elif load > mid_load:
-            wait_time = self.wait_on_load.get("min")
-        return wait_time
+        cutoff, load = self._define_values_from_headers(current_rate_header_value, total_rate_header_value)
+        return self._convert_load_to_wait_time(cutoff, load)
