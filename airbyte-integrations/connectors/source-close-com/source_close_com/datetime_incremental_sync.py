@@ -6,11 +6,11 @@ import datetime
 from dataclasses import dataclass
 
 import pendulum
-from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 
 
 @dataclass
-class CustomDatetimeStreamSlicer(DatetimeStreamSlicer):
+class CustomDatetimeIncrementalSync(DatetimeBasedCursor):
     """
     This customization helps us to avoid problems when we meet different datetime formats in a single stream.
     For example if a stream "S" has a `date_created` field filled with "2021-01-01T00:00:00.000000+00:00" value in record 1,
