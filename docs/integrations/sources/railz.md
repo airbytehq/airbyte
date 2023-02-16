@@ -92,4 +92,4 @@ The Railz connector should gracefully handle Railz API limitations under normal 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
-| 0.1.0   | 2023-01-23 | [20960](https://github.com/airbytehq/airbyte/pull/20960) | New Source: Railz                                                                         |
+| 0.1.1   | 2023-02-16 | [20960](https://github.com/airbytehq/airbyte/pull/20960) | New Source: Railz                                                                         |
