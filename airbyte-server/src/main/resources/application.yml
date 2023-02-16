@@ -1,6 +1,9 @@
 micronaut:
   application:
     name: airbyte-server
+  executors:
+    io:
+      type: fixed
   security:
     authentication-provider-strategy: ALL
     enabled: ${API_AUTHORIZATION_ENABLED:false}
