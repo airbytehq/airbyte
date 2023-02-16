@@ -12,8 +12,11 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
 import io.airbyte.integrations.destination.s3.util.Flattening;
+import lombok.ToString;
+
 import java.util.Objects;
 
+@ToString
 public class S3JsonlFormatConfig implements S3FormatConfig {
 
   public static final String JSONL_SUFFIX = ".jsonl";
@@ -53,14 +56,6 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
 
   public Flattening getFlatteningType() {
     return flattening;
-  }
-
-  @Override
-  public String toString() {
-    return "S3JsonlFormatConfig{" +
-        "compressionType=" + compressionType +
-        ", flattening=" + flattening +
-        '}';
   }
 
   @Override
