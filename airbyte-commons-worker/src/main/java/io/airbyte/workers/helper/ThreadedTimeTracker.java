@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.converters;
+package io.airbyte.workers.helper;
 
 /**
  * This class exists to track timing information for the sync. It needs to be thread-safe as
