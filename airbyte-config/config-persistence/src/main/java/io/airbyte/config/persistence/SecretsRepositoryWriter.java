@@ -280,4 +280,5 @@ public class SecretsRepositoryWriter {
     longLivedSecretPersistence.get().write(secretCoordinate, payload);
     return secretCoordinate;
   }
+
 }

@@ -182,15 +182,15 @@ class OAuthHandlerTest {
   void testGetOAuthInputConfiguration() {
     final JsonNode hydratedConfig = Jsons.deserialize(
         """
-            {
-              "field1": "1",
-              "field2": "2",
-              "field3": {
-                "field3_1": "3_1",
-                "field3_2": "3_2"
-              }
-            }
-            """);
+        {
+          "field1": "1",
+          "field2": "2",
+          "field3": {
+            "field3_1": "3_1",
+            "field3_2": "3_2"
+          }
+        }
+        """);
 
     final Map<String, String> pathsToGet = Map.ofEntries(
         Map.entry("field1", "$.field1"),
@@ -200,12 +200,12 @@ class OAuthHandlerTest {
 
     final JsonNode expected = Jsons.deserialize(
         """
-            {
-              "field1": "1",
-              "field3_1": "3_1",
-              "field3_2": "3_2"
-            }
-            """);
+        {
+          "field1": "1",
+          "field3_1": "3_1",
+          "field3_2": "3_2"
+        }
+        """);
 
     assertEquals(expected, handler.getOAuthInputConfiguration(hydratedConfig, pathsToGet));
   }
@@ -214,30 +214,30 @@ class OAuthHandlerTest {
   void testGetOauthFromDBIfNeeded() {
     final JsonNode fromInput = Jsons.deserialize(
         """
-            {
-              "testMask": "**********",
-              "testNotMask": "this",
-              "testOtherType": true
-            }
-            """);
+        {
+          "testMask": "**********",
+          "testNotMask": "this",
+          "testOtherType": true
+        }
+        """);
 
     final JsonNode fromDb = Jsons.deserialize(
         """
-            {
-              "testMask": "mask",
-              "testNotMask": "notThis",
-              "testOtherType": true
-            }
-            """);
+        {
+          "testMask": "mask",
+          "testNotMask": "notThis",
+          "testOtherType": true
+        }
+        """);
 
     final JsonNode expected = Jsons.deserialize(
         """
-            {
-              "testMask": "mask",
-              "testNotMask": "this",
-              "testOtherType": true
-            }
-            """);
+        {
+          "testMask": "mask",
+          "testNotMask": "this",
+          "testOtherType": true
+        }
+        """);
 
     assertEquals(expected, handler.getOauthFromDBIfNeeded(fromDb, fromInput));
   }
@@ -247,6 +247,7 @@ class OAuthHandlerTest {
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID workspaceId = UUID.randomUUID();
 
+    // This is being created without returnSecretCoordinate set intentionally
     final CompleteSourceOauthRequest completeSourceOauthRequest = new CompleteSourceOauthRequest()
         .sourceDefinitionId(sourceDefinitionId)
         .workspaceId(workspaceId);
@@ -258,6 +259,7 @@ class OAuthHandlerTest {
 
     handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
 
+    // Tests that with returnSecretCoordinate unset, we DO NOT return secrets.
     verify(handlerSpy).completeSourceOAuth(completeSourceOauthRequest);
     verify(handlerSpy, never()).writeOAuthResponseSecret(any(), any());
 
@@ -265,6 +267,7 @@ class OAuthHandlerTest {
 
     handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
 
+    // Tests that with returnSecretCoordinate set explicitly to true, we DO return secrets.
     verify(handlerSpy, times(2)).completeSourceOAuth(completeSourceOauthRequest);
     verify(handlerSpy).writeOAuthResponseSecret(any(), any());
 
@@ -272,7 +275,9 @@ class OAuthHandlerTest {
 
     handlerSpy.completeSourceOAuthHandleReturnSecret(completeSourceOauthRequest);
 
+    // Tests that with returnSecretCoordinate set explicitly to false, we DO NOT return secrets.
     verify(handlerSpy, times(3)).completeSourceOAuth(completeSourceOauthRequest);
     verify(handlerSpy).writeOAuthResponseSecret(any(), any());
   }
+
 }

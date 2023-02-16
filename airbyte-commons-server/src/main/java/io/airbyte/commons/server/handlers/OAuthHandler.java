@@ -169,7 +169,18 @@ public class OAuthHandler {
     return result;
   }
 
-  public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
+  public Map<String, Object> completeSourceOAuthHandleReturnSecret(final CompleteSourceOauthRequest completeSourceOauthRequest)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Map<String, Object> oAuthTokens = completeSourceOAuth(completeSourceOauthRequest);
+    if (completeSourceOauthRequest.getReturnSecretCoordinate()) {
+      return writeOAuthResponseSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens);
+    } else {
+      return oAuthTokens;
+    }
+  }
+
+  @VisibleForTesting
+  protected Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(),
         SOURCE_DEFINITION_ID_KEY, completeSourceOauthRequest.getSourceDefinitionId());
@@ -362,12 +373,13 @@ public class OAuthHandler {
   }
 
   /**
-   * Given an OAuth response, writes a secret and returns the secret Coordinate in the appropriate format.
+   * Given an OAuth response, writes a secret and returns the secret Coordinate in the appropriate
+   * format.
    * <p>
-   * Unlike our regular source creation flow, the OAuth credentials created and stored this way will be stored
-   * in a singular secret as a string. When these secrets are used, the user will be expected to use the
-   * specification to rehydrate the connection configuration with the secret values prior to saving a
-   * source/destination.
+   * Unlike our regular source creation flow, the OAuth credentials created and stored this way will
+   * be stored in a singular secret as a string. When these secrets are used, the user will be
+   * expected to use the specification to rehydrate the connection configuration with the secret
+   * values prior to saving a source/destination.
    * <p>
    * The singular secret was chosen to optimize UX for public API consumers (passing them one secret
    * to keep track of > passing them a set of secrets).
@@ -379,33 +391,19 @@ public class OAuthHandler {
     try {
       final String payloadString = Jackson.getObjectMapper().writeValueAsString(payload);
       final SecretCoordinate secretCoordinate = secretsRepositoryWriter.storeSecret(generateOAuthSecretCoordinate(workspaceId), payloadString);
-      return formatOAuthSecretResponse(secretCoordinate);
+      return Map.of("secretId", secretCoordinate.getFullCoordinate());
+
     } catch (final JsonProcessingException e) {
       throw new RuntimeException("Json object could not be written to string.", e);
     }
   }
 
-  public Map<String, Object> formatOAuthSecretResponse(final SecretCoordinate secretCoordinate){
-    return Map.of("secretId", secretCoordinate.getFullCoordinate());
-  }
-
   /**
-   * Generate our OAuthSecretCoordinate for storage For now we're treating these as always v1.
+   * Generate OAuthSecretCoordinates. Always assume V1 and do not support secret updates
    */
   private SecretCoordinate generateOAuthSecretCoordinate(final UUID workspaceId) {
     final String coordinateBase = SecretsHelpers.getCoordinatorBase("airbyte_oauth_workspace_", workspaceId, UUID::randomUUID);
     return new SecretCoordinate(coordinateBase, 1);
   }
-
-  public Map<String, Object> completeSourceOAuthHandleReturnSecret(final CompleteSourceOauthRequest completeSourceOauthRequest)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Map<String, Object> oAuthTokens = completeSourceOAuth(completeSourceOauthRequest);
-    if (completeSourceOauthRequest.getReturnSecretCoordinate()) {
-      return writeOAuthResponseSecret(completeSourceOauthRequest.getWorkspaceId(), oAuthTokens);
-    } else {
-      return oAuthTokens;
-    }
-  }
-
 
 }
