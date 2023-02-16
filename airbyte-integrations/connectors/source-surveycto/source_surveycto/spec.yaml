@@ -38,4 +38,4 @@ connectionSpecification:
         - "Jan 09, 2022 00:00:00 AM"
       default: "Jan 09, 2022 00:00:00 AM"
       order: 4
-      pattern: ^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dic) [0-9]{2}, [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} (AM|PM)$
+      pattern: ^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) [0-9]{2}, [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} (AM|PM)$

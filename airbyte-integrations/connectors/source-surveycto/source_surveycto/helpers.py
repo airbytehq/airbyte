@@ -41,12 +41,6 @@ class Helpers(object):
 
         for data in response_json:
             try:
-                dateformat_in = "%b %d, %Y %I:%M:%S %p"
-                dateformat_out = "%Y-%m-%dT%H:%M:%S+00:00"
-                data["starttime"] = datetime.strptime(data["starttime"], dateformat_in).strftime(dateformat_out)
-                data["endtime"] = datetime.strptime(data["endtime"], dateformat_in).strftime(dateformat_out)
-                data["CompletionDate"] = datetime.strptime(data["CompletionDate"], dateformat_in).strftime(dateformat_out)
-                data["SubmissionDate"] = datetime.strptime(data["SubmissionDate"], dateformat_in).strftime(dateformat_out)
                 yield data
             except Exception as e:
                 raise e
