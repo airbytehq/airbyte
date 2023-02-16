@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.converters;
+package io.airbyte.workers.helper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,12 +34,12 @@ public class CatalogClientConverters {
    */
   public static io.airbyte.protocol.models.AirbyteCatalog toAirbyteProtocol(final io.airbyte.api.client.model.generated.AirbyteCatalog catalog) {
 
-    final io.airbyte.protocol.models.AirbyteCatalog protoCatalog =
+    io.airbyte.protocol.models.AirbyteCatalog protoCatalog =
         new io.airbyte.protocol.models.AirbyteCatalog();
-    final var airbyteStream = catalog.getStreams().stream().map(stream -> {
+    var airbyteStream = catalog.getStreams().stream().map(stream -> {
       try {
         return toConfiguredProtocol(stream.getStream(), stream.getConfig());
-      } catch (final JsonValidationException e) {
+      } catch (JsonValidationException e) {
         return null;
       }
     }).collect(Collectors.toList());
@@ -50,7 +50,7 @@ public class CatalogClientConverters {
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static io.airbyte.protocol.models.AirbyteStream toConfiguredProtocol(final io.airbyte.api.client.model.generated.AirbyteStream stream,
-                                                                               final AirbyteStreamConfiguration config)
+                                                                               AirbyteStreamConfiguration config)
       throws JsonValidationException {
     if (config.getFieldSelectionEnabled() != null && config.getFieldSelectionEnabled()) {
       // Validate the selected field paths.
