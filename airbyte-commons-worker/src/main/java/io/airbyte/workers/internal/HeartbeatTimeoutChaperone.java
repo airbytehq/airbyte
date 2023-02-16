@@ -10,7 +10,6 @@ import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.ShouldFailSyncIfHeartbeatFailure;
 import io.airbyte.featureflag.Workspace;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
