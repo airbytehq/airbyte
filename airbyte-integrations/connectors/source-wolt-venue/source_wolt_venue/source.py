@@ -73,8 +73,13 @@ class WoltVenueStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         max_resp_end_time = next_page_token.get('end_time', self.start_date) if next_page_token else self.start_date
         start_time = stream_state.get(self.venue_code, max_resp_end_time)
+        # start_time - 10 hours to avoid missing data
+        start_time = pendulum.parse(start_time).subtract(hours=10).format("YYYY-MM-DDTHH:00:00")
+
         end_ts = pendulum.parse(start_time).add(days=7).format("YYYY-MM-DDTHH:00:00")
         end_time = min(str(end_ts), str(self.stop_date))
+
+
 
         params = {
             "start_time": start_time,
