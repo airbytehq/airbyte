@@ -7,9 +7,8 @@ definitions:
   requester:
     url_base: "{{ config['base_url']}}/api/v3"
     http_method: "GET"
-    request_options_provider:
-      request_body_json:
-        Content-Type: "application/json"
+    request_body_json:
+      Content-Type: "application/json"
     authenticator:
       type: ApiKeyAuthenticator
       header: Authorization

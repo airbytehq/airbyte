@@ -41,7 +41,6 @@ definitions:
       $ref: "#/definitions/selector"
     paginator:
       type: "DefaultPaginator"
-      url_base: "#/definitions/requester/url_base"
       pagination_strategy:
         class_name: "source_the_guardian_api.custom_page_strategy.CustomPageIncrement"
         page_size: 10

@@ -13,8 +13,6 @@ definitions:
       password: "{{ config['api_key_secret'] }}"
   offset_paginator:
     type: DefaultPaginator
-    $parameters:
-      url_base: "#/definitions/requester/url_base"
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 100

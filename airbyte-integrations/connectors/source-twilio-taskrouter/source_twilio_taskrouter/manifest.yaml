@@ -28,7 +28,6 @@ definitions:
       page_size: 50
     page_token_option:
       type: RequestPath
-    url_base: "https://taskrouter.twilio.com"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"

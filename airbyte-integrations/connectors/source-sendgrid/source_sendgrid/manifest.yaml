@@ -28,7 +28,6 @@ definitions:
   offset_paginator:
     type: DefaultPaginator
     $parameters:
-      url_base: "#/definitions/requester/url_base"
       page_size: "#/definitions/page_size"
     limit_option:
       inject_into: "request_parameter"
@@ -41,8 +40,6 @@ definitions:
       type: "OffsetIncrement"
   retriever:
     type: SimpleRetriever
-    name: "{{ parameters['name'] }}"
-    primary_key: "{{ parameters['primary_key'] }}"
   incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:

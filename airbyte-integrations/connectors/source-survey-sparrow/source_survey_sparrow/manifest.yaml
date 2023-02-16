@@ -26,7 +26,6 @@ definitions:
         type: RequestOption
         inject_into: "request_parameter"
         field_name: "page"
-      url_base: "#/definitions/requester/url_base"
     requester:
       $ref: "#/definitions/requester"
   base_stream:

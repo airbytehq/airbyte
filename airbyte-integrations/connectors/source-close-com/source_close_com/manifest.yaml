@@ -22,7 +22,6 @@ definitions:
       query: "sort:updated date_updated > {{ stream_slice['start_time'] }} date_updated <= {{ stream_slice['end_time'] }}"
   offset_paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     page_size_option:
       inject_into: "request_parameter"
       field_name: "_limit"
@@ -35,7 +34,6 @@ definitions:
       page_size: "{{ parameters['items_per_page'] }}"
   cursor_paginator:
     type: DefaultPaginator
-    url_base: "#/definitions/requester/url_base"
     page_token_option:
       type: RequestOption
       inject_into: "request_parameter"

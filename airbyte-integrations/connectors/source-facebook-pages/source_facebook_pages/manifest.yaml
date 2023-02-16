@@ -37,7 +37,6 @@ definitions:
       type: RequestOption
       field_name: "after"
       inject_into: "request_parameter"
-    url_base: "#/definitions/requester/url_base"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
