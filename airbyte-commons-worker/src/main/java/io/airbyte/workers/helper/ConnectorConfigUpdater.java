@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.converters;
+package io.airbyte.workers.helper;
 
 import com.google.common.hash.Hashing;
 import io.airbyte.api.client.AirbyteApiClient;

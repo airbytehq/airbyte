@@ -5,7 +5,7 @@
 package io.airbyte.server.apis;
 
 import static io.airbyte.commons.auth.AuthRoleConstants.AUTHENTICATED_USER;
-import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
+import static io.airbyte.commons.auth.AuthRoleConstants.OWNER;
 import static io.airbyte.commons.auth.AuthRoleConstants.READER;
 
 import io.airbyte.api.generated.WorkspaceApi;
@@ -20,6 +20,7 @@ import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.WorkspacesHandler;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -29,6 +30,8 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/workspaces")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class WorkspaceApiController implements WorkspaceApi {
@@ -47,7 +50,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/delete")
-  @Secured({EDITOR})
+  @Secured({OWNER})
   @SecuredWorkspace
   @Override
   @Status(HttpStatus.NO_CONTENT)
@@ -59,7 +62,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/get")
-  @Secured({READER})
+  @Secured({OWNER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead getWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
@@ -67,7 +70,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/get_by_slug")
-  @Secured({READER})
+  @Secured({OWNER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead getWorkspaceBySlug(@Body final SlugRequestBody slugRequestBody) {
@@ -82,7 +85,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/update")
-  @Secured({EDITOR})
+  @Secured({OWNER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead updateWorkspace(@Body final WorkspaceUpdate workspaceUpdate) {
@@ -90,7 +93,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/tag_feedback_status_as_done")
-  @Secured({EDITOR})
+  @Secured({OWNER})
   @SecuredWorkspace
   @Override
   public void updateWorkspaceFeedback(@Body final WorkspaceGiveFeedback workspaceGiveFeedback) {
@@ -101,7 +104,7 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/update_name")
-  @Secured({EDITOR})
+  @Secured({OWNER})
   @SecuredWorkspace
   @Override
   public WorkspaceRead updateWorkspaceName(@Body final WorkspaceUpdateName workspaceUpdateName) {

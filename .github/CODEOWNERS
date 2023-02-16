@@ -9,7 +9,6 @@
 /airbyte-server/src/test/java/io/airbyte/server/handlers/OAuthHandlerTest.java @airbytehq/connector-operations
 
 # Protocol related items
-/airbyte-protocol/ @airbytehq/protocol-reviewers
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
 
 # Airbyte Maintainers
