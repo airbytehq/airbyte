@@ -5,12 +5,9 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.generated.ConnectionApi;
-import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.client.model.generated.ConnectionRead;
-import io.airbyte.api.client.model.generated.SourceIdRequestBody;
-import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.WorkspaceRead;
 import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.FieldSelectionEnabled;
 import io.airbyte.featureflag.Flag;
@@ -26,28 +23,21 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class FeatureFlagFetchActivityImpl implements FeatureFlagFetchActivity {
 
-  private final SourceApi sourceApi;
-  private final ConnectionApi connectionApi;
+  private final WorkspaceApi workspaceApi;
   private final FeatureFlagClient featureFlagClient;
 
-  public FeatureFlagFetchActivityImpl(SourceApi sourceApi,
-                                      ConnectionApi connectionApi,
+  public FeatureFlagFetchActivityImpl(WorkspaceApi workspaceApi,
                                       FeatureFlagClient featureFlagClient) {
-    this.sourceApi = sourceApi;
-    this.connectionApi = connectionApi;
+    this.workspaceApi = workspaceApi;
     this.featureFlagClient = featureFlagClient;
   }
 
   public UUID getWorkspaceId(final UUID connectionId) {
-    final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
-        () -> connectionApi.getConnection(new ConnectionIdRequestBody().connectionId(connectionId)),
-        "get connection");
+    final WorkspaceRead workspace = AirbyteApiClient.retryWithJitter(
+        () -> workspaceApi.getWorkspaceByConnectionId(new ConnectionIdRequestBody().connectionId(connectionId)),
+        "get workspace");
 
-    final SourceRead source = AirbyteApiClient.retryWithJitter(
-        () -> sourceApi.getSource(new SourceIdRequestBody().sourceId(connection.getSourceId())),
-        "get source");
-
-    return source.getWorkspaceId();
+    return workspace.getWorkspaceId();
   }
 
   @Override
