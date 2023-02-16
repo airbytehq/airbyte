@@ -22,7 +22,7 @@ def test_get_tokens(requests_mock):
         token_key="access_token",
         lifetime="PT3600S",
         config={},
-        options={},
+        parameters={},
     )
 
     with freeze_time("2023-01-01 12:00:00"):
