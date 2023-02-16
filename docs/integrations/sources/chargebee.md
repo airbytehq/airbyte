@@ -74,6 +74,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.2.1   | 2023-02-16 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to CDK beta 0.29; fix schemas                                                               |
 | 0.2.0   | 2023-01-21 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to YAML; add new streams                                                                    |
 | 0.1.16  | 2022-10-06 | [17661](https://github.com/airbytehq/airbyte/pull/17661) | Make `transaction` stream to be consistent with `S3` by using type transformer                      |
 | 0.1.15  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                        |
