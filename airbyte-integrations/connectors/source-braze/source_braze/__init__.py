@@ -3,8 +3,8 @@
 #
 
 
-from .datetime_stream_slicer import DatetimeStreamSlicerComponent
+from .datetime_incremental_sync import DatetimeIncrementalSyncComponent
 from .source import SourceBraze
 from .transformations import TransformToRecordComponent
 
-__all__ = ["SourceBraze", "DatetimeStreamSlicerComponent", "TransformToRecordComponent"]
+__all__ = ["SourceBraze", "DatetimeIncrementalSyncComponent", "TransformToRecordComponent"]
