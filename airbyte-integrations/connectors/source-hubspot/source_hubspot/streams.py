@@ -292,6 +292,7 @@ class Stream(HttpStream, ABC):
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        
         if properties:
             request_params.update(properties.as_url_param())
 
@@ -726,6 +727,8 @@ class IncrementalStream(Stream, ABC):
     state_checkpoint_interval = 500
     last_slice = None
 
+    max_day_num=0
+
     @property
     def cursor_field(self) -> Union[str, List[str]]:
         return self.updated_at_field
@@ -806,11 +809,18 @@ class IncrementalStream(Stream, ABC):
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
-        chunk_size = pendulum.duration(days=30)
+        chunk_size = pendulum.duration(days=min(30, self.max_day_num))
         slices = []
 
         now_ts = int(pendulum.now().timestamp() * 1000)
         start_ts = int(self._start_date.timestamp() * 1000)
+
+        #If I set a maximum number of days, only make the range until that date
+        if self.max_day_num > 0:
+            max_date = self._start_date.add(days=self.max_day_num)
+            max_ts = int(max_date.timestamp() * 1000)
+            now_ts = min(max_ts, now_ts)
+
         max_delta = now_ts - start_ts
         chunk_size = int(chunk_size.total_seconds() * 1000) if self.need_chunk else max_delta
 
@@ -1223,6 +1233,7 @@ class EmailEvents(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "created"
     created_at_field = "created"
+    max_day_num=60
     primary_key = "id"
     scopes = {"content"}
 
