@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.1
+Fix docker API - "Error" is optional. [#22987](https://github.com/airbytehq/airbyte/pull/22987)
+
 ## 0.6.0
 Allow passing custom environment variables to the connector under test. [#22937](https://github.com/airbytehq/airbyte/pull/22937).
 
