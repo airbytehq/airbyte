@@ -69,10 +69,10 @@ public class OAuthHandler {
   private final SecretsRepositoryWriter secretsRepositoryWriter;
 
   public OAuthHandler(final ConfigRepository configRepository,
-                      final HttpClient httpClient,
-                      final TrackingClient trackingClient,
-                      final SecretsRepositoryReader secretsRepositoryReader,
-                      final SecretsRepositoryWriter secretsRepositoryWriter) {
+      final HttpClient httpClient,
+      final TrackingClient trackingClient,
+      final SecretsRepositoryReader secretsRepositoryReader,
+      final SecretsRepositoryWriter secretsRepositoryWriter) {
     this.configRepository = configRepository;
     this.oAuthImplementationFactory = new OAuthImplementationFactory(configRepository, httpClient);
     this.trackingClient = trackingClient;
@@ -123,7 +123,7 @@ public class OAuthHandler {
   }
 
   public OAuthConsentRead getDestinationOAuthConsent(
-                                                     final DestinationOauthConsentRequest destinationOauthConsentRequest)
+      final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(),
         DESTINATION_DEFINITION_ID_KEY, destinationOauthConsentRequest.getDestinationDefinitionId());
@@ -226,7 +226,7 @@ public class OAuthHandler {
   }
 
   public Map<String, Object> completeDestinationOAuth(
-                                                      final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
+      final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(),
         DESTINATION_DEFINITION_ID_KEY, completeDestinationOAuthRequest.getDestinationDefinitionId());
@@ -298,8 +298,8 @@ public class OAuthHandler {
   }
 
   private JsonNode getOAuthInputConfigurationForConsent(final ConnectorSpecification spec,
-                                                        final JsonNode hydratedSourceConnectionConfiguration,
-                                                        final JsonNode oAuthInputConfiguration) {
+      final JsonNode hydratedSourceConnectionConfiguration,
+      final JsonNode oAuthInputConfiguration) {
     final Map<String, String> fieldsToGet = buildJsonPathFromOAuthFlowInitParameters(
         OAuthPathExtractor.extractOauthConfigurationPaths(
             spec.getAdvancedAuth().getOauthConfigSpecification().getOauthUserInputFromConnectorConfigSpecification()));
@@ -325,7 +325,7 @@ public class OAuthHandler {
 
   @VisibleForTesting
   Map<String, String> buildJsonPathFromOAuthFlowInitParameters(
-                                                               final Map<String, List<String>> oAuthFlowInitParameters) {
+      final Map<String, List<String>> oAuthFlowInitParameters) {
     return oAuthFlowInitParameters.entrySet().stream()
         .map(entry -> Map.entry(entry.getKey(), "$." + String.join(".", entry.getValue())))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -333,7 +333,7 @@ public class OAuthHandler {
 
   @VisibleForTesting
   JsonNode getOauthFromDBIfNeeded(final JsonNode oAuthInputConfigurationFromDB,
-                                  final JsonNode oAuthInputConfigurationFromInput) {
+      final JsonNode oAuthInputConfigurationFromInput) {
     final ObjectNode result = (ObjectNode) Jsons.emptyObject();
 
     oAuthInputConfigurationFromInput.fields().forEachRemaining(entry -> {
@@ -358,7 +358,7 @@ public class OAuthHandler {
 
   @VisibleForTesting
   JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration,
-                                      final Map<String, String> pathsToGet) {
+      final Map<String, String> pathsToGet) {
     final Map<String, JsonNode> result = new HashMap<>();
     pathsToGet.forEach((k, v) -> {
       final Optional<JsonNode> configValue = JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, v);
