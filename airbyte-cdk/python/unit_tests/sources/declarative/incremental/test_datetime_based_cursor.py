@@ -8,16 +8,16 @@ import unittest
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 cursor_granularity = "PT0.000001S"
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
 config = {"start_date": "2021-01-01T00:00:00.000000+0000", "start_date_ymd": "2021-01-01"}
-end_date_now = InterpolatedString(string="{{ today_utc() }}", options={})
+end_date_now = InterpolatedString(string="{{ today_utc() }}", parameters={})
 cursor_field = "created"
 timezone = datetime.timezone.utc
 
@@ -39,8 +39,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_1_day",
             None,
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -62,8 +62,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_2_day",
             None,
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P2D",
             cursor_field,
             None,
@@ -80,8 +80,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_1_week",
             None,
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-02-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-02-10T00:00:00.000000+0000", parameters={}),
             "P1W",
             cursor_field,
             None,
@@ -99,8 +99,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_1_month",
             None,
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-06-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-06-10T00:00:00.000000+0000", parameters={}),
             "P1M",
             cursor_field,
             None,
@@ -118,8 +118,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_1_year",
             None,
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2022-06-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2022-06-10T00:00:00.000000+0000", parameters={}),
             "P1Y",
             cursor_field,
             None,
@@ -133,8 +133,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_from_stream_state",
             {"date": "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="{{ stream_state['date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ stream_state['date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -152,8 +152,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_12_day",
             None,
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P12D",
             cursor_field,
             None,
@@ -166,8 +166,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_end_time_greater_than_now",
             None,
-            MinMaxDatetime(datetime="2021-12-28T00:00:00.000000+0000", options={}),
-            MinMaxDatetime(datetime=f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}", options={}),
+            MinMaxDatetime(datetime="2021-12-28T00:00:00.000000+0000", parameters={}),
+            MinMaxDatetime(datetime=f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -184,8 +184,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_start_date_greater_than_end_time",
             None,
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
-            MinMaxDatetime(datetime="2021-01-05T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
+            MinMaxDatetime(datetime="2021-01-05T00:00:00.000000+0000", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -198,10 +198,10 @@ def mock_datetime_now(monkeypatch):
         (
             "test_cursor_date_greater_than_start_date",
             {"date": "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="{{ stream_state['date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ stream_state['date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P1D",
-            InterpolatedString(string="{{ stream_state['date'] }}", options={}),
+            InterpolatedString(string="{{ stream_state['date'] }}", parameters={}),
             None,
             datetime_format,
             cursor_granularity,
@@ -217,8 +217,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_cursor_date_greater_than_start_date_multiday_step",
             {cursor_field: "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="2021-01-03T00:00:00.000000+0000", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="2021-01-03T00:00:00.000000+0000", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P2D",
             cursor_field,
             None,
@@ -233,10 +233,10 @@ def mock_datetime_now(monkeypatch):
         (
             "test_start_date_less_than_min_date",
             {"date": "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", min_datetime="{{ stream_state['date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", min_datetime="{{ stream_state['date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P1D",
-            InterpolatedString(string="{{ stream_state['date'] }}", options={}),
+            InterpolatedString(string="{{ stream_state['date'] }}", parameters={}),
             None,
             datetime_format,
             cursor_granularity,
@@ -252,8 +252,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_end_date_greater_than_max_date",
             {"date": "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", max_datetime="{{ stream_state['date'] }}", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", max_datetime="{{ stream_state['date'] }}", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -270,8 +270,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_start_end_min_max_inherits_datetime_format_from_stream_slicer",
             {"date": "2021-01-05"},
-            MinMaxDatetime(datetime="{{ config['start_date_ymd'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10", max_datetime="{{ stream_state['date'] }}", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date_ymd'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10", max_datetime="{{ stream_state['date'] }}", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -288,8 +288,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_with_lookback_window_from_start_date",
             {"date": "2021-01-05"},
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format="%Y-%m-%d", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format="%Y-%m-%d", parameters={}),
             "P1D",
             cursor_field,
             "P3D",
@@ -309,8 +309,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_with_lookback_window_from_cursor",
             {cursor_field: "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
-            MinMaxDatetime(datetime="2021-01-06T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+            MinMaxDatetime(datetime="2021-01-06T00:00:00.000000+0000", parameters={}),
             "P1D",
             cursor_field,
             "P3D",
@@ -327,8 +327,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_with_lookback_window_defaults_to_0d",
             {"date": "2021-01-05"},
-            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
-            MinMaxDatetime(datetime="2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format="%Y-%m-%d", options={}),
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format="%Y-%m-%d", parameters={}),
             "P1D",
             cursor_field,
             "{{ config['does_not_exist'] }}",
@@ -345,8 +345,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_start_is_after_stream_state",
             {cursor_field: "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
-            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+            MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
             "P1D",
             cursor_field,
             None,
@@ -376,8 +376,8 @@ def test_stream_slices(
     cursor_granularity,
     expected_slices,
 ):
-    lookback_window = InterpolatedString(string=lookback_window, options={}) if lookback_window else None
-    slicer = DatetimeStreamSlicer(
+    lookback_window = InterpolatedString(string=lookback_window, parameters={}) if lookback_window else None
+    slicer = DatetimeBasedCursor(
         start_datetime=start,
         end_datetime=end,
         step=step,
@@ -386,7 +386,7 @@ def test_stream_slices(
         cursor_granularity=cursor_granularity,
         lookback_window=lookback_window,
         config=config,
-        options={},
+        parameters={},
     )
     stream_slices = slicer.stream_slices(SyncMode.incremental, stream_state)
 
@@ -435,16 +435,16 @@ def test_stream_slices(
     ],
 )
 def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, expected_state):
-    slicer = DatetimeStreamSlicer(
-        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
-        cursor_field=InterpolatedString(string=cursor_field, options={}),
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
         datetime_format=datetime_format,
         cursor_granularity=cursor_granularity,
-        lookback_window=InterpolatedString(string="P0D", options={}),
+        lookback_window=InterpolatedString(string="0d", parameters={}),
         config=config,
-        options={},
+        parameters={},
     )
     slicer._cursor = previous_cursor
     slicer.update_cursor(stream_slice, last_record)
@@ -492,54 +492,24 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
             {},
             {"start_time": "2021-01-01T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
         ),
-        (
-            "test_start_time_inject_into_path",
-            RequestOptionType.path,
-            "start_time",
-            {},
-            {},
-            {},
-            {"start_time": "2021-01-01T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
-        ),
     ],
 )
 def test_request_option(test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
-    if inject_into == RequestOptionType.path:
-        start_request_option = RequestOption(inject_into=inject_into, options={})
-        end_request_option = RequestOption(inject_into=inject_into, options={})
-        try:
-            DatetimeStreamSlicer(
-                start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
-                end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
-                step="P1D",
-                cursor_field=InterpolatedString(string=cursor_field, options={}),
-                datetime_format=datetime_format,
-                cursor_granularity=cursor_granularity,
-                lookback_window=InterpolatedString(string="P0D", options={}),
-                start_time_option=start_request_option,
-                end_time_option=end_request_option,
-                config=config,
-                options={},
-            )
-            assert False
-        except ValueError:
-            return
-    else:
-        start_request_option = RequestOption(inject_into=inject_into, options={}, field_name=field_name) if inject_into else None
-        end_request_option = RequestOption(inject_into=inject_into, options={}, field_name="endtime") if inject_into else None
-        slicer = DatetimeStreamSlicer(
-            start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
-            end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
-            step="P1D",
-            cursor_field=InterpolatedString(string=cursor_field, options={}),
-            datetime_format=datetime_format,
-            cursor_granularity=cursor_granularity,
-            lookback_window=InterpolatedString(string="P0D", options={}),
-            start_time_option=start_request_option,
-            end_time_option=end_request_option,
-            config=config,
-            options={},
-        )
+    start_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name=field_name) if inject_into else None
+    end_request_option = RequestOption(inject_into=inject_into, parameters={}, field_name="endtime") if inject_into else None
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
+        step="P1D",
+        cursor_field=InterpolatedString(string=cursor_field, parameters={}),
+        datetime_format=datetime_format,
+        cursor_granularity=cursor_granularity,
+        lookback_window=InterpolatedString(string="P0D", parameters={}),
+        start_time_option=start_request_option,
+        end_time_option=end_request_option,
+        config=config,
+        parameters={},
+    )
     stream_slice = {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"}
 
     slicer.update_cursor(stream_slice)
@@ -571,16 +541,16 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
     ],
 )
 def test_parse_date(test_name, input_date, date_format, date_format_granularity, expected_output_date):
-    slicer = DatetimeStreamSlicer(
-        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", options={}),
-        end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", options={}),
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
-        cursor_field=InterpolatedString(cursor_field, options={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
         datetime_format=date_format,
         cursor_granularity=date_format_granularity,
-        lookback_window=InterpolatedString("P0D", options={}),
+        lookback_window=InterpolatedString("P0D", parameters={}),
         config=config,
-        options={},
+        parameters={},
     )
     output_date = slicer.parse_date(input_date)
     assert expected_output_date == output_date
@@ -595,16 +565,16 @@ def test_parse_date(test_name, input_date, date_format, date_format_granularity,
     ],
 )
 def test_format_datetime(test_name, input_dt, datetimeformat, datetimeformat_granularity, expected_output):
-    slicer = DatetimeStreamSlicer(
-        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", options={}),
-        end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", options={}),
+    slicer = DatetimeBasedCursor(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
-        cursor_field=InterpolatedString(cursor_field, options={}),
+        cursor_field=InterpolatedString(cursor_field, parameters={}),
         datetime_format=datetimeformat,
         cursor_granularity=datetimeformat_granularity,
-        lookback_window=InterpolatedString("P0D", options={}),
+        lookback_window=InterpolatedString("P0D", parameters={}),
         config=config,
-        options={},
+        parameters={},
     )
 
     output_date = slicer._format_datetime(input_dt)
