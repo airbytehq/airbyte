@@ -32,21 +32,21 @@ class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthe
     secret_key: Union[InterpolatedString, str]
     url: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     token_key: Union[InterpolatedString, str] = "access_token"
     lifetime: Union[InterpolatedString, str] = "PT3600S"
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._client_id = InterpolatedString.create(self.client_id, options=options)
-        self._secret_key = InterpolatedString.create(self.secret_key, options=options)
-        self._url = InterpolatedString.create(self.url, options=options)
-        self._token_key = InterpolatedString.create(self.token_key, options=options)
-        self._lifetime = InterpolatedString.create(self.lifetime, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._client_id = InterpolatedString.create(self.client_id, parameters=parameters)
+        self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
+        self._url = InterpolatedString.create(self.url, parameters=parameters)
+        self._token_key = InterpolatedString.create(self.token_key, parameters=parameters)
+        self._lifetime = InterpolatedString.create(self.lifetime, parameters=parameters)
         self._basic_auth = BasicHttpAuthenticator(
             username=self._client_id,
             password=self._secret_key,
             config=self.config,
-            options=options,
+            parameters=parameters,
         )
         self._session = requests.Session()
         self._token = None
@@ -108,9 +108,9 @@ class NestedStateCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     }
     """
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._cursor = {}
-        self._options = options
+        self._parameters = parameters
 
     def get_stream_state(self) -> Mapping[str, Any]:
         return self._cursor
