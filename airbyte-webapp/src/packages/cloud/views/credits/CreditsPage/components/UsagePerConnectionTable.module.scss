@@ -29,3 +29,34 @@ th.header {
   padding-right: variables.$spacing-md;
   min-width: 53px;
 }
+
+// todo: remove after cutover
+%lightBackgroundOverride {
+  &.light {
+    background-color: colors.$white;
+  }
+}
+
+.thConnection {
+  @extend %lightBackgroundOverride;
+
+  width: 30%;
+}
+
+.thCreditsConsumed {
+  @extend %lightBackgroundOverride;
+
+  padding-right: 0;
+}
+
+.thCreditsConsumedPercent {
+  @extend %lightBackgroundOverride;
+
+  padding-left: 0;
+}
+
+.thConnectionId {
+  @extend %lightBackgroundOverride;
+
+  width: 20%;
+}
