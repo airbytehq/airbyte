@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping
@@ -44,5 +44,5 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
     ],
 )
 def test_remove_fields(input_record: Mapping[str, Any], field_pointers: List[FieldPointer], expected: Mapping[str, Any]):
-    transformation = RemoveFields(field_pointers=field_pointers, options={})
+    transformation = RemoveFields(field_pointers=field_pointers, parameters={})
     assert transformation.transform(input_record) == expected
