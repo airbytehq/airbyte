@@ -43,7 +43,7 @@ jobs:
             branch=${{ needs.check.outputs.pull_request_branch }}
             pr_number=${{ github.event.issue_comment.issue.number }}
           commands: |
-            create-cloud-pr
+            create-platform-pr
       - name: Publish comment with error message
         if: steps.slash-command-dispatch.outputs.error-message
         uses: peter-evans/create-or-update-comment@v2
