@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.s3;
 
 import io.airbyte.integrations.destination.s3.util.CompressionType;
-import io.airbyte.integrations.destination.s3.util.Flattening;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 
 public final class S3DestinationConstants {

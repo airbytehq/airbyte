@@ -11,9 +11,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
-import java.util.Map;
-
 import io.airbyte.integrations.destination.s3.util.Flattening;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

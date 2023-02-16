@@ -7,14 +7,12 @@ package io.airbyte.integrations.destination.s3.csv;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
 import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
 import io.airbyte.integrations.destination.s3.util.Flattening;
-
 import java.util.Objects;
 
 public class S3CsvFormatConfig implements S3FormatConfig {
