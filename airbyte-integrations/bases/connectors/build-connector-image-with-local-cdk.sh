@@ -20,7 +20,8 @@ cp "$CONNECTOR_DIR/setup.py" .
 cp "$CONNECTOR_DIR/main.py" .
 cp "$CONNECTOR_DIR/Dockerfile" .
 cp -r "$CONNECTOR_SUBDIR" .
-cp -r "$CDK_DIR" airbyte-cdk
+mkdir airbyte-cdk
+rsync -a --exclude "build/" --exclude ".venv/" "$CDK_DIR/" airbyte-cdk/
 
 # Insert an instruction to the Dockerfile to copy the local CDK
 awk 'NR==1 {print; print "COPY airbyte-cdk /airbyte-cdk"} NR!=1' Dockerfile > Dockerfile.copy
