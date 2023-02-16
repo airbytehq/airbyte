@@ -123,6 +123,7 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
    * [ ] if we want the source and destination names to link to their pages, we'll need the
    *     source/destination id's (not their gdefinition id's)
    * [x] horizontal overflow
+   * [ ] page header in designs has a link; confirm target and add!
    * */
 
   const billingInsightsColumns = React.useMemo(() => {
