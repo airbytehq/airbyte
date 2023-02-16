@@ -14,6 +14,8 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +40,7 @@ public class HeartbeatTimeoutChaperone {
   private final Duration timeoutCheckDuration;
   private final FeatureFlagClient featureFlagClient;
   private final UUID workspaceId;
+  private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
   private boolean hasFailed = false;
 
@@ -47,14 +50,13 @@ public class HeartbeatTimeoutChaperone {
                                    final UUID workspaceId) {
     this.timeoutCheckDuration = timeoutCheckDuration;
 
-    LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
-
     this.heartbeatMonitor = heartbeatMonitor;
     this.featureFlagClient = featureFlagClient;
     this.workspaceId = workspaceId;
   }
 
-  public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
+  public Runnable runWithHeartbeatThread(final Runnable runnable) {
+    LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
     return () -> {
       final CompletableFuture<Void> runnableFuture = CompletableFuture.runAsync(runnable, executorService);
       final CompletableFuture<Void> heartbeatFuture = CompletableFuture.runAsync(this::monitor, executorService);

@@ -28,7 +28,6 @@ class HeartBeatTimeoutChaperoneTest {
 
   private final FeatureFlagClient featureFlagClient = mock(TestClient.class);
   private final UUID workspaceId = UUID.randomUUID();
-  private final ExecutorService executorService = Executors.newFixedThreadPool(4);
 
   private final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(
       heartbeatMonitor,
@@ -47,7 +46,7 @@ class HeartBeatTimeoutChaperoneTest {
           } catch (final InterruptedException e) {
             throw new RuntimeException(e);
           }
-        }, executorService).run());
+        }).run());
   }
 
   @Test
@@ -60,7 +59,7 @@ class HeartBeatTimeoutChaperoneTest {
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
-    }, executorService).run());
+    }).run());
   }
 
   @Test
@@ -73,7 +72,7 @@ class HeartBeatTimeoutChaperoneTest {
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       }
-    }, executorService).run());
+    }).run());
   }
 
 }
