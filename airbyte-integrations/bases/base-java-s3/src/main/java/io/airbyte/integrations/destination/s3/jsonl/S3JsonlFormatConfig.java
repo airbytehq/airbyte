@@ -26,7 +26,7 @@ public class S3JsonlFormatConfig implements S3FormatConfig {
     this(
         formatConfig.has(FLATTENING_ARG_NAME)
             ? Flattening.fromValue(formatConfig.get(FLATTENING_ARG_NAME).asText())
-            : DEFAULT_FLATTENING_TYPE,
+            : Flattening.NO,
         formatConfig.has(COMPRESSION_ARG_NAME)
             ? CompressionTypeHelper.parseCompressionType(formatConfig.get(COMPRESSION_ARG_NAME))
             : DEFAULT_COMPRESSION_TYPE);
