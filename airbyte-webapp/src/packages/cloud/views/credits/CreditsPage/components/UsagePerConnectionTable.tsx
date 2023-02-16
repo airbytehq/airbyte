@@ -13,6 +13,7 @@ import { NextTable } from "components/ui/NextTable";
 import { SortableTableHeader } from "components/ui/Table";
 import { Text } from "components/ui/Text";
 
+import { useExperiment } from "hooks/services/Experiment";
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { RoutePaths } from "pages/routePaths";
@@ -34,9 +35,7 @@ type FullTableProps = CreditConsumptionByConnector & {
 };
 
 export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
-  // TODO: this is not targeting "true" when expected
-  // const isBillingInsightsEnabled = useExperiment("billingPage.billingInsights", false);
-  const isBillingInsightsEnabled = true;
+  const isBillingInsightsEnabled = useExperiment("billingPage.billingInsights", false);
 
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
   const navigate = useNavigate();
@@ -118,10 +117,11 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
    * [x] only calculate this if the flag is on!
    * [ ] should cells truncate + show a tooltip? (long connection/connector names are a problem currently)
    * [x] link to connection from connection name
+   * [ ] convert link to new Link component once it's merged
    * [x] sizing of columns
    * [x] alignment of headers/cells
    * [ ] if we want the source and destination names to link to their pages, we'll need the
-   *     source/destination id's (not their gdefinition id's)
+   *     source/destination id's (not their definition id's)
    * [x] horizontal overflow
    * [ ] page header in designs has a link; confirm target and add!
    * */
