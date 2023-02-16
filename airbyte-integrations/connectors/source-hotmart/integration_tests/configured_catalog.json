@@ -1,0 +1,43 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "sales_history",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["purchase.order_date"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["purchase.order_date"]
+    },
+    {
+      "stream": {
+        "name": "sales_commissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "sales_price_details",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "sales_users",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
