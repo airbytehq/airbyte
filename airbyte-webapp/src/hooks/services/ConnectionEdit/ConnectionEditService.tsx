@@ -1,7 +1,7 @@
 import pick from "lodash/pick";
 import { useContext, useState, createContext, useCallback } from "react";
 import { useIntl } from "react-intl";
-import { useMutation } from "react-query";
+import { useAsyncFn } from "react-use";
 
 import {
   AirbyteCatalog,
@@ -27,7 +27,7 @@ export interface ConnectionCatalog {
 interface ConnectionEditHook {
   connection: WebBackendConnectionRead;
   connectionUpdating: boolean;
-  schemaError?: SchemaError | null;
+  schemaError?: Error;
   schemaRefreshing: boolean;
   schemaHasBeenRefreshed: boolean;
   updateConnection: (connectionUpdates: WebBackendConnectionUpdate) => Promise<void>;
@@ -46,11 +46,7 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEdi
   const [catalog, setCatalog] = useState<ConnectionCatalog>(() => getConnectionCatalog(connection));
   const [schemaHasBeenRefreshed, setSchemaHasBeenRefreshed] = useState(false);
 
-  const {
-    isLoading: schemaRefreshing,
-    error: schemaError,
-    mutateAsync: refreshSchema,
-  } = useMutation<void, SchemaError>(async () => {
+  const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
     unregisterNotificationById("connection.noDiff");
 
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
@@ -136,7 +132,7 @@ export const ConnectionEditServiceProvider: React.FC<React.PropsWithChildren<Con
       <ConnectionFormServiceProvider
         mode={data.connection.status === ConnectionStatus.deprecated ? "readonly" : "edit"}
         connection={data.connection}
-        schemaError={schemaError}
+        schemaError={schemaError as SchemaError}
         refreshSchema={refreshSchema}
       >
         {children}
