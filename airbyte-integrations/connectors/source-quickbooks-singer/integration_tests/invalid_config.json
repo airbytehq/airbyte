@@ -1,9 +1,0 @@
-{
-  "client_id": "<invalid_client_id>",
-  "client_secret": "<invalid_client_secret>",
-  "refresh_token": "<invalid_refresh_token>",
-  "realm_id": "<invalid_realm_id>",
-  "user_agent": "invalid invalid@invalid.com",
-  "start_date": "2021-01-01T00:00:00Z",
-  "sandbox": true
-}

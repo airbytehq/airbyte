@@ -1,9 +1,0 @@
-{
-  "spreadsheet_id": "invalid_spreadsheet_id",
-  "credentials": {
-    "auth_type": "Client",
-    "client_id": "invalid_id",
-    "client_secret": "invalid_secret",
-    "refresh_token": "invalid_token"
-  }
-}

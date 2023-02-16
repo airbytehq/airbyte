@@ -1,9 +1,0 @@
-plugins {
-    id 'airbyte-docker'
-    id 'airbyte-python'
-}
-
-airbytePython {
-    moduleDirectory 'connector_acceptance_test'
-}
-

@@ -1,8 +1,0 @@
-{
-  "domain": "myorg",
-  "start_date": "2022-07-22T00:00:00Z",
-  "credentials": {
-    "auth_type": "api_token",
-    "api_token": "00uItIsFake_DoNotUseTheTokenEoxoRw_2"
-  }
-}

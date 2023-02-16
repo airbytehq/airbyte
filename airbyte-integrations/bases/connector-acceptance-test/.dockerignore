@@ -1,5 +1,0 @@
-*
-!Dockerfile
-!connector_acceptance_test
-!setup.py
-!pytest.ini

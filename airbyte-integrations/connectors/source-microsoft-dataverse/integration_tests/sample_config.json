@@ -1,7 +1,0 @@
-{
-  "url": "<url>",
-  "client_id": "<client_id>",
-  "tenant_id": "<tenant_id>",
-  "client_secret_value": "<client_secret>",
-  "odata_maxpagesize": 5000
-}

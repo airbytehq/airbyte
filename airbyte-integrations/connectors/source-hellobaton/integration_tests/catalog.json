@@ -1,9 +1,0 @@
-{
-  "streams": [
-    {
-      "name": "tasks",
-      "supported_sync_modes": ["full_refresh"],
-      "json_schema": {}
-    }
-  ]
-}

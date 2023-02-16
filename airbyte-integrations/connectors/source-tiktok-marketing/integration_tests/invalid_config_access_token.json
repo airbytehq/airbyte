@@ -1,8 +1,0 @@
-{
-  "credentials": {
-    "auth_type": "sandbox_access_token",
-    "access_token": "<broken_token>",
-    "start_date": "2021-01-01",
-    "advertiser_id": "11111111"
-  }
-}

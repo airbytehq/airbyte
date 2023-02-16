@@ -1,7 +1,0 @@
-{
-  "endpoint": "fake-endpoint",
-  "iban": "fake_iban",
-  "organization_slug": "fake_organization",
-  "secret_key": "fake_secret",
-  "start_date": "9999-99-99"
-}
