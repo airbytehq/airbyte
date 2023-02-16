@@ -2,11 +2,11 @@ import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { useNavigate, useMatch } from "react-router-dom";
 
-import { Workspace, WorkspaceService } from "core/domain/workspace";
+import { WorkspaceService } from "core/domain/workspace";
 import { RoutePaths } from "pages/routePaths";
 
 import { useConfig } from "../../config";
-import { WorkspaceUpdate } from "../../core/request/AirbyteClient";
+import { WorkspaceRead, WorkspaceUpdate } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
 import { useDefaultRequestMiddlewares } from "../useDefaultRequestMiddlewares";
@@ -21,13 +21,13 @@ export const workspaceKeys = {
 };
 
 interface Context {
-  selectWorkspace: (workspaceId?: string | null | Workspace) => void;
+  selectWorkspace: (workspaceId?: string | null | WorkspaceRead) => void;
   exitWorkspace: () => void;
 }
 
 export const WorkspaceServiceContext = React.createContext<Context | null>(null);
 
-const useSelectWorkspace = (): ((workspace?: string | null | Workspace) => void) => {
+const useSelectWorkspace = (): ((workspace?: string | null | WorkspaceRead) => void) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
