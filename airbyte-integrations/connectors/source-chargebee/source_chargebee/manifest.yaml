@@ -53,16 +53,12 @@ definitions:
         cursor_value: "{{ response.get('next_offset')|tojson() }}"
         stop_condition: "{{ not response.next_offset }}"
         page_size_option:
-          type: RequestOption
           inject_into: request_parameter
           field_name: limit
           page_size: 100
       page_token_option:
-        type: RequestOption
         inject_into: request_parameter
         field_name: offset
-#      url_base:
-#        $ref: "#/definitions/requester/url_base"
     requester:
       $ref: "#/definitions/requester"
 
@@ -77,11 +73,10 @@ definitions:
       $ref: "#/definitions/retriever"
       requester:
         $ref: "#/definitions/retriever/requester"
-        request_options_provider:
-          request_parameters:
-            sort_by[asc]: updated_at
-            include_deleted: "true"
-            updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+        request_parameters:
+          sort_by[asc]: updated_at
+          include_deleted: "true"
+          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
   addon_stream:
@@ -134,10 +129,9 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
-        request_options_provider:
-          request_parameters:
-            sort_by[asc]: created_at
-            include_deleted: "true"
+        request_parameters:
+          sort_by[asc]: created_at
+          include_deleted: "true"
     $parameters:
       name: "coupon"
       primary_key: "id"
@@ -149,11 +143,10 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
-        request_options_provider:
-          request_parameters:
-            sort_by[asc]: date
-            include_deleted: "true"
-            updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+        request_parameters:
+          sort_by[asc]: date
+          include_deleted: "true"
+          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "credit_note"
       primary_key: "id"
@@ -165,11 +158,10 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
-        request_options_provider:
-          request_parameters:
-            sort_by[asc]: "occurred_at"
-            include_deleted: "true"
-            occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+        request_parameters:
+          sort_by[asc]: "occurred_at"
+          include_deleted: "true"
+          occurred_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "event"
       primary_key: "id"
@@ -237,11 +229,10 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
-        request_options_provider:
-          request_parameters:
-            sort_by[asc]: created_at
-            include_deleted: "true"
-            created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+        request_parameters:
+          sort_by[asc]: created_at
+          include_deleted: "true"
+          created_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "promotional_credit"
       primary_key: "id"
@@ -281,11 +272,10 @@ definitions:
       $ref: "#/definitions/base_incremental_stream/retriever"
       requester:
         $ref: "#/definitions/base_incremental_stream/retriever/requester"
-        request_options_provider:
-          request_parameters:
-            sort_by[asc]: date
-            include_deleted: "true"
-            updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
+        request_parameters:
+          sort_by[asc]: date
+          include_deleted: "true"
+          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "quote"
       primary_key: "id"
