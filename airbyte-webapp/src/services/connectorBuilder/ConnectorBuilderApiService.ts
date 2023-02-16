@@ -11,6 +11,7 @@ import {
 } from "core/request/ConnectorBuilderClient";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
+import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 
 const connectorBuilderKeys = {
@@ -25,9 +26,10 @@ const connectorBuilderKeys = {
 
 function useConnectorBuilderService() {
   const config = useConfig();
+  const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new ConnectorBuilderRequestService(config.connectorBuilderApiUrl),
-    [config.connectorBuilderApiUrl]
+    () => new ConnectorBuilderRequestService(config.connectorBuilderApiUrl, middlewares),
+    [config.connectorBuilderApiUrl, middlewares]
   );
 }
 

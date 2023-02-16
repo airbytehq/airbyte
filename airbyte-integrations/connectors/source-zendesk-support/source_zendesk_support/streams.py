@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import calendar
@@ -21,6 +21,7 @@ import pendulum
 import pytz
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
@@ -109,12 +110,18 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
 
 
 class BaseSourceZendeskSupportStream(HttpStream, ABC):
+    raise_on_http_errors = True
+
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
         self._start_date = start_date
         self._subdomain = subdomain
         self._ignore_pagination = ignore_pagination
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -180,6 +187,13 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
                     yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {response.json().get('error')}.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
 
 
 class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):

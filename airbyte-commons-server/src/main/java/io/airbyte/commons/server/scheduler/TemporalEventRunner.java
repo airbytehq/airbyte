@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.scheduler;
@@ -52,6 +52,11 @@ public class TemporalEventRunner implements EventRunner {
   @Override
   public void update(final UUID connectionId) {
     temporalClient.update(connectionId);
+  }
+
+  @Override
+  public void sendSchemaChangeNotification(final UUID connectionId, final String url) {
+    temporalClient.sendSchemaChangeNotification(connectionId, url);
   }
 
 }

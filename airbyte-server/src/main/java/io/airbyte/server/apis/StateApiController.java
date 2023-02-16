@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.apis;
@@ -11,16 +11,14 @@ import io.airbyte.api.generated.StateApi;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.StateHandler;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/state")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class StateApiController implements StateApi {
 
@@ -39,6 +37,7 @@ public class StateApiController implements StateApi {
 
   @Post("/get")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> stateHandler.getState(connectionIdRequestBody));

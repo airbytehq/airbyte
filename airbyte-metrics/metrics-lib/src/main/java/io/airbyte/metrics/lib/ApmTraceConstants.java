@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
@@ -13,6 +13,11 @@ public final class ApmTraceConstants {
    * Operation name for an APM trace of a Temporal activity.
    */
   public static final String ACTIVITY_TRACE_OPERATION_NAME = "activity";
+
+  /**
+   * Operation name for an APM trace of API endpoint execution.
+   */
+  public static final String ENDPOINT_EXECUTION_OPERATION_NAME = "execute";
 
   /**
    * Operation name for an APM trace of a job orchestrator.

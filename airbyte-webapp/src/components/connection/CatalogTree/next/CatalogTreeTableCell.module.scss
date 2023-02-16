@@ -33,3 +33,7 @@ $large: 200px;
 .noEllipsis > * {
   overflow: visible;
 }
+
+.fullWidthTooltip {
+  max-width: none;
+}

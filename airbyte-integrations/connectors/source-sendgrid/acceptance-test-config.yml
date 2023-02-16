@@ -3,7 +3,7 @@ tests:
   spec:
     - spec_path: "source_sendgrid/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.2.16"
+        disable_for_version: "0.3.0"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -15,6 +15,8 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/old_config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.3.0"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/no_spam_reports_configured_catalog.json"
@@ -36,4 +38,4 @@ tests:
         # spam_reports: ["created"]
   full_refresh:
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_no_messages.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"

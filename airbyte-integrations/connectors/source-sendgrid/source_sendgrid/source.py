@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -19,7 +19,6 @@ from .streams import (
     GlobalSuppressions,
     InvalidEmails,
     Lists,
-    Messages,
     Scopes,
     Segments,
     SingleSends,
@@ -58,7 +57,6 @@ class SourceSendgrid(AbstractSource):
             Segments(authenticator=authenticator),
             SingleSends(authenticator=authenticator),
             Templates(authenticator=authenticator),
-            Messages(authenticator=authenticator, start_time=start_time),
             GlobalSuppressions(authenticator=authenticator, start_time=start_time),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
