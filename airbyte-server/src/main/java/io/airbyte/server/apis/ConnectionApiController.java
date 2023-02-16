@@ -21,6 +21,7 @@ import io.airbyte.commons.server.handlers.ConnectionsHandler;
 import io.airbyte.commons.server.handlers.OperationsHandler;
 import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -30,7 +31,9 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/connections")
-@Context
+@Context()
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class ConnectionApiController implements ConnectionApi {
 
