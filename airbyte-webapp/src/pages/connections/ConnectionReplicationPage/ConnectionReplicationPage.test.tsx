@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { render as tlr, act, fireEvent, RenderResult } from "@testing-library/react";
+import { render as tlr, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React, { Suspense } from "react";
 import selectEvent from "react-select-event";
@@ -44,11 +44,6 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspace: () => mockWorkspace,
   useCurrentWorkspaceId: () => mockWorkspaceId,
 }));
-
-const expandConfigurationSection = (renderResult: RenderResult) => {
-  const expandArrowButton = renderResult.getByTestId("configuration-section-expand-arrow");
-  fireEvent.click(expandArrowButton);
-};
 
 describe("ConnectionReplicationPage", () => {
   const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
@@ -93,16 +88,6 @@ describe("ConnectionReplicationPage", () => {
     expect(renderResult).toMatchSnapshot();
   });
 
-  it("should expand configuration section", async () => {
-    setupSpies();
-
-    const renderResult = await render();
-
-    expandConfigurationSection(renderResult);
-
-    expect(renderResult).toMatchSnapshot();
-  });
-
   it("should show an error if there is a schemaError", async () => {
     setupSpies(() => Promise.reject("Test Error"));
 
@@ -134,7 +119,6 @@ describe("ConnectionReplicationPage", () => {
     it("should display an error for an invalid cron expression", async () => {
       setupSpies();
       const renderResult = await render();
-      expandConfigurationSection(renderResult);
 
       await selectEvent.select(renderResult.getByTestId("scheduleData"), /cron/i);
 
@@ -152,7 +136,6 @@ describe("ConnectionReplicationPage", () => {
       setupSpies();
 
       const renderResult = await render();
-      expandConfigurationSection(renderResult);
 
       await selectEvent.select(renderResult.getByTestId("scheduleData"), /cron/i);
 
@@ -177,7 +160,6 @@ describe("ConnectionReplicationPage", () => {
           </ConnectionEditServiceProvider>
         </TestWrapper>
       );
-      expandConfigurationSection(container);
 
       await selectEvent.select(container.getByTestId("scheduleData"), /cron/i);
 
