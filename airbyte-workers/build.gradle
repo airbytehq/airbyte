@@ -56,6 +56,7 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-converters')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
