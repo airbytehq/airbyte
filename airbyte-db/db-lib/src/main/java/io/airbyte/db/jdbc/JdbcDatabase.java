@@ -22,11 +22,18 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import javax.sql.RowSet;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Database object for interacting with a JDBC connection.
  */
 public abstract class JdbcDatabase extends SqlDatabase {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JdbcDatabase.class);
 
   protected final JdbcCompatibleSourceOperations<?> sourceOperations;
   protected Exception streamException;
@@ -160,6 +167,10 @@ public abstract class JdbcDatabase extends SqlDatabase {
                                             CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException;
 
+  @MustBeClosed
+  public abstract Stream<Tuple> unsafeQueryRS(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator)
+      throws SQLException;
+
   /**
    * Json query is a common use case for
    * {@link JdbcDatabase#unsafeQuery(CheckedFunction, CheckedFunction)}. So this method is created as
@@ -194,6 +205,7 @@ public abstract class JdbcDatabase extends SqlDatabase {
   @MustBeClosed
   @Override
   public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
+    LOGGER.info("*** unsafeQuery: {}", sql);
     return unsafeQuery(connection -> {
       final PreparedStatement statement = connection.prepareStatement(sql);
       int i = 1;
@@ -203,6 +215,27 @@ public abstract class JdbcDatabase extends SqlDatabase {
       }
       return statement;
     }, sourceOperations::rowToJson);
+  }
+
+  @Override
+  public CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getRecordTransform() {
+    return sourceOperations::rowToJsonRS;
+//    return null; // TEMP
+  }
+
+  @MustBeClosed
+  @Override
+  public Stream<Tuple> unsafeQueryRS(final String sql, final String... params) throws SQLException {
+    LOGGER.info("*** unsafeQuery: {}", sql);
+    return unsafeQueryRS(connection -> {
+      final PreparedStatement statement = connection.prepareStatement(sql);
+      int i = 1;
+      for (final String param : params) {
+        statement.setString(i, param);
+        ++i;
+      }
+      return statement;
+    });
   }
 
   /**

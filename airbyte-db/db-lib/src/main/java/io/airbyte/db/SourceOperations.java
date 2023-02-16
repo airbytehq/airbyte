@@ -6,7 +6,10 @@ package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 
 public interface SourceOperations<QueryResult, SourceType> {
 
@@ -17,6 +20,7 @@ public interface SourceOperations<QueryResult, SourceType> {
    */
   JsonNode rowToJson(QueryResult queryResult) throws SQLException;
 
+  JsonNode rowToJsonRS(Pair<Tuple, ResultSetMetaData> rowInfo) throws SQLException;
   /**
    * Converts a database source type into an Airbyte type, which is currently represented by a
    * {@link JsonSchemaType}

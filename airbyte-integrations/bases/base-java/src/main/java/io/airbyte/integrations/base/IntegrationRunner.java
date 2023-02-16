@@ -184,7 +184,13 @@ public class IntegrationRunner {
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
     watchForOrphanThreads(
-        () -> messageIterator.forEachRemaining(outputRecordCollector),
+        () -> messageIterator.forEachRemaining(msg -> {
+          if (msg.getType() == Type.RECORD) {
+            System.out.println(msg.getRecord().getJsonString());
+          } else {
+            outputRecordCollector.accept(msg);
+          }
+        }),
         () -> System.exit(FORCED_EXIT_CODE),
         INTERRUPT_THREAD_DELAY_MINUTES,
         TimeUnit.MINUTES,

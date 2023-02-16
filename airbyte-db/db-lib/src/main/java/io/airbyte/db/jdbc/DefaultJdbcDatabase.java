@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import javax.sql.RowSet;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,6 +120,12 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
             throw new RuntimeException(e);
           }
         });
+  }
+
+  @Override
+  public Stream<Tuple> unsafeQueryRS(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator)
+      throws SQLException {
+    return null;
   }
 
 }

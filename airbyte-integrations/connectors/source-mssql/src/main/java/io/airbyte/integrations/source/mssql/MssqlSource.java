@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import javax.sql.RowSet;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +94,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
     return queryTable(database, preparedSqlQuery);
+  }
+
+  @Override
+  protected AutoCloseableIterator<Tuple> queryTableFullRefreshRS(final JdbcDatabase database, final List<String> columnNames,
+      final String schemaName, final String tableName) {
+    return super.queryTableFullRefreshRS(database, columnNames, schemaName, tableName);
   }
 
   /**

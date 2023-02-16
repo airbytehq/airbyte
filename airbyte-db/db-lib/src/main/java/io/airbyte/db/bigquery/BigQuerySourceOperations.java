@@ -22,11 +22,15 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.util.JsonUtil;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +47,11 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     bigQueryResultSet.getFieldList().forEach(field -> setJsonField(field, bigQueryResultSet.getRowValues().get(field.getName()), jsonNode));
     return jsonNode;
+  }
+
+  @Override
+  public JsonNode rowToJsonRS(final Pair<Tuple, ResultSetMetaData> rowInfo) throws SQLException {
+    return null;
   }
 
   private void fillObjectNode(final String fieldName, final StandardSQLTypeName fieldType, final FieldValue fieldValue, final ContainerNode<?> node) {

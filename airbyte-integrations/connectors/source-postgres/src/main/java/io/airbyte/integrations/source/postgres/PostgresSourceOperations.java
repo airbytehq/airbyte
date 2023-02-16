@@ -30,6 +30,7 @@ import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -44,6 +45,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Encoding;
+import org.postgresql.core.Tuple;
 import org.postgresql.geometric.PGbox;
 import org.postgresql.geometric.PGcircle;
 import org.postgresql.geometric.PGline;
@@ -51,7 +55,9 @@ import org.postgresql.geometric.PGlseg;
 import org.postgresql.geometric.PGpath;
 import org.postgresql.geometric.PGpoint;
 import org.postgresql.geometric.PGpolygon;
+import org.postgresql.jdbc.PgResultSet;
 import org.postgresql.jdbc.PgResultSetMetaData;
+import org.postgresql.util.ByteConverter;
 import org.postgresql.util.PGobject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,12 +82,71 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSetMetaData metadata = queryContext.getMetaData();
     final int columnCount = metadata.getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
-
+//    LOGGER.info("*** reading cols: {}", columnCount);
     for (int i = 1; i <= columnCount; i++) {
+      final String columnType = metadata.getColumnTypeName(i);
+//      LOGGER.info("*** col type: {}", columnType);
+      // attempt to access the column. this allows us to know if it is null before we do type-specific
+      // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
+      // checking for null values with jdbc.
+
+      if (columnType.equalsIgnoreCase("money")) {
+        // when a column is of type MONEY, getObject will throw exception
+        // this is a bug that will not be fixed:
+        // https://github.com/pgjdbc/pgjdbc/issues/425
+        // https://github.com/pgjdbc/pgjdbc/issues/1835
+        queryContext.getString(i);
+      } else if (columnType.equalsIgnoreCase("bit")) {
+        // getObject will fail as it tries to parse the value as boolean
+        queryContext.getString(i);
+      } else if (columnType.equalsIgnoreCase("numeric") || columnType.equalsIgnoreCase("decimal")) {
+        // getObject will fail when the value is 'infinity'
+        queryContext.getDouble(i);
+      } else {
+        queryContext.getObject(i);
+      }
+//      LOGGER.info("*** calling copyToJsonField for {}", i);
       // convert to java types that will convert into reasonable json.
       copyToJsonField(queryContext, i, jsonNode);
+//      LOGGER.info("*** done copyToJsonField");
     }
 
+    return jsonNode;
+  }
+
+  @Override
+  public JsonNode rowToJsonRS(final Pair<Tuple, ResultSetMetaData> rowInfo) throws SQLException {
+    final Tuple tuple = rowInfo.getLeft();
+    final ResultSetMetaData metaData = rowInfo.getRight();
+    final int columnCount = metaData.getColumnCount();
+    final ObjectNode jsonNode = (ObjectNode)Jsons.jsonNode(Collections.emptyMap());
+    for (int colIndex = 1; colIndex < columnCount; colIndex++) {
+      final String columnName = metaData.getColumnName(colIndex);
+//      LOGGER.info("*** {}", columnName);
+      final String columnTypeName = metaData.getColumnTypeName(colIndex).toLowerCase();
+//      LOGGER.info("*** {}", columnTypeName);
+//      LOGGER.info("*** {}", metaData.getColumnType(colIndex));
+      final PostgresType columnType = safeGetJdbcType(metaData.getColumnType(colIndex));
+//      LOGGER.info("*** {} {}", columnType, tuple.get(colIndex));
+//      LOGGER.info("*** {}", tuple.get(colIndex).length);
+      if (tuple.get(colIndex) == null || tuple.get(colIndex).length == 0) {
+        jsonNode.putNull(columnName);
+      } else {
+        final byte[] v = tuple.get(colIndex);
+        jsonNode.put(columnName, tuple.get(colIndex));
+        switch (columnTypeName) {
+          case "bool", "boolean" -> jsonNode.put(columnName, (1 == v.length) && (116 == v[0]));
+          case "numeric" -> jsonNode.put(columnName, (BigDecimal) ByteConverter.numeric(v));
+          default -> {
+            switch (columnType) {
+              case BIGINT, INTEGER -> jsonNode.put(columnName, ByteConverter.int8(v, 0));
+              case BIT, CHAR, VARCHAR, LONGVARCHAR -> jsonNode.put(columnName, new String(v, 0, v.length, Charset.defaultCharset()));
+              default -> throw new RuntimeException("unexpected field value");
+            }
+          }
+        }
+      }
+    }
     return jsonNode;
   }
 
@@ -152,14 +217,19 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
-    final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
+//    LOGGER.info("*** copyToJsonField");
+//    final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
+    final ResultSetMetaData metadata = resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
-    final ColumnInfo columnInfo = getColumnInfo(colIndex, metadata, columnName);
-    final String value = resultSet.getString(colIndex);
-    if (value == null) {
+    final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
+    final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
+//    LOGGER.info("*** getting string {}", colIndex);
+    if (resultSet.getString(colIndex) == null) {
+//      LOGGER.info("*** null string");
       json.putNull(columnName);
     } else {
-      switch (columnInfo.columnTypeName) {
+//      LOGGER.info("*** byType {} {}", columnTypeName, columnType);
+      switch (columnTypeName) {
         case "bool", "boolean" -> putBoolean(json, columnName, resultSet, colIndex);
         case "bytea" -> json.put(columnName, value);
         case TIMETZ -> putTimeWithTimezone(json, columnName, resultSet, colIndex);

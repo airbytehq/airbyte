@@ -17,7 +17,10 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,6 +109,11 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   @Override
   public boolean isCursorType(final JDBCType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
+  @Override
+  public JsonNode rowToJsonRS(final Pair<Tuple, ResultSetMetaData> rowInfo) throws SQLException {
+    return null;
   }
 
   @Override

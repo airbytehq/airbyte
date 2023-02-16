@@ -5,12 +5,19 @@
 package io.airbyte.integrations.source.relationaldb;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.SqlDatabase;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
+import javax.sql.RowSet;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 
 /**
  * Utility class for methods to query a relational db.
@@ -62,4 +69,18 @@ public class RelationalDbQueryUtils {
     });
   }
 
+  public static <Database extends SqlDatabase> AutoCloseableIterator<Tuple> queryTableRS(final Database database, final String sqlQuery) {
+    return AutoCloseableIterators.lazyIterator(() -> {
+      try {
+        final Stream<Tuple> stream = database.unsafeQueryRS(sqlQuery);
+        return AutoCloseableIterators.fromStream(stream);
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
+  public static <Database extends SqlDatabase> CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getTransform(final Database database) {
+    return database.getRecordTransform();
+  }
 }

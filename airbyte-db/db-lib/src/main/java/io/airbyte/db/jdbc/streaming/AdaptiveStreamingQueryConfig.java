@@ -45,6 +45,7 @@ public class AdaptiveStreamingQueryConfig implements JdbcStreamingQueryConfig {
 
     if (newFetchSize.isPresent() && currentFetchSize != newFetchSize.get()) {
       currentFetchSize = newFetchSize.get();
+      LOGGER.info("*** fetchSize: {}", currentFetchSize);
       resultSet.setFetchSize(currentFetchSize);
 
       if (fetchSizeChanges.size() < LOG_ENTRY_SIZE) {

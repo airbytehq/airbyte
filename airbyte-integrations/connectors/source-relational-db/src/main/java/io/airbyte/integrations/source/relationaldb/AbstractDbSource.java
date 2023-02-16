@@ -15,6 +15,7 @@ import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -50,6 +51,8 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -65,6 +68,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -454,6 +459,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
           table, emittedAt);
+//      final AutoCloseableIterator<Tuple> iteratorRS = getFullRefreshStreamRS(database, streamName, namespace, selectedDatabaseFields,
+//          table, emittedAt);
+      // add in iterator that converts all available records upfront
+//      iterator = AutoCloseableIterators.transformRS(iter -> new RodiIterator(database, iteratorRS, getRecordTransform(database), streamName, namespace, emittedAt.toEpochMilli()), iteratorRS);
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(
           String.format("%s requires a source sync mode", this.getClass()));
@@ -535,6 +544,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         queryTableFullRefresh(database, selectedDatabaseFields, table.getNameSpace(),
             table.getName());
     return getMessageIterator(queryStream, streamName, namespace, emittedAt.toEpochMilli());
+  }
+
+  private AutoCloseableIterator<Tuple> getFullRefreshStreamRS(final Database database,
+      final String streamName,
+      final String namespace,
+      final List<String> selectedDatabaseFields,
+      final TableInfo<CommonField<DataType>> table,
+      final Instant emittedAt) {
+    final AutoCloseableIterator<Tuple> queryStream =
+        queryTableFullRefreshRS(database, selectedDatabaseFields, table.getNameSpace(),
+            table.getName());
+    return queryStream;
   }
 
   private String getFullyQualifiedTableName(final String nameSpace, final String tableName) {
@@ -737,6 +758,13 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                            final List<String> columnNames,
                                                                            final String schemaName,
                                                                            final String tableName);
+
+  public abstract CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getRecordTransform(final Database database);
+
+  protected abstract AutoCloseableIterator<Tuple> queryTableFullRefreshRS(final Database database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName);
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor

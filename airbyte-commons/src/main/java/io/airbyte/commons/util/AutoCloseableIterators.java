@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import org.postgresql.core.Tuple;
 
 public class AutoCloseableIterators {
 
@@ -118,6 +119,11 @@ public class AutoCloseableIterators {
    */
   public static <T> AutoCloseableIterator<T> transform(final Function<AutoCloseableIterator<T>, Iterator<T>> iteratorCreator,
                                                        final AutoCloseableIterator<T> autoCloseableIterator) {
+    return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close);
+  }
+
+  public static <T> AutoCloseableIterator<T> transformRS(final Function<AutoCloseableIterator<Tuple>, Iterator<T>> iteratorCreator,
+                                                         final AutoCloseableIterator<Tuple> autoCloseableIterator) {
     return new DefaultAutoCloseableIterator<>(iteratorCreator.apply(autoCloseableIterator), autoCloseableIterator::close);
   }
 

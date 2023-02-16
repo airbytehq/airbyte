@@ -14,6 +14,7 @@ import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -28,6 +29,9 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,10 +40,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.RowSet;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.bson.BsonType;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,6 +180,17 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
                                                                final String schemaName,
                                                                final String tableName) {
     return queryTable(database, columnNames, tableName, null);
+  }
+
+  @Override
+  public CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getRecordTransform(final MongoDatabase database) {
+    return null;
+  }
+
+  @Override
+  protected AutoCloseableIterator<Tuple> queryTableFullRefreshRS(final MongoDatabase database, final List<String> columnNames,
+      final String schemaName, final String tableName) {
+    return null;
   }
 
   @Override

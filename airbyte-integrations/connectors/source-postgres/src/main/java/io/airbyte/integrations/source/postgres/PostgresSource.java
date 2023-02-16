@@ -497,9 +497,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    if (!featureFlags.useStreamCapableState()) {
-      return AirbyteStateType.LEGACY;
-    }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 

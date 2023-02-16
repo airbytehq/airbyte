@@ -5,6 +5,7 @@
 package io.airbyte.db;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.sql.ResultSetMetaData;
 
 /**
  * A wrapper around the instantiated {@link javax.sql.DataSource}.
@@ -18,6 +19,7 @@ public class AbstractDatabase {
   private JsonNode sourceConfig;
   private JsonNode databaseConfig;
 
+  public ResultSetMetaData currentMetaData;
   public JsonNode getSourceConfig() {
     return sourceConfig;
   }

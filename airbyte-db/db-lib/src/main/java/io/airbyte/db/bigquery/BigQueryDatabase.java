@@ -23,10 +23,13 @@ import com.google.cloud.bigquery.Table;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.db.SqlDatabase;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,7 +39,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.RowSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
@@ -209,6 +215,16 @@ public class BigQueryDatabase extends SqlDatabase {
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public Stream<Tuple> unsafeQueryRS(final String sql, final String... params) throws Exception {
+    return null;
+  }
+
+  @Override
+  public CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getRecordTransform() {
+    return null;
   }
 
 }

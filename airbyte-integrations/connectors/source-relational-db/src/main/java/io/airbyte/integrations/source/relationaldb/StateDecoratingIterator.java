@@ -196,7 +196,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * @param totalRecordCount count of read messages
    * @return AirbyteMessage which includes information on state of records read so far
    */
-  public AirbyteMessage createStateMessage(final boolean isFinalState, int totalRecordCount) {
+  public AirbyteMessage createStateMessage(final boolean isFinalState, final int totalRecordCount) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
     // logging once every 100 messages to reduce log verbosity

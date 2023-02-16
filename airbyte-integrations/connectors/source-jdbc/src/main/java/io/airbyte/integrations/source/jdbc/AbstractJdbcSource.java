@@ -23,13 +23,16 @@ import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getTransform;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTableRS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
@@ -57,6 +60,7 @@ import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
@@ -75,8 +79,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
+import javax.sql.RowSet;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -145,8 +151,24 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final List<String> columnNames,
                                                                   final String schemaName,
                                                                   final String tableName) {
-    LOGGER.info("Queueing query for table: {}", tableName);
+    LOGGER.info("fr Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
+        enquoteIdentifierList(columnNames, getQuoteString()),
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+  }
+
+  @Override
+  public CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getRecordTransform(final JdbcDatabase database) {
+    return getTransform(database);
+  }
+
+  @Override
+  protected AutoCloseableIterator<Tuple> queryTableFullRefreshRS(final JdbcDatabase database,
+      final List<String> columnNames,
+      final String schemaName,
+      final String tableName) {
+    LOGGER.info("fr Queueing query for table: {}", tableName);
+    return queryTableRS(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
   }
@@ -337,7 +359,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                final String tableName,
                                                                final CursorInfo cursorInfo,
                                                                final Datatype cursorFieldType) {
-    LOGGER.info("Queueing query for table: {}", tableName);
+    LOGGER.info("inc Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(

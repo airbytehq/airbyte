@@ -14,6 +14,7 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -28,6 +29,9 @@ import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +40,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.RowSet;
+import org.apache.commons.lang3.tuple.Pair;
+import org.postgresql.core.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,10 +163,21 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final List<String> columnNames,
                                                                   final String schemaName,
                                                                   final String tableName) {
-    LOGGER.info("Queueing query for table: {}", tableName);
+    LOGGER.info("bq fr Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+  }
+
+  @Override
+  public CheckedFunction<Pair<Tuple, ResultSetMetaData>, JsonNode, SQLException> getRecordTransform(final BigQueryDatabase database) {
+    return null;
+  }
+
+  @Override
+  protected AutoCloseableIterator<Tuple> queryTableFullRefreshRS(final BigQueryDatabase database, final List<String> columnNames,
+      final String schemaName, final String tableName) {
+    return null;
   }
 
   @Override
