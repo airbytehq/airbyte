@@ -69,7 +69,7 @@ def test_parse_response(custom_extractor, data, expected):
 
 
 class TestEventsExtractor:
-    extractor = EventsExtractor(config={}, options={'name': 'events'})
+    extractor = EventsExtractor(config={}, parameters={'name': 'events'})
 
     def test_get_date_time_items_from_schema(self):
         expected = [
