@@ -69,7 +69,10 @@ definitions:
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
+    transformations:
+      - "#/definitions/custom_field_transformation"
   base_incremental_stream:
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -81,8 +84,6 @@ definitions:
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     incremental_sync:
       $ref: "#/definitions/date_stream_slicer"
-    transformations:
-      - "#/definitions/custom_field_transformation"
   addon_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
@@ -91,7 +92,7 @@ definitions:
       path: "/addons"
       stream_cursor_field: "updated_at"
   attached_item_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -113,7 +114,7 @@ definitions:
       path: "/customers"
       stream_cursor_field: "updated_at"
   contact_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
@@ -291,7 +292,7 @@ definitions:
       path: "/quotes"
       stream_cursor_field: "updated_at"
   quote_line_group_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     retriever:
       $ref: "#/definitions/retriever"
       partition_router:
