@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - "perangel/test/docs**" 
     paths:
       - "docs/**"
 
@@ -42,6 +43,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
+          echo ${{ github.event_name }}
+          echo ${{ github.event.pull_request.merged }}
           export SKIP_DEPLOY="yes"
           if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' -o "${{github.event.pull_request.merged}}" = 'true']; then
               export SKIP_DEPLOY="no"
