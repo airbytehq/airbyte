@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -17,6 +17,15 @@ import org.jooq.DSLContext;
  */
 @SuppressWarnings("PMD.MissingOverride")
 public interface SecretPersistence extends ReadOnlySecretPersistence {
+
+  /**
+   * Performs any initialization prior to utilization of the persistence object. This exists to make
+   * it possible to create instances within a dependency management framework, where any
+   * initialization logic should not be present in a constructor.
+   *
+   * @throws Exception if unable to perform the initialization.
+   */
+  default void initialize() throws Exception {}
 
   Optional<String> read(final SecretCoordinate coordinate);
 

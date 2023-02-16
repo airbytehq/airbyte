@@ -1,18 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Paginator(RequestOptionsProvider, JsonSchemaMixin):
+class Paginator(ABC, RequestOptionsProvider):
     """
     Defines the token to use to fetch the next page of records from the API.
 

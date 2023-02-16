@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -40,16 +40,6 @@ public class MSSQLDestinationAcceptanceTestSSL extends JdbcDestinationAcceptance
   @Override
   protected String getImageName() {
     return "airbyte/destination-mssql:dev";
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
   }
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {

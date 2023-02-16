@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -289,7 +289,8 @@ public class StandardSyncPersistence {
         .where(
             CONNECTION.UNSUPPORTED_PROTOCOL_VERSION.eq(true).and(
                 (actorType == ActorType.DESTINATION ? destDef : sourceDef).ID.eq(actorDefId)))
-        .fetchStream()
+        .fetch()
+        .stream()
         .map(r -> new StandardSyncIdsWithProtocolVersions(
             r.get(CONNECTION.ID),
             r.get(sourceDef.ID),

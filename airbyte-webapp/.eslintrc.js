@@ -9,7 +9,7 @@ module.exports = {
     "plugin:jsx-a11y/recommended",
     "plugin:@airbyte/recommended",
   ],
-  plugins: ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y", "@airbyte"],
+  plugins: ["@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y", "@airbyte"],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: "module",
@@ -84,6 +84,7 @@ module.exports = {
       },
     ],
     "jest/consistent-test-it": ["warn", { fn: "it", withinDescribe: "it" }],
+    "react/no-danger": "error",
     "react/jsx-boolean-value": "warn",
     "react/jsx-curly-brace-presence": "warn",
     "react/jsx-fragments": "warn",

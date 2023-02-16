@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
@@ -25,6 +25,13 @@ public class MetricTags {
   public static final String ATTEMPT_QUEUE = "attempt_queue";
   public static final String GEOGRAPHY = "geography";
   public static final String UNKNOWN = "unknown";
+
+  // the release stage of the highest release connector in the sync (GA > Beta > Alpha)
+  public static final String MAX_CONNECTOR_RELEASE_STATE = "max_connector_release_stage";
+  // the release stage of the lowest release stage connector in the sync (GA > Beta > Alpha)
+  public static final String MIN_CONNECTOR_RELEASE_STATE = "min_connector_release_stage";
+  public static final String ATTEMPT_OUTCOME = "attempt_outcome"; // succeeded|failed
+  public static final String ATTEMPT_NUMBER = "attempt_number"; // 0|1|2|3
 
   public static String getReleaseStage(final ReleaseStage stage) {
     return stage != null ? stage.getLiteral() : UNKNOWN;

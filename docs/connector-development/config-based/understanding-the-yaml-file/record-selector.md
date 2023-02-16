@@ -13,8 +13,8 @@ Schema:
     required:
       - extractor
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       extractor:
         "$ref": "#/definitions/RecordExtractor"
       record_filter:
@@ -22,6 +22,7 @@ Schema:
 ```
 
 The current record extraction implementation uses [dpath](https://pypi.org/project/dpath/) to select records from the json-decoded HTTP response.
+For nested structures `*` can be used to iterate over array elements.
 Schema:
 
 ```yaml
@@ -29,11 +30,11 @@ Schema:
     type: object
     additionalProperties: true
     required:
-      - field_pointer
+      - field_path
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      field_pointer:
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
+      field_path:
         type: array
         items:
           type: string
@@ -50,7 +51,7 @@ If the root of the response is an array containing the records, the records can 
 ```yaml
 selector:
   extractor:
-    field_pointer: [ ]
+    field_path: [ ]
 ```
 
 If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
@@ -67,7 +68,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer: [ ]
+    field_path: [ ]
 ```
 
 The selected records will be
@@ -96,7 +97,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer: [ "data" ]
+    field_path: [ "data" ]
 ```
 
 The selected records will be
@@ -136,7 +137,51 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_pointer: [ "data", "records" ]
+    field_path: [ "data", "records" ]
+```
+
+The selected records will be
+
+```json
+[
+  {
+    "id": 1
+  },
+  {
+    "id": 2
+  }
+]
+```
+
+### Selecting fields nested in arrays
+
+Given a response body of the form
+
+```json
+
+{
+  "data": [
+    {
+      "record": {
+        "id": "1"
+      }
+    },
+    {
+      "record": {
+        "id": "2"
+      }
+    }
+  ]
+}
+
+```
+
+and a selector
+
+```yaml
+selector:
+  extractor:
+    field_path: [ "data", "*", "record" ]
 ```
 
 The selected records will be
@@ -162,7 +207,7 @@ In this example, all records with a `created_at` field greater than the stream s
 ```yaml
 selector:
   extractor:
-    field_pointer: [ ]
+    field_path: [ ]
   record_filter:
     condition: "{{ record['created_at'] < stream_slice['start_time'] }}"
 ```
@@ -195,8 +240,8 @@ Schema:
       - fields
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       fields:
         type: array
         items:
@@ -208,8 +253,8 @@ Schema:
       - value
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       path:
         "$ref": "#/definitions/FieldPointer"
       value:
@@ -296,8 +341,8 @@ Schema:
       - field_pointers
     additionalProperties: true
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       field_pointers:
         type: array
         items:

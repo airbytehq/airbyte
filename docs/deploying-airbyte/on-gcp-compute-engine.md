@@ -59,10 +59,8 @@ sudo usermod -a -G docker $USER
 7. Install `docker-compose` on your VM instance by following the below commands in your VM terminal:
 
 ```bash
-sudo apt-get -y install wget
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
+sudo apt-get -y install docker-compose-plugin
+docker compose version
 ```
 
 8.  Close the SSH connection on your VM instance to ensure the group modification is taken into account by following the below command in your VM terminal:
@@ -85,8 +83,8 @@ gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 
 ```bash
 mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-docker-compose up -d
+curl -sOO https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml,flags.yml}
+docker compose up -d
 ```
 
 ## Connect to Airbyte

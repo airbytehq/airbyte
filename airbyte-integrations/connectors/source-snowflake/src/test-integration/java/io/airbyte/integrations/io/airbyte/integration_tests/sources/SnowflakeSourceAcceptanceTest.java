@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -75,7 +75,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("ID"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME1),
+                STREAM_NAME1, SCHEMA_NAME,
                 Field.of("ID", JsonSchemaType.NUMBER),
                 Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(
@@ -84,7 +84,7 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(SyncMode.FULL_REFRESH)
             .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", SCHEMA_NAME, STREAM_NAME2),
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("ID", JsonSchemaType.NUMBER),
                 Field.of("NAME", JsonSchemaType.STRING))
                 .withSupportedSyncModes(

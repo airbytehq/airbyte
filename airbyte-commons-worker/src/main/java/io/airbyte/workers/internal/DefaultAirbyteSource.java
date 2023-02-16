@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -9,13 +9,15 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
+import io.airbyte.commons.protocol.DefaultProtocolSerializer;
+import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -51,28 +53,36 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
+  private final ProtocolSerializer protocolSerializer;
   private final HeartbeatMonitor heartbeatMonitor;
 
   private Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
-  private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
+  private final boolean featureFlagLogConnectorMsgs;
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final FeatureFlags featureFlags) {
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultProtocolSerializer(), featureFlags);
   }
 
-  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
-    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
+                              final AirbyteStreamFactory streamFactory,
+                              final ProtocolSerializer protocolSerializer,
+                              final FeatureFlags featureFlags) {
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION), protocolSerializer, featureFlags);
   }
 
   @VisibleForTesting
   DefaultAirbyteSource(final IntegrationLauncher integrationLauncher,
                        final AirbyteStreamFactory streamFactory,
-                       final HeartbeatMonitor heartbeatMonitor) {
+                       final HeartbeatMonitor heartbeatMonitor,
+                       final ProtocolSerializer protocolSerializer,
+                       final FeatureFlags featureFlags) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
+    this.protocolSerializer = protocolSerializer;
     this.heartbeatMonitor = heartbeatMonitor;
+    this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -84,8 +94,9 @@ public class DefaultAirbyteSource implements AirbyteSource {
         WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
         Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
         WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getCatalog()),
+        protocolSerializer.serialize(sourceConfig.getCatalog()),
         sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+        // TODO We should be passing a typed state here and use the protocolSerializer
         sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
@@ -167,7 +178,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   }
 
   private void logInitialStateAsJSON(final WorkerSourceConfig sourceConfig) {
-    if (!logConnectorMessages) {
+    if (!featureFlagLogConnectorMsgs) {
       return;
     }
 

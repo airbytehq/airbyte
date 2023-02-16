@@ -1,16 +1,18 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-analytics-data==0.11.2", "PyJWT==2.4.0", "cryptography==37.0.4", "requests==2.28.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.16", "PyJWT==2.4.0", "cryptography==37.0.4", "requests==2.28.1"]
 
 TEST_REQUIREMENTS = [
+    "freezegun",
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
-    "source-acceptance-test",
+    "requests-mock~=1.9",
+    "connector-acceptance-test",
 ]
 
 setup(

@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,13 +16,18 @@ import static org.mockito.Mockito.spy;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TimePartitioning;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -72,17 +78,22 @@ import org.slf4j.LoggerFactory;
 
 @TestInstance(PER_CLASS)
 class BigQueryDestinationTest {
+
   protected static final Path CREDENTIALS_STANDARD_INSERT_PATH = Path.of("secrets/credentials-standard.json");
   protected static final Path CREDENTIALS_BAD_PROJECT_PATH = Path.of("secrets/credentials-badproject.json");
   protected static final Path CREDENTIALS_NO_DATASET_CREATION_PATH =
       Path.of("secrets/credentials-standard-no-dataset-creation.json");
   protected static final Path CREDENTIALS_NON_BILLABLE_PROJECT_PATH =
       Path.of("secrets/credentials-standard-non-billable-project.json");
+  protected static final Path CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH =
+      Path.of("secrets/credentials-no-edit-public-schema-role.json");
   protected static final Path CREDENTIALS_WITH_GCS_STAGING_PATH =
       Path.of("secrets/credentials-gcs-staging.json");
 
-  protected static final Path[] ALL_PATHS = {CREDENTIALS_WITH_GCS_STAGING_PATH, CREDENTIALS_BAD_PROJECT_PATH, CREDENTIALS_NO_DATASET_CREATION_PATH,
-      CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
+
+  protected static final Path[] ALL_PATHS = {CREDENTIALS_STANDARD_INSERT_PATH, CREDENTIALS_BAD_PROJECT_PATH, CREDENTIALS_NO_DATASET_CREATION_PATH,
+    CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
+
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
   private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
 
@@ -116,8 +127,9 @@ class BigQueryDestinationTest {
   protected static JsonNode configWithProjectId;
   protected static JsonNode configWithBadProjectId;
   protected static JsonNode insufficientRoleConfig;
+  protected static JsonNode noEditPublicSchemaRoleConfig;
   protected static JsonNode nonBillableConfig;
-  protected static JsonNode gcsStagingConfig; //default BigQuery config. Also used for setup/teardown
+  protected static JsonNode gcsStagingConfig; // default BigQuery config. Also used for setup/teardown
   protected BigQuery bigquery;
   protected Dataset dataset;
   protected static Map<String, JsonNode> configs;
@@ -125,32 +137,37 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
-  private Stream<Arguments> successTestConfigProvider() {
+  /* TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
+   * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
+   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS Staging
+   */
+  private Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
         Arguments.of("config"),
-        Arguments.of("configWithProjectId"),
-        Arguments.of("gcsStagingConfig")
-    );
+        Arguments.of("configWithProjectId"));
+  }
+
+  private Stream<Arguments> successTestConfigProvider() {
+    return Stream.concat(successTestConfigProviderBase(), Stream.of(Arguments.of("gcsStagingConfig")));
   }
 
   private Stream<Arguments> failCheckTestConfigProvider() {
     return Stream.of(
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
         Arguments.of("insufficientRoleConfig", "User does not have bigquery.datasets.create permission"),
-        Arguments.of("nonBillableConfig", "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier")
-    );
+        Arguments.of("nonBillableConfig", "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier"));
   }
 
   private Stream<Arguments> failWriteTestConfigProvider() {
     return Stream.of(
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
-        Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied")
-    );
+        Arguments.of("noEditPublicSchemaRoleConfig", "Failed to write to destination schema."), // (or it may not exist)
+        Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied"));
   }
 
   @BeforeAll
   public static void beforeAll() throws IOException {
-    for(Path path : ALL_PATHS) {
+    for (final Path path : ALL_PATHS) {
       if (!Files.exists(path)) {
         throw new IllegalStateException(
             String.format("Must provide path to a big query credentials file. Please add file with credentials to %s", path.toAbsolutePath()));
@@ -158,27 +175,29 @@ class BigQueryDestinationTest {
     }
 
     datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
-    //Set up config objects for test scenarios
-    //config - basic config for standard inserts that should succeed check and write tests
-    //this config is also used for housekeeping (checking records, and cleaning up)
+    // Set up config objects for test scenarios
+    // config - basic config for standard inserts that should succeed check and write tests
+    // this config is also used for housekeeping (checking records, and cleaning up)
     config = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, datasetId);
 
-    //all successful configs use the same project ID
+    // all successful configs use the same project ID
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    //configWithProjectId - config that uses project:dataset notation for datasetId
+    // configWithProjectId - config that uses project:dataset notation for datasetId
     final String dataSetWithProjectId = String.format("%s:%s", projectId, datasetId);
     configWithProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, dataSetWithProjectId);
 
-    //configWithBadProjectId - config that uses "fake" project ID and should fail
+    // configWithBadProjectId - config that uses "fake" project ID and should fail
     final String dataSetWithBadProjectId = String.format("%s:%s", "fake", datasetId);
     configWithBadProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_BAD_PROJECT_PATH, dataSetWithBadProjectId);
 
-    //config that has insufficient privileges
+    // config that has insufficient privileges
     insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_DATASET_CREATION_PATH, datasetId);
-    //config that tries to write to a project with disabled billing (free tier)
+    // config that tries to write to a project with disabled billing (free tier)
     nonBillableConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling");
-    //config with GCS staging
+    // config that has no privileges to edit anything in Public schema
+    noEditPublicSchemaRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, "public");
+    // config with GCS staging
     gcsStagingConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_GCS_STAGING_PATH, datasetId);
 
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
@@ -188,28 +207,33 @@ class BigQueryDestinationTest {
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
-                io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
-                io.airbyte.protocol.models.Field
-                    .of("id", JsonSchemaType.STRING))
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
+            io.airbyte.protocol.models.Field
+                .of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
-    configs  = new HashMap<String, JsonNode>() {{
-      put("config", config);
-      put("configWithProjectId", configWithProjectId);
-      put("configWithBadProjectId", configWithBadProjectId);
-      put("insufficientRoleConfig", insufficientRoleConfig);
-      put("nonBillableConfig", nonBillableConfig);
-      put("gcsStagingConfig", gcsStagingConfig);
-    }};
+    configs = new HashMap<String, JsonNode>() {
+
+      {
+        put("config", config);
+        put("configWithProjectId", configWithProjectId);
+        put("configWithBadProjectId", configWithBadProjectId);
+        put("insufficientRoleConfig", insufficientRoleConfig);
+        put("noEditPublicSchemaRoleConfig", noEditPublicSchemaRoleConfig);
+        put("nonBillableConfig", nonBillableConfig);
+        put("gcsStagingConfig", gcsStagingConfig);
+      }
+
+    };
   }
 
-  protected void initBigQuery(JsonNode config) throws IOException {
+  protected void initBigQuery(final JsonNode config) throws IOException {
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     try {
       dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
-    } catch(Exception ex) {
-      //ignore
+    } catch (final Exception ex) {
+      // ignore
     }
   }
 
@@ -245,8 +269,8 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
-  void testCheckSuccess(String configName) throws IOException {
-    JsonNode testConfig = configs.get(configName);
+  void testCheckSuccess(final String configName) throws IOException {
+    final JsonNode testConfig = configs.get(configName);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(testConfig);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
@@ -254,9 +278,9 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("failCheckTestConfigProvider")
-  void testCheckFailures(String configName, String error) {
-    //TODO: this should always throw ConfigErrorException
-    JsonNode testConfig = configs.get(configName);
+  void testCheckFailures(final String configName, final String error) {
+    // TODO: this should always throw ConfigErrorException
+    final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
       new BigQueryDestination().check(testConfig);
     });
@@ -265,9 +289,9 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
-  void testWriteSuccess(String configName) throws Exception {
+  void testWriteSuccess(final String configName) throws Exception {
     initBigQuery(config);
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
@@ -296,13 +320,38 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
+  @Test
+  void testCreateTableSuccessWhenTableAlreadyExists() throws Exception {
+    initBigQuery(config);
+
+    // Test schema where we will try to re-create existing table
+    final String tmpTestSchemaName = "test_create_table_when_exists_schema";
+
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+    final TableId tableId = TableId.of(tmpTestSchemaName, "test_already_existing_table");
+
+    BigQueryUtils.getOrCreateDataset(bigquery, tmpTestSchemaName, BigQueryUtils.getDatasetLocation(config));
+
+    assertDoesNotThrow(() -> {
+      // Create table
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+
+      // Try to create it one more time. Shouldn't throw exception
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+    });
+  }
+
   @ParameterizedTest
   @MethodSource("failWriteTestConfigProvider")
-  void testWriteFailure(String configName, String error) throws Exception {
+  void testWriteFailure(final String configName, final String error) throws Exception {
     initBigQuery(config);
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
-      AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+      final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);
@@ -322,7 +371,7 @@ class BigQueryDestinationTest {
   }
 
   private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
-    if(dataset == null || bigquery == null) {
+    if (dataset == null || bigquery == null) {
       return Collections.emptySet();
     }
     final QueryJobConfiguration queryConfig = QueryJobConfiguration
@@ -330,7 +379,7 @@ class BigQueryDestinationTest {
         .setUseLegacySql(false)
         .build();
 
-    if(!dataset.exists()) {
+    if (!dataset.exists()) {
       return Collections.emptySet();
     }
     return StreamSupport
@@ -363,9 +412,9 @@ class BigQueryDestinationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("successTestConfigProvider")
-  void testWritePartitionOverUnpartitioned(String configName) throws Exception {
-    JsonNode testConfig = configs.get(configName);
+  @MethodSource("successTestConfigProviderBase")
+  void testWritePartitionOverUnpartitioned(final String configName) throws Exception {
+    final JsonNode testConfig = configs.get(configName);
     initBigQuery(config);
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);
@@ -429,4 +478,5 @@ class BigQueryDestinationTest {
     }
     return false;
   }
+
 }

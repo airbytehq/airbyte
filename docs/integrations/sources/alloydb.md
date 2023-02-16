@@ -325,12 +325,16 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                          |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------|
-| 1.0.34  | 2022-12-13 | [20378](https://github.com/airbytehq/airbyte/pull/20378)   | Improve descriptions                                               |
-| 1.0.17  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                           |
-| 1.0.16  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256)   | Disable allow and prefer ssl modes in CDC mode |
-|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238)   | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
-| 1.0.15  | 2022-10-11 | [17782](https://github.com/airbytehq/airbyte/pull/17782)   | Align with Postgres source v.1.0.15              |
-| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776)   | Align with strict-encrypt version                |
-| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323)   | Initial commit. Based on source-postgres v.1.0.7 |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                  |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.44  | 2022-02-06 | [22221](https://github.com/airbytehq/airbyte/pull/22221) | Exclude new set of system tables when using `pg_stat_statements` extension.                                                                                              |
+| 1.0.43  | 2022-02-06 | [21634](https://github.com/airbytehq/airbyte/pull/21634) | Improve Standard sync performance by caching objects.                                                                                                                    |
+| 1.0.36  | 2023-01-24 | [21825](https://github.com/airbytehq/airbyte/pull/21825) | Put back the original change that will cause an incremental sync to error if table contains a NULL value in cursor column.                                               |
+| 1.0.35  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346) | Consolidate date/time values mapping for JDBC sources                                                                                                                    |
+| 1.0.34  | 2022-12-13 | [20378](https://github.com/airbytehq/airbyte/pull/20378) | Improve descriptions                                                                                                                                                     |
+| 1.0.17  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538) | Encode database name                                                                                                                                                     |
+| 1.0.16  | 2022-10-25 | [18256](https://github.com/airbytehq/airbyte/pull/18256) | Disable allow and prefer ssl modes in CDC mode                                                                                                                           |
+|         | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode                                |
+| 1.0.15  | 2022-10-11 | [17782](https://github.com/airbytehq/airbyte/pull/17782) | Align with Postgres source v.1.0.15                                                                                                                                      |
+| 1.0.0   | 2022-09-15 | [16776](https://github.com/airbytehq/airbyte/pull/16776) | Align with strict-encrypt version                                                                                                                                        |
+| 0.1.0   | 2022-09-05 | [16323](https://github.com/airbytehq/airbyte/pull/16323) | Initial commit. Based on source-postgres v.1.0.7                                                                                                                         |

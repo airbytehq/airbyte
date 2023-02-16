@@ -1,7 +1,7 @@
 @use "scss/variables";
 @use "scss/colors";
 
-.inputForm {
+.inputFormBody {
   gap: variables.$spacing-lg;
   display: flex;
   flex-direction: column;
@@ -9,4 +9,8 @@
 
 .deleteButtonContainer {
   flex-grow: 1;
+}
+
+.calloutContainer {
+  padding: variables.$spacing-md variables.$spacing-lg;
 }

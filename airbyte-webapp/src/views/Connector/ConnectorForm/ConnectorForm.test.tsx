@@ -8,10 +8,10 @@ import { render, useMockIntersectionObserver } from "test-utils/testutils";
 import { ConnectorDefinition } from "core/domain/connector";
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
-import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
+import { ConnectorForm } from "views/Connector/ConnectorForm";
 
-import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorFormValues } from "./types";
+import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
 jest.mock("components/ui/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
@@ -36,7 +36,7 @@ jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
   };
 });
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 const connectorDefinition = {
   sourceDefinitionId: "1",
@@ -179,6 +179,7 @@ describe("Service Form", () => {
           formType="source"
           onSubmit={handleSubmit}
           selectedConnectorDefinition={connectorDefinition}
+          renderFooter={() => <button type="submit">Submit</button>}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {
@@ -260,6 +261,7 @@ describe("Service Form", () => {
           onSubmit={async (values) => {
             result = values;
           }}
+          renderFooter={() => <button type="submit">Submit</button>}
           selectedConnectorDefinition={connectorDefinition}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
@@ -388,44 +390,6 @@ describe("Service Form", () => {
         { name: "test-1", price: 1 },
         { name: "test-2", price: 2 },
       ]);
-    });
-  });
-
-  describe("conditionally render form submit button", () => {
-    const renderConnectorForm = (props: ConnectorFormProps) =>
-      render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const onSubmitClb = async () => {};
-    const connectorDefSpec = {
-      connectionSpecification: schema,
-      sourceDefinitionId: "test-service-type",
-      documentationUrl: "",
-    };
-
-    it("should render <CreateControls /> if connector is selected", async () => {
-      const { getByText } = await renderConnectorForm({
-        selectedConnectorDefinition: connectorDefinition,
-        selectedConnectorDefinitionSpecification:
-          // @ts-expect-error Partial objects for testing
-          connectorDefSpec as DestinationDefinitionSpecificationRead,
-        formType: "destination",
-        onSubmit: onSubmitClb,
-      });
-      expect(getByText(/Set up destination/)).toBeInTheDocument();
-    });
-
-    it("should render <EditControls /> if connector is selected", async () => {
-      const { getByText } = await renderConnectorForm({
-        selectedConnectorDefinition: connectorDefinition,
-        selectedConnectorDefinitionSpecification:
-          // @ts-expect-error Partial objects for testing
-          connectorDefSpec as DestinationDefinitionSpecificationRead,
-        formType: "destination",
-        onSubmit: onSubmitClb,
-        isEditMode: true,
-      });
-
-      expect(getByText(/Save changes and test/)).toBeInTheDocument();
     });
   });
 });

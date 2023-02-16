@@ -36,14 +36,13 @@ Install Docker and Docker Compose in the VM:
 4. To install Docker Compose, run the following command:
 
     ```bash
-    sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    sudo apt-get install docker-compose-plugin -y
     ```
 
 5. Check Docker Compose version:
 
     ```bash
-    docker-compose --version
+    docker compose version
     ```
 
 6. Close the SSH connection to ensure that the group modification is considered:
@@ -78,13 +77,13 @@ Download Airbyte and deploy it in the VM using Docker Compose:
 3. Download Airbyte from GitHub: 
 
     ```bash
-    wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+    wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}
     ```
 
 4. To start Airbyte, run the following command:
 
     ```bash
-    sudo docker-compose up -d
+    sudo docker compose up -d
     ```
 
 ## Connect to Airbyte

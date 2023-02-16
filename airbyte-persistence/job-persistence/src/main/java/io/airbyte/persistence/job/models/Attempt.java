@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job.models;
 
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.JobOutput;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -17,7 +18,9 @@ public class Attempt {
   private final long jobId;
   private final JobOutput output;
   private final AttemptStatus status;
+  private final String processingTaskQueue;
   private final AttemptFailureSummary failureSummary;
+  private final AttemptSyncConfig syncConfig;
   private final Path logPath;
   private final long updatedAtInSecond;
   private final long createdAtInSecond;
@@ -26,16 +29,20 @@ public class Attempt {
   public Attempt(final int attemptNumber,
                  final long jobId,
                  final Path logPath,
+                 final @Nullable AttemptSyncConfig syncConfig,
                  final @Nullable JobOutput output,
                  final AttemptStatus status,
+                 final String processingTaskQueue,
                  final @Nullable AttemptFailureSummary failureSummary,
                  final long createdAtInSecond,
                  final long updatedAtInSecond,
                  final @Nullable Long endedAtInSecond) {
     this.attemptNumber = attemptNumber;
     this.jobId = jobId;
+    this.syncConfig = syncConfig;
     this.output = output;
     this.status = status;
+    this.processingTaskQueue = processingTaskQueue;
     this.failureSummary = failureSummary;
     this.logPath = logPath;
     this.updatedAtInSecond = updatedAtInSecond;
@@ -51,12 +58,20 @@ public class Attempt {
     return jobId;
   }
 
+  public Optional<AttemptSyncConfig> getSyncConfig() {
+    return Optional.ofNullable(syncConfig);
+  }
+
   public Optional<JobOutput> getOutput() {
     return Optional.ofNullable(output);
   }
 
   public AttemptStatus getStatus() {
     return status;
+  }
+
+  public String getProcessingTaskQueue() {
+    return processingTaskQueue;
   }
 
   public Optional<AttemptFailureSummary> getFailureSummary() {
@@ -96,6 +111,7 @@ public class Attempt {
         jobId == attempt.jobId &&
         updatedAtInSecond == attempt.updatedAtInSecond &&
         createdAtInSecond == attempt.createdAtInSecond &&
+        Objects.equals(syncConfig, attempt.syncConfig) &&
         Objects.equals(output, attempt.output) &&
         status == attempt.status &&
         Objects.equals(failureSummary, attempt.failureSummary) &&
@@ -105,7 +121,8 @@ public class Attempt {
 
   @Override
   public int hashCode() {
-    return Objects.hash(attemptNumber, jobId, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond, endedAtInSecond);
+    return Objects.hash(attemptNumber, jobId, syncConfig, output, status, failureSummary, logPath, updatedAtInSecond, createdAtInSecond,
+        endedAtInSecond);
   }
 
   @Override
@@ -113,6 +130,7 @@ public class Attempt {
     return "Attempt{" +
         "id=" + attemptNumber +
         ", jobId=" + jobId +
+        ", syncConfig=" + syncConfig +
         ", output=" + output +
         ", status=" + status +
         ", failureSummary=" + failureSummary +

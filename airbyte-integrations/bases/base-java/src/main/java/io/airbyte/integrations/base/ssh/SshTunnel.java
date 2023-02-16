@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base.ssh;
@@ -22,9 +22,11 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.SshException;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -41,6 +43,8 @@ import org.slf4j.LoggerFactory;
 public class SshTunnel implements AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SshTunnel.class);
+  public static final String SSH_TIMEOUT_DISPLAY_MESSAGE =
+      "Timed out while opening a SSH Tunnel. Please double check the given SSH configurations and try again.";
 
   public enum TunnelMethod {
     NO_TUNNEL,
@@ -364,7 +368,13 @@ public class SshTunnel implements AutoCloseable {
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      throw new RuntimeException(e);
+      if (e instanceof SshException && e.getMessage()
+          .toLowerCase(Locale.ROOT)
+          .contains("failed to get operation result within specified timeout")) {
+        throw new ConfigErrorException(SSH_TIMEOUT_DISPLAY_MESSAGE, e);
+      } else {
+        throw new RuntimeException(e);
+      }
     }
   }
 

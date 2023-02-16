@@ -1,16 +1,19 @@
+import React from "react";
+
+import { PillButton, PillButtonVariant } from "./PillButton";
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
-import { PillButton, PillButtonVariant } from "./PillButton";
 
 type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "onChange" | "className">;
 
 interface PillSelectProps extends PickedPopoutProps {
   variant?: PillButtonVariant;
   disabled?: boolean;
+  disabledLabel?: React.ReactNode;
   hasError?: boolean;
 }
 
-export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) => {
+export const PillSelect: React.FC<PillSelectProps> = ({ className, disabledLabel, ...props }) => {
   const { isMulti, variant, disabled } = props;
   return (
     <Popout
@@ -36,7 +39,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
                 className={className}
                 hasError={props?.hasError}
               >
-                {label}
+                {(disabled && disabledLabel) || label}
               </PillButton>
             }
             placement="bottom-start"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -14,14 +14,14 @@ from airbyte_cdk.sources.streams.core import Stream
 
 @dataclass
 class GreenHouseSlicer(StreamSlicer):
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     cursor_field: str
     request_cursor_field: str
 
     START_DATETIME: ClassVar[str] = "1970-01-01T00:00:00.000Z"
     DATETIME_FORMAT: ClassVar[str] = "%Y-%m-%dT%H:%M:%S.%fZ"
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._state = {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState, *args, **kwargs) -> Iterable[StreamSlice]:

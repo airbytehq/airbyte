@@ -10,13 +10,13 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 import { SourceRead, WebBackendConnectionListItem } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useRemoveConnectionsFromList } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,
@@ -62,6 +62,14 @@ const useGetSource = <T extends string | undefined | null>(
   return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.get(sourceId ?? ""), {
     enabled: isDefined(sourceId),
   });
+};
+
+export const useInvalidateSource = <T extends string | undefined | null>(sourceId: T): (() => void) => {
+  const queryClient = useQueryClient();
+
+  return useCallback(() => {
+    queryClient.invalidateQueries(sourcesKeys.detail(sourceId ?? ""));
+  }, [queryClient, sourceId]);
 };
 
 const useCreateSource = () => {

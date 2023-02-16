@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.bootloader;
@@ -11,7 +11,6 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -19,6 +18,8 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +27,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
+@Singleton
 @Slf4j
 public class SecretMigrator {
 
@@ -39,6 +39,18 @@ public class SecretMigrator {
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
   private final Optional<SecretPersistence> secretPersistence;
+
+  public SecretMigrator(final SecretsRepositoryReader secretsReader,
+                        final SecretsRepositoryWriter secretsWriter,
+                        final ConfigRepository configRepository,
+                        final JobPersistence jobPersistence,
+                        @Named("secretPersistence") final Optional<SecretPersistence> secretPersistence) {
+    this.secretsReader = secretsReader;
+    this.secretsWriter = secretsWriter;
+    this.configRepository = configRepository;
+    this.jobPersistence = jobPersistence;
+    this.secretPersistence = secretPersistence;
+  }
 
   @Value
   static class ConnectorConfiguration {
@@ -54,12 +66,15 @@ public class SecretMigrator {
    * Then for all the secret that are stored in a plain text format, it will save the plain text in
    * the secret manager and store the coordinate in the config DB.
    */
-  public void migrateSecrets() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void migrateSecrets() throws Exception {
     if (secretPersistence.isEmpty()) {
       log.info("No secret persistence is provided, the migration won't be run ");
 
       return;
+    } else {
+      secretPersistence.get().initialize();
     }
+
     final List<StandardSourceDefinition> standardSourceDefinitions = configRepository.listStandardSourceDefinitions(true);
 
     final Map<UUID, ConnectorSpecification> definitionIdToSourceSpecs = standardSourceDefinitions

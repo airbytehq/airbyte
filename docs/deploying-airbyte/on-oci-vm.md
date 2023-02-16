@@ -45,11 +45,9 @@ sudo usermod -a -G docker $USER
 In the terminal connected to your OCI Instance for Airbyte, run the following commands:
 
 ```bash
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+sudo yum install -y docker-compose-plugin
 
-sudo chmod +x /usr/local/bin/docker-compose
-
-sudo /usr/local/bin/docker-compose --version
+docker compose version
 ```
 
 ## Install and start Airbyte
@@ -61,16 +59,16 @@ Download the Airbyte repository and deploy it on the VM:
 	```bash
 	mkdir airbyte && cd airbyte
 
-	wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+	wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}
 	```
 
 2. Run the following commands to get Airbyte running on your OCI VM instance using Docker compose:
 
     ```bash
 
-    which docker-compose
+    which docker
 
-    sudo /usr/local/bin/docker-compose up -d
+    sudo /usr/local/bin/docker compose up -d
 
     ``` 
 

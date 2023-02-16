@@ -4,6 +4,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
 
 import { SyncSchemaStream } from "core/domain/catalog";
+import { useNewTableDesignExperiment } from "hooks/connection/useNewTableDesignExperiment";
 import { BulkEditServiceProvider } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
@@ -24,10 +25,16 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   onStreamsChanged,
   isLoading,
 }) => {
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+  const isNewTableDesignEnabled = useNewTableDesignExperiment();
   const { initialValues, mode } = useConnectionFormService();
 
   const [searchString, setSearchString] = useState("");
+
+  const onBatchStreamsChanged = useCallback(
+    (newStreams: SyncSchemaStream[]) =>
+      onStreamsChanged(streams.map((str) => newStreams.find((newStr) => newStr.id === str.id) ?? str)),
+    [streams, onStreamsChanged]
+  );
 
   const onSingleStreamChanged = useCallback(
     (newValue: SyncSchemaStream) => onStreamsChanged(streams.map((str) => (str.id === newValue.id ? newValue : str))),
@@ -69,12 +76,10 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   );
 
   return (
-    <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
+    <BulkEditServiceProvider nodes={filteredStreams} update={onBatchStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <div
-          className={classNames(styles.catalogTreeTable, { [styles.newCatalogTreeTable]: isNewStreamsTableEnabled })}
-        >
+        <div className={classNames(styles.catalogTreeTable, { [styles.newCatalogTreeTable]: isNewTableDesignEnabled })}>
           <CatalogTreeBody
             streams={filteredStreams}
             changedStreams={changedStreams}
@@ -82,7 +87,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
           />
         </div>
       </LoadingBackdrop>
-      {isNewStreamsTableEnabled && <BulkEditPanel />}
+      {isNewTableDesignEnabled && <BulkEditPanel />}
     </BulkEditServiceProvider>
   );
 };

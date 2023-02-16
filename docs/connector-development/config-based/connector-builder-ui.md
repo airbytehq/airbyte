@@ -26,15 +26,21 @@ You need at least Airbyte v0.40.27 to run the connector builder UI.
 We recommend using a dedicated Airbyte instance for the connector builder UI. This will allow you to pick up connector builder UI upgrades without impacting your production data pipelines.
 :::
 
-The connector builder UI is bundled as part of the Airbyte webapp. To run it, follow [the instructions for deploying Airbyte locally](../../deploying-airbyte/local-deployment) to run Airbyte on your machine. Once you do, Airbyte should be reachable at `http://localhost:8000`.
+The connector builder UI is bundled as part of the Airbyte webapp. To run it, follow [the instructions for deploying Airbyte locally](../../../deploying-airbyte/local-deployment) to run Airbyte on your machine. Once you do, Airbyte should be reachable at `http://localhost:8000`.
 
 ### Visit the connector builder
 
-Once your Airbyte instance has started and you've moved past the initial setup screen, visit `http://localhost:8000/connector-builder`. On this page you will find the connector builder UI. It should look like this:
+Once your Airbyte instance has started and you've moved past the initial setup screen, visit `http://localhost:8000/connector-builder`. You will be redirected to a URL of the form `localhost:8000/workspaces/<UUID>/connector-builder` where `<UUID>` is the ID automatically generated for your workspace by Airbyte
 
-![The Connector Builder home page](./assets/lowcode_landing_screen.png)
+On this page you will find the Connector Builder landing page. It should look like this:
 
-You can now use this UI to build your connector. See the [components](#connector-builder-components) section for more information on how to use the UI to iterate on your connector.
+![The Connector Builder landing page](./assets/connector_builder_landing_page.png)
+
+Here you can either upload an existing low-code YAML manifest, or start building a brand new connector in the UI. If you click `Start from scratch`, you will be redirected to `localhost:8000/workspaces/<UUID>/connector-builder/edit`, where you will see the following screen:
+
+![The Connector Builder blank form](./assets/connector_builder_blank_form.png)
+
+You can now use this UI to build your connector. See the [Testing Panel](#connector-builder-testing-panel) section for more information on how to use the UI to iterate on your connector.
 
 The output of this UI is a low-code YAML representation of your connector, which you can preview by clicking the `UI | YAML` toggle button the the top-left. This screen also allows you to edit the low-code YAML directly if desired, and continue to test it in the testing panel.
 
@@ -42,13 +48,13 @@ The output of this UI is a low-code YAML representation of your connector, which
 
 Once you're done iterating on your connector in the UI, you'll need to export the low-code YAML representation of the connector to your local filesystem into a connector module. This YAML can be downloaded by clicking the `Download Config` button in the bottom-left.
 
-If you haven't already, create a low-code connector module using the connector generator (see [this YAML tutorial for an example](tutorial/1-create-source.md)) using the name you'd like to use for your connector. For this section, let's assume our connector is called `exchange-rates`. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/exchange_rates.yaml` with the YAML you created in the UI.
+If you haven't already, create a low-code connector module using the connector generator (see [this YAML tutorial for an example](tutorial/1-create-source.md)) using the name you'd like to use for your connector. For this section, let's assume our connector is called `exchange-rates`. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/manifest.yaml` with the YAML you created in the UI.
 
 ### Building the connector image
 
 Follow the instructions in the connector README to build the Docker image. Typically this will be something like `docker build . -t airbyte/source-<name>:<version>`.
 
-Once you've built the connector image, [follow these instructions](../../integrations/custom-connectors#adding-your-connectors-in-the-ui) to add your connector to your Airbyte instance.
+Once you've built the connector image, [follow these instructions](../../../integrations/custom-connectors#adding-your-connectors-in-the-ui) to add your connector to your Airbyte instance.
 
 ## Connector Builder Testing Panel
 
@@ -67,12 +73,16 @@ The UI contains two main components: the Builder UI where you can fill out input
 9. **Page selector** Displays the selected page
 10. **Logs view**: Displays the logs emitted by the connector while running
 
+<!-- 
+
+TODO: update this video, see https://github.com/airbytehq/airbyte/issues/23019
+
 The following demo video demonstrates these components on a very simple API:
 
 <div style={{position: "relative", "padding-bottom": "64.90384615384616%", height: 0}}>
 <iframe src="https://www.loom.com/embed/acf899938ef74dec8dd61ba012bc872f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe>
-</div>
+</div> -->
 
 ## Upgrading
 
-The connector builder ships as part of the Airbyte platform. So if you want to get the latest and greatest updates to the builder UI, follow the process for [upgrading Airbyte](../../operator-guides/upgrading-airbyte) and you should pick up the upgrades.
+The connector builder ships as part of the Airbyte platform. So if you want to get the latest and greatest updates to the builder UI, follow the process for [upgrading Airbyte](../../../operator-guides/upgrading-airbyte) and you should pick up the upgrades.

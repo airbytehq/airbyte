@@ -5,7 +5,6 @@ import { ControlLabels } from "components/LabeledControl";
 
 import { RequestOption, SimpleRetrieverStreamSlicer } from "core/request/ConnectorManifest";
 
-import { timeDeltaRegex } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderFieldWithInputs } from "./BuilderFieldWithInputs";
@@ -83,9 +82,9 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
       label: "Datetime",
       typeValue: "DatetimeStreamSlicer",
       default: {
-        datetime_format: "",
+        datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00",
         start_datetime: "",
-        end_datetime: "",
+        end_datetime: "{{ now_utc() }}",
         step: "",
         cursor_field: "",
       },
@@ -96,6 +95,12 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             path={buildPath("datetime_format")}
             label="Datetime format"
             tooltip="Specify the format of the start and end time, e.g. %Y-%m-%d"
+          />
+          <BuilderFieldWithInputs
+            type="string"
+            path={buildPath("cursor_granularity")}
+            label="Cursor granularity"
+            tooltip="Smallest increment the datetime format has (ISO 8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one, e.g. for %Y-%m-%d the granularity should be P1D, for %Y-%m-%dT%H:%M:%SZ the granularity should be PT1S"
           />
           <BuilderFieldWithInputs
             type="string"
@@ -113,8 +118,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             type="string"
             path={buildPath("step")}
             label="Step"
-            tooltip="Time interval for which to break up stream into slices, e.g. 1d"
-            pattern={timeDeltaRegex}
+            tooltip="Time interval (ISO 8601 duration) for which to break up stream into slices, e.g. P1D for daily slices"
           />
           <BuilderFieldWithInputs
             type="string"
@@ -122,46 +126,46 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             label="Cursor field"
             tooltip="Field on record to use as the cursor"
           />
+          <ToggleGroupField<RequestOption>
+            label="Start time request option"
+            tooltip="Optionally configures how the start datetime will be sent in requests to the source API"
+            fieldPath={buildPath("start_time_option")}
+            initialValues={{
+              inject_into: "request_parameter",
+              type: "RequestOption",
+              field_name: "",
+            }}
+          >
+            <InjectRequestOptionFields
+              path={buildPath("start_time_option")}
+              descriptor="start datetime"
+              excludeInjectIntoValues={["path"]}
+            />
+          </ToggleGroupField>
+          <ToggleGroupField<RequestOption>
+            label="End time request option"
+            tooltip="Optionally configures how the end datetime will be sent in requests to the source API"
+            fieldPath={buildPath("end_time_option")}
+            initialValues={{
+              inject_into: "request_parameter",
+              type: "RequestOption",
+              field_name: "",
+            }}
+          >
+            <InjectRequestOptionFields
+              path={buildPath("end_time_option")}
+              descriptor="end datetime"
+              excludeInjectIntoValues={["path"]}
+            />
+          </ToggleGroupField>
           <BuilderOptional>
             <BuilderFieldWithInputs
               type="string"
               path={buildPath("lookback_window")}
               label="Lookback window"
-              tooltip="How many days before the start_datetime to read data for, e.g. 31d"
+              tooltip="Time interval (ISO 8601 duration) before the start_datetime to read data for, e.g. P1M for looking back one month"
               optional
             />
-            <ToggleGroupField<RequestOption>
-              label="Start time request option"
-              tooltip="Optionally configures how the start datetime will be sent in requests to the source API"
-              fieldPath={buildPath("start_time_option")}
-              initialValues={{
-                inject_into: "request_parameter",
-                type: "RequestOption",
-                field_name: "",
-              }}
-            >
-              <InjectRequestOptionFields
-                path={buildPath("start_time_option")}
-                descriptor="start datetime"
-                excludeInjectIntoValues={["path"]}
-              />
-            </ToggleGroupField>
-            <ToggleGroupField<RequestOption>
-              label="End time request option"
-              tooltip="Optionally configures how the end datetime will be sent in requests to the source API"
-              fieldPath={buildPath("end_time_option")}
-              initialValues={{
-                inject_into: "request_parameter",
-                type: "RequestOption",
-                field_name: "",
-              }}
-            >
-              <InjectRequestOptionFields
-                path={buildPath("end_time_option")}
-                descriptor="end datetime"
-                excludeInjectIntoValues={["path"]}
-              />
-            </ToggleGroupField>
             <BuilderFieldWithInputs
               type="string"
               path={buildPath("stream_state_field_start")}

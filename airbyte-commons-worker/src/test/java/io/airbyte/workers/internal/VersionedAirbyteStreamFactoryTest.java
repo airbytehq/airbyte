@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -10,10 +10,12 @@ import static org.mockito.Mockito.verify;
 
 import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
-import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
+import io.airbyte.commons.protocol.ConfiguredAirbyteCatalogMigrator;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV1Deserializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV1Serializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -21,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,39 +32,46 @@ import org.junit.platform.commons.util.ClassLoaderUtils;
 class VersionedAirbyteStreamFactoryTest {
 
   AirbyteMessageSerDeProvider serDeProvider;
-  AirbyteMessageVersionedMigratorFactory migratorFactory;
+  AirbyteProtocolVersionedMigratorFactory migratorFactory;
 
   final static Version defaultVersion = new Version("0.2.0");
 
   @BeforeEach
   void beforeEach() {
     serDeProvider = spy(new AirbyteMessageSerDeProvider(
-        List.of(new AirbyteMessageV0Deserializer()),
-        List.of(new AirbyteMessageV0Serializer())));
+        List.of(new AirbyteMessageV0Deserializer(), new AirbyteMessageV1Deserializer()),
+        List.of(new AirbyteMessageV0Serializer(), new AirbyteMessageV1Serializer())));
     serDeProvider.initialize();
-    final AirbyteMessageMigrator migrator = new AirbyteMessageMigrator(
-        List.of(new AirbyteMessageMigrationV0()));
-    migrator.initialize();
-    migratorFactory = spy(new AirbyteMessageVersionedMigratorFactory(migrator));
+    final AirbyteMessageMigrator airbyteMessageMigrator = new AirbyteMessageMigrator(
+        // TODO once data types v1 is re-enabled, this test should contain the migration
+        List.of(/* new AirbyteMessageMigrationV1() */));
+    airbyteMessageMigrator.initialize();
+    final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator = new ConfiguredAirbyteCatalogMigrator(
+        // TODO once data types v1 is re-enabled, this test should contain the migration
+        List.of(/* new ConfiguredAirbyteCatalogMigrationV1() */));
+    configuredAirbyteCatalogMigrator.initialize();
+    migratorFactory = spy(new AirbyteProtocolVersionedMigratorFactory(airbyteMessageMigrator, configuredAirbyteCatalogMigrator));
   }
 
   @Test
   void testCreate() {
     final Version initialVersion = new Version("0.1.2");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty());
 
     final BufferedReader bufferedReader = new BufferedReader(new StringReader(""));
     streamFactory.create(bufferedReader);
 
     verify(serDeProvider).getDeserializer(initialVersion);
-    verify(migratorFactory).getVersionedMigrator(initialVersion);
+    verify(migratorFactory).getAirbyteMessageMigrator(initialVersion);
   }
 
   @Test
   void testCreateWithVersionDetection() {
     final Version initialVersion = new Version("0.0.0");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion)
-        .withDetectVersion(true);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty())
+            .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
         getBuffereredReader("version-detection/logs-with-version.jsonl");
@@ -76,8 +86,9 @@ class VersionedAirbyteStreamFactoryTest {
   @Test
   void testCreateWithVersionDetectionFallback() {
     final Version initialVersion = new Version("0.0.6");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion)
-        .withDetectVersion(true);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty())
+            .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
         getBuffereredReader("version-detection/logs-without-version.jsonl");
@@ -92,8 +103,9 @@ class VersionedAirbyteStreamFactoryTest {
   @Test
   void testCreateWithVersionDetectionWithoutSpecMessage() {
     final Version initialVersion = new Version("0.0.1");
-    final VersionedAirbyteStreamFactory<?> streamFactory = new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion)
-        .withDetectVersion(true);
+    final VersionedAirbyteStreamFactory<?> streamFactory =
+        new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, initialVersion, Optional.empty(), Optional.empty())
+            .withDetectVersion(true);
 
     final BufferedReader bufferedReader =
         getBuffereredReader("version-detection/logs-without-spec-message.jsonl");

@@ -1,5 +1,12 @@
+import groovy.json.JsonBuilder
+import groovy.yaml.YamlSlurper
+
 plugins {
     id 'application'
+}
+
+configurations {
+    airbyteProtocol
 }
 
 dependencies {
@@ -8,6 +15,19 @@ dependencies {
 
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
+
+    // Ensure that the versions defined in deps.toml are used
+    // instead of versions from transitive dependencies
+    implementation(libs.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible with our current Helm setup
+        force = true
+    }
+    implementation(libs.aws.java.sdk.s3) {
+        // Force to avoid updated version brought in transitively from Micronaut 3.8+
+        // that is incompatible wit hour current Helm setup
+        force = true
+    }
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation libs.bundles.datadog
@@ -18,8 +38,9 @@ dependencies {
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:init')
+    implementation project(':airbyte-featureflag')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-worker-models')
 
@@ -32,7 +53,9 @@ dependencies {
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
 
-    testImplementation project(':airbyte-commons-docker')
+    airbyteProtocol(libs.airbyte.protocol) {
+        transitive = false
+    }
 }
 
 application {
@@ -41,6 +64,32 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+// Duplicated from :airbyte-worker, eventually, this should be handled in :airbyte-protocol
+task generateWellKnownTypes() {
+    doLast {
+        def wellKnownTypesYamlPath = 'airbyte_protocol/well_known_types.yaml'
+        configurations.airbyteProtocol.getFiles().each {
+            def zip = new java.util.zip.ZipFile(it)
+            def entry = zip.getEntry(wellKnownTypesYamlPath)
+
+            def wellKnownTypesYaml = zip.getInputStream(entry).text
+            def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
+            def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
+            def targetFile = project.file("build/docker/WellKnownTypes.json")
+            targetFile.getParentFile().mkdirs()
+            targetFile.text = wellKnownTypesJson
+        }
+    }
+}
+
 tasks.named("buildDockerImage") {
     dependsOn copyGeneratedTar
+    dependsOn generateWellKnownTypes
+}
+
+// Ideally, we would have buildDockerImage depend on generateWellKnownTypes
+// but some of our actions use copyGeneratedTar as the "set up the docker build context" task
+// so we'll just add it here.
+tasks.named("copyGeneratedTar") {
+    dependsOn generateWellKnownTypes
 }

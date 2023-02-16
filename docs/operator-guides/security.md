@@ -37,7 +37,23 @@ Deploy Airbyte Open Source in a private network or use a firewall to filter whic
 You can secure access to Airbyte using the following methods:
 
 - Deploy Airbyte in a private network or use a firewall to filter which IP is allowed to access your host.
-- Deploy Airbyte behind a reverse proxy and handle the access control on the reverse proxy side.
+- Deploy Airbyte behind a reverse proxy and handle the access control and SSL encryption on the reverse proxy side.
+  ```
+  # Example nginx reverse proxy config
+  server {
+    listen 443 ssl;
+    server_name airbyte.<your-domain>.com;
+    client_max_body_size 200M;  # required for Airbyte API
+    ssl_certificate <path-to-your-cert>.crt.pem; 
+    ssl_certificate_key <path-to-your-key>.key.pem;
+    
+    location / {
+      proxy_pass http://127.0.0.1:8000;
+      proxy_set_header Cookie $http_ccokie;  # if you use Airbytes basic auth
+      proxy_read_timeout 3600;  # set a number in seconds suitable for you
+    }
+  }
+  ```
 - Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
@@ -147,7 +163,7 @@ Airbyte Cloud supports [user management](https://docs.airbyte.com/cloud/managing
 Our compliance efforts for Airbyte Cloud include:
 
 - SOC 2 Type II assessment: An independent third-party completed a SOC2 Type II assessment and found effective operational controls in place. Independent third-party audits will continue at a regular cadence, and the most recent report is available upon request.
-- ISO 27001 certification: We are currently pursuing ISO 27001 certification and will continue to align the evolution of our security program with its standards as we grow.
+- ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request. 
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
 ## Reporting Vulnerabilities​

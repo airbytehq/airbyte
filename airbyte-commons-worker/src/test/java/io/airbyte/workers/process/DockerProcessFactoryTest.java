@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -86,7 +86,7 @@ class DockerProcessFactoryTest {
     final DockerProcessFactory processFactory =
         new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
     processFactory.create("tester", "job_id", 0, jobRoot, BUSYBOX, false, false, ImmutableMap.of("config.json", "{\"data\": 2}"), "echo hi",
-        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(), Map.of(), Map.of());
+        new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), null, Map.of(), Map.of(), Map.of());
 
     assertEquals(
         Jsons.jsonNode(ImmutableMap.of("data", 2)),
@@ -125,6 +125,7 @@ class DockerProcessFactoryTest {
         Map.of(),
         "/bin/sh",
         workerConfigs.getResourceRequirements(),
+        null,
         Map.of(),
         Map.of(),
         Map.of(),
@@ -158,6 +159,7 @@ class DockerProcessFactoryTest {
           Map.of(),
           "/bin/sh",
           workerConfigs.getResourceRequirements(),
+          null,
           Map.of(),
           Map.of(),
           Map.of(),

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -187,6 +187,26 @@ def test_stream_teams_404():
     assert list(read_full_refresh(stream)) == []
     assert len(responses.calls) == 1
     assert responses.calls[0].request.url == "https://api.github.com/orgs/org_name/teams?per_page=100"
+
+
+@responses.activate
+@patch("time.sleep")
+def test_stream_teams_502(sleep_mock):
+    organization_args = {"organizations": ["org_name"]}
+    stream = Teams(**organization_args)
+
+    url = "https://api.github.com/orgs/org_name/teams"
+    responses.add(
+        method="GET",
+        url=url,
+        status=requests.codes.BAD_GATEWAY,
+        json={"message": "Server Error"},
+    )
+
+    assert list(read_full_refresh(stream)) == []
+    assert len(responses.calls) == 6
+    # Check whether url is the same for all response.calls
+    assert set(call.request.url for call in responses.calls).symmetric_difference({f"{url}?per_page=100"}) == set()
 
 
 @responses.activate

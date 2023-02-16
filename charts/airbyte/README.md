@@ -213,7 +213,7 @@ Helm chart to deploy airbyte
 | webapp.image.repository | string | `"airbyte/webapp"` |  |
 | webapp.ingress.annotations | object | `{}` |  |
 | webapp.ingress.className | string | `""` |  |
-| webapp.ingress.enabled | bool | `true` |  |
+| webapp.ingress.enabled | bool | `false` |  |
 | webapp.ingress.hosts | list | `[]` |  |
 | webapp.ingress.tls | list | `[]` |  |
 | webapp.livenessProbe.enabled | bool | `true` |  |
@@ -250,7 +250,7 @@ Helm chart to deploy airbyte
 | worker.hpa.enabled | bool | `false` |  |
 | worker.image.pullPolicy | string | `"IfNotPresent"` |  |
 | worker.image.repository | string | `"airbyte/worker"` |  |
-| worker.image.tag | string | `"0.40.27"` |  |
+| worker.image.tag | string | `"0.40.32"` |  |
 | worker.livenessProbe.enabled | bool | `true` |  |
 | worker.livenessProbe.failureThreshold | int | `3` |  |
 | worker.livenessProbe.initialDelaySeconds | int | `30` |  |

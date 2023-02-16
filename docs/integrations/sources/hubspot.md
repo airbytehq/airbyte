@@ -9,19 +9,19 @@ You can use OAuth, API key, or Private App to authenticate your HubSpot account.
 | Stream                      | Required Scope                                                                   |
 | :-------------------------- | :------------------------------------------------------------------------------- |
 | `campaigns`                 | `content`                                                                        |
-| `companies`                 | `crm.objects.contacts.read`                                                      |
-| `contact_lists`             | `crm.objects.contacts.read`                                                      |
+| `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                       |
+| `contact_lists`             | `crm.objects.lists.read`                                                         |
 | `contacts`                  | `crm.objects.contacts.read`                                                      |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                      |
 | `deal_pipelines`            | either the `crm.objects.contacts.read` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals`                     | `crm.objects.contacts.read`                                                      |
+| `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                               |
 | `email_events`              | `content`                                                                        |
-| `engagements`               | `crm.objects.contacts.read`                                                      |
+| `engagements`               | `crm.objects.companies.read`, `crm.objects.contacts.read`, `crm.objects.deals.read`, `tickets`, `e-commerce`|
 | `engagements_emails`        | `sales-email-read`                                                               |
 | `forms`                     | `forms`                                                                          |
 | `form_submissions`          | `forms`                                                                          |
 | `line_items`                | `e-commerce`                                                                     |
-| `owners`                    | `crm.objects.contacts.read`                                                      |
+| `owners`                    | `crm.objects.owners.read`                                                        |
 | `products`                  | `e-commerce`                                                                     |
 | `property_history`          | `crm.objects.contacts.read`                                                      |
 | `subscription_changes`      | `content`                                                                        |
@@ -126,7 +126,9 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.0   | 2022-10-27 | [18546](https://github.com/airbytehq/airbyte/pull/18546) | Sunsetting API Key authentication. `Quotes` stream is no longer available                                                                                                             |
+| 0.3.2   | 2023-02-07 | [22479](https://github.com/airbytehq/airbyte/pull/22479) | Turn on default HttpAvailabilityStrategy                                                                                                       |
+| 0.3.1   | 2023-01-27 | [22009](https://github.com/airbytehq/airbyte/pull/22009) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                    |
+| 0.3.0   | 2022-10-27 | [18546](https://github.com/airbytehq/airbyte/pull/18546) | Sunsetting API Key authentication. `Quotes` stream is no longer available                                                                      |
 | 0.2.2   | 2022-10-03 | [16914](https://github.com/airbytehq/airbyte/pull/16914) | Fix 403 forbidden error validation                                                                                                             |
 | 0.2.1   | 2022-09-26 | [17120](https://github.com/airbytehq/airbyte/pull/17120) | Migrate to per-stream state.                                                                                                                   |
 | 0.2.0   | 2022-09-13 | [16632](https://github.com/airbytehq/airbyte/pull/16632) | Remove Feedback Submissions stream as the one using unstable (beta) API.                                                                       |

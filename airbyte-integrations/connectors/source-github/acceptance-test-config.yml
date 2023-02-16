@@ -1,4 +1,5 @@
 connector_image: airbyte/source-github:dev
+test_strictness_level: "high"
 acceptance_tests:
   spec:
     tests:
@@ -18,10 +19,16 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
         empty_streams:
           - name: "events"
             bypass_reason: "Only events created within the past 90 days can be showed"
+          - name: "organizations"
+            bypass_reason: "The objects can mutate quite often"
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -40,7 +47,7 @@ acceptance_tests:
             ["airbytehq/integration-test", "907296275", "created_at"]
           issue_events: ["airbytehq/integration-test", "created_at"]
           issue_milestones: ["airbytehq/integration-test", "updated_at"]
-          issue_reactions: ["airbytehq/integration-test", "11", "created_at"]
+          issue_reactions: ["airbytehq/integration-test", "created_at"]
           issues: ["airbytehq/integration-test", "updated_at"]
           project_cards:
             ["airbytehq/integration-test", "13167124", "17807006", "updated_at"]

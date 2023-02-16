@@ -1,0 +1,24 @@
+@use "scss/variables";
+
+.content {
+  max-width: 1073px;
+  margin: 0 auto;
+
+  & > fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: variables.$spacing-lg;
+  }
+}
+
+.customCard {
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

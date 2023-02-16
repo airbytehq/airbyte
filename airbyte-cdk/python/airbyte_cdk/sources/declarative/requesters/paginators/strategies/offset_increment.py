@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -9,11 +9,10 @@ import requests
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
+class OffsetIncrement(PaginationStrategy):
     """
     Pagination strategy that returns the number of records reads so far and returns it as the next page token
     Examples:
@@ -30,7 +29,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         # page_size to be an interpolated string value
         pagination_strategy:
           type: OffsetIncrement
-          page_size: "{{ options['items_per_page'] }}"
+          page_size: "{{ parameters['items_per_page'] }}"
 
     Attributes:
         page_size (InterpolatedString): the number of records to request
@@ -38,14 +37,15 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
 
     config: Config
     page_size: Union[str, int]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._offset = 0
-        self.page_size = InterpolatedString(self.page_size, options=options)
+        page_size = str(self.page_size) if isinstance(self.page_size, int) else self.page_size
+        self._page_size = InterpolatedString(page_size, parameters=parameters)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        if len(last_records) < self.page_size.eval(self.config):
+        if len(last_records) < self._page_size.eval(self.config):
             return None
         else:
             self._offset += len(last_records)
@@ -55,7 +55,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         self._offset = 0
 
     def get_page_size(self) -> Optional[int]:
-        page_size = self.page_size.eval(self.config)
+        page_size = self._page_size.eval(self.config)
         if not isinstance(page_size, int):
             raise Exception(f"{page_size} is of type {type(page_size)}. Expected {int}")
         return page_size

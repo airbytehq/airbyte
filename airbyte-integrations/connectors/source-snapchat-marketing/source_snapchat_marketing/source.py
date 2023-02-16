@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -14,6 +14,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -184,6 +185,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
         return self.name
 
     @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
+    @property
     def response_item_name(self):
         """Remove last 's' from response_root_name, see example in parse_response function"""
         return self.response_root_name[:-1]
@@ -206,7 +211,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
         Also, the client side filtering for incremental sync is used
         """
 
-        json_response = response.json().get(self.response_root_name)
+        json_response = response.json().get(self.response_root_name, [])
         for resp in json_response:
             if self.response_item_name not in resp:
                 error_text = f"stream {self.name}: field named '{self.response_item_name}' is absent in the response: {resp}"

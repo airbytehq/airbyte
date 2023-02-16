@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -22,6 +22,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.protocol.migrations.v1.CatalogMigrationV1Helper;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
@@ -30,10 +31,12 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.JobOutput.OutputType;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
@@ -154,9 +157,11 @@ public class DefaultJobPersistence implements JobPersistence {
         + "jobs.created_at AS job_created_at,\n"
         + "jobs.updated_at AS job_updated_at,\n"
         + "attempts.attempt_number AS attempt_number,\n"
+        + "attempts.attempt_sync_config AS attempt_sync_config,\n"
         + "attempts.log_path AS log_path,\n"
         + "attempts.output AS attempt_output,\n"
         + "attempts.status AS attempt_status,\n"
+        + "attempts.processing_task_queue AS processing_task_queue,\n"
         + "attempts.failure_summary AS attempt_failure_summary,\n"
         + "attempts.created_at AS attempt_created_at,\n"
         + "attempts.updated_at AS attempt_updated_at,\n"
@@ -488,6 +493,18 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public void writeAttemptSyncConfig(final long jobId, final int attemptNumber, final AttemptSyncConfig attemptSyncConfig) throws IOException {
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+
+    jobDatabase.transaction(
+        ctx -> ctx.update(ATTEMPTS)
+            .set(ATTEMPTS.ATTEMPT_SYNC_CONFIG, JSONB.valueOf(Jsons.serialize(attemptSyncConfig)))
+            .set(ATTEMPTS.UPDATED_AT, now)
+            .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
+            .execute());
+  }
+
+  @Override
   public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
 
@@ -534,7 +551,7 @@ public class DefaultJobPersistence implements JobPersistence {
     final var attemptStats = new HashMap<JobAttemptPair, AttemptStats>();
     final var syncResults = ctx.fetch(
         "SELECT atmpt.attempt_number, atmpt.job_id,"
-            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted "
+            + "stats.estimated_bytes, stats.estimated_records, stats.bytes_emitted, stats.records_emitted, stats.records_committed "
             + "FROM sync_stats stats "
             + "INNER JOIN attempts atmpt ON stats.attempt_id = atmpt.id "
             + "WHERE job_id IN ( " + jobIdsStr + ");");
@@ -543,6 +560,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final var syncStats = new SyncStats()
           .withBytesEmitted(r.get(SYNC_STATS.BYTES_EMITTED))
           .withRecordsEmitted(r.get(SYNC_STATS.RECORDS_EMITTED))
+          .withRecordsCommitted(r.get(SYNC_STATS.RECORDS_COMMITTED))
           .withEstimatedRecords(r.get(SYNC_STATS.ESTIMATED_RECORDS))
           .withEstimatedBytes(r.get(SYNC_STATS.ESTIMATED_BYTES));
       attemptStats.put(key, new AttemptStats(syncStats, Lists.newArrayList()));
@@ -915,7 +933,7 @@ public class DefaultJobPersistence implements JobPersistence {
     return new Job(record.get(JOB_ID, Long.class),
         Enums.toEnum(record.get("config_type", String.class), ConfigType.class).orElseThrow(),
         record.get("scope", String.class),
-        Jsons.deserialize(record.get("config", String.class), JobConfig.class),
+        parseJobConfigFromString(record.get("config", String.class)),
         new ArrayList<Attempt>(),
         JobStatus.valueOf(record.get("job_status", String.class).toUpperCase()),
         Optional.ofNullable(record.get("job_started_at")).map(value -> getEpoch(record, "started_at")).orElse(null),
@@ -923,13 +941,32 @@ public class DefaultJobPersistence implements JobPersistence {
         getEpoch(record, "job_updated_at"));
   }
 
+  private static JobConfig parseJobConfigFromString(final String jobConfigString) {
+    final JobConfig jobConfig = Jsons.deserialize(jobConfigString, JobConfig.class);
+    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
+    if (jobConfig.getConfigType() == ConfigType.SYNC && jobConfig.getSync() != null) {
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobConfig.getSync().getConfiguredAirbyteCatalog());
+    } else if (jobConfig.getConfigType() == ConfigType.RESET_CONNECTION && jobConfig.getResetConnection() != null) {
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobConfig.getResetConnection().getConfiguredAirbyteCatalog());
+    }
+    return jobConfig;
+  }
+
   private static Attempt getAttemptFromRecord(final Record record) {
+    final String attemptOutputString = record.get("attempt_output", String.class);
     return new Attempt(
         record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
-        record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),
+        record.get("attempt_sync_config", String.class) == null ? null
+            : Jsons.deserialize(record.get("attempt_sync_config", String.class), AttemptSyncConfig.class),
+        attemptOutputString == null ? null : parseJobOutputFromString(attemptOutputString),
         Enums.toEnum(record.get("attempt_status", String.class), AttemptStatus.class).orElseThrow(),
+        record.get("processing_task_queue", String.class),
         record.get("attempt_failure_summary", String.class) == null ? null
             : Jsons.deserialize(record.get("attempt_failure_summary", String.class), AttemptFailureSummary.class),
         getEpoch(record, "attempt_created_at"),
@@ -937,6 +974,21 @@ public class DefaultJobPersistence implements JobPersistence {
         Optional.ofNullable(record.get("attempt_ended_at"))
             .map(value -> getEpoch(record, "attempt_ended_at"))
             .orElse(null));
+  }
+
+  private static JobOutput parseJobOutputFromString(final String jobOutputString) {
+    final JobOutput jobOutput = Jsons.deserialize(jobOutputString, JobOutput.class);
+    // On-the-fly migration of persisted data types related objects (protocol v0->v1)
+    if (jobOutput.getOutputType() == OutputType.DISCOVER_CATALOG && jobOutput.getDiscoverCatalog() != null) {
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobOutput.getDiscoverCatalog().getCatalog());
+    } else if (jobOutput.getOutputType() == OutputType.SYNC && jobOutput.getSync() != null) {
+      // TODO feature flag this for data types rollout
+      // CatalogMigrationV1Helper.upgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+      CatalogMigrationV1Helper.downgradeSchemaIfNeeded(jobOutput.getSync().getOutputCatalog());
+    }
+    return jobOutput;
   }
 
   private static List<AttemptWithJobInfo> getAttemptsWithJobsFromResult(final Result<Record> result) {

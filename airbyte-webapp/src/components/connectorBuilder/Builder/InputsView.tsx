@@ -8,10 +8,10 @@ import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
 
-import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { InputForm, InputInEditing, newInputInEditing } from "./InputsForm";
 import styles from "./InputsView.module.scss";
+import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 
 const supportedTypes = ["string", "integer", "number", "array", "boolean", "enum", "unknown"] as const;
 
