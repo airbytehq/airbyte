@@ -11,6 +11,9 @@ airbyte:
   cron:
     update-definitions:
       enabled: ${UPDATE_DEFINITIONS_CRON_ENABLED:false}
+    workspace-failure-monitor:
+      enabled: ${WORKSPACE_FAILURE_MONITOR_CRON_ENABLED:false}
+      monitored-workspace-ids: ${WORKSPACE_FAILURE_MONITOR_IDS:}
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
   flyway:
     configs:
