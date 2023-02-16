@@ -25,6 +25,8 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -46,6 +48,7 @@ public class JobsApiController implements JobsApi {
   @Post("/cancel")
   @Secured({EDITOR})
   @SecuredWorkspace
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
@@ -61,6 +64,7 @@ public class JobsApiController implements JobsApi {
   @Post("/get_debug_info")
   @Secured({READER})
   @SecuredWorkspace
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));

@@ -28,6 +28,8 @@ import io.airbyte.commons.server.handlers.WebBackendGeographiesHandler;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
@@ -67,6 +69,7 @@ public class WebBackendApiController implements WebBackendApi {
   @Post("/connections/create")
   @Secured({EDITOR})
   @SecuredWorkspace
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
@@ -105,6 +108,8 @@ public class WebBackendApiController implements WebBackendApi {
 
   @Post("/connections/update")
   @Secured({EDITOR})
+  @SecuredWorkspace
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
