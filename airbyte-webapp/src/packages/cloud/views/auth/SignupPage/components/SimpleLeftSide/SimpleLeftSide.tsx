@@ -9,9 +9,9 @@ import { Button } from "components/ui/Button";
 import { FlexContainer } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 
+import styles from "./SimpleLeftSide.module.scss";
 import { OAuthLogin } from "../../../OAuthLogin";
 import { Disclaimer, SignupForm } from "../SignupForm";
-import styles from "./SimpleLeftSide.module.scss";
 
 const Detail: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   return (

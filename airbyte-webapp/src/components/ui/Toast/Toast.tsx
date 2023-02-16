@@ -6,8 +6,8 @@ import React from "react";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { Text } from "components/ui/Text";
 
-import { Button } from "../Button";
 import styles from "./Toast.module.scss";
+import { Button } from "../Button";
 
 export const enum ToastType {
   WARNING = "warning",
@@ -22,7 +22,6 @@ export interface ToastProps {
   onAction?: () => void;
   actionBtnText?: string;
   onClose?: () => void;
-  "data-testid"?: string;
 }
 
 const ICON_MAPPING = {
@@ -39,16 +38,9 @@ const STYLES_BY_TYPE: Readonly<Record<ToastType, string>> = {
   [ToastType.INFO]: styles.info,
 };
 
-export const Toast: React.FC<ToastProps> = ({
-  type = ToastType.INFO,
-  onAction,
-  actionBtnText,
-  onClose,
-  text,
-  "data-testid": testId,
-}) => {
+export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, actionBtnText, onClose, text }) => {
   return (
-    <div className={classNames(styles.toastContainer, STYLES_BY_TYPE[type])} data-testid={testId}>
+    <div className={classNames(styles.toastContainer, STYLES_BY_TYPE[type])}>
       <div className={classNames(styles.iconContainer)}>
         <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
       </div>
@@ -60,7 +52,7 @@ export const Toast: React.FC<ToastProps> = ({
         )}
       </div>
       {onAction && (
-        <Button variant="dark" onClick={onAction}>
+        <Button variant="dark" className={styles.actionButton} onClick={onAction}>
           {actionBtnText}
         </Button>
       )}
