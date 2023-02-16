@@ -8,6 +8,7 @@ dependencies {
 
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
+    implementation libs.airbyte.protocol
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-commons')
@@ -16,9 +17,9 @@ dependencies {
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-persistence:job-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
     implementation libs.guava
     implementation libs.slf4j.api
+
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
