@@ -17,6 +17,8 @@ import io.airbyte.commons.server.handlers.OAuthHandler;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.scheduling.TaskExecutors;
+import io.micronaut.scheduling.annotation.ExecuteOn;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import java.util.Map;
@@ -34,6 +36,7 @@ public class SourceOauthApiController implements SourceOauthApi {
   @Post("/complete_oauth")
   @Secured({EDITOR})
   @SecuredWorkspace
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
@@ -42,6 +45,7 @@ public class SourceOauthApiController implements SourceOauthApi {
   @Post("/get_consent_url")
   @Secured({EDITOR})
   @SecuredWorkspace
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public OAuthConsentRead getSourceOAuthConsent(@Body final SourceOauthConsentRequest sourceOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
@@ -49,6 +53,7 @@ public class SourceOauthApiController implements SourceOauthApi {
 
   @Post("/oauth_params/create")
   @Secured({ADMIN})
+  @ExecuteOn(TaskExecutors.IO)
   @Override
   public void setInstancewideSourceOauthParams(@Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
     ApiHelper.execute(() -> {
