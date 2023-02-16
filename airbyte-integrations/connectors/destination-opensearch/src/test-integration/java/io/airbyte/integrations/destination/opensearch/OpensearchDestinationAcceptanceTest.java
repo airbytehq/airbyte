@@ -47,7 +47,7 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected String getImageName() {
-    return "airbyte/destination-elasticsearch:dev";
+    return "airbyte/destination-opensearch:dev";
   }
 
   @Override

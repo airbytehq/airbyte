@@ -11,8 +11,11 @@ import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.OpenSearchException;
 import org.opensearch.client.opensearch.cat.indices.IndicesRecord;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
 import org.opensearch.client.opensearch.core.CreateResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkOperation;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.indices.*;
@@ -31,11 +34,12 @@ import java.util.stream.Collectors;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.message.BasicHeader;
-import org.opensearch.client.transport.Transport;
+import org.opensearch.client.transport.OpenSearchTransport;
 import org.opensearch.client.transport.endpoints.BooleanResponse;
 import org.opensearch.client.transport.rest_client.RestClientTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * All communication with Opensearch should be done through this class.
@@ -57,8 +61,7 @@ public class OpensearchConnection {
      * @param config Configuration parameters for connecting to the Opensearch host
      */
     public OpensearchConnection(ConnectorConfiguration config) {
-        log.info(String.format(
-                "creating OpensearchConnection: %s", config.getEndpoint()));
+        log.info(String.format("creating OpensearchConnection: %s", config.getEndpoint()));
 
         // Create the low-level client
         httpHost = HttpHost.create(config.getEndpoint());
@@ -77,7 +80,7 @@ public class OpensearchConnection {
                 .setFailureListener(new FailureListener())
                 .build();
         // Create the transport that provides JSON and http services to API clients
-        Transport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
+        OpenSearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
         // And create our API client
         client = new OpenSearchClient(transport);
     }
@@ -113,7 +116,7 @@ public class OpensearchConnection {
                 headerList.add(new BasicHeader("Authorization", basicHeader));
             }
         }
-        return headerList.toArray(new Header[headerList.size()]);
+        return headerList.toArray(new Header[0]);
     }
 
     /**
@@ -127,9 +130,6 @@ public class OpensearchConnection {
             final var info = client.info();
             log.info("checked opensearch connection: {}, version: {}", info.clusterName(), info.version());
             return true;
-        } catch (ApiException e) {
-            log.error("failed to ping opensearch", unwrappedApiException("failed write operation", e));
-            return false;
         } catch (Exception e) {
             log.error("unknown exception while pinging opensearch server", e);
             return false;
@@ -161,18 +161,20 @@ public class OpensearchConnection {
      *                     server
      */
     public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpensearchWriteConfig config) throws IOException {
-        var bulkRequest = new BulkRequest.Builder<>();
+
+        var bulkRequest = new BulkRequest.Builder();
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
-            bulkRequest.addOperation(
+            bulkRequest.operations(
                             b -> b.index(
                                     c -> c.index(index).id(extractPrimaryKey(doc, config))))
+
                     .addDocument(doc.getData()).refresh(JsonValue.TRUE);
         }
 
         try {
             return client.bulk(b -> bulkRequest);
-        } catch (ApiException e) {
+        } catch (Exception e) {
             throw unwrappedApiException("failed write operation", e);
         }
     }
@@ -224,8 +226,6 @@ public class OpensearchConnection {
         try {
             var response = client.cat().indices(r -> r);
             return response.valueBody().stream().map(IndicesRecord::index).collect(Collectors.toList());
-        } catch (ApiException e) {
-            log.error("", unwrappedApiException("failed to get indices", e));
         } catch (IOException e) {
             log.error("unknown exception while getting indices", e);
         }
@@ -246,13 +246,11 @@ public class OpensearchConnection {
             }
             log.info("creating index: {}, info: {}", index, client.info());
             final CreateIndexResponse createIndexResponse = client.indices().create(b -> b.index(index));
-            if (createIndexResponse.acknowledged() && createIndexResponse.shardsAcknowledged()) {
+            if (Boolean.TRUE.equals(createIndexResponse.acknowledged()) && createIndexResponse.shardsAcknowledged()) {
                 log.info("created index: {}", index);
             } else {
                 log.info("did not create index: {}, {}", index, mapper.writeValueAsString(createIndexResponse));
             }
-        } catch (ApiException e) {
-            log.warn("", unwrappedApiException("failed to create index", e));
         } catch (IOException e) {
             log.warn("unknown exception while creating index", e);
         }
@@ -269,8 +267,6 @@ public class OpensearchConnection {
             if (exists.value()) {
                 client.indices().delete(b -> b.index(indexName));
             }
-        } catch (ApiException e) {
-            log.warn("", unwrappedApiException("failed to delete index", e));
         } catch (IOException e) {
             log.warn("unknown exception while deleting index", e);
         }
@@ -312,8 +308,6 @@ public class OpensearchConnection {
 
             // enable writing on new index
             client.indices().putSettings(b -> b.index(destinationIndexName).settings(s -> s.blocks(w -> w.write(false))));
-        } catch (ApiException e) {
-            throw unwrappedApiException("failed to delete index", e);
         } catch (IOException e) {
             throw new RuntimeException("unknown exception while replacing index", e);
         }
@@ -326,14 +320,14 @@ public class OpensearchConnection {
      * @param e       source ApiException
      * @return a new RuntimeException with the ApiException as the source
      */
-    private RuntimeException unwrappedApiException(String message, ApiException e) {
+    private RuntimeException unwrappedApiException(String message, Exception e) {
         log.error(message);
-        if (Objects.isNull(e) || Objects.isNull(e.error())) {
+        if (Objects.isNull(e) || Objects.isNull(e.getCause())) {
             log.error("unknown ApiException");
             return new RuntimeException(e);
         }
-        if (OpenSearchException.class.isAssignableFrom(e.error().getClass())) {
-            OpenSearchException esException = ((OpenSearchException) e.error());
+        if (OpenSearchException.class.isAssignableFrom(e.getCause().getClass())) {
+            OpenSearchException esException = ((OpenSearchException) e.getCause());
             String errorMessage = String.format("OpensearchError: status:%s, error:%s", esException.status(), esException.error().toString());
             return new RuntimeException(errorMessage);
         }
