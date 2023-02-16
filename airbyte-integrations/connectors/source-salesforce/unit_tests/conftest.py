@@ -105,6 +105,26 @@ def stream_api_pk(stream_config):
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 
+@pytest.fixture(scope="module")
+def stream_api_v2_too_many_properties(stream_config):
+    describe_response_data = {
+        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
+    }
+    describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}])
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+@pytest.fixture(scope="module")
+def stream_api_v2_pk_too_many_properties(stream_config):
+    describe_response_data = {
+        "fields": [{"name": f"Property{str(i)}", "type": "string"} for i in range(Salesforce.REQUEST_SIZE_LIMITS)]
+    }
+    describe_response_data["fields"].extend([
+        {"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}
+    ])
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
 def generate_stream(stream_name, stream_config, stream_api):
     return SourceSalesforce.generate_streams(stream_config, {stream_name: None}, stream_api)[0]
 

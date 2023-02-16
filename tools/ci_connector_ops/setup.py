@@ -5,6 +5,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
+    "click~=8.1.3",
     "requests",
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
@@ -21,7 +22,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    version="0.1.11",
+    version="0.1.13",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
