@@ -169,7 +169,7 @@ describe("Connection - Auto-detect schema changes", () => {
       getSyncEnabledSwitch().should("be.enabled");
     });
 
-    it.only("clears breaking change when db changes are restored", () => {
+    it("clears breaking change when db changes are restored", () => {
       visitConnectionPage(connection, "replication");
 
       checkSchemaChangesDetected({ breaking: true });
