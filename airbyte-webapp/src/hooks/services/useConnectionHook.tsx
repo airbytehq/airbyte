@@ -10,6 +10,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
 import { useInitService } from "services/useInitService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
 import { useAnalyticsService } from "./Analytics";
 import { useAppMonitoringService } from "./AppMonitoringService";
@@ -83,8 +84,8 @@ export const useSyncConnection = () => {
   const { trackError } = useAppMonitoringService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
-  const notificationService = useNotificationService();
-  const workspaceId = useCurrentWorkspace();
+  const { registerNotification } = useNotificationService();
+  const workspaceId = useCurrentWorkspaceId();
   const { formatMessage } = useIntl();
 
   return useMutation(
@@ -103,7 +104,7 @@ export const useSyncConnection = () => {
     {
       onError: (error: Error) => {
         trackError(error);
-        notificationService.registerNotification({
+        registerNotification({
           id: `tables.startSyncError.${error.message}`,
           text: `${formatMessage({ id: "connection.startSyncError" })}: ${error.message}`,
           type: ToastType.ERROR,
@@ -111,7 +112,7 @@ export const useSyncConnection = () => {
       },
       onSuccess: async () => {
         await webConnectionService
-          .list(workspaceId)
+          .list({ workspaceId })
           .then((updatedConnections) => queryClient.setQueryData(connectionsKeys.lists(), updatedConnections));
       },
     }
@@ -229,12 +230,23 @@ const useUpdateConnection = () => {
  */
 export const useEnableConnection = () => {
   const analyticsService = useAnalyticsService();
+  const { trackError } = useAppMonitoringService();
+  const { registerNotification } = useNotificationService();
+  const { formatMessage } = useIntl();
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   return useMutation(
     ({ connectionId, enable }: { connectionId: WebBackendConnectionUpdate["connectionId"]; enable: boolean }) =>
       updateConnection({ connectionId, status: enable ? ConnectionStatus.active : ConnectionStatus.inactive }),
     {
+      onError: (error: Error) => {
+        trackError(error);
+        registerNotification({
+          id: `tables.updateFailed.${error.message}`,
+          text: `${formatMessage({ id: "connection.updateFailed" })}: ${error.message}`,
+          type: ToastType.ERROR,
+        });
+      },
       onSuccess: (connection) => {
         const action = connection.status === ConnectionStatus.active ? Action.REENABLE : Action.DISABLE;
 

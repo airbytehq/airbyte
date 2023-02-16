@@ -71,7 +71,8 @@ If the iteration you are working on includes changes to the models, you might wa
 ```commandline
 SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 ```
-This will generate the files based on the schemas, add the license information and format the code. If you want to only do the former and rely on pre-commit to the others, you can run the appropriate generation command i.e. `./gradlew generateProtocolClassFiles` or `./gradlew generateComponentManifestClassFiles`.
+This will generate the files based on the schemas, add the license information and format the code. If you want to only do the former and rely on
+pre-commit to the others, you can run the appropriate generation command i.e. `./gradlew generateComponentManifestClassFiles`.
 
 #### Testing
 

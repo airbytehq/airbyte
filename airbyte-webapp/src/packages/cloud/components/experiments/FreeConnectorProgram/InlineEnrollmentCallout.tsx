@@ -43,3 +43,5 @@ export const InlineEnrollmentCallout: React.FC = () => {
     </Callout>
   );
 };
+
+export default InlineEnrollmentCallout;
