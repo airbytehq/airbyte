@@ -1,7 +1,7 @@
-# CDK and SAT
+# CDK and Connector Acceptance Tests
 /airbyte-cdk/ @airbytehq/connector-extensibility
-/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/connector-extensibility
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
+/airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 
 # Oauth
 /airbyte-oauth/ @airbytehq/connector-operations
@@ -9,7 +9,6 @@
 /airbyte-server/src/test/java/io/airbyte/server/handlers/OAuthHandlerTest.java @airbytehq/connector-operations
 
 # Protocol related items
-/airbyte-protocol/ @airbytehq/protocol-reviewers
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
 
 # Airbyte Maintainers

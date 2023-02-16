@@ -2789,6 +2789,8 @@ components:
           format: uuid
         disable_cache:
           type: boolean
+        notifySchemaChange:
+          type: boolean
     SourceUpdate:
       type: object
       required:
@@ -4187,6 +4189,7 @@ components:
         - config_error
         - system_error
         - manual_cancellation
+        - refresh_schema
     AttemptStatus:
       type: string
       enum:

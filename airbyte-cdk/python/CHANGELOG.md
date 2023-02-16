@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.29.0
+Low-code language breaking changes for beta
+
+## 0.28.1
+Low-Code CDK: fix signature _parse_records_and_emit_request_and_responses
+
+## 0.28.0
+Low-Code: improve day_delta macro and MinMaxDatetime component
+
+## 0.27.0
+Make HttpAvailabilityStrategy default for HttpStreams
+
 ## 0.26.0
 Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
 

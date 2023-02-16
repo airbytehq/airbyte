@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -100,11 +100,9 @@ class IncrementalMarketoStream(MarketoStream):
         self._state = value
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        self._state = {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.start_date), current_stream_state.get(self.cursor_field, self.start_date)
-            )
-        }
+        latest_cursor_value = latest_record.get(self.cursor_field, self.start_date) or self.start_date
+        current_cursor_value = current_stream_state.get(self.cursor_field, self.start_date) or self.start_date
+        self._state = {self.cursor_field: max(latest_cursor_value, current_cursor_value)}
         return self._state
 
     def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
@@ -334,7 +332,7 @@ class MarketoExportStatus(MarketoStream):
 class Leads(MarketoExportBase):
     """
     Return list of all leeds.
-    API Docs: http://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
+    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-lead-extract/
     """
 
     cursor_field = "updatedAt"
@@ -351,7 +349,7 @@ class Activities(MarketoExportBase):
     """
     Base class for all the activities streams,
     provides functionality for dynamically created classes as streams of data.
-    API Docs: http://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
+    API Docs: https://developers.marketo.com/rest-api/bulk-extract/bulk-activity-extract/
     """
 
     primary_key = "marketoGUID"
@@ -413,7 +411,7 @@ class Activities(MarketoExportBase):
 class ActivityTypes(MarketoStream):
     """
     Return list of all activity types.
-    API Docs: http://developers.marketo.com/rest-api/lead-database/activities/#describe
+    API Docs: https://developers.marketo.com/rest-api/lead-database/activities/#describe
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -423,7 +421,7 @@ class ActivityTypes(MarketoStream):
 class Programs(IncrementalMarketoStream):
     """
     Return list of all programs.
-    API Docs: http://developers.marketo.com/rest-api/assets/programs/#by_date_range
+    API Docs: https://developers.marketo.com/rest-api/assets/programs/#by_date_range
     """
 
     cursor_field = "updatedAt"

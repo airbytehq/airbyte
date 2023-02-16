@@ -9,7 +9,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
 * [Packaging your connector](https://docs.airbyte.io/connector-development#1.-implement-and-package-the-connector)
-* [Testing your connector](../testing-connectors/source-acceptance-tests-reference.md)
+* [Testing your connector](../testing-connectors/connector-acceptance-tests-reference.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
@@ -976,17 +976,17 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Source Acceptance Test suite](../testing-connectors/source-acceptance-tests-reference.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Connector Acceptance Test suite](../testing-connectors/connector-acceptance-tests-reference.md).
 
 ### 4. Test the connector
 
-The minimum requirement for testing your connector is to pass the [Source Acceptance Test (SAT)](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) suite. SAT is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's SATs suite.
+The minimum requirement for testing your connector is to pass the [Connector Acceptance Test](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) suite. The connector acceptence test is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's acceptance test suite.
 
 The code generator should have already generated a YAML file which configures the test suite. In order to run it, modify the `acceptance-test-config.yaml` file to look like this: 
 
 
 ```yaml
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
 acceptance_tests:
@@ -1033,7 +1033,7 @@ collecting ...
  test_full_refresh.py ✓                                                                                                                                                                                                                                                                                                                                    100% ██████████
 
 ================== short test summary info ================== 
-SKIPPED [1] source_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
+SKIPPED [1] connector_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
 
 Results (8.91s):
       20 passed
