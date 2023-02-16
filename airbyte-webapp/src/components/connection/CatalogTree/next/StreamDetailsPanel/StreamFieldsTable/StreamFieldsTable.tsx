@@ -204,7 +204,6 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         },
       }),
     ],
-    // eslint-disable-next-line
     [
       columnHelper,
       config?.fieldSelectionEnabled,
