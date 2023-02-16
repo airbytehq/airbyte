@@ -142,6 +142,10 @@ class SchedulerHandlerTest {
       .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
 
+  private static final ConnectorSpecification CONNECTOR_SPECIFICATION_WITHOUT_DOCS_URL = new ConnectorSpecification()
+      .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
+      .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+
   private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("1");
 
   private SchedulerHandler schedulerHandler;
@@ -303,6 +307,26 @@ class SchedulerHandlerTest {
 
     verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId());
     assertEquals(CONNECTOR_SPECIFICATION.getConnectionSpecification(), response.getConnectionSpecification());
+  }
+
+  @Test
+  void testGetSourceSpecWithoutDocs() throws JsonValidationException, IOException, ConfigNotFoundException {
+    final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId =
+        new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
+
+    final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
+        .withName(NAME)
+        .withDockerRepository(SOURCE_DOCKER_REPO)
+        .withDockerImageTag(SOURCE_DOCKER_TAG)
+        .withSourceDefinitionId(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId())
+        .withSpec(CONNECTOR_SPECIFICATION_WITHOUT_DOCS_URL);
+    when(configRepository.getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId()))
+        .thenReturn(sourceDefinition);
+
+    final SourceDefinitionSpecificationRead response = schedulerHandler.getSourceDefinitionSpecification(sourceDefinitionIdWithWorkspaceId);
+
+    verify(configRepository).getStandardSourceDefinition(sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId());
+    assertEquals(CONNECTOR_SPECIFICATION_WITHOUT_DOCS_URL.getConnectionSpecification(), response.getConnectionSpecification());
   }
 
   @Test
