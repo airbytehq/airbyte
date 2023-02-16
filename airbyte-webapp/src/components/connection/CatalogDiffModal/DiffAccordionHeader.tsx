@@ -30,13 +30,15 @@ export const DiffAccordionHeader: React.FC<DiffAccordionHeaderProps> = ({
   const nameCellStyle = classnames(styles.nameCell, styles.row, styles.name);
   const namespaceCellStyles = classnames(styles.nameCell, styles.row, styles.namespace);
 
+  const namespace = streamDescriptor.namespace ?? formatMessage({ id: "form.noNamespace" });
+
   return (
     <>
       <ModificationIcon />
       <div className={namespaceCellStyles} aria-labelledby={formatMessage({ id: "connection.updateSchema.namespace" })}>
         <FontAwesomeIcon icon={open ? faAngleDown : faAngleRight} fixedWidth />
-        <div title={streamDescriptor.namespace} className={styles.text}>
-          {streamDescriptor.namespace}
+        <div title={namespace} className={classnames(styles.text, { [styles.grey]: !streamDescriptor.namespace })}>
+          {namespace}
         </div>
       </div>
       <div className={nameCellStyle} aria-labelledby={formatMessage({ id: "connection.updateSchema.streamName" })}>

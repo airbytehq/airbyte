@@ -14,7 +14,12 @@ export const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffAr
     }
 
     if (transform.transformType.includes("update")) {
-      sortedDiff.changedItems.push(transform);
+      const { updateFieldSchema } = transform as FieldTransform;
+      if (!updateFieldSchema || updateFieldSchema.newSchema.type !== updateFieldSchema.oldSchema.type) {
+        // Push any change except except when it's FieldTransform a same -> same type update (e.g. object -> object)
+        // because for objects, the properties of that field will be shown as added or removed in the modal
+        sortedDiff.changedItems.push(transform);
+      }
     }
   });
   return sortedDiff;
