@@ -1,0 +1,42 @@
+name: Create PR from Airbyte Pull Request
+description: Creates a pull request from an airbytehq/airbyte pull request.
+inputs:
+  source_repo:
+    description: The name of the source repository.
+    required: true
+    default: airbytehq/airbyte
+  source_branch:  
+    description: The name of the source branch.
+    required: true
+  destination_repo:
+    description: The name of the destination repository
+    required: true
+  destination_branch:
+    description: |
+      The name of the destination branch. If ommitted, gitxmod will use the source branch name with the source repo as a prefix.
+      E.g. airbytehq/airbyte-platform/my-branch
+  module_path:
+    description: A path in the destination repository where the module (source repository) will be embedded.
+  commit_author:
+    description: An optional author to apply the commits as.
+  source_pull_request:
+    description: The source pull request number.
+    required: true
+  github_access_token:
+    description: A github access token
+  
+outputs:
+  pull_request_branch:
+    description: The name of the newly created branch.
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    AUTH_TOKEN: ${{ inputs.github_access_token }}
+    SRC_REPO: ${{ inputs.source_repo }}
+    SRC_BRANCH: ${{ inputs.source_branch }}
+    SRC_PR_NUM: ${{ inputs.source_pull_request }}
+    DST_REPO: ${{ inputs.destination_repo }}
+    DST_PATH: ${{ inputs.module_path }}
+    DST_BRANCH: ${{ inputs.destination_branch }}

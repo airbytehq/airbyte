@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -e
+
+# The source repository
+SRC_REPO=${SRC_REPO:-airbytehq/airbyte}
+# The source branch to be mirrored
+SRC_BRANCH=${SRC_BRANCH}
+# The source PR number
+SRC_PR_NUM=${SRC_PR_NUM}
+# The destination repository
+DST_REPO=${DST_REPO:-airbytehq/airbyte-platform}
+# The destination branch
+DST_BRANCH="${SRC_REPO}/${SRC_BRANCH}"
+
+# Create a snapshot of the `airbytehq/airbyte` PR branch
+gitxmod mirror ref \
+    --auth-pass=$AUTH_TOKEN \
+    --src="https://github.com/${SRC_REPO}.git" \
+    --src-ref=$SRC_BRANCH \
+    --dst="https://github.com/${DST_REPO}.git" \
+    --dst-ref=$SRC_BRANCH \
+    --push
+
+# Create a snapshot of the `airbytehq/airbyte` PR
+gitxmod mirror pr \
+    --token=$AUTH_TOKEN \
+    --src-repo-owner=${SRC_REPO%/*} \
+    --src-repo-name=${SRC_REPO##*/} \
+    --dst-repo-owner=${DST_REPO%/*} \
+    --dst-repo-name=${DST_REPO##*/} \
+    --pr=$SRC_PR_NUM \
+    --ref=$DST_BRANCH
+

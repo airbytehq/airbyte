@@ -1,0 +1,22 @@
+on:
+  repository_dispatch:
+    types: [create-platform-pr-command]
+
+jobs:
+  create_platform_pr_from_airbyte_pr:
+    name: Create a PR from an OSS PR 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Create branch snapshot
+        id: create-branch-snapshot
+        uses: ./.github/actions/create-pr-from-airbyte
+        with: 
+          github_access_token: ${{ secrets.GH_PAT_ROOT_ACCESS_OCTAVIA }}
+          source_repo: ${{ github.event.client_payload.slash_command.args.named.repository }}
+          source_branch: ${{ github.event.client_payload.slash_command.args.named.branch }}
+          source_pull_request: ${{ githunb.event.client_payload.slash_command.args.named.pr_number }}
+          destination_repo: airbytehq/airbyte-platform
+    
