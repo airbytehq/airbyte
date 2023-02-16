@@ -333,10 +333,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         // Verify if the user has privilege at role level
         final List<JsonNode> rolePrivileges = database.queryJsons(connection -> {
           final PreparedStatement ps = connection.prepareStatement("""
-                       select 1 from pg_catalog.pg_roles pgr
-                         join pg_catalog.pg_auth_members pgam on pgam.roleid = pgr.oid
-                         join pg_catalog.pg_user pgu on pgam.member = pgu.usesysid
-                       where rolreplication and usename = ?;""");
+              WITH RECURSIVE cte AS (
+                 SELECT usesysid  FROM pg_catalog.pg_user WHERE usename = ?
+                 UNION ALL
+                 SELECT m.roleid
+                 FROM   cte
+                 JOIN   pg_auth_members m ON m.member = cte.usesysid
+                 )
+              SELECT rolname FROM cte
+              JOIN pg_roles on usesysid = oid
+              WHERE rolreplication;""");
           ps.setString(1, userName);
           LOGGER.info("Verifying required privileges at role level for user: {}", userName);
           return ps;

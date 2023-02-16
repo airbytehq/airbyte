@@ -50,6 +50,8 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.debezium.engine.ChangeEvent;
+
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -167,33 +169,70 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         SQLDialect.POSTGRES);
   }
 
+  /**
+   * Modify user to add replication privilege.
+   */
   private void grantReplicationPermissionUserLevel() {
     executeQuery("ALTER USER " + container.getUsername() + " REPLICATION;");
   }
-  private void grantReplicationPermissionRoleLevel() throws SQLException {
+
+  /**
+   * Grants access to replication assigning a role that has privileges to perform it.
+   */
+  private void grantReplicationPermissionRoleLevel() {
     String roleName = "replication_" + container.getContainerId();
     executeQuery("CREATE ROLE " + roleName + " REPLICATION LOGIN;");
     executeQuery("GRANT " + roleName + " TO " + container.getUsername() + ";");
   }
+
+  /**
+   * Remove REPLICATION privilege at user level (without using roles)
+   */
   private void revokeReplicationPermissionUserLevel() {
     executeQuery("ALTER USER " + container.getUsername() + " NOREPLICATION;");
   }
-  private void revokeReplicationPermissionRoleLevel() throws SQLException {
-    Object roleNames = database.query(ctx -> ctx.execute("""
-            select pgr.rolname from pg_catalog.pg_roles pgr
-              join pg_catalog.pg_auth_members pgam on pgam.roleid = pgr.oid
-              join pg_catalog.pg_user pgu on pgam.member = pgu.usesysid
-            where rolreplication and usename='""" + container.getUsername() + "';"));
-    /*
-    ITERATE ORVER ALL ROLES TO REMOVE ACCESS:
-    for(roleName in roleNames){
-      executeQuery("REVOKE " + roleName + " TO " + container.getUsername() + ";");
+
+  /**
+   * Removes all the roles attached to the user (with or without replication access). We remove all to make sure there are no replication on a subrole (role granted to a role)
+   */
+  private void revokeReplicationPermissionRoleLevel() {
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
+
+    String userName = config.get("username").asText();
+    try {
+      List<JsonNode> roleNames = defaultJdbcDatabase.queryJsons(connection -> {
+        final String sql = """
+                  select rolname
+                  from pg_catalog.pg_roles pgr
+                     join pg_catalog.pg_auth_members pgam on pgam.roleid = pgr.oid
+                     join pg_catalog.pg_user pgu on pgam.member = pgu.usesysid
+                  where usename = ?;""";
+        final PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, userName);
+
+        return ps;
+      }, JdbcUtils.getDefaultSourceOperations()::rowToJson);
+      for (JsonNode row : roleNames
+      ) {
+        executeQuery("REVOKE " + row.get("rolname").asText() + " FROM " + container.getUsername() + ";");
+      }
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
     }
-    */
+
   }
 
   @Test
-  void testCheckReplicationPermissionUserLevel() throws Exception {
+  void testCheckReplicationPermissionAtUserLevel() throws Exception {
     revokeReplicationPermissionUserLevel();
     revokeReplicationPermissionRoleLevel();
     grantReplicationPermissionUserLevel();
@@ -202,7 +241,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Test
-  void testCheckReplicationPermissionRoleLevel() throws Exception {
+  void testCheckReplicationPermissionAtRoleLevel() throws Exception {
     revokeReplicationPermissionUserLevel();
     revokeReplicationPermissionRoleLevel();
     grantReplicationPermissionRoleLevel();
