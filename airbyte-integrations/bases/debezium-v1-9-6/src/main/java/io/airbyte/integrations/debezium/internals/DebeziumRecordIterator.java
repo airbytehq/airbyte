@@ -203,10 +203,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   @VisibleForTesting
   protected Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    if (heartbeatEvent == null) {
-      return null;
-    }
     try {
+      if (heartbeatEvent == null) {
+        return null;
+      }
+
       final Class<? extends ChangeEvent> eventClass = heartbeatEvent.getClass();
       final Field f;
       if (heartbeatEventSourceField.containsKey(eventClass)) {
@@ -215,6 +216,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         f = eventClass.getDeclaredField("sourceRecord");
         f.setAccessible(true);
         heartbeatEventSourceField.put(eventClass, f);
+
+        if (heartbeatEventSourceField.size() > 1) {
+          LOGGER.warn("Field Cache size growing beyond expected size of 1, size is " + heartbeatEventSourceField.size());
+        }
       }
 
       final SourceRecord sr = (SourceRecord) f.get(heartbeatEvent);

@@ -67,7 +67,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-abstract class CdcPostgresSourceTest extends CdcSourceTest {
+public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
@@ -84,7 +84,9 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   private JsonNode config;
   private String fullReplicationSlot;
 
-  protected abstract String getPluginName();
+  protected String getPluginName() {
+    return "pgoutput";
+  }
 
   @AfterEach
   void tearDown() {
