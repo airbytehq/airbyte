@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,28 +8,43 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Iterable, List, Optional
 
 import git
 import requests
 
 from .constants import (
     AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL,
+    AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT,
     AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME,
     AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT,
     AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER,
+    GIT_USER_EMAIL,
+    GIT_USERNAME,
+    GIT_USERNAME_FOR_AUTH,
     GITHUB_API_COMMON_HEADERS,
+    GITHUB_API_TOKEN,
+    PR_LABELS,
 )
 from .models import ConnectorQAReport
 
 logger = logging.getLogger(__name__)
 
 
+def set_git_identity(repo: git.repo) -> git.repo:
+    repo.git.config("--global", "user.email", GIT_USER_EMAIL)
+    repo.git.config("--global", "user.name", GIT_USERNAME)
+    return repo
+
+
+def get_authenticated_repo_url(git_username: str, github_api_token: str) -> str:
+    return AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL.replace("https://", f"https://{git_username}:{github_api_token}@")
+
+
 def clone_airbyte_cloud_repo(local_repo_path: Path) -> git.Repo:
     logger.info(f"Cloning {AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL} to {local_repo_path}")
-    return git.Repo.clone_from(
-        AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL, local_repo_path, branch=AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME
-    )
+    authenticated_repo_url = get_authenticated_repo_url(GIT_USERNAME_FOR_AUTH, GITHUB_API_TOKEN)
+    return git.Repo.clone_from(authenticated_repo_url, local_repo_path, branch=AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME)
 
 
 def get_definitions_mask_path(local_repo_path, definition_type: str) -> Path:
@@ -94,6 +109,14 @@ def pr_already_created_for_branch(head_branch: str) -> bool:
     return len(response.json()) > 0
 
 
+def add_labels_to_pr(pr_number: str, labels_to_add: List) -> requests.Response:
+    url = AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT + f"/{pr_number}/labels"
+    response = requests.post(url, headers=GITHUB_API_COMMON_HEADERS, json={"labels": labels_to_add})
+    response.raise_for_status()
+    logger.info(f"Labels {labels_to_add} added to PR {pr_number}")
+    return response
+
+
 def create_pr(connector: ConnectorQAReport, branch: str) -> Optional[requests.Response]:
     body = f"""The Cloud Availability Updater decided that it's the right time to make {connector.connector_name} available on Cloud!
     - Technical name: {connector.connector_technical_name}
@@ -112,7 +135,9 @@ def create_pr(connector: ConnectorQAReport, branch: str) -> Optional[requests.Re
         response = requests.post(AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT, headers=GITHUB_API_COMMON_HEADERS, json=data)
         response.raise_for_status()
         pr_url = response.json().get("url")
+        pr_number = response.json().get("number")
         logger.info(f"A PR was opened for {connector.connector_technical_name}: {pr_url}")
+        add_labels_to_pr(pr_number, PR_LABELS)
         return response
     else:
         logger.warning(f"A PR already exists for branch {branch}")
@@ -145,6 +170,7 @@ def deploy_new_connector_to_cloud_repo(airbyte_cloud_repo_path: Path, airbyte_cl
 def deploy_eligible_connectors_to_cloud_repo(eligible_connectors: Iterable):
     cloud_repo_path = Path(tempfile.mkdtemp())
     airbyte_cloud_repo = clone_airbyte_cloud_repo(cloud_repo_path)
+    airbyte_cloud_repo = set_git_identity(airbyte_cloud_repo)
     for connector in eligible_connectors:
         deploy_new_connector_to_cloud_repo(cloud_repo_path, airbyte_cloud_repo, connector)
     shutil.rmtree(cloud_repo_path)
