@@ -115,15 +115,18 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
   /**
    * TODO:
    * [x] only calculate this if the flag is on!
-   * [ ] should cells truncate + show a tooltip? (long connection/connector names are a problem currently)
    * [x] link to connection from connection name
-   * [ ] convert link to new Link component once it's merged
    * [x] sizing of columns
    * [x] alignment of headers/cells
+   * [x] sorting
+   * [x] horizontal overflow
+   * [ ] cells should truncate + show a tooltip? (long connection/connector names are a problem currently)
+   * [ ] convert link to new Link component once it's merged
    * [ ] if we want the source and destination names to link to their pages, we'll need the
    *     source/destination id's (not their definition id's)
-   * [x] horizontal overflow
    * [ ] page header in designs has a link; confirm target and add!
+   * [ ] integrate free connector program data
+   * [ ] daily breakdown per connection
    * */
 
   const billingInsightsColumns = React.useMemo(() => {
@@ -142,15 +145,16 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
             cell: (props) => (
-              <FlexContainer className={styles.cell} alignItems="center">
+              <div className={styles.cell}>
                 <NavLink to={`${RoutePaths.Connections}/${props.row.original.connectionId}`}>
                   <Text size="sm" className={styles.cellText}>
                     {props.cell.getValue()}
                   </Text>
                 </NavLink>
-              </FlexContainer>
+              </div>
             ),
           }),
           columnHelper.accessor("sourceConnectionName", {
@@ -165,6 +169,7 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
             cell: (props) => (
               <FlexContainer className={styles.cell} alignItems="center">
@@ -177,13 +182,10 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
           }),
           columnHelper.display({
             id: "arrow",
-            cell: () => (
-              <div className={styles.arrowCell}>
-                <ArrowRightIcon />
-              </div>
-            ),
+            cell: () => <ArrowRightIcon />,
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
           }),
           columnHelper.accessor("destinationConnectionName", {
@@ -198,6 +200,7 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
             cell: (props) => (
               <FlexContainer className={styles.cell} alignItems="center">
@@ -228,6 +231,7 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
           }),
           columnHelper.accessor("creditsConsumedPercent", {
@@ -242,6 +246,7 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
             cell: (props) => <UsageCell percent={props.cell.getValue()} />,
           }),
@@ -249,6 +254,7 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             header: "",
             meta: {
               thClassName: classNames(styles.header, styles.light),
+              responsive: true,
             },
             cell: (props) => (
               <FlexContainer className={styles.cell} alignItems="center">

@@ -30,6 +30,12 @@ th.header {
   min-width: 53px;
 }
 
+.cellText {
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // todo: remove after cutover
 %lightBackgroundOverride {
   &.light {
