@@ -12,9 +12,8 @@ import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.integrations.destination.s3.util.CompressionTypeHelper;
 import io.airbyte.integrations.destination.s3.util.Flattening;
-import lombok.ToString;
-
 import java.util.Objects;
+import lombok.ToString;
 
 @ToString
 public class S3JsonlFormatConfig implements S3FormatConfig {
