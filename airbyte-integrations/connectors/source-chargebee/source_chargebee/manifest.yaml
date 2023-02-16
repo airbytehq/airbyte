@@ -29,7 +29,7 @@ definitions:
             - type: WaitTimeFromHeader
               header: "Retry-After"
   date_stream_slicer:
-    type: DatetimeStreamSlicer
+    type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%s') }}"
       datetime_format: "%s"
@@ -79,8 +79,8 @@ definitions:
             sort_by[asc]: updated_at
             include_deleted: "true"
             updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
-      stream_slicer:
-        $ref: "#/definitions/date_stream_slicer"
+    incremental_sync:
+      $ref: "#/definitions/date_stream_slicer"
     transformations:
       - "#/definitions/custom_field_transformation"
   addon_stream:
@@ -94,12 +94,13 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/item_stream"
+          - type: ParentStreamConfig
+            stream: "#/definitions/item_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "attached_item"
       primary_key: "id"
@@ -115,12 +116,13 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/customer_stream"
+          - type: ParentStreamConfig
+            stream: "#/definitions/customer_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "contact"
       primary_key: "id"
@@ -292,12 +294,13 @@ definitions:
     $ref: "#/definitions/base_incremental_stream"
     retriever:
       $ref: "#/definitions/retriever"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "#/definitions/quote_stream"
+          - type: ParentStreamConfig
+            stream: "#/definitions/quote_stream"
             parent_key: id
-            stream_slice_field: id
+            partition_field: id
     $parameters:
       name: "quote_line_group"
       primary_key: "id"
