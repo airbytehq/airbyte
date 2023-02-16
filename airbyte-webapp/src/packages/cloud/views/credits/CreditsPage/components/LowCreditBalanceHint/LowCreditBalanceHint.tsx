@@ -10,7 +10,7 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import styles from "./LowCreditBalanceHint.module.scss";
 
-export const LOW_BALANCE_CREDIT_TRESHOLD = 20;
+export const LOW_BALANCE_CREDIT_THRESHOLD = 20;
 
 export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const workspace = useCurrentWorkspace();
@@ -18,7 +18,7 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
 
   const isNoBillingAccount =
     cloudWorkspace.remainingCredits <= 0 && cloudWorkspace.creditStatus === CreditStatus.POSITIVE;
-  if (isNoBillingAccount || cloudWorkspace.remainingCredits > LOW_BALANCE_CREDIT_TRESHOLD) {
+  if (isNoBillingAccount || cloudWorkspace.remainingCredits > LOW_BALANCE_CREDIT_THRESHOLD) {
     return null;
   }
 
