@@ -86,8 +86,8 @@ public class OAuthHandler {
         sourceOauthConsentRequest.getSourceDefinitionId());
     ApmTraceUtils.addTagsToTrace(traceTags);
     ApmTraceUtils.addTagsToRootSpan(traceTags);
-    final StandardSourceDefinition sourceDefinition = configRepository
-        .getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
+    final StandardSourceDefinition sourceDefinition =
+        configRepository.getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
     final ConnectorSpecification spec = sourceDefinition.getSpec();
     final Map<String, Object> metadata = generateSourceMetadata(sourceOauthConsentRequest.getSourceDefinitionId());
@@ -137,8 +137,7 @@ public class OAuthHandler {
         configRepository.getStandardDestinationDefinition(destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final Map<String, Object> metadata =
-        generateDestinationMetadata(destinationOauthConsentRequest.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthConsentRead result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       final JsonNode oAuthInputConfigurationForConsent;
@@ -247,8 +246,7 @@ public class OAuthHandler {
         configRepository.getStandardDestinationDefinition(completeDestinationOAuthRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
     final ConnectorSpecification spec = destinationDefinition.getSpec();
-    final Map<String, Object> metadata =
-        generateDestinationMetadata(completeDestinationOAuthRequest.getDestinationDefinitionId());
+    final Map<String, Object> metadata = generateDestinationMetadata(completeDestinationOAuthRequest.getDestinationDefinitionId());
     final Map<String, Object> result;
     if (OAuthConfigSupplier.hasOAuthConfigSpecification(spec)) {
       final JsonNode oAuthInputConfigurationForConsent;
@@ -273,8 +271,7 @@ public class OAuthHandler {
           oAuthInputConfigurationForConsent,
           spec.getAdvancedAuth().getOauthConfigSpecification());
     } else {
-      // deprecated but this path is kept for connectors that don't define OAuth Spec
-      // yet
+      // deprecated but this path is kept for connectors that don't define OAuth Spec yet
       result = oAuthFlowImplementation.completeDestinationOAuth(
           completeDestinationOAuthRequest.getWorkspaceId(),
           completeDestinationOAuthRequest.getDestinationDefinitionId(),
@@ -333,8 +330,7 @@ public class OAuthHandler {
 
   private Map<String, Object> generateDestinationMetadata(final UUID destinationDefinitionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardDestinationDefinition destinationDefinition =
-        configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
     return TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
   }
 
@@ -353,8 +349,7 @@ public class OAuthHandler {
       final String k = entry.getKey();
       final JsonNode v = entry.getValue();
 
-      // Note: This does not currently handle replacing masked secrets within nested
-      // objects.
+      // Note: This does not currently handle replacing masked secrets within nested objects.
       if (AirbyteSecretConstants.SECRETS_MASK.equals(v.textValue())) {
         if (oAuthInputConfigurationFromDB.has(k)) {
           result.set(k, oAuthInputConfigurationFromDB.get(k));
