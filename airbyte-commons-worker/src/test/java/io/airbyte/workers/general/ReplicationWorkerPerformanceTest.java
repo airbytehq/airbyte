@@ -37,6 +37,7 @@ import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -106,7 +107,7 @@ public class ReplicationWorkerPerformanceTest {
     final var versionFac =
         new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, new Version("0.2.0"), Optional.empty(),
             Optional.of(RuntimeException.class));
-    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD);
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(1));
     final var versionedAbSource =
         new DefaultAirbyteSource(integrationLauncher, versionFac, heartbeatMonitor, migratorFactory.getProtocolSerializer(new Version("0.2.0")),
             new EnvVariableFeatureFlags());

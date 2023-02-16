@@ -26,6 +26,11 @@ airbyte:
         value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
       host: ${INTERNAL_API_HOST}
 
+datadog:
+  agent:
+    host: ${DD_AGENT_HOST:airbyte-datadog}
+    port: ${DD_DOGSTATSD_PORT:8126}
+
 endpoints:
   beans:
     enabled: true

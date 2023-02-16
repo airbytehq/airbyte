@@ -21,8 +21,6 @@ import lombok.Getter;
  */
 public class HeartbeatMonitor {
 
-  public static final Duration DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD = Duration.of(1, ChronoUnit.MILLIS);
-
   @Getter
   private final Duration heartbeatFreshnessThreshold;
   private final Supplier<Instant> nowSupplier;

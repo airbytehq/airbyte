@@ -37,7 +37,7 @@ public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
-  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.ofMinutes(1);
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.ofMillis(1);
 
   private final HeartbeatMonitor heartbeatMonitor;
   private final Duration timeoutCheckDuration;
@@ -45,8 +45,6 @@ public class HeartbeatTimeoutChaperone {
   private final UUID workspaceId;
   private final UUID connectionId;
   private final MetricClient metricClient;
-
-  private final AtomicBoolean hasReportToDataDog = new AtomicBoolean(false);
 
   private boolean hasFailed = false;
 
@@ -119,10 +117,8 @@ public class HeartbeatTimeoutChaperone {
       // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
       if (!heartbeatMonitor.isBeating().orElse(true)) {
         if (!hasFailed) {
-          if (!hasReportToDataDog.get()) {
             metricClient.count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1,
                 new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
-          }
           LOGGER.error("Source has stopped heart beating.");
           if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
             return;
