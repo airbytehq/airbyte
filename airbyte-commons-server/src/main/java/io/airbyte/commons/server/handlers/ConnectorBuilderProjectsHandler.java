@@ -12,7 +12,6 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -26,22 +25,18 @@ public class ConnectorBuilderProjectsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
-  private final WorkspaceHelper workspaceHelper;
 
   @Inject
   public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository,
-                                         final WorkspaceHelper workspaceHelper,
                                          final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
-    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = uuidSupplier;
   }
 
   // This should be deleted when cloud is migrated to micronaut
   @Deprecated(forRemoval = true)
-  public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
+  public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
-    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = UUID::randomUUID;
   }
 
@@ -63,8 +58,9 @@ public class ConnectorBuilderProjectsHandler {
     return new ConnectorBuilderProjectIdWithWorkspaceId().workspaceId(project.getWorkspaceId()).builderProjectId(project.getBuilderProjectId());
   }
 
-  public void validateWorkspace(final UUID projectId, final UUID workspaceId) throws JsonValidationException, ConfigNotFoundException {
-    final UUID actualWorkspaceId = workspaceHelper.getWorkspaceForConnectorBuilderProject(projectId);
+  public void validateWorkspace(final UUID projectId, final UUID workspaceId) throws ConfigNotFoundException, IOException {
+    final ConnectorBuilderProject project = configRepository.getConnectorBuilderProject(projectId, false);
+    final UUID actualWorkspaceId = project.getWorkspaceId();
     if (!actualWorkspaceId.equals(workspaceId)) {
       throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, projectId.toString());
     }

@@ -24,7 +24,6 @@ import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspa
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Map;
@@ -38,7 +37,6 @@ class ConnectorBuilderProjectsHandlerTest {
 
   private ConfigRepository configRepository;
   private ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler;
-  private WorkspaceHelper workspaceHelper;
   private Supplier<UUID> uuidSupplier;
   private UUID workspaceId;
 
@@ -47,10 +45,9 @@ class ConnectorBuilderProjectsHandlerTest {
   void setUp() throws JsonProcessingException {
     configRepository = mock(ConfigRepository.class);
     uuidSupplier = mock(Supplier.class);
-    workspaceHelper = mock(WorkspaceHelper.class);
     workspaceId = UUID.randomUUID();
 
-    connectorBuilderProjectsHandler = new ConnectorBuilderProjectsHandler(configRepository, workspaceHelper, uuidSupplier);
+    connectorBuilderProjectsHandler = new ConnectorBuilderProjectsHandler(configRepository, uuidSupplier);
   }
 
   private ConnectorBuilderProject generateBuilderProject() throws JsonProcessingException {
@@ -85,7 +82,7 @@ class ConnectorBuilderProjectsHandlerTest {
   void testUpdateConnectorBuilderProject() throws IOException, JsonValidationException, ConfigNotFoundException {
     final ConnectorBuilderProject project = generateBuilderProject();
 
-    when(workspaceHelper.getWorkspaceForConnectorBuilderProject(project.getBuilderProjectId())).thenReturn(workspaceId);
+    when(configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false)).thenReturn(project);
 
     final ExistingConnectorBuilderProjectWithWorkspaceId update = new ExistingConnectorBuilderProjectWithWorkspaceId()
         .builderProject(new ConnectorBuilderProjectDetails().name(project.getName())
@@ -105,12 +102,14 @@ class ConnectorBuilderProjectsHandlerTest {
   void testUpdateConnectorBuilderProjectValidateWorkspace() throws IOException, JsonValidationException, ConfigNotFoundException {
     final ConnectorBuilderProject project = generateBuilderProject();
     final UUID wrongWorkspace = UUID.randomUUID();
-    when(workspaceHelper.getWorkspaceForConnectorBuilderProject(project.getBuilderProjectId())).thenReturn(wrongWorkspace);
 
     final ExistingConnectorBuilderProjectWithWorkspaceId update = new ExistingConnectorBuilderProjectWithWorkspaceId()
         .builderProject(new ConnectorBuilderProjectDetails().name(project.getName())
             .draftManifest(new ObjectMapper().convertValue(project.getManifestDraft(), new TypeReference<Map<String, Object>>() {})))
         .workspaceId(workspaceId).builderProjectId(project.getBuilderProjectId());
+
+    project.setWorkspaceId(wrongWorkspace);
+    when(configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false)).thenReturn(project);
 
     assertThrows(ConfigNotFoundException.class, () -> connectorBuilderProjectsHandler.updateConnectorBuilderProject(update));
 
@@ -122,7 +121,9 @@ class ConnectorBuilderProjectsHandlerTest {
   void testDeleteConnectorBuilderProjectValidateWorkspace() throws IOException, JsonValidationException, ConfigNotFoundException {
     final ConnectorBuilderProject project = generateBuilderProject();
     final UUID wrongWorkspace = UUID.randomUUID();
-    when(workspaceHelper.getWorkspaceForConnectorBuilderProject(project.getBuilderProjectId())).thenReturn(wrongWorkspace);
+
+    project.setWorkspaceId(wrongWorkspace);
+    when(configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false)).thenReturn(project);
 
     assertThrows(ConfigNotFoundException.class, () -> connectorBuilderProjectsHandler.deleteConnectorBuilderProject(
         new ConnectorBuilderProjectIdWithWorkspaceId().builderProjectId(project.getBuilderProjectId()).workspaceId(workspaceId)));
@@ -135,7 +136,7 @@ class ConnectorBuilderProjectsHandlerTest {
   void testDeleteConnectorBuilderProject() throws IOException, JsonValidationException, ConfigNotFoundException {
     final ConnectorBuilderProject project = generateBuilderProject();
 
-    when(workspaceHelper.getWorkspaceForConnectorBuilderProject(project.getBuilderProjectId())).thenReturn(workspaceId);
+    when(configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false)).thenReturn(project);
 
     connectorBuilderProjectsHandler.deleteConnectorBuilderProject(
         new ConnectorBuilderProjectIdWithWorkspaceId().builderProjectId(project.getBuilderProjectId()).workspaceId(workspaceId));
