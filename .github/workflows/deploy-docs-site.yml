@@ -49,7 +49,7 @@ jobs:
           if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' -o "${{github.event.pull_request.merged}}" = 'true']; then
               export SKIP_DEPLOY="no"
           fi
-
+          echo ${SKIP_DEPLOY}
           ./tools/bin/deploy_docusaurus
 
 
