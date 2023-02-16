@@ -14,12 +14,11 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 from isodate import Duration, parse_duration
 
 
 @dataclass
-class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
+class DatetimeBasedCursor(StreamSlicer):
     """
     Slices the stream over a datetime range.
 
@@ -42,8 +41,8 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
         end_time_option (Optional[RequestOption]): request option for end time
-        stream_state_field_start (Optional[str]): stream slice start time field
-        stream_state_field_end (Optional[str]): stream slice end time field
+        partition_field_start (Optional[str]): partition start time field
+        partition_field_end (Optional[str]): stream slice end time field
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for (ISO8601 duration)
     """
 
@@ -54,30 +53,30 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     datetime_format: str
     cursor_granularity: str
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
     _cursor_end: dict = field(repr=False, default=None)  # tracks end of current stream slice
     start_time_option: Optional[RequestOption] = None
     end_time_option: Optional[RequestOption] = None
-    stream_state_field_start: Optional[str] = None
-    stream_state_field_end: Optional[str] = None
+    partition_field_start: Optional[str] = None
+    partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
-            self.start_datetime = MinMaxDatetime(self.start_datetime, options)
+            self.start_datetime = MinMaxDatetime(self.start_datetime, parameters)
         if not isinstance(self.end_datetime, MinMaxDatetime):
-            self.end_datetime = MinMaxDatetime(self.end_datetime, options)
+            self.end_datetime = MinMaxDatetime(self.end_datetime, parameters)
 
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
-        self._step = self._parse_timedelta(InterpolatedString.create(self.step, options=options).eval(self.config))
+        self._step = self._parse_timedelta(InterpolatedString.create(self.step, parameters=parameters).eval(self.config))
         self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
-        self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
-        self.lookback_window = InterpolatedString.create(self.lookback_window, options=options)
-        self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
-        self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
+        self.cursor_field = InterpolatedString.create(self.cursor_field, parameters=parameters)
+        self.lookback_window = InterpolatedString.create(self.lookback_window, parameters=parameters)
+        self.partition_field_start = InterpolatedString.create(self.partition_field_start or "start_time", parameters=parameters)
+        self.partition_field_end = InterpolatedString.create(self.partition_field_end or "end_time", parameters=parameters)
         self._parser = DatetimeParser()
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
@@ -85,11 +84,6 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
             self.start_datetime.datetime_format = self.datetime_format
         if not self.end_datetime.datetime_format:
             self.end_datetime.datetime_format = self.datetime_format
-
-        if self.start_time_option and self.start_time_option.inject_into == RequestOptionType.path:
-            raise ValueError("Start time cannot be passed by path")
-        if self.end_time_option and self.end_time_option.inject_into == RequestOptionType.path:
-            raise ValueError("End time cannot be passed by path")
 
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
@@ -104,7 +98,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         :return: None
         """
         stream_slice_value = stream_slice.get(self.cursor_field.eval(self.config))
-        stream_slice_value_end = stream_slice.get(self.stream_slice_field_end.eval(self.config))
+        stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
         cursor = None
         if stream_slice_value and last_record_value:
@@ -117,7 +111,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
             self._cursor = max(cursor, self._cursor)
         elif cursor:
             self._cursor = cursor
-        if self.stream_slice_field_end:
+        if self.partition_field_end:
             self._cursor_end = stream_slice_value_end
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
@@ -151,8 +145,8 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return self._parser.format(dt, self.datetime_format)
 
     def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
-        start_field = self.stream_slice_field_start.eval(self.config)
-        end_field = self.stream_slice_field_end.eval(self.config)
+        start_field = self.partition_field_start.eval(self.config)
+        end_field = self.partition_field_end.eval(self.config)
         dates = []
         while start <= end:
             end_date = self._get_date(start + step - self._cursor_granularity, end, min)
@@ -219,7 +213,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         options = {}
         if self.start_time_option and self.start_time_option.inject_into == option_type:
-            options[self.start_time_option.field_name] = stream_slice.get(self.stream_slice_field_start.eval(self.config))
+            options[self.start_time_option.field_name] = stream_slice.get(self.partition_field_start.eval(self.config))
         if self.end_time_option and self.end_time_option.inject_into == option_type:
-            options[self.end_time_option.field_name] = stream_slice.get(self.stream_slice_field_end.eval(self.config))
+            options[self.end_time_option.field_name] = stream_slice.get(self.partition_field_end.eval(self.config))
         return options

@@ -5,7 +5,7 @@
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from source_braze import DatetimeStreamSlicerComponent
+from source_braze import DatetimeIncrementalSyncComponent
 
 
 def test_datetime_slicer():
@@ -15,7 +15,7 @@ def test_datetime_slicer():
     - `step` value exactly equal to difference in days between end/start dates for first slice item
     - take into account if difference in days between end/start dates less than `step` argument for last record
     """
-    slicer = DatetimeStreamSlicerComponent(
+    slicer = DatetimeIncrementalSyncComponent(
         start_datetime="2022-12-01",
         end_datetime="2022-12-08",
         step="P3D",
@@ -23,12 +23,12 @@ def test_datetime_slicer():
         datetime_format="%Y-%m-%d",
         cursor_granularity="P1D",
         config={},
-        options={},
-        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, options={})
+        parameters={},
+        step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, parameters={}),
     )
     expected_slices = [
-        {'start_time': '2022-12-01', 'end_time': '2022-12-03', 'step': 2},
-        {'start_time': '2022-12-04', 'end_time': '2022-12-06', 'step': 3},
-        {'start_time': '2022-12-07', 'end_time': '2022-12-08', 'step': 2}
+        {"start_time": "2022-12-01", "end_time": "2022-12-03", "step": 2},
+        {"start_time": "2022-12-04", "end_time": "2022-12-06", "step": 3},
+        {"start_time": "2022-12-07", "end_time": "2022-12-08", "step": 2},
     ]
     assert slicer.stream_slices(SyncMode.incremental, stream_state={}) == expected_slices

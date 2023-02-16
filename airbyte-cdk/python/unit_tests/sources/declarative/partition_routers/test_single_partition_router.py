@@ -3,11 +3,11 @@
 #
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
+from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
 
 
 def test():
-    iterator = SingleSlice(options={})
+    iterator = SinglePartitionRouter(parameters={})
 
     stream_slices = iterator.stream_slices(SyncMode.incremental, None)
     next_slice = next(stream_slices)
