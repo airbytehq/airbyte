@@ -43,13 +43,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          echo ${{ github.event_name }}
-          echo ${{ github.event.pull_request.merged }}
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.event.pull_request.merged: ${{ github.event.pull_request.merged }}"
           export SKIP_DEPLOY="yes"
           if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' -o "${{github.event.pull_request.merged}}" = 'true']; then
+              echo "======= SETTING SKIP_DEPLOY=no ============="
               export SKIP_DEPLOY="no"
           fi
-          echo ${SKIP_DEPLOY}
+          echo "SKIP_DEPLOY: ${SKIP_DEPLOY}"
           ./tools/bin/deploy_docusaurus
 
 
