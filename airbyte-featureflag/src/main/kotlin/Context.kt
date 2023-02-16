@@ -80,22 +80,16 @@ data class Multi(val contexts: List<Context>) : Context {
  * Context for representing a workspace.
  *
  * @param [key] the unique identifying value of this workspace
- * @param [user] an optional user identifier
  */
-data class Workspace @JvmOverloads constructor(
-    override val key: String,
-    val user: String? = null
-) : Context {
+data class Workspace constructor(override val key: String) : Context {
     override val kind = "workspace"
 
     /**
      * Secondary constructor
      *
      * @param [key] workspace UUID
-     * @param [user] an optional user identifier
      */
-    @JvmOverloads
-    constructor(key: UUID, user: String? = null) : this(key = key.toString(), user = user)
+    constructor(key: UUID) : this(key = key.toString())
 }
 
 /**

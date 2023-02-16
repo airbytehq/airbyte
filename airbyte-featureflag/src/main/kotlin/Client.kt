@@ -248,10 +248,5 @@ private fun Context.toLDContext(): LDContext {
         builder.anonymous(true)
     }
 
-    when (this) {
-        is Workspace -> user?.let { builder.set("user", it) }
-        else -> Unit
-    }
-
     return builder.build()
 }

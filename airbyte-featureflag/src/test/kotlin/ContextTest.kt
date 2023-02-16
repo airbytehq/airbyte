@@ -77,10 +77,9 @@ class MultiTest {
 class WorkspaceTest {
     @Test
     fun `verify data`() {
-        Workspace("workspace key", "user").also {
+        Workspace("workspace key").also {
             assert(it.kind == "workspace")
             assert(it.key == "workspace key")
-            assert(it.user == "user")
         }
     }
 }
