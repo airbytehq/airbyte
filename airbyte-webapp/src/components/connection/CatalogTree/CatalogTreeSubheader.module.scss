@@ -1,7 +1,10 @@
+@use "scss/variables";
+
 %catalogHeader {
   min-height: 33px;
+  padding-left: 40px;
+  margin: 0 variables.$spacing-xl;
   margin-bottom: 0 !important;
-  margin-left: 20px;
 }
 
 .catalogSubheader {
@@ -14,5 +17,6 @@
   @extend %catalogHeader;
 
   padding-top: 10px;
-  margin-left: 115px;
+  padding-left: 0;
+  margin-left: 0;
 }

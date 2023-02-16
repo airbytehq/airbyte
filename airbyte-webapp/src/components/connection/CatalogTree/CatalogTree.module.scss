@@ -1,11 +1,12 @@
 @use "scss/variables";
 
 .catalogTreeTable {
-  padding: variables.$spacing-lg variables.$spacing-xl 0;
-  overflow-y: auto;
+  flex: 1;
+  padding: 0;
   margin-bottom: variables.$spacing-xl;
 
-  &.newCatalogTreeTable {
-    padding: 0;
+  &.scrollable {
+    overflow-y: auto;
+    max-height: 600px;
   }
 }

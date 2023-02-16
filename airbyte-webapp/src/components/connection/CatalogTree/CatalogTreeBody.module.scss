@@ -1,3 +1,9 @@
-.container {
-  max-height: 600px;
+@use "scss/colors";
+@use "scss/z-indices";
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: z-indices.$mainPageWithScrollEdge;
+  background: colors.$white;
 }

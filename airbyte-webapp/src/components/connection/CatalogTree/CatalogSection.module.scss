@@ -2,8 +2,12 @@
 @use "scss/variables";
 
 .streamFieldTableContainer {
-  margin-left: 83px;
+  margin: 0 variables.$spacing-xl 0 (variables.$spacing-xl + 83px);
   background: colors.$grey-50;
+
+  &.readonly {
+    margin-left: (variables.$spacing-xl + 40px);
+  }
 }
 
 .catalogSection:first-of-type > div:nth-child(1) > div:nth-child(3) {

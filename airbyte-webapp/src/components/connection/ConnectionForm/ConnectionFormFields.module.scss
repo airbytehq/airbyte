@@ -5,6 +5,7 @@
   flex-direction: column;
   gap: variables.$spacing-md;
   position: relative;
+  flex: 1;
 }
 
 .readonly {

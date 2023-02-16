@@ -2,6 +2,8 @@ import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 
+import { isCloudApp } from "utils/app";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,7 +20,7 @@ const StoreProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children })
     <ReactQueryDevtools
       initialIsOpen={false}
       position="bottom-right"
-      toggleButtonProps={{ style: { transform: "translateX(-75px)" } }}
+      toggleButtonProps={isCloudApp() ? { style: { transform: "translate(-65px, -12px)" } } : undefined}
     />
     {children}
   </QueryClientProvider>

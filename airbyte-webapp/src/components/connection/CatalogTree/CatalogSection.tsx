@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import { FormikErrors, getIn } from "formik";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
@@ -225,7 +226,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             toggleAllFieldsSelected={onToggleAllFieldsSelected}
           />
         ) : (
-          <div className={styles.streamFieldTableContainer}>
+          <div className={classNames(styles.streamFieldTableContainer, { [styles.readonly]: disabled })}>
             <StreamFieldTable
               config={config}
               syncSchemaFields={flattenedFields}

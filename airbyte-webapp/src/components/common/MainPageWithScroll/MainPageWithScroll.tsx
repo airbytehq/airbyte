@@ -13,12 +13,14 @@ interface MainPageWithScrollProps {
   headTitle?: React.ReactNode;
   pageTitle?: React.ReactNode;
   children?: React.ReactNode;
+  noBottomPadding?: boolean;
   softScrollEdge?: boolean;
 }
 
 export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({
   headTitle,
   pageTitle,
+  noBottomPadding,
   softScrollEdge = true,
   children,
 }) => {
@@ -36,6 +38,7 @@ export const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({
             {softScrollEdge && <div className={styles.edge} aria-hidden="true" />}
             <div
               className={classNames(styles.content, {
+                [styles.noBottomPadding]: noBottomPadding,
                 [styles.cloud]: isCloudApp(),
               })}
             >

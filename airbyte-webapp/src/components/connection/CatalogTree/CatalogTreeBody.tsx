@@ -45,19 +45,21 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
   );
 
   return (
-    <div className={styles.container}>
-      {isNewTableDesignEnabled ? (
-        <>
-          <StreamConnectionHeader />
-          <CatalogTreeTableHeader />
-        </>
-      ) : (
-        <>
-          <CatalogTreeHeader />
-          <CatalogTreeSubheader />
-          <BulkHeader />
-        </>
-      )}
+    <div>
+      <div className={styles.header}>
+        {isNewTableDesignEnabled ? (
+          <>
+            <StreamConnectionHeader />
+            <CatalogTreeTableHeader />
+          </>
+        ) : (
+          <>
+            <CatalogTreeHeader />
+            <CatalogTreeSubheader />
+            <BulkHeader />
+          </>
+        )}
+      </div>
       {streams.map((streamNode) => (
         <Field key={`schema.streams[${streamNode.id}].config`} name={`schema.streams[${streamNode.id}].config`}>
           {({ form }: FieldProps<FormikConnectionFormValues>) => (

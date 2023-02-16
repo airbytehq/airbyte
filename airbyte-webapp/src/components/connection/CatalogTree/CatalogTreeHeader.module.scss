@@ -15,14 +15,15 @@
 .catalogHeader,
 %catalogHeader {
   min-height: 33px;
+  margin: 0 variables.$spacing-xl;
   margin-bottom: 0 !important;
-  margin-left: 20px;
+  padding: variables.$spacing-xl 0 0 20px;
 }
 
 .readonlyCatalogHeader {
   @extend %catalogHeader;
 
-  margin-left: 50px;
+  padding-left: 50px;
 }
 
 .nextLineText {

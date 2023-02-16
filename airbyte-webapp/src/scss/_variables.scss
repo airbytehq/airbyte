@@ -12,6 +12,7 @@ $border-radius-lg: 10px;
 $border-radius-xl: 12px;
 $border-radius-2xl: 15px;
 $border-radius-pill: 500px;
+$card-border-radius: $border-radius-lg;
 
 $box-shadow: var(--box-shadow);
 $box-shadow-left: var(--box-shadow-left);
@@ -37,6 +38,8 @@ $width-modal-sm: 492px;
 $width-modal-md: 585px;
 $width-modal-lg: 940px;
 $width-modal-xl: 1008px;
+
+$height-soft-edge: 15px;
 
 $button-height-xs: 32px;
 $button-height-sm: 36px;
