@@ -3,12 +3,21 @@
 
 .controlGroup {
   display: flex;
-  justify-content: flex-end;
   margin-top: variables.$spacing-xl;
 
-  .button {
-    margin-left: variables.$spacing-md;
+  &.formButtons {
+    justify-content: flex-end;
   }
+}
+
+.button:not(:first-child) {
+  margin-left: variables.$spacing-md;
+}
+
+// the duplicate class is a specificity hack: without it, the Button component's default
+// variant styling overrides this instead of vice versa
+.replaceButton.replaceButton {
+  color: colors.$grey-800;
 }
 
 .cardContent {
