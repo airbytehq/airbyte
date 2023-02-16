@@ -15,12 +15,11 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.stream_slicers import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
-from dataclasses_jsonschema import JsonSchemaMixin
 from isodate import Duration, parse_duration
 
 
 @dataclass
-class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator, JsonSchemaMixin):
+class ShortLivedTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticator):
     """
     [Low-Code Custom Component] ShortLivedTokenAuthenticator
     https://github.com/airbytehq/airbyte/issues/22872
