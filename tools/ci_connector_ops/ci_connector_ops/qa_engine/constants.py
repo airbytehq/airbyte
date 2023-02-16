@@ -13,19 +13,26 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "b76be0a6-27dc-4560-95f6-2623da0bd7b6",  # Local SQL Lite
 ]
 
-GCS_QA_REPORT_PATH = "gs://prod-airbyte-cloud-connector-metadata-service/qa_report.json"
+GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
 AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER = "airbytehq"
 AIRBYTE_PLATFORM_INTERNAL_REPO_NAME = "airbyte-platform-internal"
 AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL = (
     f"https://github.com/{AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}/{AIRBYTE_PLATFORM_INTERNAL_REPO_NAME}.git"
 )
 AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME = "master"
-AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT = (
-    f"https://api.github.com/repos/{AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}/{AIRBYTE_PLATFORM_INTERNAL_REPO_NAME}/pulls"
+AIRBYTE_PLATFORM_INTERNAL_REPO_ENDPOINT = (
+    f"https://api.github.com/repos/{AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}/{AIRBYTE_PLATFORM_INTERNAL_REPO_NAME}"
 )
+AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT = f"{AIRBYTE_PLATFORM_INTERNAL_REPO_ENDPOINT}/pulls"
+AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT = f"{AIRBYTE_PLATFORM_INTERNAL_REPO_ENDPOINT}/issues"
+
 GITHUB_API_TOKEN = os.environ.get("GITHUB_API_TOKEN")
 GITHUB_API_COMMON_HEADERS = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "Authorization": f"Bearer {GITHUB_API_TOKEN}",
 }
+GIT_USERNAME_FOR_AUTH = "octavia-squidington-iii"
+GIT_USER_EMAIL = f"{GIT_USERNAME_FOR_AUTH}@sers.noreply.github.com"
+GIT_USERNAME = "Octavia Squidington III"
+PR_LABELS = ["team/connector-ops", "cloud-availability-updater"]
