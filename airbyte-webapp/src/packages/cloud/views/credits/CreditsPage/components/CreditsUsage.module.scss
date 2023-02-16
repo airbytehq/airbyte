@@ -13,4 +13,8 @@
 
 .cardBlock {
   margin: variables.$spacing-md 0 variables.$spacing-xl;
+
+  h5 {
+    font-size: 16px;
+  }
 }

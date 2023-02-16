@@ -9,7 +9,7 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetCloudWorkspaceUsage } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 
 import styles from "./CreditsUsage.module.scss";
-import UsagePerConnectionTable from "./UsagePerConnectionTable";
+import { UsagePerConnectionTable } from "./UsagePerConnectionTable";
 
 const LegendLabels = ["value"];
 
@@ -33,7 +33,7 @@ const CreditsUsage: React.FC = () => {
 
   return (
     <>
-      <Card title={<FormattedMessage id="credits.totalUsage" />} lightPadding>
+      <Card title={<FormattedMessage id="credits.totalUsage" />} lightPadding noLine className={styles.cardBlock}>
         <div className={styles.chartWrapper}>
           {data?.creditConsumptionByDay?.length ? (
             <BarChart
@@ -54,7 +54,12 @@ const CreditsUsage: React.FC = () => {
         </div>
       </Card>
 
-      <Card title={<FormattedMessage id="credits.usagePerConnection" />} lightPadding className={styles.cardBlock}>
+      <Card
+        title={<FormattedMessage id="credits.usagePerConnection" />}
+        lightPadding
+        className={styles.cardBlock}
+        noLine
+      >
         {data?.creditConsumptionByConnector?.length ? (
           <UsagePerConnectionTable creditConsumption={data.creditConsumptionByConnector} />
         ) : (

@@ -32,7 +32,7 @@ type FullTableProps = CreditConsumptionByConnector & {
   destinationIcon?: string;
 };
 
-const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
+export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
   // TODO: this is not targeting "true" when expected
   // const isBillingInsightsEnabled = useExperiment("billingPage.billingInsights", false);
   const isBillingInsightsEnabled = true;
@@ -62,7 +62,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     });
   }, [creditConsumption, sourceDefinitions, destinationDefinitions]);
 
-  const sortBy = query.sortBy || "connection";
+  const sortBy = query.sortBy || "connectionName";
   const sortOrder = query.order || SortOrderEnum.ASC;
 
   const onSortClick = useCallback(
@@ -84,12 +84,12 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
 
   const sortData = useCallback(
     (a, b) => {
-      const result =
-        sortBy === "usage"
-          ? a.creditsConsumed - b.creditsConsumed
-          : `${a.sourceDefinitionName}${a.destinationDefinitionName}`
-              .toLowerCase()
-              .localeCompare(`${b.sourceDefinitionName}${b.destinationDefinitionName}`.toLowerCase());
+      let result;
+      if (sortBy === "usage") {
+        result = a.creditsConsumed - b.creditsConsumed;
+      } else {
+        result = a[sortBy].toLowerCase().localeCompare(b[sortBy].toLowerCase());
+      }
 
       if (sortOrder === SortOrderEnum.DESC) {
         return -1 * result;
@@ -117,8 +117,10 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
    * [x] only calculate this if the flag is on!
    * [ ] should cells truncate + show a tooltip?
    * [ ] links!
-   * [ ] sizing of columns
+   * [x] sizing of columns
    * [x] alignment of headers/cells
+   * [ ] if we want the source and destination names to link to their pages, we'll need the
+   *     source/destination id's (not their definition id's)
    *
    * */
 
@@ -129,8 +131,8 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
           columnHelper.accessor("connectionName", {
             header: () => (
               <SortableTableHeader
-                onClick={() => onSortClick("connection")}
-                isActive={sortBy === "connection"}
+                onClick={() => onSortClick("connectionName")}
+                isActive={sortBy === "connectionName"}
                 isAscending={sortOrder === SortOrderEnum.ASC}
               >
                 <FormattedMessage id="credits.connection" />
@@ -147,11 +149,11 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
               </FlexContainer>
             ),
           }),
-          columnHelper.accessor("sourceDefinitionName", {
+          columnHelper.accessor("sourceConnectionName", {
             header: () => (
               <SortableTableHeader
-                onClick={() => onSortClick("source")}
-                isActive={sortBy === "source"}
+                onClick={() => onSortClick("sourceConnectionName")}
+                isActive={sortBy === "sourceConnectionName"}
                 isAscending={sortOrder === SortOrderEnum.ASC}
               >
                 <FormattedMessage id="credits.source" />
@@ -171,16 +173,20 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
           }),
           columnHelper.display({
             id: "arrow",
-            cell: () => <ArrowRightIcon />,
+            cell: () => (
+              <div className={styles.arrowCell}>
+                <ArrowRightIcon />
+              </div>
+            ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
             },
           }),
-          columnHelper.accessor("destinationDefinitionName", {
+          columnHelper.accessor("destinationConnectionName", {
             header: () => (
               <SortableTableHeader
-                onClick={() => onSortClick("destination")}
-                isActive={sortBy === "destination"}
+                onClick={() => onSortClick("destinationConnectionName")}
+                isActive={sortBy === "destinationConnectionName"}
                 isAscending={sortOrder === SortOrderEnum.ASC}
               >
                 <FormattedMessage id="credits.destination" />
@@ -196,14 +202,31 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
               </FlexContainer>
             ),
           }),
-          columnHelper.accessor("creditsConsumedPercent", {
-            header: "",
+          columnHelper.display({
+            id: "schedule",
+            header: () => (
+              <SortableTableHeader
+                onClick={() => {
+                  return null;
+                }}
+                isActive={false}
+                isAscending={false}
+              >
+                <FormattedMessage id="credits.schedule" />
+              </SortableTableHeader>
+            ),
+            cell: () => (
+              <FlexContainer className={styles.cell} alignItems="center">
+                <Text size="sm" className={styles.cellText}>
+                  Every 6 hours
+                </Text>
+              </FlexContainer>
+            ),
             meta: {
               thClassName: classNames(styles.header, styles.light),
             },
-            cell: (props) => <UsageCell percent={props.cell.getValue()} />,
           }),
-          columnHelper.accessor("creditsConsumed", {
+          columnHelper.accessor("creditsConsumedPercent", {
             header: () => (
               <SortableTableHeader
                 onClick={() => onSortClick("usage")}
@@ -213,6 +236,13 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
                 <FormattedMessage id="credits.usage" />
               </SortableTableHeader>
             ),
+            meta: {
+              thClassName: classNames(styles.header, styles.light),
+            },
+            cell: (props) => <UsageCell percent={props.cell.getValue()} />,
+          }),
+          columnHelper.accessor("creditsConsumed", {
+            header: "",
             meta: {
               thClassName: classNames(styles.header, styles.light),
             },
@@ -293,5 +323,3 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     </div>
   );
 };
-
-export default UsagePerConnectionTable;

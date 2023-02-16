@@ -27,6 +27,10 @@
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
 
+  &.noLine {
+    border-bottom: none;
+  }
+
   &.lightPadding {
     padding: 19px 20px 20px;
   }

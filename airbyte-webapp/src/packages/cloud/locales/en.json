@@ -143,6 +143,7 @@
   "credits.connection": "Connection",
   "credits.source": "Source",
   "credits.destination": "Destination",
+  "credits.schedule": "Schedule",
 
   "credits.loadingCreditsUsage": "Loading credits usage …",
   "credits.usagePerConnection": "Usage per connection",
