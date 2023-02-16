@@ -325,7 +325,7 @@ public class ServerApp implements ServerRunnable {
             airbyteProtocolVersionRange);
 
     final ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler =
-        new ConnectorBuilderProjectsHandler(configRepository, () -> UUID.randomUUID());
+        new ConnectorBuilderProjectsHandler(configRepository, workspaceHelper, () -> UUID.randomUUID());
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,

@@ -1602,22 +1602,24 @@ public class ConfigRepository {
     return countResult > 0;
   }
 
-  public Optional<ConnectorBuilderProject> getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
-      throws IOException {
-    return database.query(ctx -> {
-      final List columnsToFetch = Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
-          CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID);
+  public ConnectorBuilderProject getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
+      throws IOException, ConfigNotFoundException {
+    final Optional<ConnectorBuilderProject> projectOptional = database.query(ctx -> {
+      final List columnsToFetch =
+          new ArrayList(Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
+              CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID));
       if (fetchManifestDraft) {
         columnsToFetch.add(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT);
       }
       return ctx.select(columnsToFetch)
-        .from(CONNECTOR_BUILDER_PROJECT)
-        .where(CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId))
-        .fetch()
-        .map(fetchManifestDraft ? DbConverter::buildConnectorBuilderProject : DbConverter::buildConnectorBuilderProjectWithoutManifestDraft)
-        .stream()
-        .findFirst();
+          .from(CONNECTOR_BUILDER_PROJECT)
+          .where(CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId))
+          .fetch()
+          .map(fetchManifestDraft ? DbConverter::buildConnectorBuilderProject : DbConverter::buildConnectorBuilderProjectWithoutManifestDraft)
+          .stream()
+          .findFirst();
     });
+    return projectOptional.orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, builderProjectId));
   }
 
   public Stream<ConnectorBuilderProject> getConnectorBuilderProjectsByWorkspace(final UUID workspaceId) throws IOException {
@@ -1634,9 +1636,9 @@ public class ConfigRepository {
         .stream();
   }
 
-  public boolean deleteBuilderProject(final UUID builderProjectId, final UUID workspaceId) throws IOException {
+  public boolean deleteBuilderProject(final UUID builderProjectId) throws IOException {
     return database.transaction(ctx -> ctx.deleteFrom(CONNECTOR_BUILDER_PROJECT))
-        .where(getBuilderProjectIdCondition(builderProjectId, workspaceId))
+        .where(CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId))
         .execute() > 0;
   }
 
@@ -1671,11 +1673,6 @@ public class ConfigRepository {
       }
       return null;
     });
-  }
-
-  private Condition getBuilderProjectIdCondition(final UUID builderProjectId, final UUID workspaceId) {
-    return CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId)
-        .and(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID.eq(workspaceId));
   }
 
   /**

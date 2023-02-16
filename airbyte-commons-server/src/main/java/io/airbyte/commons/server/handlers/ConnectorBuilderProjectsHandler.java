@@ -8,16 +8,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
-import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WorkspaceHelper;
+import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -27,18 +26,22 @@ public class ConnectorBuilderProjectsHandler {
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
+  private final WorkspaceHelper workspaceHelper;
 
   @Inject
   public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository,
+                                         final WorkspaceHelper workspaceHelper,
                                          final Supplier<UUID> uuidSupplier) {
     this.configRepository = configRepository;
+    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = uuidSupplier;
   }
 
   // This should be deleted when cloud is migrated to micronaut
   @Deprecated(forRemoval = true)
-  public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository) {
+  public ConnectorBuilderProjectsHandler(final ConfigRepository configRepository, final WorkspaceHelper workspaceHelper) {
     this.configRepository = configRepository;
+    this.workspaceHelper = workspaceHelper;
     this.uuidSupplier = UUID::randomUUID;
   }
 
@@ -60,6 +63,13 @@ public class ConnectorBuilderProjectsHandler {
     return new ConnectorBuilderProjectIdWithWorkspaceId().workspaceId(project.getWorkspaceId()).builderProjectId(project.getBuilderProjectId());
   }
 
+  public void validateWorkspace(final UUID projectId, final UUID workspaceId) throws JsonValidationException, ConfigNotFoundException {
+    final UUID actualWorkspaceId = workspaceHelper.getWorkspaceForConnectorBuilderProject(projectId);
+    if (!actualWorkspaceId.equals(workspaceId)) {
+      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, projectId.toString());
+    }
+  }
+
   public ConnectorBuilderProjectIdWithWorkspaceId createConnectorBuilderProject(final ConnectorBuilderProjectWithWorkspaceId projectCreate)
       throws IOException {
     final ConnectorBuilderProject project = builderProjectFromCreate(projectCreate);
@@ -70,26 +80,17 @@ public class ConnectorBuilderProjectsHandler {
   }
 
   public void updateConnectorBuilderProject(final ExistingConnectorBuilderProjectWithWorkspaceId projectUpdate)
-      throws IOException, ConfigNotFoundException {
+      throws IOException, ConfigNotFoundException, JsonValidationException {
+    validateWorkspace(projectUpdate.getBuilderProjectId(), projectUpdate.getWorkspaceId());
+
     final ConnectorBuilderProject project = builderProjectFromUpdate(projectUpdate);
-
-    final Optional<ConnectorBuilderProject> storedProject =
-        configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false);
-
-    if (storedProject.isEmpty()) {
-      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, project.getBuilderProjectId().toString());
-    }
-
     configRepository.writeBuilderProject(project);
   }
 
   public void deleteConnectorBuilderProject(final ConnectorBuilderProjectIdWithWorkspaceId projectDelete)
-      throws IOException, ConfigNotFoundException {
-    final boolean didDelete = configRepository.deleteBuilderProject(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
-
-    if (!didDelete) {
-      throw new ConfigNotFoundException(ConfigSchema.CONNECTOR_BUILDER_PROJECT, projectDelete.getBuilderProjectId().toString());
-    }
+      throws IOException, ConfigNotFoundException, JsonValidationException {
+    validateWorkspace(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
+    configRepository.deleteBuilderProject(projectDelete.getBuilderProjectId());
   }
 
 }
