@@ -32,7 +32,6 @@ tasks.named("buildDockerImage") {
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
 
-
 task downloadCombinedConnectorCatalog(type: JavaExec, dependsOn: compileJava) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'io.airbyte.config.init.CombinedConnectorCatalogDownloader'
