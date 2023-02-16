@@ -420,7 +420,6 @@ class SecretsRepositoryWriterTest {
         .withName(TEST_WORKSPACE_NAME)
         .withSlug(TEST_WORKSPACE_SLUG)
         .withInitialSetupComplete(false)
-        .withDisplaySetupWizard(true)
         .withNews(false)
         .withAnonymousDataCollection(false)
         .withSecurityUpdates(false)

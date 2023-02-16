@@ -6,6 +6,5 @@
   "initialSetupComplete": true,
   "anonymousDataCollection": false,
   "news": false,
-  "securityUpdates": false,
-  "displaySetupWizard": false
+  "securityUpdates": false
 }

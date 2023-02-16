@@ -186,7 +186,6 @@ public class Bootloader {
         .withName(workspaceId.toString())
         .withSlug(workspaceId.toString())
         .withInitialSetupComplete(false)
-        .withDisplaySetupWizard(true)
         .withTombstone(false)
         .withDefaultGeography(Geography.AUTO);
     // NOTE: it's safe to use the NoSecrets version since we know that the user hasn't supplied any

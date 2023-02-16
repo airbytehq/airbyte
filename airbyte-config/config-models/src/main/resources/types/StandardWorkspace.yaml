@@ -33,8 +33,6 @@ properties:
     type: boolean
   securityUpdates:
     type: boolean
-  displaySetupWizard:
-    type: boolean
   tombstone:
     description:
       if not set or false, the configuration is active. if true, then this

@@ -58,7 +58,7 @@ interactions:
       uri: http://localhost:8000/api/v1/workspaces/list
     response:
       body:
-        string: '{"workspaces":[{"workspaceId":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","customerId":"96d8f0d5-762c-4c38-9580-966f4c887173","email":"evan@airbyte.io","name":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","slug":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","initialSetupComplete":true,"displaySetupWizard":true,"anonymousDataCollection":false,"news":false,"securityUpdates":true,"notifications":[],"defaultGeography":"auto"}]}'
+        string: '{"workspaces":[{"workspaceId":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","customerId":"96d8f0d5-762c-4c38-9580-966f4c887173","email":"evan@airbyte.io","name":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","slug":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","initialSetupComplete":true,"anonymousDataCollection":false,"news":false,"securityUpdates":true,"notifications":[],"defaultGeography":"auto"}]}'
       headers:
         Access-Control-Allow-Headers:
           - Origin, Content-Type, Accept, Content-Encoding
@@ -100,7 +100,7 @@ interactions:
       uri: http://localhost:8000/api/v1/workspaces/get
     response:
       body:
-        string: '{"workspaceId":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","customerId":"96d8f0d5-762c-4c38-9580-966f4c887173","email":"evan@airbyte.io","name":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","slug":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","initialSetupComplete":true,"displaySetupWizard":true,"anonymousDataCollection":false,"news":false,"securityUpdates":true,"notifications":[],"defaultGeography":"auto"}'
+        string: '{"workspaceId":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","customerId":"96d8f0d5-762c-4c38-9580-966f4c887173","email":"evan@airbyte.io","name":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","slug":"df3ad9d3-5d41-4fa9-993e-c6723552c26a","initialSetupComplete":true,"anonymousDataCollection":false,"news":false,"securityUpdates":true,"notifications":[],"defaultGeography":"auto"}'
       headers:
         Access-Control-Allow-Headers:
           - Origin, Content-Type, Accept, Content-Encoding

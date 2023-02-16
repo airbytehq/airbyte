@@ -179,7 +179,6 @@ create table "public"."workspace"(
   "anonymous_data_collection" bool null,
   "send_newsletter" bool null,
   "send_security_updates" bool null,
-  "display_setup_wizard" bool null,
   "tombstone" bool not null default false,
   "notifications" jsonb null,
   "first_sync_complete" bool null,

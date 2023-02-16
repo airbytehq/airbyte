@@ -37,7 +37,6 @@ const useWorkspace = () => {
     const result = await updateWorkspace({
       workspaceId: workspace.workspaceId,
       initialSetupComplete: true,
-      displaySetupWizard: true,
       ...data,
     });
 
@@ -61,7 +60,6 @@ const useWorkspace = () => {
     await updateWorkspace({
       workspaceId: workspace.workspaceId,
       initialSetupComplete: workspace.initialSetupComplete,
-      displaySetupWizard: workspace.displaySetupWizard,
       notifications: workspace.notifications,
       ...data,
     });
@@ -70,7 +68,6 @@ const useWorkspace = () => {
     await updateWorkspace({
       workspaceId: workspace.workspaceId,
       initialSetupComplete: workspace.initialSetupComplete,
-      displaySetupWizard: workspace.displaySetupWizard,
       anonymousDataCollection: !!workspace.anonymousDataCollection,
       news: !!workspace.news,
       securityUpdates: !!workspace.securityUpdates,

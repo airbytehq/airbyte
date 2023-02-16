@@ -120,7 +120,6 @@ public class DbConverter {
         .withAnonymousDataCollection(record.get(WORKSPACE.ANONYMOUS_DATA_COLLECTION))
         .withNews(record.get(WORKSPACE.SEND_NEWSLETTER))
         .withSecurityUpdates(record.get(WORKSPACE.SEND_SECURITY_UPDATES))
-        .withDisplaySetupWizard(record.get(WORKSPACE.DISPLAY_SETUP_WIZARD))
         .withTombstone(record.get(WORKSPACE.TOMBSTONE))
         .withNotifications(notificationList)
         .withFirstCompletedSync(record.get(WORKSPACE.FIRST_SYNC_COMPLETE))

@@ -99,7 +99,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
     final Field<Boolean> anonymousDataCollection = DSL.field("anonymous_data_collection", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> sendNewsletter = DSL.field("send_newsletter", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> sendSecurityUpdates = DSL.field("send_security_updates", SQLDataType.BOOLEAN.nullable(true));
-    final Field<Boolean> displaySetupWizard = DSL.field("display_setup_wizard", SQLDataType.BOOLEAN.nullable(true));
     final Field<Boolean> tombstone = DSL.field("tombstone", SQLDataType.BOOLEAN.nullable(false).defaultValue(false));
     final Field<JSONB> notifications = DSL.field("notifications", SQLDataType.JSONB.nullable(true));
     final Field<Boolean> firstSyncComplete = DSL.field("first_sync_complete", SQLDataType.BOOLEAN.nullable(true));
@@ -119,7 +118,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
             anonymousDataCollection,
             sendNewsletter,
             sendSecurityUpdates,
-            displaySetupWizard,
             tombstone,
             notifications,
             firstSyncComplete,
@@ -145,7 +143,6 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
           .set(anonymousDataCollection, standardWorkspace.getAnonymousDataCollection())
           .set(sendNewsletter, standardWorkspace.getNews())
           .set(sendSecurityUpdates, standardWorkspace.getSecurityUpdates())
-          .set(displaySetupWizard, standardWorkspace.getDisplaySetupWizard())
           .set(tombstone, standardWorkspace.getTombstone() != null && standardWorkspace.getTombstone())
           .set(notifications, JSONB.valueOf(Jsons.serialize(standardWorkspace.getNotifications())))
           .set(firstSyncComplete, standardWorkspace.getFirstCompletedSync())

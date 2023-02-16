@@ -171,7 +171,6 @@ public class SetupForNormalizedTablesTest {
         .withAnonymousDataCollection(true)
         .withNews(true)
         .withSecurityUpdates(true)
-        .withDisplaySetupWizard(true)
         .withTombstone(false)
         .withNotifications(Collections.singletonList(notification))
         .withFirstCompletedSync(true)

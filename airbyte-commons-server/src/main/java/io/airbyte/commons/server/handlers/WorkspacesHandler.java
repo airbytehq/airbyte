@@ -88,7 +88,6 @@ public class WorkspacesHandler {
     final Boolean anonymousDataCollection = workspaceCreate.getAnonymousDataCollection();
     final Boolean news = workspaceCreate.getNews();
     final Boolean securityUpdates = workspaceCreate.getSecurityUpdates();
-    final Boolean displaySetupWizard = workspaceCreate.getDisplaySetupWizard();
 
     // if not set on the workspaceCreate, set the defaultGeography to AUTO
     final io.airbyte.config.Geography defaultGeography = workspaceCreate.getDefaultGeography() != null
@@ -104,7 +103,6 @@ public class WorkspacesHandler {
         .withAnonymousDataCollection(anonymousDataCollection != null ? anonymousDataCollection : false)
         .withNews(news != null ? news : false)
         .withSecurityUpdates(securityUpdates != null ? securityUpdates : false)
-        .withDisplaySetupWizard(displaySetupWizard != null ? displaySetupWizard : false)
         .withTombstone(false)
         .withNotifications(NotificationConverter.toConfigList(workspaceCreate.getNotifications()))
         .withDefaultGeography(defaultGeography)
@@ -259,7 +257,6 @@ public class WorkspacesHandler {
         .name(workspace.getName())
         .slug(workspace.getSlug())
         .initialSetupComplete(workspace.getInitialSetupComplete())
-        .displaySetupWizard(workspace.getDisplaySetupWizard())
         .anonymousDataCollection(workspace.getAnonymousDataCollection())
         .news(workspace.getNews())
         .securityUpdates(workspace.getSecurityUpdates())
@@ -282,9 +279,6 @@ public class WorkspacesHandler {
     }
     if (workspacePatch.getNews() != null) {
       workspace.setNews(workspacePatch.getNews());
-    }
-    if (workspacePatch.getDisplaySetupWizard() != null) {
-      workspace.setDisplaySetupWizard(workspacePatch.getDisplaySetupWizard());
     }
     if (workspacePatch.getSecurityUpdates() != null) {
       workspace.setSecurityUpdates(workspacePatch.getSecurityUpdates());

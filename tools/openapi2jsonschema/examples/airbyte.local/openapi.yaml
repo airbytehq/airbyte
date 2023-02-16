@@ -2837,8 +2837,6 @@ components:
           type: boolean
         customerId:
           $ref: "#/components/schemas/CustomerId"
-        displaySetupWizard:
-          type: boolean
         email:
           format: email
           type: string
@@ -2877,8 +2875,6 @@ components:
     WorkspaceUpdate:
       properties:
         anonymousDataCollection:
-          type: boolean
-        displaySetupWizard:
           type: boolean
         email:
           format: email

@@ -54,7 +54,6 @@
  anonymous_data_collection | boolean                  |           |          |
  send_newsletter           | boolean                  |           |          |
  send_security_updates     | boolean                  |           |          |
- display_setup_wizard      | boolean                  |           |          |
  tombstone                 | boolean                  |           | not null | false
  notifications             | jsonb                    |           |          |
  first_sync_complete       | boolean                  |           |          |

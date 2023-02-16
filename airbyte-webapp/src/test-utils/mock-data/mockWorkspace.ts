@@ -7,7 +7,6 @@ export const mockWorkspace: WorkspaceRead = {
   name: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
   slug: "47c74b9b-9b89-4af1-8331-4865af6c4e4d",
   initialSetupComplete: true,
-  displaySetupWizard: false,
   anonymousDataCollection: false,
   news: false,
   securityUpdates: false,

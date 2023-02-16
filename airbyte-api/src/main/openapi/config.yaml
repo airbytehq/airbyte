@@ -2269,8 +2269,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Notification"
-        displaySetupWizard:
-          type: boolean
         defaultGeography:
           $ref: "#/components/schemas/Geography"
         webhookConfigs:
@@ -2375,8 +2373,6 @@ components:
           type: string
         initialSetupComplete:
           type: boolean
-        displaySetupWizard:
-          type: boolean
         anonymousDataCollection:
           type: boolean
         news:
@@ -2432,8 +2428,6 @@ components:
           type: string
           format: email
         initialSetupComplete:
-          type: boolean
-        displaySetupWizard:
           type: boolean
         anonymousDataCollection:
           type: boolean
