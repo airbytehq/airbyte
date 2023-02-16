@@ -134,6 +134,7 @@ definitions:
         request_parameters:
           sort_by[asc]: created_at
           include_deleted: "true"
+          updated_at[between]: "'[{{stream_slice['start_time']}}, {{stream_slice['end_time']}}]'"
     $parameters:
       name: "coupon"
       primary_key: "id"
@@ -170,7 +171,7 @@ definitions:
       path: "/events"
       stream_cursor_field: "occurred_at"
   gift_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "gift"
       primary_key: "id"
@@ -255,12 +256,11 @@ definitions:
       path: "/transactions"
       stream_cursor_field: "updated_at"
   unbilled_charge_stream:
-    $ref: "#/definitions/base_incremental_stream"
+    $ref: "#/definitions/base_stream"
     $parameters:
       name: "unbilled_charge"
       primary_key: "id"
       path: "/unbilled_charges"
-      stream_cursor_field: "updated_at"
   virtual_bank_account_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:
