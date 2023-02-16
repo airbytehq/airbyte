@@ -186,6 +186,18 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   /**
+   * Grants access to replication assigning a role that has access to other role that can to perform it.
+   */
+  private void grantReplicationPermissionSubRoleLevel() {
+    String roleName = "replication_" + container.getContainerId();
+    String roleNameNoReplication = "no_replication_" + container.getContainerId();
+    executeQuery("CREATE ROLE " + roleNameNoReplication + " LOGIN;");
+    executeQuery("CREATE ROLE " + roleName + " REPLICATION LOGIN;");
+    executeQuery("GRANT " + roleName + " TO " + roleNameNoReplication + ";");
+    executeQuery("GRANT " + roleNameNoReplication + " TO " + container.getUsername() + ";");
+  }
+
+  /**
    * Remove REPLICATION privilege at user level (without using roles)
    */
   private void revokeReplicationPermissionUserLevel() {
@@ -245,6 +257,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     revokeReplicationPermissionUserLevel();
     revokeReplicationPermissionRoleLevel();
     grantReplicationPermissionRoleLevel();
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
+  }
+
+  @Test
+  void testCheckReplicationPermissionAtSubRoleLevel() throws Exception {
+    revokeReplicationPermissionUserLevel();
+    revokeReplicationPermissionRoleLevel();
+    grantReplicationPermissionSubRoleLevel();
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
