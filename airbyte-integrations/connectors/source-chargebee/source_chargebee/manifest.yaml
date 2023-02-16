@@ -53,10 +53,12 @@ definitions:
         cursor_value: "{{ response.get('next_offset')|tojson() }}"
         stop_condition: "{{ not response.next_offset }}"
         page_size_option:
+          type: RequestOption
           inject_into: request_parameter
           field_name: limit
           page_size: 100
       page_token_option:
+        type: RequestOption
         inject_into: request_parameter
         field_name: offset
     requester:
