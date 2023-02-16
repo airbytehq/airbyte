@@ -1,22 +1,21 @@
+import { useIntl } from "react-intl";
+
 import { Text } from "components/ui/Text";
 
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useListUsers } from "packages/cloud/services/users/UseUserHook";
 
 import styles from "./CustomerWorkspaceBanner.module.scss";
 
 export const CustomerWorkspaceBanner = () => {
-  const workspace = useCurrentWorkspace();
   const user = useCurrentUser();
-  const airbyteEmail = "@airbyte.io";
-  console.log(workspace, user);
+  const workspaceUsers = useListUsers();
+  const { formatMessage } = useIntl();
 
-  if (user.email.includes(airbyteEmail) && !workspace.email?.includes(airbyteEmail)) {
+  if (!workspaceUsers.some((member) => member.userId === user.userId)) {
     return (
       <div className={styles.customerWorkspace}>
-        <Text inverseColor>
-          Warning - you are viewing a workspace not owned by an @airbyte.io account. Make changes with care!
-        </Text>
+        <Text inverseColor>{formatMessage({ id: "workspace.customerWorkspaceWarning" })}</Text>
       </div>
     );
   }
