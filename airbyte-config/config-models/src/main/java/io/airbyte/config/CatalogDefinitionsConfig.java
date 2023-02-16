@@ -4,7 +4,6 @@
 
 package io.airbyte.config;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 public class CatalogDefinitionsConfig {

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CombinedConnectorCatalogDownloader {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(CombinedConnectorCatalogDownloader.class);
 
   public static Path getResourcePath(final String projectPath, final String relativePath) {
