@@ -11,6 +11,10 @@ from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, S
 
 @dataclass
 class CustomFieldTransformation(RecordTransformation):
+    """
+    Add custom field based on condition. Jinja interpolation does not support list comprehension.
+    https://github.com/airbytehq/airbyte/issues/23134
+    """
     def transform(
         self,
         record: Record,
