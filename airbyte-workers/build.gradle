@@ -8,6 +8,7 @@ plugins {
 
 configurations {
     jdbc
+    airbyteProtocol
 }
 
 dependencies {
@@ -99,6 +100,10 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
+
+    airbyteProtocol(libs.airbyte.protocol) {
+        transitive = false
+    }
 }
 
 mainClassName = 'io.airbyte.workers.Application'
@@ -135,12 +140,18 @@ task cloudStorageIntegrationTest(type: Test) {
 // Duplicated in :airbyte-container-orchestrator, eventually, this should be handled in :airbyte-protocol
 task generateWellKnownTypes() {
     doLast {
-        def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
-        def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
-        def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
-        def targetFile = project.file("build/docker/WellKnownTypes.json")
-        targetFile.getParentFile().mkdirs()
-        targetFile.text = wellKnownTypesJson
+        def wellKnownTypesYamlPath = 'airbyte_protocol/well_known_types.yaml'
+        configurations.airbyteProtocol.getFiles().each {
+            def zip = new java.util.zip.ZipFile(it)
+            def entry = zip.getEntry(wellKnownTypesYamlPath)
+
+            def wellKnownTypesYaml = zip.getInputStream(entry).text
+            def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
+            def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
+            def targetFile = project.file("build/docker/WellKnownTypes.json")
+            targetFile.getParentFile().mkdirs()
+            targetFile.text = wellKnownTypesJson
+        }
     }
 }
 
