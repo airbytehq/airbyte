@@ -1,0 +1,1 @@
+export { CustomerWorkspaceBanner } from "./CustomerWorkspaceBanner";

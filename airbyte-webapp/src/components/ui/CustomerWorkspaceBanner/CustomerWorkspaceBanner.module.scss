@@ -1,0 +1,11 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.customerWorkspace {
+  position: sticky;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  padding: variables.$spacing-md;
+  background-color: colors.$red-400;
+}
