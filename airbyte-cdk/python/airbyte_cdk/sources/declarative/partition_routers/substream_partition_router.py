@@ -12,37 +12,36 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ParentStreamConfig(JsonSchemaMixin):
+class ParentStreamConfig:
     """
     Describes how to create a stream slice from a parent stream
 
     stream: The stream to read records from
     parent_key: The key of the parent stream's records that will be the stream slice key
-    stream_slice_field: The stream slice key
+    partition_field: The partition key
     request_option: How to inject the slice value on an outgoing HTTP request
     """
 
     stream: Stream
     parent_key: Union[InterpolatedString, str]
-    stream_slice_field: Union[InterpolatedString, str]
+    partition_field: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.parent_key = InterpolatedString.create(self.parent_key, options=options)
-        self.stream_slice_field = InterpolatedString.create(self.stream_slice_field, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.parent_key = InterpolatedString.create(self.parent_key, parameters=parameters)
+        self.partition_field = InterpolatedString.create(self.partition_field, parameters=parameters)
 
 
 @dataclass
-class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
+class SubstreamPartitionRouter(StreamSlicer):
     """
-    Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
-    Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
+    Partition router that iterates over the parent's stream records and emits slices
+    Will populate the state with `partition_field` and `parent_slice` so they can be accessed by other components
 
     Attributes:
         parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
@@ -50,22 +49,22 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
 
     parent_stream_configs: List[ParentStreamConfig]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
-            raise ValueError("SubstreamSlicer needs at least 1 parent stream")
+            raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
         self._cursor = None
-        self._options = options
+        self._parameters = parameters
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         # This method is called after the records are processed.
         cursor = {}
         for parent_stream_config in self.parent_stream_configs:
-            stream_slice_field = parent_stream_config.stream_slice_field.eval(self.config)
-            slice_value = stream_slice.get(stream_slice_field)
+            partition_field = parent_stream_config.partition_field.eval(self.config)
+            slice_value = stream_slice.get(partition_field)
             if slice_value:
-                cursor.update({stream_slice_field: slice_value})
+                cursor.update({partition_field: slice_value})
         self._cursor = cursor
 
     def get_request_params(
@@ -109,10 +108,10 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
         if stream_slice:
             for parent_config in self.parent_stream_configs:
                 if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                    key = parent_config.stream_slice_field.eval(self.config)
+                    key = parent_config.partition_field.eval(self.config)
                     value = stream_slice.get(key)
                     if value:
-                        params.update({key: value})
+                        params.update({parent_config.request_option.field_name: value})
         return params
 
     def get_stream_state(self) -> StreamState:
@@ -139,7 +138,7 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)
-                stream_state_field = parent_stream_config.stream_slice_field.eval(self.config)
+                stream_state_field = parent_stream_config.partition_field.eval(self.config)
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
@@ -153,7 +152,6 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                                 parent_record = parent_record.record.data
                             else:
                                 continue
-
                         try:
                             stream_state_value = dpath.util.get(parent_record, parent_field)
                         except KeyError:
