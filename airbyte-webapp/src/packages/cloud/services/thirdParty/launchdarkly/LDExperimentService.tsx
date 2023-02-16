@@ -104,7 +104,7 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
       ? createMultiContext(userContext, createWorkspaceContext(workspaceId))
       : createMultiContext(userContext);
     ldClient.current = LDClient.initialize(apiKey, contexts);
-    console.log("workspaceId is", workspaceId);
+
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
