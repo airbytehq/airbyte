@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
+import { HeadTitle } from "components/common/HeadTitle";
 import {
   BuilderFormValues,
   DEFAULT_BUILDER_FORM_VALUES,
@@ -30,10 +31,10 @@ import {
   useConnectorBuilderLocalStorage,
 } from "services/connectorBuilder/ConnectorBuilderLocalStorageService";
 
+import { ReactComponent as AirbyteLogo } from "./airbyte-logo.svg";
 import styles from "./ConnectorBuilderLandingPage.module.scss";
-import { ReactComponent as AirbyteLogo } from "../../../../public/images/airbyte/logo.svg";
-import { ReactComponent as ImportYamlImage } from "../../../../public/images/connector-builder/import-yaml.svg";
-import { ReactComponent as StartFromScratchImage } from "../../../../public/images/connector-builder/start-from-scratch.svg";
+import { ReactComponent as ImportYamlImage } from "./import-yaml.svg";
+import { ReactComponent as StartFromScratchImage } from "./start-from-scratch.svg";
 import { ConnectorBuilderRoutePaths } from "../ConnectorBuilderRoutes";
 
 const YAML_UPLOAD_ERROR_ID = "connectorBuilder.yamlUpload.error";
@@ -210,6 +211,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
 
 export const ConnectorBuilderLandingPage: React.FC = () => (
   <ConnectorBuilderLocalStorageProvider>
+    <HeadTitle titles={[{ id: "connectorBuilder.landingPage.title" }]} />
     <ConnectorBuilderLandingPageInner />
   </ConnectorBuilderLocalStorageProvider>
 );
