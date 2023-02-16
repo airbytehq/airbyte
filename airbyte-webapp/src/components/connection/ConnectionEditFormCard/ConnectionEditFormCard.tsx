@@ -9,8 +9,8 @@ import { CollapsibleCardProps, CollapsibleCard } from "components/ui/Collapsible
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { generateMessageFromError } from "utils/errorStatusMessage";
 
-import EditControls from "../ConnectionForm/EditControls";
 import styles from "./ConnectionEditFormCard.module.scss";
+import EditControls from "../ConnectionForm/EditControls";
 
 interface FormCardProps<T> extends CollapsibleCardProps {
   form: FormikConfig<T>;

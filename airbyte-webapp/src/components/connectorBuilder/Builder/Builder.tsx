@@ -4,12 +4,12 @@ import { useEffect, useMemo } from "react";
 
 import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { builderFormValidationSchema, BuilderFormValues } from "../types";
 import styles from "./Builder.module.scss";
 import { BuilderSidebar } from "./BuilderSidebar";
 import { GlobalConfigView } from "./GlobalConfigView";
 import { InputsView } from "./InputsView";
 import { StreamConfigView } from "./StreamConfigView";
+import { builderFormValidationSchema, BuilderFormValues } from "../types";
 
 interface BuilderProps {
   values: BuilderFormValues;

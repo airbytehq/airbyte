@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.apis;
@@ -19,9 +19,9 @@ import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.api.model.generated.SourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.SourceDefinitionsHandler;
 import io.micronaut.context.annotation.Context;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
@@ -30,8 +30,6 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/source_definitions")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
 @Context
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class SourceDefinitionApiController implements SourceDefinitionApi {
@@ -44,6 +42,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/create_custom")
   @Secured({EDITOR})
+  @SecuredWorkspace
   @Override
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.createCustomSourceDefinition(customSourceDefinitionCreate));
@@ -69,6 +68,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/get_for_workspace")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.getSourceDefinitionForWorkspace(sourceDefinitionIdWithWorkspaceId));
@@ -104,6 +104,7 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
 
   @Post("/list_for_workspace")
   @Secured({READER})
+  @SecuredWorkspace
   @Override
   public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.listSourceDefinitionsForWorkspace(workspaceIdRequestBody));

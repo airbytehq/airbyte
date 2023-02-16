@@ -1,8 +1,8 @@
 import React from "react";
 
+import { PillButton, PillButtonVariant } from "./PillButton";
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
-import { PillButton, PillButtonVariant } from "./PillButton";
 
 type PickedPopoutProps = Pick<PopoutProps, "value" | "options" | "isMulti" | "onChange" | "className">;
 

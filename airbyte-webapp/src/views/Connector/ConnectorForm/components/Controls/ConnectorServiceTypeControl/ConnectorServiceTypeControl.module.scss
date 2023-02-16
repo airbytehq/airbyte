@@ -1,22 +1,25 @@
 @use "scss/colors";
-@use "scss/variables" as vars;
+@use "scss/variables";
 
 .connectorListFooter {
   width: 100%;
-  padding: vars.$spacing-md;
-  border-top: vars.$border-thin solid colors.$grey-50;
+  padding: variables.$spacing-md;
+  border-top: variables.$border-thin solid colors.$grey-50;
   min-height: 36px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
 
   .requestNewConnectorBtn {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: vars.$spacing-md;
+    gap: variables.$spacing-md;
     border: none;
     cursor: pointer;
     background: colors.$white;
-    color: colors.$dark-blue;
+    color: colors.$blue;
 
     &:hover {
       color: colors.$blue;
@@ -28,7 +31,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: vars.$spacing-md;
+  gap: variables.$spacing-md;
 }
 
 .stageLabel {
@@ -37,7 +40,7 @@
   background: colors.$grey-100;
   color: colors.$dark-blue;
   text-transform: uppercase;
-  border-radius: vars.$border-radius-pill;
+  border-radius: variables.$border-radius-pill;
   font-weight: 500;
   font-size: 8px;
   line-height: 10px;
@@ -50,4 +53,10 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+}
+
+.builderPromptContainer {
+  border: 1px solid colors.$grey-100;
+  border-radius: variables.$border-radius-md;
+  padding: variables.$spacing-md;
 }

@@ -11,8 +11,8 @@ import { Card } from "components/ui/Card";
 import { CheckBox } from "components/ui/CheckBox";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
-import { BuilderStream } from "../types";
 import styles from "./BuilderCard.module.scss";
+import { BuilderStream } from "../types";
 
 interface BuilderCardProps {
   className?: string;

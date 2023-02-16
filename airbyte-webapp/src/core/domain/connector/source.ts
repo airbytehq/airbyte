@@ -1,15 +1,15 @@
 import {
-  DestinationDefinitionSpecificationRead,
-  SourceDefinitionRead,
-  SourceDefinitionSpecificationRead,
-  SourceRead,
-} from "../../request/AirbyteClient";
-import {
   ConnectorDefinition,
   ConnectorDefinitionSpecification,
   ConnectorT,
   SourceDefinitionSpecificationDraft,
 } from "./types";
+import {
+  DestinationDefinitionSpecificationRead,
+  SourceDefinitionRead,
+  SourceDefinitionSpecificationRead,
+  SourceRead,
+} from "../../request/AirbyteClient";
 
 export function isSource(connector: ConnectorT): connector is SourceRead {
   return "sourceId" in connector;

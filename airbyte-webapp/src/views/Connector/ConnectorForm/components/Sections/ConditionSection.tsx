@@ -8,12 +8,12 @@ import { DropDown, DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { FormConditionItem } from "core/form/types";
 
-import { ConnectorFormValues } from "../../types";
-import { setDefaultValues } from "../../useBuildForm";
 import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
 import { SectionContainer } from "./SectionContainer";
+import { ConnectorFormValues } from "../../types";
+import { setDefaultValues } from "../../useBuildForm";
 
 interface ConditionSectionProps {
   formField: FormConditionItem;

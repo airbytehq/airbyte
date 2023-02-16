@@ -19,15 +19,13 @@ export const useShowEnrollmentModal = () => {
   const { registerNotification } = useNotificationService();
 
   const verifyEmail = () =>
-    sendEmailVerification()
-      .then(() => {
-        registerNotification({
-          id: "fcp/verify-email",
-          text: formatMessage({ id: "freeConnectorProgram.enrollmentModal.validationEmailConfirmation" }),
-          type: ToastType.INFO,
-        });
-      })
-      .catch(); // don't crash the page on error
+    sendEmailVerification().then(() => {
+      registerNotification({
+        id: "fcp/verify-email",
+        text: formatMessage({ id: "freeConnectorProgram.enrollmentModal.validationEmailConfirmation" }),
+        type: ToastType.INFO,
+      });
+    });
 
   return {
     showEnrollmentModal: () => {

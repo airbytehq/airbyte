@@ -1,5 +1,5 @@
 @use "scss/colors";
-@use "scss/variables" as vars;
+@use "scss/variables";
 
 $lg-size: 18px;
 $sm-size: 14px;
@@ -8,9 +8,9 @@ $sm-size: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: vars.$border-thin 0;
-  border: vars.$border-thin solid colors.$grey-100;
-  border-radius: vars.$border-radius-2xs;
+  padding: variables.$border-thin 0;
+  border: variables.$border-thin solid colors.$grey-100;
+  border-radius: variables.$border-radius-2xs;
   color: colors.$white;
   background-color: colors.$white;
   cursor: pointer;
@@ -27,7 +27,7 @@ $sm-size: 14px;
 
 .checked,
 .indeterminate {
-  border: vars.$border-thin solid colors.$blue;
+  border: variables.$border-thin solid colors.$blue;
   background: colors.$blue;
 
   &.disabled {

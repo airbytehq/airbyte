@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.apis;
@@ -16,11 +16,11 @@ import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.ConnectionsHandler;
 import io.airbyte.commons.server.handlers.OperationsHandler;
 import io.airbyte.commons.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
@@ -30,9 +30,7 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/connections")
-@Context()
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
+@Context
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class ConnectionApiController implements ConnectionApi {
 
@@ -51,6 +49,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/create")
   @Secured({EDITOR})
+  @SecuredWorkspace
   public ConnectionRead createConnection(@Body final ConnectionCreate connectionCreate) {
     return ApiHelper.execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
@@ -58,6 +57,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/update")
   @Secured({EDITOR})
+  @SecuredWorkspace
   public ConnectionRead updateConnection(@Body final ConnectionUpdate connectionUpdate) {
     return ApiHelper.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
@@ -65,6 +65,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/list")
   @Secured({READER})
+  @SecuredWorkspace
   public ConnectionReadList listConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
@@ -72,6 +73,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/list_all")
   @Secured({READER})
+  @SecuredWorkspace
   public ConnectionReadList listAllConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
   }
@@ -85,6 +87,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/get")
   @Secured({READER})
+  @SecuredWorkspace
   public ConnectionRead getConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
   }
@@ -93,6 +96,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Post(uri = "/delete")
   @Status(HttpStatus.NO_CONTENT)
   @Secured({EDITOR})
+  @SecuredWorkspace
   public void deleteConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
@@ -104,6 +108,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/sync")
   @Secured({EDITOR})
+  @SecuredWorkspace
   public JobInfoRead syncConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
@@ -111,6 +116,7 @@ public class ConnectionApiController implements ConnectionApi {
   @Override
   @Post(uri = "/reset")
   @Secured({EDITOR})
+  @SecuredWorkspace
   public JobInfoRead resetConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }

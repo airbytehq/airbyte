@@ -13,11 +13,14 @@ import { Text } from "components/ui/Text";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { useFreeConnectorProgram } from "packages/cloud/components/experiments/FreeConnectorProgram/hooks/useFreeConnectorProgram";
-import { InlineEnrollmentCallout } from "packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout";
+import { useFeature, FeatureItem } from "hooks/services/Feature";
 
-import { ConnectionRoutePaths } from "../types";
 import styles from "./ConnectionPageTitle.module.scss";
+import { ConnectionRoutePaths } from "../types";
+
+const InlineEnrollmentCallout = React.lazy(
+  () => import("packages/cloud/components/experiments/FreeConnectorProgram/InlineEnrollmentCallout")
+);
 
 export const ConnectionPageTitle: React.FC = () => {
   const params = useParams<{ id: string; "*": ConnectionRoutePaths }>();
@@ -25,9 +28,6 @@ export const ConnectionPageTitle: React.FC = () => {
   const currentStep = params["*"] || ConnectionRoutePaths.Status;
 
   const { connection } = useConnectionEditService();
-
-  const { enrollmentStatusQuery } = useFreeConnectorProgram();
-  const { showEnrollmentUi } = enrollmentStatusQuery.data || {};
 
   const steps = useMemo(() => {
     const steps = [
@@ -65,6 +65,8 @@ export const ConnectionPageTitle: React.FC = () => {
     [navigate]
   );
 
+  const fcpEnabled = useFeature(FeatureItem.FreeConnectorProgram);
+
   return (
     <div className={styles.container}>
       {connection.status === ConnectionStatus.deprecated && (
@@ -80,7 +82,7 @@ export const ConnectionPageTitle: React.FC = () => {
       <div className={styles.statusContainer}>
         <FlexContainer direction="column" gap="none">
           <ConnectionInfoCard />
-          {showEnrollmentUi && <InlineEnrollmentCallout />}
+          {fcpEnabled && <InlineEnrollmentCallout />}
         </FlexContainer>
       </div>
       <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
