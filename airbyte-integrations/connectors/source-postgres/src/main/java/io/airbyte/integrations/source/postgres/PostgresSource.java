@@ -330,7 +330,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           return ps;
         }, sourceOperations::rowToJson);
 
-        // Verify if the user has privilege at role level
+        /* Verify if the user has privilege at role level using a recursive query to verify cases like:
+        granted roleA (No replication) to user
+        granted roleB (No replication) to roleA
+        granted roleC (Replication) to roleB
+        The output of the query will be roleC.
+        */
         final List<JsonNode> rolePrivileges = database.queryJsons(connection -> {
           final PreparedStatement ps = connection.prepareStatement("""
               WITH RECURSIVE cte AS (
