@@ -9,4 +9,4 @@ RUN go install github.com/lolabyte/gitxmod/cmd/gitxmod@${version}
 
 COPY entrypoint /entrypoint
 
-ENTRYPOINT [ "./entrypoint"]
+ENTRYPOINT [ "/entrypoint"]
