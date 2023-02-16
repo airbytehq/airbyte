@@ -191,8 +191,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   // in case of user manually modified source table schema but did not refresh it and save into the
   // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
-  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                     ConfiguredAirbyteCatalog catalog) {
+  private void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     final ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -457,12 +457,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       estimateFullRefreshSyncSize(database, airbyteStream);
-      iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
-          table, emittedAt);
-//      final AutoCloseableIterator<Tuple> iteratorRS = getFullRefreshStreamRS(database, streamName, namespace, selectedDatabaseFields,
+//      iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
 //          table, emittedAt);
+      final AutoCloseableIterator<Tuple> iteratorRS = getFullRefreshStreamRS(database, streamName, namespace, selectedDatabaseFields,
+          table, emittedAt);
       // add in iterator that converts all available records upfront
-//      iterator = AutoCloseableIterators.transformRS(iter -> new RodiIterator(database, iteratorRS, getRecordTransform(database), streamName, namespace, emittedAt.toEpochMilli()), iteratorRS);
+      iterator = AutoCloseableIterators.transformRS(iter -> new RodiIterator(database, iteratorRS, getRecordTransform(database), streamName, namespace, emittedAt.toEpochMilli()), iteratorRS);
     } else if (airbyteStream.getSyncMode() == null) {
       throw new IllegalArgumentException(
           String.format("%s requires a source sync mode", this.getClass()));
