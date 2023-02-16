@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.AttemptSyncConfig;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
@@ -190,6 +191,17 @@ public interface JobPersistence {
    * @throws IOException exception due to interaction with persistence
    */
   void writeAttemptFailureSummary(long jobId, int attemptNumber, AttemptFailureSummary failureSummary) throws IOException;
+
+  /**
+   * Writes the attempt-specific configuration used to build the sync input during the attempt.
+   *
+   * @param jobId job id
+   * @param attemptNumber attempt number
+   * @param attemptSyncConfig attempt-specific configuration used to build the sync input for this
+   *        attempt
+   * @throws IOException exception due to interaction with persistence
+   */
+  void writeAttemptSyncConfig(long jobId, int attemptNumber, AttemptSyncConfig attemptSyncConfig) throws IOException;
 
   /**
    * @param configTypes - the type of config, e.g. sync

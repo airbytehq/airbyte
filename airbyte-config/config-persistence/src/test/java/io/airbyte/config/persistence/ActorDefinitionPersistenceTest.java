@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -43,7 +43,8 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     configRepository = spy(new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        mock(StandardSyncPersistence.class)));
+        mock(StandardSyncPersistence.class),
+        MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES));
   }
 
   @Test
@@ -61,9 +62,26 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     assertReturnsSrcDef(createBaseSourceDef().withTombstone(false));
   }
 
+  @Test
+  void testSourceDefinitionDefaultMaxSeconds() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSrcDefDefaultMaxSecondsBetweenMessages(createBaseSourceDefWithoutMaxSecondsBetweenMessages());
+  }
+
+  @Test
+  void testSourceDefinitionMaxSeconds() throws JsonValidationException, ConfigNotFoundException, IOException {
+    assertReturnsSrcDef(createBaseSourceDefWithoutMaxSecondsBetweenMessages().withMaxSecondsBetweenMessages(1L));
+  }
+
   private void assertReturnsSrcDef(final StandardSourceDefinition srcDef) throws ConfigNotFoundException, IOException, JsonValidationException {
     configRepository.writeStandardSourceDefinition(srcDef);
     assertEquals(srcDef, configRepository.getStandardSourceDefinition(srcDef.getSourceDefinitionId()));
+  }
+
+  private void assertReturnsSrcDefDefaultMaxSecondsBetweenMessages(final StandardSourceDefinition srcDef)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    configRepository.writeStandardSourceDefinition(srcDef);
+    assertEquals(srcDef.withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES),
+        configRepository.getStandardSourceDefinition(srcDef.getSourceDefinitionId()));
   }
 
   @Test
@@ -264,6 +282,19 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   private static StandardSourceDefinition createBaseSourceDef() {
+    final UUID id = UUID.randomUUID();
+
+    return new StandardSourceDefinition()
+        .withName("source-def-" + id)
+        .withDockerRepository("source-image-" + id)
+        .withDockerImageTag("0.0.1")
+        .withSourceDefinitionId(id)
+        .withProtocolVersion("0.2.0")
+        .withTombstone(false)
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
+  }
+
+  private static StandardSourceDefinition createBaseSourceDefWithoutMaxSecondsBetweenMessages() {
     final UUID id = UUID.randomUUID();
 
     return new StandardSourceDefinition()

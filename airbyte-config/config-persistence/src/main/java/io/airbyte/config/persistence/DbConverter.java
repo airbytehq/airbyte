@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -151,7 +151,7 @@ public class DbConverter {
         .withName(record.get(ACTOR.NAME));
   }
 
-  public static StandardSourceDefinition buildStandardSourceDefinition(final Record record) {
+  public static StandardSourceDefinition buildStandardSourceDefinition(final Record record, final long defaultMaxSecondsBetweenMessages) {
     return new StandardSourceDefinition()
         .withSourceDefinitionId(record.get(ACTOR_DEFINITION.ID))
         .withDockerImageTag(record.get(ACTOR_DEFINITION.DOCKER_IMAGE_TAG))
@@ -178,7 +178,10 @@ public class DbConverter {
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.ALLOWED_HOSTS).data(), AllowedHosts.class))
         .withSuggestedStreams(record.get(ACTOR_DEFINITION.SUGGESTED_STREAMS) == null
             ? null
-            : Jsons.deserialize(record.get(ACTOR_DEFINITION.SUGGESTED_STREAMS).data(), SuggestedStreams.class));
+            : Jsons.deserialize(record.get(ACTOR_DEFINITION.SUGGESTED_STREAMS).data(), SuggestedStreams.class))
+        .withMaxSecondsBetweenMessages(record.get(ACTOR_DEFINITION.MAX_SECONDS_BETWEEN_MESSAGES) == null
+            ? defaultMaxSecondsBetweenMessages
+            : record.get(ACTOR_DEFINITION.MAX_SECONDS_BETWEEN_MESSAGES).longValue());
   }
 
   public static StandardDestinationDefinition buildStandardDestinationDefinition(final Record record) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -70,7 +70,7 @@ class SyncOperationPersistenceTest extends BaseConfigDatabaseTest {
   void beforeEach() throws Exception {
     truncateAllTables();
 
-    configRepository = new ConfigRepository(database);
+    configRepository = new ConfigRepository(database, MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
     createWorkspace();
 
     for (final StandardSyncOperation op : OPS) {

@@ -43,7 +43,7 @@ airbyte:
         s3:
           access-key: ${STATE_STORAGE_S3_ACCESS_KEY:}
           bucket: ${STATE_STORAGE_S3_BUCKET_NAME:}
-          region: ${STATE_STORAGE_S3_BUCKET_REGION:}
+          region: ${STATE_STORAGE_S3_REGION:}
           secret-access-key: ${STATE_STORAGE_S3_SECRET_ACCESS_KEY:}
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
   flyway:
@@ -75,6 +75,7 @@ airbyte:
         sentry:
           dsn: ${JOB_ERROR_REPORTING_SENTRY_DSN}
         strategy: ${JOB_ERROR_REPORTING_STRATEGY:LOGGING}
+    max-seconds-between-messages: ${MAX_SECONDS_BETWEEN_MESSAGES:10800}
   web-app:
     url: ${WEBAPP_URL:}
   workspace:
@@ -101,7 +102,7 @@ datasources:
     maximum-pool-size: 10
     minimum-idle: 0
     idle-timeout: 600000
-    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    initialization-fail-timeout: -1 # Disable fail fast checking to avoid issues due to other pods not being started in time
     url: ${DATABASE_URL}
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}
@@ -139,11 +140,11 @@ flyway:
     config:
       enabled: false
       locations:
-        - 'classpath:io/airbyte/db/instance/configs/migrations'
+        - "classpath:io/airbyte/db/instance/configs/migrations"
     jobs:
       enabled: false
       locations:
-        - 'classpath:io/airbyte/db/instance/jobs/migrations'
+        - "classpath:io/airbyte/db/instance/jobs/migrations"
 
 jooq:
   datasources:

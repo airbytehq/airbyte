@@ -1,12 +1,22 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.general;
 
 import static java.lang.Thread.sleep;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -14,15 +24,28 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.config.*;
+import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
+import io.airbyte.config.ReplicationAttemptSummary;
+import io.airbyte.config.ReplicationOutput;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.State;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
+import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.featureflag.TestClient;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.MetricTags;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage.Level;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
@@ -35,7 +58,11 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.internal.*;
+import io.airbyte.workers.internal.AirbyteDestination;
+import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -43,7 +70,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -52,6 +84,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mockito;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -907,6 +940,45 @@ class DefaultReplicationWorkerTest {
         false,
         heartbeatTimeoutChaperone);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
+  }
+
+  @Test
+  void testSourceFailingTimeout() throws Exception {
+    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
+    when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
+    final UUID connectionId = UUID.randomUUID();
+    final MetricClient mMetricClient = mock(MetricClient.class);
+    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone =
+        new HeartbeatTimeoutChaperone(heartbeatMonitor, Duration.ofMillis(1), new TestClient(Map.of("heartbeat.failSync", true)), UUID.randomUUID(),
+            connectionId, mMetricClient);
+
+    final AirbyteSource source = mock(AirbyteSource.class);
+    when(source.isFinished()).thenReturn(false);
+    when(source.attemptRead()).thenAnswer((Answer<Optional<AirbyteMessage>>) invocation -> {
+      sleep(100);
+      return Optional.of(RECORD_MESSAGE1);
+    });
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        connectorConfigUpdater,
+        false,
+        heartbeatTimeoutChaperone);
+
+    final ReplicationOutput actual = worker.run(syncInput, jobRoot);
+
+    verify(mMetricClient).count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1,
+        new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
+    assertEquals(1, actual.getFailures().size());
+    assertEquals(FailureOrigin.SOURCE, actual.getFailures().get(0).getFailureOrigin());
+    assertEquals(FailureReason.FailureType.HEARTBEAT_TIMEOUT, actual.getFailures().get(0).getFailureType());
   }
 
 }

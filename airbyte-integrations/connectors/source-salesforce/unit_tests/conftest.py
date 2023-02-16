@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -9,6 +9,7 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
+from source_salesforce.streams import SalesforceStream
 
 
 @pytest.fixture(autouse=True)
@@ -102,6 +103,26 @@ def stream_api_v2(stream_config):
 @pytest.fixture(scope="module")
 def stream_api_pk(stream_config):
     describe_response_data = {"fields": [{"name": "LastModifiedDate", "type": "string"}, {"name": "Id", "type": "string"}]}
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+@pytest.fixture(scope="module")
+def stream_api_v2_too_many_properties(stream_config):
+    describe_response_data = {
+        "fields": [{"name": f"PropertyName{str(i)}", "type": "string"} for i in range(SalesforceStream.MAX_PROPERTIES_LENGTH)]
+    }
+    describe_response_data["fields"].extend([{"name": "BillingAddress", "type": "address"}])
+    return _stream_api(stream_config, describe_response_data=describe_response_data)
+
+
+@pytest.fixture(scope="module")
+def stream_api_v2_pk_too_many_properties(stream_config):
+    describe_response_data = {
+        "fields": [{"name": f"PropertyName{str(i)}", "type": "string"} for i in range(SalesforceStream.MAX_PROPERTIES_LENGTH)]
+    }
+    describe_response_data["fields"].extend([
+        {"name": "BillingAddress", "type": "address"}, {"name": "Id", "type": "string"}
+    ])
     return _stream_api(stream_config, describe_response_data=describe_response_data)
 
 

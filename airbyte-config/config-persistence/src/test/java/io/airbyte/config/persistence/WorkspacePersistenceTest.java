@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -49,7 +49,8 @@ class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
     configRepository = spy(new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        null));
+        null,
+        MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES));
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -18,7 +18,6 @@ import io.airbyte.api.model.generated.SourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.server.ServerConstants;
 import io.airbyte.commons.server.converters.ApiPojoConverters;
@@ -33,7 +32,11 @@ import io.airbyte.commons.util.MoreLists;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.*;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.ActorType;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -104,7 +107,8 @@ public class SourceDefinitionsHandler {
           .protocolVersion(standardSourceDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardSourceDefinition))
           .releaseDate(getReleaseDate(standardSourceDefinition))
-          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
+          .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()))
+          .maxSecondsBetweenMessages(standardSourceDefinition.getMaxSecondsBetweenMessages());
 
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
@@ -296,7 +300,7 @@ public class SourceDefinitionsHandler {
 
   private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag, final boolean isCustomConnector)
       throws IOException {
-    final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
+    final String imageName = dockerRepository + ":" + imageTag;
     final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName, isCustomConnector);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
   }

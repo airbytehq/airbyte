@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -25,7 +25,7 @@ class HealthCheckPersistenceTest {
   void beforeEach() throws Exception {
 
     database = mock(Database.class);
-    configRepository = new ConfigRepository(database);
+    configRepository = new ConfigRepository(database, MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   @Test

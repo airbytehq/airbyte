@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -14,7 +14,6 @@ import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -38,7 +37,7 @@ public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
-  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.ofMinutes(1);
 
   private final HeartbeatMonitor heartbeatMonitor;
   private final Duration timeoutCheckDuration;
@@ -48,6 +47,8 @@ public class HeartbeatTimeoutChaperone {
   private final MetricClient metricClient;
 
   private final AtomicBoolean hasReportToDataDog = new AtomicBoolean(false);
+
+  private boolean hasFailed = false;
 
   public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
                                    final Duration timeoutCheckDuration,
@@ -117,14 +118,18 @@ public class HeartbeatTimeoutChaperone {
 
       // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
       if (!heartbeatMonitor.isBeating().orElse(true)) {
-        if (!hasReportToDataDog.get()) {
-          metricClient.count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1, new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
-        }
-        LOGGER.error("Source has stopped heart beating.");
-        if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
-          return;
-        } else {
-          LOGGER.info("Do not return because the feature flag is disable");
+        if (!hasFailed) {
+          if (!hasReportToDataDog.get()) {
+            metricClient.count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1,
+                new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
+          }
+          LOGGER.error("Source has stopped heart beating.");
+          if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
+            return;
+          } else {
+            LOGGER.info("Do not return because the feature flag is disable");
+          }
+          hasFailed = true;
         }
       }
     }

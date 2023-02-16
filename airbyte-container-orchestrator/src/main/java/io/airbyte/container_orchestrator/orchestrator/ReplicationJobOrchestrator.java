@@ -1,16 +1,20 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.container_orchestrator.orchestrator;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.*;
-import static io.airbyte.workers.internal.DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.generated.SourceDefinitionApi;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.commons.features.FeatureFlagHelper;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -23,6 +27,8 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.featureflag.FeatureFlagClient;
+import io.airbyte.featureflag.FieldSelectionEnabled;
+import io.airbyte.featureflag.Workspace;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
@@ -35,7 +41,16 @@ import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
-import io.airbyte.workers.internal.*;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteDestination;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
+import io.airbyte.workers.internal.EmptyAirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
@@ -43,8 +58,10 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +77,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final JobRunConfig jobRunConfig;
   private final SourceApi sourceApi;
   private final DestinationApi destinationApi;
+  private final SourceDefinitionApi sourceDefinitionApi;
 
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
@@ -69,7 +87,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                     final JobRunConfig jobRunConfig,
                                     final SourceApi sourceApi,
-                                    final DestinationApi destinationApi) {
+                                    final DestinationApi destinationApi,
+                                    final SourceDefinitionApi sourceDefinitionApi) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
@@ -79,6 +98,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     this.jobRunConfig = jobRunConfig;
     this.sourceApi = sourceApi;
     this.destinationApi = destinationApi;
+    this.sourceDefinitionApi = sourceDefinitionApi;
   }
 
   @Override
@@ -136,8 +156,14 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         featureFlags);
 
     log.info("Setting up source...");
+
+    final UUID sourceDefinitionId = sourceApi.getSource(new SourceIdRequestBody().sourceId(syncInput.getSourceId())).getSourceDefinitionId();
+
+    final long maxSecondsBetweenMessages = sourceDefinitionApi
+        .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
+        .getMaxSecondsBetweenMessages();
     // reset jobs use an empty source to induce resetting all data in destination.
-    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION);
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(maxSecondsBetweenMessages));
 
     final var airbyteSource =
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
@@ -158,6 +184,13 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         MetricClientFactory.getMetricClient());
 
     log.info("Setting up replication worker...");
+    final UUID workspaceId = syncInput.getWorkspaceId();
+    // NOTE: we apply field selection if the feature flag client says so (recommended) or the old
+    // environment-variable flags say so (deprecated).
+    // The latter FeatureFlagHelper will be removed once the flag client is fully deployed.
+    final boolean fieldSelectionEnabled = workspaceId != null &&
+        (featureFlagClient.enabled(FieldSelectionEnabled.INSTANCE, new Workspace(workspaceId))
+            || FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, workspaceId));
     final var replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -173,7 +206,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new RecordSchemaValidator(featureFlagClient, syncInput.getWorkspaceId(), WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
         new ConnectorConfigUpdater(sourceApi, destinationApi),
-        FeatureFlagHelper.isFieldSelectionEnabledForWorkspace(featureFlags, syncInput.getWorkspaceId()),
+        fieldSelectionEnabled,
         heartbeatTimeoutChaperone);
 
     log.info("Running replication worker...");

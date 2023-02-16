@@ -43,7 +43,7 @@ airbyte:
         s3:
           access-key: ${STATE_STORAGE_S3_ACCESS_KEY:}
           bucket: ${STATE_STORAGE_S3_BUCKET_NAME:}
-          region: ${STATE_STORAGE_S3_BUCKET_REGION:}
+          region: ${STATE_STORAGE_S3_REGION:}
           secret-access-key: ${STATE_STORAGE_S3_SECRET_ACCESS_KEY:}
   connector:
     specific-resource-defaults-enabled: ${CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED:false}
@@ -61,6 +61,10 @@ airbyte:
     plane:
       auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}
   data:
+    check:
+      task-queue: ${DATA_CHECK_TASK_QUEUES:CHECK_CONNECTION}
+    discover:
+      task-queue: ${DATA_DISCOVER_TASK_QUEUES:DISCOVER_SCHEMA}
     sync:
       task-queue: ${DATA_SYNC_TASK_QUEUES:SYNC}
     plane:
@@ -75,6 +79,10 @@ airbyte:
     jobs:
       initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
       minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  feature-flag:
+    client: ${FEATURE_FLAG_CLIENT:config}
+    path: ${FEATURE_FLAG_PATH:/flags}
+    api-key: ${LAUNCHDARKLY_KEY:}
   internal:
     api:
       auth-header:
@@ -146,6 +154,7 @@ airbyte:
           memory:
             limit: ${JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
             request: ${JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
+    max-seconds-between-messages: ${MAX_SECONDS_BETWEEN_MESSAGES:10800}
     normalization:
       main:
         container:

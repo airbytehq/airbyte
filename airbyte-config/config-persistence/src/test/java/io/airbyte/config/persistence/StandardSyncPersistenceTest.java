@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -79,7 +79,7 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
     standardSyncPersistence = new StandardSyncPersistence(database);
 
     // only used for creating records that sync depends on.
-    configRepository = new ConfigRepository(database);
+    configRepository = new ConfigRepository(database, MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -78,7 +78,7 @@ class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
     truncateAllTables();
 
     migrator = new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database));
-    configRepository = new ConfigRepository(database, migrator, null);
+    configRepository = new ConfigRepository(database, migrator, null, MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
   }
 
   private void writeSource(final StandardSourceDefinition source) throws Exception {
@@ -154,7 +154,8 @@ class ActorDefinitionMigratorTest extends BaseConfigDatabaseTest {
         .withDockerImageTag("0.1.2")
         .withName("random-name")
         .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
-        .withTombstone(false);
+        .withTombstone(false)
+        .withMaxSecondsBetweenMessages(MockData.DEFAULT_MAX_SECONDS_BETWEEN_MESSAGES);
     writeSource(sourceDef);
     assertEquals(sourceDef, configRepository.getStandardSourceDefinition(sourceDef.getSourceDefinitionId()));
   }

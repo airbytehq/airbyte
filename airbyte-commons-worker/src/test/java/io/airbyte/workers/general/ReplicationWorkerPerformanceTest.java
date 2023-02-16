@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.general;
@@ -28,7 +28,11 @@ import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
-import io.airbyte.workers.internal.*;
+import io.airbyte.workers.internal.DefaultAirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.IOException;
@@ -40,7 +44,12 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
 import org.mockito.Mockito;
-import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.Warmup;
 
 @Slf4j
 public class ReplicationWorkerPerformanceTest {

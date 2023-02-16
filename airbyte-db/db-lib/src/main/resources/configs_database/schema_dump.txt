@@ -60,6 +60,7 @@ create table "public"."actor_definition"(
   "normalization_integration_type" varchar(255) null,
   "allowed_hosts" jsonb null,
   "suggested_streams" jsonb null,
+  "max_seconds_between_messages" int4 null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );
@@ -261,6 +262,7 @@ alter table "public"."workspace_service_account"
   add constraint "workspace_service_account_workspace_id_fkey"
     foreign key ("workspace_id")
     references "public"."workspace" ("id");
+comment on column "public"."actor_definition"."max_seconds_between_messages" is 'Define the number of seconds allowed between 2 messages emitted by the connector before ';
 create index "actor_actor_definition_id_idx" on "public"."actor"("actor_definition_id" asc);
 create unique index "actor_pkey" on "public"."actor"("id" asc);
 create index "actor_workspace_id_idx" on "public"."actor"("workspace_id" asc);
