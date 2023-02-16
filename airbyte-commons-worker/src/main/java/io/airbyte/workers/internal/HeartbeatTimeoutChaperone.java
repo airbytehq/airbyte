@@ -18,7 +18,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,8 +116,8 @@ public class HeartbeatTimeoutChaperone {
       // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
       if (!heartbeatMonitor.isBeating().orElse(true)) {
         if (!hasFailed) {
-            metricClient.count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1,
-                new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
+          metricClient.count(OssMetricsRegistry.SOURCE_HEARTBEAT_FAILURE, 1,
+              new MetricAttribute(MetricTags.CONNECTION_ID, connectionId.toString()));
           LOGGER.error("Source has stopped heart beating.");
           if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
             return;

@@ -7,7 +7,6 @@ package io.airbyte.workers.internal;
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
