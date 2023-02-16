@@ -33,9 +33,9 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-converters')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-server')
+    implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:init')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
@@ -51,7 +51,6 @@ dependencies {
     implementation 'com.github.slugify:slugify:2.4'
     implementation 'commons-cli:commons-cli:1.4'
     implementation libs.temporal.sdk
-    implementation libs.bundles.datadog
     implementation 'org.apache.cxf:cxf-core:3.4.2'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
