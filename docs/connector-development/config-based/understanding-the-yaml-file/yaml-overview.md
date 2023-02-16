@@ -29,8 +29,6 @@ The stream object is represented in the YAML file as:
         enum: [DeclarativeStream]
       retriever:
         "$ref": "#/definitions/Retriever"
-      transformations:
-        "$ref": "#/definitions/RecordTransformation"
       schema_loader:
         definition: The schema loader used to retrieve the schema for the current stream
         anyOf:
@@ -111,7 +109,7 @@ The schema of a retriever object is:
 
 Some sources might require specifying additional parameters that are needed to retrieve data. Using the `PartitionRouter` component, you can specify a static or dynamic set of elements which will be iterated upon and made available for use when a connector dispatches requests to get data from a source.
 
-More information on how to configure the `partition_router` field on a Retriever to retrieve data from multiple location can be found in the [iteration](./location.md) section.
+More information on how to configure the `partition_router` field on a Retriever to retrieve data from multiple location can be found in the [iteration](./partition-router.md) section.
 
 ### Combining Incremental Syncs and Iterable Locations
 
