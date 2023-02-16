@@ -75,6 +75,7 @@ export function useConnectorAuth(): {
           workspaceId,
           sourceDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+          // redirectUrl: oauthRedirectUrl,
           oAuthInputConfiguration,
         };
         const response = await sourceAuthService.getConsentUrl(payload);
@@ -85,6 +86,7 @@ export function useConnectorAuth(): {
         workspaceId,
         destinationDefinitionId: ConnectorSpecification.id(connector),
         redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+        // redirectUrl: oauthRedirectUrl,
         oAuthInputConfiguration,
       };
       const response = await destinationAuthService.getConsentUrl(payload);

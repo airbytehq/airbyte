@@ -1,0 +1,70 @@
+apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and before 1.8.0 use extensions/v1beta1
+kind: Deployment
+metadata:
+  # This name uniquely identifies the Deployment
+  name: airbyte-minio
+spec:
+  selector:
+    matchLabels:
+      app: airbyte-minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        # Label is used as selector in the service.
+        app: airbyte-minio
+    spec:
+      # Refer to the PVC created earlier
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            # Name of the PVC created earlier
+            claimName: airbyte-minio-pv-claim
+      containers:
+        - name: airbyte-minio
+          # Pulls the default Minio image from Docker Hub
+          image: minio/minio:latest
+          args:
+            - server
+            - /storage
+          env:
+            # Minio access key and secret key. This must match the S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY declared in /dev/.env.
+            - name: MINIO_ACCESS_KEY
+              value: "minio"
+            - name: MINIO_SECRET_KEY
+              value: "minio123"
+          ports:
+            - containerPort: 9000
+          # Mount the volume into the pod
+          volumeMounts:
+            - name: storage # must match the volume name, above
+              mountPath: "/storage"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  # This name uniquely identifies the PVC. Will be used in deployment below.
+  name: airbyte-minio-pv-claim
+  labels:
+    app: airbyte-minio-storage-claim
+spec:
+  # Read more about access modes here: http://kubernetes.io/docs/user-guide/persistent-volumes/#access-modes
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    # This is the request for storage. Should be available in the cluster.
+    requests:
+      storage: 200Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airbyte-minio-svc
+spec:
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  selector:
+    app: airbyte-minio

@@ -27,6 +27,7 @@ export const links = {
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://daspire.com/talk-to-sales",
   webpageLink: "https://daspire.com",
+  supportEmailLink: "mailto:support@daspire.com",
 } as const;
 
 export type OutboundLinks = typeof links;

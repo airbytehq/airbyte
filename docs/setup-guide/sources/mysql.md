@@ -2,6 +2,16 @@
 
 This page contains the setup guide and reference information for MySQL.
 
+## Prerequisites
+
+* MySQL Server `8.0`, `5.7`, or `5.6`.
+* Create a dedicated read-only Daspire user with access to all tables needed for replication.
+* Host
+* Port
+* Database
+* Username
+* Password
+
 ## Features
 
 | Feature | Supported | Notes |
@@ -16,11 +26,6 @@ This page contains the setup guide and reference information for MySQL.
 | Arrays | Yes | Byte arrays are not supported yet |
 
 The MySQL source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
-
-## Prerequisites
-
-1. MySQL Server `8.0`, `5.7`, or `5.6`.
-2. Create a dedicated read-only Daspire user with access to all tables needed for replication.
 
 ## Setup guide
 
@@ -44,7 +49,7 @@ The right set of permissions differ between the `STANDARD` and `CDC` replication
 GRANT SELECT ON <database name>.* TO 'daspire'@'%';
 ``` 
 
-For `CDC` replication method, `SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT` permissions are required.
+For `CDC` replication method, `SELECT`, `RELOAD`, `SHOW DATABASES`, `REPLICATION SLAVE`, `REPLICATION CLIENT` permissions are required.
 
 ```
 GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'daspire'@'%'; 
@@ -160,40 +165,40 @@ This produces the private key in pem format, and the public key remains in the s
 
 | MySQL Type | Daspire Type | Note |
 | --- | --- | --- |
-| bit(1) | boolean |
-| bit(\>1) | base64 binary string |
-| boolean | boolean |
-| tinyint(1) | boolean |
-| tinyint(\>1) | boolean |
-| smallint | number |
-| mediumint | number |
-| int | number |
-| bigint | number |
-| float | number |
-| double | number |
-| decimal | number |
-| binary | string |
-| blob | string |
-| date | string | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
-| datetime, timestamp | string | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
-| time | string | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59. |
-| year | year string | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html) |
-| char, varchar with non-binary charset | string |
-| char, varchar with binary charset | base64 binary string |
-| tinyblob | base64 binary string |
-| blob | base64 binary string |
-| mediumblob | base64 binary string |
-| longblob | base64 binary string |
-| binary | base64 binary string |
-| varbinary | base64 binary string |
-| tinytext | string |
-| text | string |
-| mediumtext | string |
-| longtext | string |
-| json | serialized json string | E.g. {"a": 10, "b": 15} |
-| enum | string |
-| set | string | E.g. blue,green,yellow |
-| geometry | base64 binary string |
+| `bit(1)` | boolean |
+| `bit(\>1)` | base64 binary string |
+| `boolean` | boolean |
+| `tinyint(1)` | boolean |
+| `tinyint(\>1)` | boolean |
+| `smallint` | number |
+| `mediumint` | number |
+| `int` | number |
+| `bigint` | number |
+| `float` | number |
+| `double` | number |
+| `decimal` | number |
+| `binary` | string |
+| `blob` | string |
+| `date` | string | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
+| `datetime`, `timestamp` | string | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
+| `time` | string | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59. |
+| `year` | year string | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html) |
+| `char`, `varchar` with non-binary charset | string |
+| `char`, `varchar` with binary charset | base64 binary string |
+| `tinyblob` | base64 binary string |
+| `blob` | base64 binary string |
+| `mediumblob` | base64 binary string |
+| `longblob` | base64 binary string |
+| `binary` | base64 binary string |
+| `varbinary` | base64 binary string |
+| `tinytext` | string |
+| `text` | string |
+| `mediumtext` | string |
+| `longtext` | string |
+| `json` | serialized json string | E.g. {"a": 10, "b": 15} |
+| `enum` | string |
+| `set` | string | E.g. blue,green,yellow |
+| `geometry` | base64 binary string |
 
 Note: If you do not see a type in this list, assume that it is coerced into a string.
 
