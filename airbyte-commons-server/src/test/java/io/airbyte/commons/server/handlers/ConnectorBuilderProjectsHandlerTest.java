@@ -5,7 +5,9 @@
 package io.airbyte.commons.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.mock;
@@ -19,8 +21,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectDetails;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectReadList;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -29,6 +33,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,7 +58,7 @@ class ConnectorBuilderProjectsHandlerTest {
   private ConnectorBuilderProject generateBuilderProject() throws JsonProcessingException {
     final UUID projectId = UUID.randomUUID();
     return new ConnectorBuilderProject().withBuilderProjectId(projectId).withWorkspaceId(workspaceId).withName("Test project")
-        .withManifestDraft(new ObjectMapper().readTree("{\"test\": 123}"));
+        .withHasDraft(true).withManifestDraft(new ObjectMapper().readTree("{\"test\": 123}"));
   }
 
   @Test
@@ -72,6 +77,8 @@ class ConnectorBuilderProjectsHandlerTest {
     assertEquals(response.getBuilderProjectId(), project.getBuilderProjectId());
     assertEquals(response.getWorkspaceId(), project.getWorkspaceId());
 
+    // hasDraft is not set when writing
+    project.setHasDraft(null);
     verify(configRepository, times(1))
         .writeBuilderProject(
             project);
@@ -145,6 +152,29 @@ class ConnectorBuilderProjectsHandlerTest {
     verify(configRepository, times(1))
         .deleteBuilderProject(
             project.getBuilderProjectId());
+  }
+
+  @Test
+  @DisplayName("listConnectorBuilderProject should list all projects without drafts")
+  void testListConnectorBuilderProject() throws IOException {
+    final ConnectorBuilderProject project1 = generateBuilderProject();
+    final ConnectorBuilderProject project2 = generateBuilderProject();
+    project2.setHasDraft(false);
+
+
+    when(configRepository.getConnectorBuilderProjectsByWorkspace(workspaceId)).thenReturn(Stream.of(project1, project2));
+
+    final ConnectorBuilderProjectReadList response = connectorBuilderProjectsHandler.listConnectorBuilderProject(new WorkspaceIdRequestBody().workspaceId(workspaceId));
+
+    assertEquals(response.getSources().get(0).getBuilderProjectId(), project1.getBuilderProjectId());
+    assertEquals(response.getSources().get(1).getBuilderProjectId(), project2.getBuilderProjectId());
+
+    assertTrue(response.getSources().get(0).getHasDraft());
+    assertFalse(response.getSources().get(1).getHasDraft());
+
+    verify(configRepository, times(1))
+        .getConnectorBuilderProjectsByWorkspace(
+            workspaceId);
   }
 
 }

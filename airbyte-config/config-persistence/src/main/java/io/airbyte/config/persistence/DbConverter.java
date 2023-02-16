@@ -288,6 +288,7 @@ public class DbConverter {
         .withWorkspaceId(record.get(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID))
         .withBuilderProjectId(record.get(CONNECTOR_BUILDER_PROJECT.ID))
         .withName(record.get(CONNECTOR_BUILDER_PROJECT.NAME))
+        .withHasDraft(!(Boolean) record.get("noDraft"))
         .withActorDefinitionId(record.get(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID));
   }
 

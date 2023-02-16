@@ -21,6 +21,8 @@ properties:
   actorDefinitionId:
     type: string
     format: uuid
+  hasDraft:
+    type: boolean
   manifestDraft:
     description: Integration specific blob. Must be a valid JSON string.
     type: object

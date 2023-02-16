@@ -4,10 +4,14 @@
 
 package io.airbyte.commons.server.handlers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectDetails;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectReadList;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -16,8 +20,10 @@ import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
 @Singleton
@@ -44,6 +50,10 @@ public class ConnectorBuilderProjectsHandler {
     return new ConnectorBuilderProject().withBuilderProjectId(projectCreate.getBuilderProjectId()).withWorkspaceId(projectCreate.getWorkspaceId())
         .withName(projectCreate.getBuilderProject().getName())
         .withManifestDraft(new ObjectMapper().valueToTree(projectCreate.getBuilderProject().getDraftManifest()));
+  }
+
+  private static ConnectorBuilderProjectDetails builderProjectToDetails(final ConnectorBuilderProject project) {
+    return new ConnectorBuilderProjectDetails().name(project.getName()).builderProjectId(project.getBuilderProjectId()).hasDraft(project.getHasDraft()).draftManifest(project.getManifestDraft() == null ? null : new ObjectMapper().convertValue(project.getManifestDraft(), new TypeReference<Map<String, Object>>() {}));
   }
 
   private ConnectorBuilderProject builderProjectFromCreate(final ConnectorBuilderProjectWithWorkspaceId projectCreate) {
@@ -87,6 +97,14 @@ public class ConnectorBuilderProjectsHandler {
       throws IOException, ConfigNotFoundException, JsonValidationException {
     validateWorkspace(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
     configRepository.deleteBuilderProject(projectDelete.getBuilderProjectId());
+  }
+
+  public ConnectorBuilderProjectReadList listConnectorBuilderProject(final WorkspaceIdRequestBody workspaceIdRequestBody)
+      throws IOException {
+
+    final Stream<ConnectorBuilderProject> projects = configRepository.getConnectorBuilderProjectsByWorkspace(workspaceIdRequestBody.getWorkspaceId());
+
+    return new ConnectorBuilderProjectReadList().sources(projects.map(ConnectorBuilderProjectsHandler::builderProjectToDetails).toList());
   }
 
 }

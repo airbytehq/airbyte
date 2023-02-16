@@ -14,6 +14,7 @@ import io.airbyte.config.ConnectorBuilderProject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +58,25 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
+  void testListWithNoManifest() throws IOException, ConfigNotFoundException {
+    createBaseObjects();
+
+
+    // actually set draft to null for first project
+    project1.setManifestDraft(null);
+    project1.setHasDraft(false);
+    configRepository.writeBuilderProject(project1);
+
+    // set draft to null because it won't be returned as part of listing call
+    project2.setManifestDraft(null);
+    // has draft is still truthy because there is a draft in the database
+    project2.setHasDraft(true);
+
+    assertEquals(new ArrayList<>(
+        Arrays.asList(project1, project2)), configRepository.getConnectorBuilderProjectsByWorkspace(mainWorkspace).toList());
+  }
+
+  @Test
   void testUpdate() throws IOException, ConfigNotFoundException {
     createBaseObjects();
     project1.setName("Updated name");
@@ -93,6 +113,7 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
         .withBuilderProjectId(projectId)
         .withName("project " + projectId)
         .withManifestDraft(new ObjectMapper().readTree("{\"the_id\": \"" + projectId + "\"}"))
+        .withHasDraft(true)
         .withWorkspaceId(workspace);
     configRepository.writeBuilderProject(project);
     return project;
