@@ -137,7 +137,11 @@ public class KubePodProcess implements KubePod {
   // init container should fail if no new data copied into the init container within
   // INIT_RETRY_TIMEOUT_MINUTES
   private static final double INIT_SLEEP_PERIOD_SECONDS = 0.1;
+
+  // This timeout was initially 1 minute, but sync pods scheduled on newly-provisioned nodes
+  // are occasionally not able to start the copy within 1 minute, hence the increase to 5.
   private static final Duration INIT_RETRY_TIMEOUT_MINUTES = Duration.ofMinutes(5);
+
   private static final int INIT_RETRY_MAX_ITERATIONS = (int) (INIT_RETRY_TIMEOUT_MINUTES.toSeconds() / INIT_SLEEP_PERIOD_SECONDS);
 
   private final KubernetesClient fabricClient;
