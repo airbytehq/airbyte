@@ -188,11 +188,13 @@ class SourceTiktokMarketing(AbstractSource):
             if is_production:
                 # 2.1 streams work only in prod env
                 reports.append(AdvertisersReports)
-                audience_reports.extend[
-                    AdvertisersAudienceReports,
-                    AdvertisersAudienceReportsByCountry,
-                    AdvertisersAudienceReportsByPlatform,
-                ]
+                audience_reports.extend(
+                    [
+                        AdvertisersAudienceReports,
+                        AdvertisersAudienceReportsByCountry,
+                        AdvertisersAudienceReportsByPlatform,
+                    ]
+                )
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
