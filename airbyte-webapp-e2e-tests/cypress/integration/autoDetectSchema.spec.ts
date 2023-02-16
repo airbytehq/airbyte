@@ -21,6 +21,7 @@ import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage"
 import { getManualSyncButton, getSchemaChangeIcon, visitConnectionsListPage } from "pages/connnectionsListPage";
 import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
 import {
+  checkNoDiffToast,
   checkSchemaChangesDetected,
   checkSchemaChangesDetectedCleared,
   clickSaveReplication,
@@ -111,6 +112,18 @@ describe("Connection - Auto-detect schema changes", () => {
       clickSaveReplication();
       getSyncEnabledSwitch().should("be.enabled");
     });
+
+    it("clears non-breaking change when db changes are restored", () => {
+      visitConnectionPage(connection, "replication");
+
+      checkSchemaChangesDetected({ breaking: false });
+
+      runDbQuery(alterTable("public.users", { add: ["updated_at TIMESTAMP"] }));
+      clickSchemaChangesReviewButton();
+
+      checkSchemaChangesDetectedCleared();
+      checkNoDiffToast();
+    });
   });
 
   describe("breaking changes", () => {
@@ -154,6 +167,18 @@ describe("Connection - Auto-detect schema changes", () => {
 
       clickSaveReplication();
       getSyncEnabledSwitch().should("be.enabled");
+    });
+
+    it.only("clears breaking change when db changes are restored", () => {
+      visitConnectionPage(connection, "replication");
+
+      checkSchemaChangesDetected({ breaking: true });
+
+      runDbQuery(alterTable("public.users", { add: ["updated_at TIMESTAMP"] }));
+      clickSchemaChangesReviewButton();
+
+      checkSchemaChangesDetectedCleared();
+      checkNoDiffToast();
     });
   });
 
