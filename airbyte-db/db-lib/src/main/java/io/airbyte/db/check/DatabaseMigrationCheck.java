@@ -59,7 +59,7 @@ public interface DatabaseMigrationCheck {
 
           currDatabaseMigrationVersion = getCurrentVersion(flyway);
         }
-        getLogger().info("Verified that database has been migrated to the required minimum version {}.", getTimeoutMs());
+        getLogger().info("Verified that database has been migrated to the required minimum version {}.", getMinimumFlywayVersion());
       } else {
         throw new DatabaseCheckException("Flyway configuration not present.");
       }
