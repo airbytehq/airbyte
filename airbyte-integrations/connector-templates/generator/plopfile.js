@@ -27,7 +27,7 @@ module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
   const definitionRoot = '../../../airbyte-config/init/src/main/resources';
 
-  const sourceAcceptanceTestFilesInputRoot = '../source_acceptance_test_files';
+  const connectorAcceptanceTestFilesInputRoot = '../connector_acceptance_test_files';
 
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
@@ -123,8 +123,8 @@ module.exports = function (plop) {
         abortOnFail: true,
         type:'addMany',
         destination: httpApiOutputRoot,
-        base: sourceAcceptanceTestFilesInputRoot,
-        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+        base: connectorAcceptanceTestFilesInputRoot,
+        templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
       },
       // plop doesn't add dotfiles by default so we manually add them
       {
@@ -153,8 +153,8 @@ module.exports = function (plop) {
         abortOnFail: true,
         type:'addMany',
         destination: pythonSourceOutputRoot,
-        base: sourceAcceptanceTestFilesInputRoot,
-        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+        base: connectorAcceptanceTestFilesInputRoot,
+        templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
       },
       // plop doesn't add dotfiles by default so we manually add them
       {
@@ -188,8 +188,8 @@ module.exports = function (plop) {
          abortOnFail: true,
          type:'addMany',
          destination: singerSourceOutputRoot,
-         base: sourceAcceptanceTestFilesInputRoot,
-         templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+         base: connectorAcceptanceTestFilesInputRoot,
+         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
          data: {
           connectorImageNameSuffix: "-singer",
           specPathFolderSuffix: "_singer"
@@ -227,8 +227,8 @@ module.exports = function (plop) {
               abortOnFail: true,
               type:'addMany',
               destination: pythonSourceOutputRoot,
-              base: sourceAcceptanceTestFilesInputRoot,
-              templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+              base: connectorAcceptanceTestFilesInputRoot,
+              templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
             },
             {
                 type:'add',
@@ -270,8 +270,8 @@ module.exports = function (plop) {
           abortOnFail: true,
           type:'addMany',
           destination: genericSourceOutputRoot,
-          base: sourceAcceptanceTestFilesInputRoot,
-          templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+          base: connectorAcceptanceTestFilesInputRoot,
+          templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
           data: {
             inSubFolder: false
           }

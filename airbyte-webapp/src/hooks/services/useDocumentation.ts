@@ -13,7 +13,14 @@ export const documentationKeys = {
 
 const DOCS_URL = /^https:\/\/docs\.airbyte\.(io|com)/;
 
-const AVAILABLE_INAPP_DOCS = ["hubspot", "facebook-marketing"];
+const AVAILABLE_INAPP_DOCS = [
+  "hubspot",
+  "facebook-marketing",
+  "google-analytics-v4",
+  "notion",
+  "google-search-console",
+  "instagram",
+];
 
 export const useDocumentation = (documentationUrl: string): UseDocumentationResult => {
   const { integrationUrl } = useConfig();

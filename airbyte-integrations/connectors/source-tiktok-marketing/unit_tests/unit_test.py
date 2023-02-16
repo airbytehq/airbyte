@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -167,8 +167,9 @@ def logger_mock_fixture():
 
 
 def test_source_check_connection_ok(config, logger_mock):
-    with patch.object(Advertisers, "read_records", return_value=iter([1])):
-        assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
+    with patch.object(Advertisers, "stream_slices"):
+        with patch.object(Advertisers, "read_records", return_value=iter([1])):
+            assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
 
 
 def test_source_check_connection_failed(config, logger_mock):

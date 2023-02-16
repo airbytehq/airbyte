@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.handlers;
@@ -192,7 +192,8 @@ public class SchedulerHandler {
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
         .sourceId(updatedSource.getSourceId())
         .connectionConfiguration(updatedSource.getConfiguration())
-        .sourceDefinitionId(updatedSource.getSourceDefinitionId());
+        .sourceDefinitionId(updatedSource.getSourceDefinitionId())
+        .workspaceId(updatedSource.getWorkspaceId());
 
     return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
   }
@@ -268,7 +269,7 @@ public class SchedulerHandler {
               isCustomConnector);
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId, sourceDef);
 
-      if (discoverSchemaRequestBody.getConnectionId() != null) {
+      if (persistedCatalogId.isSuccess() && discoverSchemaRequestBody.getConnectionId() != null) {
         // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
         generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
       }
