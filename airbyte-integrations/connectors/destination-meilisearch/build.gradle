@@ -4,5 +4,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'destination_meilisearch'
+    moduleDirectory 'destination_opensearch'
 }
