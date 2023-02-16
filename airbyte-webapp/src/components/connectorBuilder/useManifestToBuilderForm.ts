@@ -12,8 +12,6 @@ import {
   DpathExtractor,
   HttpRequester,
   HttpRequesterAuthenticator,
-  InlineSchemaLoader,
-  ListStreamSlicer,
   SimpleRetriever,
   SimpleRetrieverPaginator,
   SimpleRetrieverPartitionRouter,
