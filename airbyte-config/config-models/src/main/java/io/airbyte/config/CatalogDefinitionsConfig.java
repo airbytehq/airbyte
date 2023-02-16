@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public class CatalogDefinitionsConfig {
 
-  private static final String RESOURCE_DIRECTORY_PATH = "src/main/resources/";
   private static final String SEED_SUBDIRECTORY = "seed/";
   private static final String ICON_SUBDIRECTORY = "icons/";
   private static final String LOCAL_CONNECTOR_CATALOG_FILE_NAME = "oss_catalog.json";
@@ -29,13 +28,10 @@ public class CatalogDefinitionsConfig {
 
   }
 
-  public static Path getLocalCatalogWritePath() {
-    final Path resourcesRoot = Path.of(RESOURCE_DIRECTORY_PATH);
-
+  public static String getLocalCatalogWritePath() {
     // We always want to write to the default path
     // This is to prevent overwriting the catalog file in the event we are using a custom catalog path.
-    final Path writePath = resourcesRoot.resolve(DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH);
-    return writePath;
+    return DEFAULT_LOCAL_CONNECTOR_CATALOG_PATH;
   }
 
   public static String getRemoteOssCatalogUrl() {
