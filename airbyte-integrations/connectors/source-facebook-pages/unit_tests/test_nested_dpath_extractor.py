@@ -17,9 +17,9 @@ def _create_response(content: Any) -> Response:
 
 def test_list_of_records():
     extractor = NestedDpathExtractor(
-        field_pointer=["data", "insights", "data"],
+        field_path=["data", "insights", "data"],
         config={},
-        options={},
+        parameters={},
     )
     content = {"data": [
         {"insights": {"data": [{"id": "id1", "name": "name1"}, {"id": "id2", "name": "name2"}]}},
@@ -37,9 +37,9 @@ def test_list_of_records():
 
 def test_no_field_pointer():
     extractor = NestedDpathExtractor(
-        field_pointer=[],
+        field_path=[],
         config={},
-        options={},
+        parameters={},
     )
     obj_response = _create_response({"data": {}})
     obj_records = extractor.extract_records(obj_response)
@@ -49,9 +49,9 @@ def test_no_field_pointer():
 
 def test_no_records():
     extractor = NestedDpathExtractor(
-        field_pointer=["data", "insights", "data"],
+        field_path=["data", "insights", "data"],
         config={},
-        options={},
+        parameters={},
     )
     obj_response = _create_response({"data": {}})
     obj_records = extractor.extract_records(obj_response)
@@ -61,9 +61,9 @@ def test_no_records():
 
 def test_single_record():
     extractor = NestedDpathExtractor(
-        field_pointer=["data", "insights", "data"],
+        field_path=["data", "insights", "data"],
         config={},
-        options={},
+        parameters={},
     )
     content = {"data": [
         {"insights": {"data": [{"id": "id1", "name": "name1"}]}}

@@ -15,7 +15,6 @@ import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsReque
 import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.OAuthHandler;
 import io.micronaut.context.annotation.Context;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import io.micronaut.security.annotation.Secured;
@@ -23,8 +22,6 @@ import io.micronaut.security.rules.SecurityRule;
 import java.util.Map;
 
 @Controller("/api/v1/destination_oauths")
-@Requires(property = "airbyte.deployment-mode",
-          value = "OSS")
 @Context
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class DestinationOauthApiController implements DestinationOauthApi {

@@ -346,11 +346,15 @@ public class SchedulerHandler {
     final UUID sourceDefinitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
     final StandardSourceDefinition source = configRepository.getStandardSourceDefinition(sourceDefinitionId);
     final ConnectorSpecification spec = source.getSpec();
+
     final SourceDefinitionSpecificationRead specRead = new SourceDefinitionSpecificationRead()
         .jobInfo(jobConverter.getSynchronousJobRead(SynchronousJobMetadata.mock(ConfigType.GET_SPEC)))
         .connectionSpecification(spec.getConnectionSpecification())
-        .documentationUrl(spec.getDocumentationUrl().toString())
         .sourceDefinitionId(sourceDefinitionId);
+
+    if (spec.getDocumentationUrl() != null) {
+      specRead.documentationUrl(spec.getDocumentationUrl().toString());
+    }
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);
     authSpec.ifPresent(specRead::setAuthSpecification);
