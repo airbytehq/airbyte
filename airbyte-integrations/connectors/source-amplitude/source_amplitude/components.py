@@ -15,7 +15,6 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.types import Config, Record
-from dataclasses_jsonschema import JsonSchemaMixin
 
 logger = logging.getLogger("airbyte")
 
@@ -48,15 +47,15 @@ class ActiveUsersRecordExtractor(RecordExtractor):
 
 
 @dataclass
-class EventsExtractor(RecordExtractor, JsonSchemaMixin):
+class EventsExtractor(RecordExtractor):
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.name = options.get("name")
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.name = parameters.get("name")
 
     def _get_schema_root_properties(self):
-        schema_loader = JsonFileSchemaLoader(config=self.config, options={"name": self.name})
+        schema_loader = JsonFileSchemaLoader(config=self.config, parameters={"name": self.name})
         schema = schema_loader.get_json_schema()
         return schema["properties"]
 
