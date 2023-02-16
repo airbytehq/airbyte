@@ -240,7 +240,7 @@
     },
     {
       "stream": {
-        "name": "geo_target_constant",
+        "name": "custom_audience",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
