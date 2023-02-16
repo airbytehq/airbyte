@@ -116,13 +116,13 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
   /**
    * TODO:
    * [x] only calculate this if the flag is on!
-   * [ ] should cells truncate + show a tooltip?
+   * [ ] should cells truncate + show a tooltip? (long connection/connector names are a problem currently)
    * [x] link to connection from connection name
    * [x] sizing of columns
    * [x] alignment of headers/cells
    * [ ] if we want the source and destination names to link to their pages, we'll need the
-   *     source/destination id's (not their definition id's)
-   * [ ] todo: horizontal overflow
+   *     source/destination id's (not their gdefinition id's)
+   * [x] horizontal overflow
    * */
 
   const billingInsightsColumns = React.useMemo(() => {
