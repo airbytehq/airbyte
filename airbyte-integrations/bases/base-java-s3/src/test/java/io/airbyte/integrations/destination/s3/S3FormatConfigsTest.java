@@ -10,9 +10,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import io.airbyte.integrations.destination.s3.util.CompressionType;
 import java.util.Map;
+
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -22,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
+
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
