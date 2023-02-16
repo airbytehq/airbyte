@@ -1,0 +1,39 @@
+plugins {
+    id "java-library"
+    id("io.micronaut.minimal.application") version "3.6.3"
+}
+
+micronaut {
+    version = "3.7.4"
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+    annotationProcessor libs.micronaut.jaxrs.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+    implementation libs.micronaut.jaxrs.server
+
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    implementation("io.micronaut.data:micronaut-data-jdbc")
+
+    implementation("io.micronaut:micronaut-jackson-databind")
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("jakarta.annotation:jakarta.annotation-api")
+    runtimeOnly("ch.qos.logback:logback-classic")
+    runtimeOnly("org.postgresql:postgresql")
+    implementation("io.micronaut:micronaut-validation")
+    runtimeOnly("io.micronaut:micronaut-http-server-netty")
+}
+
+micronaut {
+    processing {
+        incremental(true)
+        annotations("io.airbyte.db.*")
+    }
+}

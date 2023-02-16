@@ -99,6 +99,7 @@ include ':airbyte-commons-converters'
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
 include ':airbyte-featureflag'
+include ':airbyte-db:data-repositories'
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
 include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
@@ -174,5 +175,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
-
+include 'airbyte-db:data-repositories'
+findProject(':airbyte-db:data-repositories')?.name = 'data-repositories'
 
