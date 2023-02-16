@@ -46,7 +46,7 @@ jobs:
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.event.pull_request.merged: ${{ github.event.pull_request.merged }}"
           export SKIP_DEPLOY="yes"
-          if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' -o "${{github.event.pull_request.merged}}" = 'true']; then
+          if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' -o "${{github.event.pull_request.merged}}" = 'true' ]; then
               echo "======= SETTING SKIP_DEPLOY=no ============="
               export SKIP_DEPLOY="no"
           fi
