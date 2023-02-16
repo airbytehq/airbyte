@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 
-from .datetime_slicer import CustomDatetimeStreamSlicer
+from .datetime_incremental_sync import CustomDatetimeIncrementalSync
 from .source_lc import SourceCloseCom
 
-__all__ = ["SourceCloseCom", "CustomDatetimeStreamSlicer"]
+__all__ = ["SourceCloseCom", "CustomDatetimeIncrementalSync"]
