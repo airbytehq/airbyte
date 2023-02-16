@@ -3,7 +3,7 @@ import classNames from "classnames";
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
 import { SortOrderEnum } from "components/EntityTable/types";
@@ -15,6 +15,7 @@ import { Text } from "components/ui/Text";
 
 import { useQuery } from "hooks/useQuery";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
@@ -116,12 +117,12 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
    * TODO:
    * [x] only calculate this if the flag is on!
    * [ ] should cells truncate + show a tooltip?
-   * [ ] links!
+   * [x] link to connection from connection name
    * [x] sizing of columns
    * [x] alignment of headers/cells
    * [ ] if we want the source and destination names to link to their pages, we'll need the
    *     source/destination id's (not their definition id's)
-   *
+   * [ ] todo: horizontal overflow
    * */
 
   const billingInsightsColumns = React.useMemo(() => {
@@ -143,9 +144,11 @@ export const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = (
             },
             cell: (props) => (
               <FlexContainer className={styles.cell} alignItems="center">
-                <Text size="sm" className={styles.cellText}>
-                  {props.cell.getValue()}
-                </Text>
+                <NavLink to={`${RoutePaths.Connections}/${props.row.original.connectionId}`}>
+                  <Text size="sm" className={styles.cellText}>
+                    {props.cell.getValue()}
+                  </Text>
+                </NavLink>
               </FlexContainer>
             ),
           }),
