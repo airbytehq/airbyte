@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -37,10 +37,19 @@ class TestContainerRunner:
         ]
         mocker.patch.object(connector_runner.ConnectorRunner, "read", mocker.Mock(return_value=records_reads))
         mocker.patch.object(connector_runner.ConnectorRunner, "_persist_new_configuration")
-
-        runner = connector_runner.ConnectorRunner("source-test:dev", tmp_path, connector_configuration_path=old_configuration_path)
+        runner = connector_runner.ConnectorRunner(
+            "source-test:dev", tmp_path, connector_configuration_path=old_configuration_path, custom_environment_variables={"foo": "bar"}
+        )
         list(runner.run("dummy_cmd"))
         runner._persist_new_configuration.assert_called_once_with(new_configuration, 1)
+        runner._client.containers.run.assert_called_once_with(
+            image=runner._image,
+            command="dummy_cmd",
+            volumes={str(tmp_path) + "/run_1/input": {"bind": "/data"}, str(tmp_path) + "/run_1/output": {"bind": "/local", "mode": "rw"}},
+            network_mode="host",
+            detach=True,
+            environment={"foo": "bar"},
+        )
 
     @pytest.mark.parametrize(
         "pass_configuration_path, old_configuration, new_configuration, new_configuration_emitted_at, expect_new_configuration",

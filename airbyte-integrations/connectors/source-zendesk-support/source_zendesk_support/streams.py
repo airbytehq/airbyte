@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import calendar
@@ -110,6 +110,8 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
 
 
 class BaseSourceZendeskSupportStream(HttpStream, ABC):
+    raise_on_http_errors = True
+
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
@@ -185,6 +187,13 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
                     yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {response.json().get('error')}.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
 
 
 class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):

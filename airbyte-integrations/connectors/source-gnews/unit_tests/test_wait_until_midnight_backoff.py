@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -25,6 +25,6 @@ DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 def test_wait_until_midnight(test_datetime, test_name, now_utc, expected_backoff_time):
     test_datetime.utcnow = Mock(return_value=datetime.strptime(now_utc, DATE_FORMAT))
     response_mock = Mock()
-    backoff_stratery = WaitUntilMidnightBackoffStrategy(options={}, config={})
+    backoff_stratery = WaitUntilMidnightBackoffStrategy(parameters={}, config={})
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
