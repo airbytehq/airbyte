@@ -28,6 +28,8 @@ task downloadCombinedConnectorCatalog(type: JavaExec, dependsOn: compileJava) {
 }
 
 project(":airbyte-config:init").tasks.processResources.dependsOn(downloadCombinedConnectorCatalog)
+project(":airbyte-config:init").tasks.processTestResources.dependsOn(downloadCombinedConnectorCatalog)
+project(":airbyte-config:init").tasks.test.dependsOn(downloadCombinedConnectorCatalog)
 
 
 task generateConnectorSpecsMask(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {

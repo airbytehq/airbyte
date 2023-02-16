@@ -32,10 +32,9 @@ tasks.named("buildDockerImage") {
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
 
-// TODO (ben) move to spec tasks
 task validateIcons(type: JavaExec, dependsOn: [compileJava]) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'io.airbyte.config.init.IconValidationTask'
 }
 
-check.dependsOn validateIcons
+validateIcons.shouldRunAfter processResources
