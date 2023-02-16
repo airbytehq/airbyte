@@ -99,7 +99,12 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   };
 
   if (!ldClient.current) {
-    ldClient.current = LDClient.initialize(apiKey, createUserContext(user, locale));
+    const userContext = createUserContext(user, locale);
+    const contexts = workspaceId
+      ? createMultiContext(userContext, createWorkspaceContext(workspaceId))
+      : createMultiContext(userContext);
+    ldClient.current = LDClient.initialize(apiKey, contexts);
+    console.log("workspaceId is", workspaceId);
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
     Promise.race([
       ldClient.current.waitForInitialization(),
@@ -141,7 +146,9 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
   // Whenever the user, locale or workspaceId changes, we need to re-identify with launchdarkly
   useEffect(() => {
     const userContext = createUserContext(user, locale);
-    const contexts = workspaceId ? createMultiContext(userContext, createWorkspaceContext(workspaceId)) : userContext;
+    const contexts = workspaceId
+      ? createMultiContext(userContext, createWorkspaceContext(workspaceId))
+      : createMultiContext(userContext);
     ldClient.current?.identify(contexts);
   }, [workspaceId, locale, user]);
 
