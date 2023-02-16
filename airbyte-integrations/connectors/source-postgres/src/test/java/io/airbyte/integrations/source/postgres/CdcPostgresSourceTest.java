@@ -167,13 +167,53 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         SQLDialect.POSTGRES);
   }
 
-  private void revokeReplicationPermission() {
+  private void grantReplicationPermissionUserLevel() {
+    executeQuery("ALTER USER " + container.getUsername() + " REPLICATION;");
+  }
+  private void grantReplicationPermissionRoleLevel() throws SQLException {
+    String roleName = "replication_" + container.getContainerId();
+    executeQuery("CREATE ROLE " + roleName + " REPLICATION LOGIN;");
+    executeQuery("GRANT " + roleName + " TO " + container.getUsername() + ";");
+  }
+  private void revokeReplicationPermissionUserLevel() {
     executeQuery("ALTER USER " + container.getUsername() + " NOREPLICATION;");
+  }
+  private void revokeReplicationPermissionRoleLevel() throws SQLException {
+    Object roleNames = database.query(ctx -> ctx.execute("""
+            select pgr.rolname from pg_catalog.pg_roles pgr
+              join pg_catalog.pg_auth_members pgam on pgam.roleid = pgr.oid
+              join pg_catalog.pg_user pgu on pgam.member = pgu.usesysid
+            where rolreplication and usename='""" + container.getUsername() + "';"));
+    /*
+    ITERATE ORVER ALL ROLES TO REMOVE ACCESS:
+    for(roleName in roleNames){
+      executeQuery("REVOKE " + roleName + " TO " + container.getUsername() + ";");
+    }
+    */
+  }
+
+  @Test
+  void testCheckReplicationPermissionUserLevel() throws Exception {
+    revokeReplicationPermissionUserLevel();
+    revokeReplicationPermissionRoleLevel();
+    grantReplicationPermissionUserLevel();
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
+  }
+
+  @Test
+  void testCheckReplicationPermissionRoleLevel() throws Exception {
+    revokeReplicationPermissionUserLevel();
+    revokeReplicationPermissionRoleLevel();
+    grantReplicationPermissionRoleLevel();
+    final AirbyteConnectionStatus status = source.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
 
   @Test
   void testCheckWithoutReplicationPermission() throws Exception {
-    revokeReplicationPermission();
+    revokeReplicationPermissionUserLevel();
+    revokeReplicationPermissionRoleLevel();
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,

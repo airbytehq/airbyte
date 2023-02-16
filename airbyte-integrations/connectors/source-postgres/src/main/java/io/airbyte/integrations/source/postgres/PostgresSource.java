@@ -322,14 +322,28 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
 
+        // Verify if the user has privilege at user level
         final List<JsonNode> userPrivileges = database.queryJsons(connection -> {
           final PreparedStatement ps = connection.prepareStatement("SELECT userepl FROM pg_user WHERE usename = ?");
           ps.setString(1, userName);
-          LOGGER.info("Verifying required privileges for user: {}", userName);
+          LOGGER.info("Verifying required privileges at user level for user: {}", userName);
           return ps;
         }, sourceOperations::rowToJson);
 
-        if (!userPrivileges.get(0).get("userepl").asBoolean()) {
+        // Verify if the user has privilege at role level
+        final List<JsonNode> rolePrivileges = database.queryJsons(connection -> {
+          final PreparedStatement ps = connection.prepareStatement("""
+                       select 1 from pg_catalog.pg_roles pgr
+                         join pg_catalog.pg_auth_members pgam on pgam.roleid = pgr.oid
+                         join pg_catalog.pg_user pgu on pgam.member = pgu.usesysid
+                       where rolreplication and usename = ?;""");
+          ps.setString(1, userName);
+          LOGGER.info("Verifying required privileges at role level for user: {}", userName);
+          return ps;
+        }, sourceOperations::rowToJson);
+
+        if ((userPrivileges.size() == 1 && !userPrivileges.get(0).get("userepl").asBoolean())
+            && rolePrivileges.size() == 0) {
           throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
         }
 
