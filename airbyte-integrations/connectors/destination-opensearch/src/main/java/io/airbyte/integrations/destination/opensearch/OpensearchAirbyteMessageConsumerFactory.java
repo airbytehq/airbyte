@@ -24,8 +24,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.client.opensearch._types.ErrorCause;
+import org.opensearch.client.opensearch.core.BulkResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,8 +105,7 @@ public class OpensearchAirbyteMessageConsumerFactory {
   private static List<String> extractErrorReport(BulkResponse response) {
     final Map<String, ErrorCause> errorResult = new HashMap<>();
     response.items().forEach(item -> {
-      IndexResponseItem index = item.index();
-      errorResult.put(index.index(), index.error());
+      errorResult.put(item.index(), item.error());
     });
     final List<String> errorReport = new ArrayList<>();
     errorResult.forEach((index, error) -> {

@@ -38,7 +38,7 @@ public class OpensearchDestinationTest {
 
   private static OpensearchContainer container;
   private static JsonNode config;
-  private static final DockerImageName OPENSEARCH_IMAGE = DockerImageName.parse("opensearchproject/opensearch:2.0.0");
+
   @BeforeAll
   public static void beforeAll() {
     // TODO: 컨테이너 이미지 수정 및 오픈서치 이미지 변경 (인스턴스 생성 -> Opensearch)
