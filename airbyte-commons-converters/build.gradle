@@ -15,6 +15,7 @@ dependencies {
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-persistence:job-persistence')
+    implementation libs.airbyte.protocol
     implementation libs.guava
     implementation libs.slf4j.api
 
