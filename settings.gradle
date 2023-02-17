@@ -78,8 +78,6 @@ if (!System.getenv().containsKey("SUB_BUILD")) {
 
 // shared
 include ':airbyte-commons'
-
-// shared by CONNECTORS_BASE and PLATFORM sub builds
 include ':airbyte-api'
 include ':airbyte-commons-cli'
 include ':airbyte-commons-protocol'
