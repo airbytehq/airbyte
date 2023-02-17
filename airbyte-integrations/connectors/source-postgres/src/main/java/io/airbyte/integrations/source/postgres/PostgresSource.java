@@ -318,43 +318,18 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
 
-      // Verify that the db user has required privilege to perform replication.
+      // Verify that the db user has required privilege to perform replication. The user has to be super user of to has replication access.
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
 
-        // Verify if the user has privilege at user level
         final List<JsonNode> userPrivileges = database.queryJsons(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("SELECT userepl FROM pg_user WHERE usename = ?");
+          final PreparedStatement ps = connection.prepareStatement("SELECT userepl or usesuper AS has_access FROM pg_user WHERE usename = ?");
           ps.setString(1, userName);
-          LOGGER.info("Verifying required privileges at user level for user: {}", userName);
+          LOGGER.info("Verifying required privileges for user: {}", userName);
           return ps;
         }, sourceOperations::rowToJson);
 
-        /* Verify if the user has privilege at role level using a recursive query to verify cases like:
-        granted roleA (No replication) to user
-        granted roleB (No replication) to roleA
-        granted roleC (Replication) to roleB
-        The output of the query will be roleC.
-        */
-        final List<JsonNode> rolePrivileges = database.queryJsons(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("""
-              WITH RECURSIVE cte AS (
-                 SELECT usesysid  FROM pg_catalog.pg_user WHERE usename = ?
-                 UNION ALL
-                 SELECT m.roleid
-                 FROM   cte
-                 JOIN   pg_auth_members m ON m.member = cte.usesysid
-                 )
-              SELECT rolname FROM cte
-              JOIN pg_roles on usesysid = oid
-              WHERE rolreplication;""");
-          ps.setString(1, userName);
-          LOGGER.info("Verifying required privileges at role level for user: {}", userName);
-          return ps;
-        }, sourceOperations::rowToJson);
-
-        if ((userPrivileges.size() == 1 && !userPrivileges.get(0).get("userepl").asBoolean())
-            && rolePrivileges.size() == 0) {
+        if (!userPrivileges.get(0).get("has_access").asBoolean()) {
           throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
         }
 
