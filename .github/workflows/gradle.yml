@@ -16,8 +16,6 @@ on:
           - "true"
           - "false"
         required: false
-  schedule:
-    - cron: "0 */1 * * *"
   push:
     branches:
       - master
