@@ -636,6 +636,7 @@
   "ui.learnMore": "Learn more",
   "ui.secretTextArea.hidden": "Contents hidden. Click to show.",
   "ui.stepIndicator.currentStep": "(current step)",
+  "ui.loading": "Loading …",
 
   "airbyte.datatype.string": "String",
   "airbyte.datatype.binary_data": "Binary Data",
