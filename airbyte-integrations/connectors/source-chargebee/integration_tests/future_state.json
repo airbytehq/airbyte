@@ -9,6 +9,13 @@
   {
     "type": "STREAM",
     "stream": {
+      "stream_state": { "occurred_at": 2147483647 },
+      "stream_descriptor": { "name": "event" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
       "stream_state": { "updated_at": 2147483647 },
       "stream_descriptor": { "name": "coupon" }
     }
@@ -65,7 +72,21 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "cbdemo_standard": { "updated_at": 2147483647 } },
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "transaction" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "cbdemo_standard": { "updated_at": 2147483647 },
+        "cbdemo_advanced": { "updated_at": 2147483647 },
+        "cbdemo_basic": { "updated_at": 2147483647 },
+        "cbdemo_intermediary": { "updated_at": 2147483647 },
+        "cbdemo_lite": { "updated_at": 2147483647 },
+        "cbdemo_premium": { "updated_at": 2147483647 }
+      },
       "stream_descriptor": { "name": "attached_item" }
     }
   }
