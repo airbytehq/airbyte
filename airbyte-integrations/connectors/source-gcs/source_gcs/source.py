@@ -59,11 +59,10 @@ class SourceGCS(Source):
         for blob in blobs:
             logger.info(blob.name)
             df = read_csv_file(blob)
-            logger.info(df)
             stream_name = blob.name.replace(".csv", "")
             for _, row in df.iterrows():
                 row_dict = row.to_dict()
-                print(row_dict)
+                row_dict = {k: str(v) for k, v in row_dict.items()}
                 yield AirbyteMessage(
                     type=Type.RECORD,
                     record=AirbyteRecordMessage(stream=stream_name, data=row_dict, emitted_at=int(datetime.now().timestamp()) * 1000),
