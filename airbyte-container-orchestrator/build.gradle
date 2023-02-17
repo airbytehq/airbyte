@@ -29,7 +29,7 @@ dependencies {
         force = true
     }
 
-    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation libs.kubernetes.client
     implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
@@ -48,7 +48,7 @@ dependencies {
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
 
     testImplementation libs.bundles.micronaut.test
-    testImplementation 'org.mockito:mockito-inline:2.13.0'
+    testImplementation libs.mockito.inline
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql

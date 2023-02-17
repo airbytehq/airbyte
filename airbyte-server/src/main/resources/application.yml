@@ -12,6 +12,10 @@ micronaut:
         web:
           allowedOrigins:
             - ^.*$
+    netty:
+      access-logger:
+        enabled: ${HTTP_ACCESS_LOG_ENABLED:true}
+
 airbyte:
   cloud:
     storage:

@@ -39,20 +39,20 @@ dependencies {
 
     implementation 'com.google.auth:google-auth-library-oauth2-http:1.4.0'
     implementation 'com.auth0:java-jwt:3.19.2'
-    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation libs.kubernetes.client
     implementation libs.guava
     implementation(libs.temporal.sdk) {
         exclude module: 'guava'
     }
-    implementation 'org.apache.ant:ant:1.10.10'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation 'org.quartz-scheduler:quartz:2.3.2'
+    implementation libs.apache.ant
+    implementation libs.apache.commons.lang
+    implementation libs.apache.commons.text
+    implementation libs.quartz.scheduler
     implementation libs.micrometer.statsd
     implementation libs.bundles.datadog
-    implementation 'io.sentry:sentry:6.3.1'
-    implementation 'net.bytebuddy:byte-buddy:1.12.14'
-    implementation 'org.springframework:spring-core:5.3.22'
+    implementation libs.sentry.java
+    implementation libs.byte.buddy
+    implementation libs.spring.core
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
@@ -88,8 +88,8 @@ dependencies {
 
     testImplementation libs.bundles.micronaut.test
     testImplementation libs.temporal.testing
-    testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
-    testImplementation 'org.mockito:mockito-inline:4.7.0'
+    testImplementation libs.json.path
+    testImplementation libs.mockito.inline
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
