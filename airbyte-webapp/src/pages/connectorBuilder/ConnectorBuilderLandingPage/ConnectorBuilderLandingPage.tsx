@@ -54,7 +54,7 @@ const ConnectorBuilderLandingPageInner: React.FC = () => {
       !isEqual(initialStoredFormValues.current, DEFAULT_BUILDER_FORM_VALUES) ||
       !isEqual(initialStoredManifest.current, DEFAULT_JSON_MANIFEST_VALUES)
     ) {
-      navigate(ConnectorBuilderRoutePaths.Edit);
+      navigate(ConnectorBuilderRoutePaths.Edit, { replace: true });
     }
   }, [navigate]);
 
