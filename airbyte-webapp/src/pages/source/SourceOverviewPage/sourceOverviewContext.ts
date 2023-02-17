@@ -15,7 +15,7 @@ export const useSourceOverviewContext = () => {
   return useOutletContext<SourceOverviewContext>();
 };
 
-export const useSetupSourceOverviewContext: (id: string) => SourceOverviewContext = (id: string) => {
+export const useSetupSourceOverviewContext = (id: string): SourceOverviewContext => {
   const source = useGetSource(id);
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   // We load only connections attached to this source to be shown in the connections grid
