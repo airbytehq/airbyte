@@ -15,7 +15,7 @@ public class CatalogDefinitionsConfig {
       SEED_SUBDIRECTORY + LOCAL_CONNECTOR_CATALOG_FILE_NAME;
 
   private static final String REMOTE_OSS_CATALOG_URL =
-      "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json";
+      "https://connectors.airbyte.com/api/v0/catalog/oss_catalog.json";
 
   public static String getLocalConnectorCatalogPath() {
     Optional<String> customCatalogPath = new EnvConfigs().getLocalCatalogPath();
