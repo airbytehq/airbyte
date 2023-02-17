@@ -58,10 +58,10 @@ public class HeartbeatTimeoutChaperone {
 
   @VisibleForTesting
   HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
-                                   final Duration timeoutCheckDuration,
-                                   final FeatureFlagClient featureFlagClient,
-                                   final UUID workspaceId,
-                                   final Optional<Runnable> customMonitor) {
+                            final Duration timeoutCheckDuration,
+                            final FeatureFlagClient featureFlagClient,
+                            final UUID workspaceId,
+                            final Optional<Runnable> customMonitor) {
     this.timeoutCheckDuration = timeoutCheckDuration;
 
     this.heartbeatMonitor = heartbeatMonitor;

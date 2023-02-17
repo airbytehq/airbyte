@@ -238,7 +238,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               .whenComplete((msg, ex) -> {
                 if (ex != null) {
                   ApmTraceUtils.addExceptionToTrace((Throwable) ex);
-                  replicationRunnableFailureRef.set(getFailureReason(((Throwable) ex).getCause(), Long.valueOf(jobId), attempt));
+                  replicationRunnableFailureRef.set(getFailureReason(((Throwable) ex).getCause(), Long.parseLong(jobId), attempt));
                 }
               });
 
