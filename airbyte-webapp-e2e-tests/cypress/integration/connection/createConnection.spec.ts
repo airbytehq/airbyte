@@ -11,7 +11,7 @@ import {
 } from "commands/api";
 import { appendRandomString, submitButtonClick } from "commands/common";
 import * as connectionListPage from "pages/connection/connectionListPageObject";
-import * as newConnectionPage from "pages/connection/createConnection.pageObjectt";
+import * as newConnectionPage from "pages/connection/createConnectionPageObject";
 import {
   interceptCreateConnectionRequest,
   interceptDiscoverSchemaRequest,
