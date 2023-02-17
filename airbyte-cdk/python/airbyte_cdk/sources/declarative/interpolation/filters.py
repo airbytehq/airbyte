@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import hashlib
@@ -18,8 +18,8 @@ def hash(value, hash_type="md5", salt=None):
       For example:
 
     rates_stream:
-      $ref: "*ref(definitions.base_stream)"
-      $options:
+      $ref: "#/definitions/base_stream"
+      $parameters:
         name: "rates"
         primary_key: "date"
         path: "/exchangerates_data/latest"

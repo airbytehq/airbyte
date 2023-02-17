@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.server.scheduler;
@@ -27,5 +27,7 @@ public interface EventRunner {
   void migrateSyncIfNeeded(final Set<UUID> connectionIds);
 
   void update(final UUID connectionId);
+
+  void sendSchemaChangeNotification(final UUID connectionId, final String url);
 
 }

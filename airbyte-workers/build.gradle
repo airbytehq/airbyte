@@ -8,6 +8,7 @@ plugins {
 
 configurations {
     jdbc
+    airbyteProtocol
 }
 
 dependencies {
@@ -55,10 +56,10 @@ dependencies {
 
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-commons-server')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:init')
@@ -67,7 +68,7 @@ dependencies {
     implementation project(':airbyte-featureflag')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-json-validation')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-notification')
     implementation(project(':airbyte-persistence:job-persistence')) {
         // Temporary hack to avoid dependency conflicts
@@ -92,12 +93,17 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
-
-    testImplementation project(':airbyte-commons-docker')
     testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    testImplementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
+    testImplementation project(':airbyte-api')
 
     integrationTestJavaImplementation project(':airbyte-workers')
     integrationTestJavaImplementation libs.bundles.micronaut.test
+
+    airbyteProtocol(libs.airbyte.protocol) {
+        transitive = false
+    }
 }
 
 mainClassName = 'io.airbyte.workers.Application'
@@ -134,12 +140,18 @@ task cloudStorageIntegrationTest(type: Test) {
 // Duplicated in :airbyte-container-orchestrator, eventually, this should be handled in :airbyte-protocol
 task generateWellKnownTypes() {
     doLast {
-        def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
-        def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
-        def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
-        def targetFile = project.file("build/docker/WellKnownTypes.json")
-        targetFile.getParentFile().mkdirs()
-        targetFile.text = wellKnownTypesJson
+        def wellKnownTypesYamlPath = 'airbyte_protocol/well_known_types.yaml'
+        configurations.airbyteProtocol.getFiles().each {
+            def zip = new java.util.zip.ZipFile(it)
+            def entry = zip.getEntry(wellKnownTypesYamlPath)
+
+            def wellKnownTypesYaml = zip.getInputStream(entry).text
+            def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
+            def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
+            def targetFile = project.file("build/docker/WellKnownTypes.json")
+            targetFile.getParentFile().mkdirs()
+            targetFile.text = wellKnownTypesJson
+        }
     }
 }
 

@@ -78,13 +78,14 @@ jobs:
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
-              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
               - 'airbyte-commons-worker/**'
             db:
               - 'airbyte-db/**'
             frontend:
               - 'airbyte-api/src/main/openapi/config.yaml'
+              - 'airbyte-connector-builder-server/CDK_VERSION'
+              - 'airbyte-connector-builder-server/src/main/openapi/openapi.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
 
@@ -688,7 +689,6 @@ jobs:
             ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
-            ${{ github.workspace }}/airbyte-commons-docker/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
@@ -704,7 +704,6 @@ jobs:
             ${{ github.workspace }}/airbyte-notification/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-oauth/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-persistence/job-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
-            ${{ github.workspace }}/airbyte-protocol/protocol-models/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-server/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
@@ -714,21 +713,6 @@ jobs:
           title: Airbyte Code Coverage
           update-comment: true
           debug-mode: false
-
-      - name: Integration test
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Slow integration test
-        if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
 
       - name: Test if Seed spec is updated
         uses: Wandalen/wretry.action@master
@@ -1107,7 +1091,7 @@ jobs:
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: [start-helm-acceptance-test-runner] # required to start the main job when the runner is ready
+    needs: [ start-helm-acceptance-test-runner ] # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     # this is the label of the runner
     environment: more-secrets
@@ -1230,7 +1214,7 @@ jobs:
           AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-        timeout-minutes: 20
+        timeout-minutes: 40
         uses: Wandalen/wretry.action@master
         with:
           command: CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh

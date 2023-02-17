@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -647,7 +647,12 @@ def test_issues_stream(config, issues_response):
 
 
 @responses.activate
-def test_issue_comments_stream(config, issue_comments_response):
+def test_issue_comments_stream(config, issues_response, issue_comments_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
+        json=issues_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/comment?maxResults=50",
@@ -660,7 +665,7 @@ def test_issue_comments_stream(config, issue_comments_response):
     records = [r for r in
                stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -789,7 +794,12 @@ def test_labels_stream(config, labels_response):
 
 
 @responses.activate
-def test_issue_worklogs_stream(config, issue_worklogs_response):
+def test_issue_worklogs_stream(config, issues_response, issue_worklogs_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
+        json=issues_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/worklog?maxResults=50",
@@ -801,11 +811,16 @@ def test_issue_worklogs_stream(config, issue_worklogs_response):
     stream = IssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
-def test_issue_watchers_stream(config, issue_watchers_response):
+def test_issue_watchers_stream(config, issues_response, issue_watchers_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
+        json=issues_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/watchers?maxResults=50",
@@ -817,11 +832,16 @@ def test_issue_watchers_stream(config, issue_watchers_response):
     stream = IssueWatchers(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
-def test_issue_votes_stream(config, issue_votes_response):
+def test_issue_votes_stream(config, issues_response, issue_votes_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
+        json=issues_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/votes?maxResults=50",
@@ -834,11 +854,16 @@ def test_issue_votes_stream(config, issue_votes_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 1
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate
-def test_issue_remote_links_stream(config, issue_remote_links_response):
+def test_issue_remote_links_stream(config, issues_response, issue_remote_links_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search?maxResults=50&fields=%2Aall&jql=project+in+%28%271%27%2C+%272%27%29",
+        json=issues_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/remotelink?maxResults=50",
@@ -851,7 +876,7 @@ def test_issue_remote_links_stream(config, issue_remote_links_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 2
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
 
 
 @responses.activate

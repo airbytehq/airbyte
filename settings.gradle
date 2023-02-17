@@ -82,15 +82,14 @@ include ':airbyte-commons'
 // shared by CONNECTORS_BASE and PLATFORM sub builds
 include ':airbyte-api'
 include ':airbyte-commons-cli'
-include ':airbyte-commons-docker'
 include ':airbyte-commons-protocol'
+include ':airbyte-config:specs'
 include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
 include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
 include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
-include ':airbyte-protocol:protocol-models'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
@@ -108,7 +107,6 @@ include ':airbyte-worker-models'
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-commons-server'
-    include ':airbyte-config:specs'
     include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
@@ -148,6 +146,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
     include ':airbyte-integrations:connectors:destination-tidb'
+    include ':airbyte-integrations:connectors:destination-duckdb'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'
@@ -173,5 +172,3 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
         }
     }
 }
-
-
