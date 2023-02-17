@@ -32,6 +32,7 @@ const schemaChangesReviewButton = "[data-testid='schemaChangesReviewButton']";
 const schemaChangesBackdrop = "[data-testid='schemaChangesBackdrop']";
 const nonBreakingChangesPreference = "[data-testid='nonBreakingChangesPreference']";
 const nonBreakingChangesPreferenceValue = (value: string) => `div[data-testid='nonBreakingChangesPreference-${value}']`;
+const noDiffToast = "[data-testid='notification-connection.noDiff']";
 
 export const goToReplicationTab = () => {
   cy.get(replicationTab).click();
@@ -224,6 +225,10 @@ export const checkSchemaChangesDetected = ({ breaking }: { breaking: boolean }) 
 export const checkSchemaChangesDetectedCleared = () => {
   cy.get(schemaChangesDetectedBanner).should("not.exist");
   cy.get(schemaChangesBackdrop).should("not.exist");
+};
+
+export const checkNoDiffToast = () => {
+  cy.get(noDiffToast).should("exist");
 };
 
 export const clickSchemaChangesReviewButton = () => {
