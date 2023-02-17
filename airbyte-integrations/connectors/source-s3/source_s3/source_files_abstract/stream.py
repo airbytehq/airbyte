@@ -54,7 +54,7 @@ class FileStream(Stream, ABC):
     ab_last_mod_col = "_ab_source_file_last_modified"
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
-    datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
+    datetime_format_string = "%Y-%m-%dT%H:%M:%SZ"
     parallel_tasks_size = 256
 
     def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
@@ -430,7 +430,7 @@ class IncrementalFileStream(FileStream, ABC):
         if stream_state is not None and self.cursor_field in stream_state.keys():
             return datetime.strptime(stream_state[self.cursor_field], self.datetime_format_string)
         else:
-            return datetime.strptime("1970-01-01T00:00:00+0000", self.datetime_format_string)
+            return datetime.strptime("1970-01-01T00:00:00Z", self.datetime_format_string)
 
     def get_updated_history(self, current_stream_state, latest_record_datetime, latest_record, current_parsed_datetime, state_date):
         """
@@ -484,7 +484,7 @@ class IncrementalFileStream(FileStream, ABC):
         state_dict: Dict[str, Any] = {}
         current_parsed_datetime = self._get_datetime_from_stream_state(current_stream_state)
         latest_record_datetime = datetime.strptime(
-            latest_record.get(self.cursor_field, "1970-01-01T00:00:00+0000"), self.datetime_format_string
+            latest_record.get(self.cursor_field, "1970-01-01T00:00:00Z"), self.datetime_format_string
         )
         state_dict[self.cursor_field] = datetime.strftime(max(current_parsed_datetime, latest_record_datetime), self.datetime_format_string)
 
