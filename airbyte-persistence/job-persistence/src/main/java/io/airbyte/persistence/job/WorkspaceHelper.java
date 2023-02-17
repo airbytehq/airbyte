@@ -40,7 +40,6 @@ public class WorkspaceHelper {
   private final LoadingCache<UUID, UUID> sourceToWorkspaceCache;
   private final LoadingCache<UUID, UUID> destinationToWorkspaceCache;
   private final LoadingCache<UUID, UUID> connectionToWorkspaceCache;
-  private final LoadingCache<UUID, UUID> connectorBuilderProjectToWorkspaceCache;
   private final LoadingCache<UUID, UUID> operationToWorkspaceCache;
   private final LoadingCache<Long, UUID> jobToWorkspaceCache;
 
@@ -62,16 +61,6 @@ public class WorkspaceHelper {
       public UUID load(@NonNull final UUID destinationId) throws JsonValidationException, ConfigNotFoundException, IOException {
         final DestinationConnection destination = configRepository.getDestinationConnection(destinationId);
         return destination.getWorkspaceId();
-      }
-
-    });
-
-    this.connectorBuilderProjectToWorkspaceCache = getExpiringCache(new CacheLoader<>() {
-
-      @Override
-      public UUID load(@NonNull final UUID projectId) throws ConfigNotFoundException, IOException {
-        final ConnectorBuilderProject project = configRepository.getConnectorBuilderProject(projectId, false);
-        return project.getWorkspaceId();
       }
 
     });
@@ -179,11 +168,6 @@ public class WorkspaceHelper {
   // OPERATION ID
   public UUID getWorkspaceForOperationId(final UUID operationId) throws JsonValidationException, ConfigNotFoundException {
     return handleCacheExceptions(() -> operationToWorkspaceCache.get(operationId));
-  }
-
-  // CONNECTOR BUILDER PROJECT
-  public UUID getWorkspaceForConnectorBuilderProject(final UUID projectId) throws ConfigNotFoundException, JsonValidationException {
-    return handleCacheExceptions(() -> connectorBuilderProjectToWorkspaceCache.get(projectId));
   }
 
   public UUID getWorkspaceForOperationIdIgnoreExceptions(final UUID operationId) {
