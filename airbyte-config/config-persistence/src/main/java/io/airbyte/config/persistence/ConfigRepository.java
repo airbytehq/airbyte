@@ -1603,12 +1603,14 @@ public class ConfigRepository {
     return countResult > 0;
   }
 
+  private static final List<Field<?>> baseConnectorBuilderProjectColumns = Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
+  CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, field(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT.isNotNull()).as("hasDraft"));
+
   public ConnectorBuilderProject getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
       throws IOException, ConfigNotFoundException {
     final Optional<ConnectorBuilderProject> projectOptional = database.query(ctx -> {
       final List columnsToFetch =
-          new ArrayList(Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
-              CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, field(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT.isNull()).as("noDraft")));
+          new ArrayList(baseConnectorBuilderProjectColumns);
       if (fetchManifestDraft) {
         columnsToFetch.add(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT);
       }
@@ -1628,8 +1630,7 @@ public class ConfigRepository {
 
     return database
         .query(ctx -> ctx
-            .select(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
-                CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, field(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT.isNull()).as("noDraft"))
+            .select(baseConnectorBuilderProjectColumns)
             .from(CONNECTOR_BUILDER_PROJECT)
             .where(matchByIds)
             .fetch())
