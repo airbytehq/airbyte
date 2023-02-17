@@ -1286,6 +1286,10 @@
   icon: paypal.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "api-m.paypal.com"
+      - "api-m.sandbox.paypal.com"
 - name: Paystack
   sourceDefinitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
   dockerRepository: airbyte/source-paystack
