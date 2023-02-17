@@ -6,7 +6,7 @@ import { Link, Outlet } from "react-router-dom";
 import { LoadingPage } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
 import { AlertBanner } from "components/ui/Banner/AlertBanner";
-import { CustomerWorkspaceBanner } from "components/ui/CustomerWorkspaceBanner";
+import { CustomerWorkspaceWarning } from "components/ui/CustomerWorkspaceWarning";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { CloudRoutes } from "packages/cloud/cloudRoutePaths";
@@ -39,7 +39,7 @@ const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const isAllowUpdateConnectorsEnabled = useFeature(FeatureItem.AllowUpdateConnectors);
-  const isCustomerWorkspaceWarningEnabled = useFeature(FeatureItem.ShowCustomerWorkspaceWarning);
+  const isShowAdminWarningEnabled = useFeature(FeatureItem.ShowCustomerWorkspaceWarning);
 
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
@@ -96,6 +96,7 @@ const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar>
           <AirbyteHomeLink />
+          {isShowAdminWarningEnabled && <CustomerWorkspaceWarning />}
           <WorkspacePopout>
             {({ onOpen, value }) => (
               <button className={styles.workspaceButton} onClick={onOpen} data-testid="workspaceButton">
@@ -135,7 +136,6 @@ const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
             </ResourceNotFoundErrorBoundary>
           </div>
-          {isCustomerWorkspaceWarningEnabled && <CustomerWorkspaceBanner />}
         </div>
       </InsufficientPermissionsErrorBoundary>
     </div>

@@ -1,0 +1,21 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.customerWorkspace {
+  width: 100%;
+  background-color: colors.$red-400;
+  border-radius: variables.$border-radius-pill;
+  margin-top: variables.$spacing-sm;
+  user-select: none;
+
+  /** Hard coded values to match WorkspaceSelector :-( **/
+  flex: 0 0 21px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  p {
+    font-size: 9px;
+    line-height: 9px;
+  }
+}
