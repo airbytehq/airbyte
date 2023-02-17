@@ -87,7 +87,7 @@
 
     #logo {
       animation: logoFadeOut infinite var(--duration);
-      opacity: 1;
+      animation-delay: var(--delay);
       
       --delay: 200ms;
       --duration: 2s;
