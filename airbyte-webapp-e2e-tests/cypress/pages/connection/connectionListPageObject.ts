@@ -6,7 +6,7 @@ const changesStatusIcon = (type: string) => `[data-testId='changesStatusIcon-${t
 const manualSyncButton = "button[data-testId='manual-sync-button']";
 const newConnectionButton = "button[data-testId='new-connection-button']";
 
-export const visitConnectionsListPage = () => {
+export const visit = () => {
   cy.intercept("**/web_backend/connections/list").as("listConnections");
   cy.visit(`/workspaces/${getWorkspaceId()}/connections`);
   cy.wait("@listConnections", { timeout: 20000 });

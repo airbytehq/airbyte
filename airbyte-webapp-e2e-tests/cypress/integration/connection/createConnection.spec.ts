@@ -73,7 +73,7 @@ describe.skip("Connection - Create new connection", () => {
 
   describe("Set up source and destination", () => {
     it("should open 'New connection' page", () => {
-      connectionListPage.visitConnectionsListPage();
+      connectionListPage.visit();
       interceptGetSourcesListRequest();
       interceptGetSourceDefinitionsRequest();
 

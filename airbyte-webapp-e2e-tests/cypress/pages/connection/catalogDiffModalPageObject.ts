@@ -7,7 +7,7 @@ export const removedFieldsTable = "table[aria-label='removed fields']";
 export const newFieldsTable = "table[aria-label='new fields']";
 export const closeButton = "[data-testid='update-schema-confirm-btn']";
 
-export const checkCatalogDiffModal = () => {
+export const shouldExist = () => {
   cy.get(catalogDiffModal).should("exist");
 };
 
@@ -15,6 +15,6 @@ export const toggleStreamWithChangesAccordion = (streamName: string) => {
   cy.get(streamWithChangesToggleBtn(streamName)).click();
 };
 
-export const clickCatalogDiffCloseButton = () => {
+export const clickCloseButton = () => {
   cy.get(closeButton).click();
 };

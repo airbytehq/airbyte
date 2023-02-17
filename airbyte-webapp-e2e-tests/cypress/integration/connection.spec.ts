@@ -32,8 +32,8 @@ import {
 } from "pages/connection/connectionSettingsPageObject";
 import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "commands/db";
 import {
-  checkCatalogDiffModal,
-  clickCatalogDiffCloseButton,
+  shouldExist,
+  clickCloseButton,
   newFieldsTable,
   newStreamsTable,
   removedFieldsTable,
@@ -555,7 +555,7 @@ describe("Connection - detect source schema changes in source", () => {
     goToReplicationTab();
     refreshSourceSchemaBtnClick();
 
-    checkCatalogDiffModal();
+    shouldExist();
 
     cy.get(removedStreamsTable).should("contain", "users");
 
@@ -565,7 +565,7 @@ describe("Connection - detect source schema changes in source", () => {
     cy.get(removedFieldsTable).should("contain", "city_code");
     cy.get(newFieldsTable).children().should("contain", "country").and("contain", "state");
 
-    clickCatalogDiffCloseButton();
+    clickCloseButton();
 
     toggleStreamEnabledState("cars");
 

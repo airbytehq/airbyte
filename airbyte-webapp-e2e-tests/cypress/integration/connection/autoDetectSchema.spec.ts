@@ -81,21 +81,21 @@ describe("Connection - Auto-detect schema changes", () => {
     });
 
     it("shows non-breaking change on list page", () => {
-      connectionListPage.visitConnectionsListPage();
+      connectionListPage.visit();
       connectionListPage.getSchemaChangeIcon(connection, "non_breaking").should("exist");
       connectionListPage.getManualSyncButton(connection).should("be.enabled");
     });
 
     it("shows non-breaking change that can be saved after refresh", () => {
       // Need to continue running but async breaks everything
-      connectionPage.visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       replicationPage.checkSchemaChangesDetected({ breaking: false });
       replicationPage.clickSchemaChangesReviewButton();
       connectionPage.getSyncEnabledSwitch().should("be.enabled");
 
-      catalogDiffModal.checkCatalogDiffModal();
-      catalogDiffModal.clickCatalogDiffCloseButton();
+      catalogDiffModal.shouldExist();
+      catalogDiffModal.clickCloseButton();
 
       replicationPage.checkSchemaChangesDetectedCleared();
 
@@ -104,7 +104,7 @@ describe("Connection - Auto-detect schema changes", () => {
     });
 
     it("clears non-breaking change when db changes are restored", () => {
-      connectionPage.visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       replicationPage.checkSchemaChangesDetected({ breaking: false });
 
@@ -119,7 +119,7 @@ describe("Connection - Auto-detect schema changes", () => {
   describe("breaking changes", () => {
     beforeEach(() => {
       const streamName = "users";
-      connectionPage.visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       // Change users sync mode
       replicationPage.searchStream(streamName);
@@ -134,21 +134,21 @@ describe("Connection - Auto-detect schema changes", () => {
     });
 
     it("shows breaking change on list page", () => {
-      connectionListPage.visitConnectionsListPage();
+      connectionListPage.visit();
       connectionListPage.getSchemaChangeIcon(connection, "breaking").should("exist");
       connectionListPage.getManualSyncButton(connection).should("be.disabled");
     });
 
     it("shows breaking change that can be saved after refresh and fix", () => {
-      connectionPage.visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       // Confirm that breaking changes are there
       replicationPage.checkSchemaChangesDetected({ breaking: true });
       replicationPage.clickSchemaChangesReviewButton();
       connectionPage.getSyncEnabledSwitch().should("be.disabled");
 
-      catalogDiffModal.checkCatalogDiffModal();
-      catalogDiffModal.clickCatalogDiffCloseButton();
+      catalogDiffModal.shouldExist();
+      catalogDiffModal.clickCloseButton();
       replicationPage.checkSchemaChangesDetectedCleared();
 
       // Fix the conflict
@@ -160,7 +160,7 @@ describe("Connection - Auto-detect schema changes", () => {
     });
 
     it("clears breaking change when db changes are restored", () => {
-      connectionPage.visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       replicationPage.checkSchemaChangesDetected({ breaking: true });
 
@@ -174,7 +174,7 @@ describe("Connection - Auto-detect schema changes", () => {
 
   describe("non-breaking schema update preference", () => {
     it("saves non-breaking schema update preference change", () => {
-      connectionPage.visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
       replicationPage.selectNonBreakingChangesPreference("disable");
 
       cy.intercept("/api/v1/web_backend/connections/update").as("updatesNonBreakingPreference");
