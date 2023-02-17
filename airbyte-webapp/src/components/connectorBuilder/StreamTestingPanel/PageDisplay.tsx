@@ -40,7 +40,16 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
 
   const formattedRecords = useMemo(() => formatJson(page.records), [page.records]);
   const formattedRequest = useMemo(() => formatJson(page.request), [page.request]);
-  const formattedResponse = useMemo(() => formatJson(page.response), [page.response]);
+  const formattedResponse = useMemo(() => {
+    if (!page.response) {
+      return "";
+    }
+    const unpackedBodyResponse = {
+      ...page.response,
+      body: page.response.body ? JSON.parse(page.response.body) : undefined,
+    };
+    return formatJson(unpackedBodyResponse);
+  }, [page.response]);
   const formattedSchema = useMemo(() => inferredSchema && formatJson(inferredSchema, true), [inferredSchema]);
 
   let defaultTabIndex = 0;
