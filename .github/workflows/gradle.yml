@@ -1069,7 +1069,6 @@ jobs:
       - frontend-build
       - octavia-cli-build
       - platform-build
-      - kube-acceptance-test
       # Todo: Kyryl turn this on.
       # - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
@@ -1104,7 +1103,6 @@ jobs:
       - frontend-build
       - octavia-cli-build
       - platform-build
-      - kube-acceptance-test
       # Todo: Kyryl turn this on.
       # - helm-acceptance-test
     if: success()
