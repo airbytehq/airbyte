@@ -40,7 +40,7 @@ class DentclinicIncrementalStream(HttpStream, ABC):
             days=self.fetch_interval_days)
 
         self.clinic_ids = self.get_clinic_ids()
-        self.clinic_id = next(self.clinic_ids)
+        self.clinic_id = '1'
 
     def request_headers(
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -107,8 +107,9 @@ class DentclinicIncrementalStream(HttpStream, ABC):
     def request_body_data(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None,
                           next_page_token: Mapping[str, Any] = None, ) -> Optional[Mapping]:
 
-        if self.cursor_end_date >= self.stop_date:
+        if self.cursor_end_date > self.stop_date:
             self.clinic_id = next(self.clinic_ids, None)
+
             if self.clinic_id is None:
                 return ""
 
@@ -124,18 +125,7 @@ class DentclinicIncrementalStream(HttpStream, ABC):
         start_ts = self.cursor_start_date
         end_ts = self.cursor_end_date
 
-        clinic_state = stream_state.get(
-            self.cursor_field, {}).get(self.clinic_id)
 
-        print('Stream State', stream_state)
-
-        if clinic_state:
-            state_ts = pendulum.parse(clinic_state)
-            start_ts = max(start_ts, state_ts)
-            end_ts = start_ts.add(days=self.fetch_interval_days)
-
-            print(
-                f'Fetching Interval - {self.clinic_id} : {start_ts} - {end_ts}')
 
         return f"""<?xml version="1.0" encoding="utf-8"?>
         <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
