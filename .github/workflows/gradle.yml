@@ -70,7 +70,6 @@ jobs:
             build:
               - '.github/**'
               - 'buildSrc/**'
-              - 'tools/**'
               - '*.gradle'
               - 'deps.toml'
             cli:
