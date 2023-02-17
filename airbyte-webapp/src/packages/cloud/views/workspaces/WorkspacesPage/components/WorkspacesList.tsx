@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
+import { FrequentlyUsedWorkspaces } from "components/workspaces/FrequentlyUsedWorkspaces";
+
 import {
   useCreateCloudWorkspace,
   useListCloudWorkspaces,
@@ -24,6 +26,7 @@ const WorkspacesList: React.FC = () => {
 
   return (
     <Content>
+      {workspaces.length >= 10 && <FrequentlyUsedWorkspaces workspaces={workspaces} />}
       {workspaces.map((workspace) => (
         <WorkspaceItem key={workspace.workspaceId} id={workspace.workspaceId} onClick={selectWorkspace}>
           {workspace.name}

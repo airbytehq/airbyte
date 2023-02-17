@@ -4,6 +4,7 @@ import { useEffectOnce } from "react-use";
 
 import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 import LoadingPage from "components/LoadingPage";
+import { useTrackFrequentlyUsedWorkspaces } from "components/workspaces/FrequentlyUsedWorkspaces";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics/useAnalyticsService";
 import { useApiHealthPoll } from "hooks/services/Health";
@@ -39,6 +40,7 @@ const DefaultView = React.lazy(() => import("./views/DefaultView"));
 
 const MainRoutes: React.FC = () => {
   const workspace = useCurrentWorkspace();
+  useTrackFrequentlyUsedWorkspaces();
 
   const analyticsContext = useMemo(
     () => ({

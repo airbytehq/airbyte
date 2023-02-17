@@ -15,6 +15,10 @@
   background: colors.$white;
   border-radius: variables.$border-radius-lg;
   border: none;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .iconColor {

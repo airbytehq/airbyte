@@ -1,0 +1,14 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.frequentlyUsedWorkspaces {
+  padding-bottom: variables.$spacing-2xl;
+  margin-bottom: variables.$spacing-2xl;
+  border-bottom: variables.$border-thick solid colors.$grey-100;
+
+  &__list {
+    margin: variables.$spacing-xl 0 0;
+    padding: 0;
+    list-style: none;
+  }
+}
