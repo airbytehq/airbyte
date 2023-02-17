@@ -57,7 +57,7 @@ public class HeartbeatTimeoutChaperone {
   }
 
   @VisibleForTesting
-  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
+  HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
                                    final Duration timeoutCheckDuration,
                                    final FeatureFlagClient featureFlagClient,
                                    final UUID workspaceId,
@@ -94,9 +94,9 @@ public class HeartbeatTimeoutChaperone {
       if (featureFlagClient.enabled(ShouldFailSyncIfHeartbeatFailure.INSTANCE, new Workspace(workspaceId))) {
         runnableFuture.cancel(true);
         return raiseException(
-            new HeartbeatTimeoutException(String.format("Heartbeat has stopped. Heartbeat freshness threshold: %s Actual heartbeat age: %s",
-                heartbeatMonitor.getHeartbeatFreshnessThreshold(),
-                heartbeatMonitor.getTimeSinceLastBeat().orElse(null))));
+            new HeartbeatTimeoutException(String.format("Heartbeat has stopped. Heartbeat freshness threshold: %s secs Actual heartbeat age: %s secs",
+                heartbeatMonitor.getHeartbeatFreshnessThreshold().getSeconds(),
+                heartbeatMonitor.getTimeSinceLastBeat().orElse(Duration.ZERO).getSeconds())));
       } else {
         LOGGER.info("Do not return because the feature flag is disable");
         return runnableFuture;
