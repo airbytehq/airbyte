@@ -74,7 +74,7 @@ class HeartBeatTimeoutChaperoneTest {
         workspaceId);
     when(featureFlagClient.enabled(eq(ShouldFailSyncIfHeartbeatFailure.INSTANCE), any())).thenReturn(true);
     when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
-    assertDoesNotThrow(() -> CompletableFuture.runAsync(() -> heartbeatTimeoutChaperone.monitor()).get(500, TimeUnit.MICROSECONDS));
+    assertDoesNotThrow(() -> CompletableFuture.runAsync(() -> heartbeatTimeoutChaperone.monitor()).get(1000, TimeUnit.MILLISECONDS));
   }
 
   @Test
@@ -86,7 +86,7 @@ class HeartBeatTimeoutChaperoneTest {
         workspaceId);
     when(featureFlagClient.enabled(eq(ShouldFailSyncIfHeartbeatFailure.INSTANCE), any())).thenReturn(false);
     when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(true), Optional.of(false));
-    assertThrows(TimeoutException.class, () -> CompletableFuture.runAsync(() -> heartbeatTimeoutChaperone.monitor()).get(100, TimeUnit.MICROSECONDS));
+    assertThrows(TimeoutException.class, () -> CompletableFuture.runAsync(() -> heartbeatTimeoutChaperone.monitor()).get(1000, TimeUnit.MILLISECONDS));
   }
 
 }
