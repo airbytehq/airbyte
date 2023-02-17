@@ -45,8 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
- * {@link AirbyteMessage} for processing
+ * Uses both Factory and Consumer design pattern to create a single point of creation for consuming {@link AirbyteMessage} for processing
  */
 public class StagingConsumerFactory {
 
@@ -85,15 +84,12 @@ public class StagingConsumerFactory {
   }
 
   /**
-   * Creates a list of all {@link WriteConfig} for each stream within a
-   * {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration settings for
-   * writing to a destination connector
+   * Creates a list of all {@link WriteConfig} for each stream within a {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration
+   * settings for writing to a destination connector
    *
-   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are
-   *        acceptable by each destination connector
+   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are acceptable by each destination connector
    * @param config destination connector configuration parameters
-   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured
-   *        {@link ConfiguredAirbyteStream}
+   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured {@link ConfiguredAirbyteStream}
    * @return list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
    */
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
@@ -153,8 +149,8 @@ public class StagingConsumerFactory {
         stagingOperations.createStageIfNotExists(database, stageName);
 
         /*
-         * When we're in OVERWRITE, clear out the table at the start of a sync, this is an expected side
-         * effect of checkpoint and the removal of temporary tables
+         * When we're in OVERWRITE, clear out the table at the start of a sync, this is an expected
+         * side effect of checkpoint and the removal of temporary tables
          */
         switch (writeConfig.getSyncMode()) {
           case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schema, dstTableName));
@@ -184,10 +180,10 @@ public class StagingConsumerFactory {
    */
   @VisibleForTesting
   CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
-                                                                                                       final JdbcDatabase database,
-                                                                                                       final StagingOperations stagingOperations,
-                                                                                                       final List<WriteConfig> writeConfigs,
-                                                                                                       final ConfiguredAirbyteCatalog catalog) {
+                                                                                                               final JdbcDatabase database,
+                                                                                                               final StagingOperations stagingOperations,
+                                                                                                               final List<WriteConfig> writeConfigs,
+                                                                                                               final ConfiguredAirbyteCatalog catalog) {
     final Set<WriteConfig> conflictingStreams = new HashSet<>();
     final Map<AirbyteStreamNameNamespacePair, WriteConfig> pairToWriteConfig = new HashMap<>();
     for (final WriteConfig config : writeConfigs) {
@@ -204,7 +200,8 @@ public class StagingConsumerFactory {
     if (!conflictingStreams.isEmpty()) {
       final String message = String.format(
           "You are trying to write multiple streams to the same table. Consider switching to a custom namespace format using ${SOURCE_NAMESPACE}, or moving one of them into a separate connection with a different stream prefix. Affected streams: %s",
-          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", ")));
+          conflictingStreams.stream().map(config -> config.getNamespace() + "." + config.getStreamName()).collect(joining(", "))
+      );
       throw new ConfigErrorException(message);
     }
     return (pair, writer) -> {
@@ -222,8 +219,7 @@ public class StagingConsumerFactory {
       try (writer) {
         writer.flush();
         final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-        copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName,
-            stagingOperations);
+        copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(), schemaName, stagingOperations);
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and commit buffer data into destination's raw table", e);
         throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
@@ -236,13 +232,12 @@ public class StagingConsumerFactory {
    * upload was unsuccessful
    */
   private void copyIntoTableFromStage(final JdbcDatabase database,
-                                      final String stageName,
-                                      final String stagingPath,
-                                      final List<String> stagedFiles,
-                                      final String tableName,
-                                      final String schemaName,
-                                      final StagingOperations stagingOperations)
-      throws Exception {
+                                         final String stageName,
+                                         final String stagingPath,
+                                         final List<String> stagedFiles,
+                                         final String tableName,
+                                         final String schemaName,
+                                         final StagingOperations stagingOperations) throws Exception {
     try {
       stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
           tableName, schemaName);
@@ -286,5 +281,4 @@ public class StagingConsumerFactory {
       LOGGER.info("Cleaning up destination completed.");
     };
   }
-
 }
