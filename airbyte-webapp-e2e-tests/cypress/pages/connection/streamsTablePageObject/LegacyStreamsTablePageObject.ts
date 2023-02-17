@@ -1,4 +1,5 @@
-import { AbstractStreamsTablePageObject } from "./AbstractStreamsTablePageObject";
+import { IStreamsTablePageObject } from "./IStreamsTablePageObject";
+import { StreamsTablePageObjectBase } from "./StreamsTableContainerPageObject";
 
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const getFieldDropdownContainer = (streamName: string, type: Dropdown) => `div[id='${streamName}_${type}_pathPopout']`;
@@ -59,7 +60,7 @@ const checkDropdownField = (streamName: string, dropdownType: Dropdown, expected
     : isButtonContainsExactValue(expectedValue);
 };
 
-export class LegacyStreamsTablePageObject extends AbstractStreamsTablePageObject {
+export class LegacyStreamsTablePageObject extends StreamsTablePageObjectBase implements IStreamsTablePageObject {
   expandStreamDetailsByName(streamName: string) {
     cy.get(getExpandStreamArrowBtn(streamName)).click();
   }
