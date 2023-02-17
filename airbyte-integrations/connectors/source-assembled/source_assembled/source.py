@@ -418,11 +418,6 @@ class Forecasts(IncrementalAssembledStream):
     data_field = "forecasts"
     result_is_dict = False
 
-    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        for slice in super().stream_slices(stream_state, **kwargs):
-            for channel in self._channels:
-                yield {**slice, "channel": channel}
-
     def path(self, **kwargs) -> str:
         return "forecasts"
 
