@@ -20,15 +20,15 @@ dependencies {
     implementation('org.apache.spark:spark-hive_2.13:3.3.0') {
         exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
     }
-    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.0.0'
-    implementation "software.amazon.awssdk:bundle:2.17.131"
-    implementation "software.amazon.awssdk:url-connection-client:2.17.131"
+    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.1.0'
+    implementation "software.amazon.awssdk:bundle:2.17.257"
+    implementation "software.amazon.awssdk:url-connection-client:2.17.257"
     implementation "org.apache.hadoop:hadoop-aws:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
     implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
     implementation "org.postgresql:postgresql:42.5.0"
     implementation "commons-collections:commons-collections:3.2.2"
-//    implementation "software.amazon.awssdk:utils:2.17.131"
+//    implementation "software.amazon.awssdk:utils:2.17.257"
 
     testImplementation libs.connectors.testcontainers.postgresql
     integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
