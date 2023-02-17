@@ -24,9 +24,12 @@ import {
   checkPreFilledPrimaryKeyField,
   checkStreamFields,
   expandStreamDetailsByName,
-} from "pages/replicationPage";
+} from "pages/connection/connectionReplicationPageObject";
 import { goToSourcePage, openSourceOverview } from "pages/sourcePage";
-import { goToSettingsPage, openConnectionOverviewByDestinationName } from "pages/settingsConnectionPage";
+import {
+  goToSettingsPage,
+  openConnectionOverviewByDestinationName,
+} from "pages/connection/connectionSettingsPageObject";
 import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "commands/db";
 import {
   checkCatalogDiffModal,
@@ -36,7 +39,7 @@ import {
   removedFieldsTable,
   removedStreamsTable,
   toggleStreamWithChangesAccordion,
-} from "pages/modals/catalogDiffModal";
+} from "pages/connection/catalogDiffModalPageObject";
 import {
   interceptGetConnectionRequest,
   interceptUpdateConnectionRequest,

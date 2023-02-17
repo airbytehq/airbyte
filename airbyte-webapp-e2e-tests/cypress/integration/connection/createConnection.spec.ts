@@ -10,19 +10,8 @@ import {
   requestWorkspaceId,
 } from "commands/api";
 import { appendRandomString, submitButtonClick } from "commands/common";
-import { clickNewConnectionButton, visitConnectionsListPage } from "pages/connnectionsListPage";
-import {
-  checkAmountOfStreamTableRows,
-  checkColumnNames,
-  checkConnectorIconAndTitle,
-  clickUseExistingConnectorButton,
-  isAtConnectionOverviewPage,
-  isAtNewConnectionPage,
-  isNewConnectionPageHeaderVisible,
-  isStreamTableRowVisible,
-  scrollTableToStream,
-  selectExistingConnectorFromDropdown,
-} from "pages/newConnectionPage";
+import * as connectionListPage from "pages/connection/connectionListPageObject";
+import * as newConnectionPage from "pages/connection/createConnection.pageObjectt";
 import {
   interceptCreateConnectionRequest,
   interceptDiscoverSchemaRequest,
@@ -34,7 +23,7 @@ import {
   waitForGetSourcesListRequest,
 } from "commands/interceptors";
 import { Connection, Destination, Source } from "commands/api/types";
-import { clearStreamSearch, searchStream, selectSchedule } from "pages/replicationPage";
+import * as replicationPage from "pages/connection/connectionReplicationPageObject";
 import { runDbQuery } from "commands/db/db";
 import {
   createUsersTableQuery,
@@ -84,72 +73,72 @@ describe.skip("Connection - Create new connection", () => {
 
   describe("Set up source and destination", () => {
     it("should open 'New connection' page", () => {
-      visitConnectionsListPage();
+      connectionListPage.visitConnectionsListPage();
       interceptGetSourcesListRequest();
       interceptGetSourceDefinitionsRequest();
 
-      clickNewConnectionButton();
+      connectionListPage.clickNewConnectionButton();
       waitForGetSourcesListRequest();
       waitForGetSourceDefinitionsRequest();
     });
 
     it("should select existing Source from dropdown and click button", () => {
-      selectExistingConnectorFromDropdown(source.name);
-      clickUseExistingConnectorButton("source");
+      newConnectionPage.selectExistingConnectorFromDropdown(source.name);
+      newConnectionPage.clickUseExistingConnectorButton("source");
     });
 
     it("should select existing Destination from dropdown and click button", () => {
       interceptDiscoverSchemaRequest();
-      selectExistingConnectorFromDropdown(destination.name);
-      clickUseExistingConnectorButton("destination");
+      newConnectionPage.selectExistingConnectorFromDropdown(destination.name);
+      newConnectionPage.clickUseExistingConnectorButton("destination");
       waitForDiscoverSchemaRequest();
     });
 
     it("should redirect to 'New connection' settings page with stream table'", () => {
-      isAtNewConnectionPage();
+      newConnectionPage.isAtNewConnectionPage();
     });
 
     it("should show 'New connection' page header", () => {
-      isNewConnectionPageHeaderVisible();
+      newConnectionPage.isNewConnectionPageHeaderVisible();
     });
   });
 
   describe("Configuration", () => {
     it("should set 'Replication frequency' to 'Manual'", () => {
-      selectSchedule("Manual");
+      replicationPage.selectSchedule("Manual");
     });
   });
 
   describe("Streams table", () => {
     it("should check check connector icons and titles in table", () => {
-      checkConnectorIconAndTitle("source");
-      checkConnectorIconAndTitle("destination");
+      newConnectionPage.checkConnectorIconAndTitle("source");
+      newConnectionPage.checkConnectorIconAndTitle("destination");
     });
 
     it("should check columns names in table", () => {
-      checkColumnNames();
+      newConnectionPage.checkColumnNames();
     });
 
     it("should check total amount of table streams", () => {
       // dummy tables amount + users table
-      checkAmountOfStreamTableRows(21);
+      newConnectionPage.checkAmountOfStreamTableRows(21);
     });
 
     it("should allow to scroll table to desired stream table row and it should be visible", () => {
       const desiredStreamTableRow = "dummy_table_18";
 
-      scrollTableToStream(desiredStreamTableRow);
-      isStreamTableRowVisible(desiredStreamTableRow);
+      newConnectionPage.scrollTableToStream(desiredStreamTableRow);
+      newConnectionPage.isStreamTableRowVisible(desiredStreamTableRow);
     });
 
     it("should filter table by stream name", () => {
-      searchStream("dummy_table_10");
-      checkAmountOfStreamTableRows(1);
+      replicationPage.searchStream("dummy_table_10");
+      newConnectionPage.checkAmountOfStreamTableRows(1);
     });
 
     it("should clear stream search input field and show all available streams", () => {
-      clearStreamSearch();
-      checkAmountOfStreamTableRows(21);
+      replicationPage.clearStreamSearch();
+      newConnectionPage.checkAmountOfStreamTableRows(21);
     });
   });
 
@@ -178,7 +167,7 @@ describe.skip("Connection - Create new connection", () => {
     });
 
     it("should redirect to connection overview page after connection set up", () => {
-      isAtConnectionOverviewPage(connectionId);
+      newConnectionPage.isAtConnectionOverviewPage(connectionId);
     });
   });
 });

@@ -17,9 +17,13 @@ import { appendRandomString } from "commands/common";
 import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
-import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage";
-import { getManualSyncButton, getSchemaChangeIcon, visitConnectionsListPage } from "pages/connnectionsListPage";
-import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
+import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connection/connectionPageObject";
+import {
+  getManualSyncButton,
+  getSchemaChangeIcon,
+  visitConnectionsListPage,
+} from "pages/connection/connectionListPageObject";
+import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/connection/catalogDiffModalPageObject";
 import {
   checkNoDiffToast,
   checkSchemaChangesDetected,
@@ -30,7 +34,7 @@ import {
   selectCursorField,
   selectNonBreakingChangesPreference,
   selectSyncMode,
-} from "pages/replicationPage";
+} from "pages/connection/connectionReplicationPageObject";
 
 describe("Connection - Auto-detect schema changes", () => {
   let source: Source;
