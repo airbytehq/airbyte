@@ -158,17 +158,3 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "OCTAVIA_CLI") {
     include ':octavia-cli'
 }
-
-// connectors
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
-    // include all connector projects
-    def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
-    println integrationsPath
-    integrationsPath.eachDir { dir ->
-        def buildFiles = file(dir).list { file, name -> name == "build.gradle" }
-
-        if (buildFiles.length == 1) {
-            include ":airbyte-integrations:connectors:${dir.getFileName()}"
-        }
-    }
-}
