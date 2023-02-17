@@ -2,7 +2,7 @@ import { submitButtonClick } from "./common";
 import { createLocalJsonDestination, createPostgresDestination } from "./destination";
 import { createPokeApiSource, createPostgresSource } from "./source";
 import { openAddSource } from "pages/destinationPage";
-import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage";
+import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/connection/connectionFormPageObject";
 
 export const createTestConnection = (sourceName: string, destinationName: string) => {
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");

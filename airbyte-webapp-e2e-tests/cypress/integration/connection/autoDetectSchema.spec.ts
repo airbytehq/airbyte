@@ -17,20 +17,11 @@ import { appendRandomString } from "commands/common";
 import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
-import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage";
-import { getManualSyncButton, getSchemaChangeIcon, visitConnectionsListPage } from "pages/connnectionsListPage";
-import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
-import {
-  checkNoDiffToast,
-  checkSchemaChangesDetected,
-  checkSchemaChangesDetectedCleared,
-  clickSaveReplication,
-  clickSchemaChangesReviewButton,
-  searchStream,
-  selectCursorField,
-  selectNonBreakingChangesPreference,
-  selectSyncMode,
-} from "pages/replicationPage";
+import * as connectionPage from "pages/connection/connectionPageObject";
+import * as connectionListPage from "pages/connection/connectionListPageObject";
+import * as catalogDiffModal from "pages/connection/catalogDiffModalPageObject";
+import * as replicationPage from "pages/connection/connectionReplicationPageObject";
+import streamsTablePageObject from "pages/connection/streamsTablePageObject";
 
 describe("Connection - Auto-detect schema changes", () => {
   let source: Source;
@@ -91,51 +82,51 @@ describe("Connection - Auto-detect schema changes", () => {
     });
 
     it("shows non-breaking change on list page", () => {
-      visitConnectionsListPage();
-      getSchemaChangeIcon(connection, "non_breaking").should("exist");
-      getManualSyncButton(connection).should("be.enabled");
+      connectionListPage.visit();
+      connectionListPage.getSchemaChangeIcon(connection, "non_breaking").should("exist");
+      connectionListPage.getManualSyncButton(connection).should("be.enabled");
     });
 
     it("shows non-breaking change that can be saved after refresh", () => {
       // Need to continue running but async breaks everything
-      visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
-      checkSchemaChangesDetected({ breaking: false });
-      clickSchemaChangesReviewButton();
-      getSyncEnabledSwitch().should("be.enabled");
+      replicationPage.checkSchemaChangesDetected({ breaking: false });
+      replicationPage.clickSchemaChangesReviewButton();
+      connectionPage.getSyncEnabledSwitch().should("be.enabled");
 
-      checkCatalogDiffModal();
-      clickCatalogDiffCloseButton();
+      catalogDiffModal.shouldExist();
+      catalogDiffModal.clickCloseButton();
 
-      checkSchemaChangesDetectedCleared();
+      replicationPage.checkSchemaChangesDetectedCleared();
 
-      clickSaveReplication();
-      getSyncEnabledSwitch().should("be.enabled");
+      replicationPage.clickSaveButton();
+      connectionPage.getSyncEnabledSwitch().should("be.enabled");
     });
 
     it("clears non-breaking change when db changes are restored", () => {
-      visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
-      checkSchemaChangesDetected({ breaking: false });
+      replicationPage.checkSchemaChangesDetected({ breaking: false });
 
       runDbQuery(alterTable("public.users", { add: ["updated_at TIMESTAMP"] }));
-      clickSchemaChangesReviewButton();
+      replicationPage.clickSchemaChangesReviewButton();
 
-      checkSchemaChangesDetectedCleared();
-      checkNoDiffToast();
+      replicationPage.checkSchemaChangesDetectedCleared();
+      replicationPage.checkNoDiffToast();
     });
   });
 
   describe("breaking changes", () => {
     beforeEach(() => {
       const streamName = "users";
-      visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       // Change users sync mode
-      searchStream(streamName);
-      selectSyncMode("Incremental", "Deduped + history");
-      selectCursorField(streamName, "updated_at");
-      clickSaveReplication();
+      streamsTablePageObject.searchStream(streamName);
+      streamsTablePageObject.selectSyncMode("Incremental", "Deduped + history");
+      streamsTablePageObject.selectCursorField(streamName, "updated_at");
+      replicationPage.clickSaveButton();
 
       // Remove cursor from db and refreshs schema to force breaking change detection
       runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
@@ -144,52 +135,52 @@ describe("Connection - Auto-detect schema changes", () => {
     });
 
     it("shows breaking change on list page", () => {
-      visitConnectionsListPage();
-      getSchemaChangeIcon(connection, "breaking").should("exist");
-      getManualSyncButton(connection).should("be.disabled");
+      connectionListPage.visit();
+      connectionListPage.getSchemaChangeIcon(connection, "breaking").should("exist");
+      connectionListPage.getManualSyncButton(connection).should("be.disabled");
     });
 
     it("shows breaking change that can be saved after refresh and fix", () => {
-      visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
       // Confirm that breaking changes are there
-      checkSchemaChangesDetected({ breaking: true });
-      clickSchemaChangesReviewButton();
-      getSyncEnabledSwitch().should("be.disabled");
+      replicationPage.checkSchemaChangesDetected({ breaking: true });
+      replicationPage.clickSchemaChangesReviewButton();
+      connectionPage.getSyncEnabledSwitch().should("be.disabled");
 
-      checkCatalogDiffModal();
-      clickCatalogDiffCloseButton();
-      checkSchemaChangesDetectedCleared();
+      catalogDiffModal.shouldExist();
+      catalogDiffModal.clickCloseButton();
+      replicationPage.checkSchemaChangesDetectedCleared();
 
       // Fix the conflict
-      searchStream("users");
-      selectSyncMode("Full refresh", "Append");
+      streamsTablePageObject.searchStream("users");
+      streamsTablePageObject.selectSyncMode("Full refresh", "Append");
 
-      clickSaveReplication();
-      getSyncEnabledSwitch().should("be.enabled");
+      replicationPage.clickSaveButton();
+      connectionPage.getSyncEnabledSwitch().should("be.enabled");
     });
 
     it("clears breaking change when db changes are restored", () => {
-      visitConnectionPage(connection, "replication");
+      connectionPage.visit(connection, "replication");
 
-      checkSchemaChangesDetected({ breaking: true });
+      replicationPage.checkSchemaChangesDetected({ breaking: true });
 
       runDbQuery(alterTable("public.users", { add: ["updated_at TIMESTAMP"] }));
-      clickSchemaChangesReviewButton();
+      replicationPage.clickSchemaChangesReviewButton();
 
-      checkSchemaChangesDetectedCleared();
-      checkNoDiffToast();
+      replicationPage.checkSchemaChangesDetectedCleared();
+      replicationPage.checkNoDiffToast();
     });
   });
 
   describe("non-breaking schema update preference", () => {
     it("saves non-breaking schema update preference change", () => {
-      visitConnectionPage(connection, "replication");
-      selectNonBreakingChangesPreference("disable");
+      connectionPage.visit(connection, "replication");
+      replicationPage.selectNonBreakingChangesPreference("disable");
 
       cy.intercept("/api/v1/web_backend/connections/update").as("updatesNonBreakingPreference");
 
-      clickSaveReplication({ confirm: false });
+      replicationPage.clickSaveButton({ confirm: false });
 
       cy.wait("@updatesNonBreakingPreference").then((interception) => {
         assert.equal((interception.response?.body as Connection).nonBreakingChangesPreference, "disable");
