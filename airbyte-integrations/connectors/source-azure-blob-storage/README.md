@@ -1,45 +1,69 @@
-# Azure Blob Storage Source
+# Source Azure Blob Storage
 
-This is the repository for the Azure Blob Storage source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/azure-blob-storage).
+This is the repository for the Azure Blob Storage source connector in Java.
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/azure-blob-storage).
 
 ## Local development
 
-### Prerequisites
-* If you are using Python for connector development, minimal required version `= 3.7.0`
-* Valid credentials (see the "Create credentials section for instructions)
-TODO: _which languages and tools does a user need to develop on this connector? add them to the bullet list above_
+#### Building via Gradle
+From the Airbyte repository root, run:
+```
+./gradlew :airbyte-integrations:connectors:source-azure-blob-storage:build
+```
 
-### Iteration
-TODO: _which commands should a developer use to run this connector locally?_
+#### Create credentials
+**If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
+Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
 
-### Testing
-#### Unit Tests
-TODO: _how can a user run unit tests?_
-
-#### Integration Tests
-TODO: _how can a user run integration tests?_
-_this section is currently under construction -- please reach out to us on Slack for help with setting up Airbyte's standard test suite_
-
+**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
 
 ### Locally running the connector docker image
 
-First, make sure you build the latest Docker image:
+#### Build
+Build the connector image via Gradle:
 ```
-docker build . -t airbyte/azure-blob-storage:dev
+./gradlew :airbyte-integrations:connectors:source-azure-blob-storage:airbyteDocker
 ```
+When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
+the Dockerfile.
 
+#### Run
 Then run any of the connector commands as follows:
 ```
 docker run --rm airbyte/source-azure-blob-storage:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-azure-blob-storage:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-azure-blob-storage:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-azure-blob-storage:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-azure-blob-storage:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
-#### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/azure-blob-storage)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec.json` file. `secrets` is gitignored by default.
+## Testing
+We use `JUnit` for Java tests.
 
-**If you are an Airbyte core member**, copy the credentials from Lastpass under the secret name `source azure-blob-storage test creds`
-and place them into `secrets/config.json`.
+### Unit and Integration Tests
+Place unit tests under `src/test/...`
+Place integration tests in `src/test-integration/...`
+
+#### Acceptance Tests
+Airbyte has a standard test suite that all source connectors must pass. Implement the `TODO`s in
+`src/test-integration/java/io/airbyte/integrations/sources/AzureBlobStorageSourceAcceptanceTest.java`.
+
+### Using gradle to run tests
+All commands should be run from airbyte project root.
+To run unit tests:
+```
+./gradlew :airbyte-integrations:connectors:source-azure-blob-storage:unitTest
+```
+To run acceptance and custom integration tests:
+```
+./gradlew :airbyte-integrations:connectors:source-azure-blob-storage:integrationTest
+```
+
+## Dependency Management
+
+### Publishing a new version of the connector
+You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing unit and integration tests.
+1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
+1. Create a Pull Request.
+1. Pat yourself on the back for being an awesome contributor.
+1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.

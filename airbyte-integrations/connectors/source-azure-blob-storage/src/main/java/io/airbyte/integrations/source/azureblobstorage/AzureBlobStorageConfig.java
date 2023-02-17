@@ -15,13 +15,9 @@ public record AzureBlobStorageConfig(
 
     String containerName,
 
-    // prefix and tags are mutually exclusive
-
     String prefix,
 
-    String blobsTags,
-
-    String schema,
+    Long schemaInferenceLimit,
 
     FormatConfig formatConfig
 
@@ -31,7 +27,7 @@ public record AzureBlobStorageConfig(
 
         public enum Format {
 
-            JSON
+            JSONL
 
         }
 
@@ -39,14 +35,16 @@ public record AzureBlobStorageConfig(
 
     public static AzureBlobStorageConfig createAzureBlobStorageConfig(JsonNode jsonNode) {
         return new AzureBlobStorageConfig(
-            jsonNode.get("azure_blob_storage_endpoint").asText(),
+            jsonNode.has("azure_blob_storage_endpoint") ?
+                jsonNode.get("azure_blob_storage_endpoint").asText() : null,
             jsonNode.get("azure_blob_storage_account_name").asText(),
             jsonNode.get("azure_blob_storage_account_key").asText(),
             jsonNode.get("azure_blob_storage_container_name").asText(),
-            jsonNode.get("azure_blob_storage_blobs_prefix").asText(),
-            jsonNode.get("azure_blob_storage_blobs_tags").asText(),
-            jsonNode.get("azure_blob_storage_blobs_schema").asText(),
-            new FormatConfig(FormatConfig.Format.JSON)
+            jsonNode.has("azure_blob_storage_blobs_prefix") ?
+                jsonNode.get("azure_blob_storage_blobs_prefix").asText() : null,
+            jsonNode.has("azure_blob_storage_schema_inference_limit") ?
+                jsonNode.get("azure_blob_storage_schema_inference_limit").asLong() : null,
+            formatConfig(jsonNode)
         );
     }
 
@@ -55,12 +53,24 @@ public record AzureBlobStorageConfig(
             this.accountName(),
             this.accountKey());
 
-        return new BlobContainerClientBuilder()
-            .endpoint(this.endpoint())
+        var builder = new BlobContainerClientBuilder()
             .credential(credential)
-            .containerName(this.containerName())
-            .buildClient();
+            .containerName(this.containerName());
 
+        if (this.endpoint() != null) {
+            builder.endpoint(this.endpoint());
+        }
+
+        return builder.buildClient();
+    }
+
+    private static FormatConfig formatConfig(JsonNode config) {
+        JsonNode formatConfig = config.get("format");
+
+        FormatConfig.Format formatType = FormatConfig.Format
+            .valueOf(formatConfig.get("format_type").asText().toUpperCase());
+
+        return new FormatConfig(formatType);
     }
 
 }

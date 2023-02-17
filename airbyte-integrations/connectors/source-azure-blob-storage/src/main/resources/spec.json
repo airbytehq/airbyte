@@ -7,6 +7,7 @@
     "required": [
       "azure_blob_storage_account_name",
       "azure_blob_storage_account_key",
+      "azure_blob_storage_container_name",
       "format"
     ],
     "additionalProperties": false,
@@ -39,14 +40,6 @@
           "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
         ]
       },
-      "azure_blob_storage_blobs_tags": {
-        "title": "Azure Blob Storage blobs tags",
-        "description": "The Azure blob storage tag query to be applied",
-        "type": "string",
-        "examples": [
-          "\"Rank\" >= '010' AND \"Rank\" < '100'"
-        ]
-      },
       "azure_blob_storage_blobs_prefix": {
         "title": "Azure Blob Storage blobs prefix",
         "description": "The Azure blob storage prefix to be applied",
@@ -55,12 +48,12 @@
           "FolderA/FolderB/"
         ]
       },
-      "azure_blob_storage_blobs_schema": {
-        "title": "Azure Blob Storage blobs schema",
-        "description": "The Azure blob storage schema to be used",
-        "type": "string",
+      "azure_blob_storage_schema_inference_limit": {
+        "title": "Azure Blob Storage schema inference limit",
+        "description": "The Azure blob storage blobs to scan for inferring the schema, useful on large amounts of data with consistent structure",
+        "type": "integer",
         "examples": [
-          "{\"column_1\": \"number\", \"column_2\": \"string\", \"column_3\": \"array\", \"column_4\": \"object\", \"column_5\": \"boolean\"}"
+          "500"
         ]
       },
       "format": {
