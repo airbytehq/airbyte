@@ -89,6 +89,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   private PostgresSource source;
   private JsonNode config;
   private String fullReplicationSlot;
+  private final String cleanUserName = "airbyte_test";
+  private final String cleanUserPassword = "password";
 
   protected abstract String getPluginName();
 
@@ -113,7 +115,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
-    config = getConfig(dbName);
+    config = getConfig(dbName, container.getUsername(), container.getPassword());
     fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     dslContext = getDslContext(config);
     database = getDatabase(dslContext);
@@ -127,15 +129,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   }
 
-  private JsonNode getConfig(final String dbName) {
+  private JsonNode getConfig(final String dbName, final String userName, final String userPassword) {
     final JsonNode replicationMethod = getReplicationMethod(dbName);
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, userName)
+        .put(JdbcUtils.PASSWORD_KEY, userPassword)
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
@@ -170,114 +172,45 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   /**
-   * Modify user to add replication privilege.
+   * Creates a new user without privileges for the access tests
    */
-  private void grantReplicationPermissionUserLevel() {
-    executeQuery("ALTER USER " + container.getUsername() + " REPLICATION;");
+  private void createCleanUser() {
+    executeQuery("CREATE USER " + cleanUserName + " PASSWORD '" + cleanUserPassword + "';");
   }
 
   /**
-   * Grants access to replication assigning a role that has privileges to perform it.
+   * Grants privilege to a user (SUPERUSER, REPLICATION, ...)
    */
-  private void grantReplicationPermissionRoleLevel() {
-    String roleName = "replication_" + container.getContainerId();
-    executeQuery("CREATE ROLE " + roleName + " REPLICATION LOGIN;");
-    executeQuery("GRANT " + roleName + " TO " + container.getUsername() + ";");
-  }
-
-  /**
-   * Grants access to replication assigning a role that has access to other role that can to perform it.
-   */
-  private void grantReplicationPermissionSubRoleLevel() {
-    String roleName = "replication_" + container.getContainerId();
-    String roleNameNoReplication = "no_replication_" + container.getContainerId();
-    executeQuery("CREATE ROLE " + roleNameNoReplication + " LOGIN;");
-    executeQuery("CREATE ROLE " + roleName + " REPLICATION LOGIN;");
-    executeQuery("GRANT " + roleName + " TO " + roleNameNoReplication + ";");
-    executeQuery("GRANT " + roleNameNoReplication + " TO " + container.getUsername() + ";");
-  }
-
-  /**
-   * Remove REPLICATION privilege at user level (without using roles)
-   */
-  private void revokeReplicationPermissionUserLevel() {
-    executeQuery("ALTER USER " + container.getUsername() + " NOREPLICATION;");
-  }
-
-  /**
-   * Removes all the roles attached to the user (with or without replication access). We remove all to make sure there are no replication on a subrole (role granted to a role)
-   */
-  private void revokeReplicationPermissionRoleLevel() {
-    final DataSource dataSource = DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()));
-
-    JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
-
-    String userName = config.get("username").asText();
-    try {
-      List<JsonNode> roleNames = defaultJdbcDatabase.queryJsons(connection -> {
-        final String sql = """
-                  select rolname
-                  from pg_catalog.pg_roles pgr
-                     join pg_catalog.pg_auth_members pgam on pgam.roleid = pgr.oid
-                     join pg_catalog.pg_user pgu on pgam.member = pgu.usesysid
-                  where usename = ?;""";
-        final PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, userName);
-
-        return ps;
-      }, JdbcUtils.getDefaultSourceOperations()::rowToJson);
-      for (JsonNode row : roleNames
-      ) {
-        executeQuery("REVOKE " + row.get("rolname").asText() + " FROM " + container.getUsername() + ";");
-      }
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
-
+  private void grantUserPrivilege(final String userName, final String postgresPrivilege) {
+    executeQuery("ALTER USER " + userName + " " + postgresPrivilege + ";");
   }
 
   @Test
-  void testCheckReplicationPermissionAtUserLevel() throws Exception {
-    revokeReplicationPermissionUserLevel();
-    revokeReplicationPermissionRoleLevel();
-    grantReplicationPermissionUserLevel();
-    final AirbyteConnectionStatus status = source.check(config);
+  void testCheckReplicationAccessSuperUserPrivilege() throws Exception {
+    createCleanUser();
+    JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    grantUserPrivilege(cleanUserName, "SUPERUSER");
+    final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
 
   @Test
-  void testCheckReplicationPermissionAtRoleLevel() throws Exception {
-    revokeReplicationPermissionUserLevel();
-    revokeReplicationPermissionRoleLevel();
-    grantReplicationPermissionRoleLevel();
-    final AirbyteConnectionStatus status = source.check(config);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
-  }
-
-  @Test
-  void testCheckReplicationPermissionAtSubRoleLevel() throws Exception {
-    revokeReplicationPermissionUserLevel();
-    revokeReplicationPermissionRoleLevel();
-    grantReplicationPermissionSubRoleLevel();
-    final AirbyteConnectionStatus status = source.check(config);
+  void testCheckReplicationAccessReplicationPrivilege() throws Exception {
+    createCleanUser();
+    JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    grantUserPrivilege(cleanUserName, "REPLICATION");
+    final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
 
   @Test
   void testCheckWithoutReplicationPermission() throws Exception {
-    revokeReplicationPermissionUserLevel();
-    revokeReplicationPermissionRoleLevel();
-    final AirbyteConnectionStatus status = source.check(config);
+    createCleanUser();
+    JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-            String.format(PostgresSource.REPLICATION_PRIVILEGE_ERROR_MESSAGE, config.get("username").asText())),
+            String.format(PostgresSource.REPLICATION_PRIVILEGE_ERROR_MESSAGE, test_config.get("username").asText())),
         status.getMessage());
   }
 
