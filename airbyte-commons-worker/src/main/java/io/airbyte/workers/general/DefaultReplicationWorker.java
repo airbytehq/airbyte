@@ -127,7 +127,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(4);
+    this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.connectorConfigUpdater = connectorConfigUpdater;
@@ -233,8 +233,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               metricReporter,
               timeTracker,
               sourceConfig.getSourceId(),
-              fieldSelectionEnabled),
-              executors),
+              fieldSelectionEnabled)),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {

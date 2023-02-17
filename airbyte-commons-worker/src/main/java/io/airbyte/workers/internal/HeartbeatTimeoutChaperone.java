@@ -6,6 +6,7 @@ package io.airbyte.workers.internal;
 
 import static java.lang.Thread.sleep;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.featureflag.FeatureFlagClient;
 import io.airbyte.featureflag.ShouldFailSyncIfHeartbeatFailure;
 import io.airbyte.featureflag.Workspace;
@@ -14,10 +15,12 @@ import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +45,8 @@ public class HeartbeatTimeoutChaperone {
   private final Duration timeoutCheckDuration;
   private final FeatureFlagClient featureFlagClient;
   private final UUID workspaceId;
+  private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+  private final Optional<Runnable> customMonitor;
   private final UUID connectionId;
   private final MetricClient metricClient;
 
@@ -55,19 +60,37 @@ public class HeartbeatTimeoutChaperone {
                                    final MetricClient metricClient) {
     this.timeoutCheckDuration = timeoutCheckDuration;
 
-    LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
+    this.heartbeatMonitor = heartbeatMonitor;
+    this.featureFlagClient = featureFlagClient;
+    this.workspaceId = workspaceId;
+    this.connectionId = connectionId;
+    this.metricClient = metricClient;
+    this.customMonitor = Optional.empty();
+  }
+
+  @VisibleForTesting
+  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor,
+                                   final Duration timeoutCheckDuration,
+                                   final FeatureFlagClient featureFlagClient,
+                                   final UUID workspaceId,
+                                   final Optional<Runnable> customMonitor,
+                                   final UUID connectionId,
+                                   final MetricClient metricClient) {
+    this.timeoutCheckDuration = timeoutCheckDuration;
 
     this.heartbeatMonitor = heartbeatMonitor;
     this.featureFlagClient = featureFlagClient;
     this.workspaceId = workspaceId;
     this.connectionId = connectionId;
     this.metricClient = metricClient;
+    this.customMonitor = customMonitor;
   }
 
-  public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
+  public Runnable runWithHeartbeatThread(final Runnable runnable) {
+    LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
     return () -> {
       final CompletableFuture<Void> runnableFuture = CompletableFuture.runAsync(runnable, executorService);
-      final CompletableFuture<Void> heartbeatFuture = CompletableFuture.runAsync(this::monitor, executorService);
+      final CompletableFuture<Void> heartbeatFuture = CompletableFuture.runAsync(customMonitor.orElse(this::monitor), executorService);
 
       try {
         CompletableFuture.anyOf(runnableFuture, heartbeatFuture).get();
@@ -104,12 +127,13 @@ public class HeartbeatTimeoutChaperone {
   }
 
   @SuppressWarnings("BusyWait")
-  private void monitor() {
+  @VisibleForTesting
+  void monitor() {
     while (true) {
       try {
         sleep(timeoutCheckDuration.toMillis());
       } catch (final InterruptedException e) {
-        LOGGER.info("Heartbeat thread has been interrupted (this is expected; the heartbeat was healthy the whole time).");
+        LOGGER.info("Stopping the heartbeat monitor");
         return;
       }
 
