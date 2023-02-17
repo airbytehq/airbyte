@@ -58,6 +58,7 @@ interface Tag {
 interface TagInputProps {
   name: string;
   fieldValue: string[];
+  itemType?: string;
   onChange: (value: string[]) => void;
   error?: boolean;
   disabled?: boolean;
@@ -73,7 +74,7 @@ const generateStringFromTag = (tag: Tag): string => tag.label;
 
 const delimiters = [",", ";"];
 
-export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id, error }) => {
+export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id, error, itemType }) => {
   const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
 
   // input value is a tag draft
@@ -98,16 +99,24 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     onChange(updatedTags.map((tag) => generateStringFromTag(tag)));
   };
 
+  function normalizeInput(input: string) {
+    if (itemType !== "number" && itemType !== "integer") {
+      return input.trim();
+    }
+    const parsedNumber = itemType === "number" ? Number.parseFloat(input) : Number.parseInt(input);
+    if (isNaN(parsedNumber)) {
+      return "";
+    }
+    return String(parsedNumber);
+  }
+
   // handle when a user types OR pastes in the input
   const handleInputChange = (inputValue: string) => {
     setInputValue(inputValue);
 
     delimiters.forEach((delimiter) => {
       if (inputValue.includes(delimiter)) {
-        const newTagStrings = inputValue
-          .split(delimiter)
-          .map((tag) => tag.trim())
-          .filter(Boolean);
+        const newTagStrings = inputValue.split(delimiter).map(normalizeInput).filter(Boolean);
 
         inputValue.trim().length > 1 && onChange([...fieldValue, ...newTagStrings]);
         setInputValue("");
@@ -123,7 +132,8 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     switch (event.key) {
       case "Enter":
       case "Tab":
-        inputValue.trim().length >= 1 && onChange([...fieldValue, inputValue.trim()]);
+        const normalizedInput = normalizeInput(inputValue);
+        normalizedInput.length >= 1 && onChange([...fieldValue, normalizedInput]);
 
         event.preventDefault();
         setInputValue("");
