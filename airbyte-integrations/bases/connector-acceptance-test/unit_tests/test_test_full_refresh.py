@@ -16,12 +16,17 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from connector_acceptance_test.config import ConnectionTestConfig
+from connector_acceptance_test.config import ConnectionTestConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests.test_full_refresh import TestFullRefresh as _TestFullRefresh
 
 
 class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
-    ignored_fields: Dict[str, List[str]] = {"test_stream": ["ignore_me", "ignore_me_too"]}
+    ignored_fields: Dict[str, List[IgnoredFieldsConfiguration]] = {
+        "test_stream": [
+            IgnoredFieldsConfiguration(name="ignore_me", bypass_reason="test"),
+            IgnoredFieldsConfiguration(name="ignore_me_too", bypass_reason="test")
+        ]
+    }
 
 
 def record_message_from_record(records: List[Dict], emitted_at: int) -> List[AirbyteMessage]:

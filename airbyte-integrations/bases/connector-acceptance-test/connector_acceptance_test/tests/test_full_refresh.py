@@ -67,7 +67,7 @@ class TestFullRefresh(BaseTest):
             if pks_by_stream.get(stream):
                 serializer = partial(primary_keys_only, pks=pks_by_stream.get(stream))
             else:
-                serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
+                serializer = partial(make_hashable, exclude_fields=[field.name for field in ignored_fields.get(stream, [])])
             stream_records_1 = records_by_stream_1.get(stream)
             stream_records_2 = records_by_stream_2.get(stream)
             if not set(map(serializer, stream_records_1)).issubset(set(map(serializer, stream_records_2))):
