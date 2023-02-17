@@ -1,7 +1,6 @@
 import { Field, FieldProps, Form, Formik } from "formik";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 import * as yup from "yup";
 
 import { ConnectorIcon } from "components/common/ConnectorIcon";
@@ -9,6 +8,7 @@ import { ControlLabels } from "components/LabeledControl";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { DropDown } from "components/ui/DropDown";
+import { Text } from "components/ui/Text";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import { useSourceList } from "hooks/services/useSourceHook";
@@ -21,23 +21,6 @@ interface IProps {
   type: "source" | "destination";
   onSubmit: (id: string) => void;
 }
-
-const FormContent = styled(Form)`
-  padding: 22px 27px 23px 24px;
-`;
-
-const BottomBlock = styled.div`
-  text-align: right;
-  margin-top: 34px;
-`;
-
-const PaddingBlock = styled.div`
-  text-align: center;
-  padding: 18px 0 15px;
-  font-weight: 500;
-  font-size: 15px;
-  line-height: 18px;
-`;
 
 const existingEntityValidationSchema = yup.object().shape({
   entityId: yup.string().required("form.empty.error"),
@@ -94,7 +77,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
           }}
         >
           {({ isSubmitting, setFieldValue }) => (
-            <FormContent>
+            <Form className={styles.form}>
               <Field name="entityId">
                 {({ field }: FieldProps<string>) => (
                   <ControlLabels
@@ -113,23 +96,21 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
                   </ControlLabels>
                 )}
               </Field>
-              <BottomBlock>
-                <Button
-                  className={styles.submitButton}
-                  disabled={isSubmitting}
-                  type="submit"
-                  data-testid={`use-existing-${type}-button`}
-                >
-                  <FormattedMessage id={`connectionForm.${type}Use`} />
-                </Button>
-              </BottomBlock>
-            </FormContent>
+              <Button
+                className={styles.submitButton}
+                disabled={isSubmitting}
+                type="submit"
+                data-testid={`use-existing-${type}-button`}
+              >
+                <FormattedMessage id={`connectionForm.${type}Use`} />
+              </Button>
+            </Form>
           )}
         </Formik>
       </Card>
-      <PaddingBlock>
+      <Text centered size="lg">
         <FormattedMessage id="onboarding.or" />
-      </PaddingBlock>
+      </Text>
     </>
   );
 };
