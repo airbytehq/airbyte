@@ -24,11 +24,11 @@ class ReadTestConfigWithIgnoreFields(ConnectionTestConfig):
     ignored_fields: Dict[str, List[str]] = {"test_stream": ["ignore_me", "ignore_me_too"]}
 
 
-def record_message_from_record(records: List[Dict]) -> List[AirbyteMessage]:
+def record_message_from_record(records: List[Dict], emitted_at: int) -> List[AirbyteMessage]:
     return [
         AirbyteMessage(
             type=Type.RECORD,
-            record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111),
+            record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=emitted_at),
         )
         for record in records
     ]
@@ -115,7 +115,7 @@ def test_read_with_ignore_fields(mocker, schema, record, expected_record, fail_c
         sequence_of_docker_callread_results,
         list(reversed(sequence_of_docker_callread_results)),
     ):
-        docker_runner_mock.call_read.side_effect = [record_message_from_record([first]), record_message_from_record([second])]
+        docker_runner_mock.call_read.side_effect = [record_message_from_record([first], emitted_at=111), record_message_from_record([second], emitted_at=112)]
 
         t = _TestFullRefresh()
         with fail_context:
@@ -208,8 +208,8 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
     docker_runner_mock = mocker.MagicMock()
 
     docker_runner_mock.call_read.side_effect = [
-        record_message_from_record(first_read_records),
-        record_message_from_record(second_read_records),
+        record_message_from_record(first_read_records, emitted_at=111),
+        record_message_from_record(second_read_records, emitted_at=112),
     ]
 
     t = _TestFullRefresh()
@@ -220,4 +220,70 @@ def test_recordset_comparison(mocker, primary_key, first_read_records, second_re
             configured_catalog=catalog,
             docker_runner=docker_runner_mock,
             detailed_logger=mocker.MagicMock(),
+        )
+
+
+@pytest.mark.parametrize(
+    "schema, records_1, records_2, expectation",
+    [
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+            ],
+            does_not_raise()
+        ),
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=112)),
+            ],
+            does_not_raise()
+        ),
+        (
+            {"type": "object"},
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=111)),
+            ],
+            [
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 23}, emitted_at=111)),
+                AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data={"aa": 24}, emitted_at=112)),
+            ],
+            pytest.raises(AssertionError, match="emitted_at should increase on subsequent runs")
+        ),
+    ],
+)
+def test_emitted_at_increase_on_subsequent_runs(mocker, schema, records_1, records_2, expectation):
+    configured_catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream.parse_obj({"name": "test_stream", "json_schema": schema, "supported_sync_modes": ["full_refresh"]}),
+                sync_mode="full_refresh",
+                destination_sync_mode="overwrite",
+            )
+        ]
+    )
+    docker_runner_mock = mocker.MagicMock()
+    docker_runner_mock.call_read.side_effect = [records_1, records_2]
+    input_config = ReadTestConfigWithIgnoreFields()
+
+    t = _TestFullRefresh()
+    with expectation:
+        t.test_sequential_reads(
+            inputs=input_config,
+            connector_config=mocker.MagicMock(),
+            configured_catalog=configured_catalog,
+            docker_runner=docker_runner_mock,
+            detailed_logger=docker_runner_mock,
         )
