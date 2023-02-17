@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object", "string"],
+  "type": ["null", "object"],
   "properties": {
     "nickname": {
       "type": ["null", "string"]
