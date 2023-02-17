@@ -78,13 +78,14 @@ jobs:
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
-              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
               - 'airbyte-commons-worker/**'
             db:
               - 'airbyte-db/**'
             frontend:
               - 'airbyte-api/src/main/openapi/config.yaml'
+              - 'airbyte-connector-builder-server/CDK_VERSION'
+              - 'airbyte-connector-builder-server/src/main/openapi/openapi.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
 
@@ -124,7 +125,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -191,10 +191,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -230,7 +228,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
@@ -345,10 +342,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -378,10 +373,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -416,7 +409,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - name: Set up CI Gradle Properties
         run: |
@@ -471,10 +463,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -504,10 +494,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -540,17 +528,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
-
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
-          sudo rm -f /var/lib/dpkg/lock
-          sudo rm -f /var/lib/dpkg/lock-frontend
 
       - name: Set up CI Gradle Properties
         run: |
@@ -600,10 +577,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -633,10 +608,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -668,21 +641,10 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - uses: actions/setup-node@v3
         with:
           node-version: "lts/*"
-
-      - name: Delete default old docker and replace it with a new one
-        shell: bash
-        run: |
-          sudo rm /var/lib/dpkg/lock
-          sudo rm /var/lib/dpkg/lock-frontend
-          sudo apt-get remove docker.io || sudo apt-get remove docker
-          curl -fsSL https://get.docker.com | bash -
-          sudo rm -f /var/lib/dpkg/lock
-          sudo rm -f /var/lib/dpkg/lock-frontend
 
       - name: Set up CI Gradle Properties
         run: |
@@ -727,7 +689,6 @@ jobs:
             ${{ github.workspace }}/airbyte-bootloader/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-cli/build/reports/jacoco/test/jacocoTestReport.xml,
-            ${{ github.workspace }}/airbyte-commons-docker/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-protocol/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-temporal/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-commons-worker/build/reports/jacoco/test/jacocoTestReport.xml,
@@ -743,7 +704,6 @@ jobs:
             ${{ github.workspace }}/airbyte-notification/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-oauth/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-persistence/job-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
-            ${{ github.workspace }}/airbyte-protocol/protocol-models/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-server/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
@@ -753,21 +713,6 @@ jobs:
           title: Airbyte Code Coverage
           update-comment: true
           debug-mode: false
-
-      - name: Integration test
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Slow integration test
-        if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew slowIntegrationTest
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
 
       - name: Test if Seed spec is updated
         uses: Wandalen/wretry.action@master
@@ -803,7 +748,6 @@ jobs:
         if: always()
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - name: Publish Platform Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -879,10 +823,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -911,10 +853,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -949,7 +889,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - name: Install unzip
         shell: bash
@@ -1026,7 +965,6 @@ jobs:
         if: always()
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - name: Publish Kube Test Results
         id: kube-results
@@ -1107,10 +1045,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:
@@ -1139,10 +1075,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -1157,7 +1091,7 @@ jobs:
   helm-acceptance-test:
     name: "Platform: Acceptance Tests (Helm)"
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: [start-helm-acceptance-test-runner] # required to start the main job when the runner is ready
+    needs: [ start-helm-acceptance-test-runner ] # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-helm-acceptance-test-runner.outputs.label }} # run the job on the newly created runner
     # this is the label of the runner
     environment: more-secrets
@@ -1197,7 +1131,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-          token: ${{ env.PAT }}
 
       - uses: actions/setup-java@v1
         with:
@@ -1281,7 +1214,7 @@ jobs:
           AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-        timeout-minutes: 20
+        timeout-minutes: 40
         uses: Wandalen/wretry.action@master
         with:
           command: CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh
@@ -1342,10 +1275,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:

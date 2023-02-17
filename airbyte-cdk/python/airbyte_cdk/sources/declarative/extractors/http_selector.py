@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
@@ -8,11 +8,10 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class HttpSelector(JsonSchemaMixin):
+class HttpSelector:
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.

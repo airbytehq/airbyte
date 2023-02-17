@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.notification.SlackNotificationClient;
+import io.airbyte.config.SlackNotificationConfiguration;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface NotifySchemaChangeActivity {
 
   @ActivityMethod
-  public boolean notifySchemaChange(SlackNotificationClient notificationClient, UUID connectionId, boolean isBreaking)
+  public boolean notifySchemaChange(UUID connectionId, boolean isBreaking, SlackNotificationConfiguration config, String url)
       throws IOException, InterruptedException;
 
 }

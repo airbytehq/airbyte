@@ -68,6 +68,32 @@ class ConfigFileClientTest {
     }
 
     @Test
+    fun `verify missing file returns default flag state`() {
+        val client: FeatureFlagClient = ConfigFileClient(Path.of("src", "test", "resources", "feature-flags-dne-missing.yml"))
+        val defaultFalse = Temporary(key = "default-false")
+        val defaultTrue = Temporary(key = "default-true", default = true)
+
+        val ctx = Workspace("workspace")
+        with(client) {
+            assertTrue { enabled(defaultTrue, ctx) }
+            assertFalse { enabled(defaultFalse, ctx) }
+        }
+    }
+
+    @Test
+    fun `verify directory instead of file returns default flag state`() {
+        val client: FeatureFlagClient = ConfigFileClient(Path.of("src", "test", "resources"))
+        val defaultFalse = Temporary(key = "default-false")
+        val defaultTrue = Temporary(key = "default-true", default = true)
+
+        val ctx = Workspace("workspace")
+        with(client) {
+            assertTrue { enabled(defaultTrue, ctx) }
+            assertFalse { enabled(defaultFalse, ctx) }
+        }
+    }
+
+    @Test
     @Ignore
     fun `verify config-file reload capabilities`() {
         val contents0 = """flags:

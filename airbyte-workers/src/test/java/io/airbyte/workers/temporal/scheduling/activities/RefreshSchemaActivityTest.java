@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -71,7 +71,7 @@ class RefreshSchemaActivityTest {
     UUID connectionId = UUID.randomUUID();
     refreshSchemaActivity.refreshSchema(sourceId, connectionId);
     SourceDiscoverSchemaRequestBody requestBody =
-        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true).connectionId(connectionId);
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true).connectionId(connectionId).notifySchemaChange(true);
     verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);
   }
 

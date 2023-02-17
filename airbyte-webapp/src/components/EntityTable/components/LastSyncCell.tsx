@@ -7,16 +7,16 @@ import { Text } from "components/ui/Text";
 import styles from "./LastSyncCell.module.scss";
 
 interface LastSyncCellProps {
-  timeInSecond: number;
+  timeInSeconds?: number | null;
   enabled?: boolean;
 }
 
-export const LastSyncCell: React.FC<LastSyncCellProps> = ({ timeInSecond, enabled }) => {
+export const LastSyncCell: React.FC<LastSyncCellProps> = ({ timeInSeconds, enabled }) => {
   return (
     <>
-      {timeInSecond ? (
+      {timeInSeconds ? (
         <Text className={classNames(styles.text, { [styles.enabled]: enabled })} size="sm">
-          <FormattedRelativeTime value={timeInSecond - Date.now() / 1000} updateIntervalInSeconds={60} />
+          <FormattedRelativeTime value={timeInSeconds - Date.now() / 1000} updateIntervalInSeconds={60} />
         </Text>
       ) : null}
     </>
