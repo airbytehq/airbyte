@@ -1,6 +1,10 @@
 name: Release Open Source Airbyte
 concurrency: release-airbyte
 
+
+# TODO: If we continue to use this action from here it needs to be updated to point to airbyte-platform
+# where appropriate
+
 on:
   workflow_dispatch:
     inputs:
