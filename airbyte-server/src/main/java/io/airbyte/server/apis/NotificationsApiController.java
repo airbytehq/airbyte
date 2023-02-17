@@ -13,6 +13,7 @@ import io.airbyte.api.model.generated.NotificationRead.StatusEnum;
 import io.airbyte.commons.server.converters.NotificationConverter;
 import io.airbyte.commons.server.errors.IdNotFoundKnownException;
 import io.airbyte.notification.NotificationClient;
+import io.micronaut.context.annotation.Requires;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
@@ -20,13 +21,15 @@ import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import java.io.IOException;
 
-@Controller("/api/v1/notifications")
+@Controller("/api/v1/notifications/try")
+@Requires(property = "airbyte.deployment-mode",
+          value = "OSS")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 public class NotificationsApiController implements NotificationsApi {
 
   public NotificationsApiController() {}
 
-  @Post("/try")
+  @Post
   @Secured({AUTHENTICATED_USER})
   @Override
   public NotificationRead tryNotificationConfig(@Body final Notification notification) {
