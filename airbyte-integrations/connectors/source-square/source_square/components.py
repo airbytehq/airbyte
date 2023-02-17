@@ -13,11 +13,10 @@ from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
 from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class AuthenticatorSquare(DeclarativeAuthenticator, JsonSchemaMixin):
+class AuthenticatorSquare(DeclarativeAuthenticator):
     config: Mapping[str, Any]
     bearer: BearerAuthenticator
     oauth: DeclarativeOauth2Authenticator

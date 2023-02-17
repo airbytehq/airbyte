@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-set -e
+# Ideally we'd like to have set -e, but when set -e is used, the `python -m pytest unit_tests` command can return a
+# non-zero exit code and end the whole script prematurely
+# set -e
 
 [ -z "$ROOT_DIR" ] && exit 1
 

@@ -12,11 +12,10 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config, Record
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DpathStringExtractor(RecordExtractor, JsonSchemaMixin):
+class DpathStringExtractor(RecordExtractor):
     """
     Makes it easy to extract records from nested and complex structures (nested lists, dicts, mixed structures) by specifying dpath string.
     Example: For the following structure `S` we want to extract and combine all the "expected_records" list values all together in one list.
