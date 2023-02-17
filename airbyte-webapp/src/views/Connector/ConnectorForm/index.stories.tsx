@@ -28,7 +28,6 @@ export default {
     formValues: {
       serviceType: TempConnector.sourceDefinitionId,
     },
-    // onSubmit: async (v) => console.log(v),
   },
 } as StoryObj<typeof ConnectorForm>;
 
@@ -53,6 +52,7 @@ const Template: StoryObj<typeof ConnectorForm> = {
 export const Common: StoryObj<typeof ConnectorForm> = {
   ...Template,
   args: {
+    formType: "destination",
     selectedConnectorDefinitionSpecification: {
       ...TempConnector,
       destinationDefinitionId: "some-id",
@@ -328,6 +328,7 @@ export const Preview: StoryObj<React.FC<React.ComponentProps<typeof ConnectorFor
     );
   },
   args: {
+    formType: "destination",
     connectionSpecification: json,
   },
   parameters: {
