@@ -61,6 +61,8 @@ import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
+import io.airbyte.workers.internal.exception.DestinationException;
+import io.airbyte.workers.internal.exception.SourceException;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
 import java.io.IOException;
@@ -699,6 +701,21 @@ class DefaultReplicationWorkerTest {
     assertEquals(1, actual.getFailures().size());
     assertEquals(FailureOrigin.SOURCE, actual.getFailures().get(0).getFailureOrigin());
     assertEquals(FailureReason.FailureType.HEARTBEAT_TIMEOUT, actual.getFailures().get(0).getFailureType());
+  }
+
+  @Test
+  void testGetFailureReason() {
+    final long jobId = 1;
+    final int attempt = 1;
+    FailureReason failureReason = DefaultReplicationWorker.getFailureReason(new SourceException(""), jobId, attempt);
+    assertEquals(failureReason.getFailureOrigin(), FailureOrigin.SOURCE);
+    failureReason = DefaultReplicationWorker.getFailureReason(new DestinationException(""), jobId, attempt);
+    assertEquals(failureReason.getFailureOrigin(), FailureOrigin.DESTINATION);
+    failureReason = DefaultReplicationWorker.getFailureReason(new HeartbeatTimeoutChaperone.HeartbeatTimeoutException(""), jobId, attempt);
+    assertEquals(failureReason.getFailureOrigin(), FailureOrigin.SOURCE);
+    assertEquals(failureReason.getFailureType(), FailureReason.FailureType.HEARTBEAT_TIMEOUT);
+    failureReason = DefaultReplicationWorker.getFailureReason(new RuntimeException(), jobId, attempt);
+    assertEquals(failureReason.getFailureOrigin(), FailureOrigin.REPLICATION);
   }
 
 }

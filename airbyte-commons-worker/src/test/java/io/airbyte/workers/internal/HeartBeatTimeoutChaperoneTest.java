@@ -20,6 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class HeartBeatTimeoutChaperoneTest {
@@ -32,20 +33,23 @@ class HeartBeatTimeoutChaperoneTest {
 
   @Test
   void testFailHeartbeat() {
+    when(featureFlagClient.enabled(eq(ShouldFailSyncIfHeartbeatFailure.INSTANCE), any())).thenReturn(true);
     final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(
         heartbeatMonitor,
         timeoutCheckDuration,
         featureFlagClient,
         workspaceId,
         Optional.of(() -> {}));
-    assertThrows(HeartbeatTimeoutChaperone.HeartbeatTimeoutException.class,
-        () -> heartbeatTimeoutChaperone.runWithHeartbeatThread(() -> {
-          try {
-            Thread.sleep(Long.MAX_VALUE);
-          } catch (final InterruptedException e) {
-            throw new RuntimeException(e);
-          }
-        }).run());
+
+    Assertions.assertThatThrownBy(() -> heartbeatTimeoutChaperone.runWithHeartbeatThread(CompletableFuture.runAsync(() -> {
+      try {
+        Thread.sleep(Long.MAX_VALUE);
+      } catch (final InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    })).get())
+        .hasCauseInstanceOf(HeartbeatTimeoutChaperone.HeartbeatTimeoutException.class);
+
   }
 
   @Test
@@ -62,7 +66,25 @@ class HeartBeatTimeoutChaperoneTest {
             throw new RuntimeException(e);
           }
         }));
-    assertDoesNotThrow(() -> heartbeatTimeoutChaperone.runWithHeartbeatThread(() -> {}).run());
+    assertDoesNotThrow(() -> heartbeatTimeoutChaperone.runWithHeartbeatThread(CompletableFuture.runAsync(() -> {})).get());
+  }
+
+  @Test
+  void testNotFailingHeartbeatIfFalseFlag() {
+    when(featureFlagClient.enabled(eq(ShouldFailSyncIfHeartbeatFailure.INSTANCE), any())).thenReturn(false);
+    final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(
+        heartbeatMonitor,
+        timeoutCheckDuration,
+        featureFlagClient,
+        workspaceId,
+        Optional.of(() -> {}));
+    assertDoesNotThrow(() -> heartbeatTimeoutChaperone.runWithHeartbeatThread(CompletableFuture.runAsync(() -> {
+      try {
+        Thread.sleep(1000);
+      } catch (final InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    })).get());
   }
 
   @Test
@@ -72,20 +94,18 @@ class HeartBeatTimeoutChaperoneTest {
         timeoutCheckDuration,
         featureFlagClient,
         workspaceId);
-    when(featureFlagClient.enabled(eq(ShouldFailSyncIfHeartbeatFailure.INSTANCE), any())).thenReturn(true);
     when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(false));
     assertDoesNotThrow(() -> CompletableFuture.runAsync(() -> heartbeatTimeoutChaperone.monitor()).get(1000, TimeUnit.MILLISECONDS));
   }
 
   @Test
-  void testMonitorDontFailIfNoFlag() {
+  void testMonitorDontFailIfDontStopBeating() {
     final HeartbeatTimeoutChaperone heartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(
         heartbeatMonitor,
         timeoutCheckDuration,
         featureFlagClient,
         workspaceId);
-    when(featureFlagClient.enabled(eq(ShouldFailSyncIfHeartbeatFailure.INSTANCE), any())).thenReturn(false);
-    when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(true), Optional.of(false));
+    when(heartbeatMonitor.isBeating()).thenReturn(Optional.of(true), Optional.of(true));
     assertThrows(TimeoutException.class,
         () -> CompletableFuture.runAsync(() -> heartbeatTimeoutChaperone.monitor()).get(1000, TimeUnit.MILLISECONDS));
   }

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
@@ -219,8 +220,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           });
 
-      final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-          srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(readFromSrcAndWriteToDstRunnable(
+      final CompletableFuture readSrcAndWriteDstThread =
+          srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(CompletableFuture.runAsync(readFromSrcAndWriteToDstRunnable(
               source,
               destination,
               sourceConfig.getCatalog(),
@@ -233,22 +234,13 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               metricReporter,
               timeTracker,
               sourceConfig.getSourceId(),
-              fieldSelectionEnabled)),
-          executors)
-          .whenComplete((msg, ex) -> {
-            if (ex != null) {
-              ApmTraceUtils.addExceptionToTrace(ex);
-              if (ex.getCause() instanceof SourceException) {
-                replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
-              } else if (ex.getCause() instanceof DestinationException) {
-                replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
-              } else if (ex.getCause() instanceof HeartbeatTimeoutChaperone.HeartbeatTimeoutException) {
-                replicationRunnableFailureRef.set(FailureHelper.sourceHeartbeatFailure(ex, Long.valueOf(jobId), attempt));
-              } else {
-                replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
-              }
-            }
-          });
+              fieldSelectionEnabled), executors))
+              .whenComplete((msg, ex) -> {
+                if (ex != null) {
+                  ApmTraceUtils.addExceptionToTrace((Throwable) ex);
+                  replicationRunnableFailureRef.set(getFailureReason(((Throwable) ex).getCause(), Long.valueOf(jobId), attempt));
+                }
+              });
 
       LOGGER.info("Waiting for source and destination threads to complete.");
       // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
@@ -265,6 +257,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.error("Sync worker failed.", e);
     } finally {
       executors.shutdownNow();
+    }
+  }
+
+  @VisibleForTesting
+  static FailureReason getFailureReason(final Throwable ex, final long jobId, final int attempt) {
+    if (ex instanceof SourceException) {
+      return FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt);
+    } else if (ex instanceof DestinationException) {
+      return FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt);
+    } else if (ex instanceof HeartbeatTimeoutChaperone.HeartbeatTimeoutException) {
+      return FailureHelper.sourceHeartbeatFailure(ex, Long.valueOf(jobId), attempt);
+    } else {
+      return FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt);
     }
   }
 
