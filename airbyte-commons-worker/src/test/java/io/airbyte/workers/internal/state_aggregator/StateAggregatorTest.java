@@ -18,8 +18,12 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.CollectionAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -148,6 +152,109 @@ class StateAggregatorTest {
         .withState(Jsons.jsonNode(List.of(state3NoData, state1NoData))));
   }
 
+  @Test
+  void testIngestFromAnotherStateAggregatorSingleState() {
+    final AirbyteStateMessage stateG1 = getGlobalMessage(1);
+    stateAggregator.ingest(stateG1);
+
+    final AirbyteStateMessage stateG2 = getGlobalMessage(2);
+    final StateAggregator otherStateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    otherStateAggregator.ingest(stateG2);
+
+    stateAggregator.ingest(otherStateAggregator);
+    CollectionAssert.assertThatCollection(getStateMessages(stateAggregator.getAggregated()))
+        .containsExactlyInAnyOrder(stateG2);
+  }
+
+  @Test
+  void testIngestFromAnotherStateAggregatorStreamStates() {
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    final AirbyteStateMessage stateA1 = getStreamMessage("a", 1);
+    final AirbyteStateMessage stateB2 = getStreamMessage("b", 2);
+    stateAggregator.ingest(stateA1);
+    stateAggregator.ingest(stateB2);
+
+    final AirbyteStateMessage stateA2 = getStreamMessage("a", 3);
+    final AirbyteStateMessage stateC1 = getStreamMessage("c", 1);
+    final StateAggregator otherStateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    otherStateAggregator.ingest(stateA2);
+    otherStateAggregator.ingest(stateC1);
+
+    stateAggregator.ingest(otherStateAggregator);
+    CollectionAssert.assertThatCollection(getStateMessages(stateAggregator.getAggregated()))
+        .containsExactlyInAnyOrder(stateA2, stateB2, stateC1);
+  }
+
+  @Test
+  void testIngestFromAnotherStateAggregatorChecksStateType() {
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    final AirbyteStateMessage stateG1 = getGlobalMessage(1);
+    stateAggregator.ingest(stateG1);
+
+    final AirbyteStateMessage stateA2 = getStreamMessage("a", 3);
+    final StateAggregator otherStateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    otherStateAggregator.ingest(stateA2);
+
+    Assertions.assertThatThrownBy(() -> {
+      try {
+        stateAggregator.ingest(otherStateAggregator);
+      } catch (Exception e) {
+        System.out.println(e);
+        throw e;
+      }
+    });
+
+    Assertions.assertThatThrownBy(() -> {
+      otherStateAggregator.ingest(stateAggregator);
+    });
+  }
+
+  @Test
+  void testIsEmptyForSingleStates() {
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    Assertions.assertThat(stateAggregator.isEmpty()).isTrue();
+
+    final AirbyteStateMessage globalState = getGlobalMessage(1);
+    stateAggregator.ingest(globalState);
+    Assertions.assertThat(stateAggregator.isEmpty()).isFalse();
+  }
+
+  @Test
+  void testIsEmptyForStreamStates() {
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    Assertions.assertThat(stateAggregator.isEmpty()).isTrue();
+
+    final AirbyteStateMessage streamState = getStreamMessage("woot", 1);
+    stateAggregator.ingest(streamState);
+    Assertions.assertThat(stateAggregator.isEmpty()).isFalse();
+  }
+
+  @Test
+  void testIsEmptyWhenIngestFromAggregatorSingle() {
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    Assertions.assertThat(stateAggregator.isEmpty()).isTrue();
+
+    final AirbyteStateMessage globalState = getGlobalMessage(1);
+    final StateAggregator otherAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    otherAggregator.ingest(globalState);
+
+    stateAggregator.ingest(otherAggregator);
+    Assertions.assertThat(stateAggregator.isEmpty()).isFalse();
+  }
+
+  @Test
+  void testIsEmptyWhenIngestFromAggregatorStream() {
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    Assertions.assertThat(stateAggregator.isEmpty()).isTrue();
+
+    final AirbyteStateMessage streamState = getStreamMessage("woot", 1);
+    final StateAggregator otherAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
+    otherAggregator.ingest(streamState);
+
+    stateAggregator.ingest(otherAggregator);
+    Assertions.assertThat(stateAggregator.isEmpty()).isFalse();
+  }
+
   private AirbyteStateMessage getNullMessage(final int stateValue) {
     return new AirbyteStateMessage().withData(Jsons.jsonNode(stateValue));
   }
@@ -190,6 +297,12 @@ class StateAggregatorTest {
     }
 
     return new AirbyteStateMessage().withType(stateType);
+  }
+
+  private List<AirbyteStateMessage> getStateMessages(final State state) {
+    return StreamSupport.stream(Spliterators.spliteratorUnknownSize(state.getState().elements(), Spliterator.ORDERED), false)
+        .map(s -> Jsons.object(s, AirbyteStateMessage.class))
+        .toList();
   }
 
 }

@@ -11,6 +11,10 @@ public interface StateAggregator {
 
   void ingest(AirbyteStateMessage stateMessage);
 
+  void ingest(StateAggregator stateAggregator);
+
   State getAggregated();
+
+  boolean isEmpty();
 
 }

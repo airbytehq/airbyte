@@ -23,6 +23,16 @@ class SingleStateAggregator implements StateAggregator {
     state = stateMessage;
   }
 
+  @Override
+  public void ingest(final StateAggregator stateAggregator) {
+    if (stateAggregator instanceof SingleStateAggregator) {
+      ingest(((SingleStateAggregator) stateAggregator).state);
+    } else {
+      throw new IllegalArgumentException(
+          "Got an incompatible StateAggregator: " + stateAggregator.getClass().getName() + ", expected SingleStateAggregator");
+    }
+  }
+
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public State getAggregated() {
@@ -39,6 +49,11 @@ class SingleStateAggregator implements StateAggregator {
       return new State()
           .withState(Jsons.jsonNode(List.of(state)));
     }
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return state == null;
   }
 
 }

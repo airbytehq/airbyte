@@ -28,8 +28,43 @@ public class DefaultStateAggregator implements StateAggregator {
   }
 
   @Override
+  public void ingest(final StateAggregator stateAggregator) {
+    // We fail to ingest if the state aggregators have different types
+    // If this.stateType is null, we copy the content from the other state
+    if (stateAggregator instanceof DefaultStateAggregator &&
+        (stateType == null ||
+            ((DefaultStateAggregator) stateAggregator).stateType == null ||
+            stateType == ((DefaultStateAggregator) stateAggregator).stateType)) {
+      singleStateAggregator.ingest(((DefaultStateAggregator) stateAggregator).singleStateAggregator);
+      streamStateAggregator.ingest(((DefaultStateAggregator) stateAggregator).streamStateAggregator);
+
+      // Since we allowed stateType to be null, make sure it is set to a value correct value
+      if (stateType == null) {
+        stateType = ((DefaultStateAggregator) stateAggregator).stateType;
+      }
+    } else {
+      throw new IllegalArgumentException(
+          "Got an incompatible StateAggregator: " + prettyPrintStateAggregator(stateAggregator) +
+              ", expected " + prettyPrintStateAggregator(this));
+    }
+  }
+
+  private String prettyPrintStateAggregator(final StateAggregator aggregator) {
+    if (aggregator instanceof DefaultStateAggregator) {
+      return "DefaultStateAggregator<" + ((DefaultStateAggregator) aggregator).stateType + ">";
+    } else {
+      return aggregator.getClass().getName();
+    }
+  }
+
+  @Override
   public State getAggregated() {
     return getStateAggregator().getAggregated();
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return stateType == null || getStateAggregator().isEmpty();
   }
 
   /**

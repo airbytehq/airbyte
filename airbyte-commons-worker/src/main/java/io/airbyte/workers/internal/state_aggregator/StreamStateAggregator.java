@@ -31,6 +31,18 @@ class StreamStateAggregator implements StateAggregator {
     aggregatedState.put(stateMessage.getStream().getStreamDescriptor(), stateMessage);
   }
 
+  @Override
+  public void ingest(final StateAggregator stateAggregator) {
+    if (stateAggregator instanceof StreamStateAggregator) {
+      for (final var message : ((StreamStateAggregator) stateAggregator).aggregatedState.values()) {
+        ingest(message);
+      }
+    } else {
+      throw new IllegalArgumentException(
+          "Got an incompatible StateAggregator: " + stateAggregator.getClass().getName() + ", expected StreamStateAggregator");
+    }
+  }
+
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public State getAggregated() {
@@ -38,6 +50,11 @@ class StreamStateAggregator implements StateAggregator {
     return new State()
         .withState(
             Jsons.jsonNode(aggregatedState.values()));
+  }
+
+  @Override
+  public boolean isEmpty() {
+    return aggregatedState.isEmpty();
   }
 
 }
