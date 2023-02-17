@@ -19,7 +19,17 @@ class AirbytePythonDockerPlugin implements Plugin<Project> {
 
             // This doesn't take into account dependencies if you don't have a lock file. We strongly recommend using a
             // lock file in other to ensure that given no file changes and two "pip install", you have the same output
-            inputs.dir project.projectDir.getAbsolutePath()
+            inputs.dir project.fileTree(project.projectDir.getAbsolutePath()).exclude([
+              "build",
+              "dist",
+              "**/*.pyc",
+              "**/*.pyo",
+              "**/*.pyd",
+              "**/__pycache__",
+              "**/.pytest_cache",
+              "**/.venv",
+              "**/*.egg-info",
+            ])
             outputs.cacheIf { true }
             outputs.upToDateWhen { true }
 
