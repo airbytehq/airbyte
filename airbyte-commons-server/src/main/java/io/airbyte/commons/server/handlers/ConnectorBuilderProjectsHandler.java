@@ -8,15 +8,16 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectDetails;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectRead;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectReadList;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
+import io.airbyte.api.model.generated.DeclarativeManifest;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
@@ -49,11 +50,13 @@ public class ConnectorBuilderProjectsHandler {
   private ConnectorBuilderProject builderProjectFromUpdate(final ExistingConnectorBuilderProjectWithWorkspaceId projectCreate) {
     return new ConnectorBuilderProject().withBuilderProjectId(projectCreate.getBuilderProjectId()).withWorkspaceId(projectCreate.getWorkspaceId())
         .withName(projectCreate.getBuilderProject().getName())
-        .withManifestDraft(new ObjectMapper().valueToTree(projectCreate.getBuilderProject().getDraftManifest()));
+        .withManifestDraft(projectCreate.getBuilderProject().getDraftManifest() == null ? null
+            : new ObjectMapper().valueToTree(projectCreate.getBuilderProject().getDraftManifest()));
   }
 
   private static ConnectorBuilderProjectDetails builderProjectToDetails(final ConnectorBuilderProject project) {
-    return new ConnectorBuilderProjectDetails().name(project.getName()).builderProjectId(project.getBuilderProjectId()).hasDraft(project.getHasDraft()).draftManifest(project.getManifestDraft() == null ? null : new ObjectMapper().convertValue(project.getManifestDraft(), new TypeReference<Map<String, Object>>() {}));
+    return new ConnectorBuilderProjectDetails().name(project.getName()).builderProjectId(project.getBuilderProjectId())
+        .hasDraft(project.getHasDraft());
   }
 
   private ConnectorBuilderProject builderProjectFromCreate(final ConnectorBuilderProjectWithWorkspaceId projectCreate) {
@@ -86,7 +89,7 @@ public class ConnectorBuilderProjectsHandler {
   }
 
   public void updateConnectorBuilderProject(final ExistingConnectorBuilderProjectWithWorkspaceId projectUpdate)
-      throws IOException, ConfigNotFoundException, JsonValidationException {
+      throws IOException, ConfigNotFoundException {
     validateWorkspace(projectUpdate.getBuilderProjectId(), projectUpdate.getWorkspaceId());
 
     final ConnectorBuilderProject project = builderProjectFromUpdate(projectUpdate);
@@ -94,9 +97,23 @@ public class ConnectorBuilderProjectsHandler {
   }
 
   public void deleteConnectorBuilderProject(final ConnectorBuilderProjectIdWithWorkspaceId projectDelete)
-      throws IOException, ConfigNotFoundException, JsonValidationException {
+      throws IOException, ConfigNotFoundException {
     validateWorkspace(projectDelete.getBuilderProjectId(), projectDelete.getWorkspaceId());
     configRepository.deleteBuilderProject(projectDelete.getBuilderProjectId());
+  }
+
+  public ConnectorBuilderProjectRead getBuilderProjectWithManifest(final ConnectorBuilderProjectIdWithWorkspaceId request)
+      throws IOException, ConfigNotFoundException {
+    validateWorkspace(request.getBuilderProjectId(), request.getWorkspaceId());
+    final ConnectorBuilderProject project = configRepository.getConnectorBuilderProject(request.getBuilderProjectId(), true);
+    final ConnectorBuilderProjectRead response = new ConnectorBuilderProjectRead().builderProject(builderProjectToDetails(project));
+    if (project.getManifestDraft() != null) {
+      final DeclarativeManifest manifest = new DeclarativeManifest()
+          .manifest(new ObjectMapper().convertValue(project.getManifestDraft(), new TypeReference<Map<String, Object>>() {})).isDraft(true);
+      response.setDeclarativeManifest(manifest);
+    }
+
+    return response;
   }
 
   public ConnectorBuilderProjectReadList listConnectorBuilderProject(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -104,7 +121,7 @@ public class ConnectorBuilderProjectsHandler {
 
     final Stream<ConnectorBuilderProject> projects = configRepository.getConnectorBuilderProjectsByWorkspace(workspaceIdRequestBody.getWorkspaceId());
 
-    return new ConnectorBuilderProjectReadList().sources(projects.map(ConnectorBuilderProjectsHandler::builderProjectToDetails).toList());
+    return new ConnectorBuilderProjectReadList().projects(projects.map(ConnectorBuilderProjectsHandler::builderProjectToDetails).toList());
   }
 
 }

@@ -8,6 +8,7 @@ import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
 
 import io.airbyte.api.generated.ConnectorBuilderProjectApi;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectRead;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectReadList;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
@@ -52,6 +53,15 @@ public class ConnectorBuilderProjectApiController implements ConnectorBuilderPro
       connectorBuilderProjectsHandler.deleteConnectorBuilderProject(connectorBuilderProjectIdWithWorkspaceId);
       return null;
     });
+  }
+
+  @Override
+  @Post(uri = "/get_with_manifest")
+  @Status(HttpStatus.OK)
+  @Secured({EDITOR})
+  @SecuredWorkspace
+  public ConnectorBuilderProjectRead getProject(final ConnectorBuilderProjectIdWithWorkspaceId connectorBuilderProjectIdWithWorkspaceId) {
+    return ApiHelper.execute(() -> connectorBuilderProjectsHandler.getBuilderProjectWithManifest(connectorBuilderProjectIdWithWorkspaceId));
   }
 
   @Override

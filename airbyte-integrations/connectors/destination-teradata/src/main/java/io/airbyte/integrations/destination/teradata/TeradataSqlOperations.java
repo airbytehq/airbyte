@@ -59,18 +59,18 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
         pstmt.executeBatch();
 
       } catch (final SQLException se) {
-    	  for (SQLException ex = se ; ex != null ; ex = ex.getNextException()) {
-    		  LOGGER.info(ex.getMessage());
-    	  }
+        for (SQLException ex = se; ex != null; ex = ex.getNextException()) {
+          LOGGER.info(ex.getMessage());
+        }
         AirbyteTraceMessageUtility.emitSystemErrorTrace(se,
             "Connector failed while inserting records to staging table");
         throw new RuntimeException(se);
       } catch (Exception e) {
-    	  AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
-    	            "Connector failed while inserting records to staging table");
-    	        throw new RuntimeException(e);
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e,
+            "Connector failed while inserting records to staging table");
+        throw new RuntimeException(e);
       }
-      
+
     });
   }
 
@@ -81,10 +81,10 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     } catch (SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Database " + schemaName + " already exists.");
-	} else {
-		AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating schema ");
-		throw new RuntimeException(e);
-	}
+      } else {
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating schema ");
+        throw new RuntimeException(e);
+      }
     }
 
   }
@@ -97,10 +97,10 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
     } catch (SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Table " + schemaName + "." + tableName + " already exists.");
-	} else {
-		AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating table ");
-		throw new RuntimeException(e);
-	}
+      } else {
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Connector failed while creating table ");
+        throw new RuntimeException(e);
+      }
     }
   }
 

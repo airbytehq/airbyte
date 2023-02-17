@@ -2653,7 +2653,7 @@ components:
     ConnectorBuilderProjectRead:
       type: object
       required:
-        - projects
+        - builderProject
       properties:
         builderProject:
           $ref: "#/components/schemas/ConnectorBuilderProjectDetails"
@@ -2664,7 +2664,7 @@ components:
       required:
         - projects
       properties:
-        sources:
+        projects:
           type: array
           items:
             $ref: "#/components/schemas/ConnectorBuilderProjectDetails"

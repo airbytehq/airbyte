@@ -95,7 +95,11 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
   }
 
   @Override
-  public String uploadRecordsToStage(final JdbcDatabase database, final SerializableBuffer recordsData, final String schemaName, final String stageName, final String stagingPath)
+  public String uploadRecordsToStage(final JdbcDatabase database,
+                                     final SerializableBuffer recordsData,
+                                     final String schemaName,
+                                     final String stageName,
+                                     final String stagingPath)
       throws Exception {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
@@ -131,11 +135,11 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
 
   @Override
   public void copyIntoTableFromStage(final JdbcDatabase database,
-                                        final String stageName,
-                                        final String stagingPath,
-                                        final List<String> stagedFiles,
-                                        final String tableName,
-                                        final String schemaName)
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final List<String> stagedFiles,
+                                     final String tableName,
+                                     final String schemaName)
       throws Exception {
     LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
         tableName, stagingPath, schemaName);

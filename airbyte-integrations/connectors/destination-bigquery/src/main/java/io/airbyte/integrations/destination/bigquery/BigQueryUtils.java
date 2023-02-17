@@ -200,7 +200,7 @@ public class BigQueryUtils {
    * @param tableId equivalent to table name
    * @param schema representation for table schema
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
-   * was not successfully created
+   *         was not successfully created
    */
   static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {

@@ -16,18 +16,13 @@ import static org.mockito.Mockito.spy;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
-import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
-import com.google.cloud.bigquery.TimePartitioning;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -90,7 +85,6 @@ class BigQueryDestinationTest {
   protected static final Path CREDENTIALS_WITH_GCS_STAGING_PATH =
       Path.of("secrets/credentials-gcs-staging.json");
 
-
   protected static final Path[] ALL_PATHS = {CREDENTIALS_STANDARD_INSERT_PATH, CREDENTIALS_BAD_PROJECT_PATH, CREDENTIALS_NO_DATASET_CREATION_PATH,
     CREDENTIALS_NO_EDIT_PUBLIC_SCHEMA_ROLE_PATH, CREDENTIALS_NON_BILLABLE_PROJECT_PATH, CREDENTIALS_WITH_GCS_STAGING_PATH};
 
@@ -137,9 +131,11 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
-  /* TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
+  /*
+   * TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
    * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
-   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS Staging
+   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS
+   * Staging
    */
   private Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
@@ -351,7 +347,8 @@ class BigQueryDestinationTest {
     initBigQuery(config);
     final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
-      final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+      final AirbyteMessageConsumer consumer =
+          spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);

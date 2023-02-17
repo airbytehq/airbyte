@@ -14,7 +14,6 @@ import io.airbyte.config.ConnectorBuilderProject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +40,13 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
+  void testReadWithoutManifest() throws IOException, ConfigNotFoundException {
+    createBaseObjects();
+    project1.setManifestDraft(null);
+    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), false));
+  }
+
+  @Test
   void testReadNotExists() throws IOException {
     assertThrows(ConfigNotFoundException.class, () -> configRepository.getConnectorBuilderProject(UUID.randomUUID(), false));
   }
@@ -60,7 +66,6 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
   @Test
   void testListWithNoManifest() throws IOException, ConfigNotFoundException {
     createBaseObjects();
-
 
     // actually set draft to null for first project
     project1.setManifestDraft(null);

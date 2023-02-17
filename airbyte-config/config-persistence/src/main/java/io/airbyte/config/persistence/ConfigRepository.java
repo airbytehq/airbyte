@@ -1657,7 +1657,8 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
             .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
-            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, builderProject.getManifestDraft() == null ? null : JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,
+                builderProject.getManifestDraft() == null ? null : JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .where(matchId)
             .execute();
@@ -1667,7 +1668,8 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
             .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
-            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, builderProject.getManifestDraft() == null ? null : JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,
+                builderProject.getManifestDraft() == null ? null : JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .execute();

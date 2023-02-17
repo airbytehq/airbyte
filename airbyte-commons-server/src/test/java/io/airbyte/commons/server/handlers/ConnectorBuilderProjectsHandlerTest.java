@@ -4,11 +4,13 @@
 
 package io.airbyte.commons.server.handlers;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atMostOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -21,6 +23,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectDetails;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectRead;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectReadList;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
@@ -44,6 +47,7 @@ class ConnectorBuilderProjectsHandlerTest {
   private ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler;
   private Supplier<UUID> uuidSupplier;
   private UUID workspaceId;
+  private final String draftJSONString = "{\"test\":123}";
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -58,7 +62,7 @@ class ConnectorBuilderProjectsHandlerTest {
   private ConnectorBuilderProject generateBuilderProject() throws JsonProcessingException {
     final UUID projectId = UUID.randomUUID();
     return new ConnectorBuilderProject().withBuilderProjectId(projectId).withWorkspaceId(workspaceId).withName("Test project")
-        .withHasDraft(true).withManifestDraft(new ObjectMapper().readTree("{\"test\": 123}"));
+        .withHasDraft(true).withManifestDraft(new ObjectMapper().readTree(draftJSONString));
   }
 
   @Test
@@ -74,8 +78,8 @@ class ConnectorBuilderProjectsHandlerTest {
         .workspaceId(workspaceId);
 
     final ConnectorBuilderProjectIdWithWorkspaceId response = connectorBuilderProjectsHandler.createConnectorBuilderProject(create);
-    assertEquals(response.getBuilderProjectId(), project.getBuilderProjectId());
-    assertEquals(response.getWorkspaceId(), project.getWorkspaceId());
+    assertEquals(project.getBuilderProjectId(), response.getBuilderProjectId());
+    assertEquals(project.getWorkspaceId(), response.getWorkspaceId());
 
     // hasDraft is not set when writing
     project.setHasDraft(null);
@@ -85,8 +89,8 @@ class ConnectorBuilderProjectsHandlerTest {
   }
 
   @Test
-  @DisplayName("updateConnectorBuilderProject should update an existing project and return the id")
-  void testUpdateConnectorBuilderProject() throws IOException, JsonValidationException, ConfigNotFoundException {
+  @DisplayName("updateConnectorBuilderProject should update an existing project")
+  void testUpdateConnectorBuilderProject() throws IOException, ConfigNotFoundException {
     final ConnectorBuilderProject project = generateBuilderProject();
 
     when(configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false)).thenReturn(project);
@@ -94,6 +98,26 @@ class ConnectorBuilderProjectsHandlerTest {
     final ExistingConnectorBuilderProjectWithWorkspaceId update = new ExistingConnectorBuilderProjectWithWorkspaceId()
         .builderProject(new ConnectorBuilderProjectDetails().name(project.getName())
             .draftManifest(new ObjectMapper().convertValue(project.getManifestDraft(), new TypeReference<Map<String, Object>>() {})))
+        .workspaceId(workspaceId).builderProjectId(project.getBuilderProjectId());
+
+    connectorBuilderProjectsHandler.updateConnectorBuilderProject(update);
+
+    verify(uuidSupplier, never()).get();
+    verify(configRepository, atMostOnce())
+        .writeBuilderProject(
+            project);
+  }
+
+  @Test
+  @DisplayName("updateConnectorBuilderProject should update an existing project removing the draft")
+  void testUpdateConnectorBuilderProjectWipeDraft() throws IOException, ConfigNotFoundException {
+    final ConnectorBuilderProject project = generateBuilderProject();
+    project.setManifestDraft(null);
+
+    when(configRepository.getConnectorBuilderProject(project.getBuilderProjectId(), false)).thenReturn(project);
+
+    final ExistingConnectorBuilderProjectWithWorkspaceId update = new ExistingConnectorBuilderProjectWithWorkspaceId()
+        .builderProject(new ConnectorBuilderProjectDetails().name(project.getName()))
         .workspaceId(workspaceId).builderProjectId(project.getBuilderProjectId());
 
     connectorBuilderProjectsHandler.updateConnectorBuilderProject(update);
@@ -161,20 +185,54 @@ class ConnectorBuilderProjectsHandlerTest {
     final ConnectorBuilderProject project2 = generateBuilderProject();
     project2.setHasDraft(false);
 
-
     when(configRepository.getConnectorBuilderProjectsByWorkspace(workspaceId)).thenReturn(Stream.of(project1, project2));
 
-    final ConnectorBuilderProjectReadList response = connectorBuilderProjectsHandler.listConnectorBuilderProject(new WorkspaceIdRequestBody().workspaceId(workspaceId));
+    final ConnectorBuilderProjectReadList response =
+        connectorBuilderProjectsHandler.listConnectorBuilderProject(new WorkspaceIdRequestBody().workspaceId(workspaceId));
 
-    assertEquals(response.getSources().get(0).getBuilderProjectId(), project1.getBuilderProjectId());
-    assertEquals(response.getSources().get(1).getBuilderProjectId(), project2.getBuilderProjectId());
+    assertEquals(project1.getBuilderProjectId(), response.getProjects().get(0).getBuilderProjectId());
+    assertEquals(project2.getBuilderProjectId(), response.getProjects().get(1).getBuilderProjectId());
 
-    assertTrue(response.getSources().get(0).getHasDraft());
-    assertFalse(response.getSources().get(1).getHasDraft());
+    assertTrue(response.getProjects().get(0).getHasDraft());
+    assertFalse(response.getProjects().get(1).getHasDraft());
 
     verify(configRepository, times(1))
         .getConnectorBuilderProjectsByWorkspace(
             workspaceId);
+  }
+
+  @Test
+  @DisplayName("getConnectorBuilderProject should return a builder project with draft")
+  void testGetConnectorBuilderProject() throws IOException, ConfigNotFoundException {
+    final ConnectorBuilderProject project = generateBuilderProject();
+
+    when(configRepository.getConnectorBuilderProject(eq(project.getBuilderProjectId()), any(Boolean.class))).thenReturn(project);
+
+    final ConnectorBuilderProjectRead response =
+        connectorBuilderProjectsHandler.getBuilderProjectWithManifest(
+            new ConnectorBuilderProjectIdWithWorkspaceId().builderProjectId(project.getBuilderProjectId()).workspaceId(workspaceId));
+
+    assertEquals(project.getBuilderProjectId(), response.getBuilderProject().getBuilderProjectId());
+    assertTrue(response.getDeclarativeManifest().getIsDraft());
+    assertEquals(draftJSONString, new ObjectMapper().writeValueAsString(response.getDeclarativeManifest().getManifest()));
+  }
+
+  @Test
+  @DisplayName("getConnectorBuilderProject should return a builder project even if there is no draft")
+  void testGetConnectorBuilderProjectWithoutDraft() throws IOException, ConfigNotFoundException {
+    final ConnectorBuilderProject project = generateBuilderProject();
+    project.setManifestDraft(null);
+    project.setHasDraft(false);
+
+    when(configRepository.getConnectorBuilderProject(eq(project.getBuilderProjectId()), any(Boolean.class))).thenReturn(project);
+
+    final ConnectorBuilderProjectRead response =
+        connectorBuilderProjectsHandler.getBuilderProjectWithManifest(
+            new ConnectorBuilderProjectIdWithWorkspaceId().builderProjectId(project.getBuilderProjectId()).workspaceId(workspaceId));
+
+    assertEquals(project.getBuilderProjectId(), response.getBuilderProject().getBuilderProjectId());
+    assertFalse(response.getBuilderProject().getHasDraft());
+    assertNull(response.getDeclarativeManifest());
   }
 
 }
