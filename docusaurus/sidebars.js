@@ -252,9 +252,10 @@ module.exports = {
                     'connector-development/config-based/understanding-the-yaml-file/error-handling',  
                   ]
               },
+                'connector-development/config-based/understanding-the-yaml-file/incremental-syncs',
                 'connector-development/config-based/understanding-the-yaml-file/pagination',
+                'connector-development/config-based/understanding-the-yaml-file/partition-router',
                 'connector-development/config-based/understanding-the-yaml-file/record-selector',
-                'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
                 'connector-development/config-based/understanding-the-yaml-file/reference',
               ]
             },
