@@ -4,27 +4,11 @@ import { deleteDestination } from "commands/destination";
 import { deleteSource } from "commands/source";
 import { initialSetupCompleted } from "commands/workspaces";
 import {
-  confirmStreamConfigurationChangedPopup,
   selectSchedule,
   fillOutDestinationPrefix,
-  goToReplicationTab,
   setupDestinationNamespaceCustomFormat,
-  checkSuccessResult,
-  refreshSourceSchemaBtnClick,
-  resetModalSaveBtnClick,
-  toggleStreamEnabledState,
-  searchStream,
-  selectCursorField,
-  checkCursorField,
-  selectSyncMode,
   setupDestinationNamespaceDefaultFormat,
-  checkPrimaryKey,
-  isPrimaryKeyNonExist,
-  selectPrimaryKeyField,
-  checkPreFilledPrimaryKeyField,
-  checkStreamFields,
-  expandStreamDetailsByName,
-} from "pages/connection/connectionReplicationPageObject";
+} from "pages/connection/connectionFormPageObject";
 import { goToSourcePage, openSourceOverview } from "pages/sourcePage";
 import {
   goToSettingsPage,
@@ -46,6 +30,13 @@ import {
   waitForGetConnectionRequest,
   waitForUpdateConnectionRequest,
 } from "commands/interceptors";
+import { goToReplicationTab } from "pages/connection/connectionPageObject";
+import {
+  confirmStreamConfigurationChangedPopup,
+  checkSuccessResult,
+  resetModalSaveBtnClick,
+} from "pages/connection/connectionReplicationPageObject";
+import streamsTablePageObject from "pages/connection/streamsTablePageObject";
 
 describe("Connection - creation, updating connection replication settings, deletion", () => {
   beforeEach(() => {
@@ -110,7 +101,7 @@ describe("Connection - creation, updating connection replication settings, delet
     selectSchedule("Every hour");
     fillOutDestinationPrefix("auto_test");
     setupDestinationNamespaceCustomFormat("_test");
-    selectSyncMode("Full refresh", "Append");
+    streamsTablePageObject.selectSyncMode("Full refresh", "Append");
 
     const prefix = "auto_test";
     fillOutDestinationPrefix(prefix);
@@ -381,9 +372,9 @@ describe("Connection - stream details", () => {
 
     goToReplicationTab();
 
-    searchStream(streamName);
-    expandStreamDetailsByName(streamName);
-    checkStreamFields(collectionNames, collectionTypes);
+    streamsTablePageObject.searchStream(streamName);
+    streamsTablePageObject.expandStreamDetailsByName(streamName);
+    streamsTablePageObject.checkStreamFields(collectionNames, collectionTypes);
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -415,9 +406,9 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream(streamName);
-    selectSyncMode("Incremental", "Append");
-    selectCursorField(streamName, "updated_at");
+    streamsTablePageObject.searchStream(streamName);
+    streamsTablePageObject.selectSyncMode("Incremental", "Append");
+    streamsTablePageObject.selectCursorField(streamName, "updated_at");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -434,8 +425,8 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream("users");
-    checkCursorField(streamName, "updated_at");
+    streamsTablePageObject.searchStream("users");
+    streamsTablePageObject.checkCursorField(streamName, "updated_at");
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -454,10 +445,10 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream(streamName);
-    selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField(streamName, "updated_at");
-    checkPreFilledPrimaryKeyField(streamName, "id");
+    streamsTablePageObject.searchStream(streamName);
+    streamsTablePageObject.selectSyncMode("Incremental", "Deduped + history");
+    streamsTablePageObject.selectCursorField(streamName, "updated_at");
+    streamsTablePageObject.checkPreFilledPrimaryKeyField(streamName, "id");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -474,10 +465,10 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream(streamName);
+    streamsTablePageObject.searchStream(streamName);
 
-    checkCursorField(streamName, "updated_at");
-    checkPreFilledPrimaryKeyField(streamName, "id");
+    streamsTablePageObject.checkCursorField(streamName, "updated_at");
+    streamsTablePageObject.checkPreFilledPrimaryKeyField(streamName, "id");
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -496,11 +487,11 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream(streamName);
-    selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField(streamName, "city");
-    isPrimaryKeyNonExist(streamName);
-    selectPrimaryKeyField(streamName, ["city_code"]);
+    streamsTablePageObject.searchStream(streamName);
+    streamsTablePageObject.selectSyncMode("Incremental", "Deduped + history");
+    streamsTablePageObject.selectCursorField(streamName, "city");
+    streamsTablePageObject.isPrimaryKeyNonExist(streamName);
+    streamsTablePageObject.selectPrimaryKeyField(streamName, ["city_code"]);
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -517,10 +508,10 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream(streamName);
+    streamsTablePageObject.searchStream(streamName);
 
-    checkCursorField(streamName, "city");
-    checkPrimaryKey(streamName, ["city_code"]);
+    streamsTablePageObject.checkCursorField(streamName, "city");
+    streamsTablePageObject.checkPrimaryKey(streamName, ["city_code"]);
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -553,7 +544,7 @@ describe("Connection - detect source schema changes in source", () => {
 
     makeChangesInDBSource();
     goToReplicationTab();
-    refreshSourceSchemaBtnClick();
+    streamsTablePageObject.refreshSourceSchemaBtnClick();
 
     shouldExist();
 
@@ -567,7 +558,7 @@ describe("Connection - detect source schema changes in source", () => {
 
     clickCloseButton();
 
-    toggleStreamEnabledState("cars");
+    streamsTablePageObject.toggleStreamEnabledState("cars");
 
     submitButtonClick();
     resetModalSaveBtnClick();

@@ -21,6 +21,7 @@ import * as connectionPage from "pages/connection/connectionPageObject";
 import * as connectionListPage from "pages/connection/connectionListPageObject";
 import * as catalogDiffModal from "pages/connection/catalogDiffModalPageObject";
 import * as replicationPage from "pages/connection/connectionReplicationPageObject";
+import streamsTablePageObject from "pages/connection/streamsTablePageObject";
 
 describe("Connection - Auto-detect schema changes", () => {
   let source: Source;
@@ -99,7 +100,7 @@ describe("Connection - Auto-detect schema changes", () => {
 
       replicationPage.checkSchemaChangesDetectedCleared();
 
-      replicationPage.clickSaveReplication();
+      replicationPage.clickSaveButton();
       connectionPage.getSyncEnabledSwitch().should("be.enabled");
     });
 
@@ -122,10 +123,10 @@ describe("Connection - Auto-detect schema changes", () => {
       connectionPage.visit(connection, "replication");
 
       // Change users sync mode
-      replicationPage.searchStream(streamName);
-      replicationPage.selectSyncMode("Incremental", "Deduped + history");
-      replicationPage.selectCursorField(streamName, "updated_at");
-      replicationPage.clickSaveReplication();
+      streamsTablePageObject.searchStream(streamName);
+      streamsTablePageObject.selectSyncMode("Incremental", "Deduped + history");
+      streamsTablePageObject.selectCursorField(streamName, "updated_at");
+      replicationPage.clickSaveButton();
 
       // Remove cursor from db and refreshs schema to force breaking change detection
       runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
@@ -152,10 +153,10 @@ describe("Connection - Auto-detect schema changes", () => {
       replicationPage.checkSchemaChangesDetectedCleared();
 
       // Fix the conflict
-      replicationPage.searchStream("users");
-      replicationPage.selectSyncMode("Full refresh", "Append");
+      streamsTablePageObject.searchStream("users");
+      streamsTablePageObject.selectSyncMode("Full refresh", "Append");
 
-      replicationPage.clickSaveReplication();
+      replicationPage.clickSaveButton();
       connectionPage.getSyncEnabledSwitch().should("be.enabled");
     });
 
@@ -179,7 +180,7 @@ describe("Connection - Auto-detect schema changes", () => {
 
       cy.intercept("/api/v1/web_backend/connections/update").as("updatesNonBreakingPreference");
 
-      replicationPage.clickSaveReplication({ confirm: false });
+      replicationPage.clickSaveButton({ confirm: false });
 
       cy.wait("@updatesNonBreakingPreference").then((interception) => {
         assert.equal((interception.response?.body as Connection).nonBreakingChangesPreference, "disable");

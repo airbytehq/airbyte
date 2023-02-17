@@ -23,7 +23,7 @@ import {
   waitForGetSourcesListRequest,
 } from "commands/interceptors";
 import { Connection, Destination, Source } from "commands/api/types";
-import * as replicationPage from "pages/connection/connectionReplicationPageObject";
+import * as replicationPage from "pages/connection/connectionFormPageObject";
 import { runDbQuery } from "commands/db/db";
 import {
   createUsersTableQuery,
@@ -31,6 +31,7 @@ import {
   createDummyTablesQuery,
   dropDummyTablesQuery,
 } from "commands/db/queries";
+import streamsTablePageObject from "pages/connection/streamsTablePageObject";
 
 // TODO: Enable this test when the new stream table will be turned on
 describe.skip("Connection - Create new connection", () => {
@@ -132,12 +133,12 @@ describe.skip("Connection - Create new connection", () => {
     });
 
     it("should filter table by stream name", () => {
-      replicationPage.searchStream("dummy_table_10");
+      streamsTablePageObject.searchStream("dummy_table_10");
       newConnectionPage.checkAmountOfStreamTableRows(1);
     });
 
     it("should clear stream search input field and show all available streams", () => {
-      replicationPage.clearStreamSearch();
+      streamsTablePageObject.clearStreamSearch();
       newConnectionPage.checkAmountOfStreamTableRows(21);
     });
   });
