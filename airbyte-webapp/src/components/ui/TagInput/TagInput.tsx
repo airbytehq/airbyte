@@ -145,8 +145,9 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
    * This needs to be implemented outside of the onBlur prop of react-select because it's not default behavior.
    */
   const onBlurControl = () => {
-    if (inputValue) {
-      onChange([...fieldValue, inputValue]);
+    const normalizedInput = normalizeInput(inputValue);
+    if (normalizedInput) {
+      onChange([...fieldValue, normalizedInput]);
       setInputValue("");
     }
   };
