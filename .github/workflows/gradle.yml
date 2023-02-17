@@ -18,7 +18,7 @@ on:
         required: false
   push:
     branches:
-      - master
+      - main
   pull_request:
 
 permissions: write-all
@@ -73,11 +73,6 @@ jobs:
               - 'deps.toml'
             cli:
               - 'airbyte-api/**'
-              - 'octavia-cli/**'
-            connectors:
-              - 'airbyte-cdk/**'
-              - 'airbyte-integrations/**'
-              - 'airbyte-commons-worker/**'
             db:
               - 'airbyte-db/**'
             frontend:
