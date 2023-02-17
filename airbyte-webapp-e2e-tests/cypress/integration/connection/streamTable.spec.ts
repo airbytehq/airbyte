@@ -44,7 +44,7 @@ import {
 } from "commands/db/queries";
 
 // TODO: Enable this test when the new stream table will be turned on
-describe.skip("New stream table - new connection set up ", () => {
+describe.only("New stream table - new connection set up ", () => {
   let source: Source;
   let destination: Destination;
   let connectionId: string;
@@ -82,94 +82,103 @@ describe.skip("New stream table - new connection set up ", () => {
     }
   });
 
-  it("should open 'New connection' page", () => {
-    visitConnectionsListPage();
-    interceptGetSourcesListRequest();
-    interceptGetSourceDefinitionsRequest();
+  describe("Set up source and destination", () => {
+    it("should open 'New connection' page", () => {
+      visitConnectionsListPage();
+      interceptGetSourcesListRequest();
+      interceptGetSourceDefinitionsRequest();
 
-    clickNewConnectionButton();
-    waitForGetSourcesListRequest();
-    waitForGetSourceDefinitionsRequest();
+      clickNewConnectionButton();
+      waitForGetSourcesListRequest();
+      waitForGetSourceDefinitionsRequest();
+    });
+
+    it("should select existing Source from dropdown and click button", () => {
+      selectExistingConnectorFromDropdown(source.name);
+      clickUseExistingConnectorButton("source");
+    });
+
+    it("should select existing Destination from dropdown and click button", () => {
+      interceptDiscoverSchemaRequest();
+      selectExistingConnectorFromDropdown(destination.name);
+      clickUseExistingConnectorButton("destination");
+      waitForDiscoverSchemaRequest();
+    });
+
+    it("should redirect to 'New connection' settings page with stream table'", () => {
+      isAtNewConnectionPage();
+    });
+
+    it("should show 'New connection' page header", () => {
+      isNewConnectionPageHeaderVisible();
+    });
   });
 
-  it("should select existing Source from dropdown and click button", () => {
-    selectExistingConnectorFromDropdown(source.name);
-    clickUseExistingConnectorButton("source");
+  describe("Configuration", () => {
+    it("should set 'Replication frequency' to 'Manual'", () => {
+      selectSchedule("Manual");
+    });
   });
 
-  it("should select existing Destination from dropdown and click button", () => {
-    interceptDiscoverSchemaRequest();
-    selectExistingConnectorFromDropdown(destination.name);
-    clickUseExistingConnectorButton("destination");
-    waitForDiscoverSchemaRequest();
-  });
+  describe("Streams table", () => {
+    it("should check check connector icons and titles in table", () => {
+      checkConnectorIconAndTitle("source");
+      checkConnectorIconAndTitle("destination");
+    });
 
-  it("should redirect to 'New connection' settings page with stream table'", () => {
-    isAtNewConnectionPage();
-  });
+    it("should check columns names in table", () => {
+      checkColumnNames();
+    });
 
-  it("should show 'New connection' page header", () => {
-    isNewConnectionPageHeaderVisible();
-  });
+    it("should check total amount of table streams", () => {
+      // dummy tables amount + users table
+      checkAmountOfStreamTableRows(21);
+    });
 
-  it("should set 'Replication frequency' to 'Manual'", () => {
-    selectSchedule("Manual");
-  });
+    it("should allow to scroll table to desired stream table row and it should be visible", () => {
+      const desiredStreamTableRow = "dummy_table_18";
 
-  it("should check check connector icons and titles in table", () => {
-    checkConnectorIconAndTitle("source");
-    checkConnectorIconAndTitle("destination");
-  });
+      scrollTableToStream(desiredStreamTableRow);
+      isStreamTableRowVisible(desiredStreamTableRow);
+    });
 
-  it("should check columns names in table", () => {
-    checkColumnNames();
-  });
+    it("should filter table by stream name", () => {
+      searchStream("dummy_table_10");
+      checkAmountOfStreamTableRows(1);
+    });
 
-  it("should check total amount of table streams", () => {
-    // dummy tables amount + users table
-    checkAmountOfStreamTableRows(21);
-  });
-
-  it("should allow to scroll table to desired stream table row and it should be visible", () => {
-    const desiredStreamTableRow = "dummy_table_18";
-
-    scrollTableToStream(desiredStreamTableRow);
-    isStreamTableRowVisible(desiredStreamTableRow);
-  });
-
-  it("should filter table by stream name", () => {
-    searchStream("dummy_table_10");
-    checkAmountOfStreamTableRows(1);
-  });
-
-  it("should clear stream search input field and show all available streams", () => {
-    clearStreamSearch();
-    checkAmountOfStreamTableRows(21);
+    it("should clear stream search input field and show all available streams", () => {
+      clearStreamSearch();
+      checkAmountOfStreamTableRows(21);
+    });
   });
 
   /*
     here will be added more tests to extend the test flow
    */
 
-  it("should set up a connection", () => {
-    interceptCreateConnectionRequest();
-    submitButtonClick(true);
-    waitForCreateConnectionRequest().then((interception) => {
-      assert.isNotNull(interception.response?.statusCode, "200");
-      expect(interception.request.method).to.eq("POST");
+  describe("Submit form", () => {
+    it("should set up a connection", () => {
+      interceptCreateConnectionRequest();
+      submitButtonClick(true);
 
-      const connection: Partial<Connection> = {
-        name: `${source.name} <> ${destination.name}`,
-        scheduleType: "manual",
-      };
-      expect(interception.request.body).to.contain(connection);
-      expect(interception.response?.body).to.contain(connection);
+      waitForCreateConnectionRequest().then((interception) => {
+        assert.isNotNull(interception.response?.statusCode, "200");
+        expect(interception.request.method).to.eq("POST");
 
-      connectionId = interception.response?.body?.connectionId;
+        const connection: Partial<Connection> = {
+          name: `${source.name} <> ${destination.name}`,
+          scheduleType: "manual",
+        };
+        expect(interception.request.body).to.contain(connection);
+        expect(interception.response?.body).to.contain(connection);
+
+        connectionId = interception.response?.body?.connectionId;
+      });
     });
-  });
 
-  it("should redirect to connection overview page after connection set up", () => {
-    isAtConnectionOverviewPage(connectionId);
+    it("should redirect to connection overview page after connection set up", () => {
+      isAtConnectionOverviewPage(connectionId);
+    });
   });
 });
