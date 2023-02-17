@@ -41,17 +41,16 @@ public class OpensearchDestinationTest {
 
   @BeforeAll
   public static void beforeAll() {
-    // TODO: 컨테이너 이미지 수정 및 오픈서치 이미지 변경 (인스턴스 생성 -> Opensearch)
-    container = new OpensearchContainer("opensearchproject/opensearch:2.5.0")
-        .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
-        .withEnv("discovery.type", "single-node")
-        .withEnv("network.host", "0.0.0.0")
-        .withExposedPorts(9200)
-        .withStartupTimeout(Duration.ofSeconds(60));
-    container.start();
+    container = new OpensearchContainer("opensearchproject/opensearch:2.0.0")
+            .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+            .withEnv("discovery.type", "single-node")
+            .withEnv("network.host", "0.0.0.0")
+            .withExposedPorts(9200)
+            .withStartupTimeout(Duration.ofSeconds(60));
+
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
-        .build());
+            .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
+            .build());
   }
 
   @AfterAll

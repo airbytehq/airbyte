@@ -2,6 +2,17 @@
 airbyte-protocol = "0.3.6"
 commons_io = "2.7"
 testcontainers = "1.19.0"
+connectors-destination-testcontainers-clickhouse = "1.17.3"
+connectors-destination-testcontainers-elasticsearch = "1.17.3"
+connectors-destination-testcontainers-opensearch = "2.0.0"
+connectors-destination-testcontainers-oracle-xe = "1.17.3"
+connectors-source-testcontainers-clickhouse = "1.17.3"
+connectors-testcontainers = "1.15.3"
+connectors-testcontainers-cassandra = "1.16.0"
+connectors-testcontainers-mariadb = "1.16.2"
+connectors-testcontainers-pulsar = "1.16.2"
+connectors-testcontainers-scylla = "1.16.2"
+connectors-testcontainers-tidb = "1.16.3"
 datadog-version = "0.111.0"
 fasterxml_version = "2.15.2"
 flyway = "7.14.0"
@@ -50,6 +61,26 @@ testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.
 testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "testcontainers" }
 testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+connectors-destination-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-destination-testcontainers-clickhouse" }
+connectors-destination-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-destination-testcontainers-oracle-xe" }
+connectors-source-testcontainers-clickhouse = { module = "org.testcontainers:clickhouse", version.ref = "connectors-source-testcontainers-clickhouse" }
+connectors-source-testcontainers-oracle-xe = { module = "org.testcontainers:oracle-xe", version.ref = "connectors-testcontainers" }
+connectors-testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-cassandra = { module = "org.testcontainers:cassandra", version.ref = "connectors-testcontainers-cassandra" }
+connectors-testcontainers-cockroachdb = { module = "org.testcontainers:cockroachdb", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-db2 = { module = "org.testcontainers:db2", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-elasticsearch = { module = "org.testcontainers:elasticsearch", version.ref = "connectors-destination-testcontainers-elasticsearch" }
+connectors-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-kafka = { module = "org.testcontainers:kafka", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mariadb = { module = "org.testcontainers:mariadb", version.ref = "connectors-testcontainers-mariadb" }
+connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-opensearch = { module = "org.opensearch:opensearch-testcontainers", version.ref = "connectors-destination-testcontainers-opensearch" }
+connectors-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "connectors-testcontainers-pulsar" }
+connectors-testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-scylla" }
+connectors-testcontainers-tidb = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-tidb" }
 datadog-trace-api = { module = "com.datadoghq:dd-trace-api", version.ref = "datadog-version" }
 datadog-trace-ot = { module = "com.datadoghq:dd-trace-ot", version.ref = "datadog-version" }
 fasterxml = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "fasterxml_version" }
