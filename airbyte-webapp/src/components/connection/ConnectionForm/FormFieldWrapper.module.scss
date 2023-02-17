@@ -1,0 +1,12 @@
+@use "scss/variables";
+
+.leftFieldCol {
+  flex: 1;
+  max-width: 640px;
+  padding-right: variables.$spacing-xl;
+}
+
+.rightFieldCol {
+  flex: 1;
+  max-width: 300px;
+}
