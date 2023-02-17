@@ -203,7 +203,7 @@ def test_read_stream():
                 body={"custom": "field"},
                 http_method="GET",
             ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
             records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
         ),
         StreamReadPages(
@@ -214,7 +214,7 @@ def test_read_stream():
                 body={"custom": "field"},
                 http_method="GET",
             ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
             records=[{"name": "Mitsuri Kanroji"}],
         ),
     ]
@@ -263,7 +263,7 @@ def test_read_stream_with_logs():
                 body={"custom": "field"},
                 http_method="GET",
             ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
             records=[{"name": "Shinobu Kocho"}, {"name": "Muichiro Tokito"}],
         ),
         StreamReadPages(
@@ -274,7 +274,7 @@ def test_read_stream_with_logs():
                 body={"custom": "field"},
                 http_method="GET",
             ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
             records=[{"name": "Mitsuri Kanroji"}],
         ),
     ]
@@ -444,7 +444,7 @@ def test_read_stream_no_records():
                 body={"custom": "field"},
                 http_method="GET",
             ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
             records=[],
         ),
         StreamReadPages(
@@ -455,7 +455,7 @@ def test_read_stream_no_records():
                 body={"custom": "field"},
                 http_method="GET",
             ),
-            response=HttpResponse(status=200, headers={"field": "value"}, body={"name": "field"}),
+            response=HttpResponse(status=200, headers={"field": "value"}, body='{"name": "field"}'),
             records=[],
         ),
     ]
@@ -601,19 +601,37 @@ def test_create_request_from_log_message(log_message, expected_request):
     "log_message, expected_response",
     [
         pytest.param(
-            {"status_code": 200, "headers": {"field": "name"}, "body": '{"id":"fire", "owner": "kyojuro_rengoku"}'},
-            HttpResponse(status=200, headers={"field": "name"}, body={"id": "fire", "owner": "kyojuro_rengoku"}),
+            {"status_code": 200, "headers": {"field": "name"}, "body": '{"id": "fire", "owner": "kyojuro_rengoku"}'},
+            HttpResponse(status=200, headers={"field": "name"}, body='{"id": "fire", "owner": "kyojuro_rengoku"}'),
             id="test_create_response_with_all_fields",
         ),
         pytest.param(
             {"status_code": 200, "headers": {"field": "name"}},
-            HttpResponse(status=200, body={}, headers={"field": "name"}),
+            HttpResponse(status=200, headers={"field": "name"}, body="{}"),
             id="test_create_response_with_no_body",
         ),
         pytest.param(
-            {"status_code": 200, "body": '{"id":"fire", "owner": "kyojuro_rengoku"}'},
-            HttpResponse(status=200, body={"id": "fire", "owner": "kyojuro_rengoku"}),
+            {"status_code": 200, "body": '{"id": "fire", "owner": "kyojuro_rengoku"}'},
+            HttpResponse(status=200, body='{"id": "fire", "owner": "kyojuro_rengoku"}'),
             id="test_create_response_with_no_headers",
+        ),
+        pytest.param(
+            {
+                "status_code": 200,
+                "headers": {"field": "name"},
+                "body": '[{"id": "fire", "owner": "kyojuro_rengoku"}, {"id": "mist", "owner": "muichiro_tokito"}]',
+            },
+            HttpResponse(
+                status=200,
+                headers={"field": "name"},
+                body='[{"id": "fire", "owner": "kyojuro_rengoku"}, {"id": "mist", "owner": "muichiro_tokito"}]',
+            ),
+            id="test_create_response_with_array",
+        ),
+        pytest.param(
+            {"status_code": 200, "body": "tomioka"},
+            HttpResponse(status=200, body="tomioka"),
+            id="test_create_response_with_string",
         ),
         pytest.param("request:{invalid_json: }", None, id="test_invalid_json_still_does_not_crash"),
         pytest.param("just a regular log message", None, id="test_no_response:_prefix_does_not_crash"),
@@ -676,19 +694,12 @@ def test_read_stream_with_many_slices():
     assert len(stream_read.slices[1].pages[2].records) == 0
 
 
-
 def test_read_stream_given_maximum_number_of_slices_then_test_read_limit_reached():
     maximum_number_of_slices = 5
     request = {}
     response = {"status_code": 200}
     mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [
-                slice_message(),
-                request_log_message(request),
-                response_log_message(response)
-            ] * maximum_number_of_slices
-        )
+        iter([slice_message(), request_log_message(request), response_log_message(response)] * maximum_number_of_slices)
     )
 
     api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)
@@ -706,9 +717,7 @@ def test_read_stream_given_maximum_number_of_pages_then_test_read_limit_reached(
     request = {}
     response = {"status_code": 200}
     mock_source_adapter_cls = make_mock_adapter_factory(
-        iter(
-            [slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice
-        )
+        iter([slice_message()] + [request_log_message(request), response_log_message(response)] * maximum_number_of_pages_per_slice)
     )
 
     api = DefaultApiImpl(mock_source_adapter_cls, MAX_PAGES_PER_SLICE, MAX_SLICES)

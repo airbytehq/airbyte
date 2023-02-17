@@ -213,7 +213,7 @@ components:
           type: integer
           description: The status of the response
         body:
-          type: object
+          type: string
           description: The body of the HTTP response, if present
         headers:
           type: object

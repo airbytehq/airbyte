@@ -156,7 +156,7 @@ spec:
             logs=log_messages,
             slices=slices,
             test_read_limit_reached=self._has_reached_limit(slices),
-            inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream)
+            inferred_schema=schema_inferrer.get_stream_schema(stream_read_request_body.stream),
         )
 
     def _has_reached_limit(self, slices):
@@ -286,7 +286,7 @@ spec:
         raw_response = log_message.message.partition("response:")[2]
         try:
             response = json.loads(raw_response)
-            body = json.loads(response.get("body", "{}"))
+            body = response.get("body", "{}")
             return HttpResponse(status=response.get("status_code"), body=body, headers=response.get("headers"))
         except JSONDecodeError as error:
             self.logger.warning(f"Failed to parse log message into response object with error: {error}")
