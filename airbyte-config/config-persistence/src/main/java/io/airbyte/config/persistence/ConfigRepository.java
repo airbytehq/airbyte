@@ -8,6 +8,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_CONFIG_INJECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
@@ -36,6 +37,7 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorCatalogWithUpdatedAt;
+import io.airbyte.config.ActorDefinitionConfigInjection;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.DestinationConnection;
@@ -1668,6 +1670,44 @@ public class ConfigRepository {
   private Condition getBuilderProjectIdCondition(final UUID builderProjectId, final UUID workspaceId) {
     return CONNECTOR_BUILDER_PROJECT.ID.eq(builderProjectId)
         .and(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID.eq(workspaceId));
+  }
+
+  public Stream<ActorDefinitionConfigInjection> getActorDefinitionConfigInjections(final UUID actorDefinitionId) throws IOException {
+    return database.query(ctx -> ctx.select(ACTOR_DEFINITION_CONFIG_INJECTION.asterisk())
+            .from(ACTOR_DEFINITION_CONFIG_INJECTION)
+            .where(ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
+            .fetch())
+        .map(DbConverter::buildActorDefinitionConfigInjection)
+        .stream();
+  }
+
+  public void writeActorDefinitionConfigInjectionForPath(final ActorDefinitionConfigInjection actorDefinitionConfigInjection) throws IOException {
+    database.transaction(ctx -> {
+      final OffsetDateTime timestamp = OffsetDateTime.now();
+      final Condition matchActorDefinitionIdAndInjectionPath = ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID.eq(actorDefinitionConfigInjection.getActorDefinitionId()).
+          and(ACTOR_DEFINITION_CONFIG_INJECTION.INJECTION_PATH.eq(actorDefinitionConfigInjection.getInjectionPath()));
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(ACTOR_DEFINITION_CONFIG_INJECTION)
+          .where(matchActorDefinitionIdAndInjectionPath));
+
+      if (isExistingConfig) {
+        ctx.update(ACTOR_DEFINITION_CONFIG_INJECTION)
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.JSON_TO_INJECT, JSONB.valueOf(Jsons.serialize(actorDefinitionConfigInjection.getJsonToInject())))
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.UPDATED_AT, timestamp)
+            .where(matchActorDefinitionIdAndInjectionPath)
+            .execute();
+      } else {
+        ctx.insertInto(ACTOR_DEFINITION_CONFIG_INJECTION)
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.ID, actorDefinitionConfigInjection.getActorDefinitionConfigInjectionId())
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.INJECTION_PATH, actorDefinitionConfigInjection.getInjectionPath())
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID, actorDefinitionConfigInjection.getActorDefinitionId())
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.JSON_TO_INJECT, JSONB.valueOf(Jsons.serialize(actorDefinitionConfigInjection.getJsonToInject())))
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.CREATED_AT, timestamp)
+            .set(ACTOR_DEFINITION_CONFIG_INJECTION.UPDATED_AT, timestamp)
+            .execute();
+      }
+      return null;
+    });
   }
 
   /**

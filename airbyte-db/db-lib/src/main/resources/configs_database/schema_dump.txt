@@ -63,6 +63,16 @@ create table "public"."actor_definition"(
   constraint "actor_definition_pkey"
     primary key ("id")
 );
+create table "public"."actor_definition_config_injection"(
+  "id" uuid not null,
+  "json_to_inject" jsonb null,
+  "injection_path" varchar(256) not null,
+  "actor_definition_id" uuid null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
+  constraint "actor_definition_config_injection_pkey"
+    primary key ("id")
+);
 create table "public"."actor_definition_workspace_grant"(
   "actor_definition_id" uuid not null,
   "workspace_id" uuid not null
@@ -232,6 +242,10 @@ alter table "public"."actor_catalog_fetch_event"
   add constraint "actor_catalog_fetch_event_actor_id_fkey"
     foreign key ("actor_id")
     references "public"."actor" ("id");
+alter table "public"."actor_definition_config_injection"
+  add constraint "actor_definition_config_injection_actor_definition_id_fkey"
+    foreign key ("actor_definition_id")
+    references "public"."actor_definition" ("id");
 alter table "public"."actor_definition_workspace_grant"
   add constraint "actor_definition_workspace_grant_actor_definition_id_fkey"
     foreign key ("actor_definition_id")
@@ -281,6 +295,7 @@ create index "actor_catalog_fetch_event_actor_catalog_id_idx" on "public"."actor
 create index "actor_catalog_fetch_event_actor_id_idx" on "public"."actor_catalog_fetch_event"("actor_id" asc);
 create unique index "actor_catalog_fetch_event_pkey" on "public"."actor_catalog_fetch_event"("id" asc);
 create unique index "actor_definition_pkey" on "public"."actor_definition"("id" asc);
+create unique index "actor_definition_config_injection_pkey" on "public"."actor_definition_config_injection"("id" asc);
 create unique index "actor_definition_workspace_gr_workspace_id_actor_definition_key" on "public"."actor_definition_workspace_grant"(
   "workspace_id" asc, 
   "actor_definition_id" asc
