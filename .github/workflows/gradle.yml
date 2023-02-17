@@ -502,7 +502,7 @@ jobs:
         id: platform-results
         if: always()
         with:
-          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
+          junit_files: "/actions-runner/_work/airbyte-platform/airbyte-platform/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte-platform/airbyte-platform/*/*/build/test-results/*/*.xml"
           comment_mode: failures
           json_file: platform_results.json
           json_test_case_results: true
@@ -534,7 +534,7 @@ jobs:
         with:
           name: Platform Test Report with Docker E2E Test
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
+          path: "/actions-runner/_work/airbyte-platform/airbyte-platform/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte-platform/airbyte-platform/*/*/build/test-results/*/*.xml"
           reporter: java-junit
           fail-on-error: 'false'
 
@@ -544,7 +544,7 @@ jobs:
         with:
           account: 59758427
           repository: 283046497
-          path: "/actions-runner/_work/airbyte/airbyte/*"
+          path: "/actions-runner/_work/airbyte-platform/airbyte-platform/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
 
@@ -719,7 +719,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
-          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
+          junit_files: "/actions-runner/_work/airbyte-platform/airbyte-platform/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte-platform/airbyte-platform/*/*/build/test-results/*/*.xml"
           comment_mode: failures
           json_file: kube_results.json
           json_test_case_results: true
@@ -750,7 +750,7 @@ jobs:
         if: always() # run this step even if previous step failed
         with:
           name: Platform Kubernetes E2E Test Report
-          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml"
+          path: "/actions-runner/_work/airbyte-platform/airbyte-platform/*/build/test-results/*/*.xml"
           reporter: java-junit
           fail-on-error: 'false'
 
@@ -760,7 +760,7 @@ jobs:
         with:
           account: 59758427
           repository: 283046497
-          path: "/actions-runner/_work/airbyte/airbyte/*"
+          path: "/actions-runner/_work/airbyte-platform/airbyte-platform/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
 
@@ -846,15 +846,15 @@ jobs:
     timeout-minutes: 90
     defaults:
       run:
-        working-directory: "/actions-runner/_work/airbyte/airbyte"
+        working-directory: "/actions-runner/_work/airbyte-platform/airbyte-platform"
     env:
-      HOME: /actions-runner/_work/airbyte/airbyte
-      GITHUB_WORKSPACE: /actions-runner/_work/airbyte/airbyte
+      HOME: /actions-runner/_work/airbyte-platform/airbyte-platform
+      GITHUB_WORKSPACE: /actions-runner/_work/airbyte-platform/airbyte-platform
 
     steps:
       - name: Fix EC-2 Runner
         run: |
-          mkdir -p /actions-runner/_work/airbyte/airbyte && mkdir -p /actions-runner/_work/airbyte/airbyte/.kube
+          mkdir -p /actions-runner/_work/airbyte-platform/airbyte-platform && mkdir -p /actions-runner/_work/airbyte-platform/airbyte-platform/.kube
 
       - name: Checkout Airbyte
         uses: actions/checkout@v2
@@ -990,7 +990,7 @@ jobs:
         with:
           account: 59758427
           repository: 283046497
-          path: "/actions-runner/_work/airbyte/airbyte/*"
+          path: "/actions-runner/_work/airbyte-platform/airbyte-platform/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
 
@@ -1070,9 +1070,7 @@ jobs:
     name: "Notify Slack Channel on Build Fixes"
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
       - frontend-build
-      - octavia-cli-build
       - platform-build
       - kube-acceptance-test
       # Todo: Kyryl turn this on.

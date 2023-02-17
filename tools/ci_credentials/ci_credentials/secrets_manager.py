@@ -52,7 +52,7 @@ class SecretsManager:
     if os.getenv("VERSION") == "dev":
         base_folder = Path(os.getcwd())
     else:
-        base_folder = Path("/actions-runner/_work/airbyte/airbyte")
+        base_folder = Path("/actions-runner/_work/airbyte-platform/airbyte-platform")
 
     def __init__(self, connector_name: str, gsm_credentials: Mapping[str, Any]):
         self.gsm_credentials = gsm_credentials
