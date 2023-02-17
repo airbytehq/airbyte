@@ -44,7 +44,7 @@ import {
 } from "commands/db/queries";
 
 // TODO: Enable this test when the new stream table will be turned on
-describe.only("New stream table - new connection set up ", () => {
+describe.skip("Connection - Create new connection", () => {
   let source: Source;
   let destination: Destination;
   let connectionId: string;
