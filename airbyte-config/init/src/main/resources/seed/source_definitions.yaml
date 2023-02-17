@@ -481,7 +481,6 @@
   icon: airbyte.svg
   sourceType: api
   releaseStage: alpha
-  maxSecondsBetweenMessages: 1
 - name: EmailOctopus
   sourceDefinitionId: 46b25e70-c980-4590-a811-8deaf50ee09f
   dockerRepository: airbyte/source-emailoctopus

@@ -137,7 +137,7 @@ public class JobHistoryHandler {
       for (final AttemptRead a : jwar.getAttempts()) {
         final var stat = stats.get(new JobAttemptPair(jwar.getJob().getId(), a.getId().intValue()));
         if (stat == null) {
-          // log.error("Missing stats for job {} attempt {}", jwar.getJob().getId(), a.getId().intValue());
+          log.error("Missing stats for job {} attempt {}", jwar.getJob().getId(), a.getId().intValue());
           continue;
         }
 

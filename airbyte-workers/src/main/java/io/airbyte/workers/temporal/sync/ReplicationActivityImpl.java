@@ -315,7 +315,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           .getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId))
           .getMaxSecondsBetweenMessages();
 
-      LOGGER.error("______________________________________" + maxSecondsBetweenMessages);
       final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(Duration.ofMillis(maxSecondsBetweenMessages));
 
       // reset jobs use an empty source to induce resetting all data in destination.
