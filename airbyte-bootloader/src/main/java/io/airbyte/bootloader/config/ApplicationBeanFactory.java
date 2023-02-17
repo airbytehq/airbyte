@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.bootloader.config;
@@ -44,7 +44,7 @@ public class ApplicationBeanFactory {
 
   @Singleton
   public DefinitionsProvider localDefinitionsProvider() throws IOException {
-    return new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+    return new LocalDefinitionsProvider();
   }
 
   @Singleton

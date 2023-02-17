@@ -16,8 +16,6 @@ on:
           - "true"
           - "false"
         required: false
-  schedule:
-    - cron: "0 */1 * * *"
   push:
     branches:
       - master
@@ -78,7 +76,6 @@ jobs:
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
-              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
               - 'airbyte-commons-worker/**'
             db:
@@ -705,7 +702,6 @@ jobs:
             ${{ github.workspace }}/airbyte-notification/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-oauth/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-persistence/job-persistence/build/reports/jacoco/test/jacocoTestReport.xml,
-            ${{ github.workspace }}/airbyte-protocol/protocol-models/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-server/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-test-utils/build/reports/jacoco/test/jacocoTestReport.xml,
             ${{ github.workspace }}/airbyte-workers/build/reports/jacoco/test/jacocoTestReport.xml
@@ -1216,7 +1212,7 @@ jobs:
           AWS_S3_BUCKET: airbyte-ci-ac-tests-logs
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
-        timeout-minutes: 20
+        timeout-minutes: 40
         uses: Wandalen/wretry.action@master
         with:
           command: CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube_helm.sh

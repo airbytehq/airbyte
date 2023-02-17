@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.persistence.job;
@@ -137,7 +137,8 @@ public class DefaultJobCreator implements JobCreator {
             workerResourceRequirements))
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(isDestinationCustomConnector);
+        .withIsDestinationCustomConnector(isDestinationCustomConnector)
+        .withWorkspaceId(destination.getWorkspaceId());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,7 @@ from source_greenhouse.components import GreenHouseSlicer, GreenHouseSubstreamSl
 def test_slicer():
     date_time = "2022-09-05T10:10:10.000000Z"
     date_time_dict = {date_time: date_time}
-    slicer = GreenHouseSlicer(cursor_field=date_time, options=None, request_cursor_field=None)
+    slicer = GreenHouseSlicer(cursor_field=date_time, parameters={}, request_cursor_field=None)
     slicer.update_cursor(stream_slice=date_time_dict, last_record=date_time_dict)
     assert slicer.get_stream_state() == {date_time: "2022-09-05T10:10:10.000Z"}
     assert slicer.get_request_headers() == {}
@@ -34,11 +34,11 @@ def test_slicer():
 )
 def test_sub_slicer(last_record, expected, records):
     date_time = "2022-09-05T10:10:10.000000Z"
-    parent_slicer = GreenHouseSlicer(cursor_field=date_time, options=None, request_cursor_field=None)
+    parent_slicer = GreenHouseSlicer(cursor_field=date_time, parameters={}, request_cursor_field=None)
     GreenHouseSlicer.read_records = MagicMock(return_value=records)
     slicer = GreenHouseSubstreamSlicer(
         cursor_field=date_time,
-        options=None,
+        parameters={},
         request_cursor_field=None,
         parent_stream=parent_slicer,
         stream_slice_field=date_time,
