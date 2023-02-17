@@ -42,8 +42,8 @@ definitions:
     "{{ parameters.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, parameters.boundary_format) }}"
   datetime_slicer:
     type: DatetimeBasedCursor
-    stream_state_field_start: "lower_boundary"
-    stream_state_field_end: "upper_boundary"
+    partition_field_start: "lower_boundary"
+    partition_field_end: "upper_boundary"
     start_datetime:
       datetime: "{{ config.start_date }}"
       min_datetime: "{{ day_delta(-parameters.retention_window_limit, '%Y-%m-%dT%H:%M:%SZ') if parameters.retention_window_limit }}"
