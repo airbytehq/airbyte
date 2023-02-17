@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: ["{{ options.data_field or options.name }}"]
+      field_path: ["{{ parameters.data_field or parameters.name }}"]
   requester:
     type: HttpRequester
     url_base: "https://api.twilio.com/"
@@ -23,7 +23,7 @@ definitions:
   retriever:
     type: SimpleRetriever
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -34,26 +34,24 @@ definitions:
         inject_into: "request_parameter"
         field_name: "PageSize"
       page_token_option:
-        inject_into: "path"
-      url_base: "*ref(definitions.requester.url_base)"
+        type: RequestPath
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   boundary_request_parameters:
-    request_parameters:
-      "{{ options.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, options.boundary_format) }}"
-      "{{ options.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, options.boundary_format) }}"
+    "{{ parameters.lower_boundary_param }}": "{{ format_datetime(stream_slice.lower_boundary, parameters.boundary_format) }}"
+    "{{ parameters.upper_boundary_param }}": "{{ format_datetime(stream_slice.upper_boundary, parameters.boundary_format) }}"
   datetime_slicer:
-    type: DatetimeStreamSlicer
+    type: DatetimeBasedCursor
     stream_state_field_start: "lower_boundary"
     stream_state_field_end: "upper_boundary"
     start_datetime:
       datetime: "{{ config.start_date }}"
-      min_datetime: "{{ day_delta(-options.retention_window_limit, '%Y-%m-%dT%H:%M:%SZ') if options.retention_window_limit }}"
+      min_datetime: "{{ day_delta(-parameters.retention_window_limit, '%Y-%m-%dT%H:%M:%SZ') if parameters.retention_window_limit }}"
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     cursor_format: "%a, %d %b %Y %H:%M:%S %z"
-    step: "{{ 'P' + config.slice_step_map[options.name]|string() + 'D' if config.slice_step_map and config.slice_step_map[options.name] else options.step_default }}"
+    step: "{{ 'P' + config.slice_step_map[parameters.name]|string() + 'D' if config.slice_step_map and config.slice_step_map[parameters.name] else parameters.step_default }}"
     lookback_window: "{{ 'PT' + config.lookback_window|string() + 'M' if config.lookback_window else '' }}"
   datetime_transformation:
     type: AddFields
@@ -65,171 +63,170 @@ definitions:
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   # https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources
   accounts_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "accounts"
       path: "/2010-04-01/Accounts.json"
       data_field: null
       primary_key: "sid"
   # https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
   flows_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         url_base: "https://studio.twilio.com/"
-    $options:
+    $parameters:
       name: "flows"
       path: "/v1/Flows"
       primary_key: "sid"
-  accounts_slicer:
-    type: SubstreamSlicer
+  accounts_partition_router:
+    type: SubstreamPartitionRouter
     parent_stream_configs:
-      - stream: "*ref(definitions.accounts_stream)"
+      - stream: "#/definitions/accounts_stream"
         parent_key: "/"
-        stream_slice_field: "record"
+        partition_field: "record"
   base_nested_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        path: "{{ stream_slice.record.subresource_uris[options.subresource_uri_key or options.name] }}"
-      stream_slicer:
-        $ref: "*ref(definitions.accounts_slicer)"
+        $ref: "#/definitions/requester"
+        path: "{{ stream_slice.record.subresource_uris[parameters.subresource_uri_key or parameters.name] }}"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
   # https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources
   addresses_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "addresses"
       primary_key: "sid"
   # https://www.twilio.com/docs/usage/api/applications#read-multiple-application-resources
   applications_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "applications"
       primary_key: "sid"
   # https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources
   incoming_phone_numbers_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "incoming_phone_numbers"
       primary_key: "sid"
   # https://www.twilio.com/docs/usage/api/keys#read-a-key-resource
   keys_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "keys"
       primary_key: "sid"
   # https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource
   outgoing_caller_ids_stream:
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $ref: "*ref(definitions.base_nested_stream)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $ref: "#/definitions/base_nested_stream"
+    $parameters:
       name: "outgoing_caller_ids"
       primary_key: "sid"
   # https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources
   transcriptions_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "transcriptions"
       primary_key: "sid"
   # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
   # List of available phone number countries, as well as local, mobile and toll free numbers
   # may be different on each request, so could not pass the full refresh tests.
   available_phone_number_countries_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
-    $options:
+    $ref: "#/definitions/base_nested_stream"
+    $parameters:
       name: "available_phone_number_countries"
       data_field: "countries"
       subresource_uri_key: "available_phone_numbers"
   # https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources
   queues_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "queues"
       primary_key: "sid"
   base_phone_number_countries_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "{{ stream_slice.path }}"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.available_phone_number_countries_stream)"
-            parent_key: "subresource_uris/{{ options.subresource_uri_key }}"
-            stream_slice_field: "path"
+          - stream: "#/definitions/available_phone_number_countries_stream"
+            parent_key: "subresource_uris/{{ parameters.subresource_uri_key }}"
+            partition_field: "path"
   # https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources
   available_phone_numbers_local_stream:
-    $ref: "*ref(definitions.base_phone_number_countries_stream)"
-    $options:
+    $ref: "#/definitions/base_phone_number_countries_stream"
+    $parameters:
       name: "available_phone_numbers_local"
       data_field: "available_phone_numbers"
       subresource_uri_key: "local"
   # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources
   available_phone_numbers_mobile_stream:
-    $ref: "*ref(definitions.base_phone_number_countries_stream)"
-    $options:
+    $ref: "#/definitions/base_phone_number_countries_stream"
+    $parameters:
       name: "available_phone_numbers_mobile"
       data_field: "available_phone_numbers"
       subresource_uri_key: "mobile"
   # https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources
   available_phone_numbers_toll_free_stream:
-    $ref: "*ref(definitions.base_phone_number_countries_stream)"
-    $options:
+    $ref: "#/definitions/base_phone_number_countries_stream"
+    $parameters:
       name: "available_phone_numbers_toll_free"
       data_field: "available_phone_numbers"
       subresource_uri_key: "toll_free"
   base_incremental_nested_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        path: "{{ stream_slice.record.subresource_uris[options.name] }}"
-        request_options_provider:
-          $ref: "*ref(definitions.boundary_request_parameters)"
-      stream_slicer:
-        type: CustomStreamSlicer
-        class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
-        stream_slicers:
-          - $ref: "*ref(definitions.accounts_slicer)"
-          - $ref: "*ref(definitions.datetime_slicer)"
-    checkpoint_interval: 1000
+        $ref: "#/definitions/requester"
+        path: "{{ stream_slice.record.subresource_uris[parameters.name] }}"
+        request_parameters:
+          $ref: "#/definitions/boundary_request_parameters"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
+      stream_slicers:
+        - $ref: "#/definitions/accounts_partition_router"
+        - $ref: "#/definitions/datetime_slicer"
   # https://www.twilio.com/docs/voice/api/call-resource#read-multiple-call-resources
   calls_stream:
-    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $ref: "#/definitions/base_incremental_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
+      - "#/definitions/datetime_transformation"
       - type: AddFields
         fields:
           - path: ["start_time"]
             value: "{{ format_datetime(record.start_time, '%Y-%m-%dT%H:%M:%SZ') }}"
           - path: ["end_time"]
             value: "{{ format_datetime(record.end_time, '%Y-%m-%dT%H:%M:%SZ') }}"
-    $options:
+    $parameters:
       name: "calls"
       cursor_field: "end_time"
       lower_boundary_param: "EndTime>"
@@ -238,13 +235,12 @@ definitions:
       cursor_granularity: "P1D"
       step_default: "P1Y"
       primary_key: "sid"
-    stream_cursor_field: "end_time"
   # https://www.twilio.com/docs/voice/api/conference-resource#read-multiple-conference-resources
   conferences_stream:
-    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $ref: "#/definitions/base_incremental_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "conferences"
       data_field: null
       cursor_field: "date_updated"
@@ -254,23 +250,22 @@ definitions:
       cursor_granularity: "P1D"
       step_default: "P1Y"
       primary_key: "sid"
-    stream_cursor_field: "date_updated"
   # https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources
   messages_stream:
-    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $ref: "#/definitions/base_incremental_nested_stream"
     retriever:
-      $ref: "*ref(definitions.base_incremental_nested_stream.retriever)"
+      $ref: "#/definitions/base_incremental_nested_stream/retriever"
       record_selector:
-        $ref: "*ref(definitions.selector)"
+        $ref: "#/definitions/selector"
         record_filter:
-          condition: "{{ not options.with_media_only or record.num_media|int() > 0 }}"
+          condition: "{{ not parameters.with_media_only or record.num_media|int() > 0 }}"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
+      - "#/definitions/datetime_transformation"
       - type: AddFields
         fields:
           - path: ["date_sent"]
             value: "{{ format_datetime(record.date_sent, '%Y-%m-%dT%H:%M:%SZ') }}"
-    $options:
+    $parameters:
       name: "messages"
       data_field: null
       cursor_field: "date_sent"
@@ -281,17 +276,16 @@ definitions:
       step_default: "P1D"
       primary_key: "sid"
       retention_window_limit: 399
-    stream_cursor_field: "date_sent"
   # https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources
   recordings_stream:
-    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $ref: "#/definitions/base_incremental_nested_stream"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
+      - "#/definitions/datetime_transformation"
       - type: AddFields
         fields:
           - path: ["start_time"]
             value: "{{ format_datetime(record.start_time, '%Y-%m-%dT%H:%M:%SZ') }}"
-    $options:
+    $parameters:
       name: "recordings"
       cursor_field: "date_created"
       lower_boundary_param: "DateCreated>"
@@ -300,27 +294,26 @@ definitions:
       cursor_granularity: "PT0S"
       step_default: "P1Y"
       primary_key: "sid"
-    stream_cursor_field: "date_created"
   # https://www.twilio.com/docs/usage/monitor-alert#read-multiple-alert-resources
   alerts_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         url_base: "https://monitor.twilio.com/"
         path: "/v1/Alerts"
-        request_options_provider:
-          $ref: "*ref(definitions.boundary_request_parameters)"
-      stream_slicer:
-        $ref: "*ref(definitions.datetime_slicer)"
+        request_parameters:
+          $ref: "#/definitions/boundary_request_parameters"
+    incremental_sync:
+      $ref: "#/definitions/datetime_slicer"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
+      - "#/definitions/datetime_transformation"
       - type: AddFields
         fields:
           - path: ["date_generated"]
             value: "{{ format_datetime(record.date_generated, '%Y-%m-%dT%H:%M:%SZ') }}"
-    $options:
+    $parameters:
       name: "alerts"
       cursor_field: "date_generated"
       lower_boundary_param: "StartDate"
@@ -329,28 +322,27 @@ definitions:
       cursor_granularity: "PT0S"
       step_default: "P1Y"
       primary_key: "sid"
-    stream_cursor_field: "date_generated"
   # https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources
   usage_records_stream:
-    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $ref: "#/definitions/base_incremental_nested_stream"
     retriever:
-      $ref: "*ref(definitions.base_incremental_nested_stream.retriever)"
+      $ref: "#/definitions/base_incremental_nested_stream/retriever"
       requester:
-        $ref: "*ref(definitions.base_incremental_nested_stream.retriever.requester)"
+        $ref: "#/definitions/base_incremental_nested_stream/retriever/requester"
         path: "/2010-04-01/Accounts/{{ stream_slice.record.sid }}/Usage/Records/Daily.json"
-      stream_slicer:
-        type: CustomStreamSlicer
-        class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
-        stream_slicers:
-          - $ref: "*ref(definitions.accounts_slicer)"
-          - $ref: "*ref(definitions.datetime_slicer)"
-            start_datetime:
-              datetime: "{{ format_datetime(config.start_date, '%Y-%m-%d') }}"
-            end_datetime:
-              datetime: "{{ today_utc() }}"
-            datetime_format: "%Y-%m-%d"
-            cursor_format: ""
-    $options:
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
+      stream_slicers:
+        - $ref: "#/definitions/accounts_partition_router"
+        - $ref: "#/definitions/datetime_slicer"
+          start_datetime:
+            datetime: "{{ format_datetime(config.start_date, '%Y-%m-%d') }}"
+          end_datetime:
+            datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+          cursor_format: ""
+    $parameters:
       name: "usage_records"
       cursor_field: "start_date"
       lower_boundary_param: "StartDate"
@@ -359,86 +351,85 @@ definitions:
       cursor_granularity: "P1D"
       step_default: "P1Y"
       primary_key: ["account_sid", "category", "start_date"]
-    stream_cursor_field: "start_date"
   # https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources
   usage_triggers_stream:
-    $ref: "*ref(definitions.base_nested_stream)"
+    $ref: "#/definitions/base_nested_stream"
     retriever:
-      $ref: "*ref(definitions.base_nested_stream.retriever)"
+      $ref: "#/definitions/base_nested_stream/retriever"
       requester:
-        $ref: "*ref(definitions.base_nested_stream.retriever.requester)"
+        $ref: "#/definitions/base_nested_stream/retriever/requester"
         path: "/2010-04-01/Accounts/{{ stream_slice.record.sid }}/Usage/Triggers.json"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
+      - "#/definitions/datetime_transformation"
       - type: AddFields
         fields:
           - path: ["date_fired"]
             value: "{{ format_datetime(record.date_fired, '%Y-%m-%dT%H:%M:%SZ') if record.date_fired else record.date_fired }}"
-    $options:
+    $parameters:
       name: "usage_triggers"
       primary_key: "sid"
   # https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources
   # This streams has records only if there are active conference participants (participants, which are on conference call at the moment request is made).
   conference_participants_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
-        path: "{{ stream_slice.record.subresource_uris[options.subresource_uri_key] }}"
-      stream_slicer:
-        type: SubstreamSlicer
+        $ref: "#/definitions/requester"
+        path: "{{ stream_slice.record.subresource_uris[parameters.subresource_uri_key] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.conferences_stream)"
+          - stream: "#/definitions/conferences_stream"
             parent_key: "/"
-            stream_slice_field: "record"
+            partition_field: "record"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "conference_participants"
       primary_key: ["account_sid", "conference_sid"]
       data_field: "participants"
       subresource_uri_key: "participants"
   # https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#list-dependent-pns
   dependent_phone_numbers_stream:
-    $ref: "*ref(definitions.base_stream)"
+    $ref: "#/definitions/base_stream"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "#/definitions/requester"
         path: "/2010-04-01/Accounts/{{ stream_slice.record.account_sid }}/Addresses/{{ stream_slice.record.sid }}/DependentPhoneNumbers.json"
-      stream_slicer:
-        type: SubstreamSlicer
+      partition_router:
+        type: SubstreamPartitionRouter
         parent_stream_configs:
-          - stream: "*ref(definitions.addresses_stream)"
+          - stream: "#/definitions/addresses_stream"
             parent_key: "/"
-            stream_slice_field: "record"
+            partition_field: "record"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "dependent_phone_numbers"
       primary_key: "sid"
   # https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources
   message_media_stream:
-    $ref: "*ref(definitions.base_incremental_nested_stream)"
+    $ref: "#/definitions/base_incremental_nested_stream"
     retriever:
-      $ref: "*ref(definitions.base_incremental_nested_stream.retriever)"
+      $ref: "#/definitions/base_incremental_nested_stream/retriever"
       requester:
-        $ref: "*ref(definitions.base_incremental_nested_stream.retriever.requester)"
+        $ref: "#/definitions/base_incremental_nested_stream/retriever/requester"
         path: "{{ stream_slice.record.subresource_uris.media }}"
-      stream_slicer:
-        type: CustomStreamSlicer
-        class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
-        stream_slicers:
-          - type: SubstreamSlicer
-            parent_stream_configs:
-              - stream: "*ref(definitions.messages_stream)"
-                parent_key: "/"
-                stream_slice_field: "record"
-          - $ref: "*ref(definitions.datetime_slicer)"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_twilio.components.NestedStateCartesianProductStreamSlicer
+      stream_slicers:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/messages_stream"
+              parent_key: "/"
+              partition_field: "record"
+        - $ref: "#/definitions/datetime_slicer"
     transformations:
-      - "*ref(definitions.datetime_transformation)"
-    $options:
+      - "#/definitions/datetime_transformation"
+    $parameters:
       name: "message_media"
       primary_key: "sid"
       data_field: "media_list"
@@ -450,33 +441,32 @@ definitions:
       boundary_format: "%Y-%m-%dT%H:%M:%SZ"
       with_media_only: true
       retention_window_limit: 399
-    stream_cursor_field: "date_created"
 
 
 streams:
-  - "*ref(definitions.accounts_stream)"
-  - "*ref(definitions.flows_stream)"
-  - "*ref(definitions.addresses_stream)"
-  - "*ref(definitions.applications_stream)"
-  - "*ref(definitions.incoming_phone_numbers_stream)"
-  - "*ref(definitions.keys_stream)"
-  - "*ref(definitions.outgoing_caller_ids_stream)"
-  - "*ref(definitions.transcriptions_stream)"
-  - "*ref(definitions.available_phone_number_countries_stream)"
-  - "*ref(definitions.queues_stream)"
-  - "*ref(definitions.available_phone_numbers_local_stream)"
-  - "*ref(definitions.available_phone_numbers_mobile_stream)"
-  - "*ref(definitions.available_phone_numbers_toll_free_stream)"
-  - "*ref(definitions.calls_stream)"
-  - "*ref(definitions.conferences_stream)"
-  - "*ref(definitions.messages_stream)"
-  - "*ref(definitions.recordings_stream)"
-  - "*ref(definitions.alerts_stream)"
-  - "*ref(definitions.usage_records_stream)"
-  - "*ref(definitions.usage_triggers_stream)"
-  - "*ref(definitions.conference_participants_stream)"
-  - "*ref(definitions.dependent_phone_numbers_stream)"
-  - "*ref(definitions.message_media_stream)"
+  - "#/definitions/accounts_stream"
+  - "#/definitions/flows_stream"
+  - "#/definitions/addresses_stream"
+  - "#/definitions/applications_stream"
+  - "#/definitions/incoming_phone_numbers_stream"
+  - "#/definitions/keys_stream"
+  - "#/definitions/outgoing_caller_ids_stream"
+  - "#/definitions/transcriptions_stream"
+  - "#/definitions/available_phone_number_countries_stream"
+  - "#/definitions/queues_stream"
+  - "#/definitions/available_phone_numbers_local_stream"
+  - "#/definitions/available_phone_numbers_mobile_stream"
+  - "#/definitions/available_phone_numbers_toll_free_stream"
+  - "#/definitions/calls_stream"
+  - "#/definitions/conferences_stream"
+  - "#/definitions/messages_stream"
+  - "#/definitions/recordings_stream"
+  - "#/definitions/alerts_stream"
+  - "#/definitions/usage_records_stream"
+  - "#/definitions/usage_triggers_stream"
+  - "#/definitions/conference_participants_stream"
+  - "#/definitions/dependent_phone_numbers_stream"
+  - "#/definitions/message_media_stream"
 
 check:
   stream_names:
