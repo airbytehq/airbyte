@@ -210,7 +210,7 @@ class TiktokStream(HttpStream, ABC):
             data = response.json()
         except Exception:
             if response.status_code == 504:
-                self.logger.error(f"Gateway Timeout: The proxy server did not receive a timely response from the upstream server.")
+                self.logger.error("Gateway Timeout: The proxy server did not receive a timely response from the upstream server.")
                 return super().should_retry(response)
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
@@ -431,7 +431,7 @@ class Advertisers(FullRefreshTiktokStream):
         ids = self.get_advertiser_ids()
         start, end, step = 0, len(ids), 100
         for i in range(start, end, step):
-            yield {"advertiser_ids": ids[i: min(end, i + step)]}
+            yield {"advertiser_ids": ids[i : min(end, i + step)]}
 
 
 class Campaigns(IncrementalTiktokStream):
