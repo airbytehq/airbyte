@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.opensearch.testcontainers.OpensearchContainer;
+import org.testcontainers.containers.Network;
 
 public abstract class SshOpensearchDestinationAcceptanceTest extends OpensearchDestinationAcceptanceTest {
 
@@ -25,11 +26,8 @@ public abstract class SshOpensearchDestinationAcceptanceTest extends OpensearchD
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private String getEndPoint() {
-    return String.format("http://%s:%d",
-        container.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .entrySet().stream().findFirst().get().getValue().getIpAddress(),
-        container.getExposedPorts().get(0));
+    return String.format("http://%s",
+        container.getHttpHostAddress());
   }
 
   @Override
@@ -55,8 +53,7 @@ public abstract class SshOpensearchDestinationAcceptanceTest extends OpensearchD
   public static void beforeAll() {
     bastion.initAndStartBastion(network);
     container = new OpensearchContainer("opensearchproject/opensearch:2.5.0")
-        .withNetwork(network)
-        .withPassword(ELASTIC_PASSWORD);
+        .withNetwork(network);
     container.start();
   }
 

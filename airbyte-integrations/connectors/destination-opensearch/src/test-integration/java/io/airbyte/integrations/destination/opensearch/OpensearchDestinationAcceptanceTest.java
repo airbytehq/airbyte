@@ -27,15 +27,14 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @BeforeAll
   public static void beforeAll() {
-    container = new OpensearchContainer(IMAGE_NAME);
-//            .withEnv("discovery.type", "single-node")
-//            .withEnv("network.host", "0.0.0.0")
-//            .withEnv("logger.org.elasticsearch", "INFO")
-//            .withEnv("ingest.geoip.downloader.enabled", "false")
-//            .withPassword("s3cret")
-//            .withExposedPorts(9200)
-//            .withEnv("xpack.security.enabled", "false")
-//            .withStartupTimeout(Duration.ofSeconds(60));
+    container = new OpensearchContainer(IMAGE_NAME)
+            .withEnv("discovery.type", "single-node")
+            .withEnv("network.host", "0.0.0.0")
+            .withEnv("logger.org.elasticsearch", "INFO")
+            .withEnv("ingest.geoip.downloader.enabled", "false")
+            .withExposedPorts(9200)
+            .withEnv("xpack.security.enabled", "false")
+            .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
   }
 

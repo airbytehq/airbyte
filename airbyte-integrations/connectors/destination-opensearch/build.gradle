@@ -19,7 +19,6 @@ dependencies {
     implementation 'org.opensearch.client:opensearch-rest-client: 2.5.0'
     implementation 'org.opensearch.client:opensearch-java:2.0.0'
     implementation 'org.opensearch.client:opensearch-rest-high-level-client:2.5.0'
-    testImplementation 'org.opensearch:opensearch-testcontainers:2.0.0'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
     // https://eclipse-ee4j.github.io/jsonp/
@@ -30,8 +29,7 @@ dependencies {
     // https://github.com/eclipse-ee4j/jsonp
     implementation 'org.glassfish:jakarta.json:2.0.1'
 
-    // MIT
-    // https://www.testcontainers.org/
+    testImplementation libs.connectors.testcontainers
     testImplementation libs.connectors.testcontainers.opensearch
     integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
 
