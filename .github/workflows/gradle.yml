@@ -337,7 +337,6 @@ jobs:
           label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
 
-
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
