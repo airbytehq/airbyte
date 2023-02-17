@@ -3,6 +3,7 @@ airbyte-protocol = "1.0.0"
 commons_io = "2.7"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
 connectors-destination-testcontainers-elasticsearch = "1.17.3"
+connectors-destination-testcontainers-opensearch = "2.0.0"
 connectors-destination-testcontainers-oracle-xe = "1.17.3"
 connectors-source-testcontainers-clickhouse = "1.17.3"
 connectors-testcontainers = "1.15.3"
@@ -56,6 +57,7 @@ connectors-testcontainers-mariadb = { module = "org.testcontainers:mariadb", ver
 connectors-testcontainers-mongodb = { module = "org.testcontainers:mongodb", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mssqlserver = { module = "org.testcontainers:mssqlserver", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-mysql = { module = "org.testcontainers:mysql", version.ref = "connectors-testcontainers" }
+connectors-testcontainers-opensearch = { module = "org.opensearch:opensearch-testcontainers", version.ref = "connectors-destination-testcontainers-opensearch" }
 connectors-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "connectors-testcontainers" }
 connectors-testcontainers-pulsar = { module = "org.testcontainers:pulsar", version.ref = "connectors-testcontainers-pulsar" }
 connectors-testcontainers-scylla = { module = "org.testcontainers:testcontainers", version.ref = "connectors-testcontainers-scylla" }
