@@ -37,6 +37,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
@@ -67,6 +68,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
   private final FeatureFlags featureFlags;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
+  private final ConfigInjector configInjector;
+
   private static final Logger LOGGER = LoggerFactory.getLogger(GenerateInputActivity.class);
 
   public GenerateInputActivityImpl(final JobPersistence jobPersistence,
@@ -74,11 +77,13 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                                    final StateApi stateApi,
                                    final AttemptApi attemptApi,
                                    final FeatureFlags featureFlags,
-                                   final OAuthConfigSupplier oAuthConfigSupplier) {
+                                   final OAuthConfigSupplier oAuthConfigSupplier,
+  final ConfigInjector configInjector) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.stateApi = stateApi;
     this.attemptApi = attemptApi;
+    this.configInjector = configInjector;
     this.featureFlags = featureFlags;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
@@ -131,7 +136,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             source.getSourceDefinitionId(),
             source.getWorkspaceId(),
             source.getConfiguration());
-        attemptSyncConfig.setSourceConfiguration(sourceConfiguration);
+        attemptSyncConfig.setSourceConfiguration(configInjector.injectConfig(sourceConfiguration, source.getSourceDefinitionId()));
       } else if (ConfigType.RESET_CONNECTION.equals(jobConfigType)) {
         final JobResetConnectionConfig resetConnection = job.getConfig().getResetConnection();
         final ResetSourceConfiguration resetSourceConfiguration = resetConnection.getResetSourceConfiguration();
@@ -169,7 +174,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           destination.getDestinationDefinitionId(),
           destination.getWorkspaceId(),
           destination.getConfiguration());
-      attemptSyncConfig.setDestinationConfiguration(destinationConfiguration);
+      attemptSyncConfig.setDestinationConfiguration(configInjector.injectConfig(destinationConfiguration, destination.getDestinationDefinitionId()));
 
       final StandardSourceDefinition sourceDefinition =
           configRepository.getSourceDefinitionFromSource(standardSync.getSourceId());
