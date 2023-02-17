@@ -2,7 +2,7 @@ import { AirbyteJSONSchema } from "core/jsonSchema/types";
 
 import { traverseSchemaToField } from "./traverseSchemaToField";
 
-describe(`${traverseSchemaToField}`, () => {
+describe(`${traverseSchemaToField.name}`, () => {
   it("traverses a nested schema", () => {
     const nestedSchema: AirbyteJSONSchema = {
       $schema: "http://json-schema.org/draft-04/schema#",

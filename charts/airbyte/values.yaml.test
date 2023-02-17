@@ -807,10 +807,6 @@ worker:
     enabled: true
     image: ""
 
-  activityMaxAttempt: ""
-  activityInitialDelayBetweenAttemptsSeconds: ""
-  activityMaxDelayBetweenAttemptsSeconds: ""
-
 ## @section Metrics parameters
 metrics:
   enabled: false
@@ -1048,9 +1044,6 @@ airbyte-bootloader:
   ##     emptyDir: {}
   ##
   extraVolumes: []
-
-  ## run database migrations on startup true|false
-  runDatabaseMigrationsOnStartup: "true"
 
 ## @section Temporal parameters
 ## TODO: Move to consuming temporal from a dedicated helm chart
