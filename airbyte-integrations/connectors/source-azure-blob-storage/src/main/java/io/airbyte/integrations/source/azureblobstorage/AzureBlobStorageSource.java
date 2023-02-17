@@ -9,6 +9,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.source.azureblobstorage.format.JsonlAzureBlobStorageOperations;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.StateDecoratingIterator;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
@@ -26,7 +27,6 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +36,6 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
 
     private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     public static void main(final String[] args) throws Exception {
         final Source source = new AzureBlobStorageSource();
         LOGGER.info("starting Source: {}", AzureBlobStorageSource.class);
@@ -46,10 +44,12 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
     }
 
     @Override
-    public AirbyteConnectionStatus check(JsonNode config) throws Exception {
+    public AirbyteConnectionStatus check(JsonNode config) {
         var azureBlobStorageConfig = AzureBlobStorageConfig.createAzureBlobStorageConfig(config);
         try {
-            var azureBlobStorageOperations = new AzureBlobStorageOperations(azureBlobStorageConfig);
+            var azureBlobStorageOperations = switch (azureBlobStorageConfig.formatConfig().format()) {
+                case JSONL -> new JsonlAzureBlobStorageOperations(azureBlobStorageConfig);
+            };
             azureBlobStorageOperations.listBlobs();
 
             return new AirbyteConnectionStatus()
@@ -63,16 +63,14 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
     }
 
     @Override
-    public AirbyteCatalog discover(JsonNode config) throws Exception {
+    public AirbyteCatalog discover(JsonNode config) {
         var azureBlobStorageConfig = AzureBlobStorageConfig.createAzureBlobStorageConfig(config);
 
-        JsonNode schema;
-        if (!StringUtils.isBlank(azureBlobStorageConfig.schema())) {
-            schema = objectMapper.readTree(azureBlobStorageConfig.schema());
-        } else {
-            var azureBlobStorageOperations = new AzureBlobStorageOperations(azureBlobStorageConfig);
-            schema = azureBlobStorageOperations.inferSchema();
-        }
+        var azureBlobStorageOperations = switch (azureBlobStorageConfig.formatConfig().format()) {
+            case JSONL -> new JsonlAzureBlobStorageOperations(azureBlobStorageConfig);
+        };
+
+        JsonNode schema = azureBlobStorageOperations.inferSchema();
 
         return new AirbyteCatalog()
             .withStreams(List.of(new AirbyteStream()
@@ -84,8 +82,7 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
     }
 
     @Override
-    public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state)
-        throws Exception {
+    public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) {
 
         final var streamState =
             AzureBlobStorageStateManager.deserializeStreamState(state, featureFlags.useStreamCapableState());
@@ -94,7 +91,9 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
             .createStateManager(streamState.airbyteStateType(), streamState.airbyteStateMessages(), catalog);
 
         var azureBlobStorageConfig = AzureBlobStorageConfig.createAzureBlobStorageConfig(config);
-        var azureBlobStorageOperations = new AzureBlobStorageOperations(azureBlobStorageConfig);
+        var azureBlobStorageOperations = switch (azureBlobStorageConfig.formatConfig().format()) {
+            case JSONL -> new JsonlAzureBlobStorageOperations(azureBlobStorageConfig);
+        };
 
         // only one stream per connection
         var streamIterators = catalog.getStreams().stream()
@@ -119,7 +118,10 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
         Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(streamPair);
 
         var messageStream = cursorInfo
-            .map(cursor -> azureBlobStorageOperations.readBlobs(OffsetDateTime.parse(cursor.getCursor())))
+            .map(cursor -> {
+                var offsetDateTime = cursor.getCursor() != null ? OffsetDateTime.parse(cursor.getCursor()) : null;
+                return azureBlobStorageOperations.readBlobs(offsetDateTime);
+            })
             .orElse(azureBlobStorageOperations.readBlobs(null))
             .stream()
             .map(jn -> new AirbyteMessage()
@@ -136,7 +138,7 @@ public class AzureBlobStorageSource extends BaseConnector implements Source {
                 cursorField,
                 cursorInfo.map(CursorInfo::getCursor).orElse(null),
                 JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.TIMESTAMP_WITH_TIMEZONE_V1,
-                // TODO (itaseski) emit state after every record since they are sorted in increasing order
+                // TODO (itaseski) emit state after every record/blob since they can be sorted in increasing order
                 0),
             AutoCloseableIterators.fromStream(messageStream));
     }
