@@ -76,6 +76,10 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
             return endOfData();
           }
 
+          if(emittedMessages.get() > 50L){
+            throw new IllegalStateException("SOURCE EXCEPTION HAPPENED");
+          }
+
           if (messageIntervalMs.isPresent() && emittedMessages.get() != 0) {
             try {
               Thread.sleep(messageIntervalMs.get());

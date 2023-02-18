@@ -205,6 +205,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           readFromDstRunnable(destination, cancelled, messageTracker, connectorConfigUpdater, mdc, timeTracker, destinationConfig.getDestinationId()),
           executors)
           .whenComplete((msg, ex) -> {
+            LOGGER.info("Completed readFromDstRunnable");
             if (ex != null) {
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof DestinationException) {
@@ -233,6 +234,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
+              LOGGER.info("Completed readSrcAndWriteDstThread: error thrown: ", ex);
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof SourceException) {
                 replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
@@ -254,10 +256,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       LOGGER.info("Source and destination threads complete.");
 
     } catch (final Exception e) {
+      LOGGER.info("Caught an exception within replication: ", e);
       hasFailed.set(true);
       ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Sync worker failed.", e);
     } finally {
+      LOGGER.info("Both threads are complete. Shutting down.");
       executors.shutdownNow();
     }
   }
