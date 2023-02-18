@@ -11,17 +11,12 @@ import { useModalService } from "hooks/services/Modal";
 
 import { FormikConnectionFormValues } from "./formConfig";
 import { FormFieldWrapper } from "./FormFieldWrapper";
+import { namespaceDefinitionOptions } from "./types";
 import { ControlLabels } from "../../LabeledControl";
 import {
   DestinationNamespaceFormValueType,
   DestinationNamespaceModal,
 } from "../DestinationNamespaceModal/DestinationNamespaceModal";
-
-const namespaceDefinitionOptions = {
-  [NamespaceDefinitionType.destination]: "destinationFormat",
-  [NamespaceDefinitionType.source]: "sourceFormat",
-  [NamespaceDefinitionType.customformat]: "customFormat",
-};
 
 /**
  * Destination namespace definition field for new stream table
