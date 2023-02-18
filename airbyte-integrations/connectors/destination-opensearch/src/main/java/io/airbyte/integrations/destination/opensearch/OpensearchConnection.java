@@ -10,9 +10,14 @@ import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch._types.Refresh;
 import org.opensearch.client.opensearch.cat.indices.IndicesRecord;
+import org.opensearch.client.opensearch.core.BulkRequest;
+import org.opensearch.client.opensearch.core.BulkResponse;
 import org.opensearch.client.opensearch.core.CreateResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
+import org.opensearch.client.opensearch.core.bulk.BulkOperation;
+import org.opensearch.client.opensearch.core.bulk.CreateOperation;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.indices.*;
@@ -21,7 +26,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.util.SSLCertificateUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import jakarta.json.JsonValue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -161,13 +165,18 @@ public class OpensearchConnection {
      *                     server
      */
     public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpensearchWriteConfig config) throws IOException {
-        var bulkRequest = new BulkRequest.Builder<>();
+        var bulkRequest = new BulkRequest.Builder();
+
+
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
-            bulkRequest.addOperation(
+            bulkRequest.operations(
                             b -> b.index(
                                     c -> c.index(index).id(extractPrimaryKey(doc, config))))
-                    .addDocument(doc.getData()).refresh(JsonValue.TRUE);
+                .operations(BulkOperation.of(
+                    d -> d.create(
+                        CreateOperation.of(k -> k.document(doc.getData())))))
+                .refresh(Refresh.True);
         }
 
         try {
