@@ -88,3 +88,4 @@ dd-java-agent.jar
 docker-compose.yaml
 .env
 .env.dev
+flags.yml
