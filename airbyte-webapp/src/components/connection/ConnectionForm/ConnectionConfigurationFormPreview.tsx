@@ -23,10 +23,10 @@ export const ConnectionConfigurationFormPreview: React.FC = () => {
 
   const frequency = (
     <div>
-      <Text size="xs" className={styles.text}>
+      <Text size="xs" color="grey">
         <FormattedMessage id="form.frequency" />:
       </Text>
-      <Text size="md" className={styles.text}>
+      <Text size="md" color="grey">
         {scheduleType === ConnectionScheduleType.manual && <FormattedMessage id="frequency.manual" />}
         {scheduleType === ConnectionScheduleType.cron && (
           <>
@@ -46,10 +46,10 @@ export const ConnectionConfigurationFormPreview: React.FC = () => {
 
   const nonBreakingChanges = allowAutoDetectSchema && (
     <div>
-      <Text size="xs" className={styles.text}>
+      <Text size="xs" color="grey">
         <FormattedMessage id="connectionForm.nonBreakingChangesPreference.label" />:
       </Text>
-      <Text size="md" className={styles.text}>
+      <Text size="md" color="grey">
         <FormattedMessage id={`connectionForm.nonBreakingChangesPreference.${nonBreakingChangesPreference}`} />
       </Text>
     </div>
