@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SyncPersistenceImpl implements SyncPersistence {
 
   final long RUN_IMMEDIATELY = 0;
+  final long FLUSH_TERMINATION_TIMEOUT_IN_SECONDS = 60;
 
   private final UUID connectionId;
   private final StateApi stateApi;
@@ -87,7 +88,7 @@ public class SyncPersistenceImpl implements SyncPersistence {
 
     // Wait for previous running task to terminate
     try {
-      final boolean terminated = stateFlushExecutorService.awaitTermination(60, TimeUnit.SECONDS);
+      final boolean terminated = stateFlushExecutorService.awaitTermination(FLUSH_TERMINATION_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS);
       if (!terminated) {
         // Ongoing flush failed to terminate within the allocated time
         log.info("Pending persist operation took too long to complete, most recent states may have been lost");
