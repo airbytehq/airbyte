@@ -196,12 +196,7 @@ class StateAggregatorTest {
     otherStateAggregator.ingest(stateA2);
 
     Assertions.assertThatThrownBy(() -> {
-      try {
-        stateAggregator.ingest(otherStateAggregator);
-      } catch (Exception e) {
-        System.out.println(e);
-        throw e;
-      }
+      stateAggregator.ingest(otherStateAggregator);
     });
 
     Assertions.assertThatThrownBy(() -> {
