@@ -20,12 +20,12 @@ from airbyte_cdk.models.airbyte_protocol import (
 from airbyte_cdk.sources.source import Source
 from apiclient import errors
 from requests.status_codes import codes as status_codes
-from slugify import slugify
 
 from .client import GoogleSheetsClient
 from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
+from .utils import safe_name_conversion
 
 # set default batch read size
 ROW_BATCH_SIZE = 200
@@ -73,7 +73,7 @@ class SourceGoogleSheets(Source):
             try:
                 header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                 if config.get("names_conversion"):
-                    header_row_data = [slugify(h) for h in header_row_data]
+                    header_row_data = [safe_name_conversion(h) for h in header_row_data]
                 _, duplicate_headers = Helpers.get_valid_headers_and_duplicates(header_row_data)
                 if duplicate_headers:
                     duplicate_headers_in_sheet[sheet_name] = duplicate_headers
@@ -112,7 +112,7 @@ class SourceGoogleSheets(Source):
                 try:
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                     if config.get("names_conversion"):
-                        header_row_data = [slugify(h) for h in header_row_data]
+                        header_row_data = [safe_name_conversion(h) for h in header_row_data]
                     stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
                     streams.append(stream)
                 except Exception as err:
