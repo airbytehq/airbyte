@@ -64,7 +64,7 @@ jobs:
               - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
               - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
               - 'docker-compose*.yaml'
-              - '(charts|kube)/**'
+              - 'charts/**'
             build:
               - '.github/**'
               - 'buildSrc/**'
@@ -831,7 +831,7 @@ jobs:
           label: ${{ needs.start-platform-build-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-platform-build-runner.outputs.ec2-instance-id }}
 
-  # ## Kube Acceptance Tests
+  # ## Helm Acceptance Tests
   # # Docker acceptance tests run as part of the build job.
   # # In case of self-hosted EC2 errors, remove this block.
   start-helm-acceptance-test-runner:
