@@ -34,6 +34,51 @@ public class ConnectorConfiguration {
     private String apiKeyId;
     private String apiKeySecret;
 
+    public OpenSearchAuthenticationMethod getMethod() {
+      return this.method;
+    }
+
+    public String getUsername() {
+      return this.username;
+    }
+
+    public String getPassword() {
+      return this.password;
+    }
+
+    public String getApiKeyId() {
+      return this.apiKeyId;
+    }
+
+    public String getApiKeySecret() {
+      return this.apiKeySecret;
+    }
+
+    public void setMethod(OpenSearchAuthenticationMethod method) {
+      this.method = method;
+    }
+
+    public void setUsername(String username) {
+      this.username = username;
+    }
+
+    public void setPassword(String password) {
+      this.password = password;
+    }
+
+    public void setApiKeyId(String apiKeyId) {
+      this.apiKeyId = apiKeyId;
+    }
+
+    public void setApiKeySecret(String apiKeySecret) {
+      this.apiKeySecret = apiKeySecret;
+    }
+
+<<<<<<< HEAD
+>>>>>>> 7edf6edbf6 (capitalize class name)
+=======
+
+>>>>>>> c01deb78a5 (fix error)
     public boolean isValid() {
       return switch (this.method) {
         case none -> true;
