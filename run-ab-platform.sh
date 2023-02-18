@@ -24,10 +24,10 @@ Help()
    # $0 is the currently running program
    echo "Syntax: $0"
    echo "options:"
-   echo "-d --download    Only download files - don't run docker compose"
-   echo "-r --refresh     ${red_text}DELETE${default_text} existing assets and re-download new ones"
-   echo "-h --help        Print this Help."
-   echo "-x --debug       Verbose mode."
+   echo "   -d --download    Only download files - don't run docker compose"
+   echo "   -r --refresh     ${red_text}DELETE${default_text} existing assets and re-download new ones"
+   echo "   -h --help        Print this Help."
+   echo "   -x --debug       Verbose mode."
    echo
 }
 
