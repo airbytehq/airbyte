@@ -21,8 +21,10 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { ConnectionConfigurationFormPreview } from "./ConnectionConfigurationFormPreview";
 import styles from "./ConnectionFormFields.module.scss";
+import { DestinationStreamPrefixName } from "./DestinationStreamPrefixName";
 import { FormikConnectionFormValues } from "./formConfig";
 import { NamespaceDefinitionField } from "./NamespaceDefinitionField";
+import { NamespaceDefinitionFieldNext } from "./NamespaceDefinitionFieldNext";
 import { NonBreakingChangesPreferenceField } from "./NonBreakingChangesPreferenceField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./refreshSourceSchemaWithConfirmationOnDirty";
 import { ScheduleField } from "./ScheduleField";
@@ -66,6 +68,12 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           testId="configuration"
         >
           <ScheduleField />
+          {isNewTableDesignEnabled && (
+            <>
+              <NamespaceDefinitionFieldNext />
+              <DestinationStreamPrefixName />
+            </>
+          )}
           {allowAutoDetectSchema && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
