@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useIntl } from "react-intl";
 
 import { Heading } from "components/ui/Heading";
@@ -16,27 +16,19 @@ interface FrequentlyUsedWorkspacesProps {
 const LOCAL_STORAGE_KEY = "ab_frequently_used_workspaces";
 
 export const useTrackFrequentlyUsedWorkspaces = () => {
-  const [frequentlyUsedWorkspaces, setFrequentlyUsedWorkspaces] = useState<string[]>(() => {
-    const workspaces = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return workspaces ? JSON.parse(workspaces) : [];
-  });
   const workspaceId = useCurrentWorkspaceId();
 
   useEffect(() => {
     if (workspaceId) {
-      setFrequentlyUsedWorkspaces((previousWorkspaces) => {
-        const newWorkspaces = [workspaceId, ...previousWorkspaces.filter((id) => id !== workspaceId)].slice(0, 5);
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newWorkspaces));
-        return newWorkspaces;
-      });
+      const previousWorkspaceIds = getFrequentlyUsedWorkspacesFromLocalStorage();
+      const newWorkspaces = [workspaceId, ...previousWorkspaceIds.filter((id) => id !== workspaceId)].slice(0, 5);
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newWorkspaces));
     }
-  }, [frequentlyUsedWorkspaces, workspaceId]);
+  }, [workspaceId]);
 };
 
-export const FrequentlyUsedWorkspaces: React.FC<FrequentlyUsedWorkspacesProps> = ({ workspaces }) => {
-  const { selectWorkspace } = useWorkspaceService();
-  const { formatMessage } = useIntl();
-  let frequentlyUsedWorkspaceIds: string[];
+export function getFrequentlyUsedWorkspacesFromLocalStorage() {
+  let frequentlyUsedWorkspaceIds: string[] = [];
 
   try {
     frequentlyUsedWorkspaceIds = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]");
@@ -45,14 +37,16 @@ export const FrequentlyUsedWorkspaces: React.FC<FrequentlyUsedWorkspacesProps> =
     }
   } catch {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
-    return null;
+    return [];
   }
 
-  // We should only show frequently used workspaces if the user has more than 10 available
-  if (workspaces.length < 10 || frequentlyUsedWorkspaceIds.length === 0) {
-    return null;
-  }
+  return frequentlyUsedWorkspaceIds;
+}
 
+export const FrequentlyUsedWorkspaces: React.FC<FrequentlyUsedWorkspacesProps> = ({ workspaces }) => {
+  const { selectWorkspace } = useWorkspaceService();
+  const { formatMessage } = useIntl();
+  const frequentlyUsedWorkspaceIds = getFrequentlyUsedWorkspacesFromLocalStorage();
   const frequentlyUsedWorkspaces = workspaces.filter((workspace) =>
     frequentlyUsedWorkspaceIds.includes(workspace.workspaceId)
   );
@@ -75,7 +69,7 @@ export const FrequentlyUsedWorkspaces: React.FC<FrequentlyUsedWorkspacesProps> =
 
   return (
     <div className={styles.frequentlyUsedWorkspaces}>
-      <Heading as="h2" size="sm">
+      <Heading as="h2" size="sm" className={styles.frequentlyUsedWorkspaces__heading}>
         {formatMessage({ id: "workspaces.frequentlyUsedWorkspacesTitle" })}
       </Heading>
       <div className={styles.frequentlyUsedWorkspaces__list}>

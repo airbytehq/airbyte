@@ -1,7 +1,11 @@
 import React from "react";
-import styled from "styled-components";
+import { useIntl } from "react-intl";
 
-import { FrequentlyUsedWorkspaces } from "components/workspaces/FrequentlyUsedWorkspaces";
+import { Heading } from "components/ui/Heading";
+import {
+  FrequentlyUsedWorkspaces,
+  getFrequentlyUsedWorkspacesFromLocalStorage,
+} from "components/workspaces/FrequentlyUsedWorkspaces";
 
 import {
   useCreateCloudWorkspace,
@@ -11,29 +15,31 @@ import { useWorkspaceService } from "services/workspaces/WorkspacesService";
 
 import WorkspaceItem from "./WorkspaceItem";
 import WorkspacesControl from "./WorkspacesControl";
-
-const Content = styled.div`
-  width: 100%;
-  max-width: 550px;
-  margin: 0 auto;
-  padding-bottom: 26px;
-`;
+import styles from "./WorkspacesList.module.scss";
 
 const WorkspacesList: React.FC = () => {
   const workspaces = useListCloudWorkspaces();
   const { selectWorkspace } = useWorkspaceService();
   const { mutateAsync: createCloudWorkspace } = useCreateCloudWorkspace();
+  const { formatMessage } = useIntl();
+  const showFrequentlyUsedWorkspaces =
+    workspaces.length >= 10 && getFrequentlyUsedWorkspacesFromLocalStorage().length > 0;
 
   return (
-    <Content>
-      {workspaces.length >= 10 && <FrequentlyUsedWorkspaces workspaces={workspaces} />}
+    <div className={styles.workspacesList}>
+      {showFrequentlyUsedWorkspaces && <FrequentlyUsedWorkspaces workspaces={workspaces} />}
+      {showFrequentlyUsedWorkspaces && (
+        <Heading as="h2" size="sm" className={styles.workspacesList__heading}>
+          {formatMessage({ id: "workspaces.allWorkspacesListHeader" })}
+        </Heading>
+      )}
       {workspaces.map((workspace) => (
         <WorkspaceItem key={workspace.workspaceId} id={workspace.workspaceId} onClick={selectWorkspace}>
           {workspace.name}
         </WorkspaceItem>
       ))}
       <WorkspacesControl onSubmit={createCloudWorkspace} />
-    </Content>
+    </div>
   );
 };
 

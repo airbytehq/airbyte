@@ -1,0 +1,15 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.workspacesList {
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
+  padding-bottom: 26px;
+
+  &__heading {
+    text-align: left;
+    margin-bottom: variables.$spacing-lg;
+    color: colors.$grey-300;
+  }
+}
