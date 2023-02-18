@@ -27,7 +27,6 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -77,7 +76,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
   }
 
   private static void createEnums(final DSLContext ctx) {
-    ctx.createType("source_type").asEnum("api", "file", JdbcUtils.DATABASE_KEY, "custom").execute();
+    ctx.createType("source_type").asEnum("api", "file", "database", "custom").execute();
     LOGGER.info("source_type enum created");
     ctx.createType("actor_type").asEnum("source", "destination").execute();
     LOGGER.info("actor_type enum created");
@@ -754,7 +753,7 @@ public class V0_32_8_001__AirbyteConfigDatabaseDenormalization extends BaseJavaM
 
     api("api"),
     file("file"),
-    database(JdbcUtils.DATABASE_KEY),
+    database("database"),
     custom("custom");
 
     private final String literal;

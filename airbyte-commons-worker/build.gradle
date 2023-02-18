@@ -39,7 +39,6 @@ dependencies {
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
     testImplementation 'org.mockito:mockito-inline:4.7.0'
     testImplementation libs.postgresql
-    testImplementation libs.platform.testcontainers
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation libs.jmh.core
     testImplementation libs.jmh.annotations
