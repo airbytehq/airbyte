@@ -7,7 +7,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from source_klaviyo.streams import Campaigns, Events, Flows, GlobalExclusions, Lists, Metrics, EmailTemplates
+from source_klaviyo.streams import Campaigns, EmailTemplates, Events, Flows, GlobalExclusions, Lists, Metrics
 
 
 class SourceKlaviyo(AbstractSource):

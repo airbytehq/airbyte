@@ -9,7 +9,7 @@ import pendulum
 import pytest
 import requests
 from pydantic import BaseModel
-from source_klaviyo.streams import Events, IncrementalKlaviyoStream, KlaviyoStream, ReverseIncrementalKlaviyoStream, EmailTemplates
+from source_klaviyo.streams import EmailTemplates, Events, IncrementalKlaviyoStream, KlaviyoStream, ReverseIncrementalKlaviyoStream
 
 START_DATE = pendulum.datetime(2020, 10, 10)
 
