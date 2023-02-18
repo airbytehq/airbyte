@@ -102,11 +102,12 @@ for argument in $@; do
     -x | --debug)
       set -o xtrace  # -x display every line before execution; enables PS4
       ;;
-    --)
+    *)
       echo "$argument is not a known command."
       echo
       Help
-      break;;
+      exit
+      ;;
   esac
   shift
 done
