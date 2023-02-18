@@ -76,7 +76,6 @@ jobs:
       - start-runner
       - generate-tags
     runs-on: ${{ needs.start-runner.outputs.label }}
-    environment: more-secrets
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
