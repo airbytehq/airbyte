@@ -62,7 +62,7 @@ export const NamespaceDefinitionFieldNext = () => {
             infoTooltipContent={<FormattedMessage id="connectionForm.namespaceDefinition.subtitle" />}
           />
           <FlexContainer alignItems="center" justifyContent="space-between">
-            <Text>
+            <Text color="grey">
               <FormattedMessage id={`connectionForm.${namespaceDefinitionOptions[field.value]}`} />
             </Text>
             <Button
