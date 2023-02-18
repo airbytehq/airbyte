@@ -19,6 +19,7 @@ Help()
    # Display Help
    echo "This Script will download the necessary files for running docker compose"
    echo "It will also run docker compose up"
+   echo "Take Warning! These assets may become stale over time!"
    echo
    # $0 is the currently running program
    echo "Syntax: $0"
