@@ -1,0 +1,26 @@
+{
+    "type": "object",
+    "properties": {
+        "object": {
+            "type": "string"
+        },
+        "id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "html": {
+            "type": "string"
+        },
+        "is_writeable": {
+            "type": "string"
+        },
+        "created": {
+            "type": "string"
+        },
+        "updated": {
+            "type": "string"
+        }
+    }
+}

@@ -272,3 +272,10 @@ class Flows(ReverseIncrementalKlaviyoStream):
 
     def path(self, **kwargs) -> str:
         return "flows"
+
+
+class EmailTemplates(IncrementalKlaviyoStream):
+    cursor_field = "created"
+
+    def path(self, **kwargs) -> str:
+        return "email-templates"
