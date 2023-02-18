@@ -1,0 +1,130 @@
+{
+  "type": "SPEC",
+  "spec":
+    {
+      "connectionSpecification":
+        {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "required": ["client_id", "client_secret", "client_refresh_token"],
+          "properties":
+            {
+              "embed":
+                {
+                  "title": "embed",
+                  "description": " Allows embedding/loading of sub-entities, allowed values are: threads",
+                  "type": "string",
+                  "enum": ["threads"],
+                },
+              "folders":
+                {
+                  "title": "folders",
+                  "description": "Filters conversations from a specific folder id",
+                  "type": "number",
+                },
+              "status":
+                {
+                  "title": "status",
+                  "description": "Filter conversation by status",
+                  "placeholder": "all",
+                  "type": "string",
+                },
+              "tags":
+                {
+                  "title": "tags",
+                  "description": "Filter conversation by tags. Use comma separated values for more tags.",
+                  "type": "string",
+                },
+              "assigned_to":
+                {
+                  "title": "assigned_to",
+                  "description": "Filters conversations by assignee id",
+                  "type": "number",
+                },
+              "modifiedsince":
+                {
+                  "description": "Filters conversations modified after this timestamp",
+                  "title": "modifiedSince",
+                  "type": "string",
+                },
+              "number":
+                {
+                  "title": "number",
+                  "description": "Looks up conversation by conversation number",
+                  "type": "number",
+                },
+              "sortfield":
+                {
+                  "title": "sortField",
+                  "description": "Sorts the result by specified field",
+                  "type": "string",
+                },
+              "sortorder":
+                {
+                  "title": "sortOrder",
+                  "enum": ["asc", "desc"],
+                  "default": "desc",
+                  "description": "Sort order",
+                  "type": "string",
+                },
+              "conversationid":
+                {
+                  "title": "conversationId",
+                  "description": "Numeric ID of the conversation",
+                  "type": "number",
+                },
+              "ratingid": { "title": "ratingId", "type": "number" },
+              "mailbox":
+                {
+                  "title": "mailbox",
+                  "description": "Filters customers from a specific mailbox",
+                  "type": "number",
+                },
+              "firstname":
+                {
+                  "title": "firstName",
+                  "description": "Filters customers by first name",
+                  "type": "string",
+                },
+              "lastname":
+                {
+                  "title": "lastName",
+                  "description": "Filters customers by last name",
+                  "type": "string",
+                },
+              "email":
+                {
+                  "title": "email",
+                  "description": "Optional filter param for looking up users by email using exact match.",
+                  "type": "string",
+                },
+              "type":
+                {
+                  "title": "type",
+                  "enum": ["manual", "automatic"],
+                  "description": "List workflows by type - manual or automatic",
+                  "type": "string",
+                },
+              "client_id":
+                {
+                  "type": "string",
+                  "title": "Client ID",
+                  "airbyte_secret": true,
+                },
+              "client_secret":
+                {
+                  "type": "string",
+                  "title": "Client secret",
+                  "airbyte_secret": true,
+                },
+              "client_refresh_token":
+                {
+                  "type": "string",
+                  "title": "Refresh token",
+                  "airbyte_secret": true,
+                },
+            },
+          "additionalProperties": true,
+        },
+    },
+}

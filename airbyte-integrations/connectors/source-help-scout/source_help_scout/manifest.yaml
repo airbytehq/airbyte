@@ -183,23 +183,23 @@ streams:
         request_options_provider:
           type: InterpolatedRequestOptionsProvider
           request_parameters:
-            mailbox: '{{ config[''mailbox''] }}'
-            embed: '{{ config[''embed''] }}'
-            folder: '{{ config[''folders''] }}'
-            status: '{{ config[''status''] }}'
-            tag: '{{ config[''tags''] }}'
-            assigned_to: '{{ config[''assigned_to''] }}'
-            modifiedSince: '{{ config[''modifiedsince''] }}'
-            number: '{{ config[''number''] }}'
-            sortField: '{{ config[''sortfield''] }}'
-            sortOrder: '{{ config[''sortorder''] }}'
+            mailbox: "{{ config['mailbox'] }}"
+            embed: "{{ config['embed'] }}"
+            folder: "{{ config['folders'] }}"
+            status: "{{ config['status'] }}"
+            tag: "{{ config['tags'] }}"
+            assigned_to: "{{ config['assigned_to'] }}"
+            modifiedSince: "{{ config['modifiedsince'] }}"
+            number: "{{ config['number'] }}"
+            sortField: "{{ config['sortfield'] }}"
+            sortOrder: "{{ config['sortorder'] }}"
           request_headers: {}
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -279,9 +279,9 @@ streams:
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -441,9 +441,9 @@ streams:
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -595,19 +595,19 @@ streams:
         request_options_provider:
           type: InterpolatedRequestOptionsProvider
           request_parameters:
-            mailbox: '{{ config[''mailbox''] }}'
-            firstName: '{{ config[''firstname''] }}'
-            lastName: '{{ config[''lastname''] }}'
-            modifiedSince: '{{ config[''modifiedsince''] }}'
-            sortField: '{{ config[''sortfield''] }}'
-            sortOrder: '{{ config[''sortorder''] }}'
+            mailbox: "{{ config['mailbox'] }}"
+            firstName: "{{ config['firstname'] }}"
+            lastName: "{{ config['lastname'] }}"
+            modifiedSince: "{{ config['modifiedsince'] }}"
+            sortField: "{{ config['sortfield'] }}"
+            sortOrder: "{{ config['sortorder'] }}"
           request_headers: {}
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -669,9 +669,9 @@ streams:
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -726,9 +726,9 @@ streams:
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -797,15 +797,15 @@ streams:
         request_options_provider:
           type: InterpolatedRequestOptionsProvider
           request_parameters:
-            email: '{{ config[''email''] }}'
-            mailbox: '{{ config[''mailbox''] }}'
+            email: "{{ config['email'] }}"
+            mailbox: "{{ config['mailbox'] }}"
           request_headers: {}
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -866,15 +866,15 @@ streams:
         request_options_provider:
           type: InterpolatedRequestOptionsProvider
           request_parameters:
-            mailboxId: '{{ config[''mailbox''] }}'
-            '[object Object]': '{{ config[''type''] }}'
+            mailboxId: "{{ config['mailbox'] }}"
+            "[object Object]": "{{ config['type'] }}"
           request_headers: {}
           request_body_json: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.helpscout.net/v2/oauth2/token
           grant_type: client_credentials
@@ -907,7 +907,7 @@ spec:
     properties:
       embed:
         title: embed
-        description: ' Allows embedding/loading of sub-entities, allowed values are: threads'
+        description: " Allows embedding/loading of sub-entities, allowed values are: threads"
         type: string
         enum:
           - threads
@@ -991,5 +991,5 @@ spec:
         title: Refresh token
         airbyte_secret: true
     additionalProperties: true
-  documentation_url: ''
+  documentation_url: "https://docs.airbyte.com"
   type: Spec
