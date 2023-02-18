@@ -21,5 +21,6 @@ def test_name_conversion():
 
 
 def test_safe_name_conversion():
-    with pytest.raises(Exception):
+    with pytest.raises(Exception) as exc_info:
         safe_name_conversion("*****")
+    assert exc_info.value.args[0] == "initial string '*****' converted to empty"

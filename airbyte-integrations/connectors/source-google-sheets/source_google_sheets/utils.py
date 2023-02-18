@@ -36,7 +36,7 @@ def name_conversion(text):
 
 
 def safe_name_conversion(text):
-    text = name_conversion(text)
-    if not text:
+    new = name_conversion(text)
+    if not new:
         raise Exception(f"initial string '{text}' converted to empty")
-    return text
+    return new
