@@ -56,7 +56,7 @@ export const DestinationStreamPrefixName = () => {
           />
           <FlexContainer alignItems="center" justifyContent="space-between">
             <Text color="grey">
-              {field.value === StreamNameDefinitionValueType.Prefix || field.value === ""
+              {field.value === ""
                 ? formatMessage({ id: "connectionForm.modal.destinationStreamNames.radioButton.mirror" })
                 : field.value}
             </Text>

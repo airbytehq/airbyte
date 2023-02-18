@@ -15,7 +15,6 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import styles from "./ConnectionConfigurationFormPreview.module.scss";
 import { FormikConnectionFormValues } from "./formConfig";
 import { namespaceDefinitionOptions } from "./types";
-import { StreamNameDefinitionValueType } from "../DestinationStreamNamesModal/DestinationStreamNamesModal";
 
 export const ConnectionConfigurationFormPreview: React.FC = () => {
   const { getFieldMeta } = useFormikContext<FormikConnectionFormValues>();
@@ -74,7 +73,7 @@ export const ConnectionConfigurationFormPreview: React.FC = () => {
         <FormattedMessage id="form.prefix" />:
       </Text>
       <Text size="md" color="grey">
-        {destPrefix === StreamNameDefinitionValueType.Prefix || destPrefix === "" ? ( // is prefix is reserved word? we cant use it as a value
+        {destPrefix === "" ? (
           <FormattedMessage id="connectionForm.modal.destinationStreamNames.radioButton.mirror" />
         ) : (
           destPrefix
