@@ -1,7 +1,6 @@
 @use "scss/colors";
 
 .text {
-  color: colors.$dark-blue;
   margin: 0;
   padding: 0;
 
@@ -32,6 +31,14 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 1.3em;
+}
+
+.darkBlue {
+  color: colors.$dark-blue;
+}
+
+.grey {
+  color: colors.$grey;
 }
 
 .centered {
