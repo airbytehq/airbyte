@@ -98,7 +98,6 @@ include ':airbyte-featureflag'
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
 include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
-include ':airbyte-worker-models'
 
 // connectors base
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
