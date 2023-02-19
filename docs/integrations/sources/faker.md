@@ -82,7 +82,8 @@ None!
 ## Changelog
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
-| :------ | :--------- | :-------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 2.0.2   | 2022-02-19 | [23228](https://github.com/airbytehq/airbyte/pull/23228)                                                              | Test publication flow                                                                                           |
 | 2.0.1   | 2022-01-30 | [22117](https://github.com/airbytehq/airbyte/pull/22117)                                                              | `source-faker` goes beta                                                                                        |
 | 2.0.0   | 2022-12-14 | [20492](https://github.com/airbytehq/airbyte/pull/20492) and [20741](https://github.com/airbytehq/airbyte/pull/20741) | Decouple stream states for better parallelism                                                                   |
 | 1.0.0   | 2022-11-28 | [19490](https://github.com/airbytehq/airbyte/pull/19490)                                                              | Faker uses the CDK; rename streams to be lower-case (breaking), add determinism to random purchases, and rename |
