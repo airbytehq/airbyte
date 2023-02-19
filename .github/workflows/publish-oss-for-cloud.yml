@@ -42,7 +42,7 @@ jobs:
       dev_tag: ${{ steps.set-outputs.outputs.dev_tag }}
       main_tag: ${{ steps.set-outputs.outputs.main_tag }}
     steps:
-      - name: Checkout Airbyte
+      - name: Checkout Airbyte Platform
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.oss_ref || github.ref }}
@@ -81,6 +81,22 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.oss_ref || github.ref }}
+
+      # TODO: Once we pull these from the metadata service, remove this step
+      - name: Copy docs from connectors repository
+        run: |
+          dir=$PWD
+          cd /tmp
+          git clone --depth 1 https://.:${{ secrets.GITHUB_TOKEN }}@github.com/airbytehq/airbyte 
+          cp -R airbyte/docs $dir/docs
+          ls -lah $dir/docs
+
+      - name: Build :airbyte-webapp
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
 
       - name: Build Branch
         uses: ./.github/actions/build-branch

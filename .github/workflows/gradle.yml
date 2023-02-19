@@ -48,7 +48,6 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       build: ${{ steps.filter.outputs.build }}
       cli: ${{ steps.filter.outputs.cli }}
-      connectors: ${{ steps.filter.outputs.connectors }}
       db: ${{ steps.filter.outputs.db }}
       frontend: ${{ steps.filter.outputs.frontend }}
     steps:
@@ -163,6 +162,14 @@ jobs:
           org.gradle.workers.max=8
           org.gradle.vfs.watch=false
           EOF
+      # TODO: Once we pull these from the metadata service, remove this step
+      - name: Copy docs from connectors repository
+        run: |
+          dir=$PWD
+          cd /tmp
+          git clone --depth 1 https://.:${{ secrets.GITHUB_TOKEN }}@github.com/airbytehq/airbyte 
+          cp -R airbyte/docs $dir/docs
+          ls -lah $dir/docs
 
       - name: Build :airbyte-webapp
         uses: Wandalen/wretry.action@master
