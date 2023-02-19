@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-commons')
     implementation project(path: ':airbyte-config:config-models')
 }
 

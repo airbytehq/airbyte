@@ -33,6 +33,7 @@ dependencies {
     implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')

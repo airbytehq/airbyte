@@ -17,6 +17,7 @@ dependencies {
     api libs.jooq
     api libs.postgresql
 
+    implementation project(':airbyte-commons')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-config:config-models')
@@ -37,6 +38,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.platform.testcontainers.postgresql
+
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {

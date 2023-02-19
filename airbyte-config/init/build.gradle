@@ -6,6 +6,7 @@ dependencies {
     annotationProcessor libs.bundles.micronaut.annotation.processor
     api libs.bundles.micronaut.annotation
 
+    implementation project(':airbyte-commons')
     implementation 'commons-cli:commons-cli:1.4'
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')

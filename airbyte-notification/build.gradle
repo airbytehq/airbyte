@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-json-validation')
 }

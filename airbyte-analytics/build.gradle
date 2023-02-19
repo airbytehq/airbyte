@@ -6,6 +6,7 @@ dependencies {
     api libs.segment.java.analytics
     api libs.micronaut.http
 
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-json-validation')
