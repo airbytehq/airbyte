@@ -58,7 +58,6 @@ jobs:
 #  bump-build-test-connector:
 #    needs: start-bump-build-test-connector-runner
 #    runs-on: ${{ needs.start-bump-build-test-connector-runner.outputs.label }}
-#    environment: more-secrets
 #    steps:
 #      ############################
 #      ##         SET UP         ##
