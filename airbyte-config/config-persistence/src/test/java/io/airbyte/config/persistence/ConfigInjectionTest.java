@@ -9,14 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.LongNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionConfigInjection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
 
   private JsonNode exampleConfig;
 
+  private final String SAMPLE_CONFIG_KEY = "my_config_key";
+  private final String SAMPLE_INJECTED_KEY = "injected_under";
+
   ConfigInjectionTest() throws JsonProcessingException {}
 
   @BeforeEach
@@ -37,7 +41,7 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
     truncateAllTables();
     configRepository = new ConfigRepository(database);
     configInjector = new ConfigInjector(configRepository);
-    exampleConfig = new ObjectMapper().readTree("{\"my_config_key\": 123}");
+    exampleConfig = Jsons.jsonNode(Map.of(SAMPLE_CONFIG_KEY, 123));
   }
 
   @Test
@@ -45,9 +49,9 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
     createBaseObjects();
 
     final JsonNode injected = configInjector.injectConfig(exampleConfig, sourceDefinition.getSourceDefinitionId());
-    assertEquals(123, injected.get("my_config_key").longValue(), 123);
-    assertEquals("a", injected.get("a").get("injected_under").asText());
-    assertEquals("b", injected.get("b").get("injected_under").asText());
+    assertEquals(123, injected.get(SAMPLE_CONFIG_KEY).longValue(), 123);
+    assertEquals("a", injected.get("a").get(SAMPLE_INJECTED_KEY).asText());
+    assertEquals("b", injected.get("b").get(SAMPLE_INJECTED_KEY).asText());
     assertFalse(injected.has("c"));
   }
 
@@ -56,11 +60,11 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
     createBaseObjects();
 
     ((ObjectNode) exampleConfig).set("a", new LongNode(123));
-    ((ObjectNode) exampleConfig).remove("my_config_key");
+    ((ObjectNode) exampleConfig).remove(SAMPLE_CONFIG_KEY);
 
     final JsonNode injected = configInjector.injectConfig(exampleConfig, sourceDefinition.getSourceDefinitionId());
-    assertEquals("a", injected.get("a").get("injected_under").asText());
-    assertEquals("b", injected.get("b").get("injected_under").asText());
+    assertEquals("a", injected.get("a").get(SAMPLE_INJECTED_KEY).asText());
+    assertEquals("b", injected.get("b").get(SAMPLE_INJECTED_KEY).asText());
     assertFalse(injected.has("c"));
   }
 
@@ -74,9 +78,9 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
         .withActorDefinitionId(sourceDefinition.getSourceDefinitionId()).withInjectionPath("a").withJsonToInject(new TextNode("abc")));
 
     final JsonNode injected = configInjector.injectConfig(exampleConfig, sourceDefinition.getSourceDefinitionId());
-    assertEquals(123, injected.get("my_config_key").longValue(), 123);
+    assertEquals(123, injected.get(SAMPLE_CONFIG_KEY).longValue(), 123);
     assertEquals("abc", injected.get("a").asText());
-    assertEquals("b", injected.get("b").get("injected_under").asText());
+    assertEquals("b", injected.get("b").get(SAMPLE_INJECTED_KEY).asText());
     assertFalse(injected.has("c"));
   }
 
@@ -90,9 +94,9 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
         .withActorDefinitionId(sourceDefinition.getSourceDefinitionId()).withInjectionPath("c").withJsonToInject(new TextNode("thirdInject")));
 
     final JsonNode injected = configInjector.injectConfig(exampleConfig, sourceDefinition.getSourceDefinitionId());
-    assertEquals(123, injected.get("my_config_key").longValue());
-    assertEquals("a", injected.get("a").get("injected_under").asText());
-    assertEquals("b", injected.get("b").get("injected_under").asText());
+    assertEquals(123, injected.get(SAMPLE_CONFIG_KEY).longValue());
+    assertEquals("a", injected.get("a").get(SAMPLE_INJECTED_KEY).asText());
+    assertEquals("b", injected.get("b").get(SAMPLE_INJECTED_KEY).asText());
     assertEquals("thirdInject", injected.get("c").asText());
   }
 
@@ -112,7 +116,7 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
   private ActorDefinitionConfigInjection createInjection(final StandardSourceDefinition definition, final String path)
       throws IOException {
     final ActorDefinitionConfigInjection injection = new ActorDefinitionConfigInjection().withActorDefinitionId(definition.getSourceDefinitionId())
-        .withInjectionPath(path).withJsonToInject(new ObjectMapper().readTree("{\"injected_under\": \"" + path + "\"}"));
+        .withInjectionPath(path).withJsonToInject(Jsons.jsonNode(Map.of(SAMPLE_INJECTED_KEY, path)));
 
     configRepository.writeActorDefinitionConfigInjectionForPath(injection);
     return injection;
