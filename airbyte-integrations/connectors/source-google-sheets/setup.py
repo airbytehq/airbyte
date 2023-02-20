@@ -13,7 +13,7 @@ MAIN_REQUIREMENTS = [
     "google-api-python-client",
     "PyYAML==5.4",
     "pydantic~=1.9.2",
-    "text-unidecode",
+    "Unidecode",
 ]
 
 TEST_REQUIREMENTS = [
