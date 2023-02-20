@@ -13,8 +13,6 @@
 {"stream": "active_users", "data": {"date": "2023-02-13", "statistics": {"(none)": 1, "Ukraine": 0}}, "emitted_at": 1676633494312}
 {"stream": "active_users", "data": {"date": "2023-02-14", "statistics": {"(none)": 1, "Ukraine": 0}}, "emitted_at": 1676633494312}
 {"stream": "active_users", "data": {"date": "2023-02-15", "statistics": {"(none)": 1, "Ukraine": 0}}, "emitted_at": 1676633494312}
-{"stream": "active_users", "data": {"date": "2023-02-16", "statistics": {"(none)": 0, "Ukraine": 0}}, "emitted_at": 1676633494313}
-{"stream": "active_users", "data": {"date": "2023-02-17", "statistics": {"(none)": 0, "Ukraine": 0}}, "emitted_at": 1676633494313}
 {"stream": "average_session_length", "data": {"date": "2023-02-01", "length": 0}, "emitted_at": 1676633495359}
 {"stream": "average_session_length", "data": {"date": "2023-02-02", "length": 0}, "emitted_at": 1676633495359}
 {"stream": "average_session_length", "data": {"date": "2023-02-03", "length": 0}, "emitted_at": 1676633495360}
