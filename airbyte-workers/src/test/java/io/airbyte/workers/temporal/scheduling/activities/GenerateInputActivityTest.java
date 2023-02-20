@@ -67,6 +67,8 @@ class GenerateInputActivityTest {
 
   static private final JsonNode SOURCE_CONFIGURATION = Jsons.jsonNode(Map.of("source_key", "source_value"));
   static private final JsonNode SOURCE_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value"));
+  static private final JsonNode SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG =
+      Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value", "injected", "value"));
   static private final JsonNode DESTINATION_CONFIGURATION = Jsons.jsonNode(Map.of("destination_key", "destination_value"));
   static private final JsonNode DESTINATION_CONFIG_WITH_OAUTH =
       Jsons.jsonNode(Map.of("destination_key", "destination_value", "oauth", "oauth_value"));
@@ -133,6 +135,8 @@ class GenerateInputActivityTest {
     when(configRepository.getSourceConnection(SOURCE_ID)).thenReturn(sourceConnection);
     when(oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, WORKSPACE_ID, SOURCE_CONFIGURATION))
         .thenReturn(SOURCE_CONFIG_WITH_OAUTH);
+    when(configInjector.injectConfig(SOURCE_CONFIG_WITH_OAUTH, sourceDefinitionId))
+        .thenReturn(SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG);
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withWorkspaceId(UUID.randomUUID())
@@ -151,7 +155,7 @@ class GenerateInputActivityTest {
         .withWorkspaceId(jobSyncConfig.getWorkspaceId())
         .withSourceId(SOURCE_ID)
         .withDestinationId(DESTINATION_ID)
-        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG)
         .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE)
         .withCatalog(jobSyncConfig.getConfiguredAirbyteCatalog())
@@ -181,7 +185,7 @@ class GenerateInputActivityTest {
     assertEquals(expectedGeneratedJobInput, generatedJobInput);
 
     final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
-        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG)
         .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE);
 
