@@ -41,7 +41,7 @@ jobs:
           static-args: |
             repository=${{ github.repository }}
             branch=${{ needs.check.outputs.pull_request_branch }}
-            pr_number=${{ github.event.issue_comment.issue.number }}
+            pr_number=${{ github.event.issue.number }}
           commands: |
             create-platform-pr
       - name: Publish comment with error message
