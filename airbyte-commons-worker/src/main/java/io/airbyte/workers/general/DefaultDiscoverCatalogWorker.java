@@ -28,7 +28,6 @@ import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -128,17 +127,6 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
             discoverSchemaInput.getConnectorVersion())
         .configurationHash(
             discoverSchemaInput.getConfigHash());
-  }
-
-  private Map<String, Object> generateTraceTags(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) {
-    final Map<String, Object> tags = new HashMap<>();
-
-    if (discoverSchemaInput != null) {
-      if (discoverSchemaInput.getSourceId() != null) {}
-      if (discoverSchemaInput.getConnectorVersion() != null) {}
-    }
-
-    return tags;
   }
 
   @Override
