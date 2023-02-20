@@ -2036,6 +2036,9 @@
   icon: zendesk-chat.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - zopim.com
 - name: Zendesk Sell
   sourceDefinitionId: 982eaa4c-bba1-4cce-a971-06a41f700b8c
   dockerRepository: airbyte/source-zendesk-sell
