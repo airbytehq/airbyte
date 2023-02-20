@@ -81,9 +81,11 @@ Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
 
 Get started by checking Github issues and creating a Pull Request. An easy way to start contributing is to update an existing connector or create a new connector using the low-code and Python CDKs. You can find the code for existing connectors in the [connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) directory. The Airbyte platform is written in Java, and the frontend in React. You can also contribute to our docs and tutorials. Advanced Airbyte users can apply to the [Maintainer program](https://airbyte.com/maintainer-program) and [Writer Program](https://airbyte.com/write-for-the-community).
 
-If you would like to make a contribution to the platform itself, please refer to guides in [the platform repository](https://github.com/airbytehq/airbyte-platform)
+If you would like to make a contribution to the platform itself, please refer to guides in [the platform repository](https://github.com/airbytehq/airbyte-platform).
 
-Read the [Contributing guide](https://docs.airbyte.com/contributing-to-airbyte/).
+If you have an existing pull request in airbytehq/airbyte that should be migrated to airbyte-platform, please follow [the guide in this document](https://docs.airbyte.com/contributing-to-airbyte/).
+
+Read the [Contributing guide](https://docs.airbyte.com/contributing-to-airbyte/working-with-airbyte-platform).
 
 ## Reporting vulnerabilities
 
