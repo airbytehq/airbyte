@@ -22,7 +22,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    version="0.1.12",
+    version="0.1.13",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",

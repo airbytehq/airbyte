@@ -1,6 +1,10 @@
 name: Release Open Source Airbyte
 concurrency: release-airbyte
 
+
+# TODO: If we continue to use this action from here it needs to be updated to point to airbyte-platform
+# where appropriate
+
 on:
   workflow_dispatch:
     inputs:
@@ -37,7 +41,6 @@ jobs:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-release-airbyte-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -71,7 +74,6 @@ jobs:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
   releaseOctavia:
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -98,7 +100,6 @@ jobs:
       - releaseAirbyte
       - releaseOctavia
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
