@@ -425,6 +425,9 @@
   icon: delighted.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.delighted.com
 - name: Dixa
   sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerRepository: airbyte/source-dixa
