@@ -77,12 +77,13 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
                                    final StateApi stateApi,
                                    final AttemptApi attemptApi,
                                    final FeatureFlags featureFlags,
-                                   final OAuthConfigSupplier oAuthConfigSupplier) {
+                                   final OAuthConfigSupplier oAuthConfigSupplier,
+                                   final ConfigInjector configInjector) {
     this.jobPersistence = jobPersistence;
     this.configRepository = configRepository;
     this.stateApi = stateApi;
     this.attemptApi = attemptApi;
-    this.configInjector = new ConfigInjector(configRepository);
+    this.configInjector = configInjector;
     this.featureFlags = featureFlags;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
   }

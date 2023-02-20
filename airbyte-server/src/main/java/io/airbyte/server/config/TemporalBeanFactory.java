@@ -61,6 +61,11 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
+  public ConfigInjector configInjector(final ConfigRepository configRepository) {
+    return new ConfigInjector(configRepository);
+  }
+
+  @Singleton
   public TaskQueueMapper taskQueueMapper() {
     return new DefaultTaskQueueMapper();
   }
@@ -71,9 +76,9 @@ public class TemporalBeanFactory {
                                                                final JobErrorReporter jobErrorReporter,
                                                                final OAuthConfigSupplier oAuthConfigSupplier,
                                                                final RouterService routerService,
-                                                               final ConfigRepository configRepository) {
+                                                               final ConfigInjector configInjector) {
     return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService,
-        new ConfigInjector(configRepository));
+        configInjector);
   }
 
 }

@@ -71,19 +71,26 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
+  public ConfigInjector configInjector(final ConfigRepository configRepository) {
+    return new ConfigInjector(configRepository);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    final JobPersistence jobPersistence,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
                                              defaultValue = "false") final boolean connectorSpecificResourceDefaultsEnabled,
                                    final DefaultJobCreator jobCreator,
-                                   final OAuthConfigSupplier oAuthConfigSupplier) {
+                                   final OAuthConfigSupplier oAuthConfigSupplier,
+                                   final ConfigInjector configInjector) {
     return new DefaultSyncJobFactory(
         connectorSpecificResourceDefaultsEnabled,
         jobCreator,
         configRepository,
         oAuthConfigSupplier,
-        new ConfigInjector(configRepository),
+        configInjector,
         new WorkspaceHelper(configRepository, jobPersistence));
   }
 
