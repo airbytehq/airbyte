@@ -14,6 +14,7 @@ MAIN_REQUIREMENTS = [
     "pydantic~=1.10.4",
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0",
+    "dagger-io==0.3.2",
 ]
 
 TEST_REQUIREMENTS = [
@@ -42,6 +43,7 @@ setup(
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
+            "test-connector = ci_connector_ops.ci.connector_test:main",
         ],
     },
 )
