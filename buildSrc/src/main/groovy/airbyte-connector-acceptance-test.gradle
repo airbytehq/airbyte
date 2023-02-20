@@ -13,11 +13,19 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
             dependsOn project.build
             dependsOn project.airbyteDocker
             
+            if (!project.hasProperty('connectorAcceptanceTestVersion')) {
+                project.ext.connectorAcceptanceTestVersion = 'latest'
+            }
+
+            if (project.connectorAcceptanceTestVersion == 'dev') {
+                project.connectorAcceptanceTest.dependsOn(':airbyte-integrations:bases:connector-acceptance-test:airbyteDocker')
+            }
+
             doFirst {
-                if (CONNECTOR_ACCEPTANCE_TEST_IMAGE != "dev") {
+                if (CONNECTOR_ACCEPTANCE_TEST_IMAGE != 'dev') {
                     project.exec {
                         def args = [
-                            'docker', 'pull', 'airbyte/connector-acceptance-test:latest'
+                            'docker', 'pull', "airbyte/connector-acceptance-test:${project.connectorAcceptanceTestVersion}"
                         ]
                         commandLine args
                     }
@@ -35,7 +43,7 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
                         '-v', "${project.projectDir.absolutePath}:${targetMountDirectory}",
                         '-w', "$targetMountDirectory",
                         '-e', "AIRBYTE_SAT_CONNECTOR_DIR=${project.projectDir.absolutePath}",
-                        "airbyte/connector-acceptance-test:${CONNECTOR_ACCEPTANCE_TEST_IMAGE}",
+                        "airbyte/connector-acceptance-test:${project.connectorAcceptanceTestVersion}",
                         '-p', 'integration_tests.acceptance',
                     ]
                     commandLine args
@@ -45,9 +53,7 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
         
-        if (CONNECTOR_ACCEPTANCE_TEST_IMAGE == 'dev') {
-            project.connectorAcceptanceTest.dependsOn(':airbyte-integrations:bases:connector-acceptance-test:airbyteDocker')
-        }
+
 
         if (project.hasProperty('airbyteDockerTest')){
             project.connectorAcceptanceTest.dependsOn(project.airbyteDockerTest)
