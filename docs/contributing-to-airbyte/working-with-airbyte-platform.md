@@ -12,6 +12,11 @@ In order to facilitate faster development workflows, airbytehq/airbyte was split
 
 If you have an existing pull request in airbytehq/airbyte that should instead target airbyte-platform there are two ways that you can move it over
 
+# Issues and Pull Requests
+
+Please open issues in airbytehq/airbyte and tag them platform. Issues have been disabled on airbyte-platform in order to keep issue tracking in one centralized location
+Please open pull requests targeting airbytehq/airbyte-platform in airbytehq/airbyte-platform and reference the issue in airbytehq/airbyte
+
 # Migrating from airbytehq/airbyte
 
 1. Using our /create-platform-pr [slash command tool](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/create-oss-pr-snapshot.yml) for platform. Simply comment "create-platform-pr" on your existing airbytehq/airbyte pull request and let our automation perform the migration for you. Note that if there are any conflicts between files, for the purposes of simplicity the tool will always use your version of the file in the pull request vs the version that exists in airbyte-platform.
