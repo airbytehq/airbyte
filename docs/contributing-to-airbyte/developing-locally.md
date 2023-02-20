@@ -19,17 +19,19 @@ To start contributing:
 1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository. 
 2. Clone the fork on your workstation:
 
-If developing connectors:
+If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
+   ./run-ab-platform.sh
    ```
 If developing platform:
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
    cd airbyte-platform
+   docker compose up
    ```
 
 3. You're ready to start!
@@ -101,7 +103,7 @@ These instructions explain how to run a version of an Airbyte connector that you
 - First, run Airbyte:
 
 ```bash
-VERSION=dev docker compose up
+./run-ab-platform
 ```
 
 - Then, build the connector image:
