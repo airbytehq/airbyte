@@ -318,7 +318,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
 
-      // Verify that the db user has required privilege to perform replication. The database user has to be superuser of to have replication access.
+      // Verify that the db user has required privilege to perform replication. The database user has to be superuser or to have replication access.
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
 
