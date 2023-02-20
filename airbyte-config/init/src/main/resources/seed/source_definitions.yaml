@@ -1706,6 +1706,9 @@
   icon: sonarcloud.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - sonarcloud.io
 - name: SpaceX API
   sourceDefinitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
   dockerRepository: airbyte/source-spacex-api
