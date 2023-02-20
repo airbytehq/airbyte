@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.process;
 
-
 import static io.airbyte.workers.process.Metadata.CHECK_JOB;
 import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
 import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
@@ -18,7 +17,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;

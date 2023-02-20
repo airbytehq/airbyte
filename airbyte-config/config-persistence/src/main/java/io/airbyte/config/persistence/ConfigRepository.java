@@ -1459,7 +1459,6 @@ public class ConfigRepository {
    * metrics without exposing the underlying database connection.
    */
 
-
   private Condition includeTombstones(final Field<Boolean> tombstoneField, final boolean includeTombstones) {
     if (includeTombstones) {
       return DSL.trueCondition();

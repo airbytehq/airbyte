@@ -4,10 +4,8 @@
 
 package io.airbyte.workers.internal;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.protocol.models.AirbyteLogMessage;

@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.general;
 
-import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
@@ -43,7 +42,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher) {
     this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
-
 
   @Override
   public ConnectorJobOutput run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {

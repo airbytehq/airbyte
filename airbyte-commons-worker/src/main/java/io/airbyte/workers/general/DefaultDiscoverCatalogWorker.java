@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.general;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
@@ -134,12 +133,9 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   private Map<String, Object> generateTraceTags(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) {
     final Map<String, Object> tags = new HashMap<>();
 
-
     if (discoverSchemaInput != null) {
-      if (discoverSchemaInput.getSourceId() != null) {
-      }
-      if (discoverSchemaInput.getConnectorVersion() != null) {
-      }
+      if (discoverSchemaInput.getSourceId() != null) {}
+      if (discoverSchemaInput.getConnectorVersion() != null) {}
     }
 
     return tags;

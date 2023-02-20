@@ -4,11 +4,8 @@
 
 package io.airbyte.workers.internal;
 
-
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;

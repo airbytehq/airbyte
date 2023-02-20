@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.internal;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.AirbyteProtocolSchema;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -24,7 +23,6 @@ public class AirbyteProtocolPredicate implements Predicate<JsonNode> {
     final JsonNode schema = JsonSchemaValidator.getSchema(AirbyteProtocolSchema.PROTOCOL.getFile(), "AirbyteMessage");
     jsonSchemaValidator.initializeSchemaValidator(PROTOCOL_SCHEMA_NAME, schema);
   }
-
 
   @Override
   public boolean test(final JsonNode s) {
