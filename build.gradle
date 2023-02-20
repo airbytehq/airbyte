@@ -49,7 +49,7 @@ repositories {
 }
 
 Properties env = new Properties()
-rootProject.file('.env').withInputStream { env.load(it) }
+rootProject.file('gradle.properties').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -459,7 +459,6 @@ subprojects { subproj ->
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
@@ -499,11 +498,6 @@ subprojects {
         }
         blackFormat.dependsOn licenseTask
 
-        def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
-        if (generateFilesTask != null) {
-            licenseTask.dependsOn generateFilesTask
-        }
-
         def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
         if (generateManifestFilesTask != null) {
             licenseTask.dependsOn generateManifestFilesTask
@@ -513,13 +507,8 @@ subprojects {
 }
 
 task('generate-docker') {
-    dependsOn(':airbyte-bootloader:assemble')
-    dependsOn(':airbyte-workers:assemble')
-    dependsOn(':airbyte-webapp:assemble')
-    dependsOn(':airbyte-server:assemble')
     dependsOn(':airbyte-db:db-lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
-    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives
