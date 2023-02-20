@@ -661,6 +661,9 @@
   icon: gnews.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - gnews.io
 - name: GoCardless
   sourceDefinitionId: ba15ac82-5c6a-4fb2-bf24-925c23a1180c
   dockerRepository: airbyte/source-gocardless
