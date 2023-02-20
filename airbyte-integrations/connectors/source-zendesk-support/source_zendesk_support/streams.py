@@ -544,6 +544,10 @@ class Tickets(SourceZendeskIncrementalExportStream):
     response_list_name: str = "tickets"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
+    @staticmethod
+    def check_start_time_param(requested_start_time: int, value: int = 1):
+        return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
+
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
