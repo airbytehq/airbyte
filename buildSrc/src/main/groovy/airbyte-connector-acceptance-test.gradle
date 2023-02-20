@@ -3,10 +3,7 @@ import org.gradle.api.Project
 
 
 class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
-    
-    // Change this value to 'dev' if you want to use a locally built connector acceptance test image
-    String CONNECTOR_ACCEPTANCE_TEST_IMAGE = 'latest'
-    
+        
     void apply(Project project) {
         
         project.task('connectorAcceptanceTest') {
@@ -22,7 +19,7 @@ class AirbyteConnectorAcceptanceTestPlugin implements Plugin<Project> {
             }
 
             doFirst {
-                if (CONNECTOR_ACCEPTANCE_TEST_IMAGE != 'dev') {
+                if (project.connectorAcceptanceTestVersion != 'dev') {
                     project.exec {
                         def args = [
                             'docker', 'pull', "airbyte/connector-acceptance-test:${project.connectorAcceptanceTestVersion}"
