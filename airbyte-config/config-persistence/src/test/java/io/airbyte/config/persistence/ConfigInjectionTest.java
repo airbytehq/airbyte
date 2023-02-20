@@ -68,7 +68,8 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
   void testUpdate() throws IOException, JsonValidationException {
     createBaseObjects();
 
-    // write an injection object with the same definition id and the same injection path - will update the existing one
+    // write an injection object with the same definition id and the same injection path - will update
+    // the existing one
     configRepository.writeActorDefinitionConfigInjectionForPath(new ActorDefinitionConfigInjection()
         .withActorDefinitionId(sourceDefinition.getSourceDefinitionId()).withInjectionPath("a").withJsonToInject(new TextNode("abc")));
 
@@ -83,7 +84,8 @@ class ConfigInjectionTest extends BaseConfigDatabaseTest {
   void testCreate() throws IOException, JsonValidationException {
     createBaseObjects();
 
-    // write an injection object with the same definition id and a new injection path - will create a new one and leave the others in place
+    // write an injection object with the same definition id and a new injection path - will create a
+    // new one and leave the others in place
     configRepository.writeActorDefinitionConfigInjectionForPath(new ActorDefinitionConfigInjection()
         .withActorDefinitionId(sourceDefinition.getSourceDefinitionId()).withInjectionPath("c").withJsonToInject(new TextNode("thirdInject")));
 
