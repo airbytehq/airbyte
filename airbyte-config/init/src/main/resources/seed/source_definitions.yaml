@@ -1286,6 +1286,10 @@
   icon: paypal.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "api-m.sandbox.paypal.com"
+      - "api-m.paypal.com"
 - name: Paystack
   sourceDefinitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
   dockerRepository: airbyte/source-paystack
@@ -1382,6 +1386,10 @@
   icon: posthog.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${base_url}"
+      - "app.posthog.com"
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
@@ -1900,6 +1908,9 @@
   icon: typeform.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "api.typeform.com"
 - name: US Census
   sourceDefinitionId: c4cfaeda-c757-489a-8aba-859fb08b6970
   dockerRepository: airbyte/source-us-census
