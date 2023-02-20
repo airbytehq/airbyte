@@ -23,12 +23,12 @@
               },
               "client_id": {
                 "type": "string",
-                "description": "The API ID of the Gitlab developer application.",
+                "description": "The API ID of the SmartSheets developer application.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "type": "string",
-                "description": "The API Secret the Gitlab developer application.",
+                "description": "The API Secret the SmartSheets developer application.",
                 "airbyte_secret": true
               },
               "access_token": {
