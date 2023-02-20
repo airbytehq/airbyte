@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.persistence;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,7 +14,9 @@ import java.util.UUID;
 
 @Singleton
 public class ConfigInjector {
+
   private final ConfigRepository configRepository;
+
   public ConfigInjector(final ConfigRepository configRepository) {
     this.configRepository = configRepository;
   }
@@ -18,8 +24,9 @@ public class ConfigInjector {
   public JsonNode injectConfig(final JsonNode configuration, final UUID actorDefinitionId) throws IOException {
     final List<ActorDefinitionConfigInjection> configInjections = configRepository.getActorDefinitionConfigInjections(actorDefinitionId).toList();
     configInjections.forEach(injection -> {
-      ((ObjectNode)configuration).set(injection.getInjectionPath(), injection.getJsonToInject());
+      ((ObjectNode) configuration).set(injection.getInjectionPath(), injection.getJsonToInject());
     });
     return configuration;
   }
+
 }

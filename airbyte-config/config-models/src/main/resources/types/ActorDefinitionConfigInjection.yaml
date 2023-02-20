@@ -5,15 +5,11 @@ title: ActorDefinitionConfigInjection
 description: JSON object that is injected into every run of the referenced actor definition
 type: object
 required:
-  - actorDefinitionConfigInjectionId
   - actorDefinitionId
   - jsonToInject
   - injectionPath
 additionalProperties: false
 properties:
-  actorDefinitionConfigInjectionId:
-    type: string
-    format: uuid
   injectionPath:
     type: string
   actorDefinitionId:

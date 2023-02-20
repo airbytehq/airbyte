@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.db.instance.configs.migrations;
 
 import static org.jooq.impl.DSL.currentOffsetDateTime;
@@ -33,22 +37,21 @@ public class V0_41_00_002__AddActorDefinitionConfigInjection extends BaseJavaMig
       addConfigInjectionTable(ctx);
     }
   }
+
   private static void addConfigInjectionTable(final DSLContext ctx) {
-    final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
-    final Field<JSONB> jsonToInject = DSL.field("json_to_inject", SQLDataType.JSONB.nullable(true));
+    final Field<JSONB> jsonToInject = DSL.field("json_to_inject", SQLDataType.JSONB.nullable(false));
     final Field<String> injectionPath = DSL.field("injection_path", SQLDataType.VARCHAR(256).nullable(false));
-    final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(true));
+    final Field<UUID> actorDefinitionId = DSL.field("actor_definition_id", SQLDataType.UUID.nullable(false));
     final Field<OffsetDateTime> createdAt =
         DSL.field("created_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
     final Field<OffsetDateTime> updatedAt =
         DSL.field("updated_at", SQLDataType.TIMESTAMPWITHTIMEZONE.nullable(false).defaultValue(currentOffsetDateTime()));
 
-    ctx.createTableIfNotExists("actor_definition_config_injection").columns(id, jsonToInject, injectionPath, actorDefinitionId, createdAt, updatedAt)
-        .constraints(primaryKey(id),
+    ctx.createTableIfNotExists("actor_definition_config_injection").columns(jsonToInject, injectionPath, actorDefinitionId, createdAt, updatedAt)
+        .constraints(primaryKey(actorDefinitionId, injectionPath),
             foreignKey(actorDefinitionId).references("actor_definition", "id").onDeleteCascade(),
-            unique(actorDefinitionId, injectionPath)
-            ).execute();
-    ctx.createIndexIfNotExists("actor_definition_config_injection_injection_path_idx").on("actor_definition_config_injection", "actor_definition_id", "injection_path").execute();
+            unique(actorDefinitionId, injectionPath))
+        .execute();
   }
 
 }

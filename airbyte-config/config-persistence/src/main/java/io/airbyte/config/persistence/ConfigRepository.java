@@ -1674,9 +1674,9 @@ public class ConfigRepository {
 
   public Stream<ActorDefinitionConfigInjection> getActorDefinitionConfigInjections(final UUID actorDefinitionId) throws IOException {
     return database.query(ctx -> ctx.select(ACTOR_DEFINITION_CONFIG_INJECTION.asterisk())
-            .from(ACTOR_DEFINITION_CONFIG_INJECTION)
-            .where(ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
-            .fetch())
+        .from(ACTOR_DEFINITION_CONFIG_INJECTION)
+        .where(ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID.eq(actorDefinitionId))
+        .fetch())
         .map(DbConverter::buildActorDefinitionConfigInjection)
         .stream();
   }
@@ -1684,8 +1684,9 @@ public class ConfigRepository {
   public void writeActorDefinitionConfigInjectionForPath(final ActorDefinitionConfigInjection actorDefinitionConfigInjection) throws IOException {
     database.transaction(ctx -> {
       final OffsetDateTime timestamp = OffsetDateTime.now();
-      final Condition matchActorDefinitionIdAndInjectionPath = ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID.eq(actorDefinitionConfigInjection.getActorDefinitionId()).
-          and(ACTOR_DEFINITION_CONFIG_INJECTION.INJECTION_PATH.eq(actorDefinitionConfigInjection.getInjectionPath()));
+      final Condition matchActorDefinitionIdAndInjectionPath =
+          ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID.eq(actorDefinitionConfigInjection.getActorDefinitionId())
+              .and(ACTOR_DEFINITION_CONFIG_INJECTION.INJECTION_PATH.eq(actorDefinitionConfigInjection.getInjectionPath()));
       final boolean isExistingConfig = ctx.fetchExists(select()
           .from(ACTOR_DEFINITION_CONFIG_INJECTION)
           .where(matchActorDefinitionIdAndInjectionPath));
@@ -1698,7 +1699,6 @@ public class ConfigRepository {
             .execute();
       } else {
         ctx.insertInto(ACTOR_DEFINITION_CONFIG_INJECTION)
-            .set(ACTOR_DEFINITION_CONFIG_INJECTION.ID, actorDefinitionConfigInjection.getActorDefinitionConfigInjectionId())
             .set(ACTOR_DEFINITION_CONFIG_INJECTION.INJECTION_PATH, actorDefinitionConfigInjection.getInjectionPath())
             .set(ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID, actorDefinitionConfigInjection.getActorDefinitionId())
             .set(ACTOR_DEFINITION_CONFIG_INJECTION.JSON_TO_INJECT, JSONB.valueOf(Jsons.serialize(actorDefinitionConfigInjection.getJsonToInject())))

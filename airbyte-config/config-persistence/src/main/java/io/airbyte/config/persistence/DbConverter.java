@@ -295,9 +295,9 @@ public class DbConverter {
 
   public static ActorDefinitionConfigInjection buildActorDefinitionConfigInjection(final Record record) {
     return new ActorDefinitionConfigInjection()
-        .withActorDefinitionConfigInjectionId(record.get(ACTOR_DEFINITION_CONFIG_INJECTION.ID))
         .withActorDefinitionId(record.get(ACTOR_DEFINITION_CONFIG_INJECTION.ACTOR_DEFINITION_ID))
         .withInjectionPath(record.get(ACTOR_DEFINITION_CONFIG_INJECTION.INJECTION_PATH))
         .withJsonToInject(Jsons.deserialize(record.get(ACTOR_DEFINITION_CONFIG_INJECTION.JSON_TO_INJECT).data()));
   }
+
 }
