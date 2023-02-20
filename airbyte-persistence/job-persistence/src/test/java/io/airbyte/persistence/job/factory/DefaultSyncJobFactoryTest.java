@@ -21,6 +21,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
@@ -98,7 +99,11 @@ class DefaultSyncJobFactoryTest {
     when(configRepository.getStandardWorkspaceNoSecrets(any(), eq(true))).thenReturn(
         new StandardWorkspace().withWorkspaceId(workspaceId).withWebhookOperationConfigs(persistedWebhookConfigs));
 
-    final SyncJobFactory factory = new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class), workspaceHelper);
+    final ConfigInjector configInjector = mock(ConfigInjector.class);
+    when(configInjector.injectConfig(any(), any())).thenAnswer(i -> i.getArguments()[0]);
+
+    final SyncJobFactory factory =
+        new DefaultSyncJobFactory(true, jobCreator, configRepository, mock(OAuthConfigSupplier.class), configInjector, workspaceHelper);
     final long actualJobId = factory.create(connectionId);
     assertEquals(jobId, actualJobId);
 

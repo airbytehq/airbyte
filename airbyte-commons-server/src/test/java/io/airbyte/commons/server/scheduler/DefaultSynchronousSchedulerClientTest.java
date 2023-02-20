@@ -35,6 +35,7 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.persistence.job.errorreporter.ConnectorJobReportingContext;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
@@ -86,6 +87,7 @@ class DefaultSynchronousSchedulerClientTest {
   private OAuthConfigSupplier oAuthConfigSupplier;
 
   private RouterService routerService;
+  private ConfigInjector configInjector;
   private DefaultSynchronousSchedulerClient schedulerClient;
 
   @BeforeEach
@@ -95,10 +97,14 @@ class DefaultSynchronousSchedulerClientTest {
     jobErrorReporter = mock(JobErrorReporter.class);
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
     routerService = mock(RouterService.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
+    configInjector = mock(ConfigInjector.class);
+    schedulerClient =
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService, configInjector);
 
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
+
+    when(configInjector.injectConfig(any(), any())).thenAnswer(i -> i.getArguments()[0]);
 
     when(routerService.getTaskQueueForWorkspace(any(), eq(TemporalJobType.CHECK_CONNECTION))).thenReturn(CHECK_TASK_QUEUE);
     when(routerService.getTaskQueueForWorkspace(any(), eq(TemporalJobType.DISCOVER_SCHEMA))).thenReturn(DISCOVER_TASK_QUEUE);

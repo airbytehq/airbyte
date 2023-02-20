@@ -15,6 +15,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
 import io.airbyte.persistence.job.JobPersistence;
@@ -82,6 +83,7 @@ public class TemporalBeanFactory {
         jobCreator,
         configRepository,
         oAuthConfigSupplier,
+        new ConfigInjector(configRepository),
         new WorkspaceHelper(configRepository, jobPersistence));
   }
 

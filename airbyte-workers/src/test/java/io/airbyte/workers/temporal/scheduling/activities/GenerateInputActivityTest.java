@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
@@ -58,6 +60,7 @@ class GenerateInputActivityTest {
   static private AttemptApi attemptApi;
   static private JobPersistence jobPersistence;
   static private ConfigRepository configRepository;
+  static private ConfigInjector configInjector;
   static private GenerateInputActivityImpl generateInputActivity;
   static private OAuthConfigSupplier oAuthConfigSupplier;
   static private Job job;
@@ -86,11 +89,14 @@ class GenerateInputActivityTest {
     attemptApi = mock(AttemptApi.class);
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    generateInputActivity = new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier);
+    configInjector = mock(ConfigInjector.class);
+    generateInputActivity =
+        new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier, configInjector);
 
     job = mock(Job.class);
 
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
+    when(configInjector.injectConfig(any(), any())).thenAnswer(i -> i.getArguments()[0]);
 
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withDestinationId(DESTINATION_ID)
