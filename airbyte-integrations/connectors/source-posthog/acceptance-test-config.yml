@@ -16,9 +16,13 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_events_incremental.json"
       future_state_path: "integration_tests/future_state.json"
+      cursor_paths:
+        "events": ["2331", "timestamp"]
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_events_incremental.json"
       future_state_path: "integration_tests/future_state_old.json"
+      cursor_paths:
+        "events": [ "2331", "timestamp" ]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

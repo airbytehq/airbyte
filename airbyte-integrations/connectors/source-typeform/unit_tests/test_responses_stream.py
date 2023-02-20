@@ -3,6 +3,8 @@
 #
 
 
+from typing import Any, Mapping, Optional
+
 import pendulum
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from pendulum.datetime import DateTime
@@ -14,7 +16,7 @@ UTC = pendulum.timezone("UTC")
 responses = Responses(authenticator=TokenAuthenticator(token=config["token"]), **config)
 
 
-def get_last_record(last_record_cursor: DateTime, form_id: str = "form1") -> str:
+def get_last_record(last_record_cursor: DateTime, form_id: Optional[str] = "form1") -> Mapping[str, Any]:
     metadata = {"referer": f"http://134/{form_id}"} if form_id else {}
     return {Responses.cursor_field: last_record_cursor.format(Responses.date_format), "metadata": metadata}
 
@@ -26,7 +28,7 @@ def test_get_updated_state_new():
     last_record = get_last_record(last_record_cursor)
 
     new_state = responses.get_updated_state(current_state, last_record)
-    assert new_state["form1"][Responses.cursor_field] == last_record_cursor.int_timestamp
+    assert new_state["form1"][Responses.cursor_field] == last_record_cursor.format(Responses.date_format)
 
 
 def test_get_updated_state_not_changed():
@@ -36,8 +38,7 @@ def test_get_updated_state_not_changed():
     last_record = get_last_record(last_record_cursor)
 
     new_state = responses.get_updated_state(current_state, last_record)
-    assert new_state["form1"][Responses.cursor_field] != last_record_cursor.int_timestamp
-    assert new_state["form1"][Responses.cursor_field] == 100000
+    assert new_state["form1"][Responses.cursor_field] == pendulum.from_timestamp(100000).format(Responses.date_format)
 
 
 def test_get_updated_state_form_id_is_new():
@@ -47,7 +48,7 @@ def test_get_updated_state_form_id_is_new():
     last_record = get_last_record(last_record_cursor, form_id="form2")
 
     new_state = responses.get_updated_state(current_state, last_record)
-    assert new_state["form2"][Responses.cursor_field] == last_record_cursor.int_timestamp
+    assert new_state["form2"][Responses.cursor_field] == last_record_cursor.format(Responses.date_format)
     assert new_state["form1"][Responses.cursor_field] == 100000
 
 
