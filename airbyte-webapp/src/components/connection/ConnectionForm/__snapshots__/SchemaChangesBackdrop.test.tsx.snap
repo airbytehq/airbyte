@@ -83,7 +83,7 @@ exports[`SchemaChangesBackdrop renders with breaking changes and prevents backgr
         </svg>
       </div>
       <p
-        class="text md text"
+        class="text md darkBlue text"
         data-type="text"
       >
         Please review the schema updates before making changes to the connection
