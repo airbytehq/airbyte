@@ -21,8 +21,7 @@ import UserManagementPage from "./pages/UserManagementPage";
 
 const PageContainer = styled.div`
   width: 100%;
-  height: 100%;
-  background: transparent;
+  height: auto;
   display: flex;
   flex-direction: row;
 `;
@@ -30,14 +29,14 @@ const PageContainer = styled.div`
 const Seperator = styled.div`
   width: 10px;
   background: transparent;
-  min-height: 100%;
+  height: 100%;
 `;
 
 const ContentContainer = styled.div`
   width: 100%;
-  min-height: 100%;
+  min-height: 100vh;
   background-color: white;
-  padding: 26px;
+  padding: 16px 26px 26px 26px;
 `;
 
 const PageHeaderContainer = styled.div`

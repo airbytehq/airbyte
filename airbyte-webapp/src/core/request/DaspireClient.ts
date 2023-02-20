@@ -9,7 +9,24 @@ import {
 import { ProductItemsList, PackagesDetail } from "../domain/product";
 import { RolesList, UpdateRoleRequestBody } from "../domain/role";
 import { UsersList, NewUser, NewUserRegisterBody } from "../domain/user";
+import { WebBackendConnectionRead } from "./AirbyteClient";
 import { apiOverride } from "./apiOverride";
+
+export interface FilterConnectionRequestBody {
+  workspaceId: string;
+  pageSize: number;
+  pageCurrent: number;
+  sourceDefinitionId: string;
+  destinationDefinitionId: string;
+  status: string;
+}
+
+export interface WebBackendFilteredConnectionReadList {
+  connections: WebBackendConnectionRead[];
+  total: number;
+  pageSize: number;
+  pageCurrent: number;
+}
 
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
 
@@ -169,6 +186,24 @@ export const registerNewUser = (
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: newUserRegisterBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Returns all non-deleted connections for a workspace.
+ */
+export const webBackendListFilteredConnectionsForWorkspace = (
+  filterConnectionRequestBody: FilterConnectionRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<WebBackendFilteredConnectionReadList>(
+    {
+      url: `/etl/web_backend/connections/page`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: filterConnectionRequestBody,
     },
     options
   );
