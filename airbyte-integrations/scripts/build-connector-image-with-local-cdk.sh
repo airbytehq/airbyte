@@ -2,12 +2,11 @@
 
 set -e
 
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+source "$ROOT_DIR/airbyte-integrations/scripts/utils.sh"
+
 [ -n "$CONNECTOR_TAG" ] || die "Missing CONNECTOR_TAG"
 [ -n "$CONNECTOR_NAME" ] || die "Missing CONNECTOR_NAME"
-
-ROOT_DIR="$(git rev-parse --show-toplevel)"
-
-source "$ROOT_DIR/airbyte-integrations/bases/connectors/utils.sh"
 
 CDK_DIR="$ROOT_DIR/airbyte-cdk/python"
 CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
@@ -31,7 +30,7 @@ mv Dockerfile.copy Dockerfile
 sed -iE 's,"airbyte-cdk[^"]*","airbyte-cdk @ file://localhost/airbyte-cdk",' setup.py
 
 # Build the connector image
-docker_build_quiet "$CONNECTOR_TAG"
+docker_build_tag "$CONNECTOR_TAG" "${QUIET_BUILD}"
 cd -
 
 # Clean up now that the image has been created

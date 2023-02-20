@@ -2,11 +2,10 @@
 
 set -e
 
-[ -n "$CONFIG_PATH" ] || die "Missing CONFIG_PATH"
-
 ROOT_DIR="$(git rev-parse --show-toplevel)"
+source "$ROOT_DIR/airbyte-integrations/scripts/utils.sh"
 
-source "$ROOT_DIR/airbyte-integrations/bases/connectors/utils.sh"
+[ -n "$CONFIG_PATH" ] || die "Missing CONFIG_PATH"
 
 CONNECTOR_TAG_BASE="$(grep connector_image $CONFIG_PATH | head -n 1 | cut -d: -f2 | sed 's/^ *//')"
 CONNECTOR_TAG="$CONNECTOR_TAG_BASE:dev"
@@ -21,10 +20,10 @@ fi
 
 if [ -n "$LOCAL_CDK" ] && [ -f "$CONNECTOR_DIR/setup.py" ]; then
   echo "Building Connector image with local CDK from $ROOT_DIR/airbyte-cdk"
-  CONNECTOR_NAME="$CONNECTOR_NAME" CONNECTOR_TAG="$CONNECTOR_TAG" sh "$ROOT_DIR/airbyte-integrations/bases/connectors/build-connector-image-with-local-cdk.sh"
+  CONNECTOR_NAME="$CONNECTOR_NAME" CONNECTOR_TAG="$CONNECTOR_TAG" QUIET_BUILD="$QUIET_BUILD" sh "$ROOT_DIR/airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh"
 else
   # Build latest connector image
-  docker_build_quiet "$CONNECTOR_TAG"
+  docker_build_tag "$CONNECTOR_TAG" "${QUIET_BUILD}"
 fi
 
 # Pull latest acctest image

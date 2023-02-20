@@ -1,10 +1,19 @@
 #!/usr/bin/env sh
 
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+
+REPO_NAME="$(basename $ROOT_DIR)"
+if [ "$REPO_NAME" != "airbyte" ]; then
+  echo "This script must be run from the airbyte repo." 1>&2
+  exit 1
+fi
+
+source "$ROOT_DIR/airbyte-integrations/scripts/utils.sh"
+
 USAGE="$(basename "$0") [-h] [-c connector1,connector2,...] -- Run connector acceptance tests (CATs) against the local CDK, if relevant.\n
     -h  show help text\n
     -c  comma-separated connector names (defaults to all connectors)"
 
-ROOT_DIR="$(git rev-parse --show-toplevel)"
 OUTPUT_DIR=/tmp/cat-output
 SCRIPT=/tmp/run-cats-with-local-cdk.sh
 # Clean up from previous test runs
@@ -15,37 +24,17 @@ while getopts ":hc:" opt; do
         h ) echo $USAGE
             exit 0 ;;
         c ) connectors="${OPTARG}" ;;
-        * ) echo "Unrecognized argument" 1>&2
-            exit 1 ;;
+        * ) die "Unrecognized argument" ;;
     esac
 done
 
-if [ -z "$connectors" ]; then
-  connectors=$(find airbyte-integrations/connectors -type d -name 'source-*' -maxdepth 1 | xargs -n 1 basename | tr '\n' ',' | sed 's/,$//')
-fi
+[ -n "$connectors" ] || die "Please specify one or more connectors."
 
 connectors=$(echo $connectors | tr ',' ' ')
 
 echo "Running CATs for ${connectors}"
 echo ""
-
-echo '
-CONNECTOR_NAME=$1
-ROOT_DIR="$(git rev-parse --show-toplevel)"
-CONNECTOR_DIR=$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME
-OUTPUT_DIR=/tmp/cat-output
-CONNECTOR_OUTPUT_DIR=$OUTPUT_DIR/$CONNECTOR_NAME
-cd $CONNECTOR_DIR
-if [ -f acceptance-test-docker.sh ] && [ -f setup.py ] && grep -q "airbyte-cdk" setup.py; then
-    mkdir $CONNECTOR_OUTPUT_DIR
-    LOCAL_CDK=1 FETCH_SECRETS=1 sh acceptance-test-docker.sh > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.out 2> $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.err
-    echo $? > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.exit-code
-fi
-' > "$SCRIPT"
-
-chmod +x "$SCRIPT"
-
-echo $connectors | xargs -P 0 -n 1 "$SCRIPT"
+echo $connectors | xargs -P 0 -n 1 -I % $ROOT_DIR/airbyte-integrations/scripts/run-acceptance-test-docker.sh % $OUTPUT_DIR
 
 # Print connectors with CATs that passed
 for directory in $OUTPUT_DIR/*; do
@@ -69,7 +58,5 @@ for directory in $OUTPUT_DIR/*; do
     echo ""
   fi
 done
-
-rm "$SCRIPT"
 
 echo "Done."
