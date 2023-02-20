@@ -71,8 +71,9 @@ public class TemporalBeanFactory {
                                                                final JobErrorReporter jobErrorReporter,
                                                                final OAuthConfigSupplier oAuthConfigSupplier,
                                                                final RouterService routerService,
-                                                               final ConfigInjector configInjector) {
-    return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService, configInjector);
+                                                               final ConfigRepository configRepository) {
+    return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService,
+        new ConfigInjector(configRepository));
   }
 
 }

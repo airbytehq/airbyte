@@ -49,6 +49,7 @@ import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.S
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,12 +92,12 @@ class GenerateInputActivityTest {
     configRepository = mock(ConfigRepository.class);
     configInjector = mock(ConfigInjector.class);
     generateInputActivity =
-        new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier, configInjector);
+        new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier);
 
     job = mock(Job.class);
 
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
-    when(configInjector.injectConfig(any(), any())).thenAnswer(i -> i.getArguments()[0]);
+    when(configRepository.getConnectorBuilderProjectsByWorkspace(any())).thenReturn(Stream.empty());
 
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withDestinationId(DESTINATION_ID)
