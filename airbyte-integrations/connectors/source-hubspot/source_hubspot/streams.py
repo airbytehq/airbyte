@@ -247,7 +247,7 @@ class Stream(HttpStream, ABC):
             return APIv1Property(properties)
         return APIv3Property(properties)
 
-    def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, **kwargs):
+    def __init__(self, api: API, start_date: Union[str, pendulum.datetime], credentials: Mapping[str, Any] = None, max_day_num: int=None, **kwargs):
         super().__init__(**kwargs)
         self._api: API = api
         self._credentials = credentials
@@ -745,7 +745,9 @@ class IncrementalStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+
         records = super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+
         latest_cursor = None
         for record in records:
             cursor = self._field_to_datetime(record[self.updated_at_field])
@@ -755,6 +757,7 @@ class IncrementalStream(Stream, ABC):
         is_last_slice = False
         if self.last_slice:
             is_last_slice = stream_slice == self.last_slice
+
         self._update_state(latest_cursor=latest_cursor, is_last_record=is_last_slice)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -802,14 +805,17 @@ class IncrementalStream(Stream, ABC):
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
                 self._state = new_state
                 self._start_date = self._state
-        if is_last_record:
-            self._state = self._init_sync
+        #if is_last_record:
+        #    self._state = self._init_sync
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         self.set_sync(sync_mode)
-        chunk_size = pendulum.duration(days=min(30, self.max_day_num))
+        if self.max_day_num > 0:
+            chunk_size = pendulum.duration(days=min(30, self.max_day_num))
+        else: 
+            chunk_size = pendulum.duration(days=30)
         slices = []
 
         now_ts = int(pendulum.now().timestamp() * 1000)
@@ -1233,9 +1239,13 @@ class EmailEvents(IncrementalStream):
     more_key = "hasMore"
     updated_at_field = "created"
     created_at_field = "created"
-    max_day_num=60
     primary_key = "id"
     scopes = {"content"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "max_day_num" in kwargs and kwargs["max_day_num"] is not None:
+            self.max_day_num = kwargs['max_day_num']
 
 
 class Engagements(IncrementalStream):

@@ -17,6 +17,11 @@ connectionSpecification:
         this date will not be replicated.
       examples:
         - "2017-01-25T00:00:00Z"
+    max_day_num:
+      type: integer
+      title: Max Event Days
+      description:
+        The maximum number of days to pull at one time. This should be used if the connection has trouble syncing the full event history. Only applies to email events.
     credentials:
       title: Authentication
       description: Choose how to authenticate to HubSpot.

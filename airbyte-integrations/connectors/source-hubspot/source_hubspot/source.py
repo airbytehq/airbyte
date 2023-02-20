@@ -82,8 +82,12 @@ class SourceHubspot(AbstractSource):
     def get_common_params(self, config) -> Mapping[str, Any]:
         start_date = config["start_date"]
         credentials = config["credentials"]
+        if "max_day_num" in config:
+            max_day_num = config["max_day_num"]
+        else:
+            max_day_num = None
         api = self.get_api(config=config)
-        return dict(api=api, start_date=start_date, credentials=credentials)
+        return dict(api=api, start_date=start_date, max_day_num=max_day_num, credentials=credentials)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
