@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -96,7 +96,7 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
     second_error_handler.interpret_response.return_value = second_handler_behavior
     second_error_handler.interpret_response.return_value = second_handler_behavior
     retriers = [first_error_handler, second_error_handler]
-    retrier = CompositeErrorHandler(error_handlers=retriers, options={})
+    retrier = CompositeErrorHandler(error_handlers=retriers, parameters={})
     response_mock = MagicMock()
     response_mock.ok = first_handler_behavior == response_status.SUCCESS or second_handler_behavior == response_status.SUCCESS
     assert retrier.interpret_response(response_mock) == expected_behavior
@@ -104,7 +104,7 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
 
 def test_composite_error_handler_no_handlers():
     try:
-        CompositeErrorHandler(error_handlers=[], options={})
+        CompositeErrorHandler(error_handlers=[], parameters={})
         assert False
     except ValueError:
         pass

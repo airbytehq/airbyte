@@ -1,9 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 """
+Report Connector Build Status to Slack
+
 All invocations of this script must be run from the Airbyte repository root.
+
+BEFORE RUNNING THIS SCRIPT:
+- Ensure you have read the documentation on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
 
 To Run tests:
 pytest ./tools/bin/build_report.py
@@ -29,7 +34,8 @@ CONNECTOR_DEFINITIONS_DIR = "./airbyte-config/init/src/main/resources/seed"
 SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
-RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
+RELEVANT_BASE_MODULES = ["base-normalization", "connector-acceptance-test"]
+CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors"
 
 # Global vars
 TESTED_SOURCE = []
@@ -42,7 +48,7 @@ FAILED_2_LAST = []
 
 
 def get_status_page(connector) -> str:
-    response = requests.get(f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/{connector}/index.html")
+    response = requests.get(f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector}/index.html")
     if response.status_code == 200:
         return response.text
 
