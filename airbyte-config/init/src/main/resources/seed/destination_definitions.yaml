@@ -451,7 +451,7 @@
   icon: duckdb.svg
   normalizationConfig:
     normalizationRepository: airbyte/normalization-duckdb
-    normalizationTag: 0.2.25
+    normalizationTag: 0.2.26
     normalizationIntegrationType: duckdb
   supportsDbt: true
   releaseStage: alpha
