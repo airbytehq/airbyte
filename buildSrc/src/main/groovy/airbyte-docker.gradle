@@ -140,25 +140,25 @@ class AirbyteDockerPlugin implements Plugin<Project> {
             def stored = (String) project.rootProject.imageToHash.get(taggedImage)
             logger.debug "stored " + stored
 
-            // def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any { baseImage ->
-            //     logger.debug "checking base image " + baseImage
-            //     def storedBase = (String) project.rootProject.imageToHash.get(resolveEnvironmentVariables(project, baseImage))
-            //     def currentBase = getImageHash(project, baseImage)
+            def notUpToDate = new ArrayList<String>(getBaseTaggedImages(dockerPath.toFile())).any { baseImage ->
+                logger.debug "checking base image " + baseImage
+                def storedBase = (String) project.rootProject.imageToHash.get(resolveEnvironmentVariables(project, baseImage))
+                def currentBase = getImageHash(project, baseImage)
 
-            //     logger.debug "storedBase " + storedBase
-            //     logger.debug "currentBase " + currentBase
-            //     if (!currentBase.equals(storedBase)) {
-            //         logger.debug "did not match"
-            //         return true
-            //     } else {
-            //         logger.debug "did match"
-            //         return false
-            //     }
-            // }
+                logger.debug "storedBase " + storedBase
+                logger.debug "currentBase " + currentBase
+                if (!currentBase.equals(storedBase)) {
+                    logger.debug "did not match"
+                    return true
+                } else {
+                    logger.debug "did match"
+                    return false
+                }
+            }
 
-            // if (notUpToDate) {
-            //     return false;
-            // }
+            if (notUpToDate) {
+                return false;
+            }
 
             logger.debug "stored " + stored
 
@@ -175,7 +175,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
     static def createTask(Project project, String taskName, String dockerFile) {
         if (project.file(dockerFile).exists()) {
             def filteredProjectFiles = project.fileTree(project.projectDir).filter {
-                file -> !file.toString().contains(".venv") && !file.toString().contains(".coverage") && !file.toString().contains(".pytest_cache")
+                file -> !file.toString().contains(".venv")
             }
 
             project.task(taskName, type: AirbyteDockerTask) {
