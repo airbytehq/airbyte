@@ -229,6 +229,14 @@ font-style: italic;
   <li><a href="#syncConnection"><code><span class="http-method">post</span> /v1/connections/sync</code></a></li>
   <li><a href="#updateConnection"><code><span class="http-method">post</span> /v1/connections/update</code></a></li>
   </ul>
+  <h4><a href="#ConnectorBuilderProject">ConnectorBuilderProject</a></h4>
+  <ul>
+  <li><a href="#createProject"><code><span class="http-method">post</span> /v1/connector_builder_projects/create</code></a></li>
+  <li><a href="#deleteProject"><code><span class="http-method">post</span> /v1/connector_builder_projects/delete</code></a></li>
+  <li><a href="#getProject"><code><span class="http-method">post</span> /v1/connector_builder_projects/get_with_manifest</code></a></li>
+  <li><a href="#listProjects"><code><span class="http-method">post</span> /v1/connector_builder_projects/list</code></a></li>
+  <li><a href="#updateProject"><code><span class="http-method">post</span> /v1/connector_builder_projects/update</code></a></li>
+  </ul>
   <h4><a href="#Destination">Destination</a></h4>
   <ul>
   <li><a href="#checkConnectionToDestination"><code><span class="http-method">post</span> /v1/destinations/check_connection</code></a></li>
@@ -2009,6 +2017,263 @@ containing the updated stream needs to be sent.</div>
     <h4 class="field-label">422</h4>
     Input failed validation
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
+  <h1><a name="ConnectorBuilderProject">ConnectorBuilderProject</a></h1>
+  <div class="method"><a name="createProject"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connector_builder_projects/create</code></pre></div>
+    <div class="method-summary">Create new connector builder project (<span class="nickname">createProject</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectorBuilderProjectWithWorkspaceId <a href="#ConnectorBuilderProjectWithWorkspaceId">ConnectorBuilderProjectWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectorBuilderProjectIdWithWorkspaceId">ConnectorBuilderProjectIdWithWorkspaceId</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "builderProjectId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectorBuilderProjectIdWithWorkspaceId">ConnectorBuilderProjectIdWithWorkspaceId</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="deleteProject"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connector_builder_projects/delete</code></pre></div>
+    <div class="method-summary">Deletes connector builder project (<span class="nickname">deleteProject</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectorBuilderProjectIdWithWorkspaceId <a href="#ConnectorBuilderProjectIdWithWorkspaceId">ConnectorBuilderProjectIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    Successful operation
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="getProject"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connector_builder_projects/get_with_manifest</code></pre></div>
+    <div class="method-summary">Get a connector builder project with draft manifest (<span class="nickname">getProject</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ConnectorBuilderProjectIdWithWorkspaceId <a href="#ConnectorBuilderProjectIdWithWorkspaceId">ConnectorBuilderProjectIdWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectorBuilderProjectRead">ConnectorBuilderProjectRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "declarativeManifest" : {
+    "manifest" : {
+      "key" : ""
+    },
+    "isDraft" : true
+  },
+  "builderProject" : {
+    "hasDraft" : true,
+    "builderProjectId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "draftManifest" : {
+      "key" : ""
+    }
+  }
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectorBuilderProjectRead">ConnectorBuilderProjectRead</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="listProjects"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connector_builder_projects/list</code></pre></div>
+    <div class="method-summary">List connector builder projects for workspace (<span class="nickname">listProjects</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#ConnectorBuilderProjectReadList">ConnectorBuilderProjectReadList</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "projects" : [ {
+    "hasDraft" : true,
+    "builderProjectId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "draftManifest" : {
+      "key" : ""
+    }
+  }, {
+    "hasDraft" : true,
+    "builderProjectId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "name" : "name",
+    "draftManifest" : {
+      "key" : ""
+    }
+  } ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#ConnectorBuilderProjectReadList">ConnectorBuilderProjectReadList</a>
+  </div> <!-- method -->
+  <hr/>
+  <div class="method"><a name="updateProject"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/connector_builder_projects/update</code></pre></div>
+    <div class="method-summary">Update connector builder project (<span class="nickname">updateProject</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">ExistingConnectorBuilderProjectWithWorkspaceId <a href="#ExistingConnectorBuilderProjectWithWorkspaceId">ExistingConnectorBuilderProjectWithWorkspaceId</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">204</h4>
+    Successful operation
+        <a href="#"></a>
   </div> <!-- method -->
   <hr/>
   <h1><a name="Destination">Destination</a></h1>
@@ -10543,6 +10808,11 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#ConnectionStateType"><code>ConnectionStateType</code> - </a></li>
     <li><a href="#ConnectionStatus"><code>ConnectionStatus</code> - </a></li>
     <li><a href="#ConnectionUpdate"><code>ConnectionUpdate</code> - </a></li>
+    <li><a href="#ConnectorBuilderProjectDetails"><code>ConnectorBuilderProjectDetails</code> - </a></li>
+    <li><a href="#ConnectorBuilderProjectIdWithWorkspaceId"><code>ConnectorBuilderProjectIdWithWorkspaceId</code> - </a></li>
+    <li><a href="#ConnectorBuilderProjectRead"><code>ConnectorBuilderProjectRead</code> - </a></li>
+    <li><a href="#ConnectorBuilderProjectReadList"><code>ConnectorBuilderProjectReadList</code> - </a></li>
+    <li><a href="#ConnectorBuilderProjectWithWorkspaceId"><code>ConnectorBuilderProjectWithWorkspaceId</code> - </a></li>
     <li><a href="#CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a></li>
     <li><a href="#CustomSourceDefinitionCreate"><code>CustomSourceDefinitionCreate</code> - </a></li>
     <li><a href="#DataType"><code>DataType</code> - </a></li>
@@ -10551,6 +10821,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DbMigrationReadList"><code>DbMigrationReadList</code> - </a></li>
     <li><a href="#DbMigrationRequestBody"><code>DbMigrationRequestBody</code> - </a></li>
     <li><a href="#DbMigrationState"><code>DbMigrationState</code> - </a></li>
+    <li><a href="#DeclarativeManifest"><code>DeclarativeManifest</code> - </a></li>
     <li><a href="#DestinationCloneConfiguration"><code>DestinationCloneConfiguration</code> - </a></li>
     <li><a href="#DestinationCloneRequestBody"><code>DestinationCloneRequestBody</code> - </a></li>
     <li><a href="#DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a></li>
@@ -10571,6 +10842,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#DiscoverCatalogResult"><code>DiscoverCatalogResult</code> - </a></li>
+    <li><a href="#ExistingConnectorBuilderProjectWithWorkspaceId"><code>ExistingConnectorBuilderProjectWithWorkspaceId</code> - </a></li>
     <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
     <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
@@ -11111,6 +11383,47 @@ containing the updated stream needs to be sent.</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="ConnectorBuilderProjectDetails"><code>ConnectorBuilderProjectDetails</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">builderProjectId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">hasDraft </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">draftManifest (optional)</div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectorBuilderProjectIdWithWorkspaceId"><code>ConnectorBuilderProjectIdWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">builderProjectId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectorBuilderProjectRead"><code>ConnectorBuilderProjectRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">builderProject </div><div class="param-desc"><span class="param-type"><a href="#ConnectorBuilderProjectDetails">ConnectorBuilderProjectDetails</a></span>  </div>
+<div class="param">declarativeManifest (optional)</div><div class="param-desc"><span class="param-type"><a href="#DeclarativeManifest">DeclarativeManifest</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectorBuilderProjectReadList"><code>ConnectorBuilderProjectReadList</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">projects </div><div class="param-desc"><span class="param-type"><a href="#ConnectorBuilderProjectDetails">array[ConnectorBuilderProjectDetails]</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ConnectorBuilderProjectWithWorkspaceId"><code>ConnectorBuilderProjectWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">builderProject </div><div class="param-desc"><span class="param-type"><a href="#ConnectorBuilderProjectDetails">ConnectorBuilderProjectDetails</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="CustomDestinationDefinitionCreate"><code>CustomDestinationDefinitionCreate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11173,6 +11486,14 @@ containing the updated stream needs to be sent.</div>
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DeclarativeManifest"><code>DeclarativeManifest</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">manifest (optional)</div><div class="param-desc"><span class="param-type"><a href="#AnyType">map[String, oas_any_type_not_mapped]</a></span>  </div>
+<div class="param">isDraft (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="DestinationCloneConfiguration"><code>DestinationCloneConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -11365,6 +11686,15 @@ containing the updated stream needs to be sent.</div>
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">catalogId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="ExistingConnectorBuilderProjectWithWorkspaceId"><code>ExistingConnectorBuilderProjectWithWorkspaceId</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">builderProjectId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">builderProject </div><div class="param-desc"><span class="param-type"><a href="#ConnectorBuilderProjectDetails">ConnectorBuilderProjectDetails</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

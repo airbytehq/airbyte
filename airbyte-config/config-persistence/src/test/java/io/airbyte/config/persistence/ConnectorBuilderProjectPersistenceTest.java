@@ -5,7 +5,8 @@
 package io.airbyte.config.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +14,6 @@ import io.airbyte.config.ConnectorBuilderProject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,15 +34,21 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
-  void testRead() throws IOException {
+  void testRead() throws IOException, ConfigNotFoundException {
     createBaseObjects();
-    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), mainWorkspace).get());
+    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), true));
+  }
+
+  @Test
+  void testReadWithoutManifest() throws IOException, ConfigNotFoundException {
+    createBaseObjects();
+    project1.setManifestDraft(null);
+    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), false));
   }
 
   @Test
   void testReadNotExists() throws IOException {
-    final Optional<ConnectorBuilderProject> projectOptional = configRepository.getConnectorBuilderProject(UUID.randomUUID(), mainWorkspace);
-    assertFalse(projectOptional.isPresent());
+    assertThrows(ConfigNotFoundException.class, () -> configRepository.getConnectorBuilderProject(UUID.randomUUID(), false));
   }
 
   @Test
@@ -58,22 +64,40 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
-  void testUpdate() throws IOException {
+  void testListWithNoManifest() throws IOException, ConfigNotFoundException {
+    createBaseObjects();
+
+    // actually set draft to null for first project
+    project1.setManifestDraft(null);
+    project1.setHasDraft(false);
+    configRepository.writeBuilderProject(project1);
+
+    // set draft to null because it won't be returned as part of listing call
+    project2.setManifestDraft(null);
+    // has draft is still truthy because there is a draft in the database
+    project2.setHasDraft(true);
+
+    assertEquals(new ArrayList<>(
+        Arrays.asList(project1, project2)), configRepository.getConnectorBuilderProjectsByWorkspace(mainWorkspace).toList());
+  }
+
+  @Test
+  void testUpdate() throws IOException, ConfigNotFoundException {
     createBaseObjects();
     project1.setName("Updated name");
     project1.setManifestDraft(new ObjectMapper().readTree("{}"));
     configRepository.writeBuilderProject(project1);
-    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), mainWorkspace).get());
+    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), true));
   }
 
   @Test
-  void testDelete() throws IOException {
+  void testDelete() throws IOException, ConfigNotFoundException {
     createBaseObjects();
 
-    final boolean deleted = configRepository.deleteBuilderProject(project1.getBuilderProjectId(), mainWorkspace);
+    final boolean deleted = configRepository.deleteBuilderProject(project1.getBuilderProjectId());
     assertTrue(deleted);
-    assertFalse(configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), mainWorkspace).isPresent());
-    assertTrue(configRepository.getConnectorBuilderProject(project2.getBuilderProjectId(), mainWorkspace).isPresent());
+    assertThrows(ConfigNotFoundException.class, () -> configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), false));
+    assertNotNull(configRepository.getConnectorBuilderProject(project2.getBuilderProjectId(), false));
   }
 
   private void createBaseObjects() throws IOException {
@@ -94,6 +118,7 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
         .withBuilderProjectId(projectId)
         .withName("project " + projectId)
         .withManifestDraft(new ObjectMapper().readTree("{\"the_id\": \"" + projectId + "\"}"))
+        .withHasDraft(true)
         .withWorkspaceId(workspace);
     configRepository.writeBuilderProject(project);
     return project;

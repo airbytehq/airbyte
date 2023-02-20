@@ -26,6 +26,11 @@ public enum ConfigSchema implements AirbyteConfig {
   WORKSPACE_WEBHOOK_OPERATION_CONFIGS("WebhookOperationConfigs.yaml",
       WebhookOperationConfigs.class),
 
+  // connector builder project
+  CONNECTOR_BUILDER_PROJECT("ConnectorBuilderProject.yaml",
+      ConnectorBuilderProject.class,
+      project -> project.getBuilderProjectId().toString(),
+      "builderProjectId"),
   // source
   STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",
       StandardSourceDefinition.class,

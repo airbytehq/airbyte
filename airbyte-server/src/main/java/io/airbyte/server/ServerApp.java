@@ -11,8 +11,31 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.server.RequestLogger;
-import io.airbyte.commons.server.errors.*;
-import io.airbyte.commons.server.handlers.*;
+import io.airbyte.commons.server.errors.InvalidInputExceptionMapper;
+import io.airbyte.commons.server.errors.InvalidJsonExceptionMapper;
+import io.airbyte.commons.server.errors.InvalidJsonInputExceptionMapper;
+import io.airbyte.commons.server.errors.KnownExceptionMapper;
+import io.airbyte.commons.server.errors.NotFoundExceptionMapper;
+import io.airbyte.commons.server.errors.UncaughtExceptionMapper;
+import io.airbyte.commons.server.handlers.AttemptHandler;
+import io.airbyte.commons.server.handlers.ConnectionsHandler;
+import io.airbyte.commons.server.handlers.ConnectorBuilderProjectsHandler;
+import io.airbyte.commons.server.handlers.DestinationDefinitionsHandler;
+import io.airbyte.commons.server.handlers.DestinationHandler;
+import io.airbyte.commons.server.handlers.HealthCheckHandler;
+import io.airbyte.commons.server.handlers.JobHistoryHandler;
+import io.airbyte.commons.server.handlers.LogsHandler;
+import io.airbyte.commons.server.handlers.OAuthHandler;
+import io.airbyte.commons.server.handlers.OpenApiConfigHandler;
+import io.airbyte.commons.server.handlers.OperationsHandler;
+import io.airbyte.commons.server.handlers.SchedulerHandler;
+import io.airbyte.commons.server.handlers.SourceDefinitionsHandler;
+import io.airbyte.commons.server.handlers.SourceHandler;
+import io.airbyte.commons.server.handlers.StateHandler;
+import io.airbyte.commons.server.handlers.WebBackendCheckUpdatesHandler;
+import io.airbyte.commons.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.commons.server.handlers.WebBackendGeographiesHandler;
+import io.airbyte.commons.server.handlers.WorkspacesHandler;
 import io.airbyte.commons.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.commons.server.scheduler.EventRunner;
 import io.airbyte.commons.server.scheduler.TemporalEventRunner;
@@ -231,6 +254,7 @@ public class ServerApp implements ServerRunnable {
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final ConfigInjector configInjector = new ConfigInjector(configRepository);
+
     final RouterService routerService = new RouterService(configRepository, taskQueueMapper);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService, configInjector);
@@ -302,6 +326,9 @@ public class ServerApp implements ServerRunnable {
     final SourceDefinitionsHandler sourceDefinitionsHandler =
         new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteGithubStore, sourceHandler,
             airbyteProtocolVersionRange);
+
+    final ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler =
+        new ConnectorBuilderProjectsHandler(configRepository, () -> UUID.randomUUID());
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,
@@ -376,6 +403,7 @@ public class ServerApp implements ServerRunnable {
         schedulerHandler,
         sourceHandler,
         sourceDefinitionsHandler,
+        connectorBuilderProjectsHandler,
         stateHandler,
         workspacesHandler,
         configInjector,
