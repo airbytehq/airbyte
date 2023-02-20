@@ -378,6 +378,7 @@ public class ServerApp implements ServerRunnable {
         sourceDefinitionsHandler,
         stateHandler,
         workspacesHandler,
+        configInjector,
         webBackendConnectionsHandler,
         webBackendGeographiesHandler,
         webBackendCheckUpdatesHandler);
