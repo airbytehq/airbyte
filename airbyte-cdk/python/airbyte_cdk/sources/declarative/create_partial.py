@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import inspect
 from typing import Any, Mapping
 
-OPTIONS_STR = "$options"
+PARAMETERS_STR = "$parameters"
 
 
 def create(func, /, *args, **keywords):
@@ -31,27 +31,27 @@ def create(func, /, *args, **keywords):
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)
 
-        # $options is a special keyword used for interpolation and propagation
-        if OPTIONS_STR in all_keywords:
-            options = all_keywords.get(OPTIONS_STR)
+        # $parameters is a special keyword used for interpolation and propagation
+        if PARAMETERS_STR in all_keywords:
+            parameters = all_keywords.get(PARAMETERS_STR)
         else:
-            options = dict()
+            parameters = dict()
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:
             all_keywords["config"] = config
 
-        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options, all_keywords)
+        kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, parameters, all_keywords)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords, all_keywords)
 
-        # options is required as part of creation of all declarative components
+        # parameters is required as part of creation of all declarative components
         dynamic_args = {**all_keywords_to_pass_down, **kwargs_to_pass_down}
-        if "options" not in dynamic_args:
-            dynamic_args["options"] = {}
+        if "parameters" not in dynamic_args:
+            dynamic_args["parameters"] = {}
         else:
-            # Handles the case where kwarg options and keyword $options both exist. We should merge both sets of options
+            # Handles the case where kwarg parameters and keyword $parameters both exist. We should merge both sets of parameters
             # before creating the component
-            dynamic_args["options"] = {**all_keywords_to_pass_down["options"], **kwargs_to_pass_down["options"]}
+            dynamic_args["parameters"] = {**all_keywords_to_pass_down["parameters"], **kwargs_to_pass_down["parameters"]}
         try:
             ret = func(*args, *fargs, **dynamic_args)
         except TypeError as e:
@@ -65,16 +65,16 @@ def create(func, /, *args, **keywords):
     return newfunc
 
 
-def _get_kwargs_to_pass_to_func(func, options, existing_keyword_parameters):
+def _get_kwargs_to_pass_to_func(func, parameters, existing_keyword_parameters):
     argspec = inspect.getfullargspec(func)
     kwargs_to_pass_down = set(argspec.kwonlyargs)
     args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)
     kwargs_to_pass_down = {
-        k: v for k, v in options.items() if k in all_args and _key_is_unset_or_identical(k, v, existing_keyword_parameters)
+        k: v for k, v in parameters.items() if k in all_args and _key_is_unset_or_identical(k, v, existing_keyword_parameters)
     }
-    if "options" in all_args:
-        kwargs_to_pass_down["options"] = options
+    if "parameters" in all_args:
+        kwargs_to_pass_down["parameters"] = parameters
     return kwargs_to_pass_down
 
 
