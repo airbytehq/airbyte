@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
+import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;
@@ -34,7 +35,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
    * @throws SQLException
    */
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
 
     final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet
@@ -44,7 +45,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     final JDBCType columnType = safeGetJdbcType(metadata.getColumnType(colIndex));
 
     if (columnTypeName.equalsIgnoreCase("time")) {
-      putString(json, columnName, resultSet, colIndex);
+      putTime(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("geometry")) {
       putGeometry(json, columnName, resultSet, colIndex);
     } else if (columnTypeName.equalsIgnoreCase("geography")) {
@@ -80,7 +81,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
       if (typeName.equalsIgnoreCase("geography")
@@ -108,6 +109,11 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     final byte[] bytes = resultSet.getBytes(index);
     final String value = new String(bytes, Charset.defaultCharset());
     node.put(columnName, value);
+  }
+
+  @Override
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DataTypeUtils.toISOTimeString(resultSet.getTimestamp(index).toLocalDateTime()));
   }
 
   protected void putGeometry(final ObjectNode node,

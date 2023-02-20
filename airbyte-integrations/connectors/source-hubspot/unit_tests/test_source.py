@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,7 +13,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from source_hubspot.errors import HubspotRateLimited
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
-from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream, Workflows
+from source_hubspot.streams import API, Companies, Deals, Engagements, Products, Stream
 
 from .utils import read_full_refresh, read_incremental
 
@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 def test_check_connection_invalid_config(config):
     config.pop("start_date")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
 
 
@@ -64,7 +64,7 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 27
+    assert len(streams) == 25
 
 
 def test_check_credential_title_exception(config):
@@ -134,42 +134,31 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_wrong_permissions_api_key(requests_mock, creds_with_wrong_permissions, common_params, caplog):
-    """
-    Error with API Key Permissions to particular stream,
-    typically this issue raises along with calling `workflows` stream with API Key
-    that doesn't have required permissions to read the stream.
-    """
-
-    # Mapping tipical response for mocker
-    responses = [
-        {
-            "json": {
-                "status": "error",
-                "message": f'This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-                "correlationId": "2fe0a9af-3609-45c9-a4d7-83a1774121aa",
-            }
-        }
-    ]
-
-    # We expect something like this
-    expected_warining_message = {
-        "type": "LOG",
-        "log": {
-            "level": "WARN",
-            "message": f'Stream `workflows` cannot be procced. This hapikey ({creds_with_wrong_permissions.get("api_key")}) does not have proper permissions! (requires any of [automation-access])',
-        },
+def test_stream_forbidden(requests_mock, config, caplog):
+    json = {
+        "status": "error",
+        "message": "This access_token does not have proper permissions!",
     }
+    requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
 
-    # Create test_stream instance
-    test_stream = Workflows(**common_params)
+    catalog = ConfiguredAirbyteCatalog.parse_obj({
+        "streams": [
+            {
+                "stream": {
+                    "name": "workflows",
+                    "json_schema": {},
+                    "supported_sync_modes": ["full_refresh"],
+                },
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite"
+            }
+        ]
+    })
 
-    # Mocking Request
-    requests_mock.register_uri("GET", test_stream.url, responses)
-    list(test_stream.read_records(sync_mode=SyncMode.full_refresh))
-
-    # match logged expected logged warning message with output given from preudo-output
-    assert expected_warining_message["log"]["message"] in caplog.text
+    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    assert json["message"] in caplog.text
+    records = [r for r in records if r.type == Type.RECORD]
+    assert not records
 
 
 class TestSplittingPropertiesFunctionality:
@@ -331,17 +320,6 @@ def configured_catalog_fixture():
     return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
 
 
-def test_it_should_not_read_quotes_stream_if_it_does_not_exist_in_client(oauth_config, configured_catalog):
-    """
-    If 'quotes' stream is not in the client, it should skip it.
-    """
-    source = SourceHubspot()
-
-    all_records = list(source.read(logger, config=oauth_config, catalog=configured_catalog, state=None))
-    records = [record for record in all_records if record.type == Type.RECORD]
-    assert not records
-
-
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
@@ -354,7 +332,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                 "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(100)],
                 "paging": {
                     "next": {
-                        "after": f"{x*100}",
+                        "after": f"{x * 100}",
                     }
                 },
             },
@@ -370,7 +348,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
                     "results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(100)],
                     "paging": {
                         "next": {
-                            "after": f"{x*100}",
+                            "after": f"{x * 100}",
                         }
                     },
                 },
@@ -399,6 +377,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
 
     # Create test_stream instance with some state
     test_stream = Companies(**common_params)
+    test_stream._init_sync = pendulum.parse("2022-02-24T16:43:11Z")
     test_stream.state = {"updatedAt": "2022-02-24T16:43:11Z"}
 
     # Mocking Request
@@ -406,11 +385,13 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri("POST", test_stream.url, responses)
     test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    requests_mock.register_uri("POST", "/crm/v4/associations/company/contacts/batch/read", [{"status_code": 200, "json": {"results": []}}])
+
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
     assert len(records) == 11000
-    assert test_stream.state["updatedAt"] == "2022-03-01T00:00:00Z"
+    assert test_stream.state["updatedAt"] == test_stream._init_sync.to_iso8601_string()
 
 
 def test_engagements_stream_pagination_works(requests_mock, common_params):
@@ -422,7 +403,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     # Mocking Request
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250",
+        "/engagements/v1/engagements/paged?count=250",
         [
             {
                 "json": {
@@ -452,7 +433,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
 
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100",
+        "/engagements/v1/engagements/recent/modified?count=100",
         [
             {
                 "json": {
@@ -486,12 +467,13 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == 1641234595251
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
+    test_stream = Engagements(**common_params)
     records, _ = read_incremental(test_stream, {})
-    # The stream should handle pagination correctly and output 600 records.
+    # The stream should handle pagination correctly and output 250 records.
     assert len(records) == 250
-    assert test_stream.state["lastUpdated"] == 1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
 def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
@@ -515,10 +497,9 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     # Create test_stream instance with some state
     test_stream = Engagements(**common_params)
     test_stream.state = {"lastUpdated": 1641234595251}
-
     # Mocking Request
-    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?count=100", responses)
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000
-    assert test_stream.state["lastUpdated"] == +1641234595252
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)

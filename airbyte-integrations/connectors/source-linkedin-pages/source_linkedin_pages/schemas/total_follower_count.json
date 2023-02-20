@@ -1,0 +1,10 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "firstDegreeSize": {
+      "type": ["null", "integer"]
+    }
+  }
+}

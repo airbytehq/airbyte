@@ -40,8 +40,9 @@ for personal_access_token in $@
       # github actions will NOT pass a string that looks like a secret
       base64_valid_pat=$(echo "$personal_access_token" | base64)
       echo -e "$blue_text""Found a good PAT!!""$default_text"
-      # ::set-output name is a github action magic string for output
-      echo "::set-output name=pat::$base64_valid_pat"
+      # $GITHUB_OUTPUT is a github action magic env variable for output
+      echo "pat=$base64_valid_pat" >> $GITHUB_OUTPUT
+      echo "PAT=$personal_access_token" >> $GITHUB_ENV
       exit 0
     else
       echo -e "$red_text""Rate limit exceed for this PAT!""$default_text"
@@ -49,7 +50,7 @@ for personal_access_token in $@
 
 done
 
-echo -e "$red_text""::error NO more request availible! Yell at topher or someone on infra!""$default_text"
+echo -e "$red_text""::error Either PR changes are proposed by non-contributor who is prohibited to access repo secrets or NO more request available!""$default_text"
+echo -e "$red_text""::error Yell at Topher or someone on infra""$default_text"
 
 exit 1
-

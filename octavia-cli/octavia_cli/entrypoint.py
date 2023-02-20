@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import List, Optional, Tuple
@@ -10,6 +10,7 @@ import pkg_resources
 from airbyte_api_client.api import workspace_api
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 
+from ._import import commands as import_commands
 from .api_http_headers import ApiHttpHeader, merge_api_headers, set_api_headers_on_api_client
 from .apply import commands as apply_commands
 from .check_context import check_api_health, check_is_initialized, check_workspace_exists
@@ -22,6 +23,7 @@ from .telemetry import TelemetryClient, build_user_agent
 AVAILABLE_COMMANDS: List[click.Command] = [
     list_commands._list,
     get_commands.get,
+    import_commands._import,
     init_commands.init,
     generate_commands.generate,
     apply_commands.apply,
@@ -31,6 +33,8 @@ AVAILABLE_COMMANDS: List[click.Command] = [
 def set_context_object(
     ctx: click.Context,
     airbyte_url: str,
+    airbyte_username: str,
+    airbyte_password: str,
     workspace_id: str,
     enable_telemetry: bool,
     option_based_api_http_headers: Optional[List[Tuple[str, str]]],
@@ -42,6 +46,8 @@ def set_context_object(
     Args:
         ctx (click.Context): Current command context.
         airbyte_url (str): The airbyte instance url.
+        airbyte_username (str): The OSS airbyte instance username.
+        airbyte_password (str): The OSS airbyte instance password.
         workspace_id (str): The user_defined workspace id.
         enable_telemetry (bool): Whether the telemetry should send data.
         option_based_api_http_headers (Optional[List[Tuple[str, str]]]): Option based headers.
@@ -61,7 +67,7 @@ def set_context_object(
         ctx.obj["TELEMETRY_CLIENT"] = telemetry_client
         user_agent = build_user_agent(ctx.obj["OCTAVIA_VERSION"])
         api_http_headers = merge_api_headers(option_based_api_http_headers, api_http_headers_file_path)
-        api_client = get_api_client(airbyte_url, user_agent, api_http_headers)
+        api_client = get_api_client(airbyte_url, airbyte_username, airbyte_password, user_agent, api_http_headers)
         ctx.obj["WORKSPACE_ID"] = get_workspace_id(api_client, workspace_id)
         ctx.obj["ANONYMOUS_DATA_COLLECTION"] = get_anonymous_data_collection(api_client, ctx.obj["WORKSPACE_ID"])
         ctx.obj["API_CLIENT"] = api_client
@@ -74,6 +80,8 @@ def set_context_object(
 
 @click.group()
 @click.option("--airbyte-url", envvar="AIRBYTE_URL", default="http://localhost:8000", help="The URL of your Airbyte instance.")
+@click.option("--airbyte-username", envvar="AIRBYTE_USERNAME", default="airbyte", help="The username for your Airbyte OSS instance.")
+@click.option("--airbyte-password", envvar="AIRBYTE_PASSWORD", default="password", help="The password for your Airbyte OSS instance.")
 @click.option(
     "--workspace-id",
     envvar="AIRBYTE_WORKSPACE_ID",
@@ -105,13 +113,24 @@ def set_context_object(
 def octavia(
     ctx: click.Context,
     airbyte_url: str,
+    airbyte_username: str,
+    airbyte_password: str,
     workspace_id: str,
     enable_telemetry: bool,
     option_based_api_http_headers: Optional[List[Tuple[str, str]]] = None,
     api_http_headers_file_path: Optional[str] = None,
 ) -> None:
 
-    ctx = set_context_object(ctx, airbyte_url, workspace_id, enable_telemetry, option_based_api_http_headers, api_http_headers_file_path)
+    ctx = set_context_object(
+        ctx,
+        airbyte_url,
+        airbyte_username,
+        airbyte_password,
+        workspace_id,
+        enable_telemetry,
+        option_based_api_http_headers,
+        api_http_headers_file_path,
+    )
 
     click.echo(
         click.style(
@@ -122,13 +141,18 @@ def octavia(
         click.echo(click.style("🐙 - Project is not yet initialized.", fg="red", bold=True))
 
 
-def get_api_client(airbyte_url: str, user_agent: str, api_http_headers: Optional[List[ApiHttpHeader]]):
-    client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api")
+def get_api_client(
+    airbyte_url: str, airbyte_username: str, airbyte_password: str, user_agent: str, api_http_headers: Optional[List[ApiHttpHeader]]
+):
+    client_configuration = airbyte_api_client.Configuration(host=f"{airbyte_url}/api", username=airbyte_username, password=airbyte_password)
     api_client = airbyte_api_client.ApiClient(client_configuration)
     api_client.user_agent = user_agent
-    if api_http_headers:
-        set_api_headers_on_api_client(api_client, api_http_headers)
-
+    api_http_headers = api_http_headers if api_http_headers else []
+    has_existing_authorization_headers = bool([header for header in api_http_headers if header.name.lower() == "authorization"])
+    if not has_existing_authorization_headers:
+        basic_auth_token = client_configuration.get_basic_auth_token()
+        api_http_headers.append(ApiHttpHeader("Authorization", basic_auth_token))
+    set_api_headers_on_api_client(api_client, api_http_headers)
     check_api_health(api_client)
     return api_client
 
@@ -152,11 +176,6 @@ def get_anonymous_data_collection(api_client, workspace_id):
 def add_commands_to_octavia():
     for command in AVAILABLE_COMMANDS:
         octavia.add_command(command)
-
-
-@octavia.command(name="import", help="[NOT IMPLEMENTED]  Import an existing resources from the Airbyte instance.")
-def _import() -> None:
-    raise click.ClickException("The import command is not yet implemented.")
 
 
 @octavia.command(help="[NOT IMPLEMENTED] Delete resources")

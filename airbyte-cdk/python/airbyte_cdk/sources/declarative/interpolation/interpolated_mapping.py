@@ -1,21 +1,44 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
+from dataclasses import InitVar, dataclass
+from typing import Any, Mapping, Optional
+
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.types import Config
 
 
+@dataclass
 class InterpolatedMapping:
-    def __init__(self, mapping: Mapping[str, Any], interpolation: Interpolation = JinjaInterpolation()):
-        self._mapping = mapping
-        self._interpolation = interpolation
+    """
+    Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
 
-    def eval(self, config, **kwargs):
+    Attributes:
+        mapping (Mapping[str, str]): to be evaluated
+    """
+
+    mapping: Mapping[str, str]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Optional[Mapping[str, Any]]):
+        self._interpolation = JinjaInterpolation()
+        self._parameters = parameters
+
+    def eval(self, config: Config, **additional_parameters):
+        """
+        Wrapper around a Mapping[str, str] that allows for both keys and values to be interpolated.
+
+        :param config: The user-provided configuration as specified by the source's spec
+        :param additional_parameters: Optional parameters used for interpolation
+        :return: The interpolated string
+        """
         interpolated_values = {
-            self._interpolation.eval(name, config, **kwargs): self._eval(value, config, **kwargs) for name, value in self._mapping.items()
+            self._interpolation.eval(name, config, parameters=self._parameters, **additional_parameters): self._eval(
+                value, config, **additional_parameters
+            )
+            for name, value in self.mapping.items()
         }
         return interpolated_values
 
@@ -23,6 +46,6 @@ class InterpolatedMapping:
         # The values in self._mapping can be of Any type
         # We only want to interpolate them if they are strings
         if type(value) == str:
-            return self._interpolation.eval(value, config, **kwargs)
+            return self._interpolation.eval(value, config, parameters=self._parameters, **kwargs)
         else:
             return value

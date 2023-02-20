@@ -101,6 +101,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "The details of watchers on an issue."
 }

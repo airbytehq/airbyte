@@ -1,36 +1,49 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
+import traceback
+from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
+@dataclass
 class CheckStream(ConnectionChecker):
     """
-    Checks the connections by trying to read records from one or many of the streams selected by the developer
+    Checks the connections by checking availability of one or many streams selected by the developer
+
+    Attributes:
+        stream_name (List[str]): names of streams to check
     """
 
-    def __init__(self, stream_names: List[str]):
-        self._stream_names = set(stream_names)
+    stream_names: List[str]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._parameters = parameters
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         streams = source.streams(config)
         stream_name_to_stream = {s.name: s for s in streams}
         if len(streams) == 0:
             return False, f"No streams to connect to from source {source}"
-        for stream_name in self._stream_names:
-            if stream_name in stream_name_to_stream.keys():
-                stream = stream_name_to_stream[stream_name]
-                try:
-                    records = stream.read_records(sync_mode=SyncMode.full_refresh)
-                    next(records)
-                except Exception as error:
-                    return False, f"Unable to connect to stream {stream} - {error}"
-            else:
-                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
-        return True, None
+        for stream_name in self.stream_names:
+            if stream_name not in stream_name_to_stream.keys():
+                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
+
+            stream = stream_name_to_stream[stream_name]
+            availability_strategy = stream.availability_strategy or HttpAvailabilityStrategy()
+            try:
+                stream_is_available, reason = availability_strategy.check_availability(stream, logger, source)
+                if stream_is_available:
+                    return True, None
+                else:
+                    return False, reason
+            except Exception as error:
+                logger.error(f"Encountered an error trying to connect to stream {stream_name}. Error: \n {traceback.format_exc()}")
+                return False, f"Unable to connect to stream {stream_name} - {error}"

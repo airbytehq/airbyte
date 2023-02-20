@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -85,6 +85,10 @@ class SourceHarvest(AbstractSource):
         auth = self.get_authenticator(config)
         replication_start_date = pendulum.parse(config["replication_start_date"])
         from_date = replication_start_date.date()
+        replication_end_date = config.get("replication_end_date")
+        replication_end_date = replication_end_date and pendulum.parse(replication_end_date)
+        to_date = replication_end_date and replication_end_date.date()
+        date_range = {"from_date": from_date, "to_date": to_date}
 
         streams = [
             Clients(authenticator=auth, replication_start_date=replication_start_date),
@@ -109,16 +113,16 @@ class SourceHarvest(AbstractSource):
             BillableRates(authenticator=auth),
             CostRates(authenticator=auth),
             ProjectAssignments(authenticator=auth, replication_start_date=replication_start_date),
-            ExpensesClients(authenticator=auth, from_date=from_date),
-            ExpensesProjects(authenticator=auth, from_date=from_date),
-            ExpensesCategories(authenticator=auth, from_date=from_date),
-            ExpensesTeam(authenticator=auth, from_date=from_date),
-            Uninvoiced(authenticator=auth, from_date=from_date),
-            TimeClients(authenticator=auth, from_date=from_date),
-            TimeProjects(authenticator=auth, from_date=from_date),
-            TimeTasks(authenticator=auth, from_date=from_date),
-            TimeTeam(authenticator=auth, from_date=from_date),
-            ProjectBudget(authenticator=auth, from_date=from_date),
+            ExpensesClients(authenticator=auth, **date_range),
+            ExpensesProjects(authenticator=auth, **date_range),
+            ExpensesCategories(authenticator=auth, **date_range),
+            ExpensesTeam(authenticator=auth, **date_range),
+            Uninvoiced(authenticator=auth, **date_range),
+            TimeClients(authenticator=auth, **date_range),
+            TimeProjects(authenticator=auth, **date_range),
+            TimeTasks(authenticator=auth, **date_range),
+            TimeTeam(authenticator=auth, **date_range),
+            ProjectBudget(authenticator=auth, **date_range),
         ]
 
         return streams

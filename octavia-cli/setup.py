@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import os
@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="octavia-cli",
-    version="0.39.28",
+    version="0.40.32",
     description="A command line interface to manage Airbyte configurations",
     long_description=README,
     author="Airbyte",
@@ -49,6 +49,7 @@ setup(
         "deepdiff~=5.7.0",
         "pyyaml~=6.0",
         "analytics-python~=1.4.0",
+        "python-slugify~=6.1.2",
     ],
     python_requires=">=3.9.11",
     extras_require={

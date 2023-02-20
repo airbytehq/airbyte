@@ -57,6 +57,10 @@ for repo in $repo_list; do
   done
 
   echo -e "$blue_text""Total ids returned: $all_runner_ids_count""$default_text"
+  if test $all_runner_ids_count -eq 0; then
+    echo -e "$blue_text""Nothing to kill.  No Termination Required :(""$default_text"
+    exit 0
+  fi
   # DELETE THEM ALL!
   cursor=0
   for this_runner in $all_runner_ids; do

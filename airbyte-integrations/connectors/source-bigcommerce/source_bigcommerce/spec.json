@@ -1,11 +1,11 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/bigcommerce",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigcommerce",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigCommerce Source CDK Specifications",
     "type": "object",
     "required": ["start_date", "store_hash", "access_token"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",

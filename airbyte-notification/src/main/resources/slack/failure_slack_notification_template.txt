@@ -2,3 +2,5 @@ Your connection from %s to %s just failed...
 This happened with %s
 
 You can access its logs here: %s
+
+Job ID: %s

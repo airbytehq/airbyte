@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import codecs
 import csv
 import json
 import tempfile
@@ -10,7 +11,11 @@ from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO,
 import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pyarrow import csv as pa_csv
+from source_s3.exceptions import S3Exception
+from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.utils import get_value_or_json_if_empty_string, run_in_external_process
 
 from .abstract_file_parser import AbstractFileParser
@@ -18,6 +23,19 @@ from .csv_spec import CsvFormat
 
 MAX_CHUNK_SIZE = 50.0 * 1024**2  # in bytes
 TMP_FOLDER = tempfile.mkdtemp()
+
+
+def wrap_exception(exceptions: Tuple[type, ...]):
+    def wrapper(fn: callable):
+        def inner(self, file: Union[TextIO, BinaryIO], file_info: FileInfo):
+            try:
+                return fn(self, file, file_info)
+            except exceptions as e:
+                raise S3Exception(file_info, str(e), str(e), exception=e)
+
+        return inner
+
+    return wrapper
 
 
 class CsvParser(AbstractFileParser):
@@ -34,6 +52,55 @@ class CsvParser(AbstractFileParser):
         if self.format_model is None:
             self.format_model = CsvFormat.parse_obj(self._format)
         return self.format_model
+
+    @staticmethod
+    def _validate_field(
+        format_: Mapping[str, Any], field_name: str, allow_empty: bool = False, disallow_values: Optional[Tuple[Any, ...]] = None
+    ) -> Optional[str]:
+        disallow_values = disallow_values or ()
+        field_value = format_.get(field_name)
+        if not field_value and allow_empty:
+            return
+        if len(field_value) != 1:
+            return f"{field_name} should contain 1 character only"
+        if field_value in disallow_values:
+            return f"{field_name} can not be {field_value}"
+
+    @classmethod
+    def _validate_options(cls, validator: Callable, options_name: str, format_: Mapping[str, Any]) -> Optional[str]:
+        options = format_.get(options_name, "{}")
+        try:
+            options = json.loads(options)
+            validator(**options)
+        except json.decoder.JSONDecodeError:
+            return "Malformed advanced read options!"
+        except TypeError as e:
+            return f"One or more read options are invalid: {str(e)}"
+
+    @classmethod
+    def _validate_read_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ReadOptions, "advanced_options", format_)
+
+    @classmethod
+    def _validate_convert_options(cls, format_: Mapping[str, Any]) -> Optional[str]:
+        return cls._validate_options(pa.csv.ConvertOptions, "additional_reader_options", format_)
+
+    def _validate_config(self, config: Mapping[str, Any]):
+        format_ = config.get("format", {})
+        for error_message in (
+            self._validate_field(format_, "delimiter", disallow_values=("\r", "\n")),
+            self._validate_field(format_, "quote_char"),
+            self._validate_field(format_, "escape_char", allow_empty=True),
+            self._validate_read_options(format_),
+            self._validate_convert_options(format_),
+        ):
+            if error_message:
+                raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
+
+        try:
+            codecs.lookup(format_.get("encoding"))
+        except LookupError:
+            raise AirbyteTracedException(error_message, error_message, failure_type=FailureType.config_error)
 
     def _read_options(self) -> Mapping[str, str]:
         """
@@ -74,7 +141,8 @@ class CsvParser(AbstractFileParser):
             **json.loads(additional_reader_options),
         }
 
-    def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
+    @wrap_exception((ValueError,))
+    def get_inferred_schema(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Mapping[str, Any]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         This now uses multiprocessing in order to timeout the schema inference as it can hang.
@@ -146,7 +214,8 @@ class CsvParser(AbstractFileParser):
         field_names = next(reader)
         return {field_name.strip(): pyarrow.string() for field_name in field_names}
 
-    def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
+    @wrap_exception((ValueError,))
+    def stream_records(self, file: Union[TextIO, BinaryIO], file_info: FileInfo) -> Iterator[Mapping[str, Any]]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.open_csv.html
         PyArrow returns lists of values for each column so we zip() these up into records which we then yield

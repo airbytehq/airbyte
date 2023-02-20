@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -20,13 +20,13 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ import java.util.List;
 public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final List<Field> FIELDS = List.of(
-      Field.of("c_custkey", JsonSchemaType.NUMBER),
+      Field.of("c_custkey", JsonSchemaType.INTEGER),
       Field.of("c_name", JsonSchemaType.STRING),
       Field.of("c_nation", JsonSchemaType.STRING));
 
@@ -65,11 +65,11 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     streamName = "customer";
 
     // limit the connection to one schema only
-    config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
+    config = config.set(JdbcUtils.SCHEMAS_KEY, Jsons.jsonNode(List.of(schemaName)));
 
     // use test user user
-    config = config.set("username", Jsons.jsonNode(testUserName));
-    config = config.set("password", Jsons.jsonNode(testUserPassword));
+    config = config.set(JdbcUtils.USERNAME_KEY, Jsons.jsonNode(testUserName));
+    config = config.set(JdbcUtils.PASSWORD_KEY, Jsons.jsonNode(testUserPassword));
 
     // create a test data
     createTestData(database, schemaName, streamName, testUserName, true);
@@ -83,13 +83,13 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JdbcDatabase createDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             RedshiftSource.DRIVER_CLASS,
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
   }
 
   protected void createTestUser(final JdbcDatabase database, final JsonNode config, final String testUserName, final String testUserPassword)

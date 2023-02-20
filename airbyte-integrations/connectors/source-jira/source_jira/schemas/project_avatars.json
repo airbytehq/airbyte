@@ -33,15 +33,11 @@
     },
     "urls": {
       "type": "object",
-      "additionalProperties": {
-        "type": "string",
-        "format": "uri",
-        "readOnly": true
-      },
+      "additionalProperties": true,
       "description": "The list of avatar icon URLs.",
       "readOnly": true
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "List of project avatars."
 }

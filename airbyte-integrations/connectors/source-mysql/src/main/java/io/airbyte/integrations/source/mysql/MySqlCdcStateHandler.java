@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -12,9 +12,9 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.debezium.CdcStateHandler;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -43,6 +43,17 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
 
     final CdcState cdcState = new CdcState().withState(asJson);
     stateManager.getCdcStateManager().setCdcState(cdcState);
+    /*
+     * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
+     * Therefore, provide an empty optional.
+     */
+    final AirbyteStateMessage stateMessage = stateManager.emit(Optional.empty());
+    return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
+  }
+
+  @Override
+  public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
+    LOGGER.info("Snapshot of new tables is complete, saving state");
     /*
      * Namespace pair is ignored by global state manager, but is needed for satisfy the API contract.
      * Therefore, provide an empty optional.

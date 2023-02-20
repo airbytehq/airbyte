@@ -28,7 +28,6 @@ To start contributing:
 
 ## Build with `gradle`
 
-
 To compile and build just the platform \(not all the connectors\):
 
 ```bash
@@ -74,12 +73,43 @@ These instructions explain how to run a version of Airbyte that you are developi
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
-VERSION=dev docker-compose up
+VERSION=dev docker compose up
 ```
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
 
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
+
+## Add a connector under development to Airbyte
+
+These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
+
+- First, build the platform images and run Airbyte:
+
+```bash
+SUB_BUILD=PLATFORM ./gradlew build
+VERSION=dev docker compose up
+```
+
+- Then, build the connector image:
+```
+docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
+```
+
+:::info
+
+The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
+
+:::
+
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Log in with the default user `airbyte` and default password `password`
+- Go to `Settings` (gear icon in lower left corner) 
+- Go to `Sources` or `Destinations` (depending on which connector you are testing)
+- Update the version number to use your docker image tag (default is `dev`)
+- Click `Change` to save the changes
+
+Now when you run a sync with that connector, it will use your local docker image
 
 ## Run acceptance tests
 
@@ -108,7 +138,19 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-If you are working on an individual connectors run: `./gradlew :airbyte-integrations:<directory the connector is in e.g. source-postgres>:format`.
+To format an individual connector in python, run:
+
+```
+ ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
+```
+
+For instance:
+
+```
+./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
+```
+
+To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
 
@@ -125,21 +167,45 @@ Note: If you are contributing a Python file without imports or function definiti
 ### Develop on `airbyte-webapp`
 
 - Spin up Airbyte locally so the UI can make requests against the local API.
-- Stop the `webapp`.
 
 ```bash
-docker-compose stop webapp
+BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
+```
+
+Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
+
+- Install [`nvm`](https://github.com/nvm-sh/nvm) (Node Version Manager) if not installed
+- Use `nvm` to install the required node version:
+
+```bash
+cd airbyte-webapp
+nvm install
+```
+
+- Install the `pnpm` package manager in the required version:
+
+```bash
+# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
+npm install -g pnpm@<version>
 ```
 
 - Start up the react app.
 
 ```bash
-cd airbyte-webapp
-npm install
-npm start
+pnpm install
+pnpm start
 ```
 
 - Happy Hacking!
+
+#### Using a custom version of the CDK declarative manifest schema for the connector builder UI
+
+When working on the connector builder UI and doing changes to the CDK and the webapp at the same time, you can start the dev server with `CDK_MANIFEST_PATH` or `CDK_VERSION` environment variables set to have the correct Typescript types built. If `CDK_VERSION` is set, it's loading the specified version of the CDK from pypi instead of the default one, if `CDK_MANIFEST_PATH` is set, it's copying the schema file locally.
+
+For example:
+```
+CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml pnpm start
+```
 
 ### Connector Specification Caching
 
@@ -149,8 +215,8 @@ The Configuration API caches connector specifications. This is done to avoid nee
 2. Restart the server by running the following commands:
 
 ```bash
-VERSION=dev docker-compose down -v
-VERSION=dev docker-compose up
+VERSION=dev docker compose down -v
+VERSION=dev docker compose up
 ```
 
 ### Resetting the Airbyte developer environment
@@ -160,7 +226,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 - Delete the datastore volumes in docker
 
   ```bash
-    VERSION=dev docker-compose down -v
+    VERSION=dev docker compose down -v
   ```
 
 - Remove the data on disk
@@ -174,7 +240,7 @@ Sometimes you'll want to reset the data in your local environment. One common ca
 
   ```bash
    SUB_BUILD=PLATFORM ./gradlew clean build
-   VERSION=dev docker-compose up -V
+   VERSION=dev docker compose up -V
   ```
 
 While not as common as the above steps, you may also get into a position where want to erase all of the data on your local docker server. This is useful if you've been modifying image tags while developing.
@@ -211,3 +277,7 @@ For example:
 ```text
 env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
+
+### Inspecting the messages passed between connectors
+
+You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker compose up`

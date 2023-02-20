@@ -1,11 +1,10 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/oracle",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/oracle",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Oracle Source Spec",
     "type": "object",
-    "required": ["host", "port", "sid", "username"],
-    "additionalProperties": false,
+    "required": ["host", "port", "username"],
     "properties": {
       "host": {
         "title": "Host",
@@ -22,10 +21,47 @@
         "default": 1521,
         "order": 2
       },
-      "sid": {
-        "title": "SID (Oracle System Identifier)",
-        "type": "string",
-        "order": 3
+      "connection_data": {
+        "title": "Connect by",
+        "type": "object",
+        "description": "Connect data that will be used for DB connection",
+        "order": 3,
+        "oneOf": [
+          {
+            "title": "Service name",
+            "description": "Use service name",
+            "required": ["service_name"],
+            "properties": {
+              "connection_type": {
+                "type": "string",
+                "const": "service_name",
+                "order": 0
+              },
+              "service_name": {
+                "title": "Service name",
+                "type": "string",
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "System ID (SID)",
+            "description": "Use SID (Oracle System Identifier)",
+            "required": ["sid"],
+            "properties": {
+              "connection_type": {
+                "type": "string",
+                "const": "sid",
+                "order": 0
+              },
+              "sid": {
+                "title": "System ID (SID)",
+                "type": "string",
+                "order": 1
+              }
+            }
+          }
+        ]
       },
       "username": {
         "title": "User",
@@ -65,29 +101,23 @@
         "oneOf": [
           {
             "title": "Unencrypted",
-            "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
             "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
                 "type": "string",
-                "const": "unencrypted",
-                "enum": ["unencrypted"],
-                "default": "unencrypted"
+                "const": "unencrypted"
               }
             }
           },
           {
             "title": "Native Network Encryption (NNE)",
-            "additionalProperties": false,
             "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
             "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
                 "type": "string",
-                "const": "client_nne",
-                "enum": ["client_nne"],
-                "default": "client_nne"
+                "const": "client_nne"
               },
               "encryption_algorithm": {
                 "type": "string",
@@ -100,15 +130,12 @@
           },
           {
             "title": "TLS Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "encryption_method": {
                 "type": "string",
-                "const": "encrypted_verify_certificate",
-                "enum": ["encrypted_verify_certificate"],
-                "default": "encrypted_verify_certificate"
+                "const": "encrypted_verify_certificate"
               },
               "ssl_certificate": {
                 "title": "SSL PEM File",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -31,7 +31,9 @@ final public class VaultSecretPersistence implements SecretPersistence {
       val response = vault.logical().read(pathPrefix + coordinate.getFullCoordinate());
       val restResponse = response.getRestResponse();
       val responseCode = restResponse.getStatus();
-      if (responseCode != 200) {
+      final Boolean isErrorResponse = responseCode / 100 != 2;
+
+      if (isErrorResponse) {
         log.error("Vault failed on read. Response code: " + responseCode);
         return Optional.empty();
       }

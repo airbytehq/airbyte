@@ -3,6 +3,10 @@
 This is the repository for the Webflow source connector, written in Python.
 For information about how to use this connector within Airbyte, see [Webflow source documentation](https://docs.airbyte.io/integrations/sources/webflow).
 
+## Related tutorial
+
+A detailed tutorial has been written about this implementation. See: [Build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api)
+
 ## Local development
 
 ### Prerequisites
@@ -106,7 +110,7 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 python -m pytest integration_tests
 ```
 #### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```

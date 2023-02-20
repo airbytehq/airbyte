@@ -5,7 +5,6 @@
     "title": "PostHog Spec",
     "type": "object",
     "required": ["api_key", "start_date"],
-    "additionalProperties": false,
     "properties": {
       "start_date": {
         "title": "Start Date",

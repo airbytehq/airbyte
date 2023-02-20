@@ -1,0 +1,284 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mssql",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MSSQL Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "properties": {
+      "host": {
+        "description": "The hostname of the database.",
+        "title": "Host",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "description": "The port of the database.",
+        "title": "Port",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "examples": ["1433"],
+        "order": 1
+      },
+      "database": {
+        "description": "The name of the database.",
+        "title": "Database",
+        "type": "string",
+        "examples": ["master"],
+        "order": 2
+      },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 0,
+        "uniqueItems": true,
+        "default": ["dbo"],
+        "order": 3
+      },
+      "username": {
+        "description": "The username which is used to access the database.",
+        "title": "Username",
+        "type": "string",
+        "order": 4
+      },
+      "password": {
+        "description": "The password associated with the username.",
+        "title": "Password",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 5
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 6
+      },
+      "ssl_method": {
+        "title": "SSL Method",
+        "type": "object",
+        "description": "The encryption method which is used when communicating with the database.",
+        "order": 7,
+        "oneOf": [
+          {
+            "title": "Unencrypted",
+            "description": "Data transfer will not be encrypted.",
+            "required": ["ssl_method"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "const": "unencrypted"
+              }
+            }
+          },
+          {
+            "title": "Encrypted (trust server certificate)",
+            "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
+            "required": ["ssl_method"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "const": "encrypted_trust_server_certificate"
+              }
+            }
+          },
+          {
+            "title": "Encrypted (verify certificate)",
+            "description": "Verify and use the certificate provided by the server.",
+            "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
+            "properties": {
+              "ssl_method": {
+                "type": "string",
+                "const": "encrypted_verify_certificate"
+              },
+              "hostNameInCertificate": {
+                "title": "Host Name In Certificate",
+                "type": "string",
+                "description": "Specifies the host name of the server. The value of this property must match the subject property of the certificate.",
+                "order": 7
+              }
+            }
+          }
+        ]
+      },
+      "replication_method": {
+        "type": "object",
+        "title": "Replication Method",
+        "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+        "default": "STANDARD",
+        "order": 8,
+        "oneOf": [
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "STANDARD",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Logical Replication (CDC)",
+            "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "CDC",
+                "order": 0
+              },
+              "data_to_sync": {
+                "title": "Data to Sync",
+                "type": "string",
+                "default": "Existing and New",
+                "enum": ["Existing and New", "New Changes Only"],
+                "description": "What data should be synced under the CDC. \"Existing and New\" will read existing data as a snapshot, and sync new changes through CDC. \"New Changes Only\" will skip the initial snapshot, and only sync new changes through CDC.",
+                "order": 1
+              },
+              "snapshot_isolation": {
+                "title": "Initial Snapshot Isolation Level",
+                "type": "string",
+                "default": "Snapshot",
+                "enum": ["Snapshot", "Read Committed"],
+                "description": "Existing data in the database are synced through an initial snapshot. This parameter controls the isolation level that will be used during the initial snapshotting. If you choose the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\">snapshot isolation mode</a> on the database.",
+                "order": 2
+              },
+              "initial_waiting_seconds": {
+                "type": "integer",
+                "title": "Initial Waiting Time in Seconds (Advanced)",
+                "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">initial waiting time</a>.",
+                "default": 300,
+                "min": 120,
+                "max": 1200,
+                "order": 3
+              }
+            }
+          }
+        ]
+      },
+      "tunnel_method": {
+        "type": "object",
+        "title": "SSH Tunnel Method",
+        "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
+        "oneOf": [
+          {
+            "title": "No Tunnel",
+            "required": ["tunnel_method"],
+            "properties": {
+              "tunnel_method": {
+                "description": "No ssh tunnel needed to connect to database",
+                "type": "string",
+                "const": "NO_TUNNEL",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "SSH Key Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "ssh_key"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "Connect through a jump server tunnel host using username and ssh key",
+                "type": "string",
+                "const": "SSH_KEY_AUTH",
+                "order": 0
+              },
+              "tunnel_host": {
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "type": "string",
+                "order": 1
+              },
+              "tunnel_port": {
+                "title": "SSH Connection Port",
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 22,
+                "examples": ["22"],
+                "order": 2
+              },
+              "tunnel_user": {
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host.",
+                "type": "string",
+                "order": 3
+              },
+              "ssh_key": {
+                "title": "SSH Private Key",
+                "description": "OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )",
+                "type": "string",
+                "airbyte_secret": true,
+                "multiline": true,
+                "order": 4
+              }
+            }
+          },
+          {
+            "title": "Password Authentication",
+            "required": [
+              "tunnel_method",
+              "tunnel_host",
+              "tunnel_port",
+              "tunnel_user",
+              "tunnel_user_password"
+            ],
+            "properties": {
+              "tunnel_method": {
+                "description": "Connect through a jump server tunnel host using username and password authentication",
+                "type": "string",
+                "const": "SSH_PASSWORD_AUTH",
+                "order": 0
+              },
+              "tunnel_host": {
+                "title": "SSH Tunnel Jump Server Host",
+                "description": "Hostname of the jump server host that allows inbound ssh tunnel.",
+                "type": "string",
+                "order": 1
+              },
+              "tunnel_port": {
+                "title": "SSH Connection Port",
+                "description": "Port on the proxy/jump server that accepts inbound ssh connections.",
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536,
+                "default": 22,
+                "examples": ["22"],
+                "order": 2
+              },
+              "tunnel_user": {
+                "title": "SSH Login Username",
+                "description": "OS-level username for logging into the jump server host",
+                "type": "string",
+                "order": 3
+              },
+              "tunnel_user_password": {
+                "title": "Password",
+                "description": "OS-level password for logging into the jump server host",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 4
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "supported_destination_sync_modes": []
+}

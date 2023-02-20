@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,7 @@ import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Optional
+from typing import Any, Generic, List, Mapping, Optional, Protocol, TypeVar, Union
 
 import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
@@ -33,27 +33,41 @@ class AirbyteSpec(object):
         self.spec_string = spec_string
 
 
-class Connector(ABC):
+TConfig = TypeVar("TConfig", bound=Mapping[str, Any])
+
+
+class BaseConnector(ABC, Generic[TConfig]):
     # configure whether the `check_config_against_spec_or_exit()` needs to be called
     check_config_against_spec: bool = True
 
-    # can be overridden to change an input config
-    def configure(self, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+    @abstractmethod
+    def configure(self, config: Mapping[str, Any], temp_dir: str) -> TConfig:
         """
         Persist config in temporary directory to run the Source job
         """
-        config_path = os.path.join(temp_dir, "config.json")
-        self.write_config(config, config_path)
-        return config
 
     @staticmethod
     def read_config(config_path: str) -> Mapping[str, Any]:
-        with open(config_path, "r") as file:
-            contents = file.read()
-        return json.loads(contents)
+        config = BaseConnector._read_json_file(config_path)
+        if isinstance(config, Mapping):
+            return config
+        else:
+            raise ValueError(
+                f"The content of {config_path} is not an object and therefore is not a valid config. Please ensure the file represent a config."
+            )
 
     @staticmethod
-    def write_config(config: Mapping[str, Any], config_path: str):
+    def _read_json_file(file_path: str) -> Union[None, bool, float, int, str, List[Any], Mapping[str, Any]]:
+        with open(file_path, "r") as file:
+            contents = file.read()
+
+        try:
+            return json.loads(contents)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Could not read json file {file_path}: {error}. Please ensure that it is a valid JSON.")
+
+    @staticmethod
+    def write_config(config: TConfig, config_path: str):
         with open(config_path, "w") as fh:
             fh.write(json.dumps(config))
 
@@ -74,15 +88,36 @@ class Connector(ABC):
         if yaml_spec:
             spec_obj = yaml.load(yaml_spec, Loader=yaml.SafeLoader)
         elif json_spec:
-            spec_obj = json.loads(json_spec)
+            try:
+                spec_obj = json.loads(json_spec)
+            except json.JSONDecodeError as error:
+                raise ValueError(f"Could not read json spec file: {error}. Please ensure that it is a valid JSON.")
         else:
             raise FileNotFoundError("Unable to find spec.yaml or spec.json in the package.")
 
         return ConnectorSpecification.parse_obj(spec_obj)
 
     @abstractmethod
-    def check(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: TConfig) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
         to the Stripe API.
         """
+
+
+class _WriteConfigProtocol(Protocol):
+    @staticmethod
+    def write_config(config: Mapping[str, Any], config_path: str):
+        ...
+
+
+class DefaultConnectorMixin:
+    # can be overridden to change an input config
+    def configure(self: _WriteConfigProtocol, config: Mapping[str, Any], temp_dir: str) -> Mapping[str, Any]:
+        config_path = os.path.join(temp_dir, "config.json")
+        self.write_config(config, config_path)
+        return config
+
+
+class Connector(DefaultConnectorMixin, BaseConnector[Mapping[str, Any]], ABC):
+    ...

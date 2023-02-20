@@ -1,9 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import concurrent.futures
 import json
+import threading
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -12,20 +14,24 @@ from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
+from ..exceptions import S3Exception
 from .file_info import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
 from .formats.avro_parser import AvroParser
 from .formats.csv_parser import CsvParser
+from .formats.jsonl_parser import JsonlParser
 from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
 LOGGER = AirbyteLogger()
+LOCK = threading.Lock()
 
 
 class ConfigurationError(Exception):
@@ -40,6 +46,7 @@ class FileStream(Stream, ABC):
             "csv": CsvParser,
             "parquet": ParquetParser,
             "avro": AvroParser,
+            "jsonl": JsonlParser,
         }
 
     # TODO: make these user configurable in spec.json
@@ -48,6 +55,7 @@ class FileStream(Stream, ABC):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
+    parallel_tasks_size = 256
 
     def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
         """
@@ -183,6 +191,32 @@ class FileStream(Stream, ABC):
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
 
+    @staticmethod
+    def _broadest_type(type_1: str, type_2: str) -> Optional[str]:
+        non_comparable_types = ["object", "array", "null"]
+        if type_1 in non_comparable_types or type_2 in non_comparable_types:
+            return None
+        types = {type_1, type_2}
+        if types == {"boolean", "string"}:
+            return "string"
+        if types == {"integer", "number"}:
+            return "number"
+        if types == {"integer", "string"}:
+            return "string"
+        if types == {"number", "string"}:
+            return "string"
+
+    @staticmethod
+    def guess_file_schema(storage_file, file_reader, file_info, processed_files, schemas):
+        try:
+            with storage_file.open(file_reader.is_binary) as f:
+                this_schema = file_reader.get_inferred_schema(f, file_info)
+                with LOCK:
+                    schemas[file_info] = this_schema
+                    processed_files.append(file_info)
+        except OSError:
+            pass
+
     def _get_master_schema(self, min_datetime: datetime = None) -> Dict[str, Any]:
         """
         In order to auto-infer a schema across many files and/or allow for additional properties (columns),
@@ -204,15 +238,26 @@ class FileStream(Stream, ABC):
 
             file_reader = self.fileformatparser_class(self._format)
 
-            for file_info in self.get_time_ordered_file_infos():
-                # skip this file if it's earlier than min_datetime
-                if (min_datetime is not None) and (file_info.last_modified < min_datetime):
-                    continue
+            processed_files = []
+            schemas = {}
 
-                storagefile = self.storagefile_class(file_info, self._provider)
-                with storagefile.open(file_reader.is_binary) as f:
-                    this_schema = file_reader.get_inferred_schema(f)
+            file_infos = list(self.get_time_ordered_file_infos())
+            if min_datetime is not None:
+                file_infos = [info for info in file_infos if info.last_modified >= min_datetime]
 
+            for i in range(0, len(file_infos), self.parallel_tasks_size):
+                chunk_infos = file_infos[i : i + self.parallel_tasks_size]
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    executor.map(
+                        lambda args: self.guess_file_schema(*args),
+                        [
+                            (self.storagefile_class(file_info, self._provider), file_reader, file_info, processed_files, schemas)
+                            for file_info in chunk_infos
+                        ],
+                    )
+
+            for file_info in file_infos:
+                this_schema = schemas[file_info]
                 if this_schema == master_schema:
                     continue  # exact schema match so go to next file
 
@@ -221,22 +266,30 @@ class FileStream(Stream, ABC):
                 # this compares datatype of every column that the two schemas have in common
                 for col in column_superset:
                     if (col in master_schema.keys()) and (col in this_schema.keys()) and (master_schema[col] != this_schema[col]):
-                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error
-                        # this is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
-                        # provided schema state. If not, then the read will error anyway
-                        if col in self._schema.keys():
+                        # If this column exists in a provided schema or schema state, we'll WARN here rather than throw an error.
+                        # This is to allow more leniency as we may be able to coerce this datatype mismatch on read according to
+                        # provided schema state. Else we're inferring the schema (or at least this column) from scratch, and therefore
+                        # we try to choose the broadest type among two if possible
+                        broadest_of_types = self._broadest_type(master_schema[col], this_schema[col])
+                        type_explicitly_defined = col in self._schema.keys()
+                        override_type = broadest_of_types and not type_explicitly_defined
+                        if override_type:
+                            master_schema[col] = broadest_of_types
+                        if override_type or type_explicitly_defined:
                             LOGGER.warn(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
+                                f"Detected mismatched datatype on column '{col}', in file '{file_info}'. "
                                 + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'. "
                                 + f"Airbyte will attempt to coerce this to {master_schema[col]} on read."
                             )
-                        # else we're inferring the schema (or at least this column) from scratch and therefore
-                        # throw an error on mismatching datatypes
-                        else:
-                            raise RuntimeError(
-                                f"Detected mismatched datatype on column '{col}', in file '{storagefile.url}'. "
-                                + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'."
-                            )
+                            continue
+                        # otherwise throw an error on mismatching datatypes
+                        raise S3Exception(
+                            processed_files,
+                            "Column type mismatch",
+                            f"Detected mismatched datatype on column '{col}', in file '{file_info}'. "
+                            + f"Should be '{master_schema[col]}', but found '{this_schema[col]}'.",
+                            failure_type=FailureType.config_error,
+                        )
 
                 # missing columns in this_schema doesn't affect our master_schema, so we don't check for it here
 
@@ -319,18 +372,21 @@ class FileStream(Stream, ABC):
         """
         for file_item in stream_slice["files"]:
             storage_file: StorageFile = file_item["storage_file"]
-            with storage_file.open(file_reader.is_binary) as f:
-                # TODO: make this more efficient than mutating every record one-by-one as they stream
-                for record in file_reader.stream_records(f):
-                    schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
-                    complete_record = self._add_extra_fields_from_map(
-                        schema_matched_record,
-                        {
-                            self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
-                            self.ab_file_name_col: storage_file.url,
-                        },
-                    )
-                    yield complete_record
+            try:
+                with storage_file.open(file_reader.is_binary) as f:
+                    # TODO: make this more efficient than mutating every record one-by-one as they stream
+                    for record in file_reader.stream_records(f, storage_file.file_info):
+                        schema_matched_record = self._match_target_schema(record, list(self._get_schema_map().keys()))
+                        complete_record = self._add_extra_fields_from_map(
+                            schema_matched_record,
+                            {
+                                self.ab_last_mod_col: datetime.strftime(storage_file.last_modified, self.datetime_format_string),
+                                self.ab_file_name_col: storage_file.url,
+                            },
+                        )
+                        yield complete_record
+            except OSError:
+                continue
         LOGGER.info("finished reading a stream slice")
 
     def read_records(

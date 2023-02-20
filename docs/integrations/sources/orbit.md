@@ -1,8 +1,8 @@
-# PostHog
+# Orbit
 
 ## Sync overview
 
-This source can sync data for the [PostHog API](https://docs.orbit.love/reference/about-the-orbit-api). It currently only supports Full Refresh syncs. 
+This source can sync data for the [Orbit API](https://docs.orbit.love/reference/about-the-orbit-api). It currently only supports Full Refresh syncs. 
 
 ### Output schema
 

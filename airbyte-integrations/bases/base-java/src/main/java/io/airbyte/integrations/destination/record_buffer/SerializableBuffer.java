@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,19 +14,26 @@ import java.io.InputStream;
  * A {@link SerializableBuffer} is designed to be used as part of a
  * {@link SerializedBufferingStrategy}.
  *
+ * <p>
  * It encapsulates the actual implementation of a buffer: both the medium storage (usually defined
  * as part of {@link BufferStorage}. and the format of the serialized data when it is written to the
  * buffer.
+ * </p>
  *
+ * <p>
  * A {@link BaseSerializedBuffer} class is provided, and should be the expected class to derive from
  * when implementing a new format of buffer. The storage aspects are normally provided through
  * composition of {@link BufferStorage}.
+ * </p>
  *
  */
 public interface SerializableBuffer extends AutoCloseable {
 
   /**
-   * Adds a @param recordMessage to the buffer and @return how many bytes were written to the buffer.
+   * Adds a {@link AirbyteRecordMessage} to the buffer and returns the size of the message in bytes
+   *
+   * @param recordMessage {@link AirbyteRecordMessage} to be added to buffer
+   * @return number of bytes written to the buffer
    */
   long accept(AirbyteRecordMessage recordMessage) throws Exception;
 

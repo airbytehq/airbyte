@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -143,7 +143,7 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
         Fetches form id to which current record belongs.
         """
         referer = record.get("metadata", {}).get("referer")
-        return referer.rsplit("/")[-1] if referer else None
+        return urlparse.urlparse(referer).path.split("/")[-1] if referer else None
 
     def get_updated_state(
         self,

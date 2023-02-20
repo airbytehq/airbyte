@@ -1,0 +1,32 @@
+{
+  "group_id": "login",
+  "protocol": {
+    "sasl_mechanism": "PLAIN",
+    "sasl_jaas_config": "org.apache.kafka.common.security.plain.PlainLoginModule   ;",
+    "security_protocol": "SASL_SSL"
+  },
+  "client_id": "airbyte-login-consumer",
+  "test_topic": "",
+  "polling_time": 100,
+  "subscription": {
+    "topic_pattern": "dev-accounts-lms-transaction-created",
+    "subscription_type": "subscribe"
+  },
+  "MessageFormat": {
+    "schema_registry_url": "http://localhost",
+    "deserialization_type": "AVRO",
+    "deserialization_strategy": "TopicRecordNameStrategy",
+    "schema_registry_password": "password",
+    "schema_registry_username": "username"
+  },
+  "repeated_calls": 3,
+  "max_poll_records": 500,
+  "retry_backoff_ms": 100,
+  "auto_offset_reset": "earliest",
+  "bootstrap_servers": "localhost:9092",
+  "client_dns_lookup": "use_all_dns_ips",
+  "enable_auto_commit": true,
+  "request_timeout_ms": 30000,
+  "receive_buffer_bytes": 32768,
+  "auto_commit_interval_ms": 5000
+}

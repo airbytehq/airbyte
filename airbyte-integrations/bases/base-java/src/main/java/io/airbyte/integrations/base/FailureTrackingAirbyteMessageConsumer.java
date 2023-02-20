@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
 
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
-import io.airbyte.protocol.models.AirbyteMessage;
-import java.util.Map;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +13,13 @@ import org.slf4j.LoggerFactory;
  * the {@link AirbyteMessageConsumer} interface. The original interface methods are wrapped in
  * generic exception handlers - any exception is caught and logged.
  *
- * Two methods are intended for extension: - startTracked: Wraps set up of necessary
- * infrastructure/configuration before message consumption. - acceptTracked: Wraps actual processing
- * of each {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * Two methods are intended for extension:
+ * <ul>
+ * <li>startTracked: Wraps set up of necessary infrastructure/configuration before message
+ * consumption.</li>
+ * <li>acceptTracked: Wraps actual processing of each
+ * {@link io.airbyte.protocol.models.v0.AirbyteMessage}.</li>
+ * </ul>
  *
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
@@ -28,13 +30,17 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
 
   private boolean hasFailed = false;
 
+  /**
+   * Wraps setup of necessary infrastructure/configuration before message consumption
+   *
+   * @throws Exception
+   */
   protected abstract void startTracked() throws Exception;
 
   @Override
   public void start() throws Exception {
     try {
-      AirbyteSentry.executeWithTracing("StartConsumer", this::startTracked,
-          Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
+      startTracked();
     } catch (final Exception e) {
       LOGGER.error("Exception while starting consumer", e);
       hasFailed = true;
@@ -42,6 +48,15 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     }
   }
 
+  /**
+   * Processing of AirbyteMessages with general functionality of storing STATE messages, serializing
+   * RECORD messages and storage within a buffer
+   *
+   * NOTE: Not all the functionality mentioned above is always true but generally applies
+   *
+   * @param msg {@link AirbyteMessage} to be processed
+   * @throws Exception
+   */
   protected abstract void acceptTracked(AirbyteMessage msg) throws Exception;
 
   @Override
@@ -64,8 +79,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     } else {
       LOGGER.info("Airbyte message consumer: succeeded.");
     }
-    AirbyteSentry.executeWithTracing("CloseConsumer", () -> close(hasFailed),
-        Map.of("consumerImpl", FailureTrackingAirbyteMessageConsumer.class.getSimpleName()));
+    close(hasFailed);
   }
 
 }

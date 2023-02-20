@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import java.io.IOException;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.jooq.DSLContext;
 
 /**
@@ -18,11 +18,20 @@ import org.jooq.DSLContext;
 @SuppressWarnings("PMD.MissingOverride")
 public interface SecretPersistence extends ReadOnlySecretPersistence {
 
+  /**
+   * Performs any initialization prior to utilization of the persistence object. This exists to make
+   * it possible to create instances within a dependency management framework, where any
+   * initialization logic should not be present in a constructor.
+   *
+   * @throws Exception if unable to perform the initialization.
+   */
+  default void initialize() throws Exception {}
+
   Optional<String> read(final SecretCoordinate coordinate);
 
   void write(final SecretCoordinate coordinate, final String payload);
 
-  static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getLongLived(final @Nullable DSLContext dslContext, final Configs configs) {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new Database(dslContext);
@@ -34,13 +43,16 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
       case VAULT -> {
         return Optional.of(new VaultSecretPersistence(configs.getVaultAddress(), configs.getVaultPrefix(), configs.getVaultToken()));
       }
+      case AWS_SECRET_MANAGER -> {
+        return Optional.of(new AWSSecretManagerPersistence(configs.getAwsAccessKey(), configs.getAwsSecretAccessKey()));
+      }
       default -> {
         return Optional.empty();
       }
     }
   }
 
-  static SecretsHydrator getSecretsHydrator(final DSLContext dslContext, final Configs configs) throws IOException {
+  static SecretsHydrator getSecretsHydrator(final @Nullable DSLContext dslContext, final Configs configs) {
     final var persistence = getLongLived(dslContext, configs);
 
     if (persistence.isPresent()) {
@@ -50,7 +62,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new Database(dslContext);
@@ -61,6 +73,9 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
       }
       case VAULT -> {
         return Optional.of(new VaultSecretPersistence(configs.getVaultAddress(), configs.getVaultPrefix(), configs.getVaultToken()));
+      }
+      case AWS_SECRET_MANAGER -> {
+        return Optional.of(new AWSSecretManagerPersistence(configs.getAwsAccessKey(), configs.getAwsSecretAccessKey()));
       }
       default -> {
         return Optional.empty();

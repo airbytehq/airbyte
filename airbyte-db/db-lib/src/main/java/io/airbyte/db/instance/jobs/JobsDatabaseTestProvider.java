@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.jobs;
@@ -27,7 +27,7 @@ public class JobsDatabaseTestProvider implements TestDatabaseProvider {
 
   @Override
   public Database create(final boolean runMigration) throws IOException, DatabaseInitializationException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
+    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH);
     DatabaseCheckFactory.createJobsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
 
     final Database jobsDatabase = new Database(dslContext);

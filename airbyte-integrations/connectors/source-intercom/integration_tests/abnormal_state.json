@@ -1,20 +1,50 @@
-{
-  "companies": {
-    "updated_at": 7626086649
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 7626086649 },
+      "stream_descriptor": { "name": "companies" }
+    }
   },
-  "company_segments": {
-    "updated_at": 7626086649
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": 7626086649,
+        "companies": { "updated_at": 7626086649 }
+      },
+      "stream_descriptor": { "name": "company_segments" }
+    }
   },
-  "conversations": {
-    "updated_at": 7626086649
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 7626086649 },
+      "stream_descriptor": { "name": "conversations" }
+    }
   },
-  "conversation_parts": {
-    "updated_at": 7626086649
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": 7626086649,
+        "conversations": { "updated_at": 7626086649 }
+      },
+      "stream_descriptor": { "name": "conversation_parts" }
+    }
   },
-  "contacts": {
-    "updated_at": 7626086649
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 7626086649 },
+      "stream_descriptor": { "name": "contacts" }
+    }
   },
-  "segments": {
-    "updated_at": 7626086649
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 7626086649 },
+      "stream_descriptor": { "name": "segments" }
+    }
   }
-}
+]

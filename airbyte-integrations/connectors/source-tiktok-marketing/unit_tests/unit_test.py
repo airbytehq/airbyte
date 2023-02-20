@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -16,9 +16,8 @@ from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffExcept
 from source_tiktok_marketing import SourceTiktokMarketing
 from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
-SANDBOX_CONFIG_FILE = "secrets/config.json"
+SANDBOX_CONFIG_FILE = "secrets/sandbox_config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
-PROD_CONFIG_DAY_FILE = "secrets/prod_config_day.json"
 
 
 @pytest.fixture(scope="module")
@@ -36,13 +35,14 @@ def prepared_prod_args():
 
 
 @timeout_decorator.timeout(20)
-def test_backoff(prepared_sandbox_args):
+@pytest.mark.parametrize("error_code", (40100, 50002))
+def test_backoff(prepared_sandbox_args, error_code):
     """TiktokMarketing sends the header 'Retry-After' about needed delay.
     All streams have to handle it"""
     stream = Advertisers(**prepared_sandbox_args)
     with requests_mock.Mocker() as m:
         url = stream.url_base + stream.path()
-        m.get(url, text=json.dumps({"code": 40100}))
+        m.get(url, text=json.dumps({"code": error_code}))
         with pytest.raises(UserDefinedBackoffException):
             list(stream.read_records(sync_mode=None))
 
@@ -134,9 +134,8 @@ def test_random_items(prepared_prod_args):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 10),
-        (SANDBOX_CONFIG_FILE, 8),
-        (PROD_CONFIG_DAY_FILE, 13),
+        (PROD_CONFIG_FILE, 22),
+        (SANDBOX_CONFIG_FILE, 16),
     ],
 )
 def test_source_streams(config, stream_len):
@@ -147,7 +146,7 @@ def test_source_streams(config, stream_len):
 
 
 def test_source_spec():
-    spec = SourceTiktokMarketing().spec()
+    spec = SourceTiktokMarketing().spec(logger=None)
     assert isinstance(spec, ConnectorSpecification)
 
 
@@ -168,18 +167,14 @@ def logger_mock_fixture():
 
 
 def test_source_check_connection_ok(config, logger_mock):
-    with patch.object(Advertisers, "read_records", return_value=iter([1])):
-        assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
+    with patch.object(Advertisers, "stream_slices"):
+        with patch.object(Advertisers, "read_records", return_value=iter([1])):
+            assert SourceTiktokMarketing().check_connection(logger_mock, config=config) == (True, None)
 
 
 def test_source_check_connection_failed(config, logger_mock):
     with patch.object(Advertisers, "read_records", return_value=0):
         assert SourceTiktokMarketing().check_connection(logger_mock, config=config)[0] is False
-
-
-SANDBOX_CONFIG_FILE = "secrets/config.json"
-PROD_CONFIG_FILE = "secrets/prod_config.json"
-PROD_CONFIG_DAY_FILE = "secrets/prod_config_day.json"
 
 
 @pytest.mark.parametrize(

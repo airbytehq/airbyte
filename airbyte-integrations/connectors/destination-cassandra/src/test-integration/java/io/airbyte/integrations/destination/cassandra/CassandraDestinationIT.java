@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.cassandra;
@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.cassandra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.airbyte.integrations.destination.cassandra.CassandraContainerInitializr.ConfiguredCassandraContainer;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;

@@ -11,11 +11,13 @@ application {
 
 dependencies {
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
 
     implementation 'org.apache.kafka:kafka-clients:2.8.0'
     implementation 'com.joestelmach:natty:0.11'
+
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-keen')

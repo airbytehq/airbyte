@@ -3,39 +3,39 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "title": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "active": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "questions": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "label": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "accepted_ratings": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
-              "type": "integer"
+              "type": ["null", "integer"]
             }
           },
           "default": {
-            "type": "boolean"
+            "type": ["null", "boolean"]
           }
         }
       }

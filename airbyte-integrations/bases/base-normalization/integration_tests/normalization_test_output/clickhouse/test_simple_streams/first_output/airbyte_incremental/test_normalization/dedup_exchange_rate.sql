@@ -1,17 +1,9 @@
 
       
-
+    
+        
+        insert into test_normalization.dedup_exchange_rate ("_airbyte_unique_key", "id", "currency", "date", "timestamp_col", "HKD@spéçiäl & characters", "HKD_special___characters", "NZD", "USD", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_normalized_at", "_airbyte_dedup_exchange_rate_hashid")
   
-    create table test_normalization.dedup_exchange_rate
-    
-  
-    
-    engine = MergeTree()
-    
-    order by (tuple())
-    
-  as (
-    
 -- Final base SQL model
 -- depends_on: test_normalization.dedup_exchange_rate_scd
 select
@@ -33,5 +25,5 @@ from test_normalization.dedup_exchange_rate_scd
 where 1 = 1
 and _airbyte_active_row = 1
 
-  )
+  
   

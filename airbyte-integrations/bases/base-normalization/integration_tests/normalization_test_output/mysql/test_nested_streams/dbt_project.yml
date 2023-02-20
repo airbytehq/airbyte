@@ -79,6 +79,10 @@ vars:
     unnest_alias_ab2: test_normalization._airbyte_raw_unnest_alias
     unnest_alias_ab3: test_normalization._airbyte_raw_unnest_alias
     unnest_alias: test_normalization._airbyte_raw_unnest_alias
+    arrays_ab1: test_normalization._airbyte_raw_arrays
+    arrays_ab2: test_normalization._airbyte_raw_arrays
+    arrays_ab3: test_normalization._airbyte_raw_arrays
+    arrays: test_normalization._airbyte_raw_arrays
     nested_stream_with_co_2g_names_partition_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_2g_names_partition_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_2g_names_partition_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names
@@ -91,6 +95,10 @@ vars:
     unnest_alias_children_ab2: test_normalization._airbyte_raw_unnest_alias
     unnest_alias_children_ab3: test_normalization._airbyte_raw_unnest_alias
     unnest_alias_children: test_normalization._airbyte_raw_unnest_alias
+    arrays_nested_array_parent_ab1: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent_ab2: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent_ab3: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent: test_normalization._airbyte_raw_arrays
     nested_stream_with_co_3double_array_data_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_3double_array_data_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
     nested_stream_with_co_3double_array_data_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names

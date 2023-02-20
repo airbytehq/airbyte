@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -35,7 +35,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in header_values},
             },
-            supported_sync_modes=["full_refresh"],
+            supported_sync_modes=[SyncMode.full_refresh],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -66,7 +66,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in expected_stream_header_values},
             },
-            supported_sync_modes=["full_refresh"],
+            supported_sync_modes=[SyncMode.full_refresh],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -84,7 +84,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {"h1": {"type": "string"}},
             },
-            supported_sync_modes=["full_refresh"],
+            supported_sync_modes=[SyncMode.full_refresh],
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 
@@ -236,15 +236,11 @@ class TestHelpers(unittest.TestCase):
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q", result)
 
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
 
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
-        result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
-
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
 

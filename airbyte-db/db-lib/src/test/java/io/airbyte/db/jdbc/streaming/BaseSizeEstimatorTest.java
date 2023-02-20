@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc.streaming;
@@ -14,10 +14,10 @@ import org.junit.jupiter.api.Test;
 class BaseSizeEstimatorTest {
 
   @Test
-  public void testGetEstimatedByteSize() {
+  void testGetEstimatedByteSize() {
     assertEquals(0L, BaseSizeEstimator.getEstimatedByteSize(null));
-    assertEquals(28L, BaseSizeEstimator.getEstimatedByteSize("12345"));
-    assertEquals(60L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
+    assertEquals(21L, BaseSizeEstimator.getEstimatedByteSize("12345"));
+    assertEquals(45L, BaseSizeEstimator.getEstimatedByteSize(Jsons.jsonNode(Map.of("key", "value"))));
   }
 
   public static class TestSizeEstimator extends BaseSizeEstimator {
@@ -41,7 +41,7 @@ class BaseSizeEstimatorTest {
   }
 
   @Test
-  public void testGetBoundedFetchSize() {
+  void testGetBoundedFetchSize() {
     final long bufferByteSize = 120;
     final int minFetchSize = 10;
     final int defaultFetchSize = 20;

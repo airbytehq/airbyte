@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "text": {
+      "type": "string"
+    }
+  }
+}

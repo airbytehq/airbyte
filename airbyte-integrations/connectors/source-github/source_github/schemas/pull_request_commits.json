@@ -88,7 +88,7 @@
       "type": ["null", "string"]
     },
     "author": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "login": {
           "type": ["null", "string"]
@@ -147,7 +147,7 @@
       }
     },
     "committer": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "login": {
           "type": ["null", "string"]

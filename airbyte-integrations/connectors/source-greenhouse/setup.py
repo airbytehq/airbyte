@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,8 +16,8 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=["airbyte-cdk~=0.1"],
-    package_data={"": ["*.json", "schemas/*.json"]},
+    install_requires=["airbyte-cdk~=0.1", "dataclasses-jsonschema==2.15.1"],
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

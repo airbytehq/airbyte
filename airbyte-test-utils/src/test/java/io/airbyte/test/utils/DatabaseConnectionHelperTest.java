@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.utils;
@@ -16,14 +16,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class DatabaseConnectionHelperTest {
+class DatabaseConnectionHelperTest {
 
   private static final String DATABASE_NAME = "airbyte_test_database";
 
   protected static PostgreSQLContainer<?> container;
 
   @BeforeAll
-  public static void dbSetup() {
+  static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName(DATABASE_NAME)
         .withUsername("docker")
@@ -32,7 +32,7 @@ public class DatabaseConnectionHelperTest {
   }
 
   @AfterAll
-  public static void dbDown() {
+  static void dbDown() {
     container.close();
   }
 

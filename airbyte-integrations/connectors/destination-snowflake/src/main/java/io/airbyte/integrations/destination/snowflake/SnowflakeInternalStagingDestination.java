@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -10,15 +10,14 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
@@ -30,13 +29,15 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeInternalStagingDestination.class);
+  private String airbyteEnvironment;
 
-  public SnowflakeInternalStagingDestination() {
-    this(new SnowflakeSQLNameTransformer());
+  public SnowflakeInternalStagingDestination(final String airbyteEnvironment) {
+    this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
 
-  public SnowflakeInternalStagingDestination(final NamingConventionTransformer nameTransformer) {
+  public SnowflakeInternalStagingDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
     super("", nameTransformer, new SnowflakeInternalStagingSqlOperations(nameTransformer));
+    this.airbyteEnvironment = airbyteEnvironment;
   }
 
   @Override
@@ -47,10 +48,9 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
-      AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations));
-      AirbyteSentry.executeWithTracing("CreateAndDropStage",
-          () -> attemptSQLCreateAndDropStages(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations));
+      attemptTableOperations(outputSchema, database, nameTransformer,
+          snowflakeInternalStagingSqlOperations, true);
+      attemptStageOperations(outputSchema, database, nameTransformer, snowflakeInternalStagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -66,10 +66,10 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     }
   }
 
-  private static void attemptSQLCreateAndDropStages(final String outputSchema,
-                                                    final JdbcDatabase database,
-                                                    final NamingConventionTransformer namingResolver,
-                                                    final SnowflakeInternalStagingSqlOperations sqlOperations)
+  private static void attemptStageOperations(final String outputSchema,
+                                             final JdbcDatabase database,
+                                             final NamingConventionTransformer namingResolver,
+                                             final SnowflakeInternalStagingSqlOperations sqlOperations)
       throws Exception {
 
     // verify we have permissions to create/drop stage
@@ -81,7 +81,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return SnowflakeDatabase.createDataSource(config);
+    return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override

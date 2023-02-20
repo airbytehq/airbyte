@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.staging.StagingOperations;
@@ -15,7 +14,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.joda.time.DateTime;
@@ -68,27 +66,24 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
                                      final String stageName,
                                      final String stagingPath)
       throws IOException {
-    AirbyteSentry.executeWithTracing("UploadRecordsToStage",
-        () -> {
-          final List<Exception> exceptionsThrown = new ArrayList<>();
-          boolean succeeded = false;
-          while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
-            try {
-              loadDataIntoStage(database, stageName, stagingPath, recordsData);
-              succeeded = true;
-            } catch (final Exception e) {
-              LOGGER.error("Failed to upload records into stage {}", stagingPath, e);
-              exceptionsThrown.add(e);
-            }
-            if (!succeeded) {
-              LOGGER.info("Retrying to upload records into stage {} ({}/{}})", stagingPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
-            }
-          }
-          if (!succeeded) {
-            throw new RuntimeException(
-                String.format("Exceptions thrown while uploading records into stage: %s", Strings.join(exceptionsThrown, "\n")));
-          }
-        }, Map.of("stage", stageName, "path", stagingPath));
+    final List<Exception> exceptionsThrown = new ArrayList<>();
+    boolean succeeded = false;
+    while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
+      try {
+        loadDataIntoStage(database, stageName, stagingPath, recordsData);
+        succeeded = true;
+      } catch (final Exception e) {
+        LOGGER.error("Failed to upload records into stage {}", stagingPath, e);
+        exceptionsThrown.add(e);
+      }
+      if (!succeeded) {
+        LOGGER.info("Retrying to upload records into stage {} ({}/{}})", stagingPath, exceptionsThrown.size(), UPLOAD_RETRY_LIMIT);
+      }
+    }
+    if (!succeeded) {
+      throw new RuntimeException(
+          String.format("Exceptions thrown while uploading records into stage: %s", Strings.join(exceptionsThrown, "\n")));
+    }
     return recordsData.getFilename();
   }
 
@@ -119,6 +114,14 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
     return result;
   }
 
+  /**
+   * Creates a SQL query to list all files that have been staged
+   *
+   * @param stageName name of staging folder
+   * @param stagingPath path to the files within the staging folder
+   * @param filename name of the file within staging area
+   * @return SQL query string
+   */
   protected String getListQuery(final String stageName, final String stagingPath, final String filename) {
     return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename).replaceAll("/+", "/");
   }
@@ -127,35 +130,48 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = getCreateStageQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
-    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
-        () -> database.execute(query),
-        Map.of("stage", stageName));
+    try {
+      database.execute(query);
+    } catch (Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
+  /**
+   * Creates a SQL query to create a staging folder. This query will create a staging folder if one
+   * previously did not exist
+   *
+   * @param stageName name of the staging folder
+   * @return SQL query string
+   */
   protected String getCreateStageQuery(final String stageName) {
     return String.format(CREATE_STAGE_QUERY, stageName);
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
+  public void copyIntoTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String dstTableName,
+                                        final String tableName,
                                         final String schemaName)
       throws SQLException {
-    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName);
+    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
     LOGGER.debug("Executing query: {}", query);
-    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> database.execute(query),
-        Map.of(
-            "schema", schemaName,
-            "stage", stageName,
-            "path", stagingPath,
-            "files", String.join(",", stagedFiles),
-            "table", dstTableName));
+    database.execute(query);
   }
 
+  /**
+   * Creates a SQL query to bulk copy data into fully qualified destination table See
+   * https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html for more context
+   *
+   * @param stageName name of staging folder
+   * @param stagingPath path of staging folder to data files
+   * @param stagedFiles collection of the staging files
+   * @param dstTableName name of destination table
+   * @param schemaName name of schema
+   * @return SQL query string
+   */
   protected String getCopyQuery(final String stageName,
                                 final String stagingPath,
                                 final List<String> stagedFiles,
@@ -168,11 +184,15 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = getDropQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
-    AirbyteSentry.executeWithTracing("DropStageIfExists",
-        () -> database.execute(query),
-        Map.of("stage", stageName));
+    database.execute(query);
   }
 
+  /**
+   * Creates a SQL query to drop staging area and all associated files within the staged area
+   *
+   * @param stageName name of staging folder
+   * @return SQL query string
+   */
   protected String getDropQuery(final String stageName) {
     return String.format(DROP_STAGE_QUERY, stageName);
   }
@@ -181,11 +201,16 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
     final String query = getRemoveQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
-    AirbyteSentry.executeWithTracing("CleanStage",
-        () -> database.execute(query),
-        Map.of("stage", stageName));
+    database.execute(query);
   }
 
+  /**
+   * Creates a SQL query used to remove staging files that were just staged See
+   * https://docs.snowflake.com/en/sql-reference/sql/remove.html for more context
+   *
+   * @param stageName name of staging folder
+   * @return SQL query string
+   */
   protected String getRemoveQuery(final String stageName) {
     return String.format(REMOVE_QUERY, stageName);
   }

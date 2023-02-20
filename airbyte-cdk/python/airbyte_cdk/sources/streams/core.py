@@ -1,18 +1,33 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 import inspect
 import logging
+import typing
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from functools import lru_cache
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
+
+# list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
+
+if typing.TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+
+# A stream's read method can return one of the following types:
+# Mapping[str, Any]: The content of an AirbyteRecordMessage
+# AirbyteRecordMessage: An AirbyteRecordMessage
+# AirbyteLogMessage: A log message
+# AirbyteTraceMessage: A trace message
+StreamData = Union[Mapping[str, Any], AirbyteLogMessage, AirbyteTraceMessage]
 
 
 def package_name_from_class(cls: object) -> str:
@@ -97,11 +112,12 @@ class Stream(ABC):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
         """
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -114,6 +130,9 @@ class Stream(ABC):
 
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+
+        if self.namespace:
+            stream.namespace = self.namespace
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
@@ -145,11 +164,41 @@ class Stream(ABC):
         return []
 
     @property
+    def namespace(self) -> Optional[str]:
+        """
+        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+        :return: A string containing the name of the namespace.
+        """
+        return None
+
+    @property
     def source_defined_cursor(self) -> bool:
         """
         Return False if the cursor can be configured by the user.
         """
         return True
+
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        """
+        Checks whether this stream is available.
+
+        :param logger: source logger
+        :param source: (optional) source
+        :return: A tuple of (boolean, str). If boolean is true, then this stream
+          is available, and no str is required. Otherwise, this stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
+        """
+        if self.availability_strategy:
+            return self.availability_strategy.check_availability(self, logger, source)
+        return True, None
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        """
+        :return: The AvailabilityStrategy used to check whether this stream is available.
+        """
+        return None
 
     @property
     @abstractmethod

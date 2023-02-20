@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.configs;
@@ -47,7 +47,7 @@ public class ConfigsFlywayMigrationDatabase extends FlywayMigrationDatabase {
 
   @Override
   protected void initializeDatabase(final DSLContext dslContext) throws DatabaseInitializationException, IOException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    final String initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH);
     DatabaseCheckFactory.createConfigsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
   }
 

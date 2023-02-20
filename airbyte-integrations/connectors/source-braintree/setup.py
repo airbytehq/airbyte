@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "braintree~=4.11.0", "pendulum~=1.5.1", "inflection~=0.5.1", "backoff~=1.11.0"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "source-acceptance-test", "freezegun~=1.1.0", "responses~=0.13.3"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "freezegun~=1.1.0", "responses~=0.13.3"]
 
 setup(
     name="source_braintree",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mqtt;
@@ -83,6 +83,10 @@ public class MqttDestinationConfig {
     }
     if (config.has("password") && !config.get("password").asText().isBlank()) {
       options.setPassword(config.get("password").asText().toCharArray());
+    }
+
+    if (config.has("max_in_flight") && !config.get("max_in_flight").asText().isBlank()) {
+      options.setMaxInflight(config.get("max_in_flight").asInt());
     }
 
     return options;

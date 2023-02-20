@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence.split_secrets;
@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.vault.VaultContainer;
 
-public class VaultSecretPersistenceTest {
+class VaultSecretPersistenceTest {
 
   private VaultSecretPersistence persistence;
   private String baseCoordinate;

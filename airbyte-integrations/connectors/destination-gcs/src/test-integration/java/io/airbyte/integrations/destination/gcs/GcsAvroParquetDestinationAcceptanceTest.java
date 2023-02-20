@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -11,12 +11,13 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.JsonSchemaType;
-import io.airbyte.integrations.standardtest.destination.NumberDataTypeTestArgumentProvider;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.integrations.standardtest.destination.argproviders.NumberDataTypeTestArgumentProvider;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -35,13 +36,18 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsAvroParquetDestinationAcceptanceTest(S3Format s3Format) {
+  public GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
     super(s3Format);
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @ParameterizedTest
   @ArgumentsSource(NumberDataTypeTestArgumentProvider.class)
-  public void testNumberDataType(String catalogFileName, String messagesFileName) throws Exception {
+  public void testNumberDataType(final String catalogFileName, final String messagesFileName) throws Exception {
     final AirbyteCatalog catalog = readCatalogFromFile(catalogFileName);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFileName);
 
@@ -54,16 +60,16 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
       final String streamName = stream.getName();
       final String schema = stream.getNamespace() != null ? stream.getNamespace() : defaultSchema;
 
-      Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
-      Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
+      final Map<String, Set<Type>> actualSchemaTypes = retrieveDataTypesFromPersistedFiles(streamName, schema);
+      final Map<String, Set<Type>> expectedSchemaTypes = retrieveExpectedDataTypes(stream);
 
       assertEquals(expectedSchemaTypes, actualSchemaTypes);
     }
   }
 
-  private Map<String, Set<Type>> retrieveExpectedDataTypes(AirbyteStream stream) {
-    Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
-    Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
+  private Map<String, Set<Type>> retrieveExpectedDataTypes(final AirbyteStream stream) {
+    final Iterable<String> iterableNames = () -> stream.getJsonSchema().get("properties").fieldNames();
+    final Map<String, JsonNode> nameToNode = StreamSupport.stream(iterableNames.spliterator(), false)
         .collect(Collectors.toMap(
             Function.identity(),
             name -> getJsonNode(stream, name)));
@@ -76,16 +82,17 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
             entry -> getExpectedSchemaType(entry.getValue())));
   }
 
-  private JsonNode getJsonNode(AirbyteStream stream, String name) {
-    JsonNode properties = stream.getJsonSchema().get("properties");
+  private JsonNode getJsonNode(final AirbyteStream stream, final String name) {
+    final JsonNode properties = stream.getJsonSchema().get("properties");
     if (properties.size() == 1) {
       return properties.get("data");
     }
     return properties.get(name).get("items");
   }
 
-  private Set<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
-    final JsonNode typeProperty = fieldDefinition.get("type");
+  private Set<Type> getExpectedSchemaType(final JsonNode fieldDefinition) {
+    // The $ref is a migration to V1 data type protocol see well_known_types.yaml
+    final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())
@@ -95,7 +102,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
         .collect(Collectors.toSet());
   }
 
-  private boolean compareAirbyteTypes(String airbyteTypePropertyText, JsonSchemaType value) {
+  private boolean compareAirbyteTypes(final String airbyteTypePropertyText, final JsonSchemaType value) {
     if (airbyteTypePropertyText == null) {
       return value.getJsonSchemaAirbyteType() == null;
     }
@@ -113,9 +120,9 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
 
   protected abstract Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception;
 
-  protected Map<String, Set<Type>> getTypes(Record record) {
+  protected Map<String, Set<Type>> getTypes(final Record record) {
 
-    List<Field> fieldList = record
+    final List<Field> fieldList = record
         .getSchema()
         .getFields()
         .stream()

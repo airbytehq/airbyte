@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -175,9 +175,10 @@ public class S3Logs implements CloudLogs {
     final var is = new ByteArrayInputStream(data);
     final var currentFileLines = new ArrayList<String>();
     try (final var reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-      String temp;
-      while ((temp = reader.readLine()) != null) {
+      String temp = reader.readLine();
+      while (temp != null) {
         currentFileLines.add(temp);
+        temp = reader.readLine();
       }
     }
     return currentFileLines;

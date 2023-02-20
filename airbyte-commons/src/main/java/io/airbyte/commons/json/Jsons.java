@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -16,10 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,10 +36,13 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+@SuppressWarnings({"PMD.AvoidReassigningParameters", "PMD.AvoidCatchingThrowable"})
 public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+
+  private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
   public static <T> String serialize(final T object) {
@@ -51,6 +56,30 @@ public class Jsons {
   public static <T> T deserialize(final String jsonString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(jsonString, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final String jsonString, final TypeReference<T> valueTypeRef) {
+    try {
+      return OBJECT_MAPPER.readValue(jsonString, valueTypeRef);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final File file, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER.readValue(file, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final File file, final TypeReference<T> valueTypeRef) {
+    try {
+      return OBJECT_MAPPER.readValue(file, valueTypeRef);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
@@ -86,6 +115,10 @@ public class Jsons {
 
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
+  }
+
+  public static JsonNode jsonNodeFromFile(final File file) throws IOException {
+    return YAML_OBJECT_MAPPER.readTree(file);
   }
 
   public static JsonNode emptyObject() {
@@ -180,7 +213,7 @@ public class Jsons {
   }
 
   private static void replaceNested(final JsonNode json, final List<String> keys, final BiConsumer<ObjectNode, String> typedReplacement) {
-    Preconditions.checkArgument(keys.size() > 0, "Must pass at least one key");
+    Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key");
     final JsonNode nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size() - 1));
     typedReplacement.accept((ObjectNode) nodeContainingFinalKey, keys.get(keys.size() - 1));
   }
@@ -220,16 +253,29 @@ public class Jsons {
   }
 
   /**
-   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. When
+   * applyFlattenToArray is true, each element in the array will be one entry in the returned map.
+   * This behavior is used in the Redshift SUPER type. When it is false, the whole array will be one
+   * entry. This is used in the JobTracker.
    */
-  public static Map<String, Object> flatten(final JsonNode node) {
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
+  public static Map<String, Object> flatten(final JsonNode node, final Boolean applyFlattenToArray) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
       for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
-        mergeMaps(output, field, flatten(value));
+        mergeMaps(output, field, flatten(value, applyFlattenToArray));
+      }
+      return output;
+    } else if (node.isArray() && applyFlattenToArray) {
+      final Map<String, Object> output = new HashMap<>();
+      final int arrayLen = node.size();
+      for (int i = 0; i < arrayLen; i++) {
+        final String field = String.format("[%d]", i);
+        final JsonNode value = node.get(i);
+        mergeMaps(output, field, flatten(value, applyFlattenToArray));
       }
       return output;
     } else {
@@ -253,6 +299,15 @@ public class Jsons {
   }
 
   /**
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. New usage of
+   * this function is best to explicitly declare the intended array mode. This version is provided for
+   * backward compatibility.
+   */
+  public static Map<String, Object> flatten(final JsonNode node) {
+    return flatten(node, false);
+  }
+
+  /**
    * Prepend all keys in subMap with prefix, then merge that map into originalMap.
    * <p>
    * If subMap contains a null key, then instead it is replaced with prefix. I.e. {null: value} is
@@ -269,6 +324,10 @@ public class Jsons {
           }
         },
         Entry::getValue)));
+  }
+
+  public static Map<String, String> deserializeToStringMap(JsonNode json) {
+    return OBJECT_MAPPER.convertValue(json, new TypeReference<>() {});
   }
 
   /**

@@ -1,26 +1,34 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.time.Instant;
 import java.util.HashMap;
@@ -28,18 +36,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.MountableFile;
 
 public class PostgresDestinationTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
+  private static final String USERNAME = "new_user";
+  private static final String DATABASE = "new_db";
+  private static final String PASSWORD = "new_password";
+
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
+
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslmode", "require");
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
@@ -53,28 +72,40 @@ public class PostgresDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.SSL_KEY, true,
+        "ssl_mode", ImmutableMap.of("mode", "require")));
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1337/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "jdbc_url_params", extraParam));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "ssl", false));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.SSL_KEY, false));
   }
 
   @BeforeAll
@@ -85,7 +116,7 @@ public class PostgresDestinationTest {
 
   @BeforeEach
   void setup() {
-    config = PostgreSQLContainerHelper.createDatabaseWithRandomNameAndGetPostgresConfig(PSQL_DB);
+    config = createDatabaseWithRandomNameAndGetPostgresConfig(PSQL_DB);
   }
 
   @AfterAll
@@ -96,20 +127,26 @@ public class PostgresDestinationTest {
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigNoJdbcParameters());
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+  }
+
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigEscapingNeeded());
+    assertEquals(EXPECTED_JDBC_ESCAPED_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
@@ -123,7 +160,78 @@ public class PostgresDestinationTest {
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
         buildConfigNoJdbcParameters());
-    assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
+    assertEquals(SSL_JDBC_PARAMETERS, defaultProperties);
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final var actual = destination.check(config);
+    assertTrue(actual.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() {
+    final var config = buildConfigNoJdbcParameters();
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, "public");
+    final PostgresDestination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertTrue(status.getMessage().contains("State code: 08001;"));
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() throws Exception {
+    final JdbcDatabase database = getJdbcDatabaseFromConfig(getDataSourceFromConfig(config));
+
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("create user %s with password '%s';", USERNAME, PASSWORD)));
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("create database %s;", DATABASE)));
+    // deny access for database for all users from group public
+    database.execute(connection -> connection.createStatement()
+        .execute(String.format("revoke all on database %s from public;", DATABASE)));
+
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE);
+
+    final Destination destination = new PostgresDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the
@@ -148,7 +256,7 @@ public class PostgresDestinationTest {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(SCHEMA_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
-    final JdbcDatabase database = PostgreSQLContainerHelper.getJdbcDatabaseFromConfig(PostgreSQLContainerHelper.getDataSourceFromConfig(config));
+    final JdbcDatabase database = getJdbcDatabaseFromConfig(getDataSourceFromConfig(config));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery("SELECT * FROM public._airbyte_raw_id_and_name;"),
@@ -170,6 +278,42 @@ public class PostgresDestinationTest {
                 .withEmittedAt(Instant.now().toEpochMilli())
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
+  }
+
+  private JdbcDatabase getJdbcDatabaseFromConfig(final DataSource dataSource) {
+    return new DefaultJdbcDatabase(dataSource, JdbcUtils.getDefaultSourceOperations());
+  }
+
+  private JsonNode createDatabaseWithRandomNameAndGetPostgresConfig(final PostgreSQLContainer<?> psqlDb) {
+    final var dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    final var initScriptName = "init_" + dbName.concat(".sql");
+    final var tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), psqlDb);
+    return getDestinationConfig(psqlDb, dbName);
+  }
+
+  private JsonNode getDestinationConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.SSL_KEY, false)
+        .build());
+  }
+
+  private DataSource getDataSourceFromConfig(final JsonNode config) {
+    return DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
   }
 
 }

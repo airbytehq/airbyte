@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/slack",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
@@ -46,10 +46,10 @@
             "type": "object",
             "title": "Sign in via Slack (OAuth)",
             "required": [
-              "access_token",
+              "option_title",
               "client_id",
               "client_secret",
-              "option_title"
+              "access_token"
             ],
             "properties": {
               "option_title": {
@@ -57,30 +57,20 @@
                 "const": "Default OAuth2.0 authorization"
               },
               "client_id": {
-                "title": "Client ID",
-                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this id.",
                 "type": "string",
-                "examples": ["slack-client-id-example"]
+                "title": "Client ID",
+                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id."
               },
               "client_secret": {
-                "title": "Client Secret",
-                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this secret.",
                 "type": "string",
-                "examples": ["slack-client-secret-example"],
+                "title": "Client Secret",
+                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this secret.",
                 "airbyte_secret": true
               },
               "access_token": {
+                "type": "string",
                 "title": "Access token",
-                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
-                "type": "string",
-                "examples": ["slack-access-token-example"],
-                "airbyte_secret": true
-              },
-              "refresh_token": {
-                "title": "Refresh token",
-                "description": "Slack refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
-                "type": "string",
-                "examples": ["slack-refresh-token-example"],
+                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
                 "airbyte_secret": true
               }
             },
@@ -89,7 +79,7 @@
           {
             "type": "object",
             "title": "API Token",
-            "required": ["api_token", "option_title"],
+            "required": ["option_title", "api_token"],
             "properties": {
               "option_title": {
                 "type": "string",
@@ -98,7 +88,7 @@
               "api_token": {
                 "type": "string",
                 "title": "API Token",
-                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
+                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
                 "airbyte_secret": true
               }
             },
@@ -108,12 +98,47 @@
       }
     }
   },
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": ["credentials", 0],
-      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-      "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "option_title"],
+    "predicate_value": "Default OAuth2.0 authorization",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
     }
   }
 }

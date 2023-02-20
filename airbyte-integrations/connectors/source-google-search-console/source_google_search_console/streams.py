@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -239,13 +239,13 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
         {
           "stream": {
-            "http://domain1.com": {
+            "https://domain1.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},
               "video": {"date": "2022-01-03"}
             },
-            "http://domain2.com": {
+            "https://domain2.com": {
               "web": {"date": "2022-01-03"},
               "news": {"date": "2022-01-03"},
               "image": {"date": "2022-01-03"},
@@ -295,3 +295,49 @@ class SearchAnalyticsByQuery(SearchAnalytics):
 
 class SearchAnalyticsAllFields(SearchAnalytics):
     dimensions = ["date", "country", "device", "page", "query"]
+
+
+class SearchAnalyticsByCustomDimensions(SearchAnalytics):
+    dimension_to_property_schema_map = {
+        "country": [{"country": {"type": ["null", "string"]}}],
+        "date": [],
+        "device": [{"device": {"type": ["null", "string"]}}],
+        "page": [{"page": {"type": ["null", "string"]}}],
+        "query": [{"query": {"type": ["null", "string"]}}],
+    }
+
+    def __init__(self, dimensions: List[str], *args, **kwargs):
+        super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
+        self.dimensions = dimensions
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        try:
+            return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
+        except FileNotFoundError:
+            schema: Mapping[str, Any] = {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": ["null", "object"],
+                "additionalProperties": True,
+                "properties": {
+                    "clicks": {"type": ["null", "integer"]},
+                    "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
+                    "date": {"type": ["null", "string"], "format": "date"},
+                    "impressions": {"type": ["null", "integer"]},
+                    "position": {"type": ["null", "number"], "multipleOf": 1e-25},
+                    "search_type": {"type": ["null", "string"]},
+                    "site_url": {"type": ["null", "string"]},
+                },
+            }
+
+            dimension_properties = self.dimension_to_property_schema()
+            schema["properties"].update(dimension_properties)
+
+            return schema
+
+    def dimension_to_property_schema(self) -> dict:
+        properties = {}
+        for dimension in sorted(self.dimensions):
+            fields = self.dimension_to_property_schema_map[dimension]
+            for field in fields:
+                properties = {**properties, **field}
+        return properties

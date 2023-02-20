@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.lib;
@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
  *
  * Application Name Conventions:
  * <p>
- * - Drop the airbyte prefix when naming applications, e.g airbyte-scheduler -> scheduler.
+ * - Drop the airbyte prefix when naming applications, e.g airbyte-server -> server.
  * <p>
  * - Use dashes to delimit application names with multiple words.
  * <p>

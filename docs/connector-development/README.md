@@ -6,6 +6,10 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Low-code Connector-Development Framework
+
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
+
 ## Python Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
@@ -64,7 +68,7 @@ and choose the relevant template by using the arrow keys. This will generate a n
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
 * [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
-* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/)
+* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/getting-started.md)
 * [Building a Python source](tutorials/building-a-python-source.md) 
 * [Building a Python destination](tutorials/building-a-python-destination.md)
 * [Building a Java destination](tutorials/building-a-java-destination.md)
@@ -106,6 +110,32 @@ The steps for updating an existing connector are the same as for building a new 
 3. Add any needed docs updates
 4. Create a PR to get the connector published
 
+## Adding normalization to a connector
+
+In order to enable normalization for a destination connector, you'll need to set some fields on the destination definitions entry for the connector. This is done in the `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` file.
+
+### New connectors
+If you're adding normalization to a new connector, you'll need to first add a destination definitions entry:
+1. Add a new connector definition in `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml`. You can copy an existing entry and modify it to match your connector, generating a new UUIDv4 for the `destinationDefinitionId`.
+2. Run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/specs) for more information.
+
+### Add normalization fields
+
+Once you have a destination definitions entry, you'll need to add a `normaliationConfig` field to enable normalization.
+
+Here's an example of normalization fields being set to enable normalization for the Postgres destination:
+
+```yaml
+normalizationConfig:
+    normalizationRepository: airbyte/normalization
+    normalizationTag: 0.2.25
+    normalizationIntegrationType: postgres
+```
+
+For more information about what these fields mean, see the [NormalizationDestinationDefinitionConfig](https://github.com/airbytehq/airbyte/blob/master/airbyte-config/config-models/src/main/resources/types/NormalizationDestinationDefinitionConfig.yaml) schema.
+
+The presence of these fields will enable normalization for the connector, and determine which docker image will run.
+
 ## Publishing a connector
 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
@@ -131,7 +161,8 @@ Once you've finished iterating on the changes to a connector as specified in its
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
    
-5. The new version of the connector is now available for everyone who uses it. Thank you!
+5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
+6. The new version of the connector is now available for everyone who uses it. Thank you!
 
 ### The /publish command
 

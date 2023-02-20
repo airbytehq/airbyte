@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -110,6 +110,11 @@ def test_secret_filtering():
     sensitive_str = f"{SECRET_STRING_VALUE} {NOT_SECRET_VALUE} {SECRET_STRING_VALUE} {SECRET_STRING_2_VALUE}"
 
     update_secrets([])
+    filtered = filter_secrets(sensitive_str)
+    assert filtered == sensitive_str
+
+    # the empty secret should not affect the result
+    update_secrets([""])
     filtered = filter_secrets(sensitive_str)
     assert filtered == sensitive_str
 

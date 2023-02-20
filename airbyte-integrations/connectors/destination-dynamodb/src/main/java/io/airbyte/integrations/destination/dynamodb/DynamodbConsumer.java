@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -12,9 +12,13 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.*;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.*;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -28,8 +32,6 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, DynamodbWriter> streamNameAndNamespaceToWriters;
-
-  private AirbyteMessage lastStateMessage = null;
 
   public DynamodbConsumer(final DynamodbDestinationConfig dynamodbDestinationConfig,
                           final ConfiguredAirbyteCatalog configuredCatalog,
@@ -72,7 +74,7 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
 
       final AirbyteStream stream = configuredStream.getStream();
       final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair
-          .fromAirbyteSteam(stream);
+          .fromAirbyteStream(stream);
       streamNameAndNamespaceToWriters.put(streamNamePair, writer);
     }
   }
@@ -80,7 +82,7 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      this.lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
       return;
     } else if (airbyteMessage.getType() != AirbyteMessage.Type.RECORD) {
       return;
@@ -104,10 +106,6 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) throws Exception {
     for (final DynamodbWriter handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
-    }
-    // DynamoDB stream uploader is all or nothing if a failure happens in the destination.
-    if (!hasFailed) {
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 

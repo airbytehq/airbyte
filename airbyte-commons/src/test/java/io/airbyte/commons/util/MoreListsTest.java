@@ -1,36 +1,17 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class MoreListsTest {
-
-  @Test
-  void testLast() {
-    assertEquals(Optional.of(3), MoreLists.last(List.of(1, 2, 3)));
-    assertEquals(Optional.empty(), MoreLists.last(List.of()));
-
-    final List<Integer> ints = new ArrayList<>();
-    ints.add(1);
-    ints.add(2);
-    ints.add(null);
-    assertEquals(Optional.empty(), MoreLists.last(ints));
-  }
-
-  @Test
-  void testReverse() {
-    final List<Integer> originalList = List.of(1, 2, 3);
-    assertEquals(List.of(3, 2, 1), MoreLists.reversed(originalList));
-    assertEquals(List.of(1, 2, 3), originalList);
-  }
 
   @Test
   void testConcat() {
@@ -41,12 +22,12 @@ class MoreListsTest {
   }
 
   @Test
-  void testAdd() {
-    final List<Integer> originalList = List.of(1, 2, 3);
-
-    assertEquals(List.of(1, 2, 3, 4), MoreLists.add(originalList, 4));
-    // verify original list was not mutated.
-    assertEquals(List.of(1, 2, 3), originalList);
+  void testGetOrNull() {
+    assertThrows(NullPointerException.class, () -> MoreLists.getOrNull(null, 0));
+    assertEquals(1, MoreLists.getOrNull(List.of(1, 2, 3), 0));
+    assertEquals(2, MoreLists.getOrNull(List.of(1, 2, 3), 1));
+    assertEquals(3, MoreLists.getOrNull(List.of(1, 2, 3), 2));
+    assertNull(MoreLists.getOrNull(List.of(1, 2, 3), 3));
   }
 
 }

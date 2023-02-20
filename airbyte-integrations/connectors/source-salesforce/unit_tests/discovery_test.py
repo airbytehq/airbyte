@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import Mock
@@ -7,12 +7,6 @@ from unittest.mock import Mock
 import pytest
 from source_salesforce.api import DATE_TYPES, LOOSE_TYPES, NUMBER_TYPES, STRING_TYPES, Salesforce
 from source_salesforce.exceptions import TypeSalesforceException
-
-
-@pytest.fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
 
 
 @pytest.mark.parametrize(
@@ -66,7 +60,7 @@ def test_discover_with_streams_criteria_param(streams_criteria, predicted_filter
     assert sorted(filtered_streams.keys()) == sorted(predicted_filtered_streams)
 
 
-def test_discover_only_queryable(stream_config):
+def test_discovery_filter(stream_config):
     sf_object = Salesforce(**stream_config)
     sf_object.login = Mock()
     sf_object.access_token = Mock()
@@ -75,6 +69,8 @@ def test_discover_only_queryable(stream_config):
         return_value={
             "sobjects": [
                 {"name": "Account", "queryable": True},
+                {"name": "ActivityMetric", "queryable": True},
+                {"name": "ActivityMetricRollup", "queryable": True},
                 {"name": "Leads", "queryable": False},
             ]
         }

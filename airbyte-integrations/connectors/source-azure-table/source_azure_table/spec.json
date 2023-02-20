@@ -5,7 +5,6 @@
     "title": "Azure Data Table Spec",
     "type": "object",
     "required": ["storage_account_name", "storage_access_key"],
-    "additionalProperties": false,
     "properties": {
       "storage_account_name": {
         "title": "Account Name",
@@ -17,14 +16,14 @@
       "storage_access_key": {
         "title": "Access Key",
         "type": "string",
-        "description": "Azure Table Storage Access Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/azure-table\">docs</a> for more information on how to obtain this key.",
+        "description": "Azure Table Storage Access Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/azure-table\">docs</a> for more information on how to obtain this key.",
         "order": 1,
         "airbyte_secret": true
       },
       "storage_endpoint_suffix": {
         "title": "Endpoint Suffix",
         "type": "string",
-        "description": "Azure Table Storage service account URL suffix. See the <a href=\"https://docs.airbyte.io/integrations/sources/azure-table\">docs</a> for more information on how to obtain endpoint suffix",
+        "description": "Azure Table Storage service account URL suffix. See the <a href=\"https://docs.airbyte.com/integrations/sources/azure-table\">docs</a> for more information on how to obtain endpoint suffix",
         "order": 2,
         "default": "core.windows.net",
         "examples": ["core.windows.net", "core.chinacloudapi.cn"],

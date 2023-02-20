@@ -1,3 +1,0 @@
-Task dockerBuildTask = getDockerBuildTask("cli", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyDocker)
-assemble.dependsOn(dockerBuildTask)

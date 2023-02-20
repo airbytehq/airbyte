@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.bigquery;
@@ -55,7 +55,7 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
       try {
         database.execute(sql);
       } catch (final SQLException e) {
-        throw new DataAccessException(e.getMessage());
+        throw new DataAccessException(e.getMessage(), e);
       }
       return null;
     }

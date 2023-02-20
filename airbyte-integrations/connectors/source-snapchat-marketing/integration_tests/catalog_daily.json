@@ -1,0 +1,60 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "adaccounts_stats_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["start_time"],
+        "source_defined_primary_key": [["id"], ["granularity"], ["start_time"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["start_time"],
+      "primary_key": [["id"], ["granularity"], ["start_time"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ads_stats_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["start_time"],
+        "source_defined_primary_key": [["id"], ["granularity"], ["start_time"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["start_time"],
+      "primary_key": [["id"], ["granularity"], ["start_time"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "adsquads_stats_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["start_time"],
+        "source_defined_primary_key": [["id"], ["granularity"], ["start_time"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["start_time"],
+      "primary_key": [["id"], ["granularity"], ["start_time"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaigns_stats_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["start_time"],
+        "source_defined_primary_key": [["id"], ["granularity"], ["start_time"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["start_time"],
+      "destination_sync_mode": "append",
+      "primary_key": [["id"], ["granularity"], ["start_time"]]
+    }
+  ]
+}
