@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
