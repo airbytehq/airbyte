@@ -66,7 +66,6 @@ const Footer = styled.div`
 
 const AllConnectionsPage: React.FC = () => {
   const { push, pathname, query } = useRouter();
-  const { pageCurrent } = query;
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
@@ -82,7 +81,7 @@ const AllConnectionsPage: React.FC = () => {
   const [filters, setFilters] = useState<FilterConnectionRequestBody>({
     workspaceId: workspace.workspaceId,
     pageSize: 10,
-    pageCurrent: pageCurrent ? JSON.parse(pageCurrent) : 1,
+    pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     status: statusOptions[0].value,
     sourceDefinitionId: sourceOptions[0].value,
     destinationDefinitionId: destinationOptions[0].value,
@@ -106,8 +105,10 @@ const AllConnectionsPage: React.FC = () => {
   }, [filters.pageCurrent]);
 
   useEffect(() => {
-    setFilters({ ...filters, pageCurrent: JSON.parse(pageCurrent) });
-  }, [pageCurrent]);
+    if (Object.keys(query).length > 2 && query?.pageCurrent !== undefined) {
+      setFilters({ ...filters, pageCurrent: JSON.parse(query.pageCurrent) });
+    }
+  }, [query]);
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
