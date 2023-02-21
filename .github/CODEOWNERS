@@ -3,11 +3,6 @@
 /airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 /airbyte-integrations/bases/connector-acceptance-tests/ @airbytehq/connector-operations
 
-# Oauth
-/airbyte-oauth/ @airbytehq/connector-operations
-/airbyte-server/src/main/java/io/airbyte/server/handlers/OAuthHandler.java @airbytehq/connector-operations
-/airbyte-server/src/test/java/io/airbyte/server/handlers/OAuthHandlerTest.java @airbytehq/connector-operations
-
 # Protocol related items
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
 
