@@ -733,6 +733,9 @@
   icon: google-sheets.svg
   sourceType: file
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.googleapis.com"
 - name: Google Webfonts
   sourceDefinitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
   dockerRepository: airbyte/source-google-webfonts
