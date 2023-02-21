@@ -48,7 +48,7 @@ To replicate data from multiple Postgres schemas, re-run the command to grant ac
 Grant the user read-only access to the relevant tables:
 
 ```
-GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ```
 
 Allow user to see tables created in the future:
@@ -411,6 +411,8 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.45  | 2022-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371) | Ensures that user has required privileges for CDC syncs.                                                                                                                   |  
+|         | 2022-02-15 | [23028](https://github.com/airbytehq/airbyte/pull/23028) |                                                                                                 |
 | 1.0.44  | 2022-02-06 | [22221](https://github.com/airbytehq/airbyte/pull/22221) | Exclude new set of system tables when using `pg_stat_statements` extension.                                                                                                |  
 | 1.0.43  | 2022-02-06 | [21634](https://github.com/airbytehq/airbyte/pull/21634) | Improve Standard sync performance by caching objects.                                                                                                                      |  
 | 1.0.42  | 2022-01-23 | [21523](https://github.com/airbytehq/airbyte/pull/21523) | Check for null in cursor values before replacing.                                                                                                                          |  
