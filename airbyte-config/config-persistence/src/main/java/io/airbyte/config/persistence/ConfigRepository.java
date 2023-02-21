@@ -18,6 +18,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.field;
 import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
@@ -1602,12 +1603,15 @@ public class ConfigRepository {
     return countResult > 0;
   }
 
+  private static final List<Field<?>> baseConnectorBuilderProjectColumns =
+      Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
+          CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, field(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT.isNotNull()).as("hasDraft"));
+
   public ConnectorBuilderProject getConnectorBuilderProject(final UUID builderProjectId, final boolean fetchManifestDraft)
       throws IOException, ConfigNotFoundException {
     final Optional<ConnectorBuilderProject> projectOptional = database.query(ctx -> {
       final List columnsToFetch =
-          new ArrayList(Arrays.asList(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
-              CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID));
+          new ArrayList(baseConnectorBuilderProjectColumns);
       if (fetchManifestDraft) {
         columnsToFetch.add(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT);
       }
@@ -1627,8 +1631,7 @@ public class ConfigRepository {
 
     return database
         .query(ctx -> ctx
-            .select(CONNECTOR_BUILDER_PROJECT.ID, CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, CONNECTOR_BUILDER_PROJECT.NAME,
-                CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID)
+            .select(baseConnectorBuilderProjectColumns)
             .from(CONNECTOR_BUILDER_PROJECT)
             .where(matchByIds)
             .fetch())
@@ -1656,7 +1659,8 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
             .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
-            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,
+                builderProject.getManifestDraft() == null ? null : JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .where(matchId)
             .execute();
@@ -1666,7 +1670,8 @@ public class ConfigRepository {
             .set(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID, builderProject.getWorkspaceId())
             .set(CONNECTOR_BUILDER_PROJECT.NAME, builderProject.getName())
             .set(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID, builderProject.getActorDefinitionId())
-            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT, JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
+            .set(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT,
+                builderProject.getManifestDraft() == null ? null : JSONB.valueOf(Jsons.serialize(builderProject.getManifestDraft())))
             .set(WORKSPACE.CREATED_AT, timestamp)
             .set(WORKSPACE.UPDATED_AT, timestamp)
             .execute();
@@ -1685,7 +1690,7 @@ public class ConfigRepository {
    */
   @SuppressWarnings("SameParameterValue")
   private boolean deleteById(final Table<?> table, final UUID id) throws IOException {
-    return database.transaction(ctx -> ctx.deleteFrom(table)).where(DSL.field(DSL.name(PRIMARY_KEY)).eq(id)).execute() > 0;
+    return database.transaction(ctx -> ctx.deleteFrom(table)).where(field(DSL.name(PRIMARY_KEY)).eq(id)).execute() > 0;
   }
 
 }

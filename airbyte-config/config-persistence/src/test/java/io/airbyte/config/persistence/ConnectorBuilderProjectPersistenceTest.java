@@ -40,6 +40,13 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
+  void testReadWithoutManifest() throws IOException, ConfigNotFoundException {
+    createBaseObjects();
+    project1.setManifestDraft(null);
+    assertEquals(project1, configRepository.getConnectorBuilderProject(project1.getBuilderProjectId(), false));
+  }
+
+  @Test
   void testReadNotExists() throws IOException {
     assertThrows(ConfigNotFoundException.class, () -> configRepository.getConnectorBuilderProject(UUID.randomUUID(), false));
   }
@@ -51,6 +58,24 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
     // set draft to null because it won't be returned as part of listing call
     project1.setManifestDraft(null);
     project2.setManifestDraft(null);
+
+    assertEquals(new ArrayList<>(
+        Arrays.asList(project1, project2)), configRepository.getConnectorBuilderProjectsByWorkspace(mainWorkspace).toList());
+  }
+
+  @Test
+  void testListWithNoManifest() throws IOException, ConfigNotFoundException {
+    createBaseObjects();
+
+    // actually set draft to null for first project
+    project1.setManifestDraft(null);
+    project1.setHasDraft(false);
+    configRepository.writeBuilderProject(project1);
+
+    // set draft to null because it won't be returned as part of listing call
+    project2.setManifestDraft(null);
+    // has draft is still truthy because there is a draft in the database
+    project2.setHasDraft(true);
 
     assertEquals(new ArrayList<>(
         Arrays.asList(project1, project2)), configRepository.getConnectorBuilderProjectsByWorkspace(mainWorkspace).toList());
@@ -93,6 +118,7 @@ class ConnectorBuilderProjectPersistenceTest extends BaseConfigDatabaseTest {
         .withBuilderProjectId(projectId)
         .withName("project " + projectId)
         .withManifestDraft(new ObjectMapper().readTree("{\"the_id\": \"" + projectId + "\"}"))
+        .withHasDraft(true)
         .withWorkspaceId(workspace);
     configRepository.writeBuilderProject(project);
     return project;

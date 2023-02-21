@@ -8,8 +8,11 @@ import static io.airbyte.commons.auth.AuthRoleConstants.EDITOR;
 
 import io.airbyte.api.generated.ConnectorBuilderProjectApi;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectIdWithWorkspaceId;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectRead;
+import io.airbyte.api.model.generated.ConnectorBuilderProjectReadList;
 import io.airbyte.api.model.generated.ConnectorBuilderProjectWithWorkspaceId;
 import io.airbyte.api.model.generated.ExistingConnectorBuilderProjectWithWorkspaceId;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.auth.SecuredWorkspace;
 import io.airbyte.commons.server.handlers.ConnectorBuilderProjectsHandler;
 import io.micronaut.context.annotation.Context;
@@ -50,6 +53,24 @@ public class ConnectorBuilderProjectApiController implements ConnectorBuilderPro
       connectorBuilderProjectsHandler.deleteConnectorBuilderProject(connectorBuilderProjectIdWithWorkspaceId);
       return null;
     });
+  }
+
+  @Override
+  @Post(uri = "/get_with_manifest")
+  @Status(HttpStatus.OK)
+  @Secured({EDITOR})
+  @SecuredWorkspace
+  public ConnectorBuilderProjectRead getProject(final ConnectorBuilderProjectIdWithWorkspaceId connectorBuilderProjectIdWithWorkspaceId) {
+    return ApiHelper.execute(() -> connectorBuilderProjectsHandler.getBuilderProjectWithManifest(connectorBuilderProjectIdWithWorkspaceId));
+  }
+
+  @Override
+  @Post(uri = "/list")
+  @Status(HttpStatus.OK)
+  @Secured({EDITOR})
+  @SecuredWorkspace
+  public ConnectorBuilderProjectReadList listProjects(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return ApiHelper.execute(() -> connectorBuilderProjectsHandler.listConnectorBuilderProject(workspaceIdRequestBody));
   }
 
   @Override
