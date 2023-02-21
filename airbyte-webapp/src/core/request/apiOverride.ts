@@ -12,6 +12,7 @@ export interface ApiOverrideRequestOptions {
   middlewares: RequestMiddleware[];
   signal?: RequestInit["signal"];
   redirectUnauthenticatedUser?: () => void;
+  headers?: any;
 }
 
 function getRequestBody<U>(data: U) {
@@ -63,7 +64,7 @@ export const apiOverride = async <T, U = unknown>(
   const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {
     method,
     ...(data ? { body: getRequestBody(data) } : {}),
-    headers: merge(headers, { Authorization: user?.token }),
+    headers: merge({ "Accept-Language": user?.lang }, headers, { Authorization: user?.token }),
     signal: signal ?? options.signal,
   });
 

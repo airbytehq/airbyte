@@ -29,14 +29,14 @@ const MainView = styled.div`
 `;
 
 export const PaymentSteps = {
-  SelectPlan: "Select Plan",
-  BillingPayment: "Billing Payment",
+  SELECT_PLAN: "SELECT_PLAN",
+  BILLING_PAYMENT: "BILLING_PAYMENT",
 } as const;
 
 const PaymentPage: React.FC = () => {
   const { push } = useRouter();
 
-  const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SelectPlan);
+  const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SELECT_PLAN);
   const [product, setProduct] = useState<ProductItem | undefined>();
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [planDetail, setPlanDetail] = useState<GetUpgradeSubscriptionDetail>();
@@ -72,7 +72,7 @@ const PaymentPage: React.FC = () => {
           const detail: GetUpgradeSubscriptionDetail = response?.data;
           setPlanDetail(detail);
           setPaymentLoading(false);
-          setCurrentStep(PaymentSteps.BillingPayment);
+          setCurrentStep(PaymentSteps.BILLING_PAYMENT);
         })
         .catch(() => {
           setPaymentLoading(false);
@@ -114,7 +114,7 @@ const PaymentPage: React.FC = () => {
       <PaymentNav steps={Object.values(PaymentSteps)} currentStep={currentStep} />
       <Content className={styles.pageContainer}>
         <MainView>
-          {currentStep === PaymentSteps.SelectPlan && (
+          {currentStep === PaymentSteps.SELECT_PLAN && (
             <SelectPlanStep
               product={product}
               setProduct={setProduct}
@@ -125,7 +125,7 @@ const PaymentPage: React.FC = () => {
               onSelectPlan={onSelectPlan}
             />
           )}
-          {currentStep === PaymentSteps.BillingPayment && (
+          {currentStep === PaymentSteps.BILLING_PAYMENT && (
             <BillingPaymentStep
               productPrice={product?.price as number}
               selectedProductPrice={selectedProduct?.price as number}

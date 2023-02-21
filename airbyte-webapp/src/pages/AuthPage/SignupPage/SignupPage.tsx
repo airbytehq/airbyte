@@ -204,7 +204,7 @@ const SignupPage: React.FC<SignupPageProps> = () => {
           </SigninText>
           <SigninButton>
             <Link $clear to={`/${RoutePaths.Signin}`}>
-              <FormattedMessage id="Sign in" />
+              <FormattedMessage id="signup.siginButton" />
             </Link>
           </SigninButton>
         </SigninButtonContent>

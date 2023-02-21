@@ -87,9 +87,9 @@ const BillingPaymentStep: React.FC<IProps> = ({
 }) => {
   const seperatorHeight = "47px";
 
-  const calculateProductDuePrice = (dueToday: number): string => {
+  const calculateProductDuePrice = (dueToday: number): string | React.ReactElement => {
     if (productPrice < selectedProductPrice) {
-      return `0 (The difference you have paid will be deducted from next month’s billing)`;
+      return <FormattedMessage id="0 (The difference you have paid will be deducted from next month’s billing)" />;
     }
     return `${dueToday}`;
   };
@@ -100,7 +100,9 @@ const BillingPaymentStep: React.FC<IProps> = ({
         <ContentContainer>
           <Logo src="/daspireLogo.svg" alt="logo" />
           <Separator />
-          <PlanName>{planDetail?.planName} Plan</PlanName>
+          <PlanName>
+            <FormattedMessage id="payment.planName" values={{ planName: planDetail?.planName }} />
+          </PlanName>
           <Separator height={seperatorHeight} />
           <ContentItem>
             <ContentHeading>
@@ -113,14 +115,17 @@ const BillingPaymentStep: React.FC<IProps> = ({
             <ContentHeading>
               <FormattedMessage id="plan.detail.billing" />
             </ContentHeading>
-            <ContentText>US${planDetail?.productItemPrice} / month</ContentText>
+            <ContentText>
+              US ${planDetail?.productItemPrice}&nbsp;/&nbsp;
+              <FormattedMessage id="payment.planDeductionTime" />
+            </ContentText>
           </ContentItem>
           <Separator height={seperatorHeight} />
           <ContentItem>
             <ContentHeading>
               <FormattedMessage id="plan.detail.dueToday" />
             </ContentHeading>
-            <ContentText>US${calculateProductDuePrice(planDetail?.totalDueToday as number)}</ContentText>
+            <ContentText>US ${calculateProductDuePrice(planDetail?.totalDueToday as number)}</ContentText>
           </ContentItem>
           <Separator height={seperatorHeight} />
           <ContentItem>
@@ -128,7 +133,8 @@ const BillingPaymentStep: React.FC<IProps> = ({
               <FormattedMessage id="plan.detail.reoccuringBilling" />
             </ContentHeading>
             <ContentText>
-              Next billing date:&nbsp;
+              <FormattedMessage id="payment.nextBillingDate" />
+              :&nbsp;
               <FormattedDate
                 value={(planDetail?.expiresTime as number) * 1000}
                 day="numeric"
@@ -136,7 +142,7 @@ const BillingPaymentStep: React.FC<IProps> = ({
                 year="numeric"
               />
               <br />
-              You can cancel at any time.
+              <FormattedMessage id="payment.cancelTime" />.
             </ContentText>
           </ContentItem>
         </ContentContainer>

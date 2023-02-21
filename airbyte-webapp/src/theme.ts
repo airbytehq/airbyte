@@ -28,6 +28,7 @@ export const theme = {
   darkBlue: scss.darkBlue,
 
   grey30: scss.grey30,
+  grey40: scss.grey40,
   grey50: scss.grey50,
   grey100: scss.grey100,
   grey200: scss.grey200,

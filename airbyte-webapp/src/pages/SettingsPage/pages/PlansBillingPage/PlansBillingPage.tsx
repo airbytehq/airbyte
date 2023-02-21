@@ -44,9 +44,9 @@ const ButtonSeparator = styled.div`
   width: 50px;
 `;
 
-export const convert_M_To_Million = (string: string): string => {
+export const convert_M_To_Million = (string: string): string | React.ReactElement => {
   if (string.includes("M")) {
-    return `${string.substring(0, string.length - 1)} million`;
+    return <FormattedMessage id="payment.amount" values={{ amount: string.substring(0, string.length - 1) }} />;
   }
   return string;
 };
@@ -105,16 +105,21 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
 
   const upgradePlan = () => push(`/${RoutePaths.Payment}`);
 
-  const manipulatePlanDetail = (planItem: PlanItem): string => {
+  const manipulatePlanDetail = (planItem: PlanItem): string | React.ReactElement => {
     if (planItem.planItemType === PlanItemTypeEnum.Features) {
-      return `${planItem.planItemName}: ${convert_M_To_Million(planItem.planItemScope as string)}`;
+      return (
+        <>
+          {`${planItem.planItemName}: `}
+          {convert_M_To_Million(planItem.planItemScopeLang as string)}
+        </>
+      );
     } else if (planItem.planItemType === PlanItemTypeEnum.Data_Replication) {
-      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+      return `${planItem.planItemName}: ${planItem.planItemScopeLang}`;
     } else if (planItem.planItemType === PlanItemTypeEnum.Support) {
       if (planItem.planItemScope === "false") {
         return "";
       }
-      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+      return `${planItem.planItemName}: ${planItem.planItemScopeLang}`;
     }
     return "";
   };

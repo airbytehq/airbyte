@@ -5,6 +5,7 @@ import {
   deleteUser,
   resendInviteToUser,
   updateUserRole,
+  updateUserLang,
   registerNewUser,
 } from "../../request/DaspireClient";
 import { UpdateRoleRequestBody } from "../role";
@@ -29,6 +30,10 @@ export class UserService extends AirbyteRequestService {
 
   public updateRole(UpdateRoleBody: UpdateRoleRequestBody) {
     return updateUserRole(UpdateRoleBody, this.requestOptions);
+  }
+
+  public updateLang(lang: string) {
+    return updateUserLang(lang, this.requestOptions);
   }
 
   public registerUser(newUserRegisterBody: NewUserRegisterBody) {
