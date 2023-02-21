@@ -60,7 +60,7 @@ according to the frequency you set.
 
 ## **How frequently can Airbyte sync data?**
 
-You can adjust the load time to run as frequent as every hour or as infrequent as once a year using [Cron expressions](https://docs.airbyte.com/cloud/managing-airbyte-cloud#edit-stream-configuration). 
+You can adjust the load time to run as frequent as every hour or as infrequent as once a year using [Cron expressions](https://docs.airbyte.com/cloud/managing-airbyte-cloud/edit-stream-configuration). 
 
 ## **Why wouldn’t I choose to load all of my data more frequently?**
 

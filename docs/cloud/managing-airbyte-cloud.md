@@ -339,7 +339,7 @@ If a connection’s source schema has breaking changes, it will stop syncing. Yo
 ### Enable schema update notifications
 
 To get notified when your source schema changes: 
-1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud#manage-airbyte-cloud-notifications) set up.
+1. Make sure you have [webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#set-up-slack-notifications) set up.
 
 2. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection you want to receive notifications for.
 
