@@ -14,6 +14,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.DefaultJobCreator;
@@ -29,17 +30,20 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
   private final DefaultJobCreator jobCreator;
   private final ConfigRepository configRepository;
   private final OAuthConfigSupplier oAuthConfigSupplier;
+  private final ConfigInjector configInjector;
   private final WorkspaceHelper workspaceHelper;
 
   public DefaultSyncJobFactory(final boolean connectorSpecificResourceDefaultsEnabled,
                                final DefaultJobCreator jobCreator,
                                final ConfigRepository configRepository,
                                final OAuthConfigSupplier oAuthConfigSupplier,
+                               final ConfigInjector configInjector,
                                final WorkspaceHelper workspaceHelper) {
     this.connectorSpecificResourceDefaultsEnabled = connectorSpecificResourceDefaultsEnabled;
     this.jobCreator = jobCreator;
     this.configRepository = configRepository;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
+    this.configInjector = configInjector;
     this.workspaceHelper = workspaceHelper;
   }
 
@@ -55,12 +59,13 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           sourceConnection.getSourceDefinitionId(),
           sourceConnection.getWorkspaceId(),
           sourceConnection.getConfiguration());
-      sourceConnection.withConfiguration(sourceConfiguration);
+      sourceConnection.withConfiguration(configInjector.injectConfig(sourceConfiguration, sourceConnection.getSourceDefinitionId()));
       final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
           destinationConnection.getDestinationDefinitionId(),
           destinationConnection.getWorkspaceId(),
           destinationConnection.getConfiguration());
-      destinationConnection.withConfiguration(destinationConfiguration);
+      destinationConnection
+          .withConfiguration(configInjector.injectConfig(destinationConfiguration, destinationConnection.getDestinationDefinitionId()));
       final StandardSourceDefinition sourceDefinition = configRepository
           .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
       final StandardDestinationDefinition destinationDefinition = configRepository

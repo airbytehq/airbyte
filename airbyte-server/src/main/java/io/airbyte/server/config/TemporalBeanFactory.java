@@ -17,6 +17,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
@@ -60,6 +61,11 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
+  public ConfigInjector configInjector(final ConfigRepository configRepository) {
+    return new ConfigInjector(configRepository);
+  }
+
+  @Singleton
   public TaskQueueMapper taskQueueMapper() {
     return new DefaultTaskQueueMapper();
   }
@@ -69,8 +75,10 @@ public class TemporalBeanFactory {
                                                                final JobTracker jobTracker,
                                                                final JobErrorReporter jobErrorReporter,
                                                                final OAuthConfigSupplier oAuthConfigSupplier,
-                                                               final RouterService routerService) {
-    return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
+                                                               final RouterService routerService,
+                                                               final ConfigInjector configInjector) {
+    return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService,
+        configInjector);
   }
 
 }

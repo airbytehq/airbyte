@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.activities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.State;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
@@ -58,12 +60,15 @@ class GenerateInputActivityTest {
   static private AttemptApi attemptApi;
   static private JobPersistence jobPersistence;
   static private ConfigRepository configRepository;
+  static private ConfigInjector configInjector;
   static private GenerateInputActivityImpl generateInputActivity;
   static private OAuthConfigSupplier oAuthConfigSupplier;
   static private Job job;
 
   static private final JsonNode SOURCE_CONFIGURATION = Jsons.jsonNode(Map.of("source_key", "source_value"));
   static private final JsonNode SOURCE_CONFIG_WITH_OAUTH = Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value"));
+  static private final JsonNode SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG =
+      Jsons.jsonNode(Map.of("source_key", "source_value", "oauth", "oauth_value", "injected", "value"));
   static private final JsonNode DESTINATION_CONFIGURATION = Jsons.jsonNode(Map.of("destination_key", "destination_value"));
   static private final JsonNode DESTINATION_CONFIG_WITH_OAUTH =
       Jsons.jsonNode(Map.of("destination_key", "destination_value", "oauth", "oauth_value"));
@@ -86,11 +91,14 @@ class GenerateInputActivityTest {
     attemptApi = mock(AttemptApi.class);
     jobPersistence = mock(JobPersistence.class);
     configRepository = mock(ConfigRepository.class);
-    generateInputActivity = new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier);
+    configInjector = mock(ConfigInjector.class);
+    generateInputActivity =
+        new GenerateInputActivityImpl(jobPersistence, configRepository, stateApi, attemptApi, featureFlags, oAuthConfigSupplier, configInjector);
 
     job = mock(Job.class);
 
     when(jobPersistence.getJob(JOB_ID)).thenReturn(job);
+    when(configInjector.injectConfig(any(), any())).thenAnswer(i -> i.getArguments()[0]);
 
     final DestinationConnection destinationConnection = new DestinationConnection()
         .withDestinationId(DESTINATION_ID)
@@ -127,6 +135,8 @@ class GenerateInputActivityTest {
     when(configRepository.getSourceConnection(SOURCE_ID)).thenReturn(sourceConnection);
     when(oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, WORKSPACE_ID, SOURCE_CONFIGURATION))
         .thenReturn(SOURCE_CONFIG_WITH_OAUTH);
+    when(configInjector.injectConfig(SOURCE_CONFIG_WITH_OAUTH, sourceDefinitionId))
+        .thenReturn(SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG);
 
     final JobSyncConfig jobSyncConfig = new JobSyncConfig()
         .withWorkspaceId(UUID.randomUUID())
@@ -145,7 +155,7 @@ class GenerateInputActivityTest {
         .withWorkspaceId(jobSyncConfig.getWorkspaceId())
         .withSourceId(SOURCE_ID)
         .withDestinationId(DESTINATION_ID)
-        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG)
         .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE)
         .withCatalog(jobSyncConfig.getConfiguredAirbyteCatalog())
@@ -175,7 +185,7 @@ class GenerateInputActivityTest {
     assertEquals(expectedGeneratedJobInput, generatedJobInput);
 
     final AttemptSyncConfig expectedAttemptSyncConfig = new AttemptSyncConfig()
-        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH)
+        .withSourceConfiguration(SOURCE_CONFIG_WITH_OAUTH_AND_INJECTED_CONFIG)
         .withDestinationConfiguration(DESTINATION_CONFIG_WITH_OAUTH)
         .withState(STATE);
 

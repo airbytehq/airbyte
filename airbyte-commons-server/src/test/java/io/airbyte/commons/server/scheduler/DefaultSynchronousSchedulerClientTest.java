@@ -13,11 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.JobMetadata;
@@ -35,6 +37,7 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.persistence.job.errorreporter.ConnectorJobReportingContext;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
@@ -86,6 +89,7 @@ class DefaultSynchronousSchedulerClientTest {
   private OAuthConfigSupplier oAuthConfigSupplier;
 
   private RouterService routerService;
+  private ConfigInjector configInjector;
   private DefaultSynchronousSchedulerClient schedulerClient;
 
   @BeforeEach
@@ -95,10 +99,14 @@ class DefaultSynchronousSchedulerClientTest {
     jobErrorReporter = mock(JobErrorReporter.class);
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
     routerService = mock(RouterService.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
+    configInjector = mock(ConfigInjector.class);
+    schedulerClient =
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService, configInjector);
 
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
+
+    when(configInjector.injectConfig(any(), any())).thenAnswer(i -> i.getArguments()[0]);
 
     when(routerService.getTaskQueueForWorkspace(any(), eq(TemporalJobType.CHECK_CONNECTION))).thenReturn(CHECK_TASK_QUEUE);
     when(routerService.getTaskQueueForWorkspace(any(), eq(TemporalJobType.DISCOVER_SCHEMA))).thenReturn(DISCOVER_TASK_QUEUE);
@@ -116,7 +124,7 @@ class DefaultSynchronousSchedulerClientTest {
 
     @SuppressWarnings(UNCHECKED)
     @Test
-    void testExecuteJobSuccess() {
+    void testExecuteJobSuccess() throws IOException {
       final UUID sourceDefinitionId = UUID.randomUUID();
       final UUID discoveredCatalogId = UUID.randomUUID();
       final Supplier<TemporalResponse<ConnectorJobOutput>> function = mock(Supplier.class);
@@ -207,6 +215,29 @@ class DefaultSynchronousSchedulerClientTest {
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION, false);
       assertEquals(mockOutput, response.getOutput());
+      verify(configInjector).injectConfig(any(), eq(SOURCE_CONNECTION.getSourceDefinitionId()));
+    }
+
+    @Test
+    void testCreateSourceCheckConnectionJobWithConfigInjection() throws IOException {
+      final JsonNode configAfterInjection = new ObjectMapper().readTree("{\"injected\": true }");
+      final JobCheckConnectionConfig jobCheckConnectionConfig = new JobCheckConnectionConfig()
+          .withActorType(ActorType.SOURCE)
+          .withActorId(SOURCE_CONNECTION.getSourceId())
+          .withConnectionConfiguration(configAfterInjection)
+          .withDockerImage(DOCKER_IMAGE)
+          .withProtocolVersion(PROTOCOL_VERSION).withIsCustomConnector(false);
+
+      when(configInjector.injectConfig(SOURCE_CONNECTION.getConfiguration(), SOURCE_CONNECTION.getSourceDefinitionId()))
+          .thenReturn(configAfterInjection);
+
+      final StandardCheckConnectionOutput mockOutput = mock(StandardCheckConnectionOutput.class);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withCheckConnection(mockOutput);
+      when(temporalClient.submitCheckConnection(any(UUID.class), eq(0), eq(CHECK_TASK_QUEUE), eq(jobCheckConnectionConfig)))
+          .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
+      final SynchronousResponse<StandardCheckConnectionOutput> response =
+          schedulerClient.createSourceCheckConnectionJob(SOURCE_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION, false);
+      assertEquals(mockOutput, response.getOutput());
     }
 
     @Test
@@ -226,6 +257,7 @@ class DefaultSynchronousSchedulerClientTest {
       final SynchronousResponse<StandardCheckConnectionOutput> response =
           schedulerClient.createDestinationCheckConnectionJob(DESTINATION_CONNECTION, DOCKER_IMAGE, PROTOCOL_VERSION, false);
       assertEquals(mockOutput, response.getOutput());
+      verify(configInjector).injectConfig(any(), eq(DESTINATION_CONNECTION.getDestinationDefinitionId()));
     }
 
     @Test
@@ -237,6 +269,7 @@ class DefaultSynchronousSchedulerClientTest {
       final SynchronousResponse<UUID> response =
           schedulerClient.createDiscoverSchemaJob(SOURCE_CONNECTION, DOCKER_IMAGE, DOCKER_IMAGE_TAG, PROTOCOL_VERSION, false);
       assertEquals(expectedCatalogId, response.getOutput());
+      verify(configInjector).injectConfig(any(), eq(SOURCE_CONNECTION.getSourceDefinitionId()));
     }
 
     @Test
@@ -249,6 +282,7 @@ class DefaultSynchronousSchedulerClientTest {
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       final SynchronousResponse<ConnectorSpecification> response = schedulerClient.createGetSpecJob(DOCKER_IMAGE, false);
       assertEquals(mockOutput, response.getOutput());
+      verify(configInjector, never()).injectConfig(any(), any());
     }
 
   }

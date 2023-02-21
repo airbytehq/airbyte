@@ -52,6 +52,7 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -252,9 +253,11 @@ public class ServerApp implements ServerRunnable {
         streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
+    final ConfigInjector configInjector = new ConfigInjector(configRepository);
+
     final RouterService routerService = new RouterService(configRepository, taskQueueMapper);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
-        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService);
+        new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier, routerService, configInjector);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 
@@ -403,6 +406,7 @@ public class ServerApp implements ServerRunnable {
         connectorBuilderProjectsHandler,
         stateHandler,
         workspacesHandler,
+        configInjector,
         webBackendConnectionsHandler,
         webBackendGeographiesHandler,
         webBackendCheckUpdatesHandler);

@@ -11,6 +11,7 @@ import io.airbyte.commons.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogConfigs;
+import io.airbyte.config.persistence.ConfigInjector;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
@@ -55,6 +56,7 @@ public interface ServerFactory {
                         final ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler,
                         final StateHandler stateHandler,
                         final WorkspacesHandler workspacesHandler,
+                        final ConfigInjector configInjector,
                         final WebBackendConnectionsHandler webBackendConnectionsHandler,
                         final WebBackendGeographiesHandler webBackendGeographiesHandler,
                         final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler);
@@ -94,6 +96,7 @@ public interface ServerFactory {
                                  final ConnectorBuilderProjectsHandler connectorBuilderProjectsHandler,
                                  final StateHandler stateHandler,
                                  final WorkspacesHandler workspacesHandler,
+                                 final ConfigInjector configInjector,
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
