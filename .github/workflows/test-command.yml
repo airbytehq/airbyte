@@ -58,7 +58,6 @@ jobs:
     timeout-minutes: 240
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
-    environment: more-secrets
     steps:
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
