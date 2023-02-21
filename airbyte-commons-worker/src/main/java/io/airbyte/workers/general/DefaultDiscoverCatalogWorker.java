@@ -4,25 +4,16 @@
 
 package io.airbyte.workers.general;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTOR_VERSION_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_ID_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaWriteRequestBody;
-import io.airbyte.commons.converters.CatalogClientConverters;
-import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -30,12 +21,13 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.CatalogClientConverters;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,10 +62,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     this(airbyteApiClient, integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
-    ApmTraceUtils.addTagsToTrace(generateTraceTags(discoverSchemaInput, jobRoot));
     try {
       final JsonNode inputConfig = discoverSchemaInput.getConnectionConfiguration();
       process = integrationLauncher.discover(
@@ -120,10 +110,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       }
       return jobOutput;
     } catch (final WorkerException e) {
-      ApmTraceUtils.addExceptionToTrace(e);
       throw e;
     } catch (final Exception e) {
-      ApmTraceUtils.addExceptionToTrace(e);
       throw new WorkerException("Error while discovering schema", e);
     }
   }
@@ -141,24 +129,6 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
             discoverSchemaInput.getConfigHash());
   }
 
-  private Map<String, Object> generateTraceTags(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) {
-    final Map<String, Object> tags = new HashMap<>();
-
-    tags.put(JOB_ROOT_KEY, jobRoot);
-
-    if (discoverSchemaInput != null) {
-      if (discoverSchemaInput.getSourceId() != null) {
-        tags.put(SOURCE_ID_KEY, discoverSchemaInput.getSourceId());
-      }
-      if (discoverSchemaInput.getConnectorVersion() != null) {
-        tags.put(CONNECTOR_VERSION_KEY, discoverSchemaInput.getConnectorVersion());
-      }
-    }
-
-    return tags;
-  }
-
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);
