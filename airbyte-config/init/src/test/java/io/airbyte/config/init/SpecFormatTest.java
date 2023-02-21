@@ -21,7 +21,7 @@ class SpecFormatTest {
 
   @Test
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
-    final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+    final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider();
 
     final List<JsonNode> sourceSpecs = definitionsProvider.getSourceDefinitions()
         .stream()
