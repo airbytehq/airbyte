@@ -23,6 +23,11 @@ jobs:
         with:
           base_branch: 'master'
           head_branch: ${{ steps.comment-branch.outputs.head_ref }}
+      - id: update-branch-with-master
+        if: steps.branch-up-to-date.outputs.branch_up_to_date != 'true'
+        run: |
+          git merge -s ours master
+          git push origin ${{ steps.comment-branch.outputs.head_ref }}
 
   dispatch_command_to_platform:
     needs: check
