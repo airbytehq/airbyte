@@ -41,7 +41,7 @@ for directory in $OUTPUT_DIR/*; do
   SOURCE_NAME="$(basename $directory)"
   CONNECTOR_OUTPUT_LOC="$OUTPUT_DIR/$SOURCE_NAME/$SOURCE_NAME"
   if [ "$(cat $CONNECTOR_OUTPUT_LOC.exit-code)" = 0 ]; then
-    echo "$SOURCE_NAME: ok"
+    echo "$SOURCE_NAME: CATs ran successfully!"
   fi
 done
 
