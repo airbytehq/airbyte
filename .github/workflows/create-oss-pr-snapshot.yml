@@ -33,7 +33,6 @@ jobs:
 
   dispatch_command_to_platform:
     needs: check
-    if: needs.check.outputs.branch_up_to_date == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Create a snapshot of an OSS PR to Cloud
