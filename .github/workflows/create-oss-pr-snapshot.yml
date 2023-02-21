@@ -28,7 +28,7 @@ jobs:
         run: |
           git config --global user.email "octavia-bot@airbyte.io"
           git config --global user.name "octavia-squidington-iii"
-          git merge -s ours origin/master
+          git merge -s ort -X ours origin/master
           git push origin ${{ steps.comment-branch.outputs.head_ref }}
 
   dispatch_command_to_platform:
