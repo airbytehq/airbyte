@@ -13,7 +13,7 @@ DEFAULT_SEPARATOR = "_"
 
 def name_conversion(text):
     """
-    https://fivetran.com/docs/getting-started/core-concepts#tableandcolumnnamingruleset
+    convert name using a set of rules, for example: '1MyName' -> '_1_my_name'
     """
     text = unidecode.unidecode(text)
 
