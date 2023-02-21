@@ -7,7 +7,7 @@ on:
 jobs:
   check:
     if: startsWith(github.head_ref, 'main') != true
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     outputs:
       pull_request_branch: ${{ steps.comment-branch.outputs.head_ref }}
       branch_up_to_date: ${{ steps.branch-up-to-date.outputs.up_to_date }}
