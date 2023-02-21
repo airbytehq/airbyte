@@ -13,6 +13,7 @@ data
 .vscode
 **/gmon.out
 static_checker_reports/
+env
 
 # Logs
 acceptance_tests_logs/
