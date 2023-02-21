@@ -60,6 +60,7 @@ class PlandayStream(HttpStream, ABC):
     """
 
     url_base = "https://openapi.planday.com/"
+    primary_key = "id"
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=Oauth2Authenticator(token_refresh_endpoint="https://id.planday.com/connect/token",
@@ -72,7 +73,7 @@ class PlandayStream(HttpStream, ABC):
         self.uri_params = {
             "offset": 0,
             "limit": 50,
-            "from": self.sync_from if self.use_lookback else self.get_today_string(delta=self.loockback_window),
+            "from": self.sync_from if not self.use_lookback else self.get_today_string(delta=self.loockback_window),
         }
 
     @staticmethod
@@ -127,7 +128,12 @@ class PlandayStream(HttpStream, ABC):
                     params.update({key: stream_slice[key]})
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self,
+                       response: requests.Response,
+                       *,
+                       stream_state: Mapping[str, Any],
+                       stream_slice: Mapping[str, Any] = None,
+                       next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
         data = response.json().get("data", [])
         print(response.url)
         print(response.json())
@@ -191,7 +197,7 @@ class IncrementalPlandayStream(PlandayStream, ABC):
 
         return start_point
 
-    def chunk_dates(self, start_date_ts: datetime.date) -> Iterable[Tuple[datetime.date, Union[datetime.date, None]]]:
+    def chunk_dates(self, start_date_ts: datetime.date, stop_at_today: bool = True) -> Iterable[Tuple[datetime.date, Union[datetime.date, None]]]:
         today = self.get_today_date()
         step = datetime.timedelta(days=self.slice_range)
         after_ts = start_date_ts
@@ -199,11 +205,43 @@ class IncrementalPlandayStream(PlandayStream, ABC):
             before_ts = min(today, after_ts + step)
             yield after_ts, before_ts
             after_ts = before_ts + datetime.timedelta(days=1)
-        yield after_ts, None
+        if not stop_at_today:
+            yield after_ts, None
+
+
+class IncrementalSubPlandayStream(IncrementalPlandayStream, ABC):
+
+    def __init__(self, parent: HttpSubStream, config: Mapping[str, Any]):
+        super().__init__(config)
+        self.parent = parent
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+
+        # iterate over all parent stream_slices
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            # iterate over all parent records with current stream_slice
+            start_ts = self.get_start_timestamp(stream_state)
+            print(f"Start state: {stream_state}")
+            for record in parent_records:
+                for start, end in self.chunk_dates(start_ts, stop_at_today=True):
+                    yield {"parent": record, "from": start, "to": end}
 
 
 class Departments(PlandayStream):
     primary_key = "id"
+
+    @property
+    def use_cache(self) -> bool:
+        return True
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -235,9 +273,10 @@ class EmployeeGroups(PlandayStream):
         return "hr/v1/employeegroups"
 
 
-class TimeAndCosts(HttpSubStream, PlandayStream):
+class TimeAndCosts(IncrementalSubPlandayStream):
 
-    primary_key = "id"
+    primary_key = "shiftId"
+    cursor_field = "from"
 
     def __init__(self, parent: Departments, config: Mapping[str, Any]):
         super().__init__(parent=parent, config=config)
@@ -247,13 +286,17 @@ class TimeAndCosts(HttpSubStream, PlandayStream):
     ) -> str:
         return f"scheduling/v1/timeandcost/{stream_slice['parent']['id']}"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {
-            "from": self.uri_params.get("from"),
-            "to": self.get_today_string(),
-        }
+    def parse_response(self,
+                       response: requests.Response,
+                       *,
+                       stream_state: Mapping[str, Any],
+                       stream_slice: Mapping[str, Any] = None,
+                       next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
+        data = response.json().get("data", {})
+        costs = data.get("costs", [])
+        print(response.url)
+        print(response.json())
+        yield from [{**cost, "departmentId": stream_slice['parent']['id']} for cost in costs]
 
 
 class EmployeeDetails(HttpSubStream, PlandayStream):
@@ -300,22 +343,24 @@ class ShiftTypes(PlandayStream):
 class SourcePlanday(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
+        Check if connection works.
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        return True, None
+        try:
+            employees = Employees(config)
+            records = employees.read_records(sync_mode=SyncMode.full_refresh)
+            next(records)
+            return True, None
+        except requests.exceptions.RequestException as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
-        TODO: Replace the streams below with your own streams.
-
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         employees = Employees(config)
-        return [Departments(config), employees, EmployeeGroups(config), TimeAndCosts(parent=Departments(config), config=config), Shifts(config), ShiftTypes(config), EmployeeDetails(parent=Employees(config), config=config)]
+        departments = Departments(config)
+        return [departments, employees, EmployeeGroups(config), TimeAndCosts(parent=departments, config=config), Shifts(config), ShiftTypes(config), EmployeeDetails(parent=employees, config=config)]

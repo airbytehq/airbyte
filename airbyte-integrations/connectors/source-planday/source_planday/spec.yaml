@@ -12,12 +12,17 @@ connectionSpecification:
     client_id:
       type: string
       description: Planday client id
+      airbyte_secret: true
     refresh_token:
       type: string
       description: Planday refresh token
+      airbyte_secret: true
     sync_from:
       type: string
       description: Original date to sync [%Y-%m-%d]
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - "%Y-%m-%d"
     loockback_window:
       type: integer
       description: If set to a number, sync_from is irrelevant and data from today()-loocback_window days will be fetched.
