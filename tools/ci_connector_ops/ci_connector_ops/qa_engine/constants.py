@@ -11,6 +11,13 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "8be1cf83-fde1-477f-a4ad-318d23c9f3c6",  # Local CSV
     "a625d593-bba5-4a1c-a53d-2d246268a816",  # Local JSON
     "b76be0a6-27dc-4560-95f6-2623da0bd7b6",  # Local SQL Lite
+    "2300fdcf-a532-419f-9f24-a014336e7966",  # destination-yugabytedb, no strict-encrypt variant
+    "7cf88806-25f5-4e1a-b422-b2fa9e1b0090",  # source-elasticsearch, no strict-encrypt variant
+    "0dad1a35-ccf8-4d03-b73e-6788c00b13ae",  # source-tidb, no strict-encrypt variant
+    "d53f9084-fa6b-4a5a-976c-5b8392f4ad8a",  # source-e2e-testing, a cloud variant already exists
+    "f3802bc4-5406-4752-9e8d-01e504ca8194",  # destination-mqtt, no strict-encrypt variant
+    "825c5ee3-ed9a-4dd1-a2b6-79ed722f7b13",  # destination-redpanda, no strict-encrypt variant
+    "58e6f9da-904e-11ed-a1eb-0242ac120002",  # destination-teradata, no strict-encrypt variant
 ]
 
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
