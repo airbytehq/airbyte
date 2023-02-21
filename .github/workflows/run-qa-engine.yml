@@ -28,5 +28,4 @@ jobs:
         env:
           LOGLEVEL: INFO
           GITHUB_API_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-        #run: run-qa-engine --create-prs
-        run: run-qa-engine
+        run: run-qa-engine --create-prs
