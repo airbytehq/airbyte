@@ -185,7 +185,6 @@ class IncrementalAssembledStream(AssembledStream, ABC):
             logger.info(f"Syncing {days} for stream {self.name}")
             start_ts = current_date - pendulum.duration(days=days)
 
-        # for channel in self._channels:
         for period in chunk_date_range(start_date=start_ts, end_date=current_time):
             period_unix = {"start_time": period.start.int_timestamp, "end_time": period.end.int_timestamp}
             if self._channels:
@@ -445,8 +444,12 @@ class SourceAssembled(AbstractSource):
         kwargs = {
             "authenticator": auth,
             "default_start_date": default_start_date,
-            "channels": forecast_channels,
             "history_days": history_days,
+        }
+
+        forecasts_kwargs = {
+            **kwargs,
+            "channels": forecast_channels,
         }
 
         report_kwargs = {
@@ -468,7 +471,7 @@ class SourceAssembled(AbstractSource):
             Activities(**kwargs),
             AgentStates(**kwargs),
             EventChanges(**kwargs),
-            Forecasts(**kwargs),
+            Forecasts(**forecasts_kwargs),
             Requirements(**kwargs),
             AdherenceReport(authenticator=auth, parent=adherence_report_requests),
             AgentTicketStatsReport(authenticator=auth, parent=agent_ticket_stats_report_requests),
