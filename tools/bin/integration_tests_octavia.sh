@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-
+. run-ab-platform.sh -d # download the platform docker files necessary to run docker compose
 . tools/lib/lib.sh
 
 assert_root
