@@ -52,6 +52,13 @@
         "default": 5,
         "examples": [5]
       },
+      "azure_blob_storage_spill_size": {
+        "title": "Azure Blob Storage file spill size",
+        "type": "integer",
+        "description": "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable",
+        "default": 500,
+        "examples": [500]
+      },
       "format": {
         "title": "Output Format",
         "type": "object",
