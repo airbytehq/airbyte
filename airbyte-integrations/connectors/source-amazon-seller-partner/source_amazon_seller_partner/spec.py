@@ -13,7 +13,7 @@ class AmazonSellerPartnerConfig(BaseModel):
         schema_extra = {"additionalProperties": True}
 
     app_id: str = Field(
-        None,
+        default=None,
         description="Your Amazon App ID",
         title="App Id",
         airbyte_secret=True,
@@ -47,6 +47,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     aws_access_key: str = Field(
+        default=None,
         description="Specifies the AWS access key used as part of the credentials to authenticate the user.",
         title="AWS Access Key",
         airbyte_secret=True,
@@ -54,6 +55,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     aws_secret_key: str = Field(
+        default=None,
         description="Specifies the AWS secret key used as part of the credentials to authenticate the user.",
         title="AWS Secret Access Key",
         airbyte_secret=True,
@@ -61,6 +63,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     role_arn: str = Field(
+        default=None,
         description="Specifies the Amazon Resource Name (ARN) of an IAM role that you want to use to perform operations requested using this profile. (Needs permission to 'Assume Role' STS).",
         title="Role ARN",
         airbyte_secret=True,
@@ -76,7 +79,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     replication_end_date: str = Field(
-        None,
+        default=None,
         description="UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated.",
         title="End Date",
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$",
@@ -85,20 +88,20 @@ class AmazonSellerPartnerConfig(BaseModel):
     )
 
     period_in_days: int = Field(
-        90,
+        default=90,
         le=90,
         examples=["1", "10", "30", "60", "90"],
         description="Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
         order=10,
     )
     report_options: str = Field(
-        None,
+        default=None,
         description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
         examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
         order=11,
     )
     max_wait_seconds: int = Field(
-        500,
+        default=500,
         title="Max wait time for reports (in seconds)",
         description="Sometimes report can take up to 30 minutes to generate. This will set the limit for how long "
         "to wait for a successful report.",
