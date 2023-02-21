@@ -394,7 +394,7 @@ def test_stream_slices(
 
 
 @pytest.mark.parametrize(
-    "test_name, previous_cursor, stream_slice, last_record, expected_state, cursor_format",
+    "test_name, previous_cursor, stream_slice, last_record, expected_state, cursor_datetime_format",
     [
         ("test_update_cursor_no_state_no_record", None, {}, None, {}, None),
         (
@@ -447,14 +447,14 @@ def test_stream_slices(
         ),
     ],
 )
-def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, expected_state, cursor_format):
+def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, expected_state, cursor_datetime_format):
     slicer = DatetimeBasedCursor(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
         end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
         step="P1D",
         cursor_field=InterpolatedString(string=cursor_field, parameters={}),
         datetime_format=datetime_format,
-        cursor_format=cursor_format,
+        cursor_datetime_format=cursor_datetime_format,
         cursor_granularity=cursor_granularity,
         lookback_window=InterpolatedString(string="0d", parameters={}),
         config=config,
