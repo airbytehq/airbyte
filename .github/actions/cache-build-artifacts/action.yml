@@ -31,6 +31,15 @@ runs:
         restore-keys: |
           ${{ inputs.cache-key }}-npm-${{ runner.os }}-
 
+    - name: pnpm Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.local/share/pnpm/store
+        key: ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ inputs.cache-key }}-pnpm-${{ runner.os }}-
+
     # this intentionally does not use restore-keys so we don't mess with gradle caching
     - name: Gradle and Python Caching
       uses: actions/cache@v3
