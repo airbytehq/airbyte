@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from requests.auth import AuthBase
 
-from .streams import Campaigns, EmailActivity, Lists, Reports
+from .streams import Campaigns, EmailActivity, Lists, Automations
 
 
 class MailChimpAuthenticator:
@@ -44,7 +44,10 @@ class MailChimpAuthenticator:
         elif auth_type == "oauth2.0":
             access_token = authorization["access_token"]
             auth = TokenAuthenticator(token=access_token, auth_method="Bearer")
-            auth.data_center = self.get_server_prefix(access_token)
+            if authorization.get("server_prefix"):
+                auth.data_center = authorization.get("server_prefix")
+            else:
+                auth.data_center = self.get_server_prefix(access_token)
 
         else:
             raise Exception(f"Invalid auth type: {auth_type}")
@@ -67,6 +70,7 @@ class SourceMailchimp(AbstractSource):
         return [
             Lists(authenticator=authenticator),
             Campaigns(authenticator=authenticator),
+            Automations(authenticator=authenticator),
             EmailActivity(authenticator=authenticator, campaign_id=campaign_id),
             Reports(authenticator=authenticator),
         ]

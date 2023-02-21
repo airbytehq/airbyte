@@ -38,6 +38,12 @@
                 "type": "string",
                 "description": "An access token generated using the above client ID and secret.",
                 "airbyte_secret": true
+              },
+              "server_prefix": {
+                "title": "server_prefix",
+                "type": "string",
+                "description": "Server prefix is attached to beginning of every endpoint ping.",
+                "airbyte_secret": true
               }
             }
           },
