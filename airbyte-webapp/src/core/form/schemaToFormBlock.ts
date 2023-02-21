@@ -119,6 +119,15 @@ export const jsonSchemaToFormBlock = (
     };
   }
 
+  const type = (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null";
+  const itemType =
+    type === "array" &&
+    jsonSchema.items &&
+    !Array.isArray(jsonSchema.items) &&
+    typeof jsonSchema.items === "object" &&
+    !Array.isArray(jsonSchema.items.type) &&
+    jsonSchema.items.type;
+
   return {
     ...pickDefaultFields(jsonSchema),
     _type: "formItem",
@@ -128,7 +137,8 @@ export const jsonSchemaToFormBlock = (
     isSecret: !!jsonSchema.airbyte_secret,
     multiline: !!jsonSchema.multiline,
     format: jsonSchema.format,
-    type: (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null",
+    type,
+    itemType: itemType || undefined,
   };
 };
 

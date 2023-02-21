@@ -1,13 +1,18 @@
+import classNames from "classnames";
 import uniqueId from "lodash/uniqueId";
-import { KeyboardEventHandler, useMemo, useState } from "react";
-import { ActionMeta, GroupBase, MultiValue, OnChangeValue, StylesConfig } from "react-select";
+import { ComponentType, KeyboardEventHandler, useMemo, useState } from "react";
+import { ActionMeta, GroupBase, MultiValue, OnChangeValue, StylesConfig, components, InputProps } from "react-select";
 import CreatableSelect from "react-select/creatable";
 
 import styles from "./TagInput.module.scss";
 
-const components = {
+const overwrittenComponents = {
   DropdownIndicator: null,
 };
+
+const NumberInput: ComponentType<InputProps<Tag, true, GroupBase<Tag>>> = (
+  props: InputProps<Tag, true, GroupBase<Tag>>
+) => <components.Input {...props} type="number" className={classNames(props.className, styles.hideArrowButtons)} />;
 
 const customStyles: StylesConfig<Tag, true, GroupBase<Tag>> = {
   multiValue: (provided) => ({
@@ -58,6 +63,7 @@ interface Tag {
 interface TagInputProps {
   name: string;
   fieldValue: string[];
+  itemType?: string;
   onChange: (value: string[]) => void;
   error?: boolean;
   disabled?: boolean;
@@ -73,7 +79,7 @@ const generateStringFromTag = (tag: Tag): string => tag.label;
 
 const delimiters = [",", ";"];
 
-export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id, error }) => {
+export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, disabled, id, error, itemType }) => {
   const tags = useMemo(() => fieldValue.map(generateTagFromString), [fieldValue]);
 
   // input value is a tag draft
@@ -123,7 +129,8 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     switch (event.key) {
       case "Enter":
       case "Tab":
-        inputValue.trim().length >= 1 && onChange([...fieldValue, inputValue.trim()]);
+        const normalizedInput = inputValue.trim();
+        normalizedInput.length >= 1 && onChange([...fieldValue, normalizedInput]);
 
         event.preventDefault();
         setInputValue("");
@@ -135,8 +142,9 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
    * This needs to be implemented outside of the onBlur prop of react-select because it's not default behavior.
    */
   const onBlurControl = () => {
-    if (inputValue) {
-      onChange([...fieldValue, inputValue]);
+    const normalizedInput = inputValue.trim();
+    if (normalizedInput) {
+      onChange([...fieldValue, normalizedInput]);
       setInputValue("");
     }
   };
@@ -146,7 +154,11 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
       <CreatableSelect
         inputId={id}
         name={name}
-        components={components}
+        components={
+          itemType === "number" || itemType === "integer"
+            ? { ...overwrittenComponents, Input: NumberInput }
+            : overwrittenComponents
+        }
         inputValue={inputValue}
         placeholder=""
         aria-invalid={Boolean(error)}

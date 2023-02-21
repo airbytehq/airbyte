@@ -12,3 +12,15 @@
   borderRadius: variables.$border-radius-md;
   paddingLeft: variables.$spacing-sm;
 }
+
+.hideArrowButtons {
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    appearance: textfield;
+  }
+}

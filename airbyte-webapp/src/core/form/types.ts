@@ -29,6 +29,10 @@ interface FormItem extends FormRelevantJSONSchema {
 export interface FormBaseItem extends FormItem {
   _type: "formItem";
   type: JSONSchema7TypeName;
+  /**
+   * In case type is array, itemType specifies the type of the items
+   * */
+  itemType?: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
 }
