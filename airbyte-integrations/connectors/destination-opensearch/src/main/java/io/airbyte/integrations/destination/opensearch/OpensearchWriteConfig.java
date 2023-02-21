@@ -8,7 +8,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.List;
 import java.util.Objects;
 
-public class OpensearchWriteConfig {
+public class OpenSearchWriteConfig {
 
 
   private static final StandardNameTransformer namingResolver = new StandardNameTransformer();
@@ -19,9 +19,9 @@ public class OpensearchWriteConfig {
   private List<List<String>> primaryKey;
   private boolean upsert;
 
-  public OpensearchWriteConfig() {}
+  public OpenSearchWriteConfig() {}
 
-  OpensearchWriteConfig(
+  OpenSearchWriteConfig(
                            String namespace,
                            String streamName,
                            DestinationSyncMode destinationSyncMode,
@@ -38,7 +38,7 @@ public class OpensearchWriteConfig {
     return namespace;
   }
 
-  public OpensearchWriteConfig setNamespace(String namespace) {
+  public OpenSearchWriteConfig setNamespace(String namespace) {
     this.namespace = namespace;
     return this;
   }
@@ -47,7 +47,7 @@ public class OpensearchWriteConfig {
     return streamName;
   }
 
-  public OpensearchWriteConfig setStreamName(String streamName) {
+  public OpenSearchWriteConfig setStreamName(String streamName) {
     this.streamName = streamName;
     return this;
   }
@@ -56,7 +56,7 @@ public class OpensearchWriteConfig {
     return syncMode;
   }
 
-  public OpensearchWriteConfig setSyncMode(DestinationSyncMode syncMode) {
+  public OpenSearchWriteConfig setSyncMode(DestinationSyncMode syncMode) {
     this.syncMode = syncMode;
     return this;
   }
@@ -65,7 +65,7 @@ public class OpensearchWriteConfig {
     return this.primaryKey;
   }
 
-  public OpensearchWriteConfig setPrimaryKey(List<List<String>> primaryKey) {
+  public OpenSearchWriteConfig setPrimaryKey(List<List<String>> primaryKey) {
     this.primaryKey = primaryKey;
     return this;
   }
@@ -78,7 +78,7 @@ public class OpensearchWriteConfig {
     return upsert;
   }
 
-  public OpensearchWriteConfig setUpsert(boolean upsert) {
+  public OpenSearchWriteConfig setUpsert(boolean upsert) {
     this.upsert = upsert;
     return this;
   }

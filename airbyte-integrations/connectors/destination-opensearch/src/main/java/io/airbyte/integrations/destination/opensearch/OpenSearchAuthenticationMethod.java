@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.opensearch;
 
-public enum OpensearchAuthenticationMethod {
+public enum OpenSearchAuthenticationMethod {
   none,
   secret,
   basic

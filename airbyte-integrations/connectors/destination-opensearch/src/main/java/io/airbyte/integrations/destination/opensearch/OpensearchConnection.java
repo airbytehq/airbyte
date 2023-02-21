@@ -42,13 +42,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * All communication with Opensearch should be done through this class.
+ * All communication with OpenSearch should be done through this class.
  */
-public class OpensearchConnection {
+public class OpenSearchConnection {
 
     // this is the max number of hits we can query without paging
     private static final int MAX_HITS = 10000;
-    private static Logger log = LoggerFactory.getLogger(OpensearchConnection.class);
+    private static Logger log = LoggerFactory.getLogger(OpenSearchConnection.class);
 
     private final OpenSearchClient client;
     private final RestClient restClient;
@@ -56,13 +56,13 @@ public class OpensearchConnection {
     private final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * Creates a new OpensearchConnection that can be used to read/write records to indices
+     * Creates a new OpenSearchConnection that can be used to read/write records to indices
      *
-     * @param config Configuration parameters for connecting to the Opensearch host
+     * @param config Configuration parameters for connecting to the OpenSearch host
      */
-    public OpensearchConnection(ConnectorConfiguration config) {
+    public OpenSearchConnection(ConnectorConfiguration config) {
         log.info(String.format(
-                "creating OpensearchConnection: %s", config.getEndpoint()));
+                "creating OpenSearchConnection: %s", config.getEndpoint()));
 
         // Create the low-level client
         httpHost = HttpHost.create(config.getEndpoint());
@@ -96,7 +96,7 @@ public class OpensearchConnection {
     }
 
     /**
-     * Configures the default headers for requests to the Opensearch server
+     * Configures the default headers for requests to the OpenSearch server
      *
      * @param config connection information
      * @return the default headers
@@ -121,27 +121,27 @@ public class OpensearchConnection {
     }
 
     /**
-     * Pings the Opensearch server for "up" check, and configuration validation
+     * Pings the OpenSearch server for "up" check, and configuration validation
      *
      * @return true if connection was successful
      */
     public boolean checkConnection() {
-        log.info("checking opensearch connection");
+        log.info("checking openSearch connection");
         try {
             final var info = client.info();
-            log.info("checked opensearch connection: {}, version: {}", info.clusterName(), info.version());
+            log.info("checked openSearch connection: {}, version: {}", info.clusterName(), info.version());
             return true;
         } catch (ApiException e) {
-            log.error("failed to ping opensearch", unwrappedApiException("failed write operation", e));
+            log.error("failed to ping openSearch", unwrappedApiException("failed write operation", e));
             return false;
         } catch (Exception e) {
-            log.error("unknown exception while pinging opensearch server", e);
+            log.error("unknown exception while pinging openSearch server", e);
             return false;
         }
     }
 
     /**
-     * Writes a single record to the Opensearch server
+     * Writes a single record to the OpenSearch server
      *
      * @param index The index to write the record to
      * @param id    The ID to give the new document
@@ -156,7 +156,7 @@ public class OpensearchConnection {
     }
 
     /**
-     * Bulk operation to append multiple documents to an Opensearch server
+     * Bulk operation to append multiple documents to an OpenSearch server
      *
      * @param index   The index to add the documents to
      * @param records The collection of records to create documents from
@@ -164,7 +164,7 @@ public class OpensearchConnection {
      * @throws IOException if there is server connection problem, or a non-successful operation on the
      *                     server
      */
-    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpensearchWriteConfig config) throws IOException {
+    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpenSearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder();
 
 
@@ -186,7 +186,7 @@ public class OpensearchConnection {
         }
     }
 
-    private String extractPrimaryKey(AirbyteRecordMessage doc, OpensearchWriteConfig config) {
+    private String extractPrimaryKey(AirbyteRecordMessage doc, OpenSearchWriteConfig config) {
         if (!config.hasPrimaryKey()) {
             return UUID.randomUUID().toString();
         }
@@ -222,7 +222,7 @@ public class OpensearchConnection {
     }
 
     /**
-     * Shutdown the connection to the Opensearch server
+     * Shutdown the connection to the OpenSearch server
      */
     public void close() throws IOException {
         this.restClient.close();
@@ -242,7 +242,7 @@ public class OpensearchConnection {
     }
 
     /**
-     * Creates an index on Opensearch if it's missing
+     * Creates an index on OpenSearch if it's missing
      *
      * @param index the index name to create
      */

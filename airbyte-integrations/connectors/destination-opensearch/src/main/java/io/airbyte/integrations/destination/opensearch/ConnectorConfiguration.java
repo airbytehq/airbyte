@@ -72,13 +72,13 @@ public class ConnectorConfiguration {
 
   static class AuthenticationMethod {
 
-    private OpensearchAuthenticationMethod method = OpensearchAuthenticationMethod.none;
+    private OpenSearchAuthenticationMethod method = OpenSearchAuthenticationMethod.none;
     private String username;
     private String password;
     private String apiKeyId;
     private String apiKeySecret;
 
-    public OpensearchAuthenticationMethod getMethod() {
+    public OpenSearchAuthenticationMethod getMethod() {
       return this.method;
     }
 
@@ -98,7 +98,7 @@ public class ConnectorConfiguration {
       return this.apiKeySecret;
     }
 
-    public void setMethod(OpensearchAuthenticationMethod method) {
+    public void setMethod(OpenSearchAuthenticationMethod method) {
       this.method = method;
     }
 
