@@ -252,9 +252,10 @@ module.exports = {
                     'connector-development/config-based/understanding-the-yaml-file/error-handling',  
                   ]
               },
+                'connector-development/config-based/understanding-the-yaml-file/incremental-syncs',
                 'connector-development/config-based/understanding-the-yaml-file/pagination',
+                'connector-development/config-based/understanding-the-yaml-file/partition-router',
                 'connector-development/config-based/understanding-the-yaml-file/record-selector',
-                'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
                 'connector-development/config-based/understanding-the-yaml-file/reference',
               ]
             },
@@ -317,7 +318,7 @@ module.exports = {
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
-        'contributing-to-airbyte/monorepo-python-development',
+        'contributing-to-airbyte/python-gradle-setup',
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',
@@ -382,9 +383,8 @@ module.exports = {
       id: "api-documentation",
     },
     {
-      type: 'link',
-      label: 'CLI documentation',
-      href: 'https://github.com/airbytehq/airbyte/blob/master/octavia-cli/README.md',
+      type: 'doc',
+      id: "cli-documentation",
     },
     {
       type: 'category',
@@ -425,6 +425,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/january_2023',
         'release_notes/december_2022',
         'release_notes/november_2022',
         'release_notes/october_2022',

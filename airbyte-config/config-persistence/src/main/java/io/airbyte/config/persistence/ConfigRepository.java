@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -56,7 +56,6 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
-import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
@@ -1460,14 +1459,6 @@ public class ConfigRepository {
    * metrics without exposing the underlying database connection.
    */
 
-  public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {
-    return database.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
-  }
-
-  public List<ReleaseStage> getJobIdToReleaseStages(final long jobId) throws IOException {
-    return database.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-  }
-
   private Condition includeTombstones(final Field<Boolean> tombstoneField, final boolean includeTombstones) {
     if (includeTombstones) {
       return DSL.trueCondition();
@@ -1540,6 +1531,14 @@ public class ConfigRepository {
     return database.query(ctx -> ctx.select(CONNECTION.GEOGRAPHY)
         .from(CONNECTION)
         .where(CONNECTION.ID.eq(connectionId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
+  }
+
+  public Geography getGeographyForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.select(WORKSPACE.GEOGRAPHY)
+        .from(WORKSPACE)
+        .where(WORKSPACE.ID.eq(workspaceId))
         .limit(1))
         .fetchOneInto(Geography.class);
   }

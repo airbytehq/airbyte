@@ -1,4 +1,4 @@
-name: Airbyte CI
+name: Airbyte Connectors & Octavia CI
 
 env:
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
@@ -16,8 +16,6 @@ on:
           - "true"
           - "false"
         required: false
-  schedule:
-    - cron: "0 */1 * * *"
   push:
     branches:
       - master
@@ -78,15 +76,10 @@ jobs:
               - 'octavia-cli/**'
             connectors:
               - 'airbyte-cdk/**'
-              - 'airbyte-protocol/**'
               - 'airbyte-integrations/**'
               - 'airbyte-commons-worker/**'
             db:
               - 'airbyte-db/**'
-            frontend:
-              - 'airbyte-api/src/main/openapi/config.yaml'
-              - 'airbyte-webapp/**'
-              - 'airbyte-webapp-e2e-tests/**'
 
   # Uncomment to debug.
   #  changes-output:
@@ -153,13 +146,6 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Build Platform Docker Images
-        uses: Wandalen/wretry.action@master
-        with:
-          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon assemble --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
@@ -1330,12 +1316,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-connectors-base
-      - frontend-build
       - octavia-cli-build
-      - platform-build
-      - kube-acceptance-test
-      # Todo: Kyryl turn this on.
-      # - helm-acceptance-test
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
@@ -1365,12 +1346,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-connectors-base
-      - frontend-build
       - octavia-cli-build
-      - platform-build
-      - kube-acceptance-test
-      # Todo: Kyryl turn this on.
-      # - helm-acceptance-test
     if: success()
     steps:
       - name: Get Previous Workflow Status
