@@ -64,8 +64,6 @@ def main():
     dependent_modules = list(set(get_dependent_modules(changed_modules, build_gradle_files)))
 
     # Create comment body to post on pull request
-    connector_names = [d for d in os.listdir(CONNECTORS_PATH) if "." not in d]  # don't include files ('.' proxy for extensions)
-    dependent_modules = connector_names
     if dependent_modules:
         write_report(dependent_modules)
 
