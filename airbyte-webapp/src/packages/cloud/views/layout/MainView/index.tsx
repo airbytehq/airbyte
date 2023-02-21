@@ -1,3 +1,3 @@
-import MainView from "./MainView";
+import CloudMainView from "./CloudMainView";
 
-export default MainView;
+export default CloudMainView;

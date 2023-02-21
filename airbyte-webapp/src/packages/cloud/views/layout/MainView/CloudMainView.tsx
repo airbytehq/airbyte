@@ -18,7 +18,7 @@ import { InsufficientPermissionsErrorBoundary } from "./InsufficientPermissionsE
 import styles from "./MainView.module.scss";
 import { WorkspaceStatusBanner } from "./WorkspaceStatusBanner";
 
-const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
+const CloudMainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   useIntercom();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
@@ -55,4 +55,4 @@ const MainView: React.FC<React.PropsWithChildren<unknown>> = (props) => {
   );
 };
 
-export default MainView;
+export default CloudMainView;
