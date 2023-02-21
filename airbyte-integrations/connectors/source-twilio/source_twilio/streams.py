@@ -482,6 +482,7 @@ class UsageRecords(IncrementalTwilioStream, UsageNestedStream):
     path_name = "Records"
     primary_key = [["account_sid"], ["category"]]
     changeable_fields = ["as_of"]
+    page_size = 100
 
 
 class UsageTriggers(UsageNestedStream):
