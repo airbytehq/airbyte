@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
-import static io.airbyte.integrations.destination.s3.S3DestinationConstants.*;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.COMPRESSION_ARG_NAME;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.DEFAULT_COMPRESSION_TYPE;
+import static io.airbyte.integrations.destination.s3.S3DestinationConstants.FLATTENING_ARG_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3Format;
