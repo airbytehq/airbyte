@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.02.21
+1. Change sidebar settings style as same as other buttons(files:sidebar.tsx)
 #### 2023.01.31
 1. change wording in Alpha connectors (file: link.ts&en.json&WarningMessage.tsx)
 #### 2023.01.13
