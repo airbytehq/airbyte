@@ -188,7 +188,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   void testCheckReplicationAccessSuperUserPrivilege() throws Exception {
     createCleanUser();
-    JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    final JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
     grantUserPrivilege(cleanUserName, "SUPERUSER");
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
@@ -197,7 +197,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   void testCheckReplicationAccessReplicationPrivilege() throws Exception {
     createCleanUser();
-    JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    final JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
     grantUserPrivilege(cleanUserName, "REPLICATION");
     final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());

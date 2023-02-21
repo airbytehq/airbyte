@@ -43,6 +43,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.PostgresDebeziumConnection;
 import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -85,6 +86,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.postgresql.core.BaseConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -318,21 +320,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
 
-      // Verify that the db user has required privilege to perform replication. The database user has to be superuser or to have replication access.
+      // Verify that a CDC connection can be created
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
-
-        final List<JsonNode> userPrivileges = database.queryJsons(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("SELECT userepl or usesuper AS has_access FROM pg_user WHERE usename = ?");
-          ps.setString(1, userName);
-          LOGGER.info("Verifying required privileges for user: {}", userName);
-          return ps;
-        }, sourceOperations::rowToJson);
-
-        if (!userPrivileges.get(0).get("has_access").asBoolean()) {
+        try {
+          PostgresDebeziumConnection.createConnection(config);
+        } catch (IllegalStateException exception){
           throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
         }
-
       });
     }
 
