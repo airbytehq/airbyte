@@ -11,8 +11,10 @@ export type PlanItemType = typeof PlanItemTypeEnum[keyof typeof PlanItemTypeEnum
 export interface PlanItem {
   planItemid: string;
   planItemType: PlanItemType;
+  planItemTypeLang: string;
   planItemName: string;
   planItemScope: string | boolean;
+  planItemScopeLang: string;
 }
 
 export interface PlanDetail {

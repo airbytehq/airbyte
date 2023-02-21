@@ -521,6 +521,18 @@
   "subscription.cancel.successfull": "Your plan is now cancelled. You can still use Daspire until the end of the billing cycle.",
   "subscription.plan.update": "Congrats! Your change was successful!",
 
+  "subscription.cancelSubscriptionModal.title": "Cancel subscription?",
+  "subscription.cancelSubscriptionModal.desc1": "Your current plan expires on",
+  "subscription.cancelSubscriptionModal.desc2": "You will still be able to use your current plan until it expires.",
+  "subscription.cancelSubscriptionModal.desc3": "Are you sure you want to cancel your subscription?",
+
+  "payment.planName": "{planName} Plan",
+  "payment.planDeductionTime": "month",
+  "payment.paymentToReturn": "0 (The difference you have paid will be deducted from next month’s billing)",
+  "payment.amount": "${amount} million",
+  "payment.nextBillingDate": "Next billing date",
+  "payment.cancelTime": "You can cancel at any time",
+
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
   "connector.request": "Request",

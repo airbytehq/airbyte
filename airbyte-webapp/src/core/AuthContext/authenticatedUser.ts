@@ -48,6 +48,21 @@ class AuthUser {
       workspaceId: user?.workspaceId,
     };
   };
+
+  logoutUser = (user: IAuthUser): IAuthUser => {
+    return {
+      account: "",
+      company: "",
+      expiresTime: 0,
+      firstName: "",
+      lang: user?.lang,
+      lastName: "",
+      role: 0,
+      status: 0,
+      token: "",
+      workspaceId: "",
+    };
+  };
 }
 
 export const MyAuthUser = new AuthUser();

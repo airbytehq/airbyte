@@ -118,7 +118,7 @@ const AllConnectionsPage: React.FC = () => {
       {connections.length ? (
         <MainPageWithScroll
           withPadding
-          headTitle={<HeadTitle titles={[{ title: "Connections" }]} />}
+          headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
             <PageTitle
               title=""

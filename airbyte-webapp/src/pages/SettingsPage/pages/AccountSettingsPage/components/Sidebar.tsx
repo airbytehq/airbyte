@@ -57,6 +57,7 @@ const SidebarItemIcon = (path: string, color: string) => {
       return <LockIcon color={color} />;
 
     default:
+      return null;
   }
 };
 

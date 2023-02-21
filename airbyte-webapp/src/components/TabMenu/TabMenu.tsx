@@ -49,7 +49,6 @@ const TabName = styled.div`
 `;
 
 export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect }) => {
-  console.log(activeItem?.split("/")[2]);
   return (
     <Content>
       {data.map((tabItem, index) => (

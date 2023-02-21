@@ -5,6 +5,10 @@ import styled from "styled-components";
 import { DropDown, LoadingButton, DropDownRow } from "components";
 import { Separator } from "components/Separator";
 
+import { useUser } from "core/AuthContext";
+import { LOCALES } from "locales";
+import { useUserAsyncAction } from "services/users/UsersService";
+
 const PageContainer = styled.div`
   width: 100%;
   display: flex;
@@ -27,14 +31,33 @@ const ChangeBtnContainer = styled.div`
   justify-content: flex-end;
 `;
 
-const LanguagePage: React.FC = () => {
-  const languages: DropDownRow.IDataItem[] = [
-    { label: "English", value: "English" },
-    { label: "Chinese Simplified - 简体中文", value: "Chinese Simplified - 简体中文" },
-  ];
+export const languages: DropDownRow.IDataItem[] = [
+  { label: "English", value: LOCALES.ENGLISH },
+  { label: "Chinese Simplified - 简体中文", value: LOCALES.CHINESE_SIMPLIFIED },
+];
 
-  const [language, setLanguage] = useState<string>(languages[0].value);
+const LanguagePage: React.FC = () => {
+  const { user, updateUserLang } = useUser();
+  const { onUpdateLang } = useUserAsyncAction();
+
+  const [language, setLanguage] = useState<string>(user.lang);
   const [isUpdated, setIsUpdated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const updateLang = () => {
+    setIsLoading(true);
+    onUpdateLang(language)
+      .then(() => {
+        setIsUpdated(false);
+        setIsLoading(false);
+        updateUserLang?.(language);
+      })
+      .catch((err: any) => {
+        console.log(err);
+        setIsUpdated(false);
+        setIsLoading(false);
+      });
+  };
 
   return (
     <PageContainer>
@@ -57,7 +80,7 @@ const LanguagePage: React.FC = () => {
       />
       <Separator height="60px" />
       <ChangeBtnContainer>
-        <LoadingButton size="lg" disabled={!isUpdated}>
+        <LoadingButton size="lg" disabled={!isUpdated} isLoading={isLoading} onClick={updateLang}>
           <FormattedMessage id="settings.language.btnText" />
         </LoadingButton>
       </ChangeBtnContainer>
