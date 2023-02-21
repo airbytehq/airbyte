@@ -251,9 +251,10 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
-    final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
+    /*final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
     final LocalDate localDate = timestamptz.toLocalDate();
-    node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+    node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));*/
+    node.put(columnName, resultSet.getString(index)); // TEMP
   }
 
   /**

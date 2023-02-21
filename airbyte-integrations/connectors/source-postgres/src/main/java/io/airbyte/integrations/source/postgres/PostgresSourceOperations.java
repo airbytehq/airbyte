@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.postgresql.geometric.PGbox;
 import org.postgresql.geometric.PGcircle;
 import org.postgresql.geometric.PGline;
@@ -154,6 +155,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
+//    LOGGER.info("*** schema {} table {}", resultSet.getMetaData().getSchemaName(colIndex), resultSet.getMetaData().getTableName(colIndex));
     final ColumnInfo columnInfo = getColumnInfo(colIndex, metadata, columnName);
     final String value = resultSet.getString(colIndex);
     if (value == null) {
@@ -574,9 +576,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final String tableName = metadata.getBaseTableName(colIndex);
     final String schemaName = metadata.getBaseSchemaName(colIndex);
     final String key = schemaName + tableName;
+    if (StringUtils.isBlank(key)) {
+      return new ColumnInfo(TIMESTAMPTZ, PostgresType.TIME_WITH_TIMEZONE); //TEMP
+    }
     if (!streamColumnInfo.containsKey(key)) {
       streamColumnInfo.clear();
       streamColumnInfo.put(key, new HashMap<>(metadata.getColumnCount()));
+      LOGGER.info("*** adding columnInfo {} key {}", colIndex, key);
     }
 
     final Map<String, ColumnInfo> stringColumnInfoMap = streamColumnInfo.get(key);
@@ -586,6 +592,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       final PostgresType columnType = safeGetJdbcType(metadata.getColumnType(colIndex), POSTGRES_TYPE_DICT);
       final ColumnInfo columnInfo = new ColumnInfo(metadata.getColumnTypeName(colIndex).toLowerCase(), columnType);
       stringColumnInfoMap.put(columnName, columnInfo);
+      LOGGER.info("*** adding columnInfo key/value {}/{}:({},{})", key, columnName, columnInfo.columnType, columnInfo.columnTypeName);
       return columnInfo;
     }
   }

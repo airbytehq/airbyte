@@ -23,6 +23,7 @@ import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -146,9 +147,19 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final String schemaName,
                                                                   final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    return queryTable(database, String.format("SELECT %s FROM %s",
-        enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+    final var modified = columnNames.stream()
+        .map(col -> {
+          final var quoted = getIdentifierWithQuoting(col, getQuoteString());
+          return col.contains("_at")
+//              ? "to_char(%s, 'yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSXXX') as %s".formatted(quoted, quoted)
+              ? "to_char(%s, 'YYYYMMDDHHMISSMSOF') as %s".formatted(quoted, quoted)
+              : quoted;
+        }).collect(Collectors.joining(","));
+    final var query = String.format("SELECT %s FROM %s",
+        /*enquoteIdentifierList(columnNames, getQuoteString())*/modified,
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
+    LOGGER.info("*** query: {}", query);
+    return queryTable(database, query);
   }
 
   /**

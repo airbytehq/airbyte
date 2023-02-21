@@ -4,6 +4,7 @@
 
 package io.airbyte.db.jdbc;
 
+import com.google.common.collect.Streams;
 import com.google.errorprone.annotations.MustBeClosed;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -12,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
@@ -19,6 +21,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
+import org.jooq.SQL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +93,38 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
   protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
                                          final CheckedFunction<ResultSet, T, SQLException> mapper,
                                          final JdbcStreamingQueryConfig streamingConfig) {
+    /*return Streams.stream(new Iterator<T>() {
+      @Override
+      public boolean hasNext() {
+        try {
+          return (!resultSet.isLast()*//* && ((resultSet.getRow() != 0) || resultSet.isBeforeFirst())*//*);
+        } catch (final SQLException e) {
+          streamException = e;
+          isStreamFailed = true;
+          return false;
+        }
+      }
+
+      @Override
+      public T next() {
+        try {
+          if (!resultSet.next()) {
+            resultSet.close();
+            return null;
+          }
+          final T dataRow = mapper.apply(resultSet);
+          streamingConfig.accept(resultSet, dataRow);
+          return dataRow;
+        } catch (final SQLException e) {
+          LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
+          streamException = e;
+          isStreamFailed = true;
+          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream
+          // will never close
+          return null;
+        }
+      }
+    });*/
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
 
       @Override
