@@ -36,6 +36,7 @@ def test_get_compression_type(config: Mapping[str, Any]):
     for codec, expected in tests.items():
         assert aws_handler._get_compression_type(codec) == expected
 
+
 def test_get_path(config: Mapping[str, Any]):
     conf = ConnectorConfig(**config)
     aws_handler = AwsHandler(conf, DestinationAwsDatalake())
