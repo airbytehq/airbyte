@@ -7,6 +7,8 @@ import json
 import socket
 from typing import Any, Generator, List, MutableMapping, Union
 
+from google.auth import exceptions as google_exceptions
+
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
@@ -62,6 +64,11 @@ class GoogleSheetsSource(Source):
             logger.error(f"Formatted error: {reason}")
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Error: {reason}"
+            )
+        except google_exceptions.GoogleAuthError as err:
+            return AirbyteConnectionStatus(
+                status=Status.FAILED,
+                message=f"Unable to connect with the provided credentials to spreadsheet. Authentication Error: {err}"
             )
 
         # Check for duplicate headers
