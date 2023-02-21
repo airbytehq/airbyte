@@ -50,7 +50,7 @@ class AvroParser(AbstractFileParser):
                 schema_dict[i["name"]] = [data_type_mapping[dtype] for dtype in data_type]
             # TODO: Figure out a better way to handle nested records. Currently a nested record is returned as a string
             elif isinstance(data_type, dict):
-                schema_dict[i["name"]] = "string"
+                schema_dict[i["name"]] = "object"
             elif data_type in data_type_mapping:
                 schema_dict[i["name"]] = data_type_mapping[data_type]
             else:

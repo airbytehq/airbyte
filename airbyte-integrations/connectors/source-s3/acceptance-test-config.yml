@@ -5,7 +5,7 @@ acceptance_tests:
     tests:
     - backward_compatibility_tests_config:
         # skip because allOf gets converted into enum
-        disable_for_version: 0.1.29
+        disable_for_version: 0.1.28
       spec_path: integration_tests/spec.json
 
   connection:
@@ -27,12 +27,14 @@ acceptance_tests:
 
   discovery:
     tests:
-    - config_path: secrets/config.json
-    - config_path: secrets/parquet_config.json
-    - config_path: secrets/avro_config.json
-    - config_path: secrets/jsonl_config.json
-    - config_path: secrets/jsonl_newlines_config.json
-    - config_path: integration_tests/config_minio.json
+      - config_path: secrets/config.json
+      - config_path: secrets/parquet_config.json
+      - config_path: secrets/avro_config.json
+        backward_compatibility_tests_config:
+          disable_for_version: 0.1.28
+      - config_path: secrets/jsonl_config.json
+      - config_path: secrets/jsonl_newlines_config.json
+      - config_path: integration_tests/config_minio.json
 
   basic_read:
     tests:
@@ -56,8 +58,8 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/jsonl_newlines.jsonl
       timeout_seconds: 1800
-#    - config_path: integration_tests/config_minio.json
-#      timeout_seconds: 1800
+    - config_path: integration_tests/config_minio.json
+      timeout_seconds: 1800
 
   full_refresh:
     tests:
