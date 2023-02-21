@@ -10,6 +10,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_OAUTH_PARAMETER;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTOR_BUILDER_PROJECT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
 
@@ -21,6 +22,7 @@ import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorCatalogWithUpdatedAt;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.AllowedHosts;
+import io.airbyte.config.ConnectorBuilderProject;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.FieldSelectionData;
@@ -273,6 +275,20 @@ public class DbConverter {
             : Jsons.deserialize(record.get(WORKSPACE_SERVICE_ACCOUNT.JSON_CREDENTIAL).data()))
         .withHmacKey(record.get(WORKSPACE_SERVICE_ACCOUNT.HMAC_KEY) == null ? null
             : Jsons.deserialize(record.get(WORKSPACE_SERVICE_ACCOUNT.HMAC_KEY).data()));
+  }
+
+  public static ConnectorBuilderProject buildConnectorBuilderProject(final Record record) {
+    return buildConnectorBuilderProjectWithoutManifestDraft(record)
+        .withManifestDraft(record.get(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT) == null ? null
+            : Jsons.deserialize(record.get(CONNECTOR_BUILDER_PROJECT.MANIFEST_DRAFT).data()));
+  }
+
+  public static ConnectorBuilderProject buildConnectorBuilderProjectWithoutManifestDraft(final Record record) {
+    return new ConnectorBuilderProject()
+        .withWorkspaceId(record.get(CONNECTOR_BUILDER_PROJECT.WORKSPACE_ID))
+        .withBuilderProjectId(record.get(CONNECTOR_BUILDER_PROJECT.ID))
+        .withName(record.get(CONNECTOR_BUILDER_PROJECT.NAME))
+        .withActorDefinitionId(record.get(CONNECTOR_BUILDER_PROJECT.ACTOR_DEFINITION_ID));
   }
 
 }

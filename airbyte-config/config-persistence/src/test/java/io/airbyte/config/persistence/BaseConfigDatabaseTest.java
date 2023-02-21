@@ -121,7 +121,8 @@ class BaseConfigDatabaseTest {
               state,
               stream_reset,
               workspace,
-              workspace_service_account
+              workspace_service_account,
+              connector_builder_project
             """));
   }
 

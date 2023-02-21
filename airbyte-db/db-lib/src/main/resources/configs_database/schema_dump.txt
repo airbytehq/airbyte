@@ -132,6 +132,17 @@ create table "public"."connection_operation"(
       "operation_id"
     )
 );
+create table "public"."connector_builder_project"(
+  "id" uuid not null,
+  "workspace_id" uuid not null,
+  "name" varchar(256) not null,
+  "manifest_draft" jsonb null,
+  "actor_definition_id" uuid null,
+  "created_at" timestamptz(35) not null default null,
+  "updated_at" timestamptz(35) not null default null,
+  constraint "connector_builder_project_pkey"
+    primary key ("id")
+);
 create table "public"."operation"(
   "id" uuid not null,
   "workspace_id" uuid not null,
@@ -291,6 +302,8 @@ create unique index "connection_operation_pkey" on "public"."connection_operatio
   "connection_id" asc, 
   "operation_id" asc
 );
+create unique index "connector_builder_project_pkey" on "public"."connector_builder_project"("id" asc);
+create index "connector_builder_project_workspace_idx" on "public"."connector_builder_project"("workspace_id" asc);
 create unique index "operation_pkey" on "public"."operation"("id" asc);
 create unique index "state__connection_id__stream_name__namespace__uq" on "public"."state"(
   "connection_id" asc, 
