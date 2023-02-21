@@ -9,7 +9,6 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-persistence:job-persistence')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation libs.lombok
