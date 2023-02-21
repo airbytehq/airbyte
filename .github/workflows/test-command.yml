@@ -58,7 +58,6 @@ jobs:
     timeout-minutes: 240
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
-    environment: more-secrets
     steps:
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
@@ -156,7 +155,7 @@ jobs:
         run: |
           run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
-        if: github.ref == 'refs/heads/master' && always()
+        if: github.event.inputs.gitref == 'master' && always()
         run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
