@@ -67,7 +67,10 @@ public class PostgresDebeziumConnection {
     });
   }
 
-  private static <T> T queryAndMap(final Connection conn, final String query, final StatementFactory statementFactory, final ResultSetMapper<T> mapper)
+  private static <T> T queryAndMap(final Connection conn,
+                                   final String query,
+                                   final StatementFactory statementFactory,
+                                   final ResultSetMapper<T> mapper)
       throws SQLException {
     Objects.requireNonNull(mapper, "Mapper must be provided");
     try (Statement statement = statementFactory.createStatement(conn)) {
