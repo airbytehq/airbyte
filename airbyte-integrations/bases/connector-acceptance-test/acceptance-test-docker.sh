@@ -5,6 +5,8 @@ set -e
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 source "$ROOT_DIR/airbyte-integrations/scripts/utils.sh"
 
+CONFIG_PATH="$(readlink_f acceptance-test-config.yml)"
+
 [ -n "$CONFIG_PATH" ] || die "Missing CONFIG_PATH"
 
 CONNECTOR_TAG_BASE="$(grep connector_image $CONFIG_PATH | head -n 1 | cut -d: -f2 | sed 's/^ *//')"
