@@ -42,7 +42,7 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation project(':airbyte-integrations:bases:base-java-s3')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
