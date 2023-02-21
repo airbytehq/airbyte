@@ -135,8 +135,6 @@ class PlandayStream(HttpStream, ABC):
                        stream_slice: Mapping[str, Any] = None,
                        next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
         data = response.json().get("data", [])
-        print(response.url)
-        print(response.json())
         yield from data if isinstance(data, list) else [data]
 
     def request_headers(
@@ -174,16 +172,12 @@ class IncrementalPlandayStream(PlandayStream, ABC):
         if isinstance(old_state_date, str):
             old_state_date = dateutil.parser.isoparse(old_state_date).date()
         latest_record_date = latest_record.get(self.cursor_field)
-        print("--updated--state")
-        print(latest_record)
-        print(current_stream_state)
         return {self.cursor_field: max(dateutil.parser.isoparse(latest_record_date).date(), old_state_date)}
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_ts = self.get_start_timestamp(stream_state)
-        print(f"Start state: {stream_state}")
         for start, end in self.chunk_dates(start_ts):
             yield {"from": start, "to": end}
 
@@ -230,7 +224,6 @@ class IncrementalSubPlandayStream(IncrementalPlandayStream, ABC):
 
             # iterate over all parent records with current stream_slice
             start_ts = self.get_start_timestamp(stream_state)
-            print(f"Start state: {stream_state}")
             for record in parent_records:
                 for start, end in self.chunk_dates(start_ts, stop_at_today=True):
                     yield {"parent": record, "from": start, "to": end}
@@ -294,8 +287,6 @@ class TimeAndCosts(IncrementalSubPlandayStream):
                        next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
         data = response.json().get("data", {})
         costs = data.get("costs", [])
-        print(response.url)
-        print(response.json())
         yield from [{**cost, "departmentId": stream_slice['parent']['id']} for cost in costs]
 
 
