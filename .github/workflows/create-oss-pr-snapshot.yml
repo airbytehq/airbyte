@@ -7,7 +7,7 @@ on:
 jobs:
   check:
     if: startsWith(github.head_ref, 'main') != true
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     outputs:
       pull_request_branch: ${{ steps.comment-branch.outputs.head_ref }}
       branch_up_to_date: ${{ steps.branch-up-to-date.outputs.up_to_date }}
@@ -23,10 +23,16 @@ jobs:
         with:
           base_branch: 'master'
           head_branch: ${{ steps.comment-branch.outputs.head_ref }}
+      - id: update-branch-with-master
+        if: steps.branch-up-to-date.outputs.branch_up_to_date != 'true'
+        run: |
+          git config --global user.email "octavia-bot@airbyte.io"
+          git config --global user.name "octavia-squidington-iii"
+          git merge -s ort -X ours origin/master
+          git push origin ${{ steps.comment-branch.outputs.head_ref }}
 
   dispatch_command_to_platform:
     needs: check
-    if: needs.check.outputs.branch_up_to_date == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Create a snapshot of an OSS PR to Cloud
@@ -41,7 +47,7 @@ jobs:
           static-args: |
             repository=${{ github.repository }}
             branch=${{ needs.check.outputs.pull_request_branch }}
-            pr_number=${{ github.event.issue_comment.issue.number }}
+            pr_number=${{ github.event.issue.number }}
           commands: |
             create-platform-pr
       - name: Publish comment with error message
