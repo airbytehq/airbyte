@@ -86,12 +86,9 @@ include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
 include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
-include ':airbyte-metrics:metrics-lib'
-include ':airbyte-oauth'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
-include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
 include ':airbyte-featureflag'
