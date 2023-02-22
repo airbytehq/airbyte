@@ -9,7 +9,7 @@ if ! test "$(tty)" == "not a tty"; then
 fi
 
 set -o xtrace
-PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+PREV_VERSION=$(grep -w VERSION gradle.properties | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)
 
 pip install bumpversion
