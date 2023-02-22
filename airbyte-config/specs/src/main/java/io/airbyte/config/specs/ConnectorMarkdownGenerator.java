@@ -96,7 +96,7 @@ public class ConnectorMarkdownGenerator {
             final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
             final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
             final String docLink = documentationUrl != "" ? "[link](" + documentationUrl + ")" : "missing";
-            final String id = definition.get(type.toLowerCase() + "DefinitionId").asText();
+            final String id = "<small>`" + definition.get(type.toLowerCase() + "DefinitionId").asText() + "`</small>";
 
             bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | " + id + " |");
         }
