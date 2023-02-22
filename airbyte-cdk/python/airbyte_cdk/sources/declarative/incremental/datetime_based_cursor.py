@@ -44,7 +44,7 @@ class DatetimeBasedCursor(StreamSlicer):
         partition_field_start (Optional[str]): partition start time field
         partition_field_end (Optional[str]): stream slice end time field
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for (ISO8601 duration)
-        cursor_datetime_format (str): datetime format of the cursor field in the data record if different from `datetime_format`.
+        cursor_datetime_format (str): the datetime format of the cursor field in the data record if different from `datetime_format`.
     """
 
     start_datetime: Union[MinMaxDatetime, str]
