@@ -133,9 +133,9 @@ public class S3StorageOperations extends BlobStorageOperations {
         exceptionsThrown.add(e);
       }
     }
+    LOGGER.info("Successfully loaded records to stage {} with {} tries", objectPath, exceptionsThrown.size());
     // Verifying that ALL exceptions are authentication related before assuming this is a configuration
-    // issue
-    // reduces risk of misidentifying errors or reporting a transient error.
+    // issue reduces risk of misidentifying errors or reporting a transient error.
     final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)
         .map(s3e -> ((AmazonS3Exception) s3e).getStatusCode())
         .filter(ConnectorExceptionUtil.HTTP_AUTHENTICATION_ERROR_CODES::contains)
