@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import io.airbyte.commons.converters.ConnectorConfigUpdater;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
@@ -59,6 +58,7 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
 import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
@@ -134,14 +134,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
-    try {
-      final LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      return provider.getDestinationDefinitions().stream()
-          .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
-          .findFirst();
-    } catch (final IOException e) {
-      return Optional.empty();
-    }
+    final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
+    return provider.getDestinationDefinitions().stream()
+        .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
+        .findFirst();
   }
 
   protected String getNormalizationImageName() {
@@ -1824,9 +1820,13 @@ public abstract class DestinationAcceptanceTest {
   @Getter
   public static class SpecialNumericTypes {
 
+    @Builder.Default
     boolean supportIntegerNan = false;
+    @Builder.Default
     boolean supportNumberNan = false;
+    @Builder.Default
     boolean supportIntegerInfinity = false;
+    @Builder.Default
     boolean supportNumberInfinity = false;
 
   }

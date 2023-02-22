@@ -30,7 +30,7 @@ class LocalDefinitionsProviderTest {
 
   @BeforeAll
   static void setup() throws IOException {
-    localDefinitionsProvider = new LocalDefinitionsProvider(SeedType.class);
+    localDefinitionsProvider = new LocalDefinitionsProvider();
   }
 
   @Test
