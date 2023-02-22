@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * All communication with Opensearch should be done through this class.
+ * All communication with OpenSearch should be done through this class.
  */
 public class OpenSearchConnection {
 
@@ -57,12 +57,17 @@ public class OpenSearchConnection {
     private final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * Creates a new OpensearchConnection that can be used to read/write records to indices
+     * Creates a new OpenSearchConnection that can be used to read/write records to indices
      *
-     * @param config Configuration parameters for connecting to the Opensearch host
+     * @param config Configuration parameters for connecting to the OpenSearch host
      */
     public OpenSearchConnection(ConnectorConfiguration config) {
+<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
         log.info(String.format("creating OpensearchConnection: %s", config.getEndpoint()));
+=======
+        log.info(String.format(
+                "creating OpenSearchConnection: %s", config.getEndpoint()));
+>>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
 
         // Create the low-level client
         httpHost = HttpHost.create(config.getEndpoint());
@@ -96,7 +101,7 @@ public class OpenSearchConnection {
     }
 
     /**
-     * Configures the default headers for requests to the Opensearch server
+     * Configures the default headers for requests to the OpenSearch server
      *
      * @param config connection information
      * @return the default headers
@@ -121,24 +126,30 @@ public class OpenSearchConnection {
     }
 
     /**
-     * Pings the Opensearch server for "up" check, and configuration validation
+     * Pings the OpenSearch server for "up" check, and configuration validation
      *
      * @return true if connection was successful
      */
     public boolean checkConnection() {
-        log.info("checking opensearch connection");
+        log.info("checking openSearch connection");
         try {
             final var info = client.info();
-            log.info("checked opensearch connection: {}, version: {}", info.clusterName(), info.version());
+            log.info("checked openSearch connection: {}, version: {}", info.clusterName(), info.version());
             return true;
+<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
+=======
+        } catch (ApiException e) {
+            log.error("failed to ping openSearch", unwrappedApiException("failed write operation", e));
+            return false;
+>>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
         } catch (Exception e) {
-            log.error("unknown exception while pinging opensearch server", e);
+            log.error("unknown exception while pinging openSearch server", e);
             return false;
         }
     }
 
     /**
-     * Writes a single record to the Opensearch server
+     * Writes a single record to the OpenSearch server
      *
      * @param index The index to write the record to
      * @param id    The ID to give the new document
@@ -153,7 +164,7 @@ public class OpenSearchConnection {
     }
 
     /**
-     * Bulk operation to append multiple documents to an Opensearch server
+     * Bulk operation to append multiple documents to an OpenSearch server
      *
      * @param index   The index to add the documents to
      * @param records The collection of records to create documents from
@@ -163,6 +174,7 @@ public class OpenSearchConnection {
      */
     public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpenSearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder();
+<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
 //            bulkRequest.operations(
@@ -177,6 +189,19 @@ public class OpenSearchConnection {
             bulkOperation.index(c -> c.index(index).id(extractPrimaryKey(doc, config)));
             bulkOperation.create(CreateOperation.of(k -> k.document(doc.getData())));
             bulkRequest.operations(bulkOperation.build()).refresh(Refresh.True);
+=======
+
+
+        for (var doc : records) {
+            log.debug("adding record to bulk create: {}", doc.getData());
+            bulkRequest.operations(
+                            b -> b.index(
+                                    c -> c.index(index).id(extractPrimaryKey(doc, config))))
+                .operations(BulkOperation.of(
+                    d -> d.create(
+                        CreateOperation.of(k -> k.document(doc.getData())))))
+                .refresh(Refresh.True);
+>>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
         }
 
         try {
@@ -222,7 +247,7 @@ public class OpenSearchConnection {
     }
 
     /**
-     * Shutdown the connection to the Opensearch server
+     * Shutdown the connection to the OpenSearch server
      */
     public void close() throws IOException {
         this.restClient.close();
@@ -240,7 +265,7 @@ public class OpenSearchConnection {
     }
 
     /**
-     * Creates an index on Opensearch if it's missing
+     * Creates an index on OpenSearch if it's missing
      *
      * @param index the index name to create
      */

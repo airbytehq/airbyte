@@ -57,6 +57,10 @@ public class OpenSearchAirbyteMessageConsumerFactory {
         isValidFunction(connection));
   }
 
+<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchAirbyteMessageConsumerFactory.java
+=======
+  // is there any json node that wont fit in the index?
+>>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchAirbyteMessageConsumerFactory.java
   private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(final OpenSearchConnection connection) {
     return jsonNode -> true;
   }
