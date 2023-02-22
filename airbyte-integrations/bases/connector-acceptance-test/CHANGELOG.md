@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.1
+Fix docker API - "Error" is optional. [#22987](https://github.com/airbytehq/airbyte/pull/22987)
+
+## 0.6.0
+Allow passing custom environment variables to the connector under test. [#22937](https://github.com/airbytehq/airbyte/pull/22937).
+
+## 0.5.3
+Spec tests: Make `oneOf` checks work for nested `oneOf`s. [#22395](https://github.com/airbytehq/airbyte/pull/22395)
+
+## 0.5.2
+Check that `emitted_at` increases during subsequent reads. [#22291](https://github.com/airbytehq/airbyte/pull/22291)
+
+## 0.5.1
+Fix discovered catalog caching for different configs. [#22301](https://github.com/airbytehq/airbyte/pull/22301)
+
 ## 0.5.0
 Re-release of 0.3.0 [#21451](https://github.com/airbytehq/airbyte/pull/21451)
 
@@ -228,7 +243,7 @@ Add validation of input config.json against spec.json.
 ## 0.1.9
 Add configurable validation of schema for all records in BasicRead test: [#4345](https://github.com/airbytehq/airbyte/pull/4345)
 
-The validation is ON by default. 
+The validation is ON by default.
 To disable validation for the source you need to set `validate_schema: off` in the config file.
 
 ## 0.1.8

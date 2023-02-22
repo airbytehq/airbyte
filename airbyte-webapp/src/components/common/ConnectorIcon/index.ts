@@ -1,1 +1,0 @@
-export { ConnectorIcon } from "./ConnectorIcon";

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -570,6 +570,15 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     final StandardSync sync = MockData.standardSyncs().get(0);
     final Geography expected = sync.getGeography();
     final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void testGetGeographyForWorkspace() throws IOException {
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
+    final Geography expected = workspace.getDefaultGeography();
+    final Geography actual = configRepository.getGeographyForWorkspace(workspace.getWorkspaceId());
 
     assertEquals(expected, actual);
   }

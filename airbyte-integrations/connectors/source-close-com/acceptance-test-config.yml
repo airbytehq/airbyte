@@ -56,6 +56,8 @@ acceptance_tests:
             bypass_reason: "unable to test due to fast-changing data"
           - name: email_bulk_actions
             bypass_reason: "unable to test due to fast-changing data"
+          - name: incoming_email_tasks
+            bypass_reason: "unable to test due to fast-changing data"
   incremental:
     tests:
       - config_path: "secrets/config.json"

@@ -2214,6 +2214,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+  /v1/attempt/save_sync_config:
+    post:
+      tags:
+        - attempt
+        - internal
+      summary: For worker to save the AttemptSyncConfig for an attempt.
+      operationId: saveSyncConfig
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveAttemptSyncConfigRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalOperationResult"
 
 components:
   securitySchemes:
@@ -2768,6 +2788,8 @@ components:
           type: string
           format: uuid
         disable_cache:
+          type: boolean
+        notifySchemaChange:
           type: boolean
     SourceUpdate:
       type: object
@@ -4167,6 +4189,7 @@ components:
         - config_error
         - system_error
         - manual_cancellation
+        - refresh_schema
     AttemptStatus:
       type: string
       enum:
@@ -5025,6 +5048,31 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptStreamStats"
+    AttemptSyncConfig:
+      type: object
+      required:
+        - sourceConfiguration
+        - destinationConfiguration
+      properties:
+        sourceConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        destinationConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        state:
+          $ref: "#/components/schemas/ConnectionState"
+    SaveAttemptSyncConfigRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptNumber
+        - syncConfig
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        syncConfig:
+          $ref: "#/components/schemas/AttemptSyncConfig"
     InternalOperationResult:
       type: object
       required:

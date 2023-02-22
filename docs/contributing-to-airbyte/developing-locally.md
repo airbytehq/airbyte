@@ -16,12 +16,22 @@ Manually switching between different language versions can get hairy. We recomme
 
 To start contributing:
 
-1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
+1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository. 
 2. Clone the fork on your workstation:
+
+If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
+   ./run-ab-platform.sh
+   ```
+If developing platform:
+
+   ```bash
+   git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
+   cd airbyte-platform
+   docker compose up
    ```
 
 3. You're ready to start!
@@ -69,7 +79,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 ## Run in `dev` mode with `docker-compose`
 
-These instructions explain how to run a version of Airbyte that you are developing on (e.g. has not been released yet).
+These instructions explain how to run a version of Airbyte Platform that you are developing on (e.g. has not been released yet).
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
@@ -78,17 +88,22 @@ VERSION=dev docker compose up
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
 
+If you are running just connectors, you don't need the first step:
+
+```bash
+VERSION=dev docker compose up
+```
+
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
 ## Add a connector under development to Airbyte
 
 These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
 
-- First, build the platform images and run Airbyte:
+- First, run Airbyte:
 
 ```bash
-SUB_BUILD=PLATFORM ./gradlew build
-VERSION=dev docker compose up
+./run-ab-platform
 ```
 
 - Then, build the connector image:
@@ -111,9 +126,9 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 Now when you run a sync with that connector, it will use your local docker image
 
-## Run acceptance tests
+## Run platform acceptance tests
 
-To run acceptance \(end-to-end\) tests:
+To run acceptance \(end-to-end\) tests for the platform:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
@@ -166,7 +181,7 @@ Note: If you are contributing a Python file without imports or function definiti
 
 ### Develop on `airbyte-webapp`
 
-- Spin up Airbyte locally so the UI can make requests against the local API.
+- Spin up Airbyte locally in airbyte-platform so the UI can make requests against the local API.
 
 ```bash
 BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
@@ -174,15 +189,38 @@ BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up
 
 Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
 
-- Start up the react app.
+- Install [`nvm`](https://github.com/nvm-sh/nvm) (Node Version Manager) if not installed
+- Use `nvm` to install the required node version:
 
 ```bash
 cd airbyte-webapp
-npm install
-npm start
+nvm install
+```
+
+- Install the `pnpm` package manager in the required version:
+
+```bash
+# <version> must be the exact version from airbyte-webapp/package.json > engines.pnpm
+npm install -g pnpm@<version>
+```
+
+- Start up the react app.
+
+```bash
+pnpm install
+pnpm start
 ```
 
 - Happy Hacking!
+
+#### Using a custom version of the CDK declarative manifest schema for the connector builder UI
+
+When working on the connector builder UI and doing changes to the CDK and the webapp at the same time, you can start the dev server with `CDK_MANIFEST_PATH` or `CDK_VERSION` environment variables set to have the correct Typescript types built. If `CDK_VERSION` is set, it's loading the specified version of the CDK from pypi instead of the default one, if `CDK_MANIFEST_PATH` is set, it's copying the schema file locally.
+
+For example:
+```
+CDK_MANIFEST_PATH=../../airbyte/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml pnpm start
+```
 
 ### Connector Specification Caching
 
