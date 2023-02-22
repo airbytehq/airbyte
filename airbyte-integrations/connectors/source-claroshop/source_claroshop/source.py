@@ -381,11 +381,11 @@ class PedidosDetalle(Pedidos):
 
         if stream_state and self.cursor_field in stream_state:
             if isinstance(stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT00:00:00')
+                current_stream_state_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%s')
             else:
                 current_stream_state_date = stream_state[self.cursor_field]
 
-        start_date = current_stream_state_date if stream_state and self.cursor_field in stream_state else self.start_date
+        start_date = current_stream_state_date - timedelta(days=15) if stream_state and self.cursor_field in stream_state else self.start_date
         return self._chunk_slices(start_date)
 
 
