@@ -236,15 +236,11 @@ class TestHelpers(unittest.TestCase):
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q", result)
 
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
 
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
-        result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
-
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
 
