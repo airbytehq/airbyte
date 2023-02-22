@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+
+set -e
+
+function usage() {
+    echo "Usage: $0 -r GITHUB_REPOSITORY [-l GITHUB_ACTOR]"
+    echo "Either of the parameters below have to be provided:"
+    echo "     -l GITHUB_ACTOR - github user login"
+}
+
+function error_exit() {
+    usage
+    echo $1 >>/dev/stderr;
+    exit 1
+}
+
+function lc() {
+    tr '[:upper:]' '[:lower:]'
+}
+
+function uc() {
+    tr '[:lower:]' '[:upper:]'
+}
+
+function jq_filter() {
+    local name=$(echo -n "$1" | lc)
+    filter=''
+    filter+="( .profile.email | tostring | ascii_downcase | startswith(\"$name \") )"
+    filter+=" or ( .profile.email | tostring | ascii_downcase == (\"$name\") )"
+    filter+=" or ( .profile.display_name | tostring | ascii_downcase | startswith(\"$name \") )"
+    filter+=" or ( .profile.display_name | tostring | ascii_downcase | endswith(\" $name\") )"
+    filter+=" or ( .profile.display_name | tostring | ascii_downcase == (\"$name\") )"
+    filter+=" or ( .name | tostring | ascii_downcase | startswith(\"$name \") )"
+    filter+=" or ( .name | tostring | ascii_downcase | endswith(\" $name\") )"
+    filter+=" or ( (.name | tostring | ascii_downcase) == \"$name\" )"
+    filter+=" or ( .real_name | tostring | ascii_downcase | startswith(\"$name \") )"
+    filter+=" or ( .real_name | tostring | ascii_downcase | endswith(\" $name\") )"
+    filter+=" or ( .real_name | tostring | ascii_downcase == (\"$name\") )"
+
+
+    echo "${filter}"
+}
+
+function fetch_slack_users() {
+    local slack_api_key=$1
+    echo  "Fetching slack users ..." >>/dev/stderr
+    slack_users="$(curl -s -H "Authorization: Bearer ${slack_api_key}" -H "Content-type: application/json" https://slack.com/api/users.list?limit=2000)"
+    echo "$slack_users" > ./slack_users.json
+    slack_page_id="$(echo ${slack_users} | jq -r '.response_metadata.next_cursor')"
+    x=0
+    echo ${slack_page_id} >>/dev/stderr
+    if [ -n "${slack_page_id}" ]; then
+        while [ -n "${slack_page_id}" ]; do
+            echo "Extracting page info ${slack_page_id} for part ${x}" >>/dev/stderr
+            slack_users_paginator="$(curl -s -H "Authorization: Bearer ${slack_api_key}" -G -H "Content-type: application/json" --data-urlencode "cursor=${slack_page_id}" https://slack.com/api/users.list)"
+            slack_page_id="$(echo ${slack_users_paginator} | jq -r '.response_metadata.next_cursor')"
+            echo "$slack_users_paginator" > ./slack_users_${x}.json
+            x=$(( $x + 1 ))
+        done
+        all_slack_users="$(jq -n '[ inputs.members ] | add ' slack_users*.json)"
+    else
+        all_slack_users="$(jq -n '[ inputs.members ] | add ' slack_users*.json)"
+    fi
+    echo ${all_slack_users}
+}
+
+[ -z "${AIRBYTE_TEAM_BOT_SLACK_TOKEN}" ] && error_exit "ERROR: AIRBYTE_TEAM_BOT_SLACK_TOKEN  is not set."
+
+while getopts ":r:c:u:l:" opt; do
+  case ${opt} in
+    r )
+      GITHUB_REPOSITORY=$OPTARG
+      ;;
+    l )
+      GITHUB_ACTOR=$OPTARG
+      ;;
+    \? ) usage
+      ;;
+  esac
+done
+
+
+[ -z "$GITHUB_ACTOR" ] && error_exit "ERROR: GITHUB_ACTOR (-l GITHUB_ACTOR) have to be provided."
+
+if [ -n "$GITHUB_ACTOR" ]; then
+    [ -z "${GITHUB_API_TOKEN}" ] && error_exit "ERROR: GITHUB_API_TOKEN is not set."
+fi
+
+
+if [ -n "$GITHUB_ACTOR" ]; then
+    echo  "Fetching github user ..." >>/dev/stderr
+    github_user="$(curl -s -H "Authorization: token ${GITHUB_API_TOKEN}" https://api.github.com/users/${GITHUB_ACTOR})"
+    echo $github_user
+    email="$(echo "$github_user"  | jq -r '.email | select(type == "string")')"
+    name="$(echo "$github_user"  | jq -r '.name | select(type == "string")')"
+    if [ -z "$email" -a -z "$name" ]; then
+        echo "WARNING: Github user ($GITHUB_ACTOR) does not have either name nor email in the profile." >>/dev/stderr
+        echo "Fetching commits made by this user to detect user by commit author name and/or email." >>/dev/stderr
+        [ -z "$GITHUB_REPOSITORY" ] && error_exit "ERROR: Git reposuitory  (-r GITHUB_REPOSITORY) is missing."
+        commit="$(curl -s -H "Authorization: token ${GITHUB_API_TOKEN}" https://api.github.com/repos/${GITHUB_REPOSITORY}/commits?author=$GITHUB_ACTOR | jq '.[0] | .commit | select(type == "object")' )"
+        github_user="$(echo "$commit" | jq  '.author | select(type == "object")')"
+    fi
+    [ -z "$github_user" ] && error_exit "ERROR: Gitub user is not found for commit ${GITHUB_ACTOR}"
+else
+    github_user="$GITHUB_USER"
+fi
+
+airbyte_team_slack_users=$(fetch_slack_users ${AIRBYTE_TEAM_BOT_SLACK_TOKEN})
+
+all_users_list=$(jq -s '.[0] + .[1]' <<EOF
+$airbyte_team_slack_users
+EOF
+)
+
+echo $all_users_list > all_slack_users.json
+
+OLDIFS=$IFS;
+IFS=$'\n'
+for git_user in $(echo "$github_user"  | jq -r '.email, .name | select(type == "string")'; echo "$github_user" | jq -r '.name | select(type == "string")' | tr ' ' "\n"); do
+    if [ -z "$git_user" ]; then
+        echo "Skipping empty string ..." >>/dev/stderr
+        continue
+    fi
+    echo "Checking $git_user string ..." >>/dev/stderr
+    slack_user_id=$(echo "$all_users_list" | lc | jq -r ".[] | select( $(jq_filter "${git_user}") ) | .id | select(type == \"string\")" | uc)
+    [ -n "$slack_user_id" ] && break
+done
+IFS=$OLDIFS
+
+if [ -z "$slack_user_id" ]; then
+        echo "WARN: Slack user is not found for ${GITHUB_ACTOR}"
+        slack_user_id="GitHub user do not match any user in Slack"
+        echo slack_user_ids=$(echo $slack_user_id) >> $GITHUB_OUTPUT
+else
+        echo "Slack User ID is found $slack_user_id" >> /dev/stderr
+        slack_user_ids=$(echo $slack_user_id | tr -s '[:blank:]' ',')
+        echo $slack_user_ids 
+        echo slack_user_ids=$slack_user_ids >> $GITHUB_OUTPUT
+fi

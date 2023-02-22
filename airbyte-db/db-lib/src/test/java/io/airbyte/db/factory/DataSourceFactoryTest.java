@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.factory;
@@ -15,20 +15,133 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.MySQLContainer;
 
 /**
  * Test suite for the {@link DataSourceFactory} class.
  */
 class DataSourceFactoryTest extends CommonFactoryTest {
 
+  private static final String CONNECT_TIMEOUT = "connectTimeout";
+
+  static String database;
+  static String driverClassName;
+  static String host;
+  static String jdbcUrl;
+  static String password;
+  static Integer port;
+  static String username;
+
+  @BeforeAll
+  static void setup() {
+    host = container.getHost();
+    port = container.getFirstMappedPort();
+    database = container.getDatabaseName();
+    username = container.getUsername();
+    password = container.getPassword();
+    driverClassName = container.getDriverClassName();
+    jdbcUrl = container.getJdbcUrl();
+  }
+
+  @Test
+  void testCreatingDataSourceWithConnectionTimeoutSetAboveDefault() {
+    final Map<String, String> connectionProperties = Map.of(
+        CONNECT_TIMEOUT, "61");
+    final DataSource dataSource = DataSourceFactory.create(
+        username,
+        password,
+        driverClassName,
+        jdbcUrl,
+        connectionProperties);
+    assertNotNull(dataSource);
+    assertEquals(HikariDataSource.class, dataSource.getClass());
+    assertEquals(61000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+  }
+
+  @Test
+  void testCreatingPostgresDataSourceWithConnectionTimeoutSetBelowDefault() {
+    final Map<String, String> connectionProperties = Map.of(
+        CONNECT_TIMEOUT, "30");
+    final DataSource dataSource = DataSourceFactory.create(
+        username,
+        password,
+        driverClassName,
+        jdbcUrl,
+        connectionProperties);
+    assertNotNull(dataSource);
+    assertEquals(HikariDataSource.class, dataSource.getClass());
+    assertEquals(30000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+  }
+
+  @Test
+  void testCreatingMySQLDataSourceWithConnectionTimeoutSetBelowDefault() {
+    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
+      mySQLContainer.start();
+      final Map<String, String> connectionProperties = Map.of(
+          CONNECT_TIMEOUT, "30");
+      final DataSource dataSource = DataSourceFactory.create(
+          mySQLContainer.getUsername(),
+          mySQLContainer.getPassword(),
+          mySQLContainer.getDriverClassName(),
+          mySQLContainer.getJdbcUrl(),
+          connectionProperties);
+      assertNotNull(dataSource);
+      assertEquals(HikariDataSource.class, dataSource.getClass());
+      assertEquals(60000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+    }
+  }
+
+  @Test
+  void testCreatingDataSourceWithConnectionTimeoutSetWithZero() {
+    final Map<String, String> connectionProperties = Map.of(
+        CONNECT_TIMEOUT, "0");
+    final DataSource dataSource = DataSourceFactory.create(
+        username,
+        password,
+        driverClassName,
+        jdbcUrl,
+        connectionProperties);
+    assertNotNull(dataSource);
+    assertEquals(HikariDataSource.class, dataSource.getClass());
+    assertEquals(Integer.MAX_VALUE, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+  }
+
+  @Test
+  void testCreatingPostgresDataSourceWithConnectionTimeoutNotSet() {
+    final Map<String, String> connectionProperties = Map.of();
+    final DataSource dataSource = DataSourceFactory.create(
+        username,
+        password,
+        driverClassName,
+        jdbcUrl,
+        connectionProperties);
+    assertNotNull(dataSource);
+    assertEquals(HikariDataSource.class, dataSource.getClass());
+    assertEquals(10000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+  }
+
+  @Test
+  void testCreatingMySQLDataSourceWithConnectionTimeoutNotSet() {
+    try (MySQLContainer<?> mySQLContainer = new MySQLContainer<>("mysql:8.0")) {
+      mySQLContainer.start();
+      final Map<String, String> connectionProperties = Map.of();
+      final DataSource dataSource = DataSourceFactory.create(
+          mySQLContainer.getUsername(),
+          mySQLContainer.getPassword(),
+          mySQLContainer.getDriverClassName(),
+          mySQLContainer.getJdbcUrl(),
+          connectionProperties);
+      assertNotNull(dataSource);
+      assertEquals(HikariDataSource.class, dataSource.getClass());
+      assertEquals(60000, ((HikariDataSource) dataSource).getHikariConfigMXBean().getConnectionTimeout());
+    }
+
+  }
+
   @Test
   void testCreatingADataSourceWithJdbcUrl() {
-    final String username = container.getUsername();
-    final String password = container.getPassword();
-    final String driverClassName = container.getDriverClassName();
-    final String jdbcUrl = container.getJdbcUrl();
-
     final DataSource dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
@@ -37,10 +150,6 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADataSourceWithJdbcUrlAndConnectionProperties() {
-    final String username = container.getUsername();
-    final String password = container.getPassword();
-    final String driverClassName = container.getDriverClassName();
-    final String jdbcUrl = container.getJdbcUrl();
     final Map<String, String> connectionProperties = Map.of("foo", "bar");
 
     final DataSource dataSource = DataSourceFactory.create(username, password, driverClassName, jdbcUrl, connectionProperties);
@@ -51,13 +160,6 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADataSourceWithHostAndPort() {
-    final String username = container.getUsername();
-    final String password = container.getPassword();
-    final String driverClassName = container.getDriverClassName();
-    final String host = container.getHost();
-    final Integer port = container.getFirstMappedPort();
-    final String database = container.getDatabaseName();
-
     final DataSource dataSource = DataSourceFactory.create(username, password, host, port, database, driverClassName);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
@@ -66,12 +168,6 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingADataSourceWithHostPortAndConnectionProperties() {
-    final String username = container.getUsername();
-    final String password = container.getPassword();
-    final String driverClassName = container.getDriverClassName();
-    final String host = container.getHost();
-    final Integer port = container.getFirstMappedPort();
-    final String database = container.getDatabaseName();
     final Map<String, String> connectionProperties = Map.of("foo", "bar");
 
     final DataSource dataSource = DataSourceFactory.create(username, password, host, port, database, driverClassName, connectionProperties);
@@ -82,12 +178,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingAnInvalidDataSourceWithHostAndPort() {
-    final String username = container.getUsername();
-    final String password = container.getPassword();
     final String driverClassName = "Unknown";
-    final String host = container.getHost();
-    final Integer port = container.getFirstMappedPort();
-    final String database = container.getDatabaseName();
 
     assertThrows(RuntimeException.class, () -> {
       DataSourceFactory.create(username, password, host, port, database, driverClassName);
@@ -96,12 +187,6 @@ class DataSourceFactoryTest extends CommonFactoryTest {
 
   @Test
   void testCreatingAPostgresqlDataSource() {
-    final String username = container.getUsername();
-    final String password = container.getPassword();
-    final String host = container.getHost();
-    final Integer port = container.getFirstMappedPort();
-    final String database = container.getDatabaseName();
-
     final DataSource dataSource = DataSourceFactory.createPostgres(username, password, host, port, database);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());

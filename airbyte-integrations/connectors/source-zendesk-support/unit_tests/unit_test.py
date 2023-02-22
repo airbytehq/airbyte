@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -42,6 +42,7 @@ from source_zendesk_support.streams import (
     UserSettingsStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
+from utils import read_full_refresh
 
 # prepared config
 STREAM_ARGS = {
@@ -91,7 +92,7 @@ def test_token_authenticator():
     # we expect base64 from creds input
     expected = "dGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="
     result = BasicApiTokenAuthenticator("test@airbyte.io", "api_token")
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -112,7 +113,7 @@ def test_convert_config2stream_args(config):
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
     result = SourceZendeskSupport().get_authenticator(config=config)
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -127,6 +128,25 @@ def test_check(response, check_passed):
         result = SourceZendeskSupport().check_connection(logger=AirbyteLogger, config=TEST_CONFIG)
         mock_method.assert_called()
         assert check_passed == result
+
+
+@pytest.mark.parametrize(
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
+    [
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
+        ({"error": "Not sufficient permissions"}, 403, 17, [
+            "Skipping stream ticket_forms: Check permissions, error message: Not sufficient permissions."
+        ]),
+    ],
+    ids=["forms_accessible", "forms_inaccessible"],
+)
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
+    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    assert len(result) == expected_n_streams
+    logged_warnings = iter([record for record in caplog.records if record.levelname == "ERROR"])
+    for msg in expected_warnings:
+        assert msg in next(logged_warnings).message
 
 
 @pytest.fixture(autouse=True)
@@ -264,10 +284,12 @@ class TestAllStreams:
         ],
     )
     def test_streams(self, expected_stream_cls):
-        streams = SourceZendeskSupport().streams(TEST_CONFIG)
-        for stream in streams:
-            if expected_stream_cls in streams:
-                assert isinstance(stream, expected_stream_cls)
+        with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
+            streams = SourceZendeskSupport().streams(TEST_CONFIG)
+            mocked_records.assert_called()
+            for stream in streams:
+                if expected_stream_cls in streams:
+                    assert isinstance(stream, expected_stream_cls)
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
@@ -803,3 +825,38 @@ class TestSourceZendeskSupportTicketEventsExportStream:
         stream = stream_cls(**STREAM_ARGS)
         result = stream.event_type
         assert result == expected
+
+
+def test_read_tickets_stream(requests_mock):
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets.json",
+        json={
+            "tickets": [
+                {"custom_fields": []},
+                {},
+                {
+                    "custom_fields": [
+                        {"id": 360023382300, "value": None},
+                        {"id": 360004841380, "value": "customer_tickets"},
+                        {"id": 360022469240, "value": "5"},
+                        {"id": 360023712840, "value": False},
+                    ]
+                },
+            ]
+        },
+    )
+
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == [
+        {"custom_fields": []},
+        {},
+        {
+            "custom_fields": [
+                {"id": 360023382300, "value": None},
+                {"id": 360004841380, "value": "customer_tickets"},
+                {"id": 360022469240, "value": "5"},
+                {"id": 360023712840, "value": "False"},
+            ]
+        },
+    ]

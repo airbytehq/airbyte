@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -17,6 +17,38 @@ def test_source_bamboo_hr_client_wrong_credentials():
     source = SourceBambooHr()
     result = source.check(logger=AirbyteLogger, config={"subdomain": "test", "api_key": "blah-blah"})
     assert result.status == Status.FAILED
+
+
+@pytest.mark.parametrize(
+    "custom_reports_fields,custom_reports_include_default_fields,available_fields,expected_message",
+    [
+        (
+            "",
+            False,
+            {},
+            "NullFieldsError('Field `custom_reports_fields` cannot be empty if `custom_reports_include_default_fields` is false.')",
+        ),
+        ("", True, {}, 'AvailableFieldsAccessDeniedError("You hasn\'t access to any report fields. Please check your access level.")'),
+        (
+            "Test",
+            True,
+            [{"name": "NewTest"}],
+            "CustomFieldsAccessDeniedError('Access to fields: Test - denied. Please check your access level.')",
+        ),
+    ],
+)
+def test_check_failed(
+    config, requests_mock, custom_reports_fields, custom_reports_include_default_fields, available_fields, expected_message
+):
+    config["custom_reports_fields"] = custom_reports_fields
+    config["custom_reports_include_default_fields"] = custom_reports_include_default_fields
+    requests_mock.get("https://api.bamboohr.com/api/gateway.php/bar/v1/meta/fields", json=available_fields)
+
+    source = SourceBambooHr()
+    result = source.check(logger=AirbyteLogger, config=config)
+
+    assert result.status == Status.FAILED
+    assert result.message == expected_message
 
 
 def test_employees_directory_stream_url_base(config):

@@ -12,13 +12,14 @@ jobs:
         id: getref
         run: |
           pr_info="$(curl ${{ github.event.issue.pull_request.url }})"
-          echo ::set-output name=ref::"$(echo $pr_info | jq -r '.head.ref')"
-          echo ::set-output name=repo::"$(echo $pr_info | jq -r '.head.repo.full_name')"
+          echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
+          echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
+
       - name: Slash Command Dispatch
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.DAVINCHIA_PAT }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           commands: |
             test
             test-performance
@@ -26,7 +27,6 @@ jobs:
             publish-connector
             publish
             publish-external
-            publish-cdk
             gke-kube-test
             run-specific-test
           static-args: |
@@ -34,6 +34,7 @@ jobs:
             gitref=${{ steps.getref.outputs.ref }}
             comment-id=${{ github.event.comment.id }}
           dispatch-type: workflow
+
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
         uses: peter-evans/create-or-update-comment@v1

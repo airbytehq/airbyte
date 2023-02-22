@@ -1,0 +1,31 @@
+version: '3'
+
+
+# Note: add mount points at /mnt/master and /mnt/tserver for persistence
+
+services:
+  yb-master:
+      image: yugabytedb/yugabyte:latest
+      container_name: yb-master-n1
+      command: [ "/home/yugabyte/bin/yb-master",
+                "--fs_data_dirs=/mnt/master",
+                "--master_addresses=yb-master-n1:7100",
+                "--rpc_bind_addresses=yb-master-n1:7100",
+                "--replication_factor=1"]
+      ports:
+      - "7000:7000"
+
+  yb-tserver:
+      image: yugabytedb/yugabyte:latest
+      container_name: yb-tserver-n1
+      command: [ "/home/yugabyte/bin/yb-tserver",
+                "--fs_data_dirs=/mnt/tserver",
+                "--start_pgsql_proxy",
+                "--rpc_bind_addresses=yb-tserver-n1:9100",
+                "--tserver_master_addrs=yb-master-n1:7100"]
+      ports:
+      - "9042:9042"
+      - "5433:5433"
+      - "9000:9000"
+      depends_on:
+      - yb-master

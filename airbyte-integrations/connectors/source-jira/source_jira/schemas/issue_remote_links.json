@@ -99,6 +99,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details of an issue remote link."
 }

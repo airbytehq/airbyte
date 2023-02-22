@@ -1,0 +1,16 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/OperatorWebhook.yaml
+title: OperatorWebhook
+description: Settings for a webhook operation
+type: object
+required:
+  - executionUrl
+properties:
+  executionUrl:
+    type: string
+  executionBody:
+    type: string
+  webhookConfigId:
+    type: string
+    format: uuid

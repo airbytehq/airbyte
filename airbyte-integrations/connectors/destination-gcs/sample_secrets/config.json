@@ -6,5 +6,8 @@
     "credential_type": "HMAC_KEY",
     "hmac_key_access_id": "<access-id>",
     "hmac_key_secret": "<secret>"
+  },
+  "format": {
+    "format_type": "CSV"
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc.streaming;
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class AdaptiveStreamingQueryConfigTest {
 
   @Test
-  public void testFetchSizeUpdate() throws SQLException {
+  void testFetchSizeUpdate() throws SQLException {
     final AdaptiveStreamingQueryConfig queryConfig = new AdaptiveStreamingQueryConfig();
     final ResultSet resultSet = mock(ResultSet.class);
     for (int i = 0; i < FetchSizeConstants.INITIAL_SAMPLE_SIZE - 1; ++i) {

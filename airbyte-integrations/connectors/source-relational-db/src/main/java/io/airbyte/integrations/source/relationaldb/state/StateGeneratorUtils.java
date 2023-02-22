@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
 
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +50,11 @@ public class StateGeneratorUtils {
     } else {
       return List.of();
     }
+  };
+
+  public static final Function<AirbyteStreamState, Long> CURSOR_RECORD_COUNT_FUNCTION = stream -> {
+    final Optional<DbStreamState> dbStreamState = StateGeneratorUtils.extractState(stream);
+    return dbStreamState.map(DbStreamState::getCursorRecordCount).orElse(0L);
   };
 
   /**
@@ -120,11 +125,15 @@ public class StateGeneratorUtils {
    */
   public static DbStreamState generateDbStreamState(final AirbyteStreamNameNamespacePair airbyteStreamNameNamespacePair,
                                                     final CursorInfo cursorInfo) {
-    return new DbStreamState()
+    final DbStreamState state = new DbStreamState()
         .withStreamName(airbyteStreamNameNamespacePair.getName())
         .withStreamNamespace(airbyteStreamNameNamespacePair.getNamespace())
         .withCursorField(cursorInfo.getCursorField() == null ? Collections.emptyList() : Lists.newArrayList(cursorInfo.getCursorField()))
         .withCursor(cursorInfo.getCursor());
+    if (cursorInfo.getCursorRecordCount() > 0L) {
+      state.setCursorRecordCount(cursorInfo.getCursorRecordCount());
+    }
+    return state;
   }
 
   /**

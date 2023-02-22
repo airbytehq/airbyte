@@ -1,0 +1,8 @@
+{
+  "properties": {
+    "product_name": {
+      "type": ["string", "array"]
+    }
+  },
+  "type": "object"
+}

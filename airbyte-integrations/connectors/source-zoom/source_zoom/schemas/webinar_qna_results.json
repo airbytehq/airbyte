@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_uuid": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "question_details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  "required": []
+}

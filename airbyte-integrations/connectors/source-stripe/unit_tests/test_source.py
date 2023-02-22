@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -36,7 +36,7 @@ def test_source_streams():
     with open("sample_files/config.json") as f:
         config = json.load(f)
     streams = SourceStripe().streams(config=config)
-    assert len(streams) == 22
+    assert len(streams) == 24
 
 
 @pytest.fixture(name="config")

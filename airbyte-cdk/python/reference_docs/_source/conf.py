@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 # Configuration file for the Sphinx documentation builder.
@@ -32,7 +32,10 @@ author = "Airbyte"
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc"]  # API docs
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",  # Support for NumPy and Google style docstrings
+]  # API docs
 
 source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 

@@ -1,0 +1,768 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "symbol": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "localization": {
+      "type": "object",
+      "properties": {
+        "en": {
+          "type": ["string", "null"]
+        },
+        "de": {
+          "type": ["string", "null"]
+        },
+        "es": {
+          "type": ["string", "null"]
+        },
+        "fr": {
+          "type": ["string", "null"]
+        },
+        "it": {
+          "type": ["string", "null"]
+        },
+        "pl": {
+          "type": ["string", "null"]
+        },
+        "ro": {
+          "type": ["string", "null"]
+        },
+        "hu": {
+          "type": ["string", "null"]
+        },
+        "nl": {
+          "type": ["string", "null"]
+        },
+        "pt": {
+          "type": ["string", "null"]
+        },
+        "sv": {
+          "type": ["string", "null"]
+        },
+        "vi": {
+          "type": ["string", "null"]
+        },
+        "tr": {
+          "type": ["string", "null"]
+        },
+        "ru": {
+          "type": ["string", "null"]
+        },
+        "ja": {
+          "type": ["string", "null"]
+        },
+        "zh": {
+          "type": ["string", "null"]
+        },
+        "zh-tw": {
+          "type": ["string", "null"]
+        },
+        "ko": {
+          "type": ["string", "null"]
+        },
+        "ar": {
+          "type": ["string", "null"]
+        },
+        "th": {
+          "type": ["string", "null"]
+        },
+        "id": {
+          "type": ["string", "null"]
+        },
+        "cs": {
+          "type": ["string", "null"]
+        },
+        "da": {
+          "type": ["string", "null"]
+        },
+        "el": {
+          "type": ["string", "null"]
+        },
+        "hi": {
+          "type": ["string", "null"]
+        },
+        "no": {
+          "type": ["string", "null"]
+        },
+        "sk": {
+          "type": ["string", "null"]
+        },
+        "uk": {
+          "type": ["string", "null"]
+        },
+        "he": {
+          "type": ["string", "null"]
+        },
+        "fi": {
+          "type": ["string", "null"]
+        },
+        "bg": {
+          "type": ["string", "null"]
+        },
+        "hr": {
+          "type": ["string", "null"]
+        },
+        "lt": {
+          "type": ["string", "null"]
+        },
+        "sl": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "thumb": {
+          "type": ["string", "null"]
+        },
+        "small": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "market_data": {
+      "type": "object",
+      "properties": {
+        "current_price": {
+          "type": "object",
+          "properties": {
+            "aed": {
+              "type": ["number", "null"]
+            },
+            "ars": {
+              "type": ["number", "null"]
+            },
+            "aud": {
+              "type": ["number", "null"]
+            },
+            "bch": {
+              "type": ["number", "null"]
+            },
+            "bdt": {
+              "type": ["number", "null"]
+            },
+            "bhd": {
+              "type": ["number", "null"]
+            },
+            "bmd": {
+              "type": ["number", "null"]
+            },
+            "bnb": {
+              "type": ["number", "null"]
+            },
+            "brl": {
+              "type": ["number", "null"]
+            },
+            "btc": {
+              "type": ["number", "null"]
+            },
+            "cad": {
+              "type": ["number", "null"]
+            },
+            "chf": {
+              "type": ["number", "null"]
+            },
+            "clp": {
+              "type": ["number", "null"]
+            },
+            "cny": {
+              "type": ["number", "null"]
+            },
+            "czk": {
+              "type": ["number", "null"]
+            },
+            "dkk": {
+              "type": ["number", "null"]
+            },
+            "dot": {
+              "type": ["number", "null"]
+            },
+            "eos": {
+              "type": ["number", "null"]
+            },
+            "eth": {
+              "type": ["number", "null"]
+            },
+            "eur": {
+              "type": ["number", "null"]
+            },
+            "gbp": {
+              "type": ["number", "null"]
+            },
+            "hkd": {
+              "type": ["number", "null"]
+            },
+            "huf": {
+              "type": ["number", "null"]
+            },
+            "idr": {
+              "type": ["number", "null"]
+            },
+            "ils": {
+              "type": ["number", "null"]
+            },
+            "inr": {
+              "type": ["number", "null"]
+            },
+            "jpy": {
+              "type": ["number", "null"]
+            },
+            "krw": {
+              "type": ["number", "null"]
+            },
+            "kwd": {
+              "type": ["number", "null"]
+            },
+            "lkr": {
+              "type": ["number", "null"]
+            },
+            "ltc": {
+              "type": ["number", "null"]
+            },
+            "mmk": {
+              "type": ["number", "null"]
+            },
+            "mxn": {
+              "type": ["number", "null"]
+            },
+            "myr": {
+              "type": ["number", "null"]
+            },
+            "ngn": {
+              "type": ["number", "null"]
+            },
+            "nok": {
+              "type": ["number", "null"]
+            },
+            "nzd": {
+              "type": ["number", "null"]
+            },
+            "php": {
+              "type": ["number", "null"]
+            },
+            "pkr": {
+              "type": ["number", "null"]
+            },
+            "pln": {
+              "type": ["number", "null"]
+            },
+            "rub": {
+              "type": ["number", "null"]
+            },
+            "sar": {
+              "type": ["number", "null"]
+            },
+            "sek": {
+              "type": ["number", "null"]
+            },
+            "sgd": {
+              "type": ["number", "null"]
+            },
+            "thb": {
+              "type": ["number", "null"]
+            },
+            "try": {
+              "type": ["number", "null"]
+            },
+            "twd": {
+              "type": ["number", "null"]
+            },
+            "uah": {
+              "type": ["number", "null"]
+            },
+            "usd": {
+              "type": ["number", "null"]
+            },
+            "vef": {
+              "type": ["number", "null"]
+            },
+            "vnd": {
+              "type": ["number", "null"]
+            },
+            "xag": {
+              "type": ["number", "null"]
+            },
+            "xau": {
+              "type": ["number", "null"]
+            },
+            "xdr": {
+              "type": ["number", "null"]
+            },
+            "xlm": {
+              "type": ["number", "null"]
+            },
+            "xrp": {
+              "type": ["number", "null"]
+            },
+            "yfi": {
+              "type": ["number", "null"]
+            },
+            "zar": {
+              "type": ["number", "null"]
+            },
+            "bits": {
+              "type": ["number", "null"]
+            },
+            "link": {
+              "type": ["number", "null"]
+            },
+            "sats": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "market_cap": {
+          "type": "object",
+          "properties": {
+            "aed": {
+              "type": ["number", "null"]
+            },
+            "ars": {
+              "type": ["number", "null"]
+            },
+            "aud": {
+              "type": ["number", "null"]
+            },
+            "bch": {
+              "type": ["number", "null"]
+            },
+            "bdt": {
+              "type": ["number", "null"]
+            },
+            "bhd": {
+              "type": ["number", "null"]
+            },
+            "bmd": {
+              "type": ["number", "null"]
+            },
+            "bnb": {
+              "type": ["number", "null"]
+            },
+            "brl": {
+              "type": ["number", "null"]
+            },
+            "btc": {
+              "type": ["number", "null"]
+            },
+            "cad": {
+              "type": ["number", "null"]
+            },
+            "chf": {
+              "type": ["number", "null"]
+            },
+            "clp": {
+              "type": ["number", "null"]
+            },
+            "cny": {
+              "type": ["number", "null"]
+            },
+            "czk": {
+              "type": ["number", "null"]
+            },
+            "dkk": {
+              "type": ["number", "null"]
+            },
+            "dot": {
+              "type": ["number", "null"]
+            },
+            "eos": {
+              "type": ["number", "null"]
+            },
+            "eth": {
+              "type": ["number", "null"]
+            },
+            "eur": {
+              "type": ["number", "null"]
+            },
+            "gbp": {
+              "type": ["number", "null"]
+            },
+            "hkd": {
+              "type": ["number", "null"]
+            },
+            "huf": {
+              "type": ["number", "null"]
+            },
+            "idr": {
+              "type": ["number", "null"]
+            },
+            "ils": {
+              "type": ["number", "null"]
+            },
+            "inr": {
+              "type": ["number", "null"]
+            },
+            "jpy": {
+              "type": ["number", "null"]
+            },
+            "krw": {
+              "type": ["number", "null"]
+            },
+            "kwd": {
+              "type": ["number", "null"]
+            },
+            "lkr": {
+              "type": ["number", "null"]
+            },
+            "ltc": {
+              "type": ["number", "null"]
+            },
+            "mmk": {
+              "type": ["number", "null"]
+            },
+            "mxn": {
+              "type": ["number", "null"]
+            },
+            "myr": {
+              "type": ["number", "null"]
+            },
+            "ngn": {
+              "type": ["number", "null"]
+            },
+            "nok": {
+              "type": ["number", "null"]
+            },
+            "nzd": {
+              "type": ["number", "null"]
+            },
+            "php": {
+              "type": ["number", "null"]
+            },
+            "pkr": {
+              "type": ["number", "null"]
+            },
+            "pln": {
+              "type": ["number", "null"]
+            },
+            "rub": {
+              "type": ["number", "null"]
+            },
+            "sar": {
+              "type": ["number", "null"]
+            },
+            "sek": {
+              "type": ["number", "null"]
+            },
+            "sgd": {
+              "type": ["number", "null"]
+            },
+            "thb": {
+              "type": ["number", "null"]
+            },
+            "try": {
+              "type": ["number", "null"]
+            },
+            "twd": {
+              "type": ["number", "null"]
+            },
+            "uah": {
+              "type": ["number", "null"]
+            },
+            "usd": {
+              "type": ["number", "null"]
+            },
+            "vef": {
+              "type": ["number", "null"]
+            },
+            "vnd": {
+              "type": ["number", "null"]
+            },
+            "xag": {
+              "type": ["number", "null"]
+            },
+            "xau": {
+              "type": ["number", "null"]
+            },
+            "xdr": {
+              "type": ["number", "null"]
+            },
+            "xlm": {
+              "type": ["number", "null"]
+            },
+            "xrp": {
+              "type": ["number", "null"]
+            },
+            "yfi": {
+              "type": ["number", "null"]
+            },
+            "zar": {
+              "type": ["number", "null"]
+            },
+            "bits": {
+              "type": ["number", "null"]
+            },
+            "link": {
+              "type": ["number", "null"]
+            },
+            "sats": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "total_volume": {
+          "type": "object",
+          "properties": {
+            "aed": {
+              "type": ["number", "null"]
+            },
+            "ars": {
+              "type": ["number", "null"]
+            },
+            "aud": {
+              "type": ["number", "null"]
+            },
+            "bch": {
+              "type": ["number", "null"]
+            },
+            "bdt": {
+              "type": ["number", "null"]
+            },
+            "bhd": {
+              "type": ["number", "null"]
+            },
+            "bmd": {
+              "type": ["number", "null"]
+            },
+            "bnb": {
+              "type": ["number", "null"]
+            },
+            "brl": {
+              "type": ["number", "null"]
+            },
+            "btc": {
+              "type": ["number", "null"]
+            },
+            "cad": {
+              "type": ["number", "null"]
+            },
+            "chf": {
+              "type": ["number", "null"]
+            },
+            "clp": {
+              "type": ["number", "null"]
+            },
+            "cny": {
+              "type": ["number", "null"]
+            },
+            "czk": {
+              "type": ["number", "null"]
+            },
+            "dkk": {
+              "type": ["number", "null"]
+            },
+            "dot": {
+              "type": ["number", "null"]
+            },
+            "eos": {
+              "type": ["number", "null"]
+            },
+            "eth": {
+              "type": ["number", "null"]
+            },
+            "eur": {
+              "type": ["number", "null"]
+            },
+            "gbp": {
+              "type": ["number", "null"]
+            },
+            "hkd": {
+              "type": ["number", "null"]
+            },
+            "huf": {
+              "type": ["number", "null"]
+            },
+            "idr": {
+              "type": ["number", "null"]
+            },
+            "ils": {
+              "type": ["number", "null"]
+            },
+            "inr": {
+              "type": ["number", "null"]
+            },
+            "jpy": {
+              "type": ["number", "null"]
+            },
+            "krw": {
+              "type": ["number", "null"]
+            },
+            "kwd": {
+              "type": ["number", "null"]
+            },
+            "lkr": {
+              "type": ["number", "null"]
+            },
+            "ltc": {
+              "type": ["number", "null"]
+            },
+            "mmk": {
+              "type": ["number", "null"]
+            },
+            "mxn": {
+              "type": ["number", "null"]
+            },
+            "myr": {
+              "type": ["number", "null"]
+            },
+            "ngn": {
+              "type": ["number", "null"]
+            },
+            "nok": {
+              "type": ["number", "null"]
+            },
+            "nzd": {
+              "type": ["number", "null"]
+            },
+            "php": {
+              "type": ["number", "null"]
+            },
+            "pkr": {
+              "type": ["number", "null"]
+            },
+            "pln": {
+              "type": ["number", "null"]
+            },
+            "rub": {
+              "type": ["number", "null"]
+            },
+            "sar": {
+              "type": ["number", "null"]
+            },
+            "sek": {
+              "type": ["number", "null"]
+            },
+            "sgd": {
+              "type": ["number", "null"]
+            },
+            "thb": {
+              "type": ["number", "null"]
+            },
+            "try": {
+              "type": ["number", "null"]
+            },
+            "twd": {
+              "type": ["number", "null"]
+            },
+            "uah": {
+              "type": ["number", "null"]
+            },
+            "usd": {
+              "type": ["number", "null"]
+            },
+            "vef": {
+              "type": ["number", "null"]
+            },
+            "vnd": {
+              "type": ["number", "null"]
+            },
+            "xag": {
+              "type": ["number", "null"]
+            },
+            "xau": {
+              "type": ["number", "null"]
+            },
+            "xdr": {
+              "type": ["number", "null"]
+            },
+            "xlm": {
+              "type": ["number", "null"]
+            },
+            "xrp": {
+              "type": ["number", "null"]
+            },
+            "yfi": {
+              "type": ["number", "null"]
+            },
+            "zar": {
+              "type": ["number", "null"]
+            },
+            "bits": {
+              "type": ["number", "null"]
+            },
+            "link": {
+              "type": ["number", "null"]
+            },
+            "sats": {
+              "type": ["number", "null"]
+            }
+          }
+        }
+      }
+    },
+    "community_data": {
+      "type": "object",
+      "properties": {
+        "facebook_likes": {},
+        "twitter_followers": {},
+        "reddit_average_posts_48h": {
+          "type": ["number", "null"]
+        },
+        "reddit_average_comments_48h": {
+          "type": ["number", "null"]
+        },
+        "reddit_subscribers": {
+          "type": ["number", "null"]
+        },
+        "reddit_accounts_active_48h": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "developer_data": {
+      "type": "object",
+      "properties": {
+        "forks": {
+          "type": ["number", "null"]
+        },
+        "stars": {
+          "type": ["number", "null"]
+        },
+        "subscribers": {
+          "type": ["number", "null"]
+        },
+        "total_issues": {
+          "type": ["number", "null"]
+        },
+        "closed_issues": {
+          "type": ["number", "null"]
+        },
+        "pull_requests_merged": {
+          "type": ["number", "null"]
+        },
+        "pull_request_contributors": {
+          "type": ["number", "null"]
+        },
+        "code_additions_deletions_4_weeks": {
+          "type": "object",
+          "properties": {
+            "additions": {
+              "type": ["number", "null"]
+            },
+            "deletions": {
+              "type": ["number", "null"]
+            }
+          }
+        },
+        "commit_count_4_weeks": {
+          "type": ["number", "null"]
+        }
+      }
+    },
+    "public_interest_stats": {
+      "type": "object",
+      "properties": {
+        "alexa_rank": {},
+        "bing_matches": {}
+      }
+    }
+  }
+}

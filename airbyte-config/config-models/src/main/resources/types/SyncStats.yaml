@@ -7,13 +7,49 @@ type: object
 required:
   - recordsEmitted
   - bytesEmitted
-additionalProperties: false
+additionalProperties: true
 properties:
-  recordsEmitted:
-    type: integer
   bytesEmitted:
     type: integer
-  stateMessagesEmitted: # TODO make required once per-stream state messages are supported in V2
+  destinationStateMessagesEmitted:
+    description: Number of State messages emitted by the Destination Connector
+    type: integer
+  destinationWriteEndTime:
+    type: integer
+    description: The exit time of the destination container/pod
+  destinationWriteStartTime:
+    type: integer
+    description: The boot time of the destination container/pod
+  estimatedBytes:
+    type: integer
+    description: The total estimated number of bytes for the sync
+  estimatedRecords:
+    type: integer
+    description: The total estimated number of records for the sync
+  meanSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBeforeSourceStateMessageEmitted:
+    type: integer
+  maxSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer
+  meanSecondsBetweenStateMessageEmittedandCommitted:
+    type: integer
+  recordsEmitted:
     type: integer
   recordsCommitted:
     type: integer # if unset, committed records could not be computed
+  replicationEndTime:
+    type: integer
+    description: The end of the replication activity
+  replicationStartTime:
+    type: integer
+    description: The start of the replication activity
+  sourceReadEndTime:
+    type: integer
+    description: The exit time of the source container/pod
+  sourceReadStartTime:
+    type: integer
+    description: The boot time of the source container/pod
+  sourceStateMessagesEmitted:
+    description: Number of State messages emitted by the Source Connector
+    type: integer

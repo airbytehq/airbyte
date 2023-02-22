@@ -1,0 +1,19 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/sqlite",
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Sqlite",
+    "type": "object",
+    "required": ["destination_path"],
+    "additionalProperties": false,
+    "properties": {
+      "destination_path": {
+        "type": "string",
+        "description": "Path to the sqlite.db file. The file will be placed inside that local mount. For more information check out our <a href=\"https://docs.airbyte.com/integrations/destinations/sqlite\">docs</a>",
+        "example": "/local/sqlite.db"
+      }
+    }
+  }
+}

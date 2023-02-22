@@ -6,11 +6,11 @@ echo "try to build the source image: ${source_image}"
 docker build  -t ${source_image} .
 
 # Pull latest acctest image
-docker pull airbyte/source-acceptance-test:latest
+docker pull airbyte/connector-acceptance-test:latest
 
 docker run --rm -it \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /tmp:/tmp \
     -v $(pwd):/test_input \
-    airbyte/source-acceptance-test \
+    airbyte/connector-acceptance-test \
     --acceptance-test-config /test_input

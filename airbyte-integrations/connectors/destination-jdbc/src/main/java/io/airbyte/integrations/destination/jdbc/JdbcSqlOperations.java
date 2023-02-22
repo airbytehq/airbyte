@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -18,8 +18,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -46,19 +44,34 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
-    if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
-      AirbyteSentry.executeWithTracing("CreateSchema",
-          () -> database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName)),
-          Map.of("schema", schemaName));
-      schemaSet.add(schemaName);
+    try {
+      if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
+        database.execute(String.format("CREATE SCHEMA IF NOT EXISTS %s;", schemaName));
+        schemaSet.add(schemaName);
+      }
+    } catch (Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
+  }
+
+  /**
+   * When an exception occurs, we may recognize it as an issue with the users permissions
+   * or other configuration options. In these cases, we can wrap the exception in a {@link ConfigErrorException}
+   * which will exclude the error from our on-call paging/reporting
+   * @param e the exception to check.
+   * @return A ConfigErrorException with a message with actionable feedback to the user.
+   */
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+    return Optional.empty();
   }
 
   @Override
   public void createTableIfNotExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
-    AirbyteSentry.executeWithTracing("CreateTableIfNotExists",
-        () -> database.execute(createTableQuery(database, schemaName, tableName)),
-        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName));
+    try {
+      database.execute(createTableQuery(database, schemaName, tableName));
+    } catch (SQLException e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   @Override
@@ -94,7 +107,7 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
+  public String insertTableQuery(final JdbcDatabase database, final String schemaName, final String srcTableName, final String dstTableName) {
     return String.format("INSERT INTO %s.%s SELECT * FROM %s.%s;\n", schemaName, dstTableName, schemaName, srcTableName);
   }
 
@@ -106,16 +119,12 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       appendedQueries.append(query);
     }
     appendedQueries.append("COMMIT;");
-    AirbyteSentry.executeWithTracing("ExecuteTransactions",
-        () -> database.execute(appendedQueries.toString()),
-        Map.of("queries", queries));
+    database.execute(appendedQueries.toString());
   }
 
   @Override
   public void dropTableIfExists(final JdbcDatabase database, final String schemaName, final String tableName) throws SQLException {
-    AirbyteSentry.executeWithTracing("DropTableIfExists",
-        () -> database.execute(dropTableIfExistsQuery(schemaName, tableName)),
-        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName));
+    database.execute(dropTableIfExistsQuery(schemaName, tableName));
   }
 
   private String dropTableIfExistsQuery(final String schemaName, final String tableName) {
@@ -138,12 +147,8 @@ public abstract class JdbcSqlOperations implements SqlOperations {
                                   final String schemaName,
                                   final String tableName)
       throws Exception {
-    AirbyteSentry.executeWithTracing("InsertRecords",
-        () -> {
-          dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
-          insertRecordsInternal(database, records, schemaName, tableName);
-        },
-        Map.of("schema", Objects.requireNonNullElse(schemaName, "null"), "table", tableName, "recordCount", records.size()));
+    dataAdapter.ifPresent(adapter -> records.forEach(airbyteRecordMessage -> adapter.adapt(airbyteRecordMessage.getData())));
+    insertRecordsInternal(database, records, schemaName, tableName);
   }
 
   protected abstract void insertRecordsInternal(JdbcDatabase database,

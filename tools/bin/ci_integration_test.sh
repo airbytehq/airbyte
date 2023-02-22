@@ -20,9 +20,9 @@ else
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
     ./gradlew --no-daemon --scan airbyteDocker
-  elif [[ "$connector" == *"source-acceptance-test"* ]]; then
+  elif [[ "$connector" == *"connector-acceptance-test"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
-    selected_integration_test="source-acceptance-test"
+    selected_integration_test="connector-acceptance-test"
     integrationTestCommand="$(_to_gradle_path "airbyte-integrations/bases/$connector_name" integrationTest)"
     export SUB_BUILD="CONNECTORS_BASE"
   elif [[ "$connector" == *"bases"* ]]; then
@@ -134,6 +134,9 @@ write_logs() {
 
 echo "# $connector" >> $GITHUB_STEP_SUMMARY
 echo "" >> $GITHUB_STEP_SUMMARY
+
+# Cut the $GITHUB_STEP_SUMMARY with head if its larger than 1MB
+echo "$GITHUB_STEP_SUMMARY" | head -c 1048576 >> $GITHUB_STEP_SUMMARY
 
 # Copy command output to extract gradle scan link.
 run | tee build.out

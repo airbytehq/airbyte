@@ -1,25 +1,26 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb.state;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FIELD_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_FUNCTION;
+import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.CURSOR_RECORD_COUNT_FUNCTION;
 import static io.airbyte.integrations.source.relationaldb.state.StateGeneratorUtils.NAME_NAMESPACE_PAIR_FUNCTION;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,7 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
         getStreamsSupplier(airbyteStateMessage),
         CURSOR_FUNCTION,
         CURSOR_FIELD_FUNCTION,
+        CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
     this.cdcStateManager = new CdcStateManager(extractCdcState(airbyteStateMessage), extractStreams(airbyteStateMessage));

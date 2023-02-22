@@ -1,0 +1,17 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "form_id": ["form_id"],
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["incremental", "full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+      }
+    ]
+  }
+}

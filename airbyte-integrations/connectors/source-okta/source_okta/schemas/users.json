@@ -1,9 +1,8 @@
 {
+  "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "_links": {
-      "additionalProperties": {
-        "type": ["object", "null"]
-      },
       "type": ["object", "null"]
     },
     "activated": {
@@ -12,16 +11,20 @@
     },
     "created": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "credentials": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
       "properties": {
         "password": {
+          "type": ["object", "null"],
+          "additionalProperties": true,
           "properties": {
             "hash": {
+              "additionalProperties": true,
               "properties": {
                 "algorithm": {
-                  "enum": ["BCRYPT", "SHA-512", "SHA-256", "SHA-1", "MD5"],
                   "type": ["string", "null"]
                 },
                 "salt": {
@@ -40,6 +43,7 @@
               "type": ["object", "null"]
             },
             "hook": {
+              "additionalProperties": true,
               "properties": {
                 "type": {
                   "type": ["string", "null"]
@@ -48,32 +52,24 @@
               "type": ["object", "null"]
             },
             "value": {
-              "format": "password",
               "type": ["string", "null"]
             }
-          },
-          "type": ["object", "null"]
+          }
         },
         "provider": {
+          "additionalProperties": true,
           "properties": {
             "name": {
               "type": ["string", "null"]
             },
             "type": {
-              "enum": [
-                "ACTIVE_DIRECTORY",
-                "FEDERATION",
-                "LDAP",
-                "OKTA",
-                "SOCIAL",
-                "IMPORT"
-              ],
               "type": ["string", "null"]
             }
           },
           "type": ["object", "null"]
         },
         "recovery_question": {
+          "additionalProperties": true,
           "properties": {
             "answer": {
               "type": ["string", "null"]
@@ -84,11 +80,10 @@
           },
           "type": ["object", "null"]
         }
-      },
-      "type": "object"
+      }
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "lastLogin": {
       "format": "date-time",
@@ -96,13 +91,14 @@
     },
     "lastUpdated": {
       "format": "date-time",
-      "type": "string"
+      "type": ["string", "null"]
     },
     "passwordChanged": {
       "format": "date-time",
       "type": ["string", "null"]
     },
     "profile": {
+      "additionalProperties": true,
       "properties": {
         "city": {
           "type": ["string", "null"]
@@ -198,33 +194,23 @@
           "type": ["string", "null"]
         }
       },
-      "type": "object"
+      "type": ["object", "null"]
     },
     "status": {
-      "enum": [
-        "ACTIVE",
-        "DEPROVISIONED",
-        "LOCKED_OUT",
-        "PASSWORD_EXPIRED",
-        "PROVISIONED",
-        "RECOVERY",
-        "STAGED",
-        "SUSPENDED"
-      ],
-      "type": "string"
+      "type": ["string", "null"]
     },
     "statusChanged": {
       "format": "date-time",
       "type": ["string", "null"]
     },
     "type": {
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["string", "null"]
         }
       },
-      "type": "object"
+      "type": ["object", "null"]
     }
-  },
-  "type": "object"
+  }
 }

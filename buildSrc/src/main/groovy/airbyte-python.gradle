@@ -84,13 +84,15 @@ class AirbytePythonPlugin implements Plugin<Project> {
             installVirtualenv = true
             pip 'pip:21.3.1'
             pip 'mccabe:0.6.1'
+            // https://github.com/csachs/pyproject-flake8/issues/13
+            pip 'flake8:4.0.1'
             // flake8 doesn't support pyproject.toml files
             // and thus there is the wrapper "pyproject-flake8" for this
             pip 'pyproject-flake8:0.0.1a2'
             pip 'black:22.3.0'
             pip 'mypy:0.930'
             pip 'isort:5.6.4'
-            pip 'pytest:6.1.2'
+            pip 'pytest:6.2.5'
             pip 'coverage[toml]:6.3.1'
         }
 
@@ -147,11 +149,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
                 command = "install -r requirements.txt"
                 inputs.file('requirements.txt')
                 outputs.file('build/installedlocalreqs.txt')
-
-                // HACK: makes all integrations depend on installing requirements for bases. long term we should resolve deps and install in order.
-                if (project.getPath().startsWith(":airbyte-integrations:connectors") && !project.hasProperty("reports_folder")) {
-                    dependsOn project.rootProject.getTasksByName("airbytePythonApply", true).findAll { it.project.getPath().startsWith(":airbyte-integrations:bases") }
-                }
             }
         } else if (project.file('setup.py').exists()) {
             // If requirements.txt does not exists, install from setup.py instead, assume a dev or "tests" profile exists.

@@ -1,7 +1,7 @@
 {{ config(
     sort = ["_airbyte_active_row", "_airbyte_unique_key_scd", "_airbyte_emitted_at"],
     unique_key = "_airbyte_unique_key_scd",
-    schema = "test_normalization",
+    schema = "test_normalization_bhhpj",
     post_hook = ["
                     {%
                     set final_table_relation = adapter.get_relation(
@@ -48,7 +48,7 @@
                     -- We have to have a non-empty query, so just do a noop delete
                     delete from {{ this }} where 1=0
                     {% endif %}
-                    ","drop view _airbyte_test_normalization.dedup_exchange_rate_stg"],
+                    ","drop view _airbyte_test_normalization_bhhpj.dedup_exchange_rate_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('dedup_exchange_rate_stg')
@@ -59,7 +59,7 @@ new_data as (
     select
         *
     from {{ ref('dedup_exchange_rate_stg')  }}
-    -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
+    -- dedup_exchange_rate from {{ source('test_normalization_bhhpj', '_airbyte_raw_dedup_exchange_rate') }}
     where 1 = 1
     {{ incremental_clause('_airbyte_emitted_at', this) }}
 ),
@@ -97,7 +97,7 @@ input_data as (
 input_data as (
     select *
     from {{ ref('dedup_exchange_rate_stg')  }}
-    -- dedup_exchange_rate from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
+    -- dedup_exchange_rate from {{ source('test_normalization_bhhpj', '_airbyte_raw_dedup_exchange_rate') }}
 ),
 {% endif %}
 scd_data as (

@@ -7,6 +7,7 @@ const destinationDocs = `${connectorsDocsRoot}/destinations`;
 
 function getFilenamesInDir(prefix, dir, excludes) {
     return fs.readdirSync(dir)
+        .filter(fileName => !fileName.endsWith(".inapp.md"))
         .map(fileName => fileName.replace(".md", ""))
         .filter(fileName => excludes.indexOf(fileName.toLowerCase()) === -1)
         .map(filename => {
@@ -39,11 +40,17 @@ module.exports = {
           {
             type: 'category',
             label: 'Sources',
+            link: {
+              type: 'generated-index',
+            },
             items: getSourceConnectors()
           },
           {
             type: 'category',
             label: 'Destinations',
+            link: {
+              type: 'generated-index',
+            },
             items: getDestinationConnectors()
           },
           {
@@ -56,19 +63,20 @@ module.exports = {
     {
       type: 'category',
       label: 'Airbyte Cloud',
-      link: {
-        type: 'doc',
-        id: 'cloud/getting-started-with-airbyte-cloud',
-      },
       items: [
+        {
+          type: 'doc',
+          label: 'Getting Started',
+          id: "cloud/getting-started-with-airbyte-cloud",
+        },
         'cloud/core-concepts',
         'cloud/managing-airbyte-cloud',
-
+        'cloud/dbt-cloud-integration',
       ],
     },
     {
       type: 'category',
-      label: 'Airbyte Open Source QuickStart',
+      label: 'Airbyte Open Source Quick Start',
       link: {
         type: 'generated-index',
       },
@@ -86,14 +94,57 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
-        'deploying-airbyte/local-deployment',
-        'deploying-airbyte/on-aws-ec2',
-        'deploying-airbyte/on-azure-vm-cloud-shell',
-        'deploying-airbyte/on-gcp-compute-engine',
-        'deploying-airbyte/on-kubernetes',
-        'deploying-airbyte/on-plural',
-        'deploying-airbyte/on-oci-vm',
-        'deploying-airbyte/on-digitalocean-droplet',
+        {
+          type: 'doc',
+          label: 'On your local machine',
+          id: 'deploying-airbyte/local-deployment',
+        },
+        {
+          type: 'doc',
+          label: 'On AWS EC2',
+          id: 'deploying-airbyte/on-aws-ec2',
+        },
+        
+        {
+          type: 'doc',
+          label: 'On Azure',
+          id:'deploying-airbyte/on-azure-vm-cloud-shell',
+        },
+        {
+          type: 'doc',
+          label: 'On Google (GCP)',
+          id:'deploying-airbyte/on-gcp-compute-engine',
+        },
+        {
+          type: 'doc',
+          label: 'On Kubernetes',
+          id:'deploying-airbyte/on-kubernetes',
+        },
+        {
+          type: 'doc',
+          label: 'On Kubernetes using Helm',
+          id:'deploying-airbyte/on-kubernetes-via-helm',
+        },
+        {
+          type: 'doc',
+          label: 'On Restack',
+          id:'deploying-airbyte/on-restack',
+        },
+        {
+          type: 'doc',
+          label: 'On Plural',
+          id:'deploying-airbyte/on-plural',
+        },
+        {
+          type: 'doc',
+          label: 'On Oracle Cloud',
+          id:'deploying-airbyte/on-oci-vm',
+        },
+        {
+          type: 'doc',
+          label: 'On DigitalOcean',
+          id:'deploying-airbyte/on-digitalocean-droplet',
+        },
       ],
     },
     {
@@ -106,6 +157,7 @@ module.exports = {
         'operator-guides/upgrading-airbyte',
         'operator-guides/reset',
         'operator-guides/configuring-airbyte-db',
+        'operator-guides/configuring-connector-resources',
         'operator-guides/browsing-output-logs',
         'operator-guides/using-the-airflow-airbyte-operator',
         'operator-guides/using-prefect-task',
@@ -133,17 +185,15 @@ module.exports = {
           },
         'operator-guides/using-custom-connectors',
         'operator-guides/scaling-airbyte',
-        'operator-guides/securing-airbyte',
+        'operator-guides/configuring-sync-notifications',
+        'operator-guides/collecting-metrics',
       ],
     },
     {
       type: 'category',
       label: 'Troubleshoot Airbyte',
-      link: {
-        type: 'doc',
-        id: 'troubleshooting/README',
-      },
       items: [
+        'troubleshooting/README',
         'troubleshooting/on-deploying',
         'troubleshooting/new-connection',
         'troubleshooting/running-sync',     
@@ -151,12 +201,67 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Build a connector',
-      link: {
-        type: 'doc',
-        id: 'connector-development/README',
-      },      
+      label: 'Build a connector',      
       items: [
+        {
+          type: 'doc',
+          label: 'CDK Introduction',
+          id: 'connector-development/README',
+        },
+        {
+          type: 'category',
+          label: 'Low-code connector development',
+          items: [
+            'connector-development/config-based/connector-builder-ui',
+            {
+              label: 'Low-code CDK Intro',
+              type: 'doc',
+              id: 'connector-development/config-based/low-code-cdk-overview',
+            },
+            {
+              type: 'category',
+              label: 'Tutorial',
+              items: [
+                'connector-development/config-based/tutorial/getting-started',
+                'connector-development/config-based/tutorial/create-source',
+                'connector-development/config-based/tutorial/install-dependencies',
+                'connector-development/config-based/tutorial/connecting-to-the-API-source',
+                'connector-development/config-based/tutorial/reading-data',
+                'connector-development/config-based/tutorial/incremental-reads',
+                'connector-development/config-based/tutorial/testing',
+              ],
+            },
+            {
+              type: 'category',
+              label: 'Understanding the YAML file',
+              link: {
+                type: 'doc',
+                id: 'connector-development/config-based/understanding-the-yaml-file/yaml-overview',
+              },
+              items: [
+                {
+                  type: `category`,
+                  label: `Requester`,
+                  link: {
+                    type: 'doc',
+                    id: 'connector-development/config-based/understanding-the-yaml-file/requester',
+                  },
+                  items: [
+                    'connector-development/config-based/understanding-the-yaml-file/request-options',
+                    'connector-development/config-based/understanding-the-yaml-file/authentication',
+                    'connector-development/config-based/understanding-the-yaml-file/error-handling',  
+                  ]
+              },
+                'connector-development/config-based/understanding-the-yaml-file/incremental-syncs',
+                'connector-development/config-based/understanding-the-yaml-file/pagination',
+                'connector-development/config-based/understanding-the-yaml-file/partition-router',
+                'connector-development/config-based/understanding-the-yaml-file/record-selector',
+                'connector-development/config-based/understanding-the-yaml-file/reference',
+              ]
+            },
+            'connector-development/config-based/advanced-topics',    
+          ]
+        },
         'connector-development/tutorials/cdk-speedrun',
         {
           type: 'category',
@@ -197,7 +302,7 @@ module.exports = {
         'connector-development/cdk-faros-js',
         'connector-development/airbyte101',
         'connector-development/testing-connectors/README',
-        'connector-development/testing-connectors/source-acceptance-tests-reference',
+        'connector-development/testing-connectors/connector-acceptance-tests-reference',
         'connector-development/connector-specification-reference',
         'connector-development/best-practices',
         'connector-development/ux-handbook',
@@ -206,25 +311,18 @@ module.exports = {
     {
       type: 'category',
       label: 'Contribute to Airbyte',
-      link: {
-        type: 'doc',
-        id: 'contributing-to-airbyte/README',
-      },
       items: [
+        'contributing-to-airbyte/README',
         'contributing-to-airbyte/code-of-conduct',
         'contributing-to-airbyte/maintainer-code-of-conduct',
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
-        'contributing-to-airbyte/monorepo-python-development',
+        'contributing-to-airbyte/python-gradle-setup',
         'contributing-to-airbyte/code-style',
+        'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',
         'contributing-to-airbyte/gradle-dependency-update',
-        {
-          type: 'link',
-          label: 'Connector template',
-          href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
-        },
         {
           type: 'category',
           label: 'Updating documentation',
@@ -233,11 +331,11 @@ module.exports = {
             id: 'contributing-to-airbyte/updating-documentation',
           },
           items: [
-            'docusaurus/contributing_to_docs',
-            'docusaurus/making_a_redirect',
-            'docusaurus/deploying_and_reverting_docs',
-            'docusaurus/locally_testing_docusaurus',
-            'docusaurus/readme',
+            {
+              type: 'link',
+              label: 'Connector doc template',
+              href: 'https://hackmd.io/Bz75cgATSbm7DjrAqgl4rw',
+            },
           ]
         },
       ]
@@ -253,11 +351,12 @@ module.exports = {
         {
           type: 'category',
           label: 'Connections and Sync Modes',
-          link: {
-            type: 'doc',
-            id: 'understanding-airbyte/connections/README',
-          },
           items: [
+            {
+              type: 'doc',
+              label: 'Connections Overview',
+              id: "understanding-airbyte/connections/README",
+            },
             'understanding-airbyte/connections/full-refresh-overwrite',
             'understanding-airbyte/connections/full-refresh-append',
             'understanding-airbyte/connections/incremental-append',
@@ -272,17 +371,20 @@ module.exports = {
         'understanding-airbyte/namespaces',
         'understanding-airbyte/supported-data-types',
         'understanding-airbyte/json-avro-conversion',
-        'understanding-airbyte/glossary',
+        'understanding-airbyte/database-data-catalog',
       ]
+    },
+    {
+      type: 'doc',
+      id: "operator-guides/security",
     },
     {
       type: 'doc',
       id: "api-documentation",
     },
     {
-      type: 'link',
-      label: 'CLI documentation',
-      href: 'https://github.com/airbytehq/airbyte/blob/master/octavia-cli/README.md',
+      type: 'doc',
+      id: "cli-documentation",
     },
     {
       type: 'category',
@@ -294,17 +396,7 @@ module.exports = {
           href: 'https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap',
         },
         'project-overview/product-release-stages',
-        {
-          type: 'category',
-          label: 'Changelog',
-          items: [
-            'project-overview/changelog/README',
-            'project-overview/changelog/platform',
-            'project-overview/changelog/connectors',
-          ]
-        },
         'project-overview/slack-code-of-conduct',
-        'project-overview/security',
         {
           type: 'link',
           label: 'Airbyte Repository',
@@ -324,6 +416,22 @@ module.exports = {
             'project-overview/licenses/examples',
           ]
         },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Release Notes',
+      link: {
+        type: 'generated-index',
+      },
+      items: [
+        'release_notes/january_2023',
+        'release_notes/december_2022',
+        'release_notes/november_2022',
+        'release_notes/october_2022',
+        'release_notes/september_2022',
+        'release_notes/august_2022',
+        'release_notes/july_2022',
       ],
     },
   ],

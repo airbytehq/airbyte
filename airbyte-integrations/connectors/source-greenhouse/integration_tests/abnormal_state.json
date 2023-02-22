@@ -1,0 +1,116 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "candidates" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "demographics_answers" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "users" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "scorecards" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "offers" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "job_stages" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "job_posts" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "interviews" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "jobs" },
+      "stream_state": { "updated_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "applications" },
+      "stream_state": { "applied_at": "2222-01-21T00:00:00.000Z"}
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "jobs_stages" },
+      "stream_state": {
+        "4177046003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "4177048003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "4446240003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "4466310003": { "updated_at": "2222-01-01T00:00:00.000Z" }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "applications_demographics_answers" },
+      "stream_state": {
+        "19214950003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "19214993003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "19215172003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "19215333003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "44933447003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "44937562003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "47459993003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "48693310003": { "updated_at": "2222-01-01T00:00:00.000Z" }
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "applications_interviews" },
+      "stream_state": {
+        "19214950003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "19214993003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "19215172003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "19215333003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "44933447003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "44937562003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "47459993003": { "updated_at": "2222-01-01T00:00:00.000Z" },
+        "48693310003": { "updated_at": "2222-01-01T00:00:00.000Z" }
+      }
+    }
+  }
+]

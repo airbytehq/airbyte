@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -7,6 +7,7 @@ from http import HTTPStatus
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
@@ -90,12 +91,18 @@ class BasicAmazonAdsStream(Stream, ABC):
         expand_refs(schema)
         return schema
 
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
 
 # Basic full refresh stream
 class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     """
     Class for getting data from streams that based on single http request.
     """
+
+    data_field = ""
 
     def __init__(self, config: Mapping[str, Any], *args, profiles: List[Profile] = None, **kwargs):
         # Each AmazonAdsStream instance are dependant on list of profiles.
@@ -121,7 +128,10 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         :return an object representing single record in the response
         """
         if response.status_code == HTTPStatus.OK:
-            yield from response.json()
+            if self.data_field:
+                yield from response.json().get(self.data_field, [])
+            else:
+                yield from response.json()
             return
 
         """
@@ -151,7 +161,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
             response.raise_for_status()
             raise Exception(response.text)
 
-        self.logger.warn(
+        self.logger.warning(
             f"Unexpected error {resp.code} when processing request {response.request.url} for "
             f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
         )

@@ -1,0 +1,744 @@
+[
+  {
+    "data": {
+      "repository": {
+        "name": "airbyte",
+        "owner": {
+          "login": "airbytehq"
+        },
+        "pullRequests": {
+          "pageInfo": {
+            "hasNextPage": true,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 4,
+          "nodes": [
+            {
+              "node_id": "pull_request1",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 2,
+                "nodes": [
+                  {
+                    "node_id": "review1",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 2,
+                      "nodes": [
+                        {
+                          "node_id": "comment1",
+                          "id": "comment1",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 2,
+                            "nodes": [
+                              {
+                                "node_id": "reaction1",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              },
+                              {
+                                "node_id": "reaction2",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "node_id": "comment2",
+                          "id": "comment2",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": true,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 3,
+                            "nodes": [
+                              {
+                                "node_id": "reaction3",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              },
+                              {
+                                "node_id": "reaction4",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "node_id": "review2",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": true,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 3,
+                      "nodes": [
+                        {
+                          "node_id": "comment3",
+                          "id": "comment3",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 0,
+                            "nodes": []
+                          }
+                        },
+                        {
+                          "node_id": "comment4",
+                          "id": "comment4",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 0,
+                            "nodes": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "node_id": "pull_request2",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 3,
+                "nodes": [
+                  {
+                    "node_id": "review3",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 0,
+                      "nodes": []
+                    }
+                  },
+                  {
+                    "node_id": "review4",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 0,
+                      "nodes": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "node": {
+        "__typename": "PullRequestReviewComment",
+        "node_id": "comment2",
+        "id": "comment2",
+        "repository": {
+          "name": "airbyte",
+          "owner": {
+            "login": "airbytehq"
+          }
+        },
+        "reactions": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 3,
+          "nodes": [
+            {
+              "node_id": "reaction5",
+              "user": {},
+              "created_at": "2022-01-01T00:00:01Z"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "node": {
+        "__typename": "PullRequestReview",
+        "node_id": "review2",
+        "repository": {
+          "name": "airbyte",
+          "owner": {
+            "login": "airbytehq"
+          }
+        },
+        "comments": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 3,
+          "nodes": [
+            {
+              "node_id": "comment5",
+              "id": "comment5",
+              "reactions": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 1,
+                "nodes": [
+                  {
+                    "node_id": "reaction6",
+                    "user": {},
+                    "created_at": "2022-01-01T00:00:01Z"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "node": {
+        "__typename": "PullRequest",
+        "node_id": "pull_request2",
+        "repository": {
+          "name": "airbyte",
+          "owner": {
+            "login": "airbytehq"
+          }
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 3,
+          "nodes": [
+            {
+              "node_id": "review5",
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 2,
+                "nodes": [
+                  {
+                    "node_id": "comment6",
+                    "id": "comment6",
+                    "reactions": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 0,
+                      "nodes": []
+                    }
+                  },
+                  {
+                    "node_id": "comment7",
+                    "id": "comment7",
+                    "reactions": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 1,
+                      "nodes": [
+                        {
+                          "node_id": "reaction7",
+                          "user": {},
+                          "created_at": "2022-01-01T00:00:01Z"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "repository": {
+        "name": "airbyte",
+        "owner": {
+          "login": "airbytehq"
+        },
+        "pullRequests": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 4,
+          "nodes": [
+            {
+              "node_id": "pull_request3",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 0,
+                "nodes": []
+              }
+            },
+            {
+              "node_id": "pull_request4",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 1,
+                "nodes": [
+                  {
+                    "node_id": "review6",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 1,
+                      "nodes": [
+                        {
+                          "node_id": "comment8",
+                          "id": "comment8",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 1,
+                            "nodes": [
+                              {
+                                "node_id": "reaction8",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "repository": {
+        "name": "airbyte",
+        "owner": {
+          "login": "airbytehq"
+        },
+        "pullRequests": {
+          "pageInfo": {
+            "hasNextPage": true,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 4,
+          "nodes": [
+            {
+              "node_id": "pull_request1",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 2,
+                "nodes": [
+                  {
+                    "node_id": "review1",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 2,
+                      "nodes": [
+                        {
+                          "node_id": "comment1",
+                          "id": "comment1",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 2,
+                            "nodes": [
+                              {
+                                "node_id": "reaction1",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              },
+                              {
+                                "node_id": "reaction2",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "node_id": "comment2",
+                          "id": "comment2",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": true,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 4,
+                            "nodes": [
+                              {
+                                "node_id": "reaction3",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              },
+                              {
+                                "node_id": "reaction4",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "node_id": "review2",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": true,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 3,
+                      "nodes": [
+                        {
+                          "node_id": "comment3",
+                          "id": "comment3",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 0,
+                            "nodes": []
+                          }
+                        },
+                        {
+                          "node_id": "comment4",
+                          "id": "comment4",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 0,
+                            "nodes": []
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "node_id": "pull_request2",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": true,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 3,
+                "nodes": [
+                  {
+                    "node_id": "review3",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 0,
+                      "nodes": []
+                    }
+                  },
+                  {
+                    "node_id": "review4",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 0,
+                      "nodes": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "node": {
+        "__typename": "PullRequestReviewComment",
+        "node_id": "comment2",
+        "id": "comment2",
+        "repository": {
+          "name": "airbyte",
+          "owner": {
+            "login": "airbytehq"
+          }
+        },
+        "reactions": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 4,
+          "nodes": [
+            {
+              "node_id": "reaction5",
+              "user": {},
+              "created_at": "2022-01-01T00:00:01Z"
+            },
+            {
+              "node_id": "reaction9",
+              "user": {},
+              "created_at": "2022-01-02T00:00:01Z"
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "node": {
+        "__typename": "PullRequestReview",
+        "node_id": "review2",
+        "repository": {
+          "name": "airbyte",
+          "owner": {
+            "login": "airbytehq"
+          }
+        },
+        "comments": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 3,
+          "nodes": [
+            {
+              "node_id": "comment5",
+              "id": "comment5",
+              "reactions": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 1,
+                "nodes": [
+                  {
+                    "node_id": "reaction6",
+                    "user": {},
+                    "created_at": "2022-01-01T00:00:01Z"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "node": {
+        "__typename": "PullRequest",
+        "node_id": "pull_request2",
+        "repository": {
+          "name": "airbyte",
+          "owner": {
+            "login": "airbytehq"
+          }
+        },
+        "reviews": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 3,
+          "nodes": [
+            {
+              "node_id": "review5",
+              "comments": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 2,
+                "nodes": [
+                  {
+                    "node_id": "comment6",
+                    "id": "comment6",
+                    "reactions": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 0,
+                      "nodes": []
+                    }
+                  },
+                  {
+                    "node_id": "comment7",
+                    "id": "comment7",
+                    "reactions": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 1,
+                      "nodes": [
+                        {
+                          "node_id": "reaction7",
+                          "user": {},
+                          "created_at": "2022-01-01T00:00:01Z"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "data": {
+      "repository": {
+        "name": "airbyte",
+        "owner": {
+          "login": "airbytehq"
+        },
+        "pullRequests": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "endCursor"
+          },
+          "totalCount": 4,
+          "nodes": [
+            {
+              "node_id": "pull_request3",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 0,
+                "nodes": []
+              }
+            },
+            {
+              "node_id": "pull_request4",
+              "reviews": {
+                "pageInfo": {
+                  "hasNextPage": false,
+                  "endCursor": "endCursor"
+                },
+                "totalCount": 1,
+                "nodes": [
+                  {
+                    "node_id": "review6",
+                    "comments": {
+                      "pageInfo": {
+                        "hasNextPage": false,
+                        "endCursor": "endCursor"
+                      },
+                      "totalCount": 1,
+                      "nodes": [
+                        {
+                          "node_id": "comment8",
+                          "id": "comment8",
+                          "reactions": {
+                            "pageInfo": {
+                              "hasNextPage": false,
+                              "endCursor": "endCursor"
+                            },
+                            "totalCount": 2,
+                            "nodes": [
+                              {
+                                "node_id": "reaction8",
+                                "user": {},
+                                "created_at": "2022-01-01T00:00:01Z"
+                              },
+                              {
+                                "node_id": "reaction10",
+                                "user": {},
+                                "created_at": "2022-01-02T00:00:01Z"
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+]

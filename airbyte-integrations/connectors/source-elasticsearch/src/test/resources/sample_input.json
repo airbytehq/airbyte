@@ -1,0 +1,34 @@
+{
+  "properties": {
+    "nestedObject": {
+      "type": "nested",
+      "properties": {
+        "binary": { "type": "binary" },
+        "boolean": { "type": "boolean" },
+        "keyword": { "type": "keyword" },
+        "constant_keyword": { "type": "constant_keyword" },
+        "wildcard": { "type": "wildcard" },
+        "long": { "type": "long" },
+        "unsigned_long": { "type": "unsigned_long" },
+        "integer": { "type": "integer" },
+        "short": { "type": "short" },
+        "byte": { "type": "byte" },
+        "double": { "type": "double" },
+        "float": { "type": "float" },
+        "half_float": { "type": "half_float" },
+        "scaled_float": { "type": "scaled_float" },
+        "date": { "type": "date" },
+        "date_nanos": { "type": "date_nanos" },
+        "object": { "type": "object" },
+        "flattened": { "type": "flattened" },
+        "nested": { "type": "nested" },
+        "join": { "type": "join" },
+        "text": { "type": "text" },
+        "geo_point": { "type": "geo_point" },
+        "geo_shape": { "type": "geo_shape" },
+        "shape": { "type": "shape" },
+        "point": { "type": "point" }
+      }
+    }
+  }
+}

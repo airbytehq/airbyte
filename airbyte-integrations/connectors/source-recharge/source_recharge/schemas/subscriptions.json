@@ -85,7 +85,7 @@
             "type": "string"
           },
           "value": {
-            "type": ["string", "integer"]
+            "type": ["null", "string"]
           }
         }
       }

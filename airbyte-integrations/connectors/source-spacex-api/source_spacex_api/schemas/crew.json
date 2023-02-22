@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "crew": {
+      "title": "crew",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "inactive", "retired", "unknown"]
+        },
+        "agency": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "image": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "wikipedia": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "launches": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["status"]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    }
+  }
+}

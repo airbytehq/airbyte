@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
 
-import static io.airbyte.protocol.models.SyncMode.FULL_REFRESH;
-import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static io.airbyte.protocol.models.v0.SyncMode.FULL_REFRESH;
+import static io.airbyte.protocol.models.v0.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -17,19 +17,20 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -153,9 +154,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testDiscover() throws Exception {
-    final AirbyteCatalog discoverOutput = runDiscover();
-    assertNotNull(discoverOutput, "Expected discover to produce a catalog");
-    verifyCatalog(discoverOutput);
+    final UUID discoverOutput = runDiscover();
+    final AirbyteCatalog discoveredCatalog = getLastPersistedCatalog();
+    assertNotNull(discoveredCatalog, "Expected discover to produce a catalog");
+    verifyCatalog(discoveredCatalog);
   }
 
   /**
@@ -311,7 +313,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     return clone;
   }
 
-  private ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {

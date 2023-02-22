@@ -1378,10 +1378,7 @@
               },
               "roles": {
                 "type": "object",
-                "additionalProperties": {
-                  "type": "string",
-                  "format": "uri"
-                },
+                "additionalProperties": true,
                 "description": "The name and self URL for each role defined in the project. For more information, see [Create project role](#api-rest-api-3-role-post)."
               },
               "avatarUrls": {

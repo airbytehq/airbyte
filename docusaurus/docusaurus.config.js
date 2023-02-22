@@ -9,7 +9,7 @@ const config = {
     title: 'Airbyte Documentation',
     tagline:
         'Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.',
-    url: 'https://airbytehq.github.io',
+    url: 'https://docs.airbyte.com',
     // Assumed relative path.  If you are using airbytehq.github.io use /
     // anything else should match the repo name
     baseUrl: '/',
@@ -41,6 +41,26 @@ const config = {
                             from: '/integrations/sources/google-analytics-data-api',
                             to: '/integrations/sources/google-analytics-v4',
                         },
+                        {
+                            from: '/integrations/sources/appstore',
+                            to: '/integrations/sources/appstore-singer',
+                        },
+                        {
+                            from: '/project-overview/security',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/operator-guides/securing-airbyte',
+                            to: '/operator-guides/security',
+                        },
+                        {
+                            from: '/connector-development/config-based/',
+                            to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
+                        {
+                            from: '/project-overview/changelog',
+                            to: '/category/release-notes',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
@@ -60,7 +80,8 @@ const config = {
                     sidebarCollapsible: true,
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
-                    path: '../docs'
+                    path: '../docs',
+                    exclude: ['**/*.inapp.md'],
                 },
                 blog: false,
                 theme: {

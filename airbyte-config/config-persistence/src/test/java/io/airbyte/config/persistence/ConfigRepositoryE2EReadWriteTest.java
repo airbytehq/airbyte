@@ -1,23 +1,26 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG_FETCH_EVENT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -26,24 +29,21 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
+import io.airbyte.config.persistence.ConfigRepository.StandardSyncQuery;
 import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,55 +51,34 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.jooq.JSONB;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
+/**
+ * The tests in this class should be moved into separate test suites grouped by resource. Do NOT add
+ * new tests here. Add them to resource based test suites (e.g. WorkspacePersistenceTest). If one
+ * does not exist yet for that resource yet, create one and follow the pattern.
+ */
+@Deprecated
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-class ConfigRepositoryE2EReadWriteTest {
+class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
-  private static PostgreSQLContainer<?> container;
-  private DataSource dataSource;
-  private DSLContext dslContext;
-  private Database database;
-  private ConfigRepository configRepository;
-  private DatabaseConfigPersistence configPersistence;
-  private JsonSecretsProcessor jsonSecretsProcessor;
-  private Flyway flyway;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
 
-  @BeforeAll
-  public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
-  }
+  private ConfigRepository configRepository;
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    jsonSecretsProcessor = mock(JsonSecretsProcessor.class);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    configRepository = spy(new ConfigRepository(configPersistence, database));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, flyway);
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
+  void setup() throws IOException, JsonValidationException, SQLException {
+    configRepository = spy(new ConfigRepository(
+        database,
+        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database)));
     for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
-      configRepository.writeStandardWorkspace(workspace);
+      configRepository.writeStandardWorkspaceNoSecrets(workspace);
     }
     for (final StandardSourceDefinition sourceDefinition : MockData.standardSourceDefinitions()) {
       configRepository.writeStandardSourceDefinition(sourceDefinition);
@@ -130,16 +109,10 @@ class ConfigRepositoryE2EReadWriteTest {
     database.transaction(ctx -> ctx.truncate(ACTOR_DEFINITION_WORKSPACE_GRANT).execute());
   }
 
-  @AfterAll
-  public static void dbDown() {
-    container.close();
-  }
-
   @Test
   void testWorkspaceCountConnections() throws IOException {
-
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
-    assertEquals(4, configRepository.countConnectionsForWorkspace(workspaceId));
+    assertEquals(3, configRepository.countConnectionsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countSourcesForWorkspace(workspaceId));
   }
@@ -151,8 +124,24 @@ class ConfigRepositoryE2EReadWriteTest {
   }
 
   @Test
-  void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
+  void testFetchActorsUsingDefinition() throws IOException {
+    final UUID destinationDefinitionId = MockData.publicDestinationDefinition().getDestinationDefinitionId();
+    final UUID sourceDefinitionId = MockData.publicSourceDefinition().getSourceDefinitionId();
+    final List<DestinationConnection> destinationConnections = configRepository.listDestinationsForDefinition(
+        destinationDefinitionId);
+    final List<SourceConnection> sourceConnections = configRepository.listSourcesForDefinition(
+        sourceDefinitionId);
 
+    assertThat(destinationConnections)
+        .containsExactlyElementsOf(MockData.destinationConnections().stream().filter(d -> d.getDestinationDefinitionId().equals(
+            destinationDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
+    assertThat(sourceConnections).containsExactlyElementsOf(MockData.sourceConnections().stream().filter(d -> d.getSourceDefinitionId().equals(
+        sourceDefinitionId) && !d.getTombstone()).collect(Collectors.toList()));
+  }
+
+  @Test
+  void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
+    final String otherConfigHash = "OtherConfigHash";
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
@@ -172,43 +161,109 @@ class ConfigRepositoryE2EReadWriteTest {
     configRepository.writeSourceConnectionNoSecrets(source);
 
     final AirbyteCatalog actorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
+    final AirbyteCatalog expectedActorCatalog = CatalogHelpers.createAirbyteCatalog("clothes", Field.of("name", JsonSchemaType.STRING));
     configRepository.writeActorCatalogFetchEvent(
         actorCatalog, source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
 
     final Optional<ActorCatalog> catalog =
         configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, CONFIG_HASH);
     assertTrue(catalog.isPresent());
-    assertEquals(actorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
+    assertEquals(expectedActorCatalog, Jsons.object(catalog.get().getCatalog(), AirbyteCatalog.class));
     assertFalse(configRepository.getActorCatalog(source.getSourceId(), "1.3.0", CONFIG_HASH).isPresent());
-    assertFalse(configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, "OtherConfigHash").isPresent());
+    assertFalse(configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash).isPresent());
 
     configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.3.0", CONFIG_HASH);
     final Optional<ActorCatalog> catalogNewConnectorVersion =
         configRepository.getActorCatalog(source.getSourceId(), "1.3.0", CONFIG_HASH);
     assertTrue(catalogNewConnectorVersion.isPresent());
-    assertEquals(actorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConnectorVersion.get().getCatalog(), AirbyteCatalog.class));
 
-    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", "OtherConfigHash");
+    configRepository.writeActorCatalogFetchEvent(actorCatalog, source.getSourceId(), "1.2.0", otherConfigHash);
     final Optional<ActorCatalog> catalogNewConfig =
-        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, "OtherConfigHash");
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash);
     assertTrue(catalogNewConfig.isPresent());
-    assertEquals(actorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
 
     final int catalogDbEntry = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
     assertEquals(1, catalogDbEntry);
+
+    // Writing the previous catalog with v1 data types
+    configRepository.writeActorCatalogFetchEvent(expectedActorCatalog, source.getSourceId(), "1.2.0", otherConfigHash);
+    final Optional<ActorCatalog> catalogV1NewConfig =
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash);
+    assertTrue(catalogV1NewConfig.isPresent());
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
+
+    configRepository.writeActorCatalogFetchEvent(expectedActorCatalog, source.getSourceId(), "1.4.0", otherConfigHash);
+    final Optional<ActorCatalog> catalogV1again =
+        configRepository.getActorCatalog(source.getSourceId(), DOCKER_IMAGE_TAG, otherConfigHash);
+    assertTrue(catalogV1again.isPresent());
+    assertEquals(expectedActorCatalog, Jsons.object(catalogNewConfig.get().getCatalog(), AirbyteCatalog.class));
+
+    final int catalogDbEntry2 = database.query(ctx -> ctx.selectCount().from(ACTOR_CATALOG)).fetchOne().into(int.class);
+    // TODO this should be 2 once we re-enable datatypes v1
+    assertEquals(1, catalogDbEntry2);
   }
 
   @Test
-  void testListWorkspaceStandardSync() throws IOException {
+  void testListWorkspaceStandardSyncAll() throws IOException {
+    final List<StandardSync> expectedSyncs = copyWithV1Types(MockData.standardSyncs().subList(0, 4));
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(
+        MockData.standardWorkspaces().get(0).getWorkspaceId(), true);
 
-    final List<StandardSync> syncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId());
-    assertThat(MockData.standardSyncs().subList(0, 4)).hasSameElementsAs(syncs);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
   }
 
   @Test
-  void testGetWorkspaceBySlug()
-      throws IOException {
+  void testListWorkspaceStandardSyncWithAllFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, List.of(MockData.SOURCE_ID_1), List.of(MockData.DESTINATION_ID_1), false);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(
+        MockData.standardSyncs().subList(0, 3).stream()
+            .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
+            .filter(sync -> query.sourceId().contains(sync.getSourceId()))
+            .toList());
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
 
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncDestinationFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, null, List.of(MockData.DESTINATION_ID_1), false);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(
+        MockData.standardSyncs().subList(0, 3).stream()
+            .filter(sync -> query.destinationId().contains(sync.getDestinationId()))
+            .toList());
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncSourceFiltering() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final StandardSyncQuery query = new StandardSyncQuery(workspaceId, List.of(MockData.SOURCE_ID_2), null, false);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(
+        MockData.standardSyncs().subList(0, 3).stream()
+            .filter(sync -> query.sourceId().contains(sync.getSourceId()))
+            .toList());
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(query);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testListWorkspaceStandardSyncExcludeDeleted() throws IOException {
+    final List<StandardSync> expectedSyncs = copyWithV1Types(MockData.standardSyncs().subList(0, 3));
+    final List<StandardSync> actualSyncs = configRepository.listWorkspaceStandardSyncs(MockData.standardWorkspaces().get(0).getWorkspaceId(), false);
+
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
+
+  @Test
+  void testGetWorkspaceBySlug() throws IOException {
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
     final StandardWorkspace tombstonedWorkspace = MockData.standardWorkspaces().get(2);
     final Optional<StandardWorkspace> retrievedWorkspace = configRepository.getWorkspaceBySlugOptional(workspace.getSlug(), false);
@@ -278,6 +333,24 @@ class ConfigRepositoryE2EReadWriteTest {
   void testListPublicSourceDefinitions() throws IOException {
     final List<StandardSourceDefinition> actualDefinitions = configRepository.listPublicSourceDefinitions(false);
     assertEquals(List.of(MockData.publicSourceDefinition()), actualDefinitions);
+  }
+
+  @Test
+  void testListWorkspaceSources() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(1).getWorkspaceId();
+    final List<SourceConnection> expectedSources = MockData.sourceConnections().stream()
+        .filter(source -> source.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
+    final List<SourceConnection> sources = configRepository.listWorkspaceSourceConnection(workspaceId);
+    assertThat(sources).hasSameElementsAs(expectedSources);
+  }
+
+  @Test
+  void testListWorkspaceDestinations() throws IOException {
+    final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
+    final List<DestinationConnection> expectedDestinations = MockData.destinationConnections().stream()
+        .filter(destination -> destination.getWorkspaceId().equals(workspaceId)).collect(Collectors.toList());
+    final List<DestinationConnection> destinations = configRepository.listWorkspaceDestinationConnection(workspaceId);
+    assertThat(destinations).hasSameElementsAs(expectedDestinations);
   }
 
   @Test
@@ -405,12 +478,48 @@ class ConfigRepositoryE2EReadWriteTest {
   @Test
   void testGetStandardSyncUsingOperation() throws IOException {
     final UUID operationId = MockData.standardSyncOperations().get(0).getOperationId();
-    final List<StandardSync> expectedSyncs = MockData.standardSyncs().subList(0, 4);
+    final List<StandardSync> expectedSyncs = copyWithV1Types(MockData.standardSyncs().subList(0, 3));
+    final List<StandardSync> actualSyncs = configRepository.listStandardSyncsUsingOperation(operationId);
 
-    final List<StandardSync> syncs = configRepository.listStandardSyncsUsingOperation(operationId);
+    assertSyncsMatch(expectedSyncs, actualSyncs);
+  }
 
-    assertThat(syncs).hasSameElementsAs(expectedSyncs);
+  private List<StandardSync> copyWithV1Types(final List<StandardSync> syncs) {
+    return syncs;
+    // TODO adjust with data types feature flag testing
+    // return syncs.stream()
+    // .map(standardSync -> {
+    // final StandardSync copiedStandardSync = Jsons.deserialize(Jsons.serialize(standardSync),
+    // StandardSync.class);
+    // copiedStandardSync.setCatalog(MockData.getConfiguredCatalogWithV1DataTypes());
+    // return copiedStandardSync;
+    // })
+    // .toList();
+  }
 
+  private void assertSyncsMatch(final List<StandardSync> expectedSyncs, final List<StandardSync> actualSyncs) {
+    assertEquals(expectedSyncs.size(), actualSyncs.size());
+
+    for (final StandardSync expected : expectedSyncs) {
+
+      final Optional<StandardSync> maybeActual = actualSyncs.stream().filter(s -> s.getConnectionId().equals(expected.getConnectionId())).findFirst();
+      if (maybeActual.isEmpty()) {
+        Assertions.fail(String.format("Expected to find connectionId %s in result, but actual connectionIds are %s",
+            expected.getConnectionId(),
+            actualSyncs.stream().map(StandardSync::getConnectionId).collect(Collectors.toList())));
+      }
+      final StandardSync actual = maybeActual.get();
+
+      // operationIds can be ordered differently in the query result than in the mock data, so they need
+      // to be verified separately
+      // from the rest of the sync.
+      assertThat(actual.getOperationIds()).hasSameElementsAs(expected.getOperationIds());
+
+      // now, clear operationIds so the rest of the sync can be compared
+      expected.setOperationIds(null);
+      actual.setOperationIds(null);
+      assertEquals(expected, actual);
+    }
   }
 
   @Test
@@ -430,6 +539,203 @@ class ConfigRepositoryE2EReadWriteTest {
         }
       }
     }
+  }
+
+  @Test
+  void testGetSourceAndDefinitionsFromSourceIds() throws IOException {
+    final List<UUID> sourceIds = MockData.sourceConnections().subList(0, 2).stream().map(SourceConnection::getSourceId).toList();
+
+    final List<SourceAndDefinition> expected = List.of(
+        new SourceAndDefinition(MockData.sourceConnections().get(0), MockData.standardSourceDefinitions().get(0)),
+        new SourceAndDefinition(MockData.sourceConnections().get(1), MockData.standardSourceDefinitions().get(1)));
+
+    final List<SourceAndDefinition> actual = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds);
+    assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetDestinationAndDefinitionsFromDestinationIds() throws IOException {
+    final List<UUID> destinationIds = MockData.destinationConnections().subList(0, 2).stream().map(DestinationConnection::getDestinationId).toList();
+
+    final List<DestinationAndDefinition> expected = List.of(
+        new DestinationAndDefinition(MockData.destinationConnections().get(0), MockData.standardDestinationDefinitions().get(0)),
+        new DestinationAndDefinition(MockData.destinationConnections().get(1), MockData.standardDestinationDefinitions().get(1)));
+
+    final List<DestinationAndDefinition> actual = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds);
+    assertThat(actual).hasSameElementsAs(expected);
+  }
+
+  @Test
+  void testGetGeographyForConnection() throws IOException {
+    final StandardSync sync = MockData.standardSyncs().get(0);
+    final Geography expected = sync.getGeography();
+    final Geography actual = configRepository.getGeographyForConnection(sync.getConnectionId());
+
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  void testGetGeographyForWorkspace() throws IOException {
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
+    final Geography expected = workspace.getDefaultGeography();
+    final Geography actual = configRepository.getGeographyForWorkspace(workspace.getWorkspaceId());
+
+    assertEquals(expected, actual);
+  }
+
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
+    }
+
+    final OffsetDateTime now = OffsetDateTime.now();
+    final OffsetDateTime yesterday = now.minusDays(1L);
+
+    final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
+    final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
+    final ActorCatalogFetchEvent fetchEvent2 = fetchEvents.get(1);
+
+    database.transaction(ctx -> {
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent1.getActorId(),
+          fetchEvent1.getActorCatalogId(),
+          yesterday);
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now);
+      // Insert a second identical copy to verify that the query can handle duplicates since the records
+      // are not guaranteed to be unique.
+      insertCatalogFetchEvent(
+          ctx,
+          fetchEvent2.getActorId(),
+          fetchEvent2.getActorCatalogId(),
+          now);
+
+      return null;
+    });
+
+    final Optional<ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSource(fetchEvent1.getActorId());
+
+    assertEquals(fetchEvent2.getActorCatalogId(), result.get().getActorCatalogId());
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException {
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
+    }
+
+    database.transaction(ctx -> {
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> insertCatalogFetchEvent(
+          ctx,
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+          actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+          actorCatalogFetchEvent.getCreatedAt()));
+
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+    assertEquals(0, configRepository.getMostRecentActorCatalogFetchEventForSources(Collections.emptyList()).size());
+  }
+
+  @Test
+  void testGetMostRecentActorCatalogFetchEventWithDuplicates() throws SQLException, IOException {
+    // Tests that we can handle two fetch events in the db with the same actor id, actor catalog id, and
+    // timestamp e.g., from duplicate discoveries.
+    for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
+    }
+
+    database.transaction(ctx -> {
+      // Insert the fetch events twice.
+      MockData.actorCatalogFetchEventsForAggregationTest().forEach(actorCatalogFetchEvent -> {
+        insertCatalogFetchEvent(
+            ctx,
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+            actorCatalogFetchEvent.getCreatedAt());
+        insertCatalogFetchEvent(
+            ctx,
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorId(),
+            actorCatalogFetchEvent.getActorCatalogFetchEvent().getActorCatalogId(),
+            actorCatalogFetchEvent.getCreatedAt());
+      });
+      return null;
+    });
+
+    final Map<UUID, ActorCatalogFetchEvent> result =
+        configRepository.getMostRecentActorCatalogFetchEventForSources(List.of(MockData.SOURCE_ID_1,
+            MockData.SOURCE_ID_2));
+
+    assertEquals(MockData.ACTOR_CATALOG_ID_1, result.get(MockData.SOURCE_ID_1).getActorCatalogId());
+    assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
+  }
+
+  @Test
+  void testGetActorDefinitionsInUseToProtocolVersion() throws IOException {
+    final Set<UUID> actorDefinitionIds = new HashSet<>();
+    actorDefinitionIds.addAll(MockData.sourceConnections().stream().map(SourceConnection::getSourceDefinitionId).toList());
+    actorDefinitionIds.addAll(MockData.destinationConnections().stream().map(DestinationConnection::getDestinationDefinitionId).toList());
+    assertEquals(actorDefinitionIds, configRepository.getActorDefinitionToProtocolVersionMap().keySet());
+  }
+
+  private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
+    ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
+        .columns(
+            ACTOR_CATALOG_FETCH_EVENT.ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID,
+            ACTOR_CATALOG_FETCH_EVENT.CONFIG_HASH,
+            ACTOR_CATALOG_FETCH_EVENT.ACTOR_VERSION,
+            ACTOR_CATALOG_FETCH_EVENT.CREATED_AT,
+            ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT)
+        .values(UUID.randomUUID(), sourceId, catalogId, "", "", creationDate, creationDate)
+        .execute();
+  }
+
+  private static void writeActorCatalog(final Database database, final List<ActorCatalog> configs) throws SQLException {
+    database.transaction(ctx -> {
+      writeActorCatalog(configs, ctx);
+      return null;
+    });
+  }
+
+  private static void writeActorCatalog(final List<ActorCatalog> configs, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    configs.forEach((actorCatalog) -> {
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(ACTOR_CATALOG)
+          .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId())));
+
+      if (isExistingConfig) {
+        ctx.update(ACTOR_CATALOG)
+            .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
+            .set(ACTOR_CATALOG.CATALOG_HASH, actorCatalog.getCatalogHash())
+            .set(ACTOR_CATALOG.MODIFIED_AT, timestamp)
+            .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId()))
+            .execute();
+      } else {
+        ctx.insertInto(ACTOR_CATALOG)
+            .set(ACTOR_CATALOG.ID, actorCatalog.getId())
+            .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
+            .set(ACTOR_CATALOG.CATALOG_HASH, actorCatalog.getCatalogHash())
+            .set(ACTOR_CATALOG.CREATED_AT, timestamp)
+            .set(ACTOR_CATALOG.MODIFIED_AT, timestamp)
+            .execute();
+      }
+    });
   }
 
 }

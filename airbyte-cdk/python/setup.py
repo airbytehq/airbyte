@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.1.63",
+    version="0.29.0",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -42,23 +42,29 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
+    package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
+        "airbyte-protocol-models==1.0.0",
         "backoff",
         "dpath~=2.0.1",
+        "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
-        "pydantic~=1.6",
+        "genson==1.2.2",
+        "pydantic~=1.9.2",
+        "python-dateutil",
         "PyYAML~=5.4",
         "requests",
-        "vcrpy",
+        "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
-        "jello~=1.5.2",
+        "cachetools",
     ],
     python_requires=">=3.9",
     extras_require={
         "dev": [
+            "freezegun",
             "MyPy~=0.812",
             "pytest",
             "pytest-cov",

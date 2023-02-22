@@ -1,9 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 """
+Report Connector Build Status to Slack
+
 All invocations of this script must be run from the Airbyte repository root.
+
+BEFORE RUNNING THIS SCRIPT:
+- Ensure you have read the documentation on how this system works: https://internal-docs.airbyte.io/Generated-Reports/Build-Status-Reports
 
 To Run tests:
 pytest ./tools/bin/build_report.py
@@ -29,7 +34,8 @@ CONNECTOR_DEFINITIONS_DIR = "./airbyte-config/init/src/main/resources/seed"
 SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
-RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
+RELEVANT_BASE_MODULES = ["base-normalization", "connector-acceptance-test"]
+CONNECTOR_BUILD_OUTPUT_URL = "https://dnsgjos7lj2fu.cloudfront.net/tests/summary/connectors"
 
 # Global vars
 TESTED_SOURCE = []
@@ -42,7 +48,7 @@ FAILED_2_LAST = []
 
 
 def get_status_page(connector) -> str:
-    response = requests.get(f"https://dnsgjos7lj2fu.cloudfront.net/tests/summary/{connector}/index.html")
+    response = requests.get(f"{CONNECTOR_BUILD_OUTPUT_URL}/{connector}/index.html")
     if response.status_code == 200:
         return response.text
 
@@ -92,7 +98,7 @@ def check_module(connector):
         elif connector.startswith("destination"):
             SUCCESS_DESTINATION.append(connector)
     else:
-        failed_today = [connector, short_status, last_build["link"]]
+        failed_today = [connector, short_status, last_build["link"], last_build["date"]]
 
         if len(history) > 1 and history[1]["status"] != "success":
             FAILED_2_LAST.append(failed_today)
@@ -170,7 +176,7 @@ def get_docker_label_to_connector_directory(base_directory: str, connector_modul
         # parse the dockerfile label if the dockerfile exists
         dockerfile_path = pathlib.Path(base_directory, connector, "Dockerfile")
         if os.path.isfile(dockerfile_path):
-            print(f"Reading f{dockerfile_path}")
+            print(f"Reading {dockerfile_path}")
             with open(dockerfile_path, "r") as file:
                 dockerfile_contents = file.read()
                 label = parse_dockerfile_repository_label(dockerfile_contents)

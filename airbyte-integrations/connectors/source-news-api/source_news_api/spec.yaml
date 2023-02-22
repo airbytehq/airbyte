@@ -1,0 +1,185 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/news-api
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: News Api Spec
+  type: object
+  required:
+    - api_key
+    - country
+    - category
+    - sort_by
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      description: API Key
+      airbyte_secret: true
+      order: 0
+    search_query:
+      type: string
+      description: |
+        Search query. See https://newsapi.org/docs/endpoints/everything for 
+        information.
+      examples:
+        - "+bitcoin OR +crypto"
+        - "sunak AND (truss OR johnson)"
+      order: 1
+    search_in:
+      type: array
+      description: |
+        Where to apply search query. Possible values are: title, description,
+        content.
+      items:
+        type: string
+        enum:
+          - title
+          - description
+          - content
+      order: 2
+    sources:
+      type: array
+      description: |
+        Identifiers (maximum 20) for the news sources or blogs you want
+        headlines from. Use the `/sources` endpoint to locate these
+        programmatically or look at the sources index:
+        https://newsapi.com/sources. Will override both country and category.
+      items:
+        type: string
+      order: 3
+    domains:
+      type: array
+      description: |
+        A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com,
+        engadget.com) to restrict the search to.
+      items:
+        type: string
+      order: 4
+    exclude_domains:
+      type: array
+      description: |
+        A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com,
+        engadget.com) to remove from the results.
+      items:
+        type: string
+      order: 5
+    start_date:
+      type: string
+      description: |
+        A date and optional time for the oldest article allowed. This should
+        be in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+      order: 6
+    end_date:
+      type: string
+      description: |
+        A date and optional time for the newest article allowed. This should
+        be in ISO 8601 format (e.g. 2021-01-01 or 2021-01-01T12:00:00).
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
+      order: 7
+    language:
+      type: string
+      description: |
+        The 2-letter ISO-639-1 code of the language you want to get headlines
+        for. Possible options: ar de en es fr he it nl no pt ru se ud zh.
+      enum:
+        - ar
+        - de
+        - en
+        - es
+        - fr
+        - he
+        - it
+        - nl
+        - no
+        - pt
+        - ru
+        - se
+        - ud
+        - zh
+      order: 8
+    country:
+      type: string
+      description: |
+        The 2-letter ISO 3166-1 code of the country you want to get headlines
+        for. You can't mix this with the sources parameter.
+      enum:
+        - ae
+        - ar
+        - at
+        - au
+        - be
+        - bg
+        - br
+        - ca
+        - ch
+        - cn
+        - co
+        - cu
+        - cz
+        - de
+        - eg
+        - fr
+        - gb
+        - gr
+        - hk
+        - hu
+        - id
+        - ie
+        - il
+        - in
+        - it
+        - jp
+        - kr
+        - lt
+        - lv
+        - ma
+        - mx
+        - my
+        - ng
+        - nl
+        - no
+        - nz
+        - ph
+        - pl
+        - pt
+        - ro
+        - rs
+        - ru
+        - sa
+        - se
+        - sg
+        - si
+        - sk
+        - th
+        - tr
+        - tw
+        - ua
+        - us
+        - ve
+        - za
+      default: us
+      order: 9
+    category:
+      type: string
+      description: The category you want to get top headlines for.
+      enum:
+        - business
+        - entertainment
+        - general
+        - health
+        - science
+        - sports
+        - technology
+      default: business
+      order: 10
+    sort_by:
+      type: string
+      description: |
+        The order to sort the articles in. Possible options: relevancy,
+        popularity, publishedAt.
+      enum:
+        - relevancy
+        - popularity
+        - publishedAt
+      default: publishedAt
+      order: 11

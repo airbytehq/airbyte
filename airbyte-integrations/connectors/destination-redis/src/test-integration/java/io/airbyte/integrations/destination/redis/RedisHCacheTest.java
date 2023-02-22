@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
@@ -28,7 +28,7 @@ class RedisHCacheTest {
     var jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
-    redisCache = new RedisHCache(new RedisConfig(jsonConfig));
+    redisCache = new RedisHCache(jsonConfig);
   }
 
   @AfterEach

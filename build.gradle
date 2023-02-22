@@ -1,6 +1,9 @@
 import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 import com.github.spotbugs.snom.SpotBugsTask
 
+// The buildscript block defines dependencies in order for .gradle file evaluation.
+// This is separate from application dependencies.
+// See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
 buildscript {
     repositories {
         maven {
@@ -8,16 +11,30 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:7.2.0'
+        classpath 'com.bmuschko:gradle-docker-plugin:8.0.0'
+        // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
+        // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
+        // Since api generation is only used in the airbyte-api module and the base gradle files
+        // are loaded in first, Gradle is not able to intelligently resolve this before loading in
+        // the bmuschko plugin and thus placing an older jackson version on the class path.
+        // The alternative is to import the openapi plugin for all modules.
+        // This might need to be updated when we change openapi plugin versions.
+        classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
+
+        classpath 'org.codehaus.groovy:groovy-yaml:3.0.3'
     }
 }
 
 plugins {
     id 'base'
     id 'pmd'
-    id 'com.diffplug.spotless' version '6.7.1'
+    id 'com.diffplug.spotless' version '6.12.0'
     id 'com.github.hierynomus.license' version '0.16.1'
-    id 'com.github.spotbugs' version '5.0.6'
+    id 'com.github.spotbugs' version '5.0.13'
+    // The distribution plugin has been added to address the an issue with the copyGeneratedTar
+    // task depending on "distTar". When that dependency has been refactored away, this plugin
+    // can be removed.
+    id 'distribution'
     id 'version-catalog'
     id 'maven-publish'
 }
@@ -26,10 +43,13 @@ apply from: "$rootDir/publish-repositories.gradle"
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+    }
 }
 
 Properties env = new Properties()
-rootProject.file('.env').withInputStream { env.load(it) }
+rootProject.file('gradle.properties').withInputStream { env.load(it) }
 
 if (!env.containsKey('VERSION')) {
     throw new Exception('Version not specified in .env file...')
@@ -86,26 +106,32 @@ def createJavaLicenseWith = { license ->
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
     def excludes = [
-        '.gradle',
-        'node_modules',
-        '.eggs',
-        '.mypy_cache',
-        '.venv',
-        '*.egg-info',
-        'build',
-        'dbt-project-template',
-        'dbt-project-template-mssql',
-        'dbt-project-template-mysql',
-        'dbt-project-template-oracle',
-        'dbt-project-template-clickhouse',
-        'dbt-project-template-snowflake',
-        'dbt_test_config',
-        'normalization_test_output',
-        'tools',
-        'secrets',
-        'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
-        'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
-        'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
+            '.gradle',
+            'node_modules',
+            '.eggs',
+            '.mypy_cache',
+            '.venv',
+            '*.egg-info',
+            'build',
+            'dbt-project-template',
+            'dbt-project-template-mssql',
+            'dbt-project-template-mysql',
+            'dbt-project-template-oracle',
+            'dbt-project-template-clickhouse',
+            'dbt-project-template-snowflake',
+            'dbt-project-template-tidb',
+            'dbt-project-template-duckdb',
+            'dbt_test_config',
+            'normalization_test_output',
+            'tools',
+            'secrets',
+            'charts', // Helm charts often have injected template strings that will fail general linting. Helm linting is done separately.
+            'resources/seed/*_specs.yaml', // Do not remove - this is necessary to prevent diffs in our github workflows, as the file diff check runs between the Format step and the Build step, the latter of which generates the file.
+            'resources/seed/*_catalog.json', // Do not remove - this is also necessary to prevent diffs in our github workflows
+            'airbyte-integrations/connectors/source-amplitude/unit_tests/api_data/zipped.json', // Zipped file presents as non-UTF-8 making spotless sad
+            'airbyte-webapp', // The webapp module uses its own auto-formatter, so spotless is not necessary here
+            'airbyte-webapp-e2e-tests', // This module also uses its own auto-formatter
+            'airbyte-connector-builder-server/connector_builder/generated', // autogenerated code doesn't need to be formatted
     ]
 
     if (System.getenv().containsKey("SUB_BUILD")) {
@@ -144,35 +170,9 @@ spotless {
 check.dependsOn 'spotlessApply'
 
 @SuppressWarnings('GroovyAssignabilityCheck')
-def Task getDockerBuildTask(String artifactName, String projectDir, String buildVersion, String buildTag) {
-    return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
-        def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
-
-        def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
-        def isArm64 = arch == "aarch64" || arch == "arm64"
-
-        def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
-        def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
-        def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
-        def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
-        def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
-
-        inputDir = file("$projectDir/build/docker")
-        platform = buildPlatform
-        images.add("airbyte/$artifactName:$buildTag")
-        buildArgs.put('JDK_VERSION', jdkVersion)
-        buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
-        buildArgs.put('ALPINE_IMAGE', alpineImage)
-        buildArgs.put('NGINX_IMAGE', nginxImage)
-        buildArgs.put('JDK_IMAGE', openjdkImage)
-        buildArgs.put('VERSION', buildVersion)
-    })
-}
-
-@SuppressWarnings('GroovyAssignabilityCheck')
 def Task getPublishArtifactsTask(String buildVersion, Project subproject) {
     // generate a unique task name based on the directory name.
-    return task ("publishArtifact-$subproject.name" {
+    return task("publishArtifact-$subproject.name" {
         apply plugin: 'maven-publish'
         publishing {
             repositories {
@@ -215,9 +215,69 @@ allprojects {
 }
 
 // Java projects common configurations
-subprojects {
+subprojects { subproj ->
 
-    if (project.name == 'airbyte-webapp' || project.name == 'airbyte-webapp-e2e-tests') {
+
+    configurations {
+        runtimeClasspath
+    }
+
+
+    // Common Docker Configuration:
+    // If subprojects have the dockerImageName property configured in their gradle.properties file,
+    // register:
+    // 1) A copyGeneratedTar task to copy generated TARs. Subprojects that produce TARs can use this
+    //    to copy the produced tar into the docker image.
+    // 2) A buildDockerImage task to build the docker image.
+    // 3) Make the docker image task depend on the default assemble task.
+    if (subproj.hasProperty('dockerImageName')) {
+        project.logger.lifecycle("configuring docker task for $subproj.name")
+
+        // Although this task is defined for every subproject with the dockerImageName property,
+        // It is not necessarily used for all subprojects. Non-TAR producing projects can ignore this.
+        tasks.register("copyGeneratedTar", Copy) {
+            dependsOn copyDocker
+            dependsOn distTar
+            from('build/distributions') {
+                // Assume that tars are named <parent-project-name>-<child-project-name>-*.tar.
+                // Because we only have a handle to the child project, and to keep things simple,
+                // use a * regex to catch all prefixes.
+                include "*$subproj.name-*.tar"
+            }
+            into 'build/docker/bin'
+        }
+
+        tasks.register("buildDockerImage", DockerBuildImage) {
+            // This is currently only used for connectors.
+            def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.4'
+
+            def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
+            def isArm64 = arch == "aarch64" || arch == "arm64"
+            def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
+            def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
+            def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
+            def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:alpine' : 'amd64/nginx:alpine'
+
+            // Used by the platform -- Must be an Amazon Corretto-based image for build to work without modification to Dockerfile instructions
+            def openjdkImage = System.getenv('JDK_IMAGE') ?: "airbyte/airbyte-base-java-image:1.0"
+
+            platform = buildPlatform
+            images.add("airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag")
+            buildArgs.put('JDK_VERSION', jdkVersion)
+            buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
+            buildArgs.put('ALPINE_IMAGE', alpineImage)
+            buildArgs.put('NGINX_IMAGE', nginxImage)
+            buildArgs.put('JDK_IMAGE', openjdkImage)
+            buildArgs.put('VERSION', rootProject.ext.version)
+
+        }
+
+        tasks.named("assemble") {
+            dependsOn buildDockerImage
+        }
+    }
+
+    if (subproj.name == 'airbyte-webapp' || subproj.name == 'airbyte-webapp-e2e-tests') {
         return
     }
 
@@ -232,11 +292,10 @@ subprojects {
     repositories {
         mavenCentral()
         maven {
-            // TODO(Issue-4915): Remove this when upstream is merged in.
-            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+            url 'https://jitpack.io'
         }
         maven {
-            url 'https://jitpack.io'
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
         }
     }
 
@@ -246,11 +305,11 @@ subprojects {
         rulesMinimumPriority = 5
         ruleSets = []
         ruleSetFiles = files(rootProject.file('tools/gradle/pmd/rules.xml'))
-        toolVersion = '6.43.0'
+        toolVersion = '6.51.0'
     }
 
     jacoco {
-        toolVersion = "0.8.7"
+        toolVersion = "0.8.8"
     }
 
     jacocoTestReport {
@@ -280,8 +339,6 @@ subprojects {
         }
     }
 
-    def integrationTagName = 'platform-integration'
-    def slowIntegrationTagName = 'platform-slow-integration'
     // make tag accessible in submodules.
     ext {
         cloudStorageTestTagName = 'cloud-storage'
@@ -293,7 +350,7 @@ subprojects {
         excludeFilter = rootProject.file('spotbugs-exclude-filter-file.xml')
         reportLevel = 'high'
         showProgress = false
-        toolVersion = '4.6.0'
+        toolVersion = '4.7.3'
     }
 
     test {
@@ -302,34 +359,13 @@ subprojects {
             excludes = ['**/*Test*', '**/generated*']
         }
         useJUnitPlatform {
-            excludeTags(integrationTagName, slowIntegrationTagName, cloudStorageTestTagName)
+            excludeTags(cloudStorageTestTagName)
         }
         testLogging() {
-            events 'failed'
+            events "passed", "skipped", "failed"
             exceptionFormat 'full'
+            // uncomment to get the full log output
             // showStandardStreams = true
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task newIntegrationTests(type: Test) {
-        useJUnitPlatform {
-            includeTags integrationTagName
-        }
-        testLogging() {
-            events 'failed'
-            exceptionFormat 'full'
-        }
-        finalizedBy jacocoTestReport
-    }
-
-    task slowIntegrationTests(type: Test) {
-        useJUnitPlatform {
-            includeTags slowIntegrationTagName
-        }
-        testLogging() {
-            events 'failed'
-            exceptionFormat 'full'
         }
         finalizedBy jacocoTestReport
     }
@@ -337,14 +373,16 @@ subprojects {
     task allTests(type: Test) {
         useJUnitPlatform()
         testLogging() {
-            events 'failed'
+            events "passed", "failed", "started"
             exceptionFormat 'full'
+            // uncomment to get the full log output
+            // showStandardStreams = true
         }
         finalizedBy jacocoTestReport
     }
 
     dependencies {
-        if (project.name != 'airbyte-commons') {
+        if (subproj.name != 'airbyte-commons') {
             implementation project(':airbyte-commons')
         }
 
@@ -421,7 +459,7 @@ subprojects {
 }
 
 task('generate') {
-    dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
+    dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
 
@@ -450,25 +488,27 @@ subprojects {
             strictCheck = true
         }
         def licenseTask = project.tasks.findByName('licenseFormatPython')
+        def isortFormatTask = project.tasks.findByName('isortFormat')
+        if (isortFormatTask != null) {
+            isortFormat.dependsOn licenseTask
+        }
+        def flakeCheckTask = project.tasks.findByName('flakeCheck')
+        if (flakeCheckTask != null) {
+            flakeCheck.dependsOn licenseTask
+        }
         blackFormat.dependsOn licenseTask
-        isortFormat.dependsOn licenseTask
-        flakeCheck.dependsOn licenseTask
 
-        def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
-        if (generateFilesTask != null) {
-            licenseTask.dependsOn generateFilesTask
+        def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
+        if (generateManifestFilesTask != null) {
+            licenseTask.dependsOn generateManifestFilesTask
         }
     }
+    task listAllDependencies(type: DependencyReportTask) {}
 }
 
 task('generate-docker') {
-    dependsOn(':airbyte-bootloader:assemble')
-    dependsOn(':airbyte-workers:assemble')
-    dependsOn(':airbyte-webapp:assemble')
-    dependsOn(':airbyte-server:assemble')
     dependsOn(':airbyte-db:db-lib:assemble')
     dependsOn(':airbyte-config:init:assemble')
-    dependsOn(':airbyte-temporal:assemble')
 }
 
 // produce reproducible archives
@@ -494,7 +534,7 @@ publishing {
 
             from components.versionCatalog
             // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-            // e.g. the subproject :airbyte-scheduler:scheduler-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
+            // e.g. the subproject :airbyte-example:example-models is imported at io.airbyte.airbyte-config:config-persistence:<version-number>.
         }
     }
     repositories.add(rootProject.repositories.getByName('cloudrepo'))

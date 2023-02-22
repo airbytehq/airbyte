@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -78,9 +78,10 @@ def test_get_time_interval_past(pendulum_now_mock_past):
     assert len(list(intervals)) == 1
 
 
+@patch("source_tiktok_marketing.streams.AdvertiserIds.read_records", MagicMock(return_value=[{"advertiser_id": i} for i in range(354)]))
 def test_stream_slices_advertisers():
     slices = Advertisers(**CONFIG).stream_slices()
-    assert list(slices) == [None]
+    assert len(list(slices)) == 4  # math.ceil(354 / 100)
 
 
 @pytest.mark.parametrize(
@@ -187,9 +188,9 @@ def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected)
 @pytest.mark.parametrize(
     "granularity, cursor_field_expected",
     [
-        (Daily, ["dimensions", "stat_time_day"]),
-        (Hourly, ["dimensions", "stat_time_hour"]),
-        (Lifetime, []),
+        (Daily, "stat_time_day"),
+        (Hourly, "stat_time_hour"),
+        (Lifetime, "stat_time_day"),
     ],
 )
 def test_basic_reports_cursor_field(granularity, cursor_field_expected):

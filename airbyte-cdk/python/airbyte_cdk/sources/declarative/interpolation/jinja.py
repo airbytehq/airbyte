@@ -1,37 +1,43 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import ast
-import datetime
-import numbers
+from typing import Optional
 
+from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
-from dateutil import parser
+from airbyte_cdk.sources.declarative.interpolation.macros import macros
+from airbyte_cdk.sources.declarative.types import Config
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 
 
 class JinjaInterpolation(Interpolation):
+    """
+    Interpolation strategy using the Jinja2 template engine.
+
+    If the input string is a raw string, the interpolated string will be the same.
+    `eval("hello world") -> "hello world"`
+
+    The engine will evaluate the content passed within {{}}, interpolating the keys from the config and context-specific arguments.
+    `eval("hello {{ name }}", name="airbyte") -> "hello airbyte")`
+    `eval("hello {{ config.name }}", config={"name": "airbyte"}) -> "hello airbyte")`
+
+    In additional to passing additional values through the kwargs argument, macros can be called from within the string interpolation.
+    For example,
+    "{{ max(2, 3) }}" will return 3
+
+    Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
+    """
+
     def __init__(self):
         self._environment = Environment()
-        # Defines some utility methods that can be called from template strings
-        # eg "{{ today_utc() }}
-        self._environment.globals["now_local"] = datetime.datetime.now
-        self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
-        self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
-        self._environment.globals["timestamp"] = (
-            lambda dt: int(dt)
-            if isinstance(dt, numbers.Number)
-            else int(parser.parse(dt).replace(tzinfo=datetime.timezone.utc).timestamp())
-        )
-        self._environment.globals["max"] = lambda a, b: max(a, b)
-        self._environment.globals["day_delta"] = lambda x: (
-            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=x)
-        ).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+        self._environment.filters.update(**filters)
+        self._environment.globals.update(**macros)
 
-    def eval(self, input_str: str, config, default=None, **kwargs):
-        context = {"config": config, **kwargs}
+    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_parameters):
+        context = {"config": config, **additional_parameters}
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.check;
@@ -28,6 +28,7 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
    *
    * @throws DatabaseCheckException if unable to perform the check.
    */
+  @Override
   default void check() throws DatabaseCheckException {
     var initialized = false;
     var totalTime = 0;

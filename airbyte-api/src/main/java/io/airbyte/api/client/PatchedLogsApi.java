@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.api.client;
@@ -75,7 +75,7 @@ public class PatchedLogsApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
-      if (localVarResponse.statusCode() / 100 != 2) {
+      if (isErrorResponse(localVarResponse)) {
         throw new ApiException(localVarResponse.statusCode(),
             "getLogs call received non-success response",
             localVarResponse.headers(),
@@ -98,6 +98,10 @@ public class PatchedLogsApi {
       Thread.currentThread().interrupt();
       throw new ApiException(e);
     }
+  }
+
+  private Boolean isErrorResponse(final HttpResponse<InputStream> httpResponse) {
+    return httpResponse.statusCode() / 100 != 2;
   }
 
   private HttpRequest.Builder getLogsRequestBuilder(final LogsRequestBody logsRequestBody) throws ApiException {

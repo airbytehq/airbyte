@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, Mapping
@@ -68,6 +68,8 @@ class DestinationGoogleSheets(Destination):
                     writer.add_to_buffer(record.stream, record.data)
                     writer.queue_write_operation(record.stream)
             elif message.type == Type.STATE:
+                # yielding a state message indicates that all preceding records have been persisted to the destination
+                writer.write_whats_left()
                 yield message
             else:
                 continue

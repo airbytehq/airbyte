@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.helpers;
@@ -11,6 +11,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.NotImplementedException;
@@ -79,8 +80,9 @@ public class LogClientSingleton {
     if (shouldUseLocalLogs(workerEnvironment)) {
       return getServerLogsRoot(workspaceRoot).resolve(LOG_FILENAME).toFile();
     }
-    final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + getServerLogsRoot(workspaceRoot);
+    final var cloudLogPath = sanitisePath(APP_LOGGING_CLOUD_PREFIX, getServerLogsRoot(workspaceRoot));
     try {
+      createCloudClientIfNull(logConfigs);
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
     } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
@@ -94,6 +96,7 @@ public class LogClientSingleton {
 
     final var cloudLogPath = APP_LOGGING_CLOUD_PREFIX + getSchedulerLogsRoot(workspaceRoot);
     try {
+      createCloudClientIfNull(logConfigs);
       return logClient.downloadCloudLog(logConfigs, cloudLogPath);
     } catch (final IOException e) {
       throw new RuntimeException("Error retrieving log file: " + cloudLogPath + " from S3", e);
@@ -109,7 +112,8 @@ public class LogClientSingleton {
       return IOs.getTail(LOG_TAIL_SIZE, logPath);
     }
 
-    final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    final var cloudLogPath = sanitisePath(JOB_LOGGING_CLOUD_PREFIX, logPath);
+    createCloudClientIfNull(logConfigs);
     return logClient.tailCloudLog(logConfigs, cloudLogPath, LOG_TAIL_SIZE);
   }
 
@@ -125,7 +129,8 @@ public class LogClientSingleton {
     if (shouldUseLocalLogs(workerEnvironment)) {
       throw new NotImplementedException("Local log deletes not supported.");
     }
-    final var cloudLogPath = JOB_LOGGING_CLOUD_PREFIX + logPath;
+    final var cloudLogPath = sanitisePath(JOB_LOGGING_CLOUD_PREFIX, Path.of(logPath));
+    createCloudClientIfNull(logConfigs);
     logClient.deleteLogs(logConfigs, cloudLogPath);
   }
 
@@ -162,6 +167,13 @@ public class LogClientSingleton {
     if (logClient == null) {
       logClient = CloudLogs.createCloudLogClient(configs);
     }
+  }
+
+  /**
+   * Convenience wrapper for making sure paths are slash-separated.
+   */
+  private static String sanitisePath(final String prefix, final Path path) {
+    return Paths.get(prefix, path.toString()).toString();
   }
 
 }

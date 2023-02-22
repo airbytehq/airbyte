@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -22,6 +22,9 @@ public enum ConfigSchema implements AirbyteConfig {
       WorkspaceServiceAccount.class,
       workspaceServiceAccount -> workspaceServiceAccount.getWorkspaceId().toString(),
       "workspaceId"),
+
+  WORKSPACE_WEBHOOK_OPERATION_CONFIGS("WebhookOperationConfigs.yaml",
+      WebhookOperationConfigs.class),
 
   // source
   STANDARD_SOURCE_DEFINITION("StandardSourceDefinition.yaml",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base.ssh;
@@ -76,6 +76,14 @@ public class SshBastionContainer {
     bastion.close();
     db.stop();
     db.close();
+  }
+
+  public void stopAndClose() {
+    bastion.close();
+  }
+
+  public GenericContainer getContainer() {
+    return bastion;
   }
 
 }

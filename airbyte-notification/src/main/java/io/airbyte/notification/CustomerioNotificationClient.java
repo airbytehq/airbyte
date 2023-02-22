@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.notification;
@@ -7,6 +7,7 @@ package io.airbyte.notification;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Notification;
+import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -63,13 +64,21 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifyJobFailure(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  public boolean notifyJobFailure(final String sourceConnector,
+                                  final String destinationConnector,
+                                  final String jobDescription,
+                                  final String logUrl,
+                                  final Long jobId)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }
 
   @Override
-  public boolean notifyJobSuccess(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  public boolean notifyJobSuccess(final String sourceConnector,
+                                  final String destinationConnector,
+                                  final String jobDescription,
+                                  final String logUrl,
+                                  final Long jobId)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }
@@ -113,6 +122,14 @@ public class CustomerioNotificationClient extends NotificationClient {
     throw new NotImplementedException();
   }
 
+  @Override
+  public boolean notifySchemaChange(final UUID connectionId,
+                                    final boolean isBreaking,
+                                    final SlackNotificationConfiguration config,
+                                    final String url) {
+    throw new NotImplementedException();
+  }
+
   private boolean notifyByEmail(final String requestBody) throws IOException, InterruptedException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
@@ -139,6 +156,7 @@ public class CustomerioNotificationClient extends NotificationClient {
     return httpStatusCode / 100 == 2;
   }
 
+  @Override
   public String renderTemplate(final String templateFile, final String... data) throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, data);

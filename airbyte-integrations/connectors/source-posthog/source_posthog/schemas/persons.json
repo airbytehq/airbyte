@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": "string"
     },
     "name": {
       "type": "string"
@@ -12,9 +12,6 @@
       "items": {
         "type": "string"
       }
-    },
-    "properties": {
-      "type": "object"
     },
     "created_at": {
       "type": "string",

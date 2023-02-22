@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.notification;
 
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Notification;
+import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -23,14 +24,16 @@ public abstract class NotificationClient {
                                            String sourceConnector,
                                            String destinationConnector,
                                            String jobDescription,
-                                           String logUrl)
+                                           String logUrl,
+                                           Long jobId)
       throws IOException, InterruptedException;
 
   public abstract boolean notifyJobSuccess(
                                            String sourceConnector,
                                            String destinationConnector,
                                            String jobDescription,
-                                           String logUrl)
+                                           String logUrl,
+                                           Long jobId)
       throws IOException, InterruptedException;
 
   public abstract boolean notifyConnectionDisabled(String receiverEmail,
@@ -52,6 +55,12 @@ public abstract class NotificationClient {
   public abstract boolean notifySuccess(String message) throws IOException, InterruptedException;
 
   public abstract boolean notifyFailure(String message) throws IOException, InterruptedException;
+
+  public abstract boolean notifySchemaChange(final UUID connectionId,
+                                             final boolean isBreaking,
+                                             final SlackNotificationConfiguration config,
+                                             final String url)
+      throws IOException, InterruptedException;
 
   public static NotificationClient createNotificationClient(final Notification notification) {
     return switch (notification.getNotificationType()) {

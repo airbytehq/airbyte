@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.toys;
@@ -31,7 +31,7 @@ class ToysDatabaseMigratorTest extends AbstractDatabaseTest {
   }
 
   @Test
-  public void testMigration() throws Exception {
+  void testMigration() throws Exception {
     final DataSource dataSource = getDataSource();
 
     initializeDatabase(getDslContext());

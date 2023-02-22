@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
@@ -17,13 +17,13 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import javax.sql.DataSource;
@@ -33,37 +33,37 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
 
-  protected OracleContainer container;
+  protected AirbyteOracleTestContainer container;
   protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    container = new OracleContainer()
+    container = new AirbyteOracleTestContainer()
         .withUsername("test")
         .withPassword("oracle")
         .usingSid();;
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put("sid", container.getSid())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("JDBC_SPACE"))
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "client_nne")
             .put("encryption_algorithm", "3DES168")
             .build()))
         .build());
 
     final DataSource dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
             "oracle.net.encryption_types_client=( 3DES168 )", ";"));

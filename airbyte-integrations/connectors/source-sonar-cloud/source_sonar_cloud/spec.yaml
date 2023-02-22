@@ -1,0 +1,48 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Sonar Cloud Spec
+  type: object
+  required:
+    - user_token
+    - organization
+    - component_keys
+  additionalProperties: true
+  properties:
+    user_token:
+      title: User Token
+      type: string
+      description: >-
+        Your User Token. See <a
+        href="https://docs.sonarcloud.io/advanced-setup/user-accounts/">here</a>. The token is
+        case sensitive.
+      airbyte_secret: true
+    organization:
+      title: Organization
+      type: string
+      description: >-
+        Organization key. See <a
+        href="https://docs.sonarcloud.io/appendices/project-information/#project-and-organization-keys">here</a>.
+      examples:
+        - airbyte
+    component_keys:
+      title: Component Keys
+      type: array
+      description: Comma-separated list of component keys.
+      examples:
+        - airbyte-ws-order
+        - airbyte-ws-checkout
+    start_date:
+      title: Start date
+      type: string
+      description: To retrieve issues created after the given date (inclusive).
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - YYYY-MM-DD
+    end_date:
+      title: End date
+      type: string
+      description: To retrieve issues created before the given date (inclusive).
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - YYYY-MM-DD

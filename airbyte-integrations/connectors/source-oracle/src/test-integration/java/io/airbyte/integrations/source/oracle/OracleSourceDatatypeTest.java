@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -25,11 +25,10 @@ import java.util.TimeZone;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  private OracleContainer container;
+  private AirbyteOracleTestContainer container;
   private JsonNode config;
   private DSLContext dslContext;
 
@@ -37,14 +36,19 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    container = new AirbyteOracleTestContainer()
+        .withUsername("TEST_ORA")
+        .withPassword("oracle")
+        .usingSid()
         .withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
+        .put("connection_data", ImmutableMap.builder()
+            .put("service_name", container.getSid())
+            .put("connection_type", "service_name").build())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("TEST"))
@@ -57,12 +61,12 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()),
+            config.get("connection_data").get("service_name").asText()),
         null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 
-    database.query(ctx -> ctx.fetch("CREATE USER test IDENTIFIED BY test DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
+    database.query(ctx -> ctx.fetch("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
 
     return database;
   }
@@ -142,7 +146,13 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("NUMBER")
             .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "1", "123.45", "power(10, -130)", "9.99999999999999999999 * power(10, 125)")
-            .addExpectedValues(null, "1", "123.45", String.valueOf(Math.pow(10, -130)), String.valueOf(9.99999999999999999999 * Math.pow(10, 125)))
+            /* The 999990000… below is the plain string representation of 9.999 * power(10, 125) */
+            /*
+             * because normalization expects a plain integer strings whereas `Math.pow(10, 125)` returns a
+             * scientific notation
+             */
+            .addExpectedValues(null, "1", "123.45", String.valueOf(Math.pow(10, -130)),
+                "999999999999999999999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
             .build());
 
     addDataTypeTestData(
@@ -151,7 +161,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("NUMBER(6,-2)")
             .addInsertValues("123.89")
-            .addExpectedValues("100.0")
+            .addExpectedValues("100")
             .build());
 
     addDataTypeTestData(
@@ -160,7 +170,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .fullSourceDataType("FLOAT(5)")
             .addInsertValues("1.34", "126.45")
-            .addExpectedValues("1.3", "130.0")
+            .addExpectedValues("1.3", "130")
             .build());
 
     addDataTypeTestData(
@@ -277,15 +287,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("LONG")
-            .airbyteType(JsonSchemaType.STRING)
-            .fullSourceDataType("LONG RAW")
-            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
-            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
             .sourceType("XMLTYPE")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("xmltype('<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -293,11 +294,11 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "<config>1</config>\n" +
                 "<config>2</config>\n" +
                 "</list_configuration>')")
-            .addExpectedValues("<?xml version = '1.0' encoding = 'UTF-8'?>" +
-                "<list_configuration>\n" +
-                "   <config>1</config>\n" +
-                "   <config>2</config>\n" +
-                "</list_configuration>")
+            .addExpectedValues("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<list_configuration>\n"
+                + "  <config>1</config>\n"
+                + "  <config>2</config>\n"
+                + "</list_configuration>\n")
             .build());
   }
 

@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mqtt",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mqtt",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -46,7 +46,8 @@
       "password": {
         "title": "Password",
         "description": "Password to use for the connection.",
-        "type": "string"
+        "type": "string",
+        "airbyte_secret": true
       },
       "topic_pattern": {
         "title": "Topic pattern",

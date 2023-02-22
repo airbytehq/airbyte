@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "timeout_actvity_name": {
+      "type": ["null", "string"]
+    },
+    "events_filter": {
+      "type": ["null", "string"]
+    },
+    "date_updated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "friendly_name": {
+      "type": ["null", "string"]
+    },
+    "timeout_activity_sid": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "default_acitvity_name": {
+      "type": ["null", "string"]
+    },
+    "multi_task_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "event_callback_url": {
+      "type": ["null", "string"]
+    },
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "default_activity_sid": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"]
+    }
+  }
+}

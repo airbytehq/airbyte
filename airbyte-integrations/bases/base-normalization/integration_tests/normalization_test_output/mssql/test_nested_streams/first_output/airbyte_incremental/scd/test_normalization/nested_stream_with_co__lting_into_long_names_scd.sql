@@ -37,8 +37,8 @@ scd_data as (
     
 
     concat(concat(coalesce(cast(id as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_unique_key,
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_unique_key,
       id,
       "date",
       "partition",
@@ -76,10 +76,10 @@ dedup_data as (
     
 
     concat(concat(coalesce(cast(_airbyte_unique_key as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_start_at as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_emitted_at as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_unique_key_scd,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_start_at as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_emitted_at as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_unique_key_scd,
         scd_data.*
     from scd_data
 )

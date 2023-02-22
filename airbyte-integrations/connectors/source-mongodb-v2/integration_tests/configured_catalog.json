@@ -1,0 +1,281 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "listingsAndReviews",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "amenities": {
+              "type": "array"
+            },
+            "notes": {
+              "type": "string"
+            },
+            "access": {
+              "type": "string"
+            },
+            "house_rules": {
+              "type": "string"
+            },
+            "first_review": {
+              "type": "string"
+            },
+            "calendar_last_scraped": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "neighborhood_overview": {
+              "type": "string"
+            },
+            "_id_aibyte_transform": {
+              "type": "string"
+            },
+            "availability": {
+              "type": "object",
+              "properties": {
+                "availability_365": {
+                  "type": "number"
+                },
+                "availability_30": {
+                  "type": "number"
+                },
+                "availability_60": {
+                  "type": "number"
+                },
+                "availability_90": {
+                  "type": "number"
+                }
+              }
+            },
+            "number_of_reviews": {
+              "type": "number"
+            },
+            "space": {
+              "type": "string"
+            },
+            "review_scores": {
+              "type": "object",
+              "properties": {
+                "review_scores_checkin": {
+                  "type": "number"
+                },
+                "review_scores_communication": {
+                  "type": "number"
+                },
+                "review_scores_rating": {
+                  "type": "number"
+                },
+                "review_scores_accuracy": {
+                  "type": "number"
+                },
+                "review_scores_location": {
+                  "type": "number"
+                },
+                "review_scores_value": {
+                  "type": "number"
+                },
+                "review_scores_cleanliness": {
+                  "type": "number"
+                }
+              }
+            },
+            "cleaning_fee": {
+              "type": "number"
+            },
+            "reviews": {
+              "type": "array"
+            },
+            "price": {
+              "type": "number"
+            },
+            "reviews_per_month": {
+              "type": "number"
+            },
+            "host": {
+              "type": "object",
+              "properties": {
+                "host_verifications": {
+                  "type": "array"
+                },
+                "host_url": {
+                  "type": "string"
+                },
+                "host_response_time": {
+                  "type": "string"
+                },
+                "host_has_profile_pic": {
+                  "type": "boolean"
+                },
+                "host_about": {
+                  "type": "string"
+                },
+                "host_picture_url": {
+                  "type": "string"
+                },
+                "host_id": {
+                  "type": "string"
+                },
+                "host_listings_count": {
+                  "type": "number"
+                },
+                "host_total_listings_count": {
+                  "type": "number"
+                },
+                "host_location": {
+                  "type": "string"
+                },
+                "host_is_superhost": {
+                  "type": "boolean"
+                },
+                "host_neighbourhood": {
+                  "type": "string"
+                },
+                "host_thumbnail_url": {
+                  "type": "string"
+                },
+                "host_response_rate": {
+                  "type": "number"
+                },
+                "host_name": {
+                  "type": "string"
+                },
+                "host_identity_verified": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "property_type": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "monthly_price": {
+              "type": "number"
+            },
+            "security_deposit": {
+              "type": "number"
+            },
+            "images": {
+              "type": "object",
+              "properties": {
+                "picture_url": {
+                  "type": "string"
+                },
+                "xl_picture_url": {
+                  "type": "string"
+                },
+                "medium_url": {
+                  "type": "string"
+                },
+                "thumbnail_url": {
+                  "type": "string"
+                }
+              }
+            },
+            "address": {
+              "type": "object",
+              "properties": {
+                "market": {
+                  "type": "string"
+                },
+                "country_code": {
+                  "type": "string"
+                },
+                "country": {
+                  "type": "string"
+                },
+                "street": {
+                  "type": "string"
+                },
+                "suburb": {
+                  "type": "string"
+                },
+                "location": {
+                  "type": "object",
+                  "properties": {
+                    "coordinates": {
+                      "type": "array"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "is_location_exact": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "government_area": {
+                  "type": "string"
+                }
+              }
+            },
+            "weekly_price": {
+              "type": "number"
+            },
+            "bed_type": {
+              "type": "string"
+            },
+            "listing_url": {
+              "type": "string"
+            },
+            "guests_included": {
+              "type": "number"
+            },
+            "maximum_nights": {
+              "type": "string"
+            },
+            "bathrooms": {
+              "type": "number"
+            },
+            "extra_people": {
+              "type": "number"
+            },
+            "bedrooms": {
+              "type": "number"
+            },
+            "minimum_nights": {
+              "type": "string"
+            },
+            "last_review": {
+              "type": "string"
+            },
+            "transit": {
+              "type": "string"
+            },
+            "accommodates": {
+              "type": "number"
+            },
+            "interaction": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "cancellation_policy": {
+              "type": "string"
+            },
+            "beds": {
+              "type": "number"
+            },
+            "last_scraped": {
+              "type": "string"
+            },
+            "room_type": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": [],
+        "source_defined_primary_key": [],
+        "namespace": "sample_airbnb"
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

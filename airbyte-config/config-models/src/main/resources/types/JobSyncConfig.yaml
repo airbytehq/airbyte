@@ -6,8 +6,6 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - sourceConfiguration
-  - destinationConfiguration
   - configuredAirbyteCatalog
   - sourceDockerImage
   - destinationDockerImage
@@ -21,14 +19,6 @@ properties:
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
-  sourceConfiguration:
-    description: Integration specific blob. Must be a valid JSON string.
-    type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
-  destinationConfiguration:
-    description: Integration specific blob. Must be a valid JSON string.
-    type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   configuredAirbyteCatalog:
     description: the configured airbyte catalog
     type: object
@@ -36,9 +26,17 @@ properties:
   sourceDockerImage:
     description: Image name of the source with tag.
     type: string
+  sourceProtocolVersion:
+    description: Airbyte Protocol Version of the source
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string
+  destinationProtocolVersion:
+    description: Airbyte Protocol Version of the destination
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
   sourceResourceRequirements:
     type: object
     description: optional resource requirements to use in source container - this is used instead of `resourceRequirements` for the source container
@@ -52,10 +50,21 @@ properties:
     type: array
     items:
       "$ref": StandardSyncOperation.yaml
-  state:
-    description: optional state of the previous run. this object is defined per integration.
-    "$ref": State.yaml
+  webhookOperationConfigs:
+    description: The webhook operation configs belonging to this workspace. Must conform to WebhookOperationConfigs.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   resourceRequirements:
     type: object
     description: optional resource requirements to run sync workers - this is used for containers other than the source/dest containers
     existingJavaType: io.airbyte.config.ResourceRequirements
+  isSourceCustomConnector:
+    description: determine if the source running image is a custom connector.
+    type: boolean
+  isDestinationCustomConnector:
+    description: determine if the destination running image is a custom connector.
+    type: boolean
+  workspaceId:
+    description: The id of the workspace associated with the sync
+    type: string
+    format: uuid

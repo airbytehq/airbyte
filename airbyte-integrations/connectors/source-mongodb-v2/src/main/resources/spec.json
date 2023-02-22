@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mongodb-v2",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/mongodb-v2",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mongodb-v2",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/mongodb-v2",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MongoDb Source Spec",
@@ -20,8 +20,7 @@
             "properties": {
               "instance": {
                 "type": "string",
-                "enum": ["standalone"],
-                "default": "standalone"
+                "const": "standalone"
               },
               "host": {
                 "title": "Host",
@@ -42,7 +41,7 @@
               "tls": {
                 "title": "TLS Connection",
                 "type": "boolean",
-                "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.io/integrations/sources/mongodb-v2\">documentation</a>.",
+                "description": "Indicates whether TLS encryption protocol will be used to connect to MongoDB. It is recommended to use TLS connection if possible. For more information see <a href=\"https://docs.airbyte.com/integrations/sources/mongodb-v2\">documentation</a>.",
                 "default": false,
                 "order": 2
               }
@@ -54,8 +53,7 @@
             "properties": {
               "instance": {
                 "type": "string",
-                "enum": ["replica"],
-                "default": "replica"
+                "const": "replica"
               },
               "server_addresses": {
                 "title": "Server Addresses",
@@ -74,13 +72,12 @@
           },
           {
             "title": "MongoDB Atlas",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "required": ["instance", "cluster_url"],
             "properties": {
               "instance": {
                 "type": "string",
-                "enum": ["atlas"],
-                "default": "atlas"
+                "const": "atlas"
               },
               "cluster_url": {
                 "title": "Cluster URL",

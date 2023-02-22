@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "symbol_id": {
+      "type": ["null", "string"]
+    },
+    "time_period_end": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "time_exchange": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "time_coinapi": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "uuid": {
+      "type": ["null", "string"]
+    },
+    "price": {
+      "type": ["null", "number"]
+    },
+    "size": {
+      "type": ["null", "number"]
+    },
+    "taker_side": {
+      "type": ["null", "string"]
+    }
+  }
+}

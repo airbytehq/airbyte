@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "EntityMediaID": {
+      "type": "string"
+    },
+    "MediaType": {
+      "type": "string"
+    },
+    "EntityID": {
+      "type": "string"
+    },
+    "EntityType": {
+      "type": "string"
+    },
+    "Title": {
+      "type": "string"
+    },
+    "Subtitle": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "EmbedCode": {
+      "type": "string"
+    },
+    "Height": {
+      "type": "integer"
+    },
+    "Width": {
+      "type": "integer"
+    },
+    "IsPrimary": {
+      "type": "boolean"
+    },
+    "IsPreview": {
+      "type": "boolean"
+    },
+    "IsGallery": {
+      "type": "boolean"
+    },
+    "URL": {
+      "type": "string"
+    },
+    "Credits": {
+      "type": "string"
+    }
+  }
+}

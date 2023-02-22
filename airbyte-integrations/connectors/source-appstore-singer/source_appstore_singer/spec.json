@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/appstore",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/appstore",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Appstore Singer Spec",
@@ -10,24 +10,24 @@
       "key_id": {
         "type": "string",
         "title": "Key ID",
-        "description": "Appstore Key ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this key."
+        "description": "Appstore Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this key."
       },
       "private_key": {
         "type": "string",
         "title": "Private Key",
-        "description": "Appstore Private Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this key.",
+        "description": "Appstore Private Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true,
         "multiline": true
       },
       "issuer_id": {
         "type": "string",
         "title": "Issuer ID",
-        "description": "Appstore Issuer ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
+        "description": "Appstore Issuer ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
       },
       "vendor": {
         "type": "string",
         "title": "Vendor ID",
-        "description": "Appstore Vendor ID. See the <a href=\"https://docs.airbyte.io/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
+        "description": "Appstore Vendor ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
       },
       "start_date": {
         "type": "string",

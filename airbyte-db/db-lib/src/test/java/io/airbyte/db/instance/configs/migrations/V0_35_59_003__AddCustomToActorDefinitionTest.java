@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.configs.migrations;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 class V0_35_59_003__AddCustomToActorDefinitionTest extends AbstractConfigsDatabaseTest {
 
   @Test
-  public void test() throws SQLException, IOException {
+  void test() throws SQLException, IOException {
     final DSLContext context = getDslContext();
 
     // necessary to add actor_definition table

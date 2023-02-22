@@ -27,13 +27,14 @@ module.exports = function (plop) {
   const docRoot = '../../../docs/integrations';
   const definitionRoot = '../../../airbyte-config/init/src/main/resources';
 
-  const sourceAcceptanceTestFilesInputRoot = '../source_acceptance_test_files';
+  const connectorAcceptanceTestFilesInputRoot = '../connector_acceptance_test_files';
 
   const pythonSourceInputRoot = '../source-python';
   const singerSourceInputRoot = '../source-singer';
   const genericSourceInputRoot = '../source-generic';
   const genericJdbcSourceInputRoot = '../source-java-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
+  const lowCodeSourceInputRoot = '../source-configuration-based';
   const javaDestinationInput = '../destination-java';
   const pythonDestinationInputRoot = '../destination-python';
 
@@ -122,8 +123,8 @@ module.exports = function (plop) {
         abortOnFail: true,
         type:'addMany',
         destination: httpApiOutputRoot,
-        base: sourceAcceptanceTestFilesInputRoot,
-        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+        base: connectorAcceptanceTestFilesInputRoot,
+        templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
       },
       // plop doesn't add dotfiles by default so we manually add them
       {
@@ -133,6 +134,36 @@ module.exports = function (plop) {
         path: `${httpApiOutputRoot}/.dockerignore`
       },
       {type: 'emitSuccess', outputPath: httpApiOutputRoot}
+    ]
+  });
+
+  plop.setGenerator('Configuration Based Source', {
+    description: 'Generate a Source that is described using a low code configuration file',
+    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-analytics"'}],
+        actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: lowCodeSourceInputRoot,
+        templateFiles: `${lowCodeSourceInputRoot}/**/**`,
+      },
+      // common acceptance tests
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: pythonSourceOutputRoot,
+        base: connectorAcceptanceTestFilesInputRoot,
+        templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${lowCodeSourceInputRoot}/.dockerignore.hbs`,
+        path: `${pythonSourceOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}
     ]
   });
 
@@ -157,8 +188,8 @@ module.exports = function (plop) {
          abortOnFail: true,
          type:'addMany',
          destination: singerSourceOutputRoot,
-         base: sourceAcceptanceTestFilesInputRoot,
-         templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+         base: connectorAcceptanceTestFilesInputRoot,
+         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
          data: {
           connectorImageNameSuffix: "-singer",
           specPathFolderSuffix: "_singer"
@@ -196,8 +227,8 @@ module.exports = function (plop) {
               abortOnFail: true,
               type:'addMany',
               destination: pythonSourceOutputRoot,
-              base: sourceAcceptanceTestFilesInputRoot,
-              templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+              base: connectorAcceptanceTestFilesInputRoot,
+              templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
             },
             {
                 type:'add',
@@ -205,7 +236,7 @@ module.exports = function (plop) {
                 templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
                 path: `${pythonSourceOutputRoot}/.dockerignore`
             },
-            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.io/tutorials/building-a-python-source"}]
+            {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.com/connector-development/tutorials/building-a-python-source"}]
     });
 
   plop.setGenerator('Java JDBC Source', {
@@ -239,8 +270,8 @@ module.exports = function (plop) {
           abortOnFail: true,
           type:'addMany',
           destination: genericSourceOutputRoot,
-          base: sourceAcceptanceTestFilesInputRoot,
-          templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+          base: connectorAcceptanceTestFilesInputRoot,
+          templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
           data: {
             inSubFolder: false
           }

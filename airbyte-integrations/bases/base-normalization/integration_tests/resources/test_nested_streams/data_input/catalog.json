@@ -284,6 +284,17 @@
               "items": {
                 "type": ["null", "string"]
               }
+            },
+            "nested_array_parent": {
+              "type": ["null", "object"],
+              "properties": {
+                "nested_array": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
             }
           }
         },

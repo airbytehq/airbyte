@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "required": ["account", "bankBalance"],
+  "properties": {
+    "account": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "ACCOUNT001",
+          "description": "Code that represents the account.",
+          "minLength": 1,
+          "maxLength": 12
+        },
+        "statementIdentifier": {
+          "type": ["null", "string"],
+          "example": "Statement identifier",
+          "description": "Account Statement Identifier of the account.",
+          "minLength": 0,
+          "maxLength": 50
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "description": "Unique internal identifier that represents the account."
+        }
+      },
+      "title": "BK-BankAccountModel"
+    },
+    "bankBalance": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double",
+          "example": 1.123,
+          "description": "End of day balance value."
+        },
+        "balanceDate": {
+          "type": "string",
+          "format": "date",
+          "example": "2019-11-11",
+          "description": "Date of the end of day balance."
+        },
+        "currencyCode": {
+          "type": "string",
+          "example": "EUR",
+          "description": "Account currency code.",
+          "minLength": 1,
+          "maxLength": 3
+        }
+      },
+      "title": "BK-BalanceModel"
+    }
+  },
+  "title": "BK-BankStatementBalanceModel",
+  "description": "Bank statement balance.",
+  "$schema": "http://json-schema.org/schema#"
+}

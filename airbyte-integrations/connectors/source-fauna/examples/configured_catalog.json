@@ -1,0 +1,19 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "foo",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["column_name"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

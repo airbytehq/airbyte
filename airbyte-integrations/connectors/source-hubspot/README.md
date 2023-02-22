@@ -17,7 +17,6 @@ The primary key for the following streams is `id`:
 - engagements_meetings
 - engagements_notes
 - engagements_tasks
-- feedback_submissions
 - forms
 - line_items
 - marketing_emails
@@ -92,7 +91,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py read --config secrets/config.json --catalog sample_files/basic_read_catalog.json
 ```
 
 ## Testing
@@ -100,7 +99,7 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named. First install test dependencies into your virtual environment:
 
 ```
-pip install .[tests]
+pip install .'[tests]'
 ```
 
 ### Unit Tests
@@ -125,7 +124,7 @@ python -m pytest integration_tests
 
 #### Acceptance Tests
 
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information. If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information. If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 
 To run your integration tests with acceptance tests, from the connector root, run
 

@@ -1,22 +1,15 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .spec import (
-    CompleteOauthOutputSpecification,
-    CompleteOauthServerInputSpecification,
-    CompleteOauthServerOutputSpecification,
-    SourceTiktokMarketingSpec,
-)
 from .streams import (
     DEFAULT_END_DATE,
     DEFAULT_START_DATE,
@@ -40,7 +33,7 @@ from .streams import (
     ReportGranularity,
 )
 
-DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+DOCUMENTATION_URL = "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
 
 
 def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:
@@ -63,27 +56,6 @@ class TiktokTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceTiktokMarketing(AbstractSource):
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
-        """Returns the spec for this integration."""
-        return ConnectorSpecification(
-            documentationUrl=DOCUMENTATION_URL,
-            changelogUrl=DOCUMENTATION_URL,
-            supportsIncremental=True,
-            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
-            connectionSpecification=SourceTiktokMarketingSpec.schema(),
-            additionalProperties=True,
-            advanced_auth=AdvancedAuth(
-                auth_flow_type=AuthFlowType.oauth2_0,
-                predicate_key=["credentials", "auth_type"],
-                predicate_value="oauth2.0",
-                oauth_config_specification=OAuthConfigSpecification(
-                    complete_oauth_output_specification=CompleteOauthOutputSpecification.schema(),
-                    complete_oauth_server_input_specification=CompleteOauthServerInputSpecification.schema(),
-                    complete_oauth_server_output_specification=CompleteOauthServerOutputSpecification.schema(),
-                ),
-            ),
-        )
-
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
@@ -116,7 +88,9 @@ class SourceTiktokMarketing(AbstractSource):
         Tests if the input configuration can be used to successfully connect to the integration
         """
         try:
-            next(Advertisers(**self._prepare_stream_args(config)).read_records(SyncMode.full_refresh))
+            advertisers = Advertisers(**self._prepare_stream_args(config))
+            for slice_ in advertisers.stream_slices():
+                next(advertisers.read_records(SyncMode.full_refresh, stream_slice=slice_))
         except Exception as err:
             return False, err
         return True, None
@@ -186,18 +160,23 @@ class SourceTiktokMarketing(AbstractSource):
 
             # 2. Basic report streams:
             reports = [AdsReports, AdGroupsReports, CampaignsReports]
+            audience_reports = [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]
             if is_production:
                 # 2.1 streams work only in prod env
-                reports.extend([AdvertisersReports, AdvertisersAudienceReports])
+                reports.append(AdvertisersReports)
+                audience_reports.append(AdvertisersAudienceReports)
 
             for Report in reports:
                 for Granularity in [Hourly, Daily, Lifetime]:
                     streams.append(get_report_stream(Report, Granularity)(**args))
 
             # 3. Audience report streams:
-            # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
-            for Report in [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]:
-                for Granularity in [Hourly, Daily]:
-                    streams.append(get_report_stream(Report, Granularity)(**args))
+            for Report in audience_reports:
+                # As per TikTok's documentation, audience reports only support daily (not hourly) time dimension for metrics
+                streams.append(get_report_stream(Report, Daily)(**args))
+
+                # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
+                if Report == AdvertisersAudienceReports:
+                    streams.append(get_report_stream(Report, Lifetime)(**args))
 
         return streams

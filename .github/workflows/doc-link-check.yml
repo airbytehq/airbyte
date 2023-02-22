@@ -1,6 +1,7 @@
 # Perform link check on all markdown files
+# https://github.com/gaurav-nelson/github-action-markdown-link-check
 
-name: Doc Link Checker
+name: Check for broken links in docs
 
 on:
   workflow_dispatch:
@@ -11,7 +12,6 @@ jobs:
   markdown-link-check:
     timeout-minutes: 50
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - uses: actions/checkout@master
       # check all files on master
