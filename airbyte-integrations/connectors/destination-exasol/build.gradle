@@ -10,7 +10,6 @@ application {
 
 dependencies {
     implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
