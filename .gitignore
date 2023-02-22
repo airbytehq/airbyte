@@ -86,6 +86,7 @@ dd-java-agent.jar
 
 # Files needed to run airbyte-platform that are downloaded on-the-fly via run-ab-platform.sh
 docker-compose.yaml
+docker-compose.debug.yaml
 .env
 .env.dev
-flags.yml   
+flags.yml
