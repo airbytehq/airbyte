@@ -62,12 +62,7 @@ public class OpenSearchConnection {
      * @param config Configuration parameters for connecting to the OpenSearch host
      */
     public OpenSearchConnection(ConnectorConfiguration config) {
-<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
         log.info(String.format("creating OpensearchConnection: %s", config.getEndpoint()));
-=======
-        log.info(String.format(
-                "creating OpenSearchConnection: %s", config.getEndpoint()));
->>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
 
         // Create the low-level client
         httpHost = HttpHost.create(config.getEndpoint());
@@ -136,12 +131,6 @@ public class OpenSearchConnection {
             final var info = client.info();
             log.info("checked openSearch connection: {}, version: {}", info.clusterName(), info.version());
             return true;
-<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
-=======
-        } catch (ApiException e) {
-            log.error("failed to ping openSearch", unwrappedApiException("failed write operation", e));
-            return false;
->>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
         } catch (Exception e) {
             log.error("unknown exception while pinging openSearch server", e);
             return false;
@@ -174,7 +163,6 @@ public class OpenSearchConnection {
      */
     public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpenSearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder();
-<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
 //            bulkRequest.operations(
@@ -189,19 +177,7 @@ public class OpenSearchConnection {
             bulkOperation.index(c -> c.index(index).id(extractPrimaryKey(doc, config)));
             bulkOperation.create(CreateOperation.of(k -> k.document(doc.getData())));
             bulkRequest.operations(bulkOperation.build()).refresh(Refresh.True);
-=======
 
-
-        for (var doc : records) {
-            log.debug("adding record to bulk create: {}", doc.getData());
-            bulkRequest.operations(
-                            b -> b.index(
-                                    c -> c.index(index).id(extractPrimaryKey(doc, config))))
-                .operations(BulkOperation.of(
-                    d -> d.create(
-                        CreateOperation.of(k -> k.document(doc.getData())))))
-                .refresh(Refresh.True);
->>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
         }
 
         try {

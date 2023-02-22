@@ -29,20 +29,10 @@ dependencies {
     // https://github.com/eclipse-ee4j/jsonp
     implementation 'org.glassfish:jakarta.json:2.0.1'
 
-<<<<<<< HEAD
     testImplementation libs.connectors.testcontainers
     testImplementation libs.connectors.testcontainers.opensearch
     integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
-=======
->>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56
-    // MIT
-    // https://www.testcontainers.org/
-//    testImplementation libs.connectors.testcontainers.opensearch
-//    integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
-<<<<<<< HEAD
-=======
 
->>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-opensearch')
 }

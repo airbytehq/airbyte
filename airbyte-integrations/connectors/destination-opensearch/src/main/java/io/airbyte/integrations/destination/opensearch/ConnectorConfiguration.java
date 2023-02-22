@@ -34,8 +34,6 @@ public class ConnectorConfiguration {
     private String apiKeyId;
     private String apiKeySecret;
 
-<<<<<<< HEAD
-=======
     public OpenSearchAuthenticationMethod getMethod() {
       return this.method;
     }
@@ -76,7 +74,7 @@ public class ConnectorConfiguration {
       this.apiKeySecret = apiKeySecret;
     }
 
->>>>>>> 7edf6edbf6927af173f37bff7985f163b2714d56
+
     public boolean isValid() {
       return switch (this.method) {
         case none -> true;
