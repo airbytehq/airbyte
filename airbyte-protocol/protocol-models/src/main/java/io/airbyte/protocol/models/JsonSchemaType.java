@@ -8,11 +8,10 @@ import static io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.PRIMITIVE_TO_RE
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Represents an Airbyte type. This corresponds to the data type that is present on the various
@@ -125,16 +124,12 @@ public class JsonSchemaType {
     }
 
     private void buildJsonbSchema() {
-      final List<String> schemaPrimitives = Stream.of(
-          JsonSchemaPrimitive.OBJECT,
-          JsonSchemaPrimitive.ARRAY,
-          JsonSchemaPrimitive.STRING,
-          JsonSchemaPrimitive.NUMBER,
-          JsonSchemaPrimitive.BOOLEAN,
-          JsonSchemaPrimitive.NULL)
-          .map(x -> x.name().toLowerCase())
-          .collect(Collectors.toList());
-      typeMapBuilder.put(TYPE, schemaPrimitives);
+      final List<JsonSchemaPrimitive> schemaPrimitives = List.of(JsonSchemaPrimitive.ARRAY, JsonSchemaPrimitive.OBJECT, JsonSchemaPrimitive.NUMBER,
+          JsonSchemaPrimitive.STRING, JsonSchemaPrimitive.BOOLEAN);
+      final List<ImmutableMap<Object, Object>> typeList = new ArrayList<>();
+      schemaPrimitives.forEach(x -> typeList.add(ImmutableMap.builder().put(TYPE, x.name().toLowerCase()).build()));
+      typeMapBuilder.put(TYPE, JsonSchemaPrimitive.OBJECT.name().toLowerCase());
+      typeMapBuilder.put(ONE_OF, typeList);
     }
 
     public Builder withFormat(final String value) {
