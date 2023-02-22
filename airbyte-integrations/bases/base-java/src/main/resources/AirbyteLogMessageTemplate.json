@@ -6,8 +6,7 @@
       "field": "name"
     },
     "message": {
-      "$resolver": "pattern",
-      "pattern": "%level %C{1.}(%M):%L %m",
+      "$resolver": "message",
       "stringified": true
     },
     "stack_trace": {
