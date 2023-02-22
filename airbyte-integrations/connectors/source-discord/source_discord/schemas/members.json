@@ -11,6 +11,12 @@
     "display_name": {
       "type": ["null", "string"]
     },
+    "guild_id": {
+      "type": ["null", "string"]
+    },
+    "guild_name": {
+      "type": ["null", "string"]
+    },
     "guild_nick": {
       "type": ["null", "string"]
     },
@@ -27,12 +33,12 @@
     "guild_joined_at": {
       "type": "string",
       "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone"
+      "airbyte_type": "timestamp_without_timezone"
     },
     "timestamp": {
       "type": "string",
       "format": "date-time",
-      "airbyte_type": "timestamp_with_timezone"
+      "airbyte_type": "timestamp_without_timezone"
     }
   }
 }

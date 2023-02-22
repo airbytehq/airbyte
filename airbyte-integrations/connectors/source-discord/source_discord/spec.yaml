@@ -7,6 +7,7 @@ connectionSpecification:
     - server_token
     - guild_id
     - bot_id
+    - guild_name
   additionalProperties: false
   properties:
     server_token:
@@ -23,6 +24,11 @@ connectionSpecification:
       type: string
       title: Guild ID(Server ID)
       description: The unique ID of the target guild (also known as Server ID)
+    guild_name:
+      type: string
+      title: Guild Name
+      default: "default"
+      description: The Name of the target guild (also known as Server Name)
 #    channel_ids:
 #      type: string
 #    initial_timestamp:

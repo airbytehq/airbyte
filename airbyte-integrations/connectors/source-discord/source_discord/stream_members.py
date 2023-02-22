@@ -15,6 +15,7 @@ class DiscordMembersStream(HttpStream):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
         self.guild_id = config["guild_id"]
+        self.guild_name = config["guild_name"]
         self.job_time = config["job_time"]
         self.server_token = config["server_token"]
 
@@ -35,6 +36,8 @@ class DiscordMembersStream(HttpStream):
             user_base = user['user']
             user_base['guild_joined_at'] = user['joined_at']
             user_base['guild_nick'] = user['nick']
+            user_base['guild_name'] = self.guild_name
+            user_base['guild_id'] = self.guild_id
             user_base['timestamp'] = self.job_time
             id_array.append(user_base)
         return id_array
