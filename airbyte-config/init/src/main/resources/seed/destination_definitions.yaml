@@ -1,7 +1,7 @@
 - name: Azure Blob Storage
   destinationDefinitionId: b4c5d105-31fd-4817-96b6-cb923bfc04cb
   dockerRepository: airbyte/destination-azure-blob-storage
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/azureblobstorage
   icon: azureblobstorage.svg
   resourceRequirements:
@@ -127,6 +127,12 @@
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/destinations/elasticsearch
   icon: elasticsearch.svg
+  releaseStage: alpha
+- name: Exasol
+  destinationDefinitionId: bb6071d9-6f34-4766-bec2-d1d4ed81a653
+  dockerRepository: airbyte/destination-exasol
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/exasol
   releaseStage: alpha
 - name: Firebolt
   destinationDefinitionId: 18081484-02a5-4662-8dba-b270b582f321
@@ -426,7 +432,7 @@
 - name: Databend
   destinationDefinitionId: 302e4d8e-08d3-4098-acd4-ac67ca365b88
   dockerRepository: airbyte/destination-databend
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   icon: databend.svg
   documentationUrl: https://docs.airbyte.com/integrations/destinations/databend
   releaseStage: alpha
