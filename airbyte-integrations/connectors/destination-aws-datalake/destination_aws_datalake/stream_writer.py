@@ -338,7 +338,7 @@ class StreamWriter:
         success = self._aws_handler.delete_table(self._database, self._table)
 
         if not success:
-            raise Exception(f"Failed to reset table {self._database}:{self._table}")
+            logger.warning(f"Failed to reset table {self._database}:{self._table}")
 
     def flush(self, partial: bool = False):
         logger.debug(f"Flushing {len(self._messages)} messages to table {self._database}:{self._table}")
