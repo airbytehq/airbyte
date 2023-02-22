@@ -1,10 +1,6 @@
 name: Release Open Source Airbyte
 concurrency: release-airbyte
 
-
-# TODO: If we continue to use this action from here it needs to be updated to point to airbyte-platform
-# where appropriate
-
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +8,10 @@ on:
         description: "Please choose the type of version upgrade : major|minor|patch"
         required: true
         default: "patch"
+
+env:
+  PIP_ROOT_USER_ACTION: ignore
+
 jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-release-airbyte-runner:
@@ -24,11 +24,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
             ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -37,15 +39,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
 
-  releaseAirbyte:
-    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-release-airbyte-runner # required to start the main job when the runner is ready
+  release-airbyte-platform:
+    needs:
+      - start-release-airbyte-runner
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          fetch-depth: 0
+          python-version: "3.9"
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -55,12 +57,16 @@ jobs:
         with:
           node-version: "lts/*"
 
-      # necessary to install pip
-      - uses: actions/setup-python@v4
+      - name: Checkout airbyte-platform
+        uses: actions/checkout@v3
         with:
-          python-version: "3.9"
-      - name: Release Airbyte
-        id: release_airbyte
+          repository: airbytehq/airbyte-platform
+          path: airbyte-platform
+
+      - name: Release Airbyte Platform
+        if: false # disable for now
+        id: release_airbyte_platform
+        working-directory: airbyte-platform
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -68,17 +74,86 @@ jobs:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
         run: |
-          ./tools/bin/release_version.sh
+          ./tools/bin/release_version.sh  # this script calls the bump_version.sh script
+
+      - name: Version Bump
+        id: bump_version
+        working-directory: airbyte-platform
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: |
+          ./tools/bin/bump_version.sh
+
+      - name: Test prev and new version output
+        env:
+          PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }} # change this to release airbyte platform after test
+          NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
+        run: |
+          echo "Bump Airbyte version from $PREV_VERSION to $NEW_VERSION"
+
+      - name: Auto Commit Version
+        if: false # disable for now
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: airbyte-platform
+          commit-message: Bump Airbyte version from ${{ steps.release_airbyte_platform.outputs.PREV_VERSION }} to ${{ steps.release_airbyte_platform.outputs.NEW_VERSION }}
+
+  release-airbyte:
+    # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
+    needs:
+      - start-release-airbyte-runner
+      - release-airbyte-platform
+    runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          path: airbyte
+          fetch-depth: 0
+
+      - name: Version Bump
+        id: bump_version
+        working-directory: airbyte
+        env:
+          PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
+        run: |
+          ./tools/bin/bump_version.sh
+
+      - name: Test prev and new version output
+        env:
+          PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
+          NEW_VERSION: ${{ steps.bump_version.outputs.NEW_VERSION }}
+        run: |
+          echo "Bump Airbyte version from $PREV_VERSION to $NEW_VERSION
+
+      - name: Auto Commit Version
+        if: false # disable for now
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          repository: airbyte
+          commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
+
+      - name: Run run-ab-platform script
+        if: false # disable for now
+        working-directory: airbyte
+        run: |
+          ./run-ab-platform.sh
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
-  releaseOctavia:
+  release-octavia:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -87,7 +162,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
       - name: Release Octavia
+        if: false # disable for now
         id: release_octavia
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -95,26 +172,32 @@ jobs:
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
 
-  createPullRequest:
+  create-pull-request: # this entire job should go away
     needs:
-      - releaseAirbyte
-      - releaseOctavia
+      - release-airbyte
+      - release-airbyte-platform
+      - release-octavia
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       # necessary to install pip
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
       - name: Bump version
+        if: false # disable for now
         id: bump_version
         env:
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/bump_version.sh
+
       - name: Get PR Body
+        if: false # disable for now
         id: pr_body
         env:
           PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
@@ -126,7 +209,9 @@ jobs:
           echo "PR_BODY<<EOF" >> $GITHUB_ENV
           echo "$body" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
       - name: Create Pull Request
+        if: false # disable for now
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
@@ -137,6 +222,7 @@ jobs:
           title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
           body: ${{ env.PR_BODY }}
           commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
+
       - name: PR Details
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
@@ -148,7 +234,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - start-release-airbyte-runner # required to get output from the start-runner job
-      - releaseAirbyte # required to wait when the main job is done
+      - release-airbyte # required to wait when the main job is done
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
