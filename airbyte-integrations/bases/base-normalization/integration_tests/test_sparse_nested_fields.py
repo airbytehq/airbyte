@@ -118,12 +118,10 @@ def test_sparse_nested_fields(destination_type: DestinationType):
         dbt_test(destination_type, test_root_dir)
     finally:
         dbt_test_utils.set_target_schema(target_schema)
-        # TODO
-        tmp_path = ''
         clean_up_args = {
             "destination_type": [destination_type],
             "test_type": "ephemeral",
-            "tmp_folders": [str(tmp_path)],
+            "tmp_folders": [str(test_root_dir)],
         }
         dbt_test_utils.clean_tmp_tables(**clean_up_args)
 
