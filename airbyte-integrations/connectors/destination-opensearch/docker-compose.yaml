@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  elastic:
+    image: "opensearchproject/opensearch:2.5.0"
+    ports:
+      - "9200:9200"
+    environment:
+      ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+      discovery.type: "single-node"
+      network.host: "0.0.0.0"

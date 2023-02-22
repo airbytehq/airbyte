@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -10,12 +10,14 @@ import org.opensearch.client.RestClientBuilder;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.OpenSearchException;
+import org.opensearch.client.opensearch._types.Refresh;
 import org.opensearch.client.opensearch.cat.indices.IndicesRecord;
 import org.opensearch.client.opensearch.core.BulkRequest;
 import org.opensearch.client.opensearch.core.BulkResponse;
 import org.opensearch.client.opensearch.core.CreateResponse;
 import org.opensearch.client.opensearch.core.SearchResponse;
 import org.opensearch.client.opensearch.core.bulk.BulkOperation;
+import org.opensearch.client.opensearch.core.bulk.CreateOperation;
 import org.opensearch.client.opensearch.core.search.Hit;
 import org.opensearch.client.opensearch.core.search.HitsMetadata;
 import org.opensearch.client.opensearch.indices.*;
@@ -24,7 +26,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.util.SSLCertificateUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import jakarta.json.JsonValue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -44,11 +45,11 @@ import org.slf4j.LoggerFactory;
 /**
  * All communication with Opensearch should be done through this class.
  */
-public class OpensearchConnection {
+public class OpenSearchConnection {
 
     // this is the max number of hits we can query without paging
     private static final int MAX_HITS = 10000;
-    private static Logger log = LoggerFactory.getLogger(OpensearchConnection.class);
+    private static Logger log = LoggerFactory.getLogger(OpenSearchConnection.class);
 
     private final OpenSearchClient client;
     private final RestClient restClient;
@@ -60,7 +61,7 @@ public class OpensearchConnection {
      *
      * @param config Configuration parameters for connecting to the Opensearch host
      */
-    public OpensearchConnection(ConnectorConfiguration config) {
+    public OpenSearchConnection(ConnectorConfiguration config) {
         log.info(String.format("creating OpensearchConnection: %s", config.getEndpoint()));
 
         // Create the low-level client
@@ -160,16 +161,38 @@ public class OpensearchConnection {
      * @throws IOException if there is server connection problem, or a non-successful operation on the
      *                     server
      */
-    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpensearchWriteConfig config) throws IOException {
-
+<<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
+    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpenSearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder();
+        for (var doc : records) {
+            log.debug("adding record to bulk create: {}", doc.getData());
+//            bulkRequest.operations(
+//                            b -> b.index(
+//                                    c -> c.index(index).id(extractPrimaryKey(doc, config))))
+//                .operations(BulkOperation.of(
+//                    d -> d.create(
+//                        CreateOperation.of(k -> k.document(doc.getData())))))
+//                .refresh(Refresh.True);
+//
+            var bulkOperation = new BulkOperation.Builder();
+            bulkOperation.index(c -> c.index(index).id(extractPrimaryKey(doc, config)));
+            bulkOperation.create(CreateOperation.of(k -> k.document(doc.getData())));
+            bulkRequest.operations(bulkOperation.build()).refresh(Refresh.True);
+=======
+    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpensearchWriteConfig config) throws IOException {
+        var bulkRequest = new BulkRequest.Builder();
+
+
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
             bulkRequest.operations(
                             b -> b.index(
                                     c -> c.index(index).id(extractPrimaryKey(doc, config))))
-
-                    .addDocument(doc.getData()).refresh(JsonValue.TRUE);
+                .operations(BulkOperation.of(
+                    d -> d.create(
+                        CreateOperation.of(k -> k.document(doc.getData())))))
+                .refresh(Refresh.True);
+>>>>>>> 2d7fd5647e (add bulk operations):airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
         }
 
         try {
@@ -179,7 +202,7 @@ public class OpensearchConnection {
         }
     }
 
-    private String extractPrimaryKey(AirbyteRecordMessage doc, OpensearchWriteConfig config) {
+    private String extractPrimaryKey(AirbyteRecordMessage doc, OpenSearchWriteConfig config) {
         if (!config.hasPrimaryKey()) {
             return UUID.randomUUID().toString();
         }

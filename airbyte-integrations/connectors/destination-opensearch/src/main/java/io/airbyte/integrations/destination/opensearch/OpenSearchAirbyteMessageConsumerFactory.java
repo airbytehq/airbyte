@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -26,13 +26,12 @@ import java.util.function.Consumer;
 
 import org.opensearch.client.opensearch._types.ErrorCause;
 import org.opensearch.client.opensearch.core.BulkResponse;
-import org.opensearch.client.opensearch.core.bulk.BulkResponseItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpensearchAirbyteMessageConsumerFactory {
+public class OpenSearchAirbyteMessageConsumerFactory {
     
-  private static final Logger log = LoggerFactory.getLogger(OpensearchAirbyteMessageConsumerFactory.class);
+  private static final Logger log = LoggerFactory.getLogger(OpenSearchAirbyteMessageConsumerFactory.class);
   private static final int MAX_BATCH_SIZE_BYTES = 1024 * 1024 * 32; // 32mib
   private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -45,8 +44,8 @@ public class OpensearchAirbyteMessageConsumerFactory {
   private static final Map<String, String> tempIndices = new HashMap<>();
 
   public static AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                              final OpensearchConnection connection,
-                                              final List<OpensearchWriteConfig> writeConfigs,
+                                              final OpenSearchConnection connection,
+                                              final List<OpenSearchWriteConfig> writeConfigs,
                                               final ConfiguredAirbyteCatalog catalog) {
 
     return new BufferedStreamConsumer(
@@ -58,12 +57,11 @@ public class OpensearchAirbyteMessageConsumerFactory {
         isValidFunction(connection));
   }
 
-  // is there any json node that wont fit in the index?
-  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(final OpensearchConnection connection) {
+  private static CheckedFunction<JsonNode, Boolean, Exception> isValidFunction(final OpenSearchConnection connection) {
     return jsonNode -> true;
   }
 
-  private static CheckedConsumer<Boolean, Exception> onCloseFunction(final OpensearchConnection connection) {
+  private static CheckedConsumer<Boolean, Exception> onCloseFunction(final OpenSearchConnection connection) {
 
     return (hasFailed) -> {
       if (!tempIndices.isEmpty() && !hasFailed) {
@@ -74,8 +72,8 @@ public class OpensearchAirbyteMessageConsumerFactory {
   }
 
   private static RecordWriter<AirbyteRecordMessage> recordWriterFunction(
-                                                                         final OpensearchConnection connection,
-                                                                         final List<OpensearchWriteConfig> writeConfigs) {
+                                                                         final OpenSearchConnection connection,
+                                                                         final List<OpenSearchWriteConfig> writeConfigs) {
 
     return (pair, records) -> {
       log.info("writing {} records in bulk operation", records.size());
@@ -119,7 +117,7 @@ public class OpensearchAirbyteMessageConsumerFactory {
     return errorReport;
   }
 
-  private static VoidCallable onStartFunction(final OpensearchConnection connection, final List<OpensearchWriteConfig> writeConfigs) {
+  private static VoidCallable onStartFunction(final OpenSearchConnection connection, final List<OpenSearchWriteConfig> writeConfigs) {
     return () -> {
       for (final var config : writeConfigs) {
         if (config.useTempIndex()) {

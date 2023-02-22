@@ -16,7 +16,7 @@ dependencies {
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'org.opensearch.client:opensearch-rest-client: 2.5.0'
+    implementation 'org.opensearch.client:opensearch-rest-client:2.5.0'
     implementation 'org.opensearch.client:opensearch-java:2.0.0'
     implementation 'org.opensearch.client:opensearch-rest-high-level-client:2.5.0'
 
@@ -29,10 +29,20 @@ dependencies {
     // https://github.com/eclipse-ee4j/jsonp
     implementation 'org.glassfish:jakarta.json:2.0.1'
 
+<<<<<<< HEAD
     testImplementation libs.connectors.testcontainers
     testImplementation libs.connectors.testcontainers.opensearch
     integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
+=======
+>>>>>>> 6213722f17 (fix typo and disable testcontainer temp)
+    // MIT
+    // https://www.testcontainers.org/
+//    testImplementation libs.connectors.testcontainers.opensearch
+//    integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
+<<<<<<< HEAD
+=======
 
+>>>>>>> 6213722f17 (fix typo and disable testcontainer temp)
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-opensearch')
 }
