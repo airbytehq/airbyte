@@ -735,7 +735,7 @@
   releaseStage: generally_available
 - name: Google Webfonts
   sourceDefinitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
-  dockerRepository: airbyte/source-google-webfonts
+  dockerRepository: airbyte/source-goallowedHostsogle-webfonts
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-webfonts
   icon: googleworkpace.svg
@@ -1055,6 +1055,9 @@
   icon: marketo.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.mktorest.com"
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
