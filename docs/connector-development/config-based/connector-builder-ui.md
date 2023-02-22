@@ -48,7 +48,7 @@ The output of this UI is a low-code YAML representation of your connector, which
 
 Once you're done iterating on your connector in the UI, you'll need to export the low-code YAML representation of the connector to your local filesystem into a connector module. This YAML can be downloaded by clicking the `Download Config` button in the bottom-left.
 
-If you haven't already, create a low-code connector module using the connector generator (see [this YAML tutorial for an example](tutorial/1-create-source.md)) using the name you'd like to use for your connector. For this section, let's assume our connector is called `exchange-rates`. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/exchange_rates.yaml` with the YAML you created in the UI.
+If you haven't already, create a low-code connector module using the connector generator (see [this YAML tutorial for an example](tutorial/1-create-source.md)) using the name you'd like to use for your connector. For this section, let's assume our connector is called `exchange-rates`. After creating the connector, overwrite the contents of `airbyte-integrations/connectors/source-exchange-rates/source_exchange_rates/manifest.yaml` with the YAML you created in the UI.
 
 ### Building the connector image
 
@@ -73,11 +73,15 @@ The UI contains two main components: the Builder UI where you can fill out input
 9. **Page selector** Displays the selected page
 10. **Logs view**: Displays the logs emitted by the connector while running
 
+<!-- 
+
+TODO: update this video, see https://github.com/airbytehq/airbyte/issues/23019
+
 The following demo video demonstrates these components on a very simple API:
 
 <div style={{position: "relative", "padding-bottom": "64.90384615384616%", height: 0}}>
 <iframe src="https://www.loom.com/embed/acf899938ef74dec8dd61ba012bc872f" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style={{position: "absolute", top: 0, left: 0, width: "100%", height: "100%"}}></iframe>
-</div>
+</div> -->
 
 ## Upgrading
 

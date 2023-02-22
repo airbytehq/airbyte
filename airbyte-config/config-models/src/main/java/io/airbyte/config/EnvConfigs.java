@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -47,6 +47,7 @@ public class EnvConfigs implements Configs {
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
+  public static final String LOCAL_CONNECTOR_CATALOG_PATH = "LOCAL_CONNECTOR_CATALOG_PATH";
   public static final String GITHUB_STORE_BRANCH = "GITHUB_STORE_BRANCH";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -224,6 +225,9 @@ public class EnvConfigs implements Configs {
   private static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
   private static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
+  private static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
+  private static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
+
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
@@ -235,6 +239,8 @@ public class EnvConfigs implements Configs {
   public static final int DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = 100;
   public static final int DEFAULT_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = 14;
   public static final String LAUNCHDARKLY_KEY = "LAUNCHDARKLY_KEY";
+
+  public static final String FEATURE_FLAG_CLIENT = "FEATURE_FLAG_CLIENT";
 
   private final Function<String, String> getEnv;
   private final Supplier<Set<String>> getAllEnvKeys;
@@ -337,6 +343,10 @@ public class EnvConfigs implements Configs {
   @Override
   public String getSpecCacheBucket() {
     return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
+  }
+
+  public Optional<String> getLocalCatalogPath() {
+    return Optional.ofNullable(getEnv(LOCAL_CONNECTOR_CATALOG_PATH));
   }
 
   @Override
@@ -854,6 +864,11 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(LAUNCHDARKLY_KEY, "");
   }
 
+  @Override
+  public String getFeatureFlagClient() {
+    return getEnvOrDefault(FEATURE_FLAG_CLIENT, "");
+  }
+
   /**
    * There are two types of environment variables available to the job container:
    * <ul>
@@ -1143,6 +1158,16 @@ public class EnvConfigs implements Configs {
   @Override
   public String getFieldSelectionWorkspaces() {
     return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "");
+  }
+
+  @Override
+  public String getStrictComparisonNormalizationWorkspaces() {
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_WORKSPACES, "");
+  }
+
+  @Override
+  public String getStrictComparisonNormalizationTag() {
+    return getEnvOrDefault(STRICT_COMPARISON_NORMALIZATION_TAG, "strict_comparison");
   }
 
   @Override

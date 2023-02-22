@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.featureflag
@@ -14,10 +14,14 @@ object LogConnectorMessages : EnvVar(envVar = "LOG_CONNECTOR_MESSAGES")
 object StreamCapableState : EnvVar(envVar = "USE_STREAM_CAPABLE_STATE")
 object AutoDetectSchema : EnvVar(envVar = "AUTO_DETECT_SCHEMA")
 object NeedStateValidation : EnvVar(envVar = "NEED_STATE_VALIDATION")
+// NOTE: this is deprecated in favor of FieldSelectionEnabled and will be removed once that flag is fully deployed.
 object ApplyFieldSelection : EnvVar(envVar = "APPLY_FIELD_SELECTION")
 
 object PerfBackgroundJsonValidation : Temporary(key = "performance.backgroundJsonSchemaValidation")
 
+object FieldSelectionEnabled : Temporary(key="connection.columnSelection")
+
+// NOTE: this is deprecated in favor of FieldSelectionEnabled and will be removed once that flag is fully deployed.
 object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES") {
     override fun enabled(ctx: Context): Boolean {
         val enabledWorkspaceIds: List<String> = fetcher(key)
@@ -37,6 +41,8 @@ object FieldSelectionWorkspaces : EnvVar(envVar = "FIELD_SELECTION_WORKSPACES") 
         }
     }
 }
+
+object ShouldFailSyncIfHeartbeatFailure : Temporary(key = "heartbeat.failSync")
 
 /**
  * Flag is a sealed class that all feature-flags must inherit from.

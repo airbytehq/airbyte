@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -134,14 +134,10 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
-    try {
-      final LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      return provider.getDestinationDefinitions().stream()
-          .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
-          .findFirst();
-    } catch (final IOException e) {
-      return Optional.empty();
-    }
+    final LocalDefinitionsProvider provider = new LocalDefinitionsProvider();
+    return provider.getDestinationDefinitions().stream()
+        .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
+        .findFirst();
   }
 
   protected String getNormalizationImageName() {
@@ -1824,9 +1820,13 @@ public abstract class DestinationAcceptanceTest {
   @Getter
   public static class SpecialNumericTypes {
 
+    @Builder.Default
     boolean supportIntegerNan = false;
+    @Builder.Default
     boolean supportNumberNan = false;
+    @Builder.Default
     boolean supportIntegerInfinity = false;
+    @Builder.Default
     boolean supportNumberInfinity = false;
 
   }

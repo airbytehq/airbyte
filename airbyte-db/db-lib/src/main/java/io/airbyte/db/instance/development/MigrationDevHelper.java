@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.instance.development;
@@ -139,7 +139,7 @@ public class MigrationDevHelper {
 
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
-    try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env", StandardCharsets.UTF_8))) {
+    try (final BufferedReader reader = new BufferedReader(new FileReader("../../gradle.properties", StandardCharsets.UTF_8))) {
       String line = reader.readLine();
       while (line != null) {
         if (line.startsWith("VERSION")) {
@@ -148,11 +148,11 @@ public class MigrationDevHelper {
         line = reader.readLine();
       }
     } catch (final FileNotFoundException e) {
-      throw new IllegalStateException("Cannot find the .env file", e);
+      throw new IllegalStateException("Cannot find the gradle.properties file", e);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-    throw new IllegalStateException("Cannot find current Airbyte version from .env file");
+    throw new IllegalStateException("Cannot find the gradle.properties file");
   }
 
   /**

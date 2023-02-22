@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -28,10 +27,6 @@ class RechargeStream(HttpStream, ABC):
     @property
     def data_path(self):
         return self.name
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -72,10 +67,6 @@ class RechargeStream(HttpStream, ABC):
 
         if incomplete_data_response:
             return True
-        elif response.status_code == requests.codes.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            self.logger.error(f"Skiping stream {self.name} because of a 403 error.")
-            return False
 
         return super().should_retry(response)
 

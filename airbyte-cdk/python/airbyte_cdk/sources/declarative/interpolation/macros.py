@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import builtins
@@ -83,7 +83,7 @@ def max(*args):
     return builtins.max(*args)
 
 
-def day_delta(num_days: int) -> str:
+def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
     """
     Returns datetime of now() + num_days
 
@@ -93,7 +93,7 @@ def day_delta(num_days: int) -> str:
     :param num_days: number of days to add to current date time
     :return: datetime formatted as RFC3339
     """
-    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime(format)
 
 
 def format_datetime(dt: Union[str, datetime.datetime], format: str):

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -325,10 +325,14 @@ class TransformConfig:
             "port": config["port"],
             "schema": config["database"],
             "user": config["username"],
-            "secure": config["ssl"],
         }
         if "password" in config:
             dbt_config["password"] = config["password"]
+
+        # ssl is an optional configuration and is not present in strict-encrypt config
+        # if ssl option is not present in the config - default to True
+        dbt_config["secure"] = config.get("ssl", True)
+
         return dbt_config
 
     @staticmethod

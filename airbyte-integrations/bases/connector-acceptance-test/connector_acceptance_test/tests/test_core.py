@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -165,7 +165,7 @@ class TestSpec(BaseTest):
             for variant in variants:
                 assert "properties" in variant, f"Each item in the oneOf array should be a property with type object. {docs_msg}"
 
-            oneof_path = ".".join(variant_path)
+            oneof_path = ".".join(map(str, variant_path))
             variant_props = [set(v["properties"].keys()) for v in variants]
             common_props = set.intersection(*variant_props)
             assert common_props, f"There should be at least one common property for {oneof_path} subobjects. {docs_msg}"

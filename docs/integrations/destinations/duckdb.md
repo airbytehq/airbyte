@@ -19,7 +19,7 @@ This destination writes data to a file on the _local_ filesystem on the host run
 
 If you set [Normalization](https://docs.airbyte.com/understanding-airbyte/basic-normalization/), source data will be normalized to a tabular form. Let's say you have a source such as GitHub with nested JSONs; the Normalization ensures you end up with tables and columns. Suppose you have a many-to-many relationship between the users and commits. Normalization will create separate tables for it. The end state is the [third normal form](https://en.wikipedia.org/wiki/Third_normal_form) (3NF).
 
-If turn off the Normalization, each stream will be output into its own table `_airbyte_raw_{stream_name}`. Each table will contain 3 columns:
+Each table will contain 3 columns:
 
 * `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
 * `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
