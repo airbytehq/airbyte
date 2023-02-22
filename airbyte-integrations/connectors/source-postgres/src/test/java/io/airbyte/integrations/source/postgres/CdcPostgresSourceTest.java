@@ -188,11 +188,6 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Test
-  public void test() {
-    System.out.println();
-  }
-
-  @Test
   void testCheckWithoutReplicationSlot() throws Exception {
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
