@@ -27,6 +27,7 @@ public class ConnectorMarkdownGenerator {
     private static final Options OPTIONS = new Options().addOption(PROJECT_ROOT_OPTION).addOption(SEED_ROOT_OPTION).addOption(OUTPUT_FILENAME_OPTION);
 
     private static final String githubIconBase = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons";
+    private static final String iconSize = "50";
 
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd @ HH:mm:ss");
     public static void main(final String[] args) throws Exception {
@@ -90,7 +91,7 @@ public class ConnectorMarkdownGenerator {
         for (final JsonNode definition : definitions) {
             final String name = definition.get("name").asText();
             final String icon = definition.get("icon") != null ? definition.get("icon").asText() : "";
-            final String iconLink = icon != "" ? "![" + name + " Icon](" + githubIconBase + "/" + icon + ")" : "x";
+            final String iconLink = icon != "" ? "<img alt=\"" + name + " icon\" src=\"" + githubIconBase + "/" + icon  + "\" height=\"" + iconSize + "\" height=\"" + iconSize + "\"/>" : "x";
             final String dockerImage = definition.get("dockerRepository").asText() + ":" + definition.get("dockerImageTag").asText();
             final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
             final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
