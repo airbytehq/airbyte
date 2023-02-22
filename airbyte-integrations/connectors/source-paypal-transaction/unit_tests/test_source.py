@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_paypal_transaction.source import PayPalOauth2Authenticator, get_endpoint, PaypalHttpException
+from source_paypal_transaction.source import PaypalHttpException, PayPalOauth2Authenticator, get_endpoint
 
 
 class TestAuthentication:
