@@ -8,6 +8,3 @@ airbytePython {
     moduleDirectory 'source_mailgun'
 }
 
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:connector-acceptance-test').airbyteDocker.outputs)
-}

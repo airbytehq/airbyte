@@ -8,6 +8,3 @@ airbytePython {
     moduleDirectory 'source_facebook_marketing'
 }
 
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:connector-acceptance-test').airbyteDocker.outputs)
-}

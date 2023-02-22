@@ -8,6 +8,3 @@ airbytePython {
     moduleDirectory 'source_amazon_ads'
 }
 
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:connector-acceptance-test').airbyteDocker.outputs)
-}

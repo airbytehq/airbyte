@@ -8,6 +8,3 @@ airbytePython {
     moduleDirectory 'source_amazon_seller_partner'
 }
 
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:connector-acceptance-test').airbyteDocker.outputs)
-}
