@@ -5,7 +5,6 @@
 package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.debezium.engine.ChangeEvent;
 
 /**
  * This interface is used to define the target position at the beginning of the sync so that once we

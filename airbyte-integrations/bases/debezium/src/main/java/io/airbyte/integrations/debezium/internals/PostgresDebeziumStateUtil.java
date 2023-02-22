@@ -209,7 +209,8 @@ public class PostgresDebeziumStateUtil {
 
       final PostgresConnectorConfig postgresConnectorConfig = new PostgresConnectorConfig(Configuration.from(properties));
       final PostgresCustomLoader loader = new PostgresCustomLoader(postgresConnectorConfig);
-      final Set<Partition> partitions = Collections.singleton(new PostgresPartition(postgresConnectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
+      final Set<Partition> partitions =
+          Collections.singleton(new PostgresPartition(postgresConnectorConfig.getLogicalName(), properties.getProperty(DATABASE_NAME.name())));
       offsetStorageReader = new OffsetStorageReaderImpl(fileOffsetBackingStore, properties.getProperty("name"), keyConverter,
           valueConverter);
       final OffsetReader<Partition, PostgresOffsetContext, Loader> offsetReader = new OffsetReader<>(offsetStorageReader, loader);

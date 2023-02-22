@@ -87,7 +87,8 @@ public class DebeziumPropertiesManager {
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
     props.setProperty("decimal.handling.mode", "string");
 
-    // WARNING : Never change the value of this otherwise all the connectors would start syncing from scratch
+    // WARNING : Never change the value of this otherwise all the connectors would start syncing from
+    // scratch
     props.setProperty("topic.prefix", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     // table selection

@@ -44,7 +44,6 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
 
   private static final Duration SUBSEQUENT_RECORD_WAIT_TIME = Duration.ofMinutes(1);
 
-
   private final Map<Class<? extends ChangeEvent>, Field> heartbeatEventSourceField;
   private final LinkedBlockingQueue<ChangeEvent<String, String>> queue;
   private final CdcTargetPosition targetPosition;
@@ -92,7 +91,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
 
-     final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
+      final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
       try {
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {

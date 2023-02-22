@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,10 +23,10 @@ public class DebeziumRecordIteratorTest {
     final DebeziumRecordIterator debeziumRecordIterator = new DebeziumRecordIterator(mock(LinkedBlockingQueue.class),
         mock(CdcTargetPosition.class),
         () -> false,
-        () -> {
-        },
+        () -> {},
         Duration.ZERO);
     final Long lsn = debeziumRecordIterator.getHeartbeatPosition(new ChangeEvent<String, String>() {
+
       private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
 
       @Override
@@ -43,9 +47,11 @@ public class DebeziumRecordIteratorTest {
       public SourceRecord sourceRecord() {
         return sourceRecord;
       }
+
     });
 
     assertEquals(lsn, 358824993496L);
     assertNull(debeziumRecordIterator.getHeartbeatPosition(null));
   }
+
 }
