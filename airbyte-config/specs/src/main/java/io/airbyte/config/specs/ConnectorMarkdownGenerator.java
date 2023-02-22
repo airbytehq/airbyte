@@ -27,7 +27,7 @@ public class ConnectorMarkdownGenerator {
     private static final Options OPTIONS = new Options().addOption(PROJECT_ROOT_OPTION).addOption(SEED_ROOT_OPTION).addOption(OUTPUT_FILENAME_OPTION);
 
     private static final String githubIconBase = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons";
-    private static final String iconSize = "50";
+    private static final String iconSize = "30";
 
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd @ HH:mm:ss");
     public static void main(final String[] args) throws Exception {
