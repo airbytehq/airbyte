@@ -395,7 +395,8 @@ class SourceClaroshop(AbstractSource):
         try:
             auth = NoAuth()
             stream = Productos(authenticator=auth, config=config)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            stream_slice = stream.stream_slices(sync_mode=SyncMode.full_refresh)[0]
+            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
             return True, None
         except requests.exceptions.RequestException as e:
