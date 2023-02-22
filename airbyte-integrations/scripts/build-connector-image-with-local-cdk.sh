@@ -30,7 +30,12 @@ mv Dockerfile.copy Dockerfile
 sed -iE 's,"airbyte-cdk[^"]*","airbyte-cdk @ file://localhost/airbyte-cdk",' setup.py
 
 # Build the connector image
-docker_build_tag "$CONNECTOR_TAG" "${QUIET_BUILD}"
+if [ -n "$QUIET_BUILD" ]; then
+  docker build -t "$CONNECTOR_TAG" -q .
+else
+  docker build -t "$CONNECTOR_TAG" .
+fi
+
 cd -
 
 # Clean up now that the image has been created

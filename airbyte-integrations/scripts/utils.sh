@@ -3,17 +3,6 @@ die () {
   exit 1
 }
 
-docker_build_tag () {
-  local TAG="$1"
-  local QUIET="$2"
-  [ -n "$TAG" ] || die "Missing TAG"
-  if [ -n "$QUIET" ]; then
-    docker build -t "$TAG" -q .
-  else
-    docker build -t "$TAG" .
-  fi
-}
-
 readlink_f () {
   # https://stackoverflow.com/a/1116890
   TARGET_FILE=$1

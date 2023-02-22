@@ -16,6 +16,7 @@ cd $CONNECTOR_DIR
 
 if [ -f acceptance-test-docker.sh ] && [ -f setup.py ] && grep -q "airbyte-cdk" setup.py; then
     mkdir $CONNECTOR_OUTPUT_DIR
+    echo "Building docker image for $CONNECTOR_NAME."
     LOCAL_CDK=1 FETCH_SECRETS=1 QUIET_BUILD=1 sh acceptance-test-docker.sh > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.out 2> $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.err
     echo $? > $CONNECTOR_OUTPUT_DIR/$CONNECTOR_NAME.exit-code
 fi
