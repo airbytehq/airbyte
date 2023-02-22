@@ -18,13 +18,13 @@ definitions:
       type: DefaultErrorHandler
       response_filters:
         - http_codes: [ 400 ]
-          action: IGNORE
+          action: FAIL
           error_message: The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.
         - http_codes: [ 404 ]
           action: IGNORE
           error_message: No data collected
         - http_codes: [ 504 ]
-          action: IGNORE
+          action: FAIL
           error_message: The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.
 
   retriever:
