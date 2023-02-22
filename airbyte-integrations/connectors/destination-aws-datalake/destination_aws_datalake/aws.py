@@ -18,6 +18,8 @@ from .config_reader import CompressionCodec, ConnectorConfig, CredentialsType, O
 
 logger = logging.getLogger("airbyte")
 
+null_values = ["", " ", "#N/A", "#N/A N/A", "#NA", "<NA>", "N/A", "NA", "NULL", "none", "None", "NaN", "n/a", "nan", "null"]
+
 
 def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_type: str) -> pd.DataFrame:
     if desired_type == "datetime64":
@@ -30,12 +32,12 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
         # First cast to string
         df = _cast_pandas_column(df=df, col=col, current_type=current_type, desired_type="string")
         # Then cast to decimal
-        df[col] = df[col].apply(lambda x: Decimal(str(x)) if str(x) not in ("", "none", "None", " ", "<NA>") else None)
+        df[col] = df[col].apply(lambda x: Decimal(str(x)) if str(x) not in null_values else None)
     elif desired_type.lower() in ["float64", "int64"]:
         df[col] = df[col].fillna("")
         df[col] = pd.to_numeric(df[col])
     elif desired_type in ["boolean", "bool"]:
-        df[col] = df[col].astype(bool)
+        df[col] = df[col].fillna(False).astype(bool)
     else:
         try:
             df[col] = df[col].astype(desired_type)
@@ -48,7 +50,7 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
                 "which may cause precision loss.",
                 UserWarning,
             )
-            df[col] = df[col].apply(lambda x: int(x) if str(x) not in ("", "none", "None", " ", "<NA>") else None).astype(desired_type)
+            df[col] = df[col].apply(lambda x: int(x) if str(x) not in null_values else None).astype(desired_type)
     return df
 
 

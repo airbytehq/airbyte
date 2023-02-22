@@ -139,8 +139,8 @@ class DestinationAwsDatalake(Destination):
         try:
             df = pd.DataFrame({"id": [1, 2], "value": ["foo", "bar"]})
 
-            aws_handler.write(df, db, tbl, None, None)
             aws_handler.reset_table(db, tbl)
+            aws_handler.write(df, db, tbl, None, None)
 
         except Exception as e:
             message = f"Could not create table {tbl} in database {db}: {repr(e)}"
