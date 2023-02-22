@@ -728,15 +728,14 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.32
+  dockerImageTag: 0.2.33
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
   releaseStage: generally_available
   allowedHosts:
     hosts:
-      - docs.google.com
-      - www.googleapis.com
+      - "*.googleapis.com"
 - name: Google Webfonts
   sourceDefinitionId: a68fbcde-b465-4ab3-b2a6-b0590a875835
   dockerRepository: airbyte/source-google-webfonts
@@ -1288,11 +1287,15 @@
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   icon: paypal.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "api-m.paypal.com"
+      - "api-m.sandbox.paypal.com"
 - name: Paystack
   sourceDefinitionId: 193bdcb8-1dd9-48d1-aade-91cadfd74f9b
   dockerRepository: airbyte/source-paystack
