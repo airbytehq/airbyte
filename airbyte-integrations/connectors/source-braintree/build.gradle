@@ -7,4 +7,3 @@ plugins {
 airbytePython {
     moduleDirectory 'source_braintree_singer'
 }
-
