@@ -37,7 +37,7 @@ def _cast_pandas_column(df: pd.DataFrame, col: str, current_type: str, desired_t
         df[col] = df[col].fillna("")
         df[col] = pd.to_numeric(df[col])
     elif desired_type in ["boolean", "bool"]:
-        df[col] = df[col].astype("boolean")
+        df[col] = df[col].astype(bool)
     else:
         try:
             df[col] = df[col].astype(desired_type)
