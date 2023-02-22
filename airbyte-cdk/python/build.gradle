@@ -27,5 +27,3 @@ blackFormat.dependsOn generateComponentManifestClassFiles
 isortFormat.dependsOn generateComponentManifestClassFiles
 flakeCheck.dependsOn generateComponentManifestClassFiles
 installReqs.dependsOn generateComponentManifestClassFiles
-
-airbyteDocker.dependsOn flakeCheck

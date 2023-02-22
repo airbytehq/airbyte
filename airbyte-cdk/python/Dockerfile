@@ -12,6 +12,7 @@ RUN apk --no-cache upgrade \
 
 RUN mkdir cdk
 COPY ./setup.py ./cdk
+# FIXME install from pypi and make sure there are no race conditions
 COPY ./airbyte_cdk ./cdk/airbyte_cdk
 COPY ./README.md ./cdk/
 # install necessary packages to a temporary folder

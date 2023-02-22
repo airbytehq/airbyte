@@ -76,15 +76,14 @@ class AirbyteEntrypoint(object):
             self.logger.setLevel(logging.INFO)
 
         # todo: add try catch for exceptions with different exit codes
+        source_spec: ConnectorSpecification = self.source.spec(self.logger)
         with tempfile.TemporaryDirectory() as temp_dir:
             if cmd == "spec":
-                source_spec: ConnectorSpecification = self.source.spec(self.logger)
                 message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                 yield message.json(exclude_unset=True)
             else:
                 raw_config = self.source.read_config(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
-                source_spec: ConnectorSpecification = self.source.spec(self.logger)
 
                 # Now that we have the config, we can use it to get a list of ai airbyte_secrets
                 # that we should filter in logging to avoid leaking secrets

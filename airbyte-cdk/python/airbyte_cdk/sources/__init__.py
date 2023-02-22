@@ -4,7 +4,6 @@
 
 from .abstract_source import AbstractSource
 from .config import BaseConfig
-from .generic_manifest_declarative_source import GenericManifestDeclarativeSource
 from .source import Source
 
-__all__ = ["AbstractSource", "BaseConfig", "Source", "GenericManifestDeclarativeSource"]
+__all__ = ["AbstractSource", "BaseConfig", "Source"]
