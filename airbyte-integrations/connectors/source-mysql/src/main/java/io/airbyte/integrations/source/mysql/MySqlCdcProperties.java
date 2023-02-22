@@ -17,8 +17,12 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySqlCdcProperties {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
 
   static Properties getDebeziumProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -43,7 +47,7 @@ public class MySqlCdcProperties {
     // debezium engine configuration
     props.setProperty("connector.class", "io.debezium.connector.mysql.MySqlConnector");
 
-    props.setProperty("database.server.id", "5400");
+    props.setProperty("database.server.id", String.valueOf(generateServerID()));
     // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-boolean-values
     // https://debezium.io/documentation/reference/stable/development/converters.html
     /**
@@ -69,42 +73,23 @@ public class MySqlCdcProperties {
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
         props.setProperty("database.ssl.mode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
-//        props.setProperty("database.history.producer.security.protocol", "SSL");
-//        props.setProperty("database.history.consumer.security.protocol", "SSL");
 
         if (dbConfig.has(TRUST_KEY_STORE_URL) && !dbConfig.get(TRUST_KEY_STORE_URL).asText().isEmpty()) {
           props.setProperty("database.ssl.truststore", Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
-//          props.setProperty("database.history.producer.ssl.truststore.location",
-//              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
-//          props.setProperty("database.history.consumer.ssl.truststore.location",
-//              Path.of(URI.create(dbConfig.get(TRUST_KEY_STORE_URL).asText())).toString());
-//          props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
-//          props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
-
         }
+
         if (dbConfig.has(TRUST_KEY_STORE_PASS) && !dbConfig.get(TRUST_KEY_STORE_PASS).asText().isEmpty()) {
           props.setProperty("database.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-//          props.setProperty("database.history.producer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-//          props.setProperty("database.history.consumer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-//          props.setProperty("database.history.producer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-//          props.setProperty("database.history.consumer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-
         }
+
         if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
           props.setProperty("database.ssl.keystore", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-//          props.setProperty("database.history.producer.ssl.keystore.location",
-//              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-//          props.setProperty("database.history.consumer.ssl.keystore.location",
-//              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-//          props.setProperty("database.history.producer.ssl.keystore.type", "PKCS12");
-//          props.setProperty("database.history.consumer.ssl.keystore.type", "PKCS12");
-
         }
+
         if (dbConfig.has(CLIENT_KEY_STORE_PASS) && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
           props.setProperty("database.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
-//          props.setProperty("database.history.producer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
-//          props.setProperty("database.history.consumer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
         }
+
       } else {
         props.setProperty("database.ssl.mode", "required");
       }
@@ -129,6 +114,15 @@ public class MySqlCdcProperties {
     final Properties props = commonProperties(database);
     props.setProperty("snapshot.mode", "initial_only");
     return props;
+  }
+
+  private static int generateServerID() {
+    int min = 5400;
+    int max = 6400;
+
+    int serverId = (int) Math.floor(Math.random() * (max - min + 1) + min);
+    LOGGER.info("Randomly generated Server ID : " + serverId);
+    return serverId;
   }
 
 }
