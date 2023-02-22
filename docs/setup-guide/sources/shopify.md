@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for Shopify.
 ## Prerequisites
 
 * Your Shopify store name
-* API password or Client ID, Client Secret, and Access Token
+* Your Shopify login details or API password
 
 ## Features
 
@@ -53,6 +53,7 @@ This Source is capable of syncing the following core Streams:
 * [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
 * [Products](https://help.shopify.com/en/api/reference/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
+* [Balance Transactions](https://shopify.dev/api/admin-rest/2021-07/resources/transactions)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
 * [Price Rules](https://help.shopify.com/en/api/reference/discounts/pricerule)
 * [Locations](https://shopify.dev/api/admin-rest/2021-10/resources/location)

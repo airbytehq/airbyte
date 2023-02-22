@@ -4,10 +4,8 @@ This page contains the setup guide and reference information for Amazon Ads.
 
 ## Prerequisites
 
+* Amazon Ads account login (username and password)
 * Store Name
-* Client ID
-* Client Secret
-* Refresh Token
 * Region
 
 ## Setup guide
@@ -16,35 +14,27 @@ This page contains the setup guide and reference information for Amazon Ads.
 
 Create an Amazon user with access to [Amazon Ads account](https://advertising.amazon.com/).
 
-### Step 2: Complete Amazon Ads API onboarding process
-
-The [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) has several steps and may take several days to complete. After completing all steps you will have to get Amazon client application `Client ID`, `Client Secret` and `Refresh Token`.
-
-### Step 3: Set up the Amazon Ads data source in Daspire
+### Step 2: Set up the Amazon Ads data source in Daspire
 
 1. Select **Amazon Ads** from the Source list.
 
 2. Enter a **Source Name**.
 
-3. Enter your Amazon **Store Name**.
+3. **Authenticate your Amazon Ads account**.
 
-4. Enter your Amazon Ads account **Client ID**.
+4. Enter your Amazon **Store Name**.
 
-5. Enter your Amazon Ads account **Client Secret**.
+5. Select **Region** to pull data from **North America (NA)**, **Europe (EU)** or **Far East (FE)**. See [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
 
-6. Enter your Amazon Ads account **Refresh Token**.
+6. **Report Wait Timeout** is the maximum number of minutes the connector waits for the generation of a report for streams.
 
-7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)** or **Far East (FE)**. See [Amazon docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
+7. **Report Generation Maximum Retries** is the maximum number of attempts the connector tries to generate a report for streams.
 
-8. **Report Wait Timeout** is the maximum number of minutes the connector waits for the generation of a report for streams.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date for a specific profile is calculated according to its timezone, this parameter should be specified in the UTC timezone. Since it doesn't make sense to generate reports for the current day (metrics could be changed), it generates reports for the day before (e.g. if **Start Date** is 2022-10-11 it would use 20221010 as reportDate parameter for request).
 
-9. **Report Generation Maximum Retries** is the maximum number of attempts the connector tries to generate a report for streams.
+9. **Profile IDs (Optional)** you want to fetch data for. See [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 
-10. **Start Date (Optional)** is used for generating reports starting from the specified start date. Should be in YYYY-MM-DD format and not more than 60 days in the past. If not specified today's date is used. The date for a specific profile is calculated according to its timezone, this parameter should be specified in the UTC timezone. Since it doesn't make sense to generate reports for the current day (metrics could be changed), it generates reports for the day before (e.g. if **Start Date** is 2022-10-11 it would use 20221010 as reportDate parameter for request).
-
-11. **Profile IDs (Optional)** you want to fetch data for. See [Amazon docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-
-12. Click **Set up source**.
+10. Click **Set up source**.
 
 ## Supported sync modes
 

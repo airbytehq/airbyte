@@ -2,7 +2,84 @@
   "streams": [
     {
       "stream": {
+        "name": "GET_PAYOUTS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_TRANSACTIONS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_ORDERS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "GET_CAMPAIGNS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_INVENTORY_LOCATIONS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_INVENTORY_ITEMS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_PROMOTIONS",
+        "json_schema": {
+          "type": "object"
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_PROMOTION_REPORTS",
         "json_schema": {
           "type": "object"
         },
