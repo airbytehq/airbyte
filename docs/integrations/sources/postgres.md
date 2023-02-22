@@ -211,7 +211,9 @@ az postgres server restart --resource-group group --name server
 
 #### Step 2: Select a replication plugin​
 
-We recommend using a [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres). If the replication table contains multiple JSON blobs and the table size exceeds 1 GB, we recommend using a [wal2json](https://github.com/eulerto/wal2json) instead. Note that wal2json may require additional installation for Bare Metal, VMs (EC2/GCE/etc), Docker, etc. For more information read the [wal2json documentation](https://github.com/eulerto/wal2json).
+We currently support two plugins :
+1. [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres).
+2. [wal2json](https://github.com/eulerto/wal2json) plugin. Please note that the wal2json plugin has been deprecated and we will remove support for it in the near future. We strongly advice against using this plugin.
 
 #### Step 3: Create replication slot​
 
@@ -406,7 +408,8 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.46  | 2022-02-21 | [22221](https://github.com/airbytehq/airbyte/pull/23138) | Fix version 1.0.45 which doesn't verify privileges correctly, preventing CDC syncs to run.                                                                                 |  
+| 1.0.47  | 2022-02-22 | [22221](https://github.com/airbytehq/airbyte/pull/23138) | Fix previous versions which doesn't verify privileges correctly, preventing CDC syncs to run.                                                                              |                                                                                                                                                                   |
+| 1.0.46  | 2022-02-21 | [23105](https://github.com/airbytehq/airbyte/pull/23105) | Include log levels and location information (class, method and line number) with source connector logs published to Airbyte Platform.                                      |
 | 1.0.45  | 2022-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371) | Ensures that user has required privileges for CDC syncs.                                                                                                                   |  
 |         | 2022-02-15 | [23028](https://github.com/airbytehq/airbyte/pull/23028) |                                                                                                                                                                            |
 | 1.0.44  | 2022-02-06 | [22221](https://github.com/airbytehq/airbyte/pull/22221) | Exclude new set of system tables when using `pg_stat_statements` extension.                                                                                                |  
