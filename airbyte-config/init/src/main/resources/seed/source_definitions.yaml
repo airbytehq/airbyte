@@ -858,6 +858,9 @@
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.intercom.io
 - name: Intruder
   sourceDefinitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
   dockerRepository: airbyte/source-intruder
