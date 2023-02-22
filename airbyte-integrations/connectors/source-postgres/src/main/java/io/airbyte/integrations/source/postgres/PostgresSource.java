@@ -43,7 +43,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.PostgresDebeziumConnection;
+import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
 import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -324,7 +324,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
         try {
-          PostgresDebeziumConnection.createConnection(config);
+          PostgresReplicationConnection.createConnection(config);
         } catch (IllegalStateException exception){
           throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
         }

@@ -7,7 +7,6 @@ package io.airbyte.integrations.debezium.internals;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.debezium.connector.postgresql.connection.Lsn;
 import io.debezium.jdbc.JdbcConnection.ResultSetMapper;
 import io.debezium.jdbc.JdbcConnection.StatementFactory;
 import java.sql.*;
@@ -17,11 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is a helper for creating Debezium connections for Postgres
+ * This class is a helper for creating replication connections for Postgres
  */
-public class PostgresDebeziumConnection {
+public class PostgresReplicationConnection {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumConnection.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresReplicationConnection.class);
   private static final String ILLEGAL_CONNECTION_ERROR_MESSAGE = "The DB connection is not a valid replication connection";
 
   public static Connection createConnection(final JsonNode jdbcConfig) throws SQLException, IllegalStateException {
@@ -58,12 +57,11 @@ public class PostgresDebeziumConnection {
   }
 
   private static void validateReplicationConnection(final Connection pgConnection) throws SQLException, IllegalStateException {
-    final Lsn xlogStart = queryAndMap(pgConnection, "IDENTIFY_SYSTEM", Connection::createStatement, rs -> {
+    queryAndMap(pgConnection, "IDENTIFY_SYSTEM", Connection::createStatement, rs -> {
       if (!rs.next()) {
         throw new IllegalStateException(ILLEGAL_CONNECTION_ERROR_MESSAGE);
       }
-      final String xlogpos = rs.getString("xlogpos");
-      return Lsn.valueOf(xlogpos);
+      return null;
     });
   }
 
