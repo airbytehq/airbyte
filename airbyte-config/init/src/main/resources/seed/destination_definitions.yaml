@@ -163,12 +163,6 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
-- name: Heap Analytics
-  destinationDefinitionId: f8e68742-407a-4a3c-99ad-dfd42ae2cba8
-  dockerRepository: airbyte/destination-heap-analytics
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/heap-analytics
-  releaseStage: alpha
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
