@@ -7189,7 +7189,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-databend:0.1.0"
+- dockerImage: "airbyte/destination-databend:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/databend"
     connectionSpecification:
@@ -7207,14 +7207,6 @@
           description: "Hostname of the database."
           type: "string"
           order: 0
-        protocol:
-          title: "Protocol"
-          description: "Protocol of the host."
-          type: "string"
-          examples:
-          - "https"
-          default: "https"
-          order: 1
         port:
           title: "Port"
           description: "Port of the database."
