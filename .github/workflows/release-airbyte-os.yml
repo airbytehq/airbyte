@@ -12,6 +12,10 @@ on:
         description: "Please choose the type of version upgrade : major|minor|patch"
         required: true
         default: "patch"
+
+env:
+  PIP_ROOT_USER_ACTION: ignore
+
 jobs:
   # In case of self-hosted EC2 errors, remove this block.
   start-release-airbyte-runner:
@@ -24,11 +28,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
             ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -42,10 +48,16 @@ jobs:
     needs: start-release-airbyte-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
     steps:
+      - name: Checkout airbyte-platform
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte-platform
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -56,10 +68,12 @@ jobs:
           node-version: "lts/*"
 
       # necessary to install pip
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4.5.0
         with:
           python-version: "3.9"
+
       - name: Release Airbyte
+        if: false # disable for now
         id: release_airbyte
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -79,6 +93,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -87,7 +102,9 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
       - name: Release Octavia
+        if: false # disable for now
         id: release_octavia
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -105,16 +122,21 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       # necessary to install pip
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
+
       - name: Bump version
+        if: false # disable for now
         id: bump_version
         env:
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/bump_version.sh
+
       - name: Get PR Body
+        if: false # disable for now
         id: pr_body
         env:
           PREV_VERSION: ${{ steps.bump_version.outputs.PREV_VERSION }}
@@ -126,7 +148,9 @@ jobs:
           echo "PR_BODY<<EOF" >> $GITHUB_ENV
           echo "$body" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+
       - name: Create Pull Request
+        if: false # disable for now
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
@@ -137,6 +161,7 @@ jobs:
           title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
           body: ${{ env.PR_BODY }}
           commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
+
       - name: PR Details
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
