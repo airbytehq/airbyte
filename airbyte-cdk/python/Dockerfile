@@ -9,14 +9,8 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
-
-RUN mkdir cdk
-COPY ./setup.py ./cdk
-# FIXME install from pypi and make sure there are no race conditions
-COPY ./airbyte_cdk ./cdk/airbyte_cdk
-COPY ./README.md ./cdk/
-# install necessary packages to a temporary folder
-RUN pip install --prefix=/install ./cdk
+# install airbyte-cdk
+RUN pip install --prefix=/install airbyte-cdk==0.29.0
 
 # build a clean environment
 FROM base

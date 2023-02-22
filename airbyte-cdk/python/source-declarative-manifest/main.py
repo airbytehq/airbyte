@@ -11,6 +11,9 @@ from airbyte_cdk.sources.declarative.manifest_declarative_source import Manifest
 
 if __name__ == "__main__":
     args = AirbyteEntrypoint.parse_args(sys.argv[1:])
+    if args.command == "spec":
+        raise ValueError("spec command is not supported for injected declarative manifest")
+
     config = BaseConnector.read_config(args.config)
     if "__injected_declarative_manifest" not in config:
         raise ValueError(
