@@ -131,7 +131,7 @@
 - name: Exasol
   destinationDefinitionId: bb6071d9-6f34-4766-bec2-d1d4ed81a653
   dockerRepository: airbyte/destination-exasol
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/exasol
   releaseStage: alpha
 - name: Firebolt
