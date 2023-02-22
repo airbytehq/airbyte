@@ -48,6 +48,11 @@ jobs:
     needs: start-release-airbyte-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
     steps:
+      - name: Checkout airbyte-platform
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte-platform
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
