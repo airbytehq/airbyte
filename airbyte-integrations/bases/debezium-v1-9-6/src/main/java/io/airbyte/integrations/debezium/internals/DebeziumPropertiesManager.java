@@ -69,7 +69,6 @@ public class DebeziumPropertiesManager {
 
     // debezium names
     props.setProperty("name", config.get(JdbcUtils.DATABASE_KEY).asText());
-//    props.setProperty("database.server.name", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     // db connection configuration
     props.setProperty("database.hostname", config.get(JdbcUtils.HOST_KEY).asText());
@@ -88,6 +87,7 @@ public class DebeziumPropertiesManager {
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
     props.setProperty("decimal.handling.mode", "string");
 
+    // WARNING : Never change the value of this otherwise all the connectors would start syncing from scratch
     props.setProperty("topic.prefix", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     // table selection
