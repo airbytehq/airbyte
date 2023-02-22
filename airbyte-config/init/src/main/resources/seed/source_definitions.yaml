@@ -1055,6 +1055,9 @@
   icon: marketo.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.mktorest.com"
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
