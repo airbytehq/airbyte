@@ -90,9 +90,7 @@ public class PostgresDebeziumStateUtil {
 
     final LogSequenceNumber logSequenceNumber = LogSequenceNumber.valueOf(savedOffset.getAsLong());
 
-    try {
-      final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig);
-
+    try (final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
       ChainedLogicalStreamBuilder streamBuilder = pgConnection
           .getReplicationAPI()
           .replicationStream()
