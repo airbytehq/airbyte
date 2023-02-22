@@ -5,6 +5,7 @@
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.debezium.jdbc.JdbcConnection.ResultSetMapper;
@@ -22,6 +23,8 @@ public class PostgresReplicationConnection {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresReplicationConnection.class);
   private static final String ILLEGAL_CONNECTION_ERROR_MESSAGE = "The DB connection is not a valid replication connection";
+  public static final String REPLICATION_PRIVILEGE_ERROR_MESSAGE =
+      "User '%s' does not have enough privileges for CDC replication. Please read the docs and add required privileges.";
 
   public static Connection createConnection(final JsonNode jdbcConfig) throws SQLException, IllegalStateException {
     Properties properties = new Properties();
@@ -45,7 +48,7 @@ public class PostgresReplicationConnection {
       connection = DriverManager.getConnection(jdbcUrl, properties);
     } catch (PSQLException exception) {
       if (exception.getMessage().equals("FATAL: must be superuser or replication role to start walsender")) {
-        throw new IllegalStateException(ILLEGAL_CONNECTION_ERROR_MESSAGE);
+        throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()));
       }
       throw exception;
     }

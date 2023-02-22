@@ -86,7 +86,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
-import org.postgresql.core.BaseConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,9 +93,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
-  public static final String REPLICATION_PRIVILEGE_ERROR_MESSAGE =
-      "User '%s' does not have enough privileges for CDC replication. Please read the docs and add required privileges.";
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String PARAM_SSL = "ssl";
@@ -323,10 +319,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // Verify that a CDC connection can be created
       checkOperations.add(database -> {
         final String userName = config.get("username").asText();
-        try {
-          PostgresReplicationConnection.createConnection(config);
-        } catch (IllegalStateException exception){
-          throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
+        // Empty try statement as we only need to verify that the connection can be created.
+        try (final Connection connection = PostgresReplicationConnection.createConnection(config)){
         }
       });
     }
