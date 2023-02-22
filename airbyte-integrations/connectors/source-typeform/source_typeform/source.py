@@ -147,10 +147,10 @@ class Responses(TrimFormsMixin, IncrementalTypeformStream):
 
     def current_state_value_int(self, current_stream_state: MutableMapping[str, Any], form_id: str) -> int:
         # state used to be stored as int, now we store it as str, so need to handle both cases
-        value = current_stream_state.get(form_id, {}).get(self.cursor_field)
+        value = current_stream_state.get(form_id, {}).get(self.cursor_field, self.start_date.int_timestamp)
         if isinstance(value, str):
             value = pendulum.from_format(value, self.date_format).int_timestamp
-        return value or 1
+        return value
 
     def get_updated_state(
         self,
