@@ -216,7 +216,9 @@ az postgres server restart --resource-group group --name server
 
 #### Step 2: Select a replication plugin​
 
-We recommend using a [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres). If the replication table contains multiple JSON blobs and the table size exceeds 1 GB, we recommend using a [wal2json](https://github.com/eulerto/wal2json) instead. Note that wal2json may require additional installation for Bare Metal, VMs (EC2/GCE/etc), Docker, etc. For more information read the [wal2json documentation](https://github.com/eulerto/wal2json).
+We currently support two plugins :
+1. [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres).
+2. [wal2json](https://github.com/eulerto/wal2json) plugin. Please note that the wal2json plugin has been deprecated and we will remove support for it in the near future. We strongly advice against using this plugin.
 
 #### Step 3: Create replication slot​
 
