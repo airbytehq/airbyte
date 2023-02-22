@@ -74,6 +74,7 @@ public class ConnectorMarkdownGenerator {
         return String.join("\r\n", bodyParts);
     }
 
+    @SuppressWarnings("PMD")
     private String buildMarkdownTable (List<JsonNode> definitions, String type) {
         final List<String> bodyParts = new ArrayList<>();
 
@@ -91,11 +92,11 @@ public class ConnectorMarkdownGenerator {
         for (final JsonNode definition : definitions) {
             final String name = definition.get("name").asText();
             final String icon = definition.get("icon") != null ? definition.get("icon").asText() : "";
-            final String iconLink = icon != "" ? "<img alt=\"" + name + " icon\" src=\"" + githubIconBase + "/" + icon  + "\" height=\"" + iconSize + "\" height=\"" + iconSize + "\"/>" : "x";
+            final String iconLink = icon.equals("") ? "<img alt=\"" + name + " icon\" src=\"" + githubIconBase + "/" + icon  + "\" height=\"" + iconSize + "\" height=\"" + iconSize + "\"/>" : "x";
             final String dockerImage = definition.get("dockerRepository").asText() + ":" + definition.get("dockerImageTag").asText();
             final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
             final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
-            final String docLink = documentationUrl != "" ? "[link](" + documentationUrl + ")" : "missing";
+            final String docLink = documentationUrl.equals("") ? "[link](" + documentationUrl + ")" : "missing";
             final String id = "<small>`" + definition.get(type.toLowerCase() + "DefinitionId").asText() + "`</small>";
 
             bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | " + id + " |");
