@@ -14,6 +14,7 @@ import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
+from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -679,3 +680,5 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
         {"Id": 3, "propertyA": "A", "propertyB": "B"},
         {"Id": 4, "propertyA": "A", "propertyB": "B"}
     ]
+    for call in requests_mock.request_history:
+        assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
