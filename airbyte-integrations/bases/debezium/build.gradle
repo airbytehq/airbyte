@@ -6,7 +6,7 @@ project.configurations {
     testFixturesImplementation.extendsFrom implementation
 }
 dependencies {
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-db:db-lib')
 
     implementation 'io.debezium:debezium-api:2.1.2.Final'

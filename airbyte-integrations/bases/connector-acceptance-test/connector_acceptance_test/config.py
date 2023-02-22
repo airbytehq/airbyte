@@ -200,6 +200,9 @@ class Config(BaseConfig):
         default=TestStrictnessLevel.low,
         description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
     )
+    custom_environment_variables: Optional[Mapping] = Field(
+        default={}, description="Mapping of custom environment variables to pass to the connector under test."
+    )
 
     @staticmethod
     def is_legacy(config: dict) -> bool:
