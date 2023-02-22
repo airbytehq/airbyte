@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -17,10 +17,10 @@ import org.opensearch.testcontainers.OpensearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class OpenSearchDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String IMAGE_NAME = "opensearchproject/opensearch:2.5.0";
-  private static final Logger LOGGER = LoggerFactory.getLogger(OpensearchDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchDestinationAcceptanceTest.class);
 
   private ObjectMapper mapper = new ObjectMapper();
   private static OpensearchContainer container;
@@ -33,7 +33,6 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
             .withEnv("logger.org.elasticsearch", "INFO")
             .withEnv("ingest.geoip.downloader.enabled", "false")
             .withExposedPorts(9200)
-            .withEnv("xpack.security.enabled", "false")
             .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
   }
@@ -66,7 +65,6 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportArrayDataTypeTest() {
-    // TODO: Enable supportArrayDataTypeTest after ticket 14568 will be done
     return false;
   }
 
@@ -103,12 +101,12 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
           throws Exception {
     // Records returned from this method will be compared against records provided to the connector
     // to verify they were written correctly
-    final String indexName = new OpensearchWriteConfig()
+    final String indexName = new OpenSearchWriteConfig()
             .setNamespace(namespace)
             .setStreamName(streamName)
             .getIndexName();
 
-    OpensearchConnection connection = new OpensearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    OpenSearchConnection connection = new OpenSearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     return connection.getRecords(indexName);
   }
 
@@ -117,7 +115,7 @@ public class OpensearchDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) throws Exception {
-    OpensearchConnection connection = new OpensearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
+    OpenSearchConnection connection = new OpenSearchConnection(mapper.convertValue(getConfig(), ConnectorConfiguration.class));
     connection.allIndices().forEach(connection::deleteIndexIfPresent);
     connection.close();
   }

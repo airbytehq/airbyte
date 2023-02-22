@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -9,7 +9,7 @@ import java.util.Base64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OpensearchConnectionTest {
+public class OpenSearchConnectionTest {
 
   String endpoint = "https:qwerty:123";
 
@@ -17,8 +17,8 @@ public class OpensearchConnectionTest {
   public void testDefaultHeadersAuthNone() {
     final var config = new ConnectorConfiguration();
     config.setEndpoint(endpoint);
-    config.getAuthenticationMethod().setMethod(OpensearchAuthenticationMethod.none);
-    final var connection = new OpensearchConnection(config);
+    config.getAuthenticationMethod().setMethod(OpenSearchAuthenticationMethod.none);
+    final var connection = new OpenSearchConnection(config);
     final var headers = connection.configureHeaders(config);
     Assertions.assertEquals(0, headers.length);
   }
@@ -29,8 +29,8 @@ public class OpensearchConnectionTest {
     config.setEndpoint(endpoint);
     config.getAuthenticationMethod().setUsername("user");
     config.getAuthenticationMethod().setPassword("password");
-    config.getAuthenticationMethod().setMethod(OpensearchAuthenticationMethod.basic);
-    final var connection = new OpensearchConnection(config);
+    config.getAuthenticationMethod().setMethod(OpenSearchAuthenticationMethod.basic);
+    final var connection = new OpenSearchConnection(config);
     final var headers = connection.configureHeaders(config);
     Assertions.assertEquals(1, headers.length);
 
@@ -46,8 +46,8 @@ public class OpensearchConnectionTest {
     config.setEndpoint(endpoint);
     config.getAuthenticationMethod().setApiKeyId("id");
     config.getAuthenticationMethod().setApiKeySecret("secret");
-    config.getAuthenticationMethod().setMethod(OpensearchAuthenticationMethod.secret);
-    final var connection = new OpensearchConnection(config);
+    config.getAuthenticationMethod().setMethod(OpenSearchAuthenticationMethod.secret);
+    final var connection = new OpenSearchConnection(config);
     final var headers = connection.configureHeaders(config);
     Assertions.assertEquals(1, headers.length);
 

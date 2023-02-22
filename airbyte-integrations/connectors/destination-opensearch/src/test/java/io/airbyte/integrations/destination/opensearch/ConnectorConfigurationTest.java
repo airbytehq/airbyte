@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -20,7 +20,7 @@ public class ConnectorConfigurationTest {
     ObjectNode authNode = mapper.createObjectNode();
 
     String endpoint = "http://localhost:123";
-    String authMethod = OpensearchAuthenticationMethod.secret.toString();
+    String authMethod = OpenSearchAuthenticationMethod.secret.toString();
     String apiKeyId = "foo";
     String apiKeySecret = "bar";
 
@@ -48,7 +48,7 @@ public class ConnectorConfigurationTest {
     ObjectNode authNode = mapper.createObjectNode();
 
     String endpoint = "http://localhost:123";
-    String authMethod = OpensearchAuthenticationMethod.basic.toString();
+    String authMethod = OpenSearchAuthenticationMethod.basic.toString();
     String username = "foo";
     String password = "bar";
 
@@ -76,7 +76,7 @@ public class ConnectorConfigurationTest {
     ObjectNode authNode = mapper.createObjectNode();
 
     String endpoint = "http://localhost:123";
-    String authMethod = OpensearchAuthenticationMethod.none.toString();
+    String authMethod = OpenSearchAuthenticationMethod.none.toString();
 
     node
         .put("endpoint", endpoint)

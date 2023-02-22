@@ -28,7 +28,7 @@ public class ConnectorConfiguration {
   @Data
   static class AuthenticationMethod {
 
-    private OpensearchAuthenticationMethod method = OpensearchAuthenticationMethod.none;
+    private OpenSearchAuthenticationMethod method = OpenSearchAuthenticationMethod.none;
     private String username;
     private String password;
     private String apiKeyId;
