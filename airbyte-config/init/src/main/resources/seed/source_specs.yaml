@@ -4034,7 +4034,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-faker:2.0.1"
+- dockerImage: "airbyte/source-faker:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -6336,7 +6336,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.15"
+- dockerImage: "airbyte/source-harvest:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
@@ -14446,7 +14446,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:1.0.1"
+- dockerImage: "airbyte/source-stripe:2.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -16468,7 +16468,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.21"
+- dockerImage: "airbyte/source-zendesk-support:0.2.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
