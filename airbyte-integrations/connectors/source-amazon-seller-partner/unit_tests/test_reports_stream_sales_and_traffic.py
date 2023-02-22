@@ -1,7 +1,7 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pytest
+
 from source_amazon_seller_partner.auth import AWSSignature
 from source_amazon_seller_partner.streams import SellerAnalyticsSalesAndTrafficReports
 
@@ -29,5 +29,5 @@ def test_stream_uses_advanced_options():
             advanced_stream_options='{"GET_SALES_AND_TRAFFIC_REPORT":{"availability_sla_days": 3}}',
             max_wait_seconds=500,
         )
-    
+
     assert stream.availability_sla_days == 3
