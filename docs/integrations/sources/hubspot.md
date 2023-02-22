@@ -126,7 +126,7 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.3.3   | 2023-02-22 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Limit length of the error message                                                                                                              |
+| 0.3.3   | 2023-02-22 | [23337](https://github.com/airbytehq/airbyte/pull/23337) | Limit length of the error message                                                                                                              |
 | 0.3.2   | 2023-02-07 | [22479](https://github.com/airbytehq/airbyte/pull/22479) | Turn on default HttpAvailabilityStrategy                                                                                                       |
 | 0.3.1   | 2023-01-27 | [22009](https://github.com/airbytehq/airbyte/pull/22009) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                    |
 | 0.3.0   | 2022-10-27 | [18546](https://github.com/airbytehq/airbyte/pull/18546) | Sunsetting API Key authentication. `Quotes` stream is no longer available                                                                      |
