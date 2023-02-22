@@ -57,6 +57,7 @@ cmd_build() {
     ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
+      export RANDOM_TEST_SCHEMA="true"
       ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
     fi
 
