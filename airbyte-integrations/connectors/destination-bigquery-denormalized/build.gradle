@@ -31,3 +31,13 @@ dependencies {
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
+
+configurations.all {
+  resolutionStrategy {
+    // at time of writing: deps.toml declares google-cloud-storage 2.17.2
+    // which pulls in google-api-client:2.2.0
+    // which conflicts with google-cloud-bigquery, which requires google-api-client:1.x
+    // google-cloud-storage is OK with downgrading to anything >=1.31.1.
+    force 'com.google.api-client:google-api-client:1.31.5'
+  }
+}
