@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "publisher_account_id": {
+      "type": "integer"
+    },
+    "hits": {
+      "type": "integer"
+    },
+    "clicks": {
+      "type": "integer"
+    },
+    "cost": {
+      "type": "number"
+    },
+    "all_conversion_value": {
+      "type": "number"
+    },
+    "revenue": {
+      "type": "number"
+    },
+    "all_conversions": {
+      "type": "integer"
+    },
+    "conversions": {
+      "type": "integer"
+    },
+    "interactions": {
+      "type": "integer"
+    },
+    "engagements": {
+      "type": "integer"
+    },
+    "cross_device_conversions": {
+      "type": "integer"
+    },
+    "date": {
+      "type": "string"
+    },
+    "advertiser": {
+      "type": "string"
+    },
+    "account": {
+      "type": "string"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "conversions_one_per_click": {
+      "type": "number"
+    },
+    "conversions_many_per_click": {
+      "type": "number"
+    }
+  }
+}

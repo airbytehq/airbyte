@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "hits": {
+      "type": "integer"
+    },
+    "interactions": {
+      "type": "integer"
+    },
+    "cost": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
+    },
+    "publisher_campaign_id": {
+      "type": "string"
+    },
+    "publisher_adset_id": {
+      "type": "string"
+    },
+    "publisher_adcreative_id": {
+      "type": "string"
+    },
+    "lead_category_id": {
+      "type": "integer"
+    },
+    "revenue": {
+      "type": "number"
+    },
+    "all_conversions": {
+      "type": "integer"
+    },
+    "advertiser": {
+      "type": "string"
+    },
+    "account": {
+      "type": "string"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "campaign": {
+      "type": "string"
+    },
+    "ad_set": {
+      "type": "string"
+    },
+    "ad_creative": {
+      "type": "string"
+    },
+    "ad_image": {
+      "type": "string"
+    },
+    "image": {
+      "type": "string"
+    },
+    "ad_message": {
+      "type": "string"
+    },
+    "event_billable_lead": {
+      "type": "integer"
+    },
+    "event_sql": {
+      "type": "integer"
+    },
+    "event_contacted": {
+      "type": "integer"
+    },
+    "event_sale": {
+      "type": "integer"
+    },
+    "conversions": {
+      "type": "integer"
+    },
+    "clicks": {
+      "type": "integer"
+    },
+    "event_lead": {
+      "type": "integer"
+    },
+    "conversions_one_per_click": {
+      "type": "integer"
+    },
+    "conversions_many_per_click": {
+      "type": "integer"
+    }
+  }
+}
