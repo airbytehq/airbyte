@@ -77,7 +77,11 @@ docker build . -t airbyte/source-tripletex-api:dev
 If you are on Apple M-chips (arm64), add `-- platform linux/amd64` tag at the end of the above command.
 
 ```
-docker build . -t airbyte/source-tripletex-api:dev
+docker build . -t airbyte/source-tripletex-api:dev --platform linux/amd64
+```
+```shell
+docker tag airbyte/source-tripletex-api:2.0.0 askeladden/source-tripletex-api:2.0.0
+docker push askeladden/source-tripletex-api:2.0.0
 ```
 
 You can also build the connector image via Gradle:

@@ -1,0 +1,72 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "id" : {
+      "type" : "object"
+    },
+    "category" : {
+      "type" : "object"
+    },
+    "name" : {
+      "type" : "object"
+    },
+    "article_no" : {
+      "type" : "object"
+    },
+    "ean_code" : {
+      "type" : "object"
+    },
+    "summary" : {
+      "type" : "object"
+    },
+    "description" : {
+      "type" : "object"
+    },
+    "buying_price" : {
+      "type" : "object"
+    },
+    "price" : {
+      "type" : "object"
+    },
+    "sales_price" : {
+      "type" : "object"
+    },
+    "weight" : {
+      "type" : "object"
+    },
+    "length" : {
+      "type" : "object"
+    },
+    "height" : {
+      "type" : "object"
+    },
+    "width" : {
+      "type" : "object"
+    },
+    "volume" : {
+      "type" : "object"
+    },
+    "image" : {
+      "type" : "object"
+    },
+    "link" : {
+      "type" : "object"
+    },
+    "additional_text" : {
+      "type" : "object"
+    },
+    "active" : {
+      "type" : "object"
+    },
+    "stock" : {
+      "type" : "object"
+    },
+    "vat" : {
+      "type" : "object"
+    },
+    "modified_on" : {
+      "type" : "object"
+    }
+  }
+}

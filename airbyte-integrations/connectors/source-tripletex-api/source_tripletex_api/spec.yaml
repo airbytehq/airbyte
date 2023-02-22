@@ -11,8 +11,7 @@ connectionSpecification:
     start_date:
       type: string
       description: "Starting date"
-      default: "2022-12-10"
-      airbyte_secret: false
+      default: "2023-02-10"
 
     consumer_token:
       type: string
