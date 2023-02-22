@@ -56,7 +56,6 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
-import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
@@ -1459,14 +1458,6 @@ public class ConfigRepository {
    * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit
    * metrics without exposing the underlying database connection.
    */
-
-  public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {
-    return database.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
-  }
-
-  public List<ReleaseStage> getJobIdToReleaseStages(final long jobId) throws IOException {
-    return database.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-  }
 
   private Condition includeTombstones(final Field<Boolean> tombstoneField, final boolean includeTombstones) {
     if (includeTombstones) {
