@@ -12,7 +12,6 @@ jobs:
   markdown-link-check:
     timeout-minutes: 50
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - uses: actions/checkout@master
       # check all files on master

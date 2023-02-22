@@ -1,9 +1,0 @@
-@use "scss/variables";
-
-.content {
-  > form {
-    display: flex;
-    flex-direction: column;
-    gap: variables.$spacing-md;
-  }
-}
