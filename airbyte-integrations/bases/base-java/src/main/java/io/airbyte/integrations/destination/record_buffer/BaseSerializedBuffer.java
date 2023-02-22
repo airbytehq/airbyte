@@ -89,7 +89,9 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     }
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
+      LOGGER.info("Writing Record to Buffer");
       writeRecord(recordMessage);
+      LOGGER.info("Writing Record completed");
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
