@@ -36,7 +36,7 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
 
-  date_stream_slicer:
+  datetime_incremental_sync:
     type: DatetimeBasedCursor
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
@@ -76,7 +76,7 @@ definitions:
           start: "{{format_datetime(stream_slice.start_time, '%Y%m%d') }}"
           end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
     incremental_sync:
-      $ref: "#/definitions/date_stream_slicer"
+      $ref: "#/definitions/datetime_incremental_sync"
 
   average_session_length_stream:
     $ref: "#/definitions/base_incremental_stream"
@@ -110,7 +110,7 @@ definitions:
           type: CustomRecordExtractor
           class_name: source_amplitude.components.ActiveUsersRecordExtractor
     incremental_sync:
-      $ref: "#/definitions/date_stream_slicer"
+      $ref: "#/definitions/datetime_incremental_sync"
       step: P1M
       cursor_field: "date"
     $parameters:
@@ -136,7 +136,7 @@ definitions:
         record_filter:
           condition: "{{ record[parameters['stream_cursor_field']] > stream_state.get(parameters['stream_cursor_field'],config['start_date']) }}"
     incremental_sync:
-      $ref: "#/definitions/date_stream_slicer"
+      $ref: "#/definitions/datetime_incremental_sync"
       step: "PT{{config.get('request_time_range', 24)}}H"
       cursor_field: "{{ parameters.get('stream_cursor_field') }}"
       cursor_granularity: PT1H
