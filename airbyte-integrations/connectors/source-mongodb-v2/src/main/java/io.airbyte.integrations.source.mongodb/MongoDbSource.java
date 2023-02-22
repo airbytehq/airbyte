@@ -59,18 +59,19 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final var credentials = config.has(MongoUtils.USER) && config.has(JdbcUtils.PASSWORD_KEY)
         ? String.format("%s:%s@", config.get(MongoUtils.USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
-
+    final var MAX_DEPTH_LEVEL_READ = config.has(MongoUtils.MAX_DEPTH_LEVEL_READ) ? config.get(MongoUtils.MAX_DEPTH_LEVEL_READ).asInt()
+    : 2
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("connectionString", buildConnectionString(config, credentials))
         .put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText())
+        .put("maxDepthLevelRead",MAX_DEPTH_LEVEL_READ)
         .build());
   }
 
   @Override
   protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
     final var dbConfig = toDatabaseConfig(config);
-    if(config.get("level")!=null)
-     MongoUtils.MAX_DEPTH_LEVEL_READ = config.get("level").asInt();
+    
     return new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
   }
@@ -106,7 +107,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final Set<String> authorizedCollections = getAuthorizedCollections(database);
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
+      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection,database.maxDepthLevelRead).stream().map(MongoUtils::nodeToCommonField).toList();
 
       // The field name _id is reserved for use as a primary key;
       final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
