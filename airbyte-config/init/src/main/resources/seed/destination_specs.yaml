@@ -2238,7 +2238,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-exasol:0.1.0"
+- dockerImage: "airbyte/destination-exasol:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/exasol"
     connectionSpecification:
