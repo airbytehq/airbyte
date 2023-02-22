@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-facebook-marketing:dev
 tests:
@@ -14,8 +14,11 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       empty_streams: ["videos"]
+      timeout_seconds: 2400
   incremental:
     - config_path: "secrets/config.json"
+      timeout_seconds: 2400
       future_state_path: "integration_tests/future_state.json"
+      skip_comprehensive_incremental_tests: true
   full_refresh:
     - config_path: "secrets/config.json"

@@ -6,11 +6,13 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import List
 
 import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
+from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
@@ -167,7 +169,19 @@ class API:
     @cached_property
     def account(self) -> AdAccount:
         """Find current account"""
-        return self._find_account(self._account_id)
+        return next(iter(self.accounts), None)
+
+    @cached_property
+    def accounts(self) -> List[AdAccount]:
+        """Find current accounts"""
+        if len(self._account_id):
+            return [self._find_account(acc.strip()) for acc in self._account_id.split(",")]
+        else:
+            ad_accounts = []
+
+
+
+            return list(fb_user.User(fbid="me").get_ad_accounts())
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:

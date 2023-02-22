@@ -4,7 +4,7 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -64,8 +65,18 @@ class AdCreatives(FBMarketingStream):
                 record["thumbnail_data_url"] = fetch_thumbnail_data_url(record.get("thumbnail_url"))
             yield record
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_creatives(params=params)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_creatives(params=params)
+
+
+class CustomConversions(FBMarketingStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
+
+    entity_prefix = "customconversion"
+    enable_deleted = False
+
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_custom_conversions(params=params)
 
 
 class Ads(FBMarketingIncrementalStream):
@@ -73,8 +84,8 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ads(params=params)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ads(params=params)
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -82,8 +93,8 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_sets(params=params)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_sets(params=params)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -91,8 +102,8 @@ class Campaigns(FBMarketingIncrementalStream):
 
     entity_prefix = "campaign"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_campaigns(params=params)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_campaigns(params=params)
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -102,8 +113,8 @@ class Activities(FBMarketingIncrementalStream):
     cursor_field = "event_time"
     primary_key = None
 
-    def list_objects(self, fields: List[str], params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_activities(fields=fields, params=params)
+    def list_objects(self, fields, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_activities(fields=fields, params=params)
 
     def read_records(
         self,
@@ -113,7 +124,9 @@ class Activities(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Main read method used by CDK"""
-        loaded_records_iter = self.list_objects(fields=self.fields, params=self.request_params(stream_state=stream_state))
+        loaded_records_iter = self.list_objects(fields=self.fields,
+                                                stream_slice=stream_slice,
+                                                params=self.request_params(stream_slice=stream_slice, stream_state=stream_state))
 
         for record in loaded_records_iter:
             if isinstance(record, AbstractObject):
@@ -121,7 +134,7 @@ class Activities(FBMarketingIncrementalStream):
             else:
                 yield record  # execute_in_batch will emmit dicts
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
         since = self._start_date if not state_value else pendulum.parse(state_value)
@@ -139,8 +152,30 @@ class Videos(FBMarketingIncrementalStream):
 
     entity_prefix = "video"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_videos(params=params)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_videos(params=params)
+
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Additional filters associated with state if any set"""
+        account_id = stream_slice.get("account", {}).get("account_id")
+        account_stream_state = stream_state.get(account_id, {})
+        state_value = account_stream_state.get(self.cursor_field)
+        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
+
+        potentially_new_records_in_the_past = self._include_deleted and not account_stream_state.get("include_deleted", False)
+        if potentially_new_records_in_the_past:
+            self.logger.info(f"Ignoring bookmark for {self.name} because of enabled `include_deleted` option")
+            filter_value = self._start_date
+
+        return {
+            "filtering": [
+                {
+                    "field": f"{self.entity_prefix}.{self.cursor_field}",
+                    "operator": "GREATER_THAN",
+                    "value": filter_value.int_timestamp,
+                },
+            ],
+        }
 
 
 class AdAccount(FBMarketingStream):
@@ -149,7 +184,28 @@ class AdAccount(FBMarketingStream):
     use_batch = False
     enable_deleted = False
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def get_task_permissions(self) -> Set[str]:
+        """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
+        res = set()
+        me = User(fbid="me", api=self._api.api)
+        for business_user in me.get_business_users():
+            assigned_users = self._api.account.get_assigned_users(params={"business": business_user["business"].get_id()})
+            for assigned_user in assigned_users:
+                if business_user.get_id() == assigned_user.get_id():
+                    res.update(set(assigned_user["tasks"]))
+        return res
+
+    @cached_property
+    def fields(self) -> List[str]:
+        properties = super().fields
+        # https://developers.facebook.com/docs/marketing-apis/guides/javascript-ads-dialog-for-payments/
+        # To access "funding_source_details", the user making the API call must have a MANAGE task permission for
+        # that specific ad account.
+        if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
+            properties.remove("funding_source_details")
+        return properties
+
+    def list_objects(self, stream_slice, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
         return [FBAdAccount(self._api.account.get_id())]
 
@@ -157,8 +213,8 @@ class AdAccount(FBMarketingStream):
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_images(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_images(params=params, fields=self.fields)
 
 
 class AdsInsightsAgeAndGender(AdsInsights):
