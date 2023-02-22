@@ -134,31 +134,48 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     assert not error
 
 
-def test_stream_forbidden(requests_mock, config, caplog):
+def test_stream_forbidden(requests_mock, config, caplog, configured_catalog):
     json = {
         "status": "error",
         "message": "This access_token does not have proper permissions!",
     }
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.parse_obj({
-        "streams": [
-            {
-                "stream": {
-                    "name": "workflows",
-                    "json_schema": {},
-                    "supported_sync_modes": ["full_refresh"],
-                },
-                "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite"
-            }
-        ]
-    })
-
-    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    records = list(SourceHubspot().read(logger, config, configured_catalog, {}))
     assert json["message"] in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
+
+
+def test_limit_error_message_length(requests_mock, config, caplog, configured_catalog):
+    html = """
+    <html dir="ltr" lang="en" class="" lazy-loaded="true"><head>
+    <meta charset="utf-8">
+    <title>New Tab</title>
+    <style>
+      body {
+        background: #FFFFFF;
+        margin: 0;
+      }
+      [show-background-image] #backgroundImage {
+        visibility: visible;
+      }
+    </style>
+</head>
+  <body style="background-color: rgb(255, 255, 255);">
+    <iframe id="backgroundImage" src=""></iframe>
+    <ntp-app></ntp-app>
+    <script type="module" src="new_tab_page.js"></script>
+    <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
+    <link rel="stylesheet" href="chrome://theme/colors.css?sets=ui,chrome">
+    <link rel="stylesheet" href="shared_vars.css">
+  </body></html>"""
+    requests_mock.get("https://api.hubapi.com/automation/v3/workflows", text=html, status_code=502)
+
+    with pytest.raises(Exception) as e:
+        list(SourceHubspot().read(logger, config, configured_catalog, {}))
+        assert len(str(e)) <= 100
+        assert len(html) > 100
 
 
 class TestSplittingPropertiesFunctionality:
@@ -301,23 +318,20 @@ class TestSplittingPropertiesFunctionality:
 
 @pytest.fixture(name="configured_catalog")
 def configured_catalog_fixture():
-    configured_catalog = {
+    catalog = ConfiguredAirbyteCatalog.parse_obj({
         "streams": [
             {
                 "stream": {
-                    "name": "quotes",
+                    "name": "workflows",
                     "json_schema": {},
-                    "supported_sync_modes": ["full_refresh", "incremental"],
-                    "source_defined_cursor": True,
-                    "default_cursor_field": ["updatedAt"],
+                    "supported_sync_modes": ["full_refresh"],
                 },
-                "sync_mode": "incremental",
-                "cursor_field": ["updatedAt"],
-                "destination_sync_mode": "append",
+                "sync_mode": "full_refresh",
+                "destination_sync_mode": "overwrite"
             }
         ]
-    }
-    return ConfiguredAirbyteCatalog.parse_obj(configured_catalog)
+    })
+    return ConfiguredAirbyteCatalog.parse_obj(catalog)
 
 
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(requests_mock, common_params, fake_properties_list):
