@@ -544,7 +544,7 @@
   icon: fauna.svg
   sourceType: database
   releaseStage: alpha
-- name: File
+- name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
   dockerImageTag: 0.2.33
