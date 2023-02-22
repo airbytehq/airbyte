@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -32,9 +32,9 @@ import org.opensearch.testcontainers.OpensearchContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpensearchDestinationTest {
+public class OpenSearchDestinationTest {
 
-  private static final Logger log = LoggerFactory.getLogger(OpensearchDestinationTest.class);
+  private static final Logger log = LoggerFactory.getLogger(OpenSearchDestinationTest.class);
 
   private static OpensearchContainer container;
   private static JsonNode config;
@@ -124,8 +124,7 @@ public class OpensearchDestinationTest {
     final var namespace = testConfig.getNamespace();
     final var streamName = testConfig.getStreamName();
     final var indexName = testConfig.getIndexName();
-    // TODO: OpenSearch 변경
-    final var destination = new OpensearchDestination();
+    final var destination = new OpenSearchDestination();
 
     final var check = destination.check(config);
     log.info("check status: {}", check);
@@ -145,7 +144,7 @@ public class OpensearchDestinationTest {
         .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.of(namespace + "." + streamName, testMessages.size())))));
     consumer.close();
 
-    final var connection = new OpensearchConnection(ConnectorConfiguration.fromJsonNode(config));
+    final var connection = new OpenSearchConnection(ConnectorConfiguration.fromJsonNode(config));
 
     final List<JsonNode> actualRecords =
         connection.getRecords(indexName);
@@ -171,7 +170,7 @@ public class OpensearchDestinationTest {
         .collect(Collectors.toList());
   }
 
-  private static class TestConfig extends OpensearchWriteConfig {
+  private static class TestConfig extends OpenSearchWriteConfig {
 
     public TestConfig(String namespace, String streamName, DestinationSyncMode destinationSyncMode, ArrayList<List<String>> primaryKey) {
       super(namespace, streamName, destinationSyncMode, primaryKey, false);

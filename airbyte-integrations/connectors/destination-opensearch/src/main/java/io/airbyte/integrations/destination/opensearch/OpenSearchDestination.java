@@ -24,20 +24,20 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class OpensearchDestination extends BaseConnector implements Destination {
+public class OpenSearchDestination extends BaseConnector implements Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OpensearchDestination.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(OpenSearchDestination.class);
   private final ObjectMapper mapper = new ObjectMapper();
 
   public static void main(String[] args) throws Exception {
     final var destination = sshWrappedDestination();
-    LOGGER.info("starting destination: {}", OpensearchDestination.class);
+    LOGGER.info("starting destination: {}", OpenSearchDestination.class);
     new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", OpensearchDestination.class);
+    LOGGER.info("completed destination: {}", OpenSearchDestination.class);
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new OpensearchDestination(), "endpoint");
+    return new SshWrappedDestination(new OpenSearchDestination(), "endpoint");
   }
 
   @Override
@@ -52,7 +52,7 @@ public class OpensearchDestination extends BaseConnector implements Destination 
               .withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("authentication options are invalid");
     }
 
-    final OpensearchConnection connection = new OpensearchConnection(configObject);
+    final OpenSearchConnection connection = new OpenSearchConnection(configObject);
     final var result = connection.checkConnection();
     try {
       connection.close();
@@ -73,9 +73,9 @@ public class OpensearchDestination extends BaseConnector implements Destination 
                                             Consumer<AirbyteMessage> outputRecordCollector) {
 
     final ConnectorConfiguration configObject = convertConfig(config);
-    final OpensearchConnection connection = new OpensearchConnection(configObject);
+    final OpenSearchConnection connection = new OpenSearchConnection(configObject);
 
-    final List<OpensearchWriteConfig> writeConfigs = new ArrayList<>();
+    final List<OpenSearchWriteConfig> writeConfigs = new ArrayList<>();
     for (final ConfiguredAirbyteStream stream : configuredCatalog.getStreams()) {
       final String namespace = stream.getStream().getNamespace();
       final String streamName = stream.getStream().getName();
@@ -89,7 +89,7 @@ public class OpensearchDestination extends BaseConnector implements Destination 
         primaryKey = stream.getPrimaryKey();
       }
       LOGGER.info("adding write config. namespace: {}, stream: {}, syncMode: {}", namespace, streamName, syncMode);
-      writeConfigs.add(new OpensearchWriteConfig()
+      writeConfigs.add(new OpenSearchWriteConfig()
               .setSyncMode(syncMode)
               .setNamespace(namespace)
               .setStreamName(stream.getStream().getName())
@@ -97,7 +97,7 @@ public class OpensearchDestination extends BaseConnector implements Destination 
               .setUpsert(configObject.isUpsert()));
     }
 
-    return OpensearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);
+    return OpenSearchAirbyteMessageConsumerFactory.create(outputRecordCollector, connection, writeConfigs, configuredCatalog);
   }
 
   private ConnectorConfiguration convertConfig(JsonNode config) {

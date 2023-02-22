@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.opensearch;
@@ -15,7 +15,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.opensearch.testcontainers.OpensearchContainer;
 import org.testcontainers.containers.Network;
 
-public abstract class SshOpensearchDestinationAcceptanceTest extends OpensearchDestinationAcceptanceTest {
+public abstract class SshOpenSearchDestinationAcceptanceTest extends OpenSearchDestinationAcceptanceTest {
 
   private static final Network network = Network.newNetwork();
   private static final SshBastionContainer bastion = new SshBastionContainer();
