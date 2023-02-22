@@ -17,7 +17,7 @@ dependencies {
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-persistence:job-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-worker-models')
     implementation project(':airbyte-api')
     implementation project(':airbyte-json-validation')

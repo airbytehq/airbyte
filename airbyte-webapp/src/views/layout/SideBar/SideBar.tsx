@@ -11,9 +11,11 @@ import { Version } from "components/common/Version";
 import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
+import { useExperiment } from "hooks/services/Experiment";
 import { links } from "utils/links";
 
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
+import BuilderIcon from "./components/BuilderIcon";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import RecipesIcon from "./components/RecipesIcon";
@@ -40,6 +42,7 @@ const SideBar: React.FC = () => {
   const config = useConfig();
   const navLinkClassName = useCalculateSidebarStyles();
   const { formatMessage } = useIntl();
+  const showBuilderNavigationLinks = useExperiment("connectorBuilder.showNavigationLinks", false);
 
   return (
     <nav className={styles.nav}>
@@ -72,6 +75,16 @@ const SideBar: React.FC = () => {
               </Text>
             </NavLink>
           </li>
+          {showBuilderNavigationLinks && (
+            <li>
+              <NavLink className={navLinkClassName} to={RoutePaths.ConnectorBuilder}>
+                <BuilderIcon />
+                <Text className={styles.text} size="sm">
+                  <FormattedMessage id="sidebar.builder" />
+                </Text>
+              </NavLink>
+            </li>
+          )}
         </ul>
       </div>
       <ul className={styles.menu}>

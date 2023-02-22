@@ -12,7 +12,7 @@ interface StreamHeaderGroupIconProps {
 
 export const ConnectorHeaderGroupIcon: React.FC<StreamHeaderGroupIconProps> = ({ type, icon }) => {
   return (
-    <span className={styles.connectorIconContainer}>
+    <span className={styles.connectorIconContainer} data-testid={`connector-header-group-icon-container-${type}`}>
       <div className={styles.icon}>{getIcon(icon)}</div>
       <FormattedMessage id={`connector.${type}`} />
     </span>

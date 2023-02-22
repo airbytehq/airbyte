@@ -500,6 +500,7 @@ describe("calculateInitialCatalog", () => {
     expect(calculatedStreams[0].stream?.defaultCursorField).toEqual(sourceDefinedStream?.defaultCursorField);
     expect(calculatedStreams[0].config?.cursorField).toEqual(calculatedStreams[0].stream?.defaultCursorField);
   });
+
   it("should keep original configured primary key if no source-defined primary key", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
@@ -531,6 +532,7 @@ describe("calculateInitialCatalog", () => {
 
     expect(calculatedStreams[0].config?.primaryKey).toEqual(config?.primaryKey);
   });
+
   it("should not override config cursor if sourceDefinedCursor is false", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
@@ -559,6 +561,7 @@ describe("calculateInitialCatalog", () => {
 
     expect(calculatedStreams[0].config?.cursorField).toEqual(config?.cursorField);
   });
+
   it("should keep its original config if source-defined primary key matches config primary key", () => {
     const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
 
@@ -681,13 +684,12 @@ describe("calculateInitialCatalog", () => {
     const values = calculateInitialCatalog(
       {
         streams: [
+          // Stream with breaking change
           {
             id: "1",
             stream: {
               ...sourceDefinedStream,
               name: "test",
-              sourceDefinedCursor: true,
-              defaultCursorField: ["id"],
               sourceDefinedPrimaryKey: [],
               supportedSyncModes: [SyncMode.incremental],
             },
@@ -698,14 +700,29 @@ describe("calculateInitialCatalog", () => {
               primaryKey: [["id"], ["email"]],
             },
           },
+          // Should not be affected
           {
             id: "2",
             stream: {
               ...sourceDefinedStream,
               name: "test-2",
-              sourceDefinedCursor: true,
-              defaultCursorField: ["updated_at"],
               sourceDefinedPrimaryKey: [],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              primaryKey: [["id"]],
+            },
+          },
+          // Has change, but the source-defined primary key will fix it
+          {
+            id: "3",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test-3",
+              sourceDefinedPrimaryKey: [["accountId"], ["userId"]],
               supportedSyncModes: [SyncMode.incremental],
             },
             config: {
@@ -730,11 +747,23 @@ describe("calculateInitialCatalog", () => {
             },
           ],
         },
+        {
+          transformType: StreamTransformTransformType.update_stream,
+          streamDescriptor: { name: "test-3", namespace: "namespace-test" },
+          updateStream: [
+            {
+              breaking: false,
+              transformType: FieldTransformTransformType.add_field,
+              fieldName: ["userId"],
+            },
+          ],
+        },
       ],
       true
     );
     expect(values.streams[0].config?.primaryKey).toEqual([]); // was entirely cleared
     expect(values.streams[1].config?.primaryKey).toEqual([["id"]]); // was not affected
+    expect(values.streams[2].config?.primaryKey).toEqual([["accountId"], ["userId"]]); // was not affected because it's source-defined
   });
 
   it("should remove cursor from config if the old cursor field was removed, even if there is a default", () => {
@@ -742,6 +771,7 @@ describe("calculateInitialCatalog", () => {
     const values = calculateInitialCatalog(
       {
         streams: [
+          // With breaking change
           {
             id: "1",
             stream: {
@@ -749,7 +779,6 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: false,
               defaultCursorField: ["id"],
-              sourceDefinedPrimaryKey: [],
               supportedSyncModes: [SyncMode.incremental],
             },
             config: {
@@ -759,6 +788,7 @@ describe("calculateInitialCatalog", () => {
               cursorField: ["updated_at"],
             },
           },
+          // Will be unaffected
           {
             id: "2",
             stream: {
@@ -766,6 +796,24 @@ describe("calculateInitialCatalog", () => {
               name: "test-2",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              cursorField: ["updated_at"],
+              primaryKey: [["id"]],
+            },
+          },
+          // Has breaking change but the updated stream source-defined cursor will fix it
+          {
+            id: "3",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test-3",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["created_at"],
               supportedSyncModes: [SyncMode.incremental],
             },
             config: {
@@ -791,17 +839,36 @@ describe("calculateInitialCatalog", () => {
             },
           ],
         },
+        {
+          transformType: StreamTransformTransformType.update_stream,
+          streamDescriptor: { name: "test-3", namespace: "namespace-test" },
+          updateStream: [
+            {
+              breaking: true,
+              transformType: FieldTransformTransformType.remove_field,
+              fieldName: ["updated_at"],
+            },
+            {
+              breaking: false,
+              transformType: FieldTransformTransformType.add_field,
+              fieldName: ["created_at"],
+            },
+          ],
+        },
       ],
       true
     );
     expect(values.streams[0].config?.cursorField).toEqual([]); // was entirely cleared and not replaced with default
     expect(values.streams[1].config?.cursorField).toEqual(["updated_at"]); // was unaffected
+    expect(values.streams[2].config?.cursorField).toEqual(["created_at"]); // was unaffected
   });
+
   it("should clear multiple config fields if multiple fields were removed", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
     const values = calculateInitialCatalog(
       {
         streams: [
+          // Breaking. Should be cleared
           {
             id: "1",
             stream: {
@@ -820,6 +887,7 @@ describe("calculateInitialCatalog", () => {
               primaryKey: [["primary_key"], ["another_field"]],
             },
           },
+          // Should be unaffected
           {
             id: "2",
             stream: {
@@ -827,6 +895,25 @@ describe("calculateInitialCatalog", () => {
               name: "test-2",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
+              sourceDefinedPrimaryKey: [],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              cursorField: ["updated_at"],
+              primaryKey: [["id"]],
+            },
+          },
+          // Should stay unaffected because updated stream will assign new source-defined cursor
+          {
+            id: "3",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test-3",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["created_at"],
               sourceDefinedPrimaryKey: [],
               supportedSyncModes: [SyncMode.incremental],
             },
@@ -858,13 +945,38 @@ describe("calculateInitialCatalog", () => {
             },
           ],
         },
+        {
+          transformType: StreamTransformTransformType.update_stream,
+          streamDescriptor: { name: "test-3", namespace: "namespace-test" },
+          updateStream: [
+            {
+              breaking: true,
+              transformType: FieldTransformTransformType.remove_field,
+              fieldName: ["updated_at"],
+            },
+            {
+              breaking: false,
+              transformType: FieldTransformTransformType.add_field,
+              fieldName: ["created_at"],
+            },
+            {
+              breaking: true,
+              transformType: FieldTransformTransformType.remove_field,
+              fieldName: ["primary_key"],
+            },
+          ],
+        },
       ],
       true
     );
+
     expect(values.streams[0].config?.primaryKey).toEqual([]); // was entirely cleared and not replaced with default
     expect(values.streams[0].config?.cursorField).toEqual([]); // was entirely cleared and not replaced with default
 
-    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]); // was unaffected})
-    expect(values.streams[1].config?.cursorField).toEqual(["updated_at"]); // was unaffected})
+    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]); // was unaffected
+    expect(values.streams[1].config?.cursorField).toEqual(["updated_at"]); // was unaffected
+
+    expect(values.streams[2].config?.primaryKey).toEqual([["id"]]); // was unaffected
+    expect(values.streams[2].config?.cursorField).toEqual(["created_at"]); // was unaffected because it's a source-defined cursor
   });
 });

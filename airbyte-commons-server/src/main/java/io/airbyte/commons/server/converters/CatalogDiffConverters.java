@@ -9,10 +9,10 @@ import io.airbyte.api.model.generated.FieldRemove;
 import io.airbyte.api.model.generated.FieldSchemaUpdate;
 import io.airbyte.api.model.generated.FieldTransform;
 import io.airbyte.api.model.generated.StreamTransform;
+import io.airbyte.commons.converters.ProtocolConverters;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.protocol.models.transform_models.FieldTransformType;
 import io.airbyte.protocol.models.transform_models.StreamTransformType;
-import io.airbyte.workers.helper.ProtocolConverters;
 import java.util.List;
 import java.util.Optional;
 

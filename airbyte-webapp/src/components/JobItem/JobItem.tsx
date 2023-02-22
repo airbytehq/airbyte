@@ -7,12 +7,13 @@ import { SynchronousJobRead } from "core/request/AirbyteClient";
 
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
-import ErrorDetails from "./components/ErrorDetails";
-import { JobLogs } from "./components/JobLogs";
 import MainInfo from "./components/MainInfo";
 import styles from "./JobItem.module.scss";
 import { JobsWithJobs } from "./types";
 import { didJobSucceed, getJobAttempts, getJobId } from "./utils";
+
+const ErrorDetails = React.lazy(() => import("./components/ErrorDetails"));
+const JobLogs = React.lazy(() => import("./components/JobLogs"));
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};

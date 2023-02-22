@@ -18,7 +18,7 @@
   position: relative;
   background: colors.$white;
 
-  &::before {
+  &::after {
     position: absolute;
     display: block;
     pointer-events: none;
@@ -26,10 +26,9 @@
     color: colors.$grey-400;
     top: 10px;
     right: 22px;
-    z-index: 3;
   }
 
-  &:focus-within::before {
+  &:focus-within::after {
     display: none;
   }
 }

@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
@@ -34,6 +35,7 @@ import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
@@ -176,12 +178,29 @@ public class NormalizationActivityImpl implements NormalizationActivity {
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
+  @Deprecated(forRemoval = true)
+  /**
+   * This activity is deprecated. It is using a big payload which is not needed, it has been replace
+   * by generateNormalizationInputWithMinimumPayload
+   */
   public NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput) {
     return new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withCatalog(syncOutput.getOutputCatalog())
         .withResourceRequirements(normalizationResourceRequirements)
         .withWorkspaceId(syncInput.getWorkspaceId());
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Override
+  public NormalizationInput generateNormalizationInputWithMinimumPayload(final JsonNode destinationConfiguration,
+                                                                         final ConfiguredAirbyteCatalog airbyteCatalog,
+                                                                         final UUID workspaceId) {
+    return new NormalizationInput()
+        .withDestinationConfiguration(destinationConfiguration)
+        .withCatalog(airbyteCatalog)
+        .withResourceRequirements(normalizationResourceRequirements)
+        .withWorkspaceId(workspaceId);
   }
 
   @VisibleForTesting

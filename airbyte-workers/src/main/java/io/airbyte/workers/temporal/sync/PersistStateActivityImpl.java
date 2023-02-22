@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.commons.converters.StateConverter.convertClientStateTypeToInternal;
 import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
-import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
@@ -15,6 +15,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
+import io.airbyte.commons.converters.StateConverter;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -25,7 +26,6 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.workers.helper.StateConverter;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;

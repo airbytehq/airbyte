@@ -75,6 +75,7 @@ public class TemporalClient {
   private final WorkflowServiceStubs service;
   private final StreamResetPersistence streamResetPersistence;
   private final ConnectionManagerUtils connectionManagerUtils;
+  private final NotificationUtils notificationUtils;
   private final StreamResetRecordsHelper streamResetRecordsHelper;
 
   public TemporalClient(@Named("workspaceRootTemporal") final Path workspaceRoot,
@@ -82,12 +83,14 @@ public class TemporalClient {
                         final WorkflowServiceStubs service,
                         final StreamResetPersistence streamResetPersistence,
                         final ConnectionManagerUtils connectionManagerUtils,
+                        final NotificationUtils notificationUtils,
                         final StreamResetRecordsHelper streamResetRecordsHelper) {
     this.workspaceRoot = workspaceRoot;
     this.client = client;
     this.service = service;
     this.streamResetPersistence = streamResetPersistence;
     this.connectionManagerUtils = connectionManagerUtils;
+    this.notificationUtils = notificationUtils;
     this.streamResetRecordsHelper = streamResetRecordsHelper;
   }
 
@@ -506,6 +509,10 @@ public class TemporalClient {
    */
   public void forceDeleteWorkflow(final UUID connectionId) {
     connectionManagerUtils.deleteWorkflowIfItExist(client, connectionId);
+  }
+
+  public void sendSchemaChangeNotification(final UUID connectionId, final String url) {
+    notificationUtils.sendSchemaChangeNotification(client, connectionId, url);
   }
 
   public void update(final UUID connectionId) {

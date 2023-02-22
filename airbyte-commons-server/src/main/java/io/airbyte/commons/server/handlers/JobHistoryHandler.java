@@ -137,7 +137,7 @@ public class JobHistoryHandler {
       for (final AttemptRead a : jwar.getAttempts()) {
         final var stat = stats.get(new JobAttemptPair(jwar.getJob().getId(), a.getId().intValue()));
         if (stat == null) {
-          log.error("Missing stats for job {} attempt {}", jwar.getJob().getId(), a.getId().intValue());
+          log.warn("Missing stats for job {} attempt {}", jwar.getJob().getId(), a.getId().intValue());
           continue;
         }
 
@@ -197,7 +197,7 @@ public class JobHistoryHandler {
   }
 
   public JobOptionalRead getLastReplicationJob(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    Optional<Job> job = jobPersistence.getLastReplicationJob(connectionIdRequestBody.getConnectionId());
+    final Optional<Job> job = jobPersistence.getLastReplicationJob(connectionIdRequestBody.getConnectionId());
     if (job.isEmpty()) {
       return new JobOptionalRead();
     } else {

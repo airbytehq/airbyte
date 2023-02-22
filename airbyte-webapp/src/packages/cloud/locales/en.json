@@ -101,6 +101,7 @@
   "settings.integrationSettings": "Integration settings",
   "settings.integrationSettings.dbtCloudSettings": "dbt Cloud Integration",
   "settings.integrationSettings.dbtCloudSettings.form.serviceToken": "Service Token",
+  "settings.integrationSettings.dbtCloudSettings.form.description": "To use the dbt Cloud integration, enter your service token here. <lnk>Learn more</lnk>.",
   "settings.integrationSettings.dbtCloudSettings.form.advancedOptions": "Advanced options",
   "settings.integrationSettings.dbtCloudSettings.form.singleTenantUrl": "Single-tenant URL",
   "settings.integrationSettings.dbtCloudSettings.form.testConnection": "Test connection",

@@ -1,11 +1,12 @@
 import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import { useField } from "formik";
-import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import React, { ReactNode, useMemo } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { FlexContainer } from "components/ui/Flex";
 import { Text } from "components/ui/Text";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 import { StreamReadInferredSchema, StreamReadSlicesItemPagesItem } from "core/request/ConnectorBuilderClient";
 import {
@@ -25,7 +26,7 @@ interface PageDisplayProps {
 }
 
 interface TabData {
-  title: string;
+  title: ReactNode;
   key: string;
   content: string;
 }
@@ -34,7 +35,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   const { formatMessage } = useIntl();
 
   const { editorView } = useConnectorBuilderFormState();
-  const { testStreamIndex } = useConnectorBuilderTestState();
+  const { testStreamIndex, streamRead } = useConnectorBuilderTestState();
   const [field] = useField(`streams[${testStreamIndex}].schema`);
 
   const formattedRecords = useMemo(() => formatJson(page.records), [page.records]);
@@ -45,7 +46,16 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
   let defaultTabIndex = 0;
   const tabs: TabData[] = [
     {
-      title: `${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`,
+      title: (
+        <>
+          {`${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`}
+          {!streamRead.isFetching && streamRead.data && streamRead.data.test_read_limit_reached && (
+            <InfoTooltip>
+              <FormattedMessage id="connectorBuilder.streamTestLimitReached" />
+            </InfoTooltip>
+          )}
+        </>
+      ),
       key: "records",
       content: formattedRecords,
     },

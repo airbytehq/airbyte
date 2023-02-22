@@ -7,15 +7,23 @@ export type DropdownMenuItemElementType = "a" | "button";
 
 export type DropdownMenuItemIconPositionType = "left" | "right";
 
-export interface DropdownMenuOptionType {
-  as?: DropdownMenuItemElementType;
+export interface DropdownMenuOptionBaseType {
   icon?: React.ReactNode;
   iconPosition?: DropdownMenuItemIconPositionType;
   displayName: string;
   value?: unknown;
-  href?: string;
   className?: string;
 }
+
+export type DropdownMenuOptionType = DropdownMenuOptionAnchorType | DropdownMenuOptionButtonType;
+
+type DropdownMenuOptionButtonType = DropdownMenuOptionBaseType & { as?: "button" };
+
+export type DropdownMenuOptionAnchorType = DropdownMenuOptionBaseType & {
+  as: "a";
+  href: string;
+  internal?: boolean;
+};
 
 export interface MenuItemContentProps {
   data: DropdownMenuOptionType;

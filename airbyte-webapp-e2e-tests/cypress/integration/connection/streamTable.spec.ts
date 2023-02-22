@@ -12,10 +12,15 @@ import {
 import { appendRandomString, submitButtonClick } from "commands/common";
 import { clickNewConnectionButton, visitConnectionsListPage } from "pages/connnectionsListPage";
 import {
+  checkAmountOfStreamTableRows,
+  checkColumnNames,
+  checkConnectorIconAndTitle,
   clickUseExistingConnectorButton,
   isAtConnectionOverviewPage,
   isAtNewConnectionPage,
   isNewConnectionPageHeaderVisible,
+  isStreamTableRowVisible,
+  scrollTableToStream,
   selectExistingConnectorFromDropdown,
 } from "pages/newConnectionPage";
 import {
@@ -29,12 +34,17 @@ import {
   waitForGetSourcesListRequest,
 } from "commands/interceptors";
 import { Connection, Destination, Source } from "commands/api/types";
-import { selectSchedule } from "pages/replicationPage";
+import { clearStreamSearch, searchStream, selectSchedule } from "pages/replicationPage";
 import { runDbQuery } from "commands/db/db";
-import { createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
+import {
+  createUsersTableQuery,
+  dropUsersTableQuery,
+  createDummyTablesQuery,
+  dropDummyTablesQuery,
+} from "commands/db/queries";
 
-// TODO: Disable before merge
-describe("New stream table - new connection set up ", () => {
+// TODO: Enable this test when the new stream table will be turned on
+describe.skip("New stream table - new connection set up ", () => {
   let source: Source;
   let destination: Destination;
   let connectionId: string;
@@ -42,7 +52,10 @@ describe("New stream table - new connection set up ", () => {
   before(() => {
     initialSetupCompleted();
     runDbQuery(dropUsersTableQuery);
+    runDbQuery(dropDummyTablesQuery(20));
+
     runDbQuery(createUsersTableQuery);
+    runDbQuery(createDummyTablesQuery(20));
 
     requestWorkspaceId().then(() => {
       const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Stream table Source"));
@@ -101,6 +114,37 @@ describe("New stream table - new connection set up ", () => {
 
   it("should set 'Replication frequency' to 'Manual'", () => {
     selectSchedule("Manual");
+  });
+
+  it("should check check connector icons and titles in table", () => {
+    checkConnectorIconAndTitle("source");
+    checkConnectorIconAndTitle("destination");
+  });
+
+  it("should check columns names in table", () => {
+    checkColumnNames();
+  });
+
+  it("should check total amount of table streams", () => {
+    // dummy tables amount + users table
+    checkAmountOfStreamTableRows(21);
+  });
+
+  it("should allow to scroll table to desired stream table row and it should be visible", () => {
+    const desiredStreamTableRow = "dummy_table_18";
+
+    scrollTableToStream(desiredStreamTableRow);
+    isStreamTableRowVisible(desiredStreamTableRow);
+  });
+
+  it("should filter table by stream name", () => {
+    searchStream("dummy_table_10");
+    checkAmountOfStreamTableRows(1);
+  });
+
+  it("should clear stream search input field and show all available streams", () => {
+    clearStreamSearch();
+    checkAmountOfStreamTableRows(21);
   });
 
   /*

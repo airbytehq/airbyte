@@ -14,6 +14,7 @@ interface TextProps {
   bold?: boolean;
   inverseColor?: boolean;
   title?: string;
+  gradient?: boolean;
 }
 
 const getTextClassNames = ({
@@ -21,7 +22,8 @@ const getTextClassNames = ({
   centered,
   bold,
   inverseColor,
-}: Required<Pick<TextProps, "size" | "centered" | "bold" | "inverseColor">>) => {
+  gradient,
+}: Required<Pick<TextProps, "size" | "centered" | "bold" | "inverseColor" | "gradient">>) => {
   const sizes: Record<TextSize, string> = {
     xs: styles.xs,
     sm: styles.sm,
@@ -33,6 +35,7 @@ const getTextClassNames = ({
     [styles.centered]: centered,
     [styles.bold]: bold,
     [styles.inverse]: inverseColor,
+    [styles.gradient]: gradient,
   });
 };
 
@@ -45,9 +48,10 @@ export const Text: React.FC<React.PropsWithChildren<TextProps>> = React.memo(
     className: classNameProp,
     size = "md",
     inverseColor = false,
+    gradient = false,
     ...remainingProps
   }) => {
-    const className = classNames(getTextClassNames({ centered, size, bold, inverseColor }), classNameProp);
+    const className = classNames(getTextClassNames({ centered, size, bold, inverseColor, gradient }), classNameProp);
 
     return React.createElement(as, {
       ...remainingProps,

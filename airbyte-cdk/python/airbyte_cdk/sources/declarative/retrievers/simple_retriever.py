@@ -407,7 +407,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
 
-    def _parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
+    def _parse_records_and_emit_request_and_responses(self, request, response, stream_state, stream_slice) -> Iterable[StreamData]:
         # Only emit requests and responses when running in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
             yield _prepared_request_to_airbyte_message(request)

@@ -382,9 +382,8 @@ module.exports = {
       id: "api-documentation",
     },
     {
-      type: 'link',
-      label: 'CLI documentation',
-      href: 'https://github.com/airbytehq/airbyte/blob/master/octavia-cli/README.md',
+      type: 'doc',
+      id: "cli-documentation",
     },
     {
       type: 'category',

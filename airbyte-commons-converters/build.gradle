@@ -1,0 +1,30 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-commons')
+    implementation project(':airbyte-commons-protocol')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-persistence:job-persistence')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.guava
+    implementation libs.slf4j.api
+
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+    testAnnotationProcessor libs.jmh.annotations
+
+    testImplementation libs.bundles.micronaut.test
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

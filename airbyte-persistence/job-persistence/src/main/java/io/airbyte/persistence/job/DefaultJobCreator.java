@@ -137,7 +137,8 @@ public class DefaultJobCreator implements JobCreator {
             workerResourceRequirements))
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
         .withIsSourceCustomConnector(false)
-        .withIsDestinationCustomConnector(isDestinationCustomConnector);
+        .withIsDestinationCustomConnector(isDestinationCustomConnector)
+        .withWorkspaceId(destination.getWorkspaceId());
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)

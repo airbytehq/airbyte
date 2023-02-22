@@ -95,6 +95,7 @@ include ':airbyte-test-utils'
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
 include ':airbyte-commons-temporal'
+include ':airbyte-commons-converters'
 include ':airbyte-commons-worker'
 include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
 include ':airbyte-featureflag'

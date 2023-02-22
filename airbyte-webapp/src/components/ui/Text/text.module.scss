@@ -42,3 +42,13 @@
 .text > strong {
   font-weight: 600;
 }
+
+.gradient {
+  background-image: linear-gradient(to right, colors.$blue-400, colors.$orange-300);
+
+  // disable no-vendor-prefix check, because without -webkit-background-clip, the text gradient is not properly rendered in Chrome
+  /* stylelint-disable-next-line property-no-vendor-prefix */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
