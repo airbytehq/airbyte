@@ -516,7 +516,7 @@
 - name: Sample Data (Faker)
   sourceDefinitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
   dockerRepository: airbyte/source-faker
-  dockerImageTag: 2.0.1
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   icon: faker.svg
   sourceType: api
@@ -775,11 +775,14 @@
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   dockerRepository: airbyte/source-harvest
-  dockerImageTag: 0.1.15
+  dockerImageTag: 0.1.16
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.harvestapp.com
 - name: Hellobaton
   sourceDefinitionId: 492b56d1-937c-462e-8076-21ad2031e784
   dockerRepository: airbyte/source-hellobaton
