@@ -113,7 +113,7 @@ jobs:
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
-  releaseOctavia:
+  release-octavia:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -141,8 +141,8 @@ jobs:
 
   createPullRequest:
     needs:
-      - releaseAirbyte
-      - releaseOctavia
+      - release-airbyte
+      - release-octavia
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -200,7 +200,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - start-release-airbyte-runner # required to get output from the start-runner job
-      - releaseAirbyte # required to wait when the main job is done
+      - release-airbyte # required to wait when the main job is done
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
     steps:
