@@ -70,12 +70,12 @@ class SourceTiktokMarketing(AbstractSource):
             app_id = int(credentials.get("app_id", 0))
             advertiser_id = int(credentials.get("advertiser_id", 0))
         else:
-            # OAuth which uses the production was only introduced after the
-            # old config style. If someone is using old config it was only
-            # sandbox.
-            is_sandbox = True
+            # old config only has advertiser id in environment object
+            # if there is a secret it is a prod config
             access_token = config["access_token"]
             secret = config.get("environment", {}).get("secret")
+            if secret:
+                is_sandbox = False
             app_id = int(config.get("environment", {}).get("app_id", 0))
             advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
 
