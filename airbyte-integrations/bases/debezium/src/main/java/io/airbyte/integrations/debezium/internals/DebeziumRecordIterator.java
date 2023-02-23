@@ -222,11 +222,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       }
 
       final SourceRecord sr = (SourceRecord) f.get(heartbeatEvent);
-      final long hbLsn = (long) sr.sourceOffset().get("lsn");
-      LOGGER.debug("Found heartbeat lsn: {}", hbLsn);
+      final long hbPosition = (long) targetPosition.getHeartbeatPositon(sr.sourceOffset());
+      LOGGER.debug("Found heartbeat position: {}", hbPosition);
       return hbLsn;
     } catch (final NoSuchFieldException | IllegalAccessException e) {
-      LOGGER.info("failed to get heartbeat lsn");
+      LOGGER.info("failed to get heartbeat position");
       throw new RuntimeException(e);
     }
   }

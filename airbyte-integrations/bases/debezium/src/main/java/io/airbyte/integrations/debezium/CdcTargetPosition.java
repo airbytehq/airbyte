@@ -6,6 +6,8 @@ package io.airbyte.integrations.debezium;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.util.Map;
+
 /**
  * This interface is used to define the target position at the beginning of the sync so that once we
  * reach the desired target, we can shutdown the sync. This is needed because it might happen that
@@ -41,5 +43,7 @@ public interface CdcTargetPosition {
   default boolean isHeartbeatSupported() {
     return false;
   }
+
+  Object getHeartbeatPositon(Map<String, ?> sourceOffset);
 
 }
