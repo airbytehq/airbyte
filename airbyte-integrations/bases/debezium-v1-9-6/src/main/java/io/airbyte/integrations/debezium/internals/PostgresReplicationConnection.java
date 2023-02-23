@@ -6,7 +6,6 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.debezium.jdbc.JdbcConnection.ResultSetMapper;
 import io.debezium.jdbc.JdbcConnection.StatementFactory;
@@ -27,36 +26,29 @@ public class PostgresReplicationConnection {
       "User '%s' does not have enough privileges for CDC replication. Please read the docs and add required privileges.";
 
   public static Connection createConnection(final JsonNode jdbcConfig) throws SQLException, IllegalStateException {
-    Properties properties = new Properties();
-    properties.setProperty("user", jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()
-        : null);
-    properties.setProperty("password", jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
-        : null);
-    properties.setProperty("assumeMinServerVersion", "9.4");
-    properties.setProperty("ApplicationName", "Airbyte Debezium Streaming");
-    properties.setProperty("replication", "database");
-    properties.setProperty("preferQueryMode", "simple"); // replication protocol only supports simple query mode
-
-    LOGGER.info("Creating a CDC connection.");
-    final String jdbcUrl = jdbcConfig.has(JdbcUtils.JDBC_URL_KEY) ? jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText()
-        : String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            jdbcConfig.get(JdbcUtils.HOST_KEY).asText(),
-            jdbcConfig.get(JdbcUtils.PORT_KEY).asInt(),
-            jdbcConfig.get(JdbcUtils.DATABASE_KEY).asText());
-    Connection connection;
     try {
-      connection = DriverManager.getConnection(jdbcUrl, properties);
-    } catch (PSQLException exception) {
+      Properties properties = new Properties();
+      properties.setProperty("user", jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()
+          : null);
+      properties.setProperty("password", jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
+          : null);
+      properties.setProperty("assumeMinServerVersion", "9.4");
+      properties.setProperty("ApplicationName", "Airbyte Debezium Streaming");
+      properties.setProperty("replication", "database");
+      properties.setProperty("preferQueryMode", "simple"); // replication protocol only supports simple query mode
+
+      LOGGER.info("Creating a replication connection.");
+      final Connection connection = DriverManager.getConnection(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), properties);
+
+      LOGGER.info("Validating replication connection.");
+      validateReplicationConnection(connection);
+      return connection;
+    } catch (final PSQLException exception) {
       if (exception.getMessage().equals("FATAL: must be superuser or replication role to start walsender")) {
         throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()));
       }
       throw exception;
     }
-
-    LOGGER.info("Validating connection.");
-    validateReplicationConnection(connection);
-
-    return connection;
   }
 
   private static void validateReplicationConnection(final Connection pgConnection) throws SQLException, IllegalStateException {
