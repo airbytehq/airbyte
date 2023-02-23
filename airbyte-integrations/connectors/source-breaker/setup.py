@@ -13,7 +13,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_faker",
+    name="source_breaker",
     description="Source implementation for fake but realistic looking data.",
     author="Airbyte",
     author_email="evan@airbyte.io",

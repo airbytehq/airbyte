@@ -5,7 +5,7 @@
 import jsonschema
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
-from source_faker import SourceFaker
+from source_breaker import SourceBreaker
 
 
 class MockLogger:
@@ -27,7 +27,7 @@ logger = MockLogger()
 
 
 def schemas_are_valid():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
@@ -38,7 +38,7 @@ def schemas_are_valid():
 
 
 def test_source_streams():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 1, "parallelism": 1}
     catalog = source.discover(None, config)
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
@@ -66,7 +66,7 @@ def test_source_streams():
 
 
 def test_read_small_random_data():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 10, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -100,7 +100,7 @@ def test_read_small_random_data():
 
 
 def test_no_read_limit_hit():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 10, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -130,7 +130,7 @@ def test_no_read_limit_hit():
 
 
 def test_read_big_random_data():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 1000, "records_per_slice": 100, "records_per_sync": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -165,7 +165,7 @@ def test_read_big_random_data():
 
 
 def test_with_purchases():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 1000, "records_per_sync": 1000, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -207,7 +207,7 @@ def test_with_purchases():
 
 
 def test_sync_ends_with_limit():
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 100, "records_per_sync": 5, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -241,7 +241,7 @@ def test_read_with_seed():
     This test asserts that setting a seed always returns the same values
     """
 
-    source = SourceFaker()
+    source = SourceBreaker()
     config = {"count": 1, "seed": 100, "parallelism": 1}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
@@ -262,7 +262,7 @@ def test_read_with_seed():
 
 def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
-        source = SourceFaker()
+        source = SourceBreaker()
         config = {"count": 100, "parallelism": 1}
         catalog = ConfiguredAirbyteCatalog(
             streams=[

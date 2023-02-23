@@ -6,13 +6,13 @@ To be fast, we make use of parallel processing per-stream and only using command
 
 As we read the connector config files, e.g. `--config secrets/config.json --state secrets/state.json --catalog integration_tests/configured_catalog.json`, you can manually step forward your sync if you need to read and store the input in chunks.
 
-## The road to 1TB of faker data
+## The road to 1TB of breaker data
 
 There's commentary on this at https://github.com/airbytehq/airbyte/pull/20558, along with some cool SQL tricks.
 
-- 2 Billion faker users for 1TB: `10,000,000*(1024/5.02) = 2,039,840,637`
-- 200 Million faker users for 100GB: `10,000,000*(100/5.02) = 199,203,187`
-- 20 Million faker users for 10GB: `10,000,000*(10/5.02) = 19,920,318`
+- 2 Billion breaker users for 1TB: `10,000,000*(1024/5.02) = 2,039,840,637`
+- 200 Million breaker users for 100GB: `10,000,000*(100/5.02) = 199,203,187`
+- 20 Million breaker users for 10GB: `10,000,000*(10/5.02) = 19,920,318`
 
 But let's assume we don't have 1TB of local hard disk. So, we want to make 10 chunks of data, each around 100GB in size.
 

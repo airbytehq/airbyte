@@ -1,7 +1,7 @@
-# Faker Source
+# Breaker Source
 
-This is the repository for the Faker source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/faker).
+This is the repository for the Breaker source connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/breaker).
 
 ## Local development
 
@@ -39,17 +39,17 @@ should work as you expect.
 From the Airbyte repository root, run:
 
 ```
-./gradlew :airbyte-integrations:connectors:source-faker:build
+./gradlew :airbyte-integrations:connectors:source-breaker:build
 ```
 
 #### Create credentials
 
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/faker)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_faker/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/breaker)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_breaker/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source faker test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source breaker test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -68,13 +68,13 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 First, make sure you build the latest Docker image:
 
 ```
-docker build . -t airbyte/source-faker:dev
+docker build . -t airbyte/source-breaker:dev
 ```
 
 You can also build the connector image via Gradle:
 
 ```
-./gradlew :airbyte-integrations:connectors:source-faker:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-breaker:airbyteDocker
 ```
 
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
@@ -85,10 +85,10 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 
 ```
-docker run --rm airbyte/source-faker:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-faker:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-faker:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-faker:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/source-breaker:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-breaker:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-breaker:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-breaker:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
@@ -138,13 +138,13 @@ All commands should be run from airbyte project root.
 To run unit tests:
 
 ```
-./gradlew :airbyte-integrations:connectors:source-faker:unitTest
+./gradlew :airbyte-integrations:connectors:source-breaker:unitTest
 ```
 
 To run acceptance and custom integration tests:
 
 ```
-./gradlew :airbyte-integrations:connectors:source-faker:integrationTest
+./gradlew :airbyte-integrations:connectors:source-breaker:integrationTest
 ```
 
 ## Dependency Management

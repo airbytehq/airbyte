@@ -1,4 +1,4 @@
-connector_image: airbyte/source-faker:dev
+connector_image: airbyte/source-breaker:dev
 test_strictness_level: high
 acceptance_tests:
   connection:
@@ -9,7 +9,7 @@ acceptance_tests:
         status: failed
   spec:
     tests:
-      - spec_path: source_faker/spec.json
+      - spec_path: source_breaker/spec.json
   discovery:
     tests:
       - config_path: secrets/config.json

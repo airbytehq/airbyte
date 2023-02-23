@@ -1,8 +1,8 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/sources/faker",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/breaker",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Faker Source Spec",
+    "title": "Breaker Source Spec",
     "type": "object",
     "required": ["count"],
     "additionalProperties": true,
@@ -17,7 +17,7 @@
       },
       "seed": {
         "title": "Seed",
-        "description": "Manually control the faker random seed to return the same values on subsequent runs (leave -1 for random)",
+        "description": "Manually control the breaker random seed to return the same values on subsequent runs (leave -1 for random)",
         "type": "integer",
         "default": -1,
         "order": 1

@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_faker import SourceFaker
+from source_breaker import SourceBreaker
 
 if __name__ == "__main__":
-    source = SourceFaker()
+    source = SourceBreaker()
     launch(source, sys.argv[1:])

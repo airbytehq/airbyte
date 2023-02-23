@@ -39,7 +39,7 @@ class UserGenerator:
         time_a = dt.datetime()
         time_b = dt.datetime()
 
-        # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
+        # breaker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
         email_parts = person.email().split("@")
         email = f"{email_parts[0]}+{user_id + 1}@{email_parts[1]}"
 

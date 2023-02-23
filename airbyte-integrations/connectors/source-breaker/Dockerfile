@@ -29,10 +29,10 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
-COPY source_faker ./source_faker
+COPY source_breaker ./source_breaker
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 LABEL io.airbyte.version=2.0.3
-LABEL io.airbyte.name=airbyte/source-faker
+LABEL io.airbyte.name=airbyte/source-breaker

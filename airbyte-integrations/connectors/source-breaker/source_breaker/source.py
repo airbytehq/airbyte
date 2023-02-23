@@ -11,7 +11,7 @@ from airbyte_cdk.sources.streams import Stream
 from .streams import Products, Purchases, Users
 
 
-class SourceFaker(AbstractSource):
+class SourceBreaker(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
