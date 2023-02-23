@@ -23,7 +23,6 @@ dependencies {
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-featureflag')
     implementation project(':airbyte-json-validation')
     implementation libs.airbyte.protocol
 
