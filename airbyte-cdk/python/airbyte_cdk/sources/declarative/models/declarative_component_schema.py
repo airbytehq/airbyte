@@ -346,7 +346,10 @@ class DatetimeBasedCursor(BaseModel):
         description="The location of the value on a record that will be used as a bookmark during sync",
     )
     datetime_format: str = Field(..., description="The format of the datetime")
-    cursor_datetime_format: Optional[str] = None
+    cursor_datetime_format: Optional[str] = Field(
+        None,
+        description="The format string used to transform the datetime value in the API response into the format used by the cursor",
+    )
     cursor_granularity: str = Field(
         ...,
         description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one",
