@@ -3,7 +3,9 @@
 #
 
 
+import concurrent.futures
 import json
+import threading
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -29,6 +31,7 @@ from .storagefile import StorageFile
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
 LOGGER = AirbyteLogger()
+LOCK = threading.Lock()
 
 
 class ConfigurationError(Exception):
@@ -52,6 +55,7 @@ class FileStream(Stream, ABC):
     ab_file_name_col = "_ab_source_file_url"
     airbyte_columns = [ab_additional_col, ab_last_mod_col, ab_file_name_col]
     datetime_format_string = "%Y-%m-%dT%H:%M:%S%z"
+    parallel_tasks_size = 256
 
     def __init__(self, dataset: str, provider: dict, format: dict, path_pattern: str, schema: str = None):
         """
@@ -202,6 +206,17 @@ class FileStream(Stream, ABC):
         if types == {"number", "string"}:
             return "string"
 
+    @staticmethod
+    def guess_file_schema(storage_file, file_reader, file_info, processed_files, schemas):
+        try:
+            with storage_file.open(file_reader.is_binary) as f:
+                this_schema = file_reader.get_inferred_schema(f, file_info)
+                with LOCK:
+                    schemas[file_info] = this_schema
+                    processed_files.append(file_info)
+        except OSError:
+            pass
+
     def _get_master_schema(self, min_datetime: datetime = None) -> Dict[str, Any]:
         """
         In order to auto-infer a schema across many files and/or allow for additional properties (columns),
@@ -224,19 +239,25 @@ class FileStream(Stream, ABC):
             file_reader = self.fileformatparser_class(self._format)
 
             processed_files = []
-            for file_info in self.get_time_ordered_file_infos():
-                # skip this file if it's earlier than min_datetime
-                if (min_datetime is not None) and (file_info.last_modified < min_datetime):
-                    continue
+            schemas = {}
 
-                storagefile = self.storagefile_class(file_info, self._provider)
-                try:
-                    with storagefile.open(file_reader.is_binary) as f:
-                        this_schema = file_reader.get_inferred_schema(f, file_info)
-                        processed_files.append(file_info)
-                except OSError:
-                    continue
+            file_infos = list(self.get_time_ordered_file_infos())
+            if min_datetime is not None:
+                file_infos = [info for info in file_infos if info.last_modified >= min_datetime]
 
+            for i in range(0, len(file_infos), self.parallel_tasks_size):
+                chunk_infos = file_infos[i : i + self.parallel_tasks_size]
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    executor.map(
+                        lambda args: self.guess_file_schema(*args),
+                        [
+                            (self.storagefile_class(file_info, self._provider), file_reader, file_info, processed_files, schemas)
+                            for file_info in chunk_infos
+                        ],
+                    )
+
+            for file_info in file_infos:
+                this_schema = schemas[file_info]
                 if this_schema == master_schema:
                     continue  # exact schema match so go to next file
 

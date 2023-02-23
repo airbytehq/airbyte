@@ -16,8 +16,7 @@
       "maxLength": 500
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["active", "archived", "deleted"]
+      "type": ["string", "null"]
     },
     "resource_version": {
       "type": ["integer", "null"]
@@ -30,8 +29,7 @@
       "maxLength": 100
     },
     "type": {
-      "type": ["string", "null"],
-      "enum": ["plan", "addon", "charge"]
+      "type": ["string", "null"]
     },
     "is_shippable": {
       "type": ["boolean", "null"]
@@ -53,8 +51,7 @@
       "type": ["boolean", "null"]
     },
     "item_applicability": {
-      "type": ["string", "null"],
-      "enum": ["all", "restricted"]
+      "type": ["string", "null"]
     },
     "gift_claim_redirect_url": {
       "type": ["string", "null"],
@@ -68,8 +65,7 @@
       "type": ["boolean", "null"]
     },
     "usage_calculation": {
-      "type": ["string", "null"],
-      "enum": ["sum_of_usages", "last_usage", "max_usage"]
+      "type": ["string", "null"]
     },
     "archived_at": {
       "type": ["integer", "null"]
