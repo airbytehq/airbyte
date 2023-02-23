@@ -23,10 +23,12 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
   incremental:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "secrets/incremental_config.json"
         configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+        cursor_paths:
+          "responses": ["SdMKQYkv", "submitted_at"]
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
