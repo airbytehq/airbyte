@@ -32,24 +32,20 @@
       "minimum": 1
     },
     "period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year"]
+      "type": ["string", "null"]
     },
     "trial_period": {
       "type": ["integer", "null"],
       "minimum": 1
     },
     "trial_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "month"]
+      "type": ["string", "null"]
     },
     "trial_end_action": {
-      "type": ["string", "null"],
-      "enum": ["site_default", "activate_subscription", "cancel_subscription"]
+      "type": ["string", "null"]
     },
     "pricing_model": {
-      "type": ["string", "null"],
-      "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"]
+      "type": ["string", "null"]
     },
     "free_quantity": {
       "type": ["integer", "null"],
@@ -60,8 +56,7 @@
       "minimum": 1
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["active", "archived"]
+      "type": ["string", "null"]
     },
     "archived_at": {
       "type": ["integer", "null"]
@@ -81,8 +76,7 @@
       "type": ["boolean", "null"]
     },
     "addon_applicability": {
-      "type": ["string", "null"],
-      "enum": ["all", "restricted"]
+      "type": ["string", "null"]
     },
     "tax_code": {
       "type": ["string", "null"],
@@ -93,8 +87,7 @@
       "maxLength": 50
     },
     "avalara_sale_type": {
-      "type": ["string", "null"],
-      "enum": ["wholesale", "retail", "consumed", "vendor_use"]
+      "type": ["string", "null"]
     },
     "avalara_transaction_type": {
       "type": ["integer", "null"]
@@ -134,8 +127,7 @@
       "minimum": 1
     },
     "shipping_frequency_period_unit": {
-      "type": ["string", "null"],
-      "enum": ["year", "month", "week", "day"]
+      "type": ["string", "null"]
     },
     "resource_version": {
       "type": ["integer", "null"]
@@ -240,8 +232,7 @@
             "minimum": 1
           },
           "type": {
-            "type": ["string", "null"],
-            "enum": ["recommended", "mandatory"]
+            "type": ["string", "null"]
           },
           "quantity_in_decimal": {
             "type": ["string", "null"],
@@ -264,14 +255,7 @@
             "minimum": 1
           },
           "on_event": {
-            "type": ["string", "null"],
-            "enum": [
-              "subscription_creation",
-              "subscription_trial_start",
-              "plan_activation",
-              "subscription_activation",
-              "contract_termination"
-            ]
+            "type": ["string", "null"]
           },
           "charge_once": {
             "type": ["boolean", "null"]
