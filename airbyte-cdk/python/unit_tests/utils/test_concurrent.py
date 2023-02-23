@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.utils import concurrent
-from airbyte_cdk.utils.concurrent import ConcurrentStreamReader
+from airbyte_cdk.utils.concurrent import ConcurrentStreamReader, MessageData, MessageDone, MessageFail
 
 
 class StreamException(Exception):
@@ -125,3 +125,20 @@ def test_throw_record_exception():
                 records.append(record)
         # even exception propagation has maximum priority we had to collect some records
         assert len(records) > 1
+
+
+def test_message():
+    message_data = MessageData(record={})
+    message_done = MessageDone()
+    message_fail = MessageFail(exception=StreamException())
+
+    assert message_data == message_done
+    assert message_fail < message_done
+    assert message_fail < message_data
+
+    message_data = message_data.set_number()
+    message_done = message_done.set_number()
+    message_fail = message_fail.set_number()
+
+    assert message_data < message_done
+    assert message_fail < message_data
