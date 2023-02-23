@@ -16,6 +16,7 @@ from google.oauth2 import service_account
 from googleapiclient import discovery
 
 from .models.spreadsheet import RowData, Spreadsheet
+from .utils import safe_name_conversion
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
@@ -140,7 +141,7 @@ class Helpers(object):
 
     @staticmethod
     def get_available_sheets_to_column_index_to_name(
-        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
+        client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]], names_conversion: bool = False
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
         logger.info(f"Available sheets: {available_sheets}")
@@ -148,6 +149,8 @@ class Helpers(object):
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:
                 first_row = Helpers.get_first_row(client, spreadsheet_id, sheet)
+                if names_conversion:
+                    first_row = [safe_name_conversion(h) for h in first_row]
                 # Find the column index of each header value
                 idx = 0
                 for cell_value in first_row:
