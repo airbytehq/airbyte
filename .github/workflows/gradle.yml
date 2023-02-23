@@ -65,7 +65,6 @@ jobs:
               - '*.gradle'
               - 'deps.toml'
               - 'airbyte-config/**'
-              - 'airbyte-featureflag/**'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
