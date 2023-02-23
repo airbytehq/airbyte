@@ -12,19 +12,21 @@ Please follow these [steps](https://developers.asana.com/docs/personal-access-to
 
 ### For Airbyte Cloud:
 
-1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source
-3. Enter your `personal_access_token`
-4. Click **Set up source**
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. Set the name for your source
+4. Enter your `personal_access_token`
+5. Click **Set up source**
 
 ⚠️ For the moment, oAuth login is disabled for Asana on Airbyte Cloud.
 
 ### For Airbyte OSS:
 
 1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source
-3. Enter your `personal_access_token`
-4. Click **Set up source**
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. Set the name for your source
+4. Enter your `personal_access_token`
+5. Click **Set up source**
 
 ## Supported sync modes
 
