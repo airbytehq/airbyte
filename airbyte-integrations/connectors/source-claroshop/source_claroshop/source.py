@@ -63,6 +63,9 @@ class ClaroshopBase(HttpStream):
     ):
 
         return None
+
+    def log_percentage_progress(self, part, whole):
+        logger.info(f'Progress: {round(100 * float(part)/float(whole), 2)}%')
     
 
 
@@ -82,6 +85,7 @@ class Productos(ClaroshopBase):
         **kwargs
     ):
         super().__init__(config)
+        self.read_products = 0
 
 
     def path(
@@ -92,6 +96,8 @@ class Productos(ClaroshopBase):
     ) -> str:
 
         transactionid = stream_slice['transactionid']
+
+        logger.info('Producto ID: %s', transactionid)
         
         return f"{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}/{transactionid}"  
     
@@ -115,6 +121,9 @@ class Productos(ClaroshopBase):
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "sensible": False
         }
+
+        self.read_products += 1
+        self.log_percentage_progress(self.read_products, self.total_products)
             
         return [item_json]  
 
@@ -124,6 +133,8 @@ class Productos(ClaroshopBase):
         total_number_of_pages = requests.get(path).json()['totalpaginas']
 
         transactionid_list = []
+
+        logger.info('GENERATING PRODUCT ID LIST')
 
         for i in range(1, total_number_of_pages+1):
             self.page = i
@@ -135,6 +146,8 @@ class Productos(ClaroshopBase):
             [transactionid_list.append({'transactionid': item['transactionid']}) for item in item_list]
         
         logger.info('Products list: %s', transactionid_list)
+
+        self.total_products = len(transactionid_list)
 
         return transactionid_list
 
@@ -259,7 +272,6 @@ class Pedidos(ClaroshopBase):
 
         for status in status_list:
             while start_date <= datetime.now():
-                # logger.info(start_date.strftime("%Y-%m-%d"))
                 slice = {}
                 slice['status_name'] = status['status_name']
                 slice['list_names'] = status['list_names']
@@ -307,6 +319,7 @@ class PedidosDetalle(Pedidos):
         super().__init__(config, start_date)
         self.config = config
         self.start_date = start_date
+        self.read_pedidos = 0
 
     def path(
         self, 
@@ -315,7 +328,7 @@ class PedidosDetalle(Pedidos):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
 
-        logger.info(stream_slice)
+        logger.info('Pedido: %s', stream_slice['nopedido'])
 
         return f"{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?action=detallepedido&nopedido={stream_slice['nopedido']}"
     
@@ -340,6 +353,9 @@ class PedidosDetalle(Pedidos):
             "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
             "sensible": False
         }
+
+        self.read_pedidos += 1
+        self.log_percentage_progress(self.read_pedidos, self.total_pedidos)
 
         return [item_json]
     
@@ -366,10 +382,16 @@ class PedidosDetalle(Pedidos):
         all_pedidos_slices = super()._chunk_slices(start_date)
 
         logger.info('GENERATING PEDIDOS NUMBER LIST USING PEDIDOS ENDPOINT')
+        pedidos = []
         for slice in all_pedidos_slices:
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
             for record in records:
-                slices.append({"nopedido": record['data']['nopedido']})
+                pedidos.append(record['data']['nopedido'])
+
+        for pedido in set(pedidos):
+            slices.append({"nopedido": pedido})
+
+        self.total_pedidos = len(slices)
 
         return slices
 
