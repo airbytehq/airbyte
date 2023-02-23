@@ -26,7 +26,7 @@ RUN echo "Etc/UTC" > /etc/timezone
 RUN apk --no-cache add bash
 
 # copy payload code only
-COPY source-declarative-manifest/main.py ./
+COPY source_declarative_manifest/main.py ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]

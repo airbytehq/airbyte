@@ -2,6 +2,11 @@
 
 This is a generic source that takes the declarative manifest via a key `__injected_declarative_manifest` of its config.
 
+## Execution
+This entrypoint is used for connectors created by the connector builder. These connector's spec is defined in their manifest, which is defined in the config's "__injected_declarative_manifest" field. This allows this entrypoint to be used with any connector manifest.
+
+The spec operation is not supported because the config is not known when running a spec.
+
 ## Local development
 
 #### Building
