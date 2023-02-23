@@ -53,7 +53,8 @@ If your connector requires to create or destroy resources for use during accepta
 
 To run your integration tests with Docker, run:
 ```
-./acceptance-test-docker.sh
+docker build . --no-cache -t airbyte/source-chargebee:dev \
+&& python -m pytest -p connector_acceptance_test.plugin
 ```
 
 ### Using gradle to run tests
