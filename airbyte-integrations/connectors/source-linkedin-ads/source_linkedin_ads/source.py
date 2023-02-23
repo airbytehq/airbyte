@@ -336,40 +336,24 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     pivot_by = "CREATIVE"
 
 
-class AdCreativeName(LinkedinAdsStream):
+class AdCreativeName(Creatives):
 
     endpoint = "adCreativesV2"
     search_param = "projection"
     search_param_value = "(variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title))))))))"
+    parent_values_map = {"creative_id": "id"}
+    parent_stream = Creatives
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return {}
 
-    @property
-    def use_cache(self) -> bool:
-        return True
-
-    @property
-    def cache_filename(self):
-        return "creatives.yml"
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {}
 
     def request_params(
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         return {self.search_param: self.search_param_value}
-
-    def stream_slices(
-        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-
-        parent = Creatives(self.config)
-        parent_stream_slices = parent.stream_slices(sync_mode=SyncMode.full_refresh)
-
-        for stream_slice in parent_stream_slices:
-            parent_records = parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-
-            for record in parent_records:
-                yield {"creative_id": record.get("id")}
 
     def parse_response(
         self,

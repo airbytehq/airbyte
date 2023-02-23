@@ -1,9 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
+  "type": ["null", "object"],
   "properties": {
     "com.linkedin.ads.SponsoredUpdateCreativeVariables": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "activity": {
           "type": "string"
@@ -18,10 +18,10 @@
           "type": "string"
         },
         "share~": {
-          "type": "object",
+          "type": ["null", "object"],
           "properties": {
             "text": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "text": {
                   "type": "string"
@@ -30,13 +30,13 @@
               "required": ["text"]
             },
             "content": {
-              "type": "object",
+              "type": ["null", "object"],
               "properties": {
                 "contentEntities": {
                   "type": "array",
                   "items": [
                     {
-                      "type": "object",
+                      "type": ["null", "object"],
                       "properties": {
                         "entityLocation": {
                           "type": "string"
