@@ -318,7 +318,7 @@ module.exports = {
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
-        'contributing-to-airbyte/monorepo-python-development',
+        'contributing-to-airbyte/python-gradle-setup',
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',
