@@ -104,6 +104,7 @@ definitions:
           end: "{{format_datetime(stream_slice.end_time, '%Y%m%d') }}"
           m: "active"
           i: "1"
+          g: "country"
       record_selector:
         type: RecordSelector
         extractor:
@@ -160,4 +161,4 @@ streams:
 
 check:
   stream_names:
-    - "annotations"
+    - "active_users"
