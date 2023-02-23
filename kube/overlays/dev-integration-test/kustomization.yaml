@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: default
+
+bases:
+  - ../../resources
+
+images:
+  - name: airbyte/db
+    newTag: dev
+  - name: airbyte/bootloader
+    newTag: dev
+  - name: airbyte/server
+    newTag: dev
+  - name: airbyte/webapp
+    newTag: dev
+  - name: airbyte/worker
+    newTag: dev
+  - name: airbyte/temporal-auto-setup
+    newTag: 1.13.0
+  - name: airbyte/cron
+    newTag: dev
+  - name: airbyte/connector-builder-server
+    newTag: dev
+
+configMapGenerator:
+  - name: airbyte-env
+    env: .env
+
+secretGenerator:
+  - name: airbyte-secrets
+    env: .secrets
+
+patchesStrategicMerge:
+  - parallelize-worker.yaml

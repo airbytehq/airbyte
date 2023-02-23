@@ -1,0 +1,33 @@
+{
+  "username": "some_user",
+  "password": "hunter2",
+  "has_ssl": false,
+  "empty_string": "",
+  "null_value": null,
+  "one_of": {
+    "type_key": "foo",
+    "some_key": 100
+  },
+  "const_object": {
+    "sub_key": "bar",
+    "sub_array": [1, 2, 3],
+    "sub_object": {
+      "sub_sub_key": "baz"
+    }
+  },
+  "const_null": null,
+  "enum_string": "foo",
+  "additionalPropertiesUnset": {
+    "foo": "bar"
+  },
+  "additionalPropertiesBoolean": {
+    "foo": "bar"
+  },
+  "additionalPropertiesSchema": {
+    "foo": 42
+  },
+  "additionalPropertiesConst": {
+    "foo": 42
+  },
+  "additionalPropertiesEnumString": "foo"
+}

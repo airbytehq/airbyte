@@ -24,7 +24,7 @@ config = {
     "another_field": "exists_in_body",
     "grant_type": "some_grant_type",
 }
-parameters = {"refresh_token": "some_refresh_token"}
+options = {"refresh_token": "some_refresh_token"}
 
 
 class TestOauth2Authenticator:
@@ -41,7 +41,7 @@ class TestOauth2Authenticator:
             token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
             client_id="{{ config['client_id'] }}",
             client_secret="{{ config['client_secret'] }}",
-            refresh_token="{{ parameters['refresh_token'] }}",
+            refresh_token="{{ options['refresh_token'] }}",
             config=config,
             scopes=["scope1", "scope2"],
             token_expiry_date="{{ config['token_expiry_date'] }}",
@@ -50,8 +50,8 @@ class TestOauth2Authenticator:
                 "another_field": "{{ config['another_field'] }}",
                 "scopes": ["no_override"],
             },
-            parameters=parameters,
-            grant_type="{{ config['grant_type'] }}",
+            options=options,
+            grant_type="{{ config['grant_type'] }}"
         )
         body = oauth.build_refresh_request_body()
         expected = {
@@ -79,13 +79,16 @@ class TestOauth2Authenticator:
                 "another_field": "{{ config['another_field'] }}",
                 "scopes": ["no_override"],
             },
-            parameters={},
+            options={},
         )
 
         resp.status_code = 200
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
         mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
         token = oauth.refresh_access_token()
+
+        schem = DeclarativeOauth2Authenticator.json_schema()
+        print(schem)
 
         assert ("access_token", 1000) == token
 
@@ -94,10 +97,10 @@ class TestOauth2Authenticator:
         [
             (86400, None),
             ("2020-01-02T00:00:00Z", "YYYY-MM-DDTHH:mm:ss[Z]"),
-            ("2020-01-02T00:00:00.000000+00:00", "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"),
+            ('2020-01-02T00:00:00.000000+00:00', "YYYY-MM-DDTHH:mm:ss.SSSSSSZ"),
             ("2020-01-02", "YYYY-MM-DD"),
         ],
-        ids=["time_in_seconds", "rfc3339", "iso8601", "simple_date"],
+        ids=["time_in_seconds", "rfc3339", "iso8601", "simple_date"]
     )
     @freezegun.freeze_time("2020-01-01")
     def test_refresh_access_token_expire_format(self, mocker, expires_in_response, token_expiry_date_format):
@@ -117,7 +120,7 @@ class TestOauth2Authenticator:
                 "another_field": "{{ config['another_field'] }}",
                 "scopes": ["no_override"],
             },
-            parameters={},
+            options={},
         )
 
         resp.status_code = 200

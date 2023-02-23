@@ -5,9 +5,10 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["results"]
+      field_pointer: ["results"]
   requester:
     type: HttpRequester
+    name: "{{ options['name'] }}"
     url_base: "https://api.tempo.io/4/"
     http_method: "GET"
     error_handler:
@@ -24,8 +25,9 @@ definitions:
       api_token: "{{ config['api_token'] }}"
   retriever:
     type: SimpleRetriever
+    name: "{{ options['name'] }}"
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -37,61 +39,63 @@ definitions:
         field_name: "limit"
         inject_into: "request_parameter"
       page_token_option:
-        type: RequestPath
+        inject_into: "path"
+      url_base: "*ref(definitions.requester.url_base)"
   base_stream:
     primary_key: "id"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
   accounts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "accounts"
       path: "accounts"
   customers_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "customers"
       path: "customers"
   worklogs_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
+    stream_cursor_field: "startDate"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester: "#/definitions/requester"
-    incremental_sync:
-      cursor_field: "startDate"
-      datetime_format: "%Y-%m-%d"
-      cursor_granularity: "P1D"
-      start_datetime:
-        datetime: "2020-01-01"
+      $ref: "*ref(definitions.retriever)"
+      requester: "*ref(definitions.requester)"
+      stream_slicer:
+        cursor_field: "startDate"
         datetime_format: "%Y-%m-%d"
-      end_datetime:
-        datetime: "{{ today_utc() }}"
-        datetime_format: "%Y-%m-%d"
-      step: "P1W"
-      end_time_option:
-        field_name: "to"
-        inject_into: "request_parameter"
-      start_time_option:
-        field_name: "from"
-        inject_into: "request_parameter"
-      type: DatetimeBasedCursor
-    $parameters:
+        cursor_granularity: "P1D"
+        start_datetime:
+          datetime: "2020-01-01"
+          datetime_format: "%Y-%m-%d"
+        end_datetime:
+          datetime: "{{ today_utc() }}"
+          datetime_format: "%Y-%m-%d"
+        step: "P1W"
+        end_time_option:
+          field_name: "to"
+          inject_into: "request_parameter"
+        start_time_option:
+          field_name: "from"
+          inject_into: "request_parameter"
+        type: DatetimeStreamSlicer
+    $options:
       name: "worklogs"
       path: "worklogs"
     primary_key: "tempoWorklogId"
   workload_schemes_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "workload-schemes"
       path: "workload-schemes"
 
 streams:
-  - "#/definitions/accounts_stream"
-  - "#/definitions/customers_stream"
-  - "#/definitions/worklogs_stream"
-  - "#/definitions/workload_schemes_stream"
+  - "*ref(definitions.accounts_stream)"
+  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.worklogs_stream)"
+  - "*ref(definitions.workload_schemes_stream)"
 
 check:
   type: CheckStream

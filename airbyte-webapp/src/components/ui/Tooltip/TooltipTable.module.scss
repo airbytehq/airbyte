@@ -1,0 +1,13 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.label {
+  color: colors.$dark-blue-200;
+  padding-right: variables.$spacing-sm;
+}
+
+.light {
+  .label {
+    color: colors.$dark-blue-400;
+  }
+}

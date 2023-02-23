@@ -1,0 +1,22 @@
+@use "scss/variables";
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+}
+
+.readonly {
+  pointer-events: none;
+}
+
+.leftFieldCol {
+  flex: 1;
+  max-width: 640px;
+  padding-right: variables.$spacing-xl;
+}
+
+.rightFieldCol {
+  flex: 1;
+  max-width: 300px;
+}

@@ -4,8 +4,11 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -82,6 +85,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
@@ -106,6 +110,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
         .iterator();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
@@ -117,6 +122,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return !messageIterator.hasNext() && !sourceProcess.isAlive();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public int getExitValue() throws IllegalStateException {
     Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
@@ -129,6 +135,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return exitValue;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
@@ -136,6 +143,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
     if (sourceProcess == null) {
@@ -155,6 +163,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel source process...");

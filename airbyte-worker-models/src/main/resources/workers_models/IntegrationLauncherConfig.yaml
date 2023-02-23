@@ -1,0 +1,33 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/IntegrationLauncherConfig.yaml
+title: IntegrationLauncherConfig
+description: integration launcher config
+type: object
+additionalProperties: false
+required:
+  - jobId
+  - attemptId
+  - dockerImage
+properties:
+  jobId:
+    type: string
+  attemptId:
+    type: integer
+  dockerImage:
+    type: string
+  normalizationDockerImage:
+    type: string
+  supportsDbt:
+    type: boolean
+    default: false
+  normalizationIntegrationType:
+    type: string
+  protocolVersion:
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
+  isCustomConnector:
+    type: boolean
+  allowedHosts:
+    type: object
+    existingJavaType: io.airbyte.config.AllowedHosts

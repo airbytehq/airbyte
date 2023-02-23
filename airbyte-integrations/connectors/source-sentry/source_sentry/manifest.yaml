@@ -3,14 +3,15 @@ definitions:
   page_size: 50
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_sentry/schemas/{{ parameters.name }}.json"
+    file_path: "./source_sentry/schemas/{{ options.name }}.json"
   selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_pointer: []
   requester:
     type: HttpRequester
+    name: "{{ options['name'] }}"
     url_base: "https://{{ config.hostname }}/api/0/"
     http_method: "GET"
     authenticator:
@@ -18,12 +19,12 @@ definitions:
       api_token: "{{ config.auth_token }}"
   paginator:
     type: DefaultPaginator
-    page_size: "#/definitions/page_size"
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size: "*ref(definitions.page_size)"
     limit_option:
       inject_into: "request_parameter"
       field_name: ""
     page_token_option:
-      type: RequestOption
       inject_into: "request_parameter"
       field_name: "cursor"
     pagination_strategy:
@@ -32,71 +33,75 @@ definitions:
       stop_condition: "{{ headers.link.next.results != 'true' }}"
   retriever:
     type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
 
 streams:
   - type: DeclarativeStream
-    $parameters:
+    $options:
       # https://docs.sentry.io/api/events/list-a-projects-events/
       name: "events"
     primary_key: "id"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "projects/{{config.organization}}/{{config.project}}/events/"
-        request_parameters:
-          full: "true"
+        request_options_provider:
+          request_parameters:
+            full: "true"
       paginator:
-        $ref: "#/definitions/paginator"
+        $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
-    $parameters:
+    $options:
       name: "issues"
     primary_key: "id"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "projects/{{config.organization}}/{{config.project}}/issues/"
-        request_parameters:
-          statsPeriod: ""
-          query: ""
+        request_options_provider:
+          request_parameters:
+            statsPeriod: ""
+            query: ""
       paginator:
-        $ref: "#/definitions/paginator"
+        $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
-    $parameters:
+    $options:
       name: "projects"
     primary_key: "id"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "projects/"
       paginator:
-        $ref: "#/definitions/paginator"
+        $ref: "*ref(definitions.paginator)"
   - type: DeclarativeStream
-    $parameters:
+    $options:
       name: "project_detail"
     primary_key: "id"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "projects/{{config.organization}}/{{config.project}}/"
       paginator:
         type: NoPagination

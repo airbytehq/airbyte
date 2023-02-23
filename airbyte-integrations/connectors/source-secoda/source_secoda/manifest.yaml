@@ -2,11 +2,11 @@ version: "0.1.0"
 
 definitions:
   schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_secoda/schemas/{{ parameters.name }}.json"
+    type: JsonSchema
+    file_path: "./source_secoda/schemas/{{ options.name }}.json"
   selector:
     extractor:
-      field_path: ["results"]
+      field_pointer: ["results"]
   requester:
     url_base: "https://api.secoda.co"
     http_method: "GET"
@@ -19,8 +19,9 @@ definitions:
           action: FAIL
   cursor_paginator:
     type: DefaultPaginator
+    url_base: "*ref(definitions.requester.url_base)"
     page_token_option:
-      type: RequestPath
+      inject_into: path
     page_size_option:
       inject_into: body_data
       field_name: "page_size"
@@ -31,37 +32,37 @@ definitions:
       page_size: 1
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
-      $ref: "#/definitions/cursor_paginator"
+      $ref: "*ref(definitions.cursor_paginator)"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   tables_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "tables"
       primary_key: "id"
       path: "/table/tables/"
   terms_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "terms"
       primary_key: "id"
       path: "/dictionary/terms/"
   collections_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "collections"
       primary_key: "id"
       path: "/collection/collections/"
 
 streams:
-  - "#/definitions/tables_stream"
-  - "#/definitions/terms_stream"
-  - "#/definitions/collections_stream"
+  - "*ref(definitions.tables_stream)"
+  - "*ref(definitions.terms_stream)"
+  - "*ref(definitions.collections_stream)"
 
 check:
   stream_names:

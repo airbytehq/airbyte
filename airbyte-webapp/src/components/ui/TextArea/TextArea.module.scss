@@ -1,0 +1,52 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.textarea {
+  outline: none;
+  resize: none;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: variables.$border-radius-xs;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: normal;
+  border: 1px solid colors.$grey-50;
+  background-color: colors.$grey-50;
+  color: colors.$dark-blue;
+  caret-color: colors.$blue;
+
+  &.error {
+    border-color: colors.$red;
+  }
+
+  &::placeholder {
+    color: colors.$grey-300;
+  }
+
+  &:hover {
+    background-color: colors.$grey-100;
+    border-color: colors.$grey-100;
+
+    &.light {
+      background-color: colors.$white;
+    }
+
+    &.error {
+      border-color: colors.$red;
+    }
+  }
+
+  &:focus {
+    background-color: colors.$primaryColor12;
+    border-color: colors.$blue;
+
+    &.light {
+      background-color: colors.$white;
+    }
+  }
+
+  &:disabled {
+    pointer-events: none;
+    color: colors.$grey-400;
+  }
+}

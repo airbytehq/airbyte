@@ -10,10 +10,11 @@ import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CompositeErrorHandler(ErrorHandler):
+class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
     """
     Error handler that sequentially iterates over a list of `ErrorHandler`s
 
@@ -38,9 +39,9 @@ class CompositeErrorHandler(ErrorHandler):
     """
 
     error_handlers: List[ErrorHandler]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, options: Mapping[str, Any]):
         if not self.error_handlers:
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 

@@ -1,0 +1,35 @@
+@use "scss/colors";
+@use "scss/mixins";
+@use "scss/variables";
+@use "scss/z-indices";
+
+.container {
+  display: inline;
+  position: relative;
+}
+
+.tooltip {
+  @include mixins.shadow;
+
+  font-size: 12px;
+  line-height: initial;
+  padding: variables.$spacing-md;
+  border-radius: variables.$border-radius-sm;
+  max-width: 300px;
+  z-index: z-indices.$tooltip;
+  background: colors.$dark-blue-900;
+  color: colors.$white;
+
+  a {
+    color: colors.$dark-blue-200;
+  }
+
+  &.light {
+    background: colors.$white;
+    color: colors.$dark-blue;
+
+    a {
+      color: colors.$blue;
+    }
+  }
+}

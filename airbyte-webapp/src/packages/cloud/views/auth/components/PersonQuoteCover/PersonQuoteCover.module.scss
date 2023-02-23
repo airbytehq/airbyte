@@ -1,0 +1,96 @@
+@use "../../../../../../scss/colors";
+@use "../../../../../../scss/fonts";
+@use "../../../../../../scss/variables";
+
+.container {
+  position: relative;
+  height: 100vh;
+}
+
+.image {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background-image: url("../../../../../../../public/images/testimonials/cartdotcom-person-photo.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: grayscale(1);
+}
+
+.overlay {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  background-image: linear-gradient(
+    45deg,
+    colors.$orange-400 10%,
+    rgba(255 106 77 / 80%) 30%,
+    rgba(97 94 255 / 80%) 80%,
+    colors.$blue-400 100%
+  );
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.contentContainer {
+  position: absolute;
+  top: calc(50% - 200px);
+  left: 50%;
+  transform: translate(-50%, 0);
+  width: calc(100% - 50px);
+  max-width: 600px;
+  padding: 0 variables.$spacing-2xl 0 variables.$spacing-2xl;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+
+  .quote {
+    margin: 0;
+    color: colors.$white;
+    font-family: fonts.$primary;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 28px;
+    text-align: justify;
+
+    &::before {
+      content: open-quote;
+      font-size: 50px;
+      position: absolute;
+      top: 0;
+    }
+
+    &::after {
+      content: close-quote;
+      font-size: 50px;
+      position: absolute;
+      right: variables.$spacing-2xl;
+    }
+  }
+
+  .companyLogo {
+    color: colors.$white;
+    height: 110px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+
+  .quoteAuthorFullName {
+    color: colors.$white;
+    font-family: fonts.$primary;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 0;
+  }
+
+  .quoteAuthorJobTitle {
+    color: colors.$white;
+    font-family: fonts.$primary;
+    font-weight: 700;
+    font-size: 18px;
+    margin: 10px 0;
+  }
+}

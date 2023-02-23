@@ -1,0 +1,55 @@
+upstream api-server {
+    server $INTERNAL_API_HOST;
+}
+
+upstream connector-builder-server {
+   server $CONNECTOR_BUILDER_API_HOST;
+}
+
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    add_header Content-Security-Policy "script-src * 'unsafe-inline'; worker-src self blob:;";
+
+    location / {
+        root   /usr/share/nginx/html;
+        try_files $uri $uri/ /index.html;
+
+        sub_filter </head>
+                '</head><script language="javascript"\>
+                window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
+                window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
+                window.API_URL = "$API_URL";
+                window.CONNECTOR_BUILDER_API_URL = "$CONNECTOR_BUILDER_API_URL";
+                </script>';
+        sub_filter_once on;
+    }
+
+    #error_page  404              /404.html;
+
+    # redirect server error pages to the static page /50x.html
+    #
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    location /api/ {
+        fastcgi_read_timeout 1h;
+        proxy_read_timeout 1h;
+        client_max_body_size 200M;
+        proxy_pass http://api-server/api/;
+    }
+
+    location /connector-builder-api/ {
+        fastcgi_read_timeout 1h;
+        proxy_read_timeout 1h;
+        client_max_body_size 200M;
+        proxy_pass http://connector-builder-server/;
+    }
+}

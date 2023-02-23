@@ -1,0 +1,28 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  font-size: 12px;
+  line-height: 15px;
+  color: colors.$grey;
+}
+
+.details > *:not(:last-child, .lastAttempt)::after {
+  content: "|";
+  padding: 0 variables.$spacing-sm;
+}
+
+.failedMessage {
+  color: colors.$red-300;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lastAttempt {
+  margin-right: variables.$spacing-sm;
+
+  &.failed {
+    color: colors.$red;
+  }
+}

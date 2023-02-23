@@ -1,0 +1,186 @@
+global:
+  serviceAccountName: placeholderServiceAccount
+  deploymentMode: oss
+  configMapName: ""
+  secretName: ""
+  extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+
+enabled: true
+##  temporal.replicaCount The number of temporal replicas to deploy
+replicaCount: 1
+
+##  temporal.image.repository The temporal image repository to use
+##  temporal.image.pullPolicy The pull policy for the temporal image
+##  temporal.image.tag The temporal image tag to use
+image:
+  repository: airbyte/temporal-auto-setup
+  pullPolicy: IfNotPresent
+  tag: "1.13.0"
+
+##  temporal.service.type The Kubernetes Service Type
+##  temporal.service.port The temporal port and exposed kubernetes port
+service:
+  type: ClusterIP
+  port: 7233
+
+##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
+##
+podAnnotations: {}
+
+##  temporal.podLabels [object] Add extra labels to the temporal pod
+##
+podLabels: {}
+
+##  temporal.containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+##  temporal.extraInitContainers Additional InitContainers to initialize the pod
+## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraInitContainers:
+##   - name: config-loader
+##     image: airbyte/temporal-auto-setup:1.13.0
+##     command:
+##       - /bin/sh
+##       - -c
+##       - >-
+##         find /etc/temporal/config/ -maxdepth 1 -mindepth 1 -exec cp -ar {} /config/ \;
+##     volumeMounts:
+##       - name: config
+##         mountPath: /config
+extraInitContainers: []
+
+## Configure extra options for the temporal containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+##  temporal.livenessProbe.enabled Enable livenessProbe on the temporal
+##  temporal.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+##  temporal.livenessProbe.periodSeconds Period seconds for livenessProbe
+##  temporal.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+##  temporal.livenessProbe.failureThreshold Failure threshold for livenessProbe
+##  temporal.livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+##  temporal.readinessProbe.enabled Enable readinessProbe on the temporal
+##  temporal.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+##  temporal.readinessProbe.periodSeconds Period seconds for readinessProbe
+##  temporal.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+##  temporal.readinessProbe.failureThreshold Failure threshold for readinessProbe
+##  temporal.readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 30
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+##  temporal.nodeSelector [object] Node labels for temporal pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+##  temporal.tolerations [array] Tolerations for temporal pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+##  temporal.affinity [object] Affinity and anti-affinity for temporal pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+##  temporal.extraEnv [array] Additional env vars for temporal pod(s).
+## Example:
+##
+## extraEnv:
+## - name: SAMPLE_ENV_VAR
+##   value: "key=sample-value"
+extraEnv: []
+
+##  temporal.extraVolumeMounts [array] Additional volumeMounts for temporal container(s).
+## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##   - name: config
+##     mountPath: /etc/temporal/config
+##
+extraVolumeMounts: []
+
+##  temporal.extraVolumes [array] Additional volumes for temporal pod(s).
+## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##  - name: config
+##    emptyDir: {}
+##
+extraVolumes: []
+
+## Temporal resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+##  temporal.resources.limits [object] The resources limits for temporal pod(s)
+##  temporal.resources.requests [object] The requested resources for temporal pod(s)
+resources:
+  ## Example:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+
+extraContainers: []
+
+##  secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example with default vars for webapp:
+# env_vars:
+
+#   # Airbyte Internal Database, see https://docs.airbyte.io/operator-guides/configuring-airbyte-db
+#   DB: airbyte-db-svc
+#   DB_PORT: 5432
+#   DATABASE_DB: airbyte
+#   POSTGRES_USER: airbyte
+#   POSTGRES_PWD: 12345
+
+env_vars: {}
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

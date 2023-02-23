@@ -1,0 +1,23 @@
+@use "scss/_colors";
+@use "scss/_variables";
+@forward "./CatalogTreeTableRow.module.scss";
+
+.cellText {
+  color: colors.$grey;
+}
+
+.headerContainer {
+  margin: variables.$spacing-md 0 variables.$spacing-sm 0;
+  gap: variables.$spacing-sm;
+  overflow: hidden;
+  scrollbar-gutter: stable;
+  min-height: 33px;
+
+  &.newTable {
+    overflow: unset;
+  }
+}
+
+.checkboxCell {
+  @extend %streamRowCheckboxCell;
+}

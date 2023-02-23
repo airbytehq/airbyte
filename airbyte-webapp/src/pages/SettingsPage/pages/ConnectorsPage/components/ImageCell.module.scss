@@ -1,0 +1,13 @@
+@use "scss/_variables";
+@use "scss/_colors";
+
+.imageNameText {
+  margin-right: variables.$spacing-md;
+}
+
+.linkText {
+  &:hover,
+  &:active {
+    color: colors.$blue;
+  }
+}

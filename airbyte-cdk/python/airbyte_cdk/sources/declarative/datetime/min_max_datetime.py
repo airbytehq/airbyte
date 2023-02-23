@@ -8,10 +8,11 @@ from typing import Any, Mapping, Union
 
 from airbyte_cdk.sources.declarative.datetime.datetime_parser import DatetimeParser
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class MinMaxDatetime:
+class MinMaxDatetime(JsonSchemaMixin):
     """
     Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
@@ -29,7 +30,7 @@ class MinMaxDatetime:
     """
 
     datetime: Union[InterpolatedString, str]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     # datetime_format is a unique case where we inherit it from the parent if it is not specified before using the default value
     # which is why we need dedicated getter/setter methods and private dataclass field
     datetime_format: str = ""
@@ -37,20 +38,20 @@ class MinMaxDatetime:
     min_datetime: Union[InterpolatedString, str] = ""
     max_datetime: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self.datetime = InterpolatedString.create(self.datetime, parameters=parameters or {})
+    def __post_init__(self, options: Mapping[str, Any]):
+        self.datetime = InterpolatedString.create(self.datetime, options=options or {})
         self.timezone = dt.timezone.utc
         self._parser = DatetimeParser()
-        self.min_datetime = InterpolatedString.create(self.min_datetime, parameters=parameters) if self.min_datetime else None
-        self.max_datetime = InterpolatedString.create(self.max_datetime, parameters=parameters) if self.max_datetime else None
+        self.min_datetime = InterpolatedString.create(self.min_datetime, options=options) if self.min_datetime else None
+        self.max_datetime = InterpolatedString.create(self.max_datetime, options=options) if self.max_datetime else None
 
         self._timezone = dt.timezone.utc
 
-    def get_datetime(self, config, **additional_parameters) -> dt.datetime:
+    def get_datetime(self, config, **additional_options) -> dt.datetime:
         """
         Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
-        :param additional_parameters: Additional arguments to be passed to the strings for interpolation
+        :param additional_options: Additional arguments to be passed to the strings for interpolation
         :return: The evaluated datetime
         """
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
@@ -58,15 +59,15 @@ class MinMaxDatetime:
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = self._parser.parse(str(self.datetime.eval(config, **additional_parameters)), datetime_format, self.timezone)
+        time = self._parser.parse(str(self.datetime.eval(config, **additional_options)), datetime_format, self.timezone)
 
         if self.min_datetime:
-            min_time = str(self.min_datetime.eval(config, **additional_parameters))
+            min_time = str(self.min_datetime.eval(config, **additional_options))
             if min_time:
                 min_time = self._parser.parse(min_time, datetime_format, self.timezone)
                 time = max(time, min_time)
         if self.max_datetime:
-            max_time = str(self.max_datetime.eval(config, **additional_parameters))
+            max_time = str(self.max_datetime.eval(config, **additional_options))
             if max_time:
                 max_time = self._parser.parse(max_time, datetime_format, self.timezone)
                 time = min(time, max_time)

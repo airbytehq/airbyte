@@ -7,7 +7,6 @@ import ctypes
 import math
 import os
 import time
-import urllib.parse
 from abc import ABC
 from contextlib import closing
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
@@ -39,6 +38,7 @@ class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     encoding = DEFAULT_ENCODING
+    MAX_PROPERTIES_LENGTH = Salesforce.REQUEST_SIZE_LIMITS - 2000
 
     def __init__(
         self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
@@ -49,10 +49,6 @@ class SalesforceStream(HttpStream, ABC):
         self.stream_name = stream_name
         self.schema: Mapping[str, Any] = schema  # type: ignore[assignment]
         self.sobject_options = sobject_options
-
-    @property
-    def max_properties_length(self) -> int:
-        return Salesforce.REQUEST_SIZE_LIMITS - len(self.url_base) - 2000
 
     @property
     def name(self) -> str:
@@ -73,8 +69,8 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def too_many_properties(self):
         selected_properties = self.get_json_schema().get("properties", {})
-        properties_length = len(urllib.parse.quote(",".join(p for p in selected_properties)))
-        return properties_length > self.max_properties_length
+        properties_length = len(",".join(p for p in selected_properties))
+        return properties_length > self.MAX_PROPERTIES_LENGTH
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()["records"]
@@ -139,8 +135,8 @@ class RestSalesforceStream(SalesforceStream):
         summary_length = 0
         local_properties = {}
         for property_name, value in selected_properties.items():
-            current_property_length = len(urllib.parse.quote(f"{property_name},"))
-            if current_property_length + summary_length >= self.max_properties_length:
+            current_property_length = len(property_name) + 1  # properties are split with commas
+            if current_property_length + summary_length >= self.MAX_PROPERTIES_LENGTH:
                 yield local_properties
                 local_properties = {}
                 summary_length = 0

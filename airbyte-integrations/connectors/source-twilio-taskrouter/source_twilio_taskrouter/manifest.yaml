@@ -3,8 +3,8 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path:
-        - "{{ parameters['name'] }}"
+      field_pointer:
+        - "{{ options['name'] }}"
   requester:
     url_base: "https://taskrouter.twilio.com"
     http_method: "GET"
@@ -14,9 +14,9 @@ definitions:
       password: "{{ config['auth_token'] }}"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   default_paginator:
     type: "DefaultPaginator"
     page_size_option:
@@ -27,47 +27,48 @@ definitions:
       cursor_value: "{{response['meta']['next_page_url']}}"
       page_size: 50
     page_token_option:
-      type: RequestPath
+      inject_into: "path"
+    url_base: "https://taskrouter.twilio.com"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   base_stream_with_pagination:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       paginator:
-        $ref: "#/definitions/default_paginator"
+        $ref: "*ref(definitions.default_paginator)"
   workspaces_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
+    $ref: "*ref(definitions.base_stream_with_pagination)"
+    $options:
       name: "workspaces"
       path: "/v1/Workspaces"
       primary_key: "sid"
 
-  workspace_partition_router:
-    type: SubstreamPartitionRouter
+  workspace_stream_slicer:
+    type: SubstreamSlicer
     parent_stream_configs:
-      - stream: "#/definitions/workspaces_stream"
+      - stream: "*ref(definitions.workspaces_stream)"
         parent_key: sid
-        partition_field: id
+        stream_slice_field: id
 
   workers_stream:
-    $ref: "#/definitions/base_stream_with_pagination"
-    $parameters:
+    $ref: "*ref(definitions.base_stream_with_pagination)"
+    $options:
       name: "workers"
       primary_key: "sid"
       path: "/v1/Workspaces/{{ stream_slice.id }}/Workers"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
       paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/workspace_partition_router"
+        $ref: "*ref(definitions.default_paginator)"
+      stream_slicer:
+        $ref: "*ref(definitions.workspace_stream_slicer)"
 
 streams:
-  - "#/definitions/workspaces_stream"
-  - "#/definitions/workers_stream"
+  - "*ref(definitions.workspaces_stream)"
+  - "*ref(definitions.workers_stream)"
 
 check:
   stream_names:

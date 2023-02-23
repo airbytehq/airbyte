@@ -3,29 +3,30 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: []
+      field_pointer: []
   selector_bounces:
     extractor:
-      field_path: ["Bounces"]
+      field_pointer: ["Bounces"]
   selector_domains:
     extractor:
-      field_path: ["Domains"]
+      field_pointer: ["Domains"]
   selector_servers:
     extractor:
-      field_path: ["Servers"]
+      field_pointer: ["Servers"]
   selector_message_streams:
     extractor:
-      field_path: ["MessageStreams"]
+      field_pointer: ["MessageStreams"]
   selector_messages:
     extractor:
-      field_path: ["Messages"]
+      field_pointer: ["Messages"]
   requester:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
-    request_body_json:
-      Accept: "application/json"
-    request_parameters:
-      count: "500"
+    request_options_provider:
+      request_body_json:
+        Accept: "application/json"
+      request_parameters:
+        count: "500"
     authenticator:
       type: "ApiKeyAuthenticator"
       header: "X-Postmark-Server-Token"
@@ -33,121 +34,124 @@ definitions:
   requester_account:
     url_base: "https://api.postmarkapp.com"
     http_method: "GET"
-    request_body_json:
-      Accept: "application/json"
-    request_parameters:
-      count: "500"
+    request_options_provider:
+      request_body_json:
+        Accept: "application/json"
+      request_parameters:
+        count: "500"
     authenticator:
       type: "ApiKeyAuthenticator"
       header: "X-Postmark-Account-Token"
       api_token: "{{ config['X-Postmark-Account-Token'] }}"
   retriever_account:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: DefaultPaginator
+      $options:
+        url_base: "*ref(definitions.requester.url_base)"
       pagination_strategy:
         type: "OffsetIncrement"
         page_size: 500
       page_token_option:
-        type: RequestOption
         inject_into: "request_parameter"
         field_name: "offset"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "offset"
     requester:
-      $ref: "#/definitions/requester_account"
+      $ref: "*ref(definitions.requester_account)"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: DefaultPaginator
+      $options:
+        url_base: "*ref(definitions.requester.url_base)"
       pagination_strategy:
         type: "OffsetIncrement"
         page_size: 500
       page_token_option:
-        type: RequestOption
         inject_into: "request_parameter"
         field_name: "offset"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "offset"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   base_stream_account:
     retriever:
-      $ref: "#/definitions/retriever_account"
+      $ref: "*ref(definitions.retriever_account)"
   deliverystats:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector_bounces"
-    $parameters:
+        $ref: "*ref(definitions.selector_bounces)"
+    $options:
       name: "deliverystats"
       primary_key: "Name"
       path: "/deliverystats"
   message-streams:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector_message_streams"
-    $parameters:
+        $ref: "*ref(definitions.selector_message_streams)"
+    $options:
       name: "message-streams"
       primary_key: "ID"
       path: "/message-streams"
   bounces:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector_bounces"
-    $parameters:
+        $ref: "*ref(definitions.selector_bounces)"
+    $options:
       name: "bounces"
       primary_key: "ID"
       path: "/bounces"
 
   servers:
-    $ref: "#/definitions/base_stream_account"
+    $ref: "*ref(definitions.base_stream_account)"
     retriever:
-      $ref: "#/definitions/retriever_account"
+      $ref: "*ref(definitions.retriever_account)"
       record_selector:
-        $ref: "#/definitions/selector_servers"
-    $parameters:
+        $ref: "*ref(definitions.selector_servers)"
+    $options:
       name: "servers"
       primary_key: "ID"
       path: "/servers"
   messages:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector_messages"
-    $parameters:
+        $ref: "*ref(definitions.selector_messages)"
+    $options:
       name: "messages"
       primary_key: "MessageID"
       path: "/messages/outbound"
   domains:
-    $ref: "#/definitions/base_stream_account"
-    $parameters:
+    $ref: "*ref(definitions.base_stream_account)"
+    $options:
       name: "domains"
       primary_key: "ID"
       path: "/domains"
     retriever:
-      $ref: "#/definitions/retriever_account"
+      $ref: "*ref(definitions.retriever_account)"
       record_selector:
-        $ref: "#/definitions/selector_domains"
+        $ref: "*ref(definitions.selector_domains)"
 streams:
-  - "#/definitions/deliverystats"
-  - "#/definitions/message-streams"
-  - "#/definitions/domains"
-  - "#/definitions/messages"
-  - "#/definitions/bounces"
-  - "#/definitions/servers"
+  - "*ref(definitions.deliverystats)"
+  - "*ref(definitions.message-streams)"
+  - "*ref(definitions.domains)"
+  - "*ref(definitions.messages)"
+  - "*ref(definitions.bounces)"
+  - "*ref(definitions.servers)"
 
 check:
   stream_names:

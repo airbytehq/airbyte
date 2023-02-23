@@ -6,9 +6,11 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Any, Mapping
 
+from dataclasses_jsonschema import JsonSchemaMixin
+
 
 @dataclass
-class SchemaLoader:
+class SchemaLoader(JsonSchemaMixin):
     """Describes a stream's schema"""
 
     @abstractmethod

@@ -21,11 +21,14 @@ The schema of a requester object is:
     type: object
     additionalProperties: true
     required:
+      - name
       - url_base
       - path
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
+      name:
+        type: string
       url_base:
         type: string
         description: "base url"
@@ -53,7 +56,7 @@ The schema of a requester object is:
 The primary way to set request parameters and headers is to define them as key-value pairs using a `RequestOptionsProvider`.
 Other components, such as an `Authenticator` can also set additional request params or headers as needed.
 
-Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Partition routers](./partition-router.md).
+Additionally, some stateful components use a `RequestOption` to configure the options and update the value. Example of such components are [Paginators](./pagination.md) and [Stream slicers](./stream-slicers.md).
 
 ## More readings
 

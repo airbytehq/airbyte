@@ -1,0 +1,85 @@
+/* stylelint-disable color-no-hex */
+body, html {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+}
+
+noscript {
+    box-sizing: border-box;
+    background: #F8F8FF;
+    height: 100%;
+    width: 100%;
+    padding: 34px 0 13px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.card {
+    width: 100%;
+    max-width: 600px;
+    padding: 50px 10px;
+    background: #FFF;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 25%);
+    border: 1px solid #E8E8ED;
+    margin-top: 20px;
+    text-align: center;
+    font-style: normal;
+    font-weight: 500;
+    color: #1A1A21;
+    font-size: 18px;
+    line-height: 22px;
+    font-family: Inter, Helvetica, Arial, sans-serif;
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-weight: 100 900;
+    font-display: swap;
+    font-style: normal;
+    src: url("/fonts/inter/Inter-roman.var.woff2?v=3.19") format("woff2");
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-weight: 100 900;
+    font-display: swap;
+    font-style: italic;
+    src: url("/fonts/inter/Inter-italic.var.woff2?v=3.19") format("woff2");
+}
+
+/* Regular Roboto Mono */
+@font-face {
+    font-family: "Roboto Mono";
+    src: url("/fonts/robotoMono/RobotoMono-Regular.eot"); /* IE9 Compat Modes */
+    src: local("Roboto Mono"),
+    url("/fonts/robotoMono/RobotoMono-Regular.eot?#iefix")
+    format("embedded-opentype"),
+        /* IE6-IE8 */ url("/fonts/robotoMono/RobotoMono-Regular.woff2")
+    format("woff2"),
+        /* Super Modern Browsers */ url("/fonts/robotoMono/RobotoMono-Regular.woff")
+    format("woff"),
+        /* Modern Browsers */ url("/fonts/robotoMono/RobotoMono-Regular.ttf")
+    format("truetype"),
+        /* Safari, Android, iOS */
+    url("/fonts/robotoMono/RobotoMono-Regular.svg#OpenSans") format("svg"); /* Legacy iOS */
+
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* Roboto Medium */
+@font-face {
+    font-family: "Roboto";
+    font-style: normal;
+    font-weight: 500;
+    src: url("/fonts/roboto/Roboto-Medium.eot"); /* IE9 Compat Modes */
+    src: local("Roboto"),
+    url("/fonts/roboto/Roboto-Medium.eot?#iefix") format("embedded-opentype"), /* IE6-IE8 */
+    url("/fonts/roboto/Roboto-Medium.woff2") format("woff2"), /* Super Modern Browsers */
+    url("/fonts/roboto/Roboto-Medium.woff") format("woff"), /* Modern Browsers */
+    url("/fonts/roboto/Roboto-Medium.ttf") format("truetype"), /* Safari, Android, iOS */
+    url("/fonts/roboto/Roboto-Medium.svg#RobotoMedium") format("svg"); /* Legacy iOS */
+}

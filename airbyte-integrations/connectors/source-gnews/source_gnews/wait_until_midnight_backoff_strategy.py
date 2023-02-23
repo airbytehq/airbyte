@@ -9,15 +9,16 @@ from typing import Any, Mapping, Optional
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class WaitUntilMidnightBackoffStrategy(BackoffStrategy):
+class WaitUntilMidnightBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
     Backoff strategy that waits until next midnight
     """
 
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     config: Config
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:

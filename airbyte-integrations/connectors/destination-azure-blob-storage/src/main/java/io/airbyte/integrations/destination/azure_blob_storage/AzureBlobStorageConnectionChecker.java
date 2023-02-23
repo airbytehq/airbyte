@@ -62,7 +62,8 @@ public class AzureBlobStorageConnectionChecker {
     writeUsingAppendBlock("Some test data");
     listBlobsInContainer()
         .forEach(
-            blobItem -> LOGGER.info("Blob name: {}, Snapshot: {}", blobItem.getName(), blobItem.getSnapshot()));
+            blobItem -> LOGGER.info(
+                "Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
 
     deleteBlob();
   }
@@ -88,13 +89,13 @@ public class AzureBlobStorageConnectionChecker {
    * but those are not supposed to be written here
    */
   public void writeUsingAppendBlock(final String data) {
-    LOGGER.info("Writing test data to Azure Blob storage: {}", data);
+    LOGGER.info("Writing test data to Azure Blob storage: " + data);
     final InputStream dataStream = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 
     final Integer blobCommittedBlockCount = appendBlobClient.appendBlock(dataStream, data.length())
         .getBlobCommittedBlockCount();
 
-    LOGGER.info("blobCommittedBlockCount: {}", blobCommittedBlockCount);
+    LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
   }
 
   /*
@@ -108,16 +109,16 @@ public class AzureBlobStorageConnectionChecker {
    * Delete the blob we created earlier.
    */
   public void deleteBlob() {
-    LOGGER.info("Deleting blob: {}", appendBlobClient.getBlobName());
+    LOGGER.info("Deleting blob: " + appendBlobClient.getBlobName());
     appendBlobClient.delete(); // remove aka "SQL Table" used
   }
 
   /*
-   * Delete the Container. Be very careful when you use it. It removes the whole bucket and supposed
+   * Delete the Container. Be very careful when you ise ir. It removes thw whole bucket and supposed
    * to be used in check connection ony for writing tmp data
    */
   public void deleteContainer() {
-    LOGGER.info("Deleting blob: {}", containerClient.getBlobContainerName());
+    LOGGER.info("Deleting blob: " + containerClient.getBlobContainerName());
     containerClient.delete(); // remove aka "SQL Schema" used
   }
 

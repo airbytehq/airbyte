@@ -1,0 +1,5 @@
+FROM alpine:3
+
+ENV AIRBYTE_ENTRYPOINT="sh"
+
+ENTRYPOINT "sh"

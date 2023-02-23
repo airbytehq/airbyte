@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "41375467-61ae-4204-8e38-e2b8b7365f23",
+  "name": "Slack",
+  "dockerRepository": "airbyte/source-slack-singer",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-slack-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/slack",
+    "connectionSpecification": {}
+  }
+}

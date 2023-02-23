@@ -1,0 +1,103 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/mixins";
+
+.container {
+  display: flex;
+  gap: variables.$spacing-2xl;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.heading {
+  color: colors.$dark-blue;
+
+  strong {
+    color: colors.$blue;
+  }
+}
+
+.sourcesTitle,
+.destinationsTitle {
+  color: colors.$dark-blue-400;
+  text-align: center;
+  cursor: help;
+
+  // Required to have the title centered (no matter it's length) above the buttons
+  // without extending the size of this flex box, which would cause the buttons to be
+  // unaligned with the illustration
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  margin-top: -1.5 * variables.$spacing-xl;
+}
+
+.sources,
+.destinations {
+  display: flex;
+  width: fit-content;
+  flex-direction: column;
+  position: relative;
+
+  // Manual spacing/margin to align with the illustration in the center
+  gap: 12px;
+  margin-top: -7px;
+}
+
+.connectors {
+  display: flex;
+  margin-top: variables.$spacing-2xl;
+}
+
+.connectorButton {
+  @include mixins.shadow;
+
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: none;
+  padding: 18px;
+  cursor: pointer;
+  background: colors.$white;
+  border-radius: variables.$border-radius-2xl;
+  transition: box-shadow variables.$transition ease;
+
+  .destinations & {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  &:hover,
+  &:focus-visible {
+    box-shadow: variables.$box-shadow-raised;
+  }
+}
+
+.connectorIcon,
+.moreIcon {
+  width: 38px;
+  height: 38px;
+}
+
+.moreIcon {
+  width: 28px;
+  height: 28px;
+  color: colors.$blue;
+}
+
+.demoLink {
+  color: colors.$dark-blue;
+
+  &:hover,
+  &:focus {
+    color: colors.$blue-400;
+  }
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}

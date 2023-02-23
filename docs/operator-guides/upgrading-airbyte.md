@@ -47,7 +47,7 @@ Airbyte version 0.40.32 or later requires [Docker Compose V2](https://docs.docke
 
    i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/{.env,flags.yml,docker-compose.yaml}` to pull the latest versions and overwrite both files.
+   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}` to pull the latest versions and overwrite both files.
 
 3. Bring Airbyte back online.
 

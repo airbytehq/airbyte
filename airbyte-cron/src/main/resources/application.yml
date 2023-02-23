@@ -1,0 +1,127 @@
+micronaut:
+  application:
+    name: airbyte-cron
+  caches:
+    remote-definitions-provider:
+      expire-after-write: 15s
+  server:
+    port: 9001
+
+airbyte:
+  cron:
+    update-definitions:
+      enabled: ${UPDATE_DEFINITIONS_CRON_ENABLED:false}
+  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  flyway:
+    configs:
+      initialization-timeout-ms: ${CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
+      minimum-migration-version: ${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+  local:
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
+    root: ${LOCAL_ROOT}
+  platform:
+    remote-connector-catalog:
+      timeout-ms: ${REMOTE_CONNECTOR_CATALOG_MS:30000}
+      url: ${REMOTE_CONNECTOR_CATALOG_URL:}
+  role: ${AIRBYTE_ROLE:}
+  temporal:
+    worker:
+      ports: ${TEMPORAL_WORKER_PORTS:}
+  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  version: ${AIRBYTE_VERSION}
+  workflow:
+    failure:
+      restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}
+  workspace:
+    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
+    root: ${WORKSPACE_ROOT}
+
+datasources:
+  config:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    maximum-pool-size: 5
+    minimum-idle: 0
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+  jobs:
+    connection-test-query: SELECT 1
+    connection-timeout: 30000
+    idle-timeout: 600000
+    initialization-fail-timeout: -1   # Disable fail fast checking to avoid issues due to other pods not being started in time
+    maximum-pool-size: 5
+    minimum-idle: 0
+    url: ${DATABASE_URL}
+    driverClassName: org.postgresql.Driver
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+
+docker:
+  network: ${DOCKER_NETWORK:host}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
+
+flyway:
+  enabled: true
+  datasources:
+    config:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/configs/migrations'
+    jobs:
+      enabled: false
+      locations:
+        - 'classpath:io/airbyte/db/instance/jobs/migrations'
+
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+    jobs:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+
+temporal:
+  cloud:
+    client:
+      cert: ${TEMPORAL_CLOUD_CLIENT_CERT:}
+      key: ${TEMPORAL_CLOUD_CLIENT_KEY:}
+    enabled: ${TEMPORAL_CLOUD_ENABLED:false}
+    host: ${TEMPORAL_CLOUD_HOST:}
+    namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
+  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
+  retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
+
+logger:
+  levels:
+# Uncomment to help resolve issues with conditional beans
+#    io.micronaut.context.condition: DEBUG

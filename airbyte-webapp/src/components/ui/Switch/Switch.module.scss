@@ -1,0 +1,161 @@
+@use "scss/colors";
+@use "scss/variables";
+
+@mixin knob-transform($position, $size) {
+  @if $position == left {
+    transform: translateX(0);
+  } @else if $position == middle {
+    @if $size == lg {
+      transform: translateX(8px);
+    }
+    @if $size == sm {
+      transform: translateX(4.5px);
+    }
+    @if $size == xs {
+      transform: translateX(3.5px);
+    }
+  } @else {
+    @if $size == lg {
+      transform: translateX(16px);
+    }
+    @if $size == sm {
+      transform: translateX(9px);
+    }
+    @if $size == xs {
+      transform: translateX(7px);
+    }
+  }
+}
+
+@mixin all-sizes-knob-transform($position) {
+  &.sizeLg::before {
+    @include knob-transform($position, lg);
+  }
+
+  &.sizeSm::before {
+    @include knob-transform($position, sm);
+  }
+
+  &.sizeXs::before {
+    @include knob-transform($position, xs);
+  }
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+
+  &.sizeLg {
+    width: 42px;
+    height: 26px;
+  }
+
+  &.sizeSm {
+    width: 25px;
+    height: 16px;
+  }
+
+  &.sizeXs {
+    width: 17px;
+    height: 10px;
+  }
+
+  .slider {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: colors.$grey-100;
+    transition: variables.$transition;
+    border-radius: variables.$border-radius-pill;
+
+    &.sizeLg {
+      border: 1px solid colors.$grey-200;
+    }
+
+    &.sizeLg::before {
+      width: 24px;
+      height: 24px;
+      left: 0;
+      top: 0;
+    }
+
+    &.sizeSm::before {
+      height: 14px;
+      width: 14px;
+      top: 1px;
+      left: 1px;
+    }
+
+    &.sizeXs::before {
+      width: 8px;
+      height: 8px;
+      top: 1px;
+      left: 1px;
+    }
+
+    &::before {
+      position: absolute;
+      content: "";
+      background: colors.$white;
+      transition: variables.$transition;
+      border-radius: 50%;
+    }
+  }
+
+  .switchInput {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &[aria-checked="true"] + .slider {
+      &.variantDefault {
+        background-color: colors.$blue;
+      }
+
+      &.variantStrongBlue {
+        background-color: colors.$blue-700;
+      }
+
+      @include all-sizes-knob-transform(right);
+
+      &.loading {
+        background-image: url("./ProgressReverse.svg");
+        @include all-sizes-knob-transform(left);
+      }
+    }
+
+    &[aria-checked="false"] + .slider {
+      @include all-sizes-knob-transform(left);
+
+      &.loading {
+        background-image: url("./Progress.svg");
+        @include all-sizes-knob-transform(right);
+      }
+    }
+
+    &[aria-checked="mixed"] + .slider {
+      &.variantDefault {
+        background-color: colors.$blue-200;
+      }
+
+      &.loading {
+        background-color: colors.$blue-100;
+        background-image: url("./ProgressReverse.svg");
+      }
+
+      @include all-sizes-knob-transform(middle);
+    }
+
+    &:disabled + .slider {
+      opacity: 0.5;
+      cursor: auto;
+
+      &.loading {
+        opacity: 1;
+      }
+    }
+  }
+}

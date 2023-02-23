@@ -13,8 +13,8 @@ Schema:
     required:
       - extractor
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       extractor:
         "$ref": "#/definitions/RecordExtractor"
       record_filter:
@@ -30,11 +30,11 @@ Schema:
     type: object
     additionalProperties: true
     required:
-      - field_path
+      - field_pointer
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
-      field_path:
+      "$options":
+        "$ref": "#/definitions/$options"
+      field_pointer:
         type: array
         items:
           type: string
@@ -51,7 +51,7 @@ If the root of the response is an array containing the records, the records can 
 ```yaml
 selector:
   extractor:
-    field_path: [ ]
+    field_pointer: [ ]
 ```
 
 If the root of the response is a json object representing a single record, the record can be extracted and wrapped in an array.
@@ -68,7 +68,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_path: [ ]
+    field_pointer: [ ]
 ```
 
 The selected records will be
@@ -97,7 +97,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_path: [ "data" ]
+    field_pointer: [ "data" ]
 ```
 
 The selected records will be
@@ -137,7 +137,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_path: [ "data", "records" ]
+    field_pointer: [ "data", "records" ]
 ```
 
 The selected records will be
@@ -181,7 +181,7 @@ and a selector
 ```yaml
 selector:
   extractor:
-    field_path: [ "data", "*", "record" ]
+    field_pointer: [ "data", "*", "record" ]
 ```
 
 The selected records will be
@@ -207,7 +207,7 @@ In this example, all records with a `created_at` field greater than the stream s
 ```yaml
 selector:
   extractor:
-    field_path: [ ]
+    field_pointer: [ ]
   record_filter:
     condition: "{{ record['created_at'] < stream_slice['start_time'] }}"
 ```
@@ -240,8 +240,8 @@ Schema:
       - fields
     additionalProperties: true
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       fields:
         type: array
         items:
@@ -253,8 +253,8 @@ Schema:
       - value
     additionalProperties: true
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       path:
         "$ref": "#/definitions/FieldPointer"
       value:
@@ -341,8 +341,8 @@ Schema:
       - field_pointers
     additionalProperties: true
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       field_pointers:
         type: array
         items:

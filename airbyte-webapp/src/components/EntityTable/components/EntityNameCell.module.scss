@@ -1,0 +1,14 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  color: colors.$grey;
+
+  &.enabled {
+    color: colors.$dark-blue;
+  }
+}

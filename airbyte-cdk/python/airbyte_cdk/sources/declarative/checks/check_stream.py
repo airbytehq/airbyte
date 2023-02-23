@@ -10,10 +10,11 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CheckStream(ConnectionChecker):
+class CheckStream(ConnectionChecker, JsonSchemaMixin):
     """
     Checks the connections by checking availability of one or many streams selected by the developer
 
@@ -22,10 +23,10 @@ class CheckStream(ConnectionChecker):
     """
 
     stream_names: List[str]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._parameters = parameters
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._options = options
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         streams = source.streams(config)

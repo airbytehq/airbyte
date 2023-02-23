@@ -8,10 +8,11 @@ from typing import List
 
 import requests
 from airbyte_cdk.sources.declarative.types import Record
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordExtractor:
+class RecordExtractor(JsonSchemaMixin):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response.
     """

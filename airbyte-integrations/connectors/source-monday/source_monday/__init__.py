@@ -3,7 +3,7 @@
 #
 
 from .dpath_string_extractor import DpathStringExtractor
-from .graphql_requester import MondayGraphqlRequester
+from .graphql_request_options_provider import GraphQLRequestOptionsProvider
 from .source import SourceMonday
 
-__all__ = ["SourceMonday", "MondayGraphqlRequester", "DpathStringExtractor"]
+__all__ = ["SourceMonday", "GraphQLRequestOptionsProvider", "DpathStringExtractor"]

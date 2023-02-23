@@ -1,0 +1,56 @@
+@use "scss/colors";
+@use "scss/variables";
+
+@mixin header-background($color, $hoverColor) {
+  background-color: $color;
+
+  &:hover {
+    background-color: $hoverColor;
+    cursor: pointer;
+  }
+}
+
+.streamHeaderContent {
+  @include header-background(colors.$white, colors.$grey-30);
+
+  border-bottom: 1px solid colors.$grey-50;
+  padding: 0;
+  margin-bottom: 1px;
+  gap: variables.$spacing-sm;
+  min-height: 50px;
+  height: 50px;
+  align-items: center;
+  scrollbar-gutter: stable;
+
+  &.removed {
+    @include header-background(colors.$red-30, colors.$red-40);
+  }
+
+  &.added {
+    @include header-background(colors.$green-30, colors.$green-40);
+  }
+
+  &.changed {
+    @include header-background(colors.$blue-30, colors.$blue-40);
+  }
+
+  &.disabled {
+    background-color: colors.$grey-50;
+  }
+}
+%streamRowCheckboxCell,
+.streamRowCheckboxCell {
+  max-width: 53px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 13px;
+  display: flex;
+  justify-content: flex-end;
+  gap: variables.$spacing-sm;
+}
+
+.cellText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,17 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.controlContainer {
+  width: 100%;
+}
+
+.optionalText {
+  display: inline;
+  color: colors.$grey-300;
+  font-style: oblique;
+  padding-left: variables.$spacing-sm;
+}
+
+.tooltip {
+  word-wrap: break-word;
+}

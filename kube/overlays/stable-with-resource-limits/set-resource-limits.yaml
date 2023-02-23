@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-db
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-db-container
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-worker
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-worker-container
+          env:
+            - name: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-server-container
+          env:
+            - name: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-temporal
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-temporal
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-webapp
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-webapp-container
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-minio
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-minio
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 512Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-pod-sweeper
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-pod-sweeper
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-cron
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-cron-container
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 128Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-connector-builder-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: airbyte-connector-builder-server-container
+          resources:
+            limits:
+              cpu: 0.5
+              memory: 128Mi

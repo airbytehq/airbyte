@@ -1,0 +1,122 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "common.names.fullname" . }}
+  labels:
+    {{- include "airbyte.labels" . | nindent 4 }}
+    {{- if .Values.extraLabels }}
+    {{ toYaml (mergeOverwrite .Values.extraLabels .Values.global.extraLabels) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.podLabels }}
+      {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 4 }}
+    {{- end }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    {{- if .Values.podAnnotations }}
+      {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  serviceAccountName: {{ .Values.global.serviceAccountName }}
+  {{- if .Values.global.imagePullSecrets }}
+  imagePullSecrets:
+    {{- range .Values.global.imagePullSecrets }}
+      {{- printf "- name: %s" .name | nindent 2 }}
+    {{- end }}
+  {{- end }}
+  restartPolicy: Never
+  {{- if .Values.nodeSelector }}
+  nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+  {{- end }}
+  {{- if .Values.tolerations }}
+  tolerations: {{- include "common.tplvalues.render" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+  {{- end }}
+  {{- if .Values.affinity }}
+  affinity: {{- include "common.tplvalues.render" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+  {{- end }}
+  {{- if .Values.extraInitContainers }}
+  initContainers:
+  {{- toYaml .Values.extraInitContainers | nindent 4 }}
+  {{- end }}
+  containers:
+    - name: airbyte-bootloader-container
+      image: {{ printf "%s:%s" .Values.image.repository (include "bootloader.imageTag" .) }}
+      imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+      env:
+        {{- if eq .Values.global.deploymentMode "oss"  }}
+        - name: AIRBYTE_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+              key: AIRBYTE_VERSION
+        - name: DATABASE_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+              key: DATABASE_HOST
+        - name: DATABASE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+              key: DATABASE_PORT
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.database.secretName | default (printf "%s-airbyte-secrets" .Release.Name ) }}
+              key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.global.configMapName | default (printf "%s-airbyte-env" .Release.Name) }}
+              key: DATABASE_URL
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.global.secretName | default (printf "%s-airbyte-secrets" .Release.Name) }}
+              key: DATABASE_USER
+        {{- end }}
+        # Values from secret
+        {{- if .Values.secrets }}
+        {{- range $k, $v := .Values.secrets }}
+        - name: {{ $k }}
+          valueFrom:
+            secretKeyRef:
+              name: bootloader-secrets
+              key: {{ $k }}
+        {{- end }}
+        {{- end }}
+
+        # Values from env
+        {{- if .Values.env_vars }}
+        {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
+        - name: {{ $k }}
+          value: {{ $v | quote }}
+        {{- end }}
+        {{- end }}
+
+        # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+        {{- if .Values.extraEnv }}
+        {{- toYaml .Values.extraEnv | nindent 8 }}
+        {{- end }}
+
+      {{- if .Values.resources }}
+      resources: {{- toYaml .Values.resources | nindent 8 }}
+      {{- end }}
+      {{- if .Values.extraVolumeMounts }}
+      volumeMounts:
+        {{- toYaml .Values.extraVolumeMounts | nindent 8 }}
+      {{- end }}
+      {{- if .Values.containerSecurityContext }}
+      securityContext: {{- toYaml .Values.containerSecurityContext | nindent 8 }}
+      {{- end }}
+    {{- if .Values.extraContainers }}
+    {{ toYaml .Values.extraContainers | nindent 4 }}
+    {{- end }}
+    {{- if .Values.global.extraContainers }}
+    {{ toYaml .Values.global.extraContainers | nindent 4 }}
+    {{- end }}
+  {{- if .Values.extraVolumes }}
+  volumes:
+    {{- toYaml .Values.extraVolumes | nindent 4 }}
+  {{- end }}

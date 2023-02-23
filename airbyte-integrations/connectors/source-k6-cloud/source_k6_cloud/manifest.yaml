@@ -3,8 +3,8 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path:
-        - "{{ parameters['name'] }}"
+      field_pointer:
+        - "{{ options['name'] }}"
   requester:
     url_base: "https://api.k6.io"
     http_method: "GET"
@@ -14,11 +14,11 @@ definitions:
 
   increment_paginator:
     type: "DefaultPaginator"
+    url_base: "*ref(definitions.requester.url_base)"
     pagination_strategy:
       type: "PageIncrement"
       page_size: 32
     page_token_option:
-      type: RequestOption
       inject_into: "request_parameter"
       field_name: "page"
     page_size_option:
@@ -26,65 +26,65 @@ definitions:
       field_name: "page_size"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
-      $ref: "#/definitions/increment_paginator"
+      $ref: "*ref(definitions.increment_paginator)"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   organizations_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
-        $ref: "#/definitions/requester"
-    $parameters:
+        $ref: "*ref(definitions.requester)"
+    $options:
       name: "organizations"
       primary_key: "id"
       path: "/v3/organizations"
-  organizations_partition_router:
-    type: SubstreamPartitionRouter
+  organizations_stream_slicer:
+    type: SubstreamSlicer
     parent_stream_configs:
-      - stream: "#/definitions/organizations_stream"
+      - stream: "*ref(definitions.organizations_stream)"
         parent_key: id
-        partition_field: id
+        stream_slice_field: id
   projects_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     type: DeclarativeStream
-    $parameters:
+    $options:
       name: "projects"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/v3/organizations/{{ stream_slice.id }}/projects"
-      partition_router:
-        $ref: "#/definitions/organizations_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.organizations_stream_slicer)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
   tests_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
-        $ref: "#/definitions/increment_paginator"
+        $ref: "*ref(definitions.increment_paginator)"
       requester:
-        $ref: "#/definitions/requester"
-    $parameters:
+        $ref: "*ref(definitions.requester)"
+    $options:
       name: "k6-tests"
       primary_key: "id"
       path: "loadtests/v2/tests"
 
 streams:
-  - "#/definitions/organizations_stream"
-  - "#/definitions/projects_stream"
-  - "#/definitions/tests_stream"
+  - "*ref(definitions.organizations_stream)"
+  - "*ref(definitions.projects_stream)"
+  - "*ref(definitions.tests_stream)"
 
 check:
   stream_names:

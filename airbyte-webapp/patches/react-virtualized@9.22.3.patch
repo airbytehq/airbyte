@@ -1,0 +1,10 @@
+diff --git a/dist/es/WindowScroller/utils/onScroll.js b/dist/es/WindowScroller/utils/onScroll.js
+index d00f0f18c6596e4e57f4f762f91fed4282610c91..c8496e8eabafdf9cf6071986ec446839d7b65556 100644
+--- a/dist/es/WindowScroller/utils/onScroll.js
++++ b/dist/es/WindowScroller/utils/onScroll.js
+@@ -71,4 +71,3 @@ export function unregisterScrollListener(component, element) {
+     }
+   }
+ }
+\ No newline at end of file
+-import { bpfrpt_proptype_WindowScroller } from "../WindowScroller.js";

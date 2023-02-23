@@ -1,0 +1,53 @@
+micronaut:
+  server:
+    port: 9000
+
+airbyte:
+  config-dir: /config
+  acceptance:
+    test:
+      enabled: ${ACCEPTANCE_TEST_ENABLED:false}
+  control:
+    plane:
+      auth-endpoint: ${CONTROL_PLANE_AUTH_ENDPOINT:}
+  data:
+    plane:
+      service-account:
+        credentials-path: ${DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH:}
+        email: ${DATA_PLANE_SERVICE_ACCOUNT_EMAIL:}
+  feature-flag:
+    client: ${FEATURE_FLAG_CLIENT:config}
+    path: ${FEATURE_FLAG_PATH:/flags}
+    api-key: ${LAUNCHDARKLY_KEY:}
+  internal:
+    api:
+      auth-header:
+        name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
+        value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
+      host: ${INTERNAL_API_HOST}
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true

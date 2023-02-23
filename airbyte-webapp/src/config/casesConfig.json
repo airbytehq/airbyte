@@ -1,0 +1,7 @@
+{
+  "singleCustomerView": "https://airbyte.com/recipes/single-customer-view",
+  "buildDashboard": "https://airbyte.com/recipes/build-a-github-activity-dashboard-for-your-project",
+  "replicatePostgres": "https://airbyte.com/recipes/postgres-replication",
+  "syncMySQLKafka": "https://airbyte.com/recipes/mysql-cdc-to-kafka",
+  "mailchimpSnowflake": "https://airbyte.com/recipes/data-ingestion-pipeline-mailchimp-snowflake"
+}

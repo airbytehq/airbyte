@@ -3,22 +3,23 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: ["data"]
+      field_pointer: ["data"]
 
   air_quality_current_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+    $options:
       name: "air_quality_current"
       primary_key: "datetime"
       path: "/air-quality/v2/current-conditions"
@@ -26,18 +27,19 @@ definitions:
   air_quality_forecast_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          hours: "{{ config['hours_to_forecast'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+            hours: "{{ config['hours_to_forecast'] }}"
+    $options:
       name: "air_quality_forecast"
       primary_key: "datetime"
       path: "/air-quality/v2/forecast/hourly"
@@ -45,18 +47,19 @@ definitions:
   air_quality_historical_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          hours: "{{ config['historic_hours'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+            hours: "{{ config['historic_hours'] }}"
+    $options:
       name: "air_quality_historical"
       primary_key: "datetime"
       path: "/air-quality/v2/historical/hourly"
@@ -64,18 +67,19 @@ definitions:
   pollen_forecast_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          days: "{{ config['days_to_forecast'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+            days: "{{ config['days_to_forecast'] }}"
+    $options:
       name: "pollen_forecast"
       primary_key: "index_id"
       path: "/pollen/v2/forecast/daily"
@@ -83,17 +87,18 @@ definitions:
   weather_current_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+    $options:
       name: "weather_current"
       primary_key: "datetime"
       path: "/weather/v1/current-conditions"
@@ -101,66 +106,69 @@ definitions:
   weather_forecast_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          days: "{{ config['days_to_forecast'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+            days: "{{ config['days_to_forecast'] }}"
+    $options:
       name: "weather_forecast"
       path: "/weather/v1/forecast/daily"
 
   wildfire_burnt_area_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          radius: "{{ config['radius'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+            radius: "{{ config['radius'] }}"
+    $options:
       name: "wildfire_burnt_area"
       path: "/fires/v1/burnt-area"
 
   wildfire_locate_stream:
     retriever:
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       paginator:
         type: NoPagination
       requester:
         url_base: "https://api.breezometer.com"
         http_method: "GET"
-        request_parameters:
-          key: "{{ config['api_key'] }}"
-          lat: "{{ config['latitude'] }}"
-          lon: "{{ config['longitude'] }}"
-          radius: "{{ config['radius'] }}"
-    $parameters:
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            lat: "{{ config['latitude'] }}"
+            lon: "{{ config['longitude'] }}"
+            radius: "{{ config['radius'] }}"
+    $options:
       name: "wildfire_locate"
       path: "/fires/v1/locate-and-track"
 
 streams:
-  - "#/definitions/air_quality_current_stream"
-  - "#/definitions/air_quality_forecast_stream"
-  - "#/definitions/air_quality_historical_stream"
-  - "#/definitions/pollen_forecast_stream"
-  - "#/definitions/weather_current_stream"
-  - "#/definitions/weather_forecast_stream"
-  - "#/definitions/wildfire_burnt_area_stream"
-  - "#/definitions/wildfire_locate_stream"
+  - "*ref(definitions.air_quality_current_stream)"
+  - "*ref(definitions.air_quality_forecast_stream)"
+  - "*ref(definitions.air_quality_historical_stream)"
+  - "*ref(definitions.pollen_forecast_stream)"
+  - "*ref(definitions.weather_current_stream)"
+  - "*ref(definitions.weather_forecast_stream)"
+  - "*ref(definitions.wildfire_burnt_area_stream)"
+  - "*ref(definitions.wildfire_locate_stream)"
 
 check:
   stream_names:

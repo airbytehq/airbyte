@@ -773,4 +773,4 @@ Other progress on connectors:
 
 ## 09/23/2020
 
-**New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md) **New destinations:** [BigQuery](../../integrations/destinations/bigquery.md), [Postgres](../../integrations/destinations/postgres.md), [local CSV](../../integrations/destinations/csv.md)
+**New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md) **New destinations:** [BigQuery](../../integrations/destinations/bigquery.md), [Postgres](../../integrations/destinations/postgres.md), [local CSV](../../integrations/destinations/local-csv.md)

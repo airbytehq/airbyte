@@ -12,10 +12,11 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import I
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CursorPaginationStrategy(PaginationStrategy):
+class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
     """
     Pagination strategy that evaluates an interpolated string to define the next page token
 
@@ -29,16 +30,16 @@ class CursorPaginationStrategy(PaginationStrategy):
 
     cursor_value: Union[InterpolatedString, str]
     config: Config
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     page_size: Optional[int] = None
     stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
-    decoder: Decoder = JsonDecoder(parameters={})
+    decoder: Decoder = JsonDecoder(options={})
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.cursor_value, str):
-            self.cursor_value = InterpolatedString.create(self.cursor_value, parameters=parameters)
+            self.cursor_value = InterpolatedString.create(self.cursor_value, options=options)
         if isinstance(self.stop_condition, str):
-            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
+            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)

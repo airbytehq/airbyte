@@ -18,11 +18,6 @@ task validateSourceYamlManifest(type: Exec) {
     commandLine 'bin/validate-yaml-schema.sh'
 }
 
-task runLowCodeConnectorUnitTests(type: Exec) {
-    environment 'ROOT_DIR', rootDir.absolutePath
-    commandLine 'bin/low-code-unit-tests.sh'
-}
-
 blackFormat.dependsOn generateComponentManifestClassFiles
 isortFormat.dependsOn generateComponentManifestClassFiles
 flakeCheck.dependsOn generateComponentManifestClassFiles

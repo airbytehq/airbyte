@@ -1,0 +1,39 @@
+@use "../../../scss/colors";
+
+.heading {
+  font-weight: 700;
+  color: colors.$dark-blue;
+  margin: 0;
+  padding: 0;
+
+  &.inverse {
+    color: colors.$white;
+  }
+}
+
+.sm {
+  font-size: 16px;
+  line-height: 1.2em;
+}
+
+.md,
+.lg,
+.xl {
+  line-height: 1.3em;
+}
+
+.md {
+  font-size: 20px;
+}
+
+.lg {
+  font-size: 24px;
+}
+
+.xl {
+  font-size: 32px;
+}
+
+.centered {
+  text-align: center;
+}

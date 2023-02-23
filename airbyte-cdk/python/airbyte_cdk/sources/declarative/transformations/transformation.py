@@ -7,10 +7,11 @@ from dataclasses import dataclass
 from typing import Optional
 
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordTransformation:
+class RecordTransformation(JsonSchemaMixin):
     """
     Implementations of this class define transformations that can be applied to records of a stream.
     """

@@ -1,0 +1,11 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.modalFooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  border-top: variables.$border-thin solid colors.$grey-100;
+  padding: variables.$spacing-lg variables.$spacing-xl;
+  gap: variables.$spacing-md;
+}

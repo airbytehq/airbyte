@@ -3,12 +3,12 @@ version: "0.3.0"
 definitions:
   selector:
     extractor:
-      field_path: []
+      field_pointer: []
   data_field_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["data"]
+      field_pointer: ["data"]
   requester:
     url_base: "{{ config['instance_api_url'] }}"
     http_method: "GET"
@@ -24,55 +24,55 @@ definitions:
       validate_session_url: "user/current"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   data_field_retriever:
     record_selector:
-      $ref: "#/definitions/data_field_selector"
+      $ref: "*ref(definitions.data_field_selector)"
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     primary_key: "id"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   activity_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "activity"
       path: "activity"
   cards_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "cards"
       path: "card"
   collections_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "collections"
       path: "collection"
   dashboards_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "dashboards"
       path: "dashboard"
   users_stream:
     primary_key: "id"
     retriever:
-      $ref: "#/definitions/data_field_retriever"
-    $parameters:
+      $ref: "*ref(definitions.data_field_retriever)"
+    $options:
       name: "users"
       path: "user"
 streams:
-  - "#/definitions/activity_stream"
-  - "#/definitions/cards_stream"
-  - "#/definitions/collections_stream"
-  - "#/definitions/dashboards_stream"
-  - "#/definitions/users_stream"
+  - "*ref(definitions.activity_stream)"
+  - "*ref(definitions.cards_stream)"
+  - "*ref(definitions.collections_stream)"
+  - "*ref(definitions.dashboards_stream)"
+  - "*ref(definitions.users_stream)"
 
 check:
   stream_names:

@@ -3,27 +3,28 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: []
+      field_pointer: []
 
   requester:
     # url_base: "http://localhost:8080"
     url_base: "{{ config['backend_url'] }}"
     http_method: "POST"
-    request_body_data: |
-      [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
-          [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
-           {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
-          ]
-          
-        }, "orderBy": 1, "columnName": "Timestamp"}]/
-    request_headers:
-      Content-Type: application/json
+    request_options_provider:
+      request_body_data: |
+        [{"clause": {"type": "timestamp", "operator": 10, "parameters": 
+            [{"value": {{ stream_slice['start_time'] | int * 1000 }} },
+             {"value": {{ stream_slice['end_time'] | int * 1000 + (86400000 - 1) }} }
+            ]
+            
+          }, "orderBy": 1, "columnName": "Timestamp"}]/
+      request_headers:
+        Content-Type: application/json
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['access_token'] }}"
 
-  incremental_sync:
-    type: "DatetimeBasedCursor"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -33,13 +34,14 @@ definitions:
     step: "P100D" #TODO: Add {{ config['slice_range'] ~ d }} here, once it's possible to use config-values for step definition
     datetime_format: "%s"
     cursor_granularity: "PT1S"
-    cursor_field: "airbyte_cursor"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
 
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -47,24 +49,24 @@ definitions:
         type: "OffsetIncrement"
         page_size: 10000
       page_token_option:
-        type: RequestOption
         field_name: "offset"
         inject_into: "request_parameter"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
 
   base_stream:
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   dataset_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "dataset"
       primary_key:
         - "id"
       path: "/api/dataset/execute/{{ config['dataset_id']}}"
+      stream_cursor_field: "airbyte_cursor"
     transformations:
       - type: AddFields
         fields:
@@ -72,7 +74,7 @@ definitions:
             value: "{{ record['timestamp'] | int / 1000 }}"
 
 streams:
-  - "#/definitions/dataset_stream"
+  - "*ref(definitions.dataset_stream)"
 
 check:
   stream_names:

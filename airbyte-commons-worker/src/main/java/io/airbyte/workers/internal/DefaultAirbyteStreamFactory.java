@@ -4,10 +4,15 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -80,10 +85,13 @@ public class DefaultAirbyteStreamFactory implements AirbyteStreamFactory {
     this.maxMemory = maxMemory;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Stream<AirbyteMessage> create(final BufferedReader bufferedReader) {
+    final var metricClient = MetricClientFactory.getMetricClient();
     return bufferedReader
         .lines()
+        .peek(str -> metricClient.distribution(OssMetricsRegistry.JSON_STRING_LENGTH, str.getBytes(StandardCharsets.UTF_8).length))
         .peek(str -> {
           if (exceptionClass.isPresent()) {
             final long messageSize = str.getBytes(StandardCharsets.UTF_8).length;

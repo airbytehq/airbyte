@@ -9,10 +9,11 @@ import dpath.exceptions
 import dpath.util
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import FieldPointer, Record
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RemoveFields(RecordTransformation):
+class RemoveFields(RecordTransformation, JsonSchemaMixin):
     """
     A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
@@ -39,7 +40,7 @@ class RemoveFields(RecordTransformation):
     """
 
     field_pointers: List[FieldPointer]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
 
     def transform(self, record: Record, **kwargs) -> Record:
         """

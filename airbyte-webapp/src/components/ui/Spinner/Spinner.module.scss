@@ -1,0 +1,25 @@
+@use "../../../scss/colors";
+
+@keyframes spin {
+  from {
+    transform: rotate(0);
+  }
+
+  to {
+    transform: rotate(359deg);
+  }
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  border: 4px solid colors.$blue-100;
+  border-top: 4px solid transparent;
+  border-radius: 50%;
+  animation: spin 1.5s linear 0s infinite;
+}
+
+.small {
+  width: 30px;
+  height: 30px;
+}

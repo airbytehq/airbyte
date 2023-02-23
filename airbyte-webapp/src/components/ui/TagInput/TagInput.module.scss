@@ -1,0 +1,14 @@
+@use "scss/colors";
+@use "scss/variables";
+
+:export {
+  backgroundColor: colors.$dark-blue-800;
+  inputBackgroundColor: colors.$grey-50;
+  focusedBorderColor: colors.$blue-400;
+  hoveredBorderColor: colors.$grey-100;
+  errorBorderColor: colors.$red-100;
+  errorHoveredBorderColor: colors.$red-300;
+  fontColor: colors.$white;
+  borderRadius: variables.$border-radius-md;
+  paddingLeft: variables.$spacing-sm;
+}

@@ -1,0 +1,24 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  margin: variables.$spacing-lg 0;
+  padding: variables.$spacing-lg variables.$spacing-xl;
+  width: 100%;
+  background-image: url("./longtail-connectors.svg");
+  background-repeat: no-repeat;
+  background-position-y: center;
+  background-position-x: -50px;
+}
+
+.title {
+  text-transform: uppercase;
+}
+
+.flexRow {
+  width: 100%;
+}
+
+.enrollButton {
+  margin-left: auto;
+}

@@ -1,0 +1,27 @@
+@use "../../../scss/colors";
+
+.errorOccurredView {
+  min-height: 400px;
+  height: calc(100% - 70px);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+
+  .octavia {
+    width: 100px;
+    height: 128px;
+    margin-bottom: 24px;
+  }
+
+  .content {
+    max-width: 600px;
+    text-align: center;
+  }
+
+  .message {
+    margin-bottom: 30px;
+  }
+}

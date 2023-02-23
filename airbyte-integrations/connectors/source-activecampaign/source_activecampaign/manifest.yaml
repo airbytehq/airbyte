@@ -4,7 +4,7 @@ definitions:
   selector:
     extractor:
       # API Docs: https://developers.activecampaign.com/reference/schema
-      field_path: ["{{ parameters['name'] }}"]
+      field_pointer: ["{{ options['name'] }}"]
 
   requester:
     # API Docs: https://developers.activecampaign.com/reference/url
@@ -17,11 +17,12 @@ definitions:
 
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
 
     # API Docs: https://developers.activecampaign.com/reference/pagination
     paginator:
       type: DefaultPaginator
+      url_base: "*ref(definitions.requester.url_base)"
       page_size_option:
         inject_into: "request_parameter"
         field_name: "limit"
@@ -29,72 +30,71 @@ definitions:
         type: "OffsetIncrement"
         page_size: 20
       page_token_option:
-        type: RequestOption
         inject_into: "request_parameter"
         field_name: "offset"
 
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
 
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-campaigns
   campaigns_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "campaigns"
       primary_key: "id"
       path: "/campaigns"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-contacts
   contacts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "contacts"
       primary_key: "id"
       path: "/contacts"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-deals
   deals_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "deals"
       primary_key: "id"
       path: "/deals"
 
   # API Docs: https://developers.activecampaign.com/reference/retrieve-all-lists
   lists_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "lists"
       primary_key: "id"
       path: "/lists"
 
   # API Docs: https://developers.activecampaign.com/reference/list-all-segments
   segments_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "segments"
       primary_key: "id"
       path: "/segments"
 
   # API Docs: https://developers.activecampaign.com/reference/forms-1
   forms_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "forms"
       primary_key: "id"
       path: "/forms"
 
 streams:
-  - "#/definitions/campaigns_stream"
-  - "#/definitions/contacts_stream"
-  - "#/definitions/lists_stream"
-  - "#/definitions/deals_stream"
-  - "#/definitions/segments_stream"
-  - "#/definitions/forms_stream"
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.contacts_stream)"
+  - "*ref(definitions.lists_stream)"
+  - "*ref(definitions.deals_stream)"
+  - "*ref(definitions.segments_stream)"
+  - "*ref(definitions.forms_stream)"
 
 check:
   stream_names: ["campaigns"]

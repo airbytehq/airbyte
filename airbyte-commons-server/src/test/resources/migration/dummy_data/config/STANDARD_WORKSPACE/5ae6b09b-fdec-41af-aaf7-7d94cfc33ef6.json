@@ -1,0 +1,11 @@
+{
+  "workspaceId": "5ae6b09b-fdec-41af-aaf7-7d94cfc33ef6",
+  "customerId": "17f90b72-5ae4-40b7-bc49-d6c2943aea57",
+  "name": "default",
+  "slug": "default",
+  "initialSetupComplete": true,
+  "anonymousDataCollection": false,
+  "news": false,
+  "securityUpdates": false,
+  "displaySetupWizard": false
+}

@@ -19,13 +19,13 @@ def test_facebook_url_params(req_mock):
         "access_token": "initial_token",
         "page_id": "pageID"
     }
-    parameters = config
+    options = config
 
     req_mock.get("https://graph.facebook.com/pageID", json={"access_token": "page_access_token"})
     authenticator = AuthenticatorFacebookPageAccessToken(config=config,
                                                          page_id=config.get("page_id"),
                                                          access_token=config.get("access_token"),
-                                                         parameters=parameters)
+                                                         options=options)
     page_token = authenticator.generate_page_access_token()
     assert page_token == "page_access_token"
     prepared_request = requests.PreparedRequest()

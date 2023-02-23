@@ -7,10 +7,11 @@ from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordFilter:
+class RecordFilter(JsonSchemaMixin):
     """
     Filter applied on a list of Records
 
@@ -18,12 +19,12 @@ class RecordFilter:
     condition (str): The string representing the predicate to filter a record. Records will be removed if evaluated to False
     """
 
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     config: Config
     condition: str = ""
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, options=options)
 
     def filter_records(
         self,

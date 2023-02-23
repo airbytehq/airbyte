@@ -18,7 +18,7 @@ git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
 
 # start Airbyte
-./run-ab-platform.sh
+docker compose up
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)
@@ -58,7 +58,7 @@ Make sure to select the options:
 ```bash
 git clone https://github.com/airbytehq/airbyte.git
 cd airbyte
-bash run-ab-platform.sh
+docker compose up
 ```
 
 - In your browser, just visit [http://localhost:8000](http://localhost:8000)

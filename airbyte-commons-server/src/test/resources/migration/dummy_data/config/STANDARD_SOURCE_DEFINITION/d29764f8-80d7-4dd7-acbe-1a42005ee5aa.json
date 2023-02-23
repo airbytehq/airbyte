@@ -1,0 +1,11 @@
+{
+  "sourceDefinitionId": "d29764f8-80d7-4dd7-acbe-1a42005ee5aa",
+  "name": "Zendesk Support",
+  "dockerRepository": "airbyte/source-zendesk-support-singer",
+  "dockerImageTag": "0.2.0",
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-zendesk-support-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/zendesk-support",
+    "connectionSpecification": {}
+  }
+}

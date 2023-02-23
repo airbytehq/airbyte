@@ -1,0 +1,13 @@
+@use "scss/variables";
+
+.modalBody {
+  min-width: 500px;
+}
+
+.controlLabel {
+  margin-bottom: variables.$spacing-xl;
+}
+
+.requestButton {
+  min-width: 105px;
+}

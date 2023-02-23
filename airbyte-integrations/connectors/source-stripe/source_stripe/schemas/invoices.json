@@ -65,26 +65,14 @@
     "paid": {
       "type": ["null", "boolean"]
     },
+    "discount": {
+      "type": ["null", "string"]
+    },
     "discounts": {
       "type": ["null", "array"],
-      "items": {
-        "type": [
-          "null",
-          "string"
-        ]
-      }
-    },
-    "discount": {
-      "type": ["null", "object"],
       "properties": {
-        "id": {
-          "type": ["null", "string"]
-        },
-        "object": {
-          "type": ["null", "string"]
-        },
-        "checkout_session": {
-          "type": ["null", "string"]
+        "end": {
+          "type": ["null", "integer"]
         },
         "coupon": {
           "type": ["null", "object"],
@@ -107,6 +95,9 @@
             },
             "duration_in_months": {
               "type": ["null", "integer"]
+            },
+            "percent_off_precise": {
+              "type": ["null", "number"]
             },
             "max_redemptions": {
               "type": ["null", "integer"]
@@ -140,20 +131,11 @@
         "customer": {
           "type": ["null", "string"]
         },
-        "end": {
-          "type": ["null", "integer"]
-        },
-        "invoice": {
-          "type": ["null", "integer"]
-        },
-        "invoice_item": {
-          "type": ["null", "integer"]
-        },
-        "promotion_code": {
-          "type": ["null", "integer"]
-        },
         "start": {
           "type": ["null", "integer"]
+        },
+        "object": {
+          "type": ["null", "string"]
         },
         "subscription": {
           "type": ["null", "string"]

@@ -516,7 +516,7 @@
 - name: Sample Data (Faker)
   sourceDefinitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
   dockerRepository: airbyte/source-faker
-  dockerImageTag: 2.0.3
+  dockerImageTag: 2.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   icon: faker.svg
   sourceType: api
@@ -775,14 +775,11 @@
 - name: Harvest
   sourceDefinitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
   dockerRepository: airbyte/source-harvest
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   icon: harvest.svg
   sourceType: api
   releaseStage: generally_available
-  allowedHosts:
-    hosts:
-      - api.harvestapp.com
 - name: Hellobaton
   sourceDefinitionId: 492b56d1-937c-462e-8076-21ad2031e784
   dockerRepository: airbyte/source-hellobaton
@@ -874,9 +871,6 @@
   icon: iterable.svg
   sourceType: api
   releaseStage: generally_available
-  allowedHosts:
-    hosts:
-      - api.iterable.com
 - name: Jenkins
   sourceDefinitionId: d6f73702-d7a0-4e95-9758-b0fb1af0bfba
   dockerRepository: farosai/airbyte-jenkins-source
@@ -1574,14 +1568,11 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
   releaseStage: generally_available
-  allowedHosts:
-    hosts:
-      - "*.salesforce.com"
 - name: SAP Fieldglass
   sourceDefinitionId: ec5f3102-fb31-4916-99ae-864faf8e7e25
   dockerRepository: airbyte/source-sap-fieldglass
@@ -1741,14 +1732,11 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 2.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
   releaseStage: generally_available
-  allowedHosts:
-    hosts:
-      - "api.stripe.com"
 - name: SurveyCTO
   sourceDefinitionId: dd4632f4-15e0-4649-9b71-41719fb1fdee
   dockerRepository: airbyte/source-surveycto
@@ -2055,15 +2043,11 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.2.21
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
   releaseStage: generally_available
-  allowedHosts:
-    hosts:
-      - "${subdomain}.zendesk.com"
-      - zendesk.com
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk

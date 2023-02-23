@@ -30,24 +30,24 @@ class DpathStringExtractor(RecordExtractor, JsonSchemaMixin):
         ...     }
         ... }
         >>> dpath.util.values(S, "/key/subkey/*/expected_records/*")  # The result: [{'id': 1}, {'id': 2}, {'id': 3}, {'id': 4}]
-    # Now we are able to specify the `field_path` as a dpath interpolated string "/key/subkey/*/expected_records/*":
+    # Now we are able to specify the `field_pointer` as a dpath interpolated string "/key/subkey/*/expected_records/*":
     record_selector:
         ...
         extractor:
             ...
-            field_path: "/key/subkey/*/expected_records/*"
+            field_pointer: "/key/subkey/*/expected_records/*"
             class_name: "source_monday.DpathStringExtractor"
     """
 
-    field_path: Union[InterpolatedString, str]
+    field_pointer: Union[InterpolatedString, str]
     config: Config
-    parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    options: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(options={})
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self.field_path = InterpolatedString.create(self.field_path, parameters=parameters)
-        self.field_path = self.field_path.eval(self.config)
+    def __post_init__(self, options: Mapping[str, Any]):
+        self.field_pointer = InterpolatedString.create(self.field_pointer, options=options)
+        self.field_pointer = self.field_pointer.eval(self.config)
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
-        return dpath.util.values(response_body, self.field_path)
+        return dpath.util.values(response_body, self.field_pointer)

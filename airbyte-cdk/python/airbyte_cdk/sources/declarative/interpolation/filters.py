@@ -18,8 +18,8 @@ def hash(value, hash_type="md5", salt=None):
       For example:
 
     rates_stream:
-      $ref: "#/definitions/base_stream"
-      $parameters:
+      $ref: "*ref(definitions.base_stream)"
+      $options:
         name: "rates"
         primary_key: "date"
         path: "/exchangerates_data/latest"

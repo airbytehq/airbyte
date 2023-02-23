@@ -10,10 +10,11 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RecordSelector(HttpSelector):
+class RecordSelector(HttpSelector, JsonSchemaMixin):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.
@@ -24,11 +25,11 @@ class RecordSelector(HttpSelector):
     """
 
     extractor: RecordExtractor
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     record_filter: RecordFilter = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        self._parameters = parameters
+    def __post_init__(self, options: Mapping[str, Any]):
+        self._options = options
 
     def select_records(
         self,

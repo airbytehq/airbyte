@@ -1,9 +1,6 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
-
 import pendulum
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 from source_stripe.streams import InvoiceLineItems, Invoices
 

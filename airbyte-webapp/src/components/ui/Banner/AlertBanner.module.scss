@@ -1,0 +1,26 @@
+@use "../../../scss/colors";
+
+.alertBannerContainer {
+  height: 30px;
+  width: 100%;
+  text-align: center;
+  position: fixed;
+  top: 0;
+  z-index: 3;
+  font-size: 12px;
+  line-height: 30px;
+
+  & a {
+    color: inherit;
+  }
+}
+
+.default {
+  background-color: colors.$blue;
+  color: colors.$white;
+}
+
+.red {
+  background-color: colors.$red;
+  color: colors.$black;
+}

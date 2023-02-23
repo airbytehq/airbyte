@@ -57,7 +57,7 @@ class SourceFreshdesk(AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]):
         try:
-            check_stream = CheckStream(stream_names=["settings"], parameters={})
+            check_stream = CheckStream(stream_names=["settings"], options={})
             return check_stream.check_connection(self, logger, config)
         except Exception as error:
             return False, repr(error)

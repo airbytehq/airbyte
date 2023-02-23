@@ -1,0 +1,25 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  width: 75%;
+  max-width: 320px;
+}
+
+.button {
+  padding: variables.$spacing-md;
+  background-color: transparent;
+  border-radius: variables.$border-radius-md;
+  border: none;
+  display: flex;
+  justify-content: center;
+  gap: variables.$spacing-md;
+}
+
+.label {
+  overflow: auto;
+}
+
+.arrow {
+  color: colors.$blue;
+}

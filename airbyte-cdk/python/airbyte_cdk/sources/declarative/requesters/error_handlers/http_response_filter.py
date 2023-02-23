@@ -12,10 +12,11 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.http import HttpStream
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class HttpResponseFilter:
+class HttpResponseFilter(JsonSchemaMixin):
     """
     Filter to select HttpResponses
 
@@ -32,19 +33,19 @@ class HttpResponseFilter:
 
     action: Union[ResponseAction, str]
     config: Config
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     http_codes: Set[int] = None
     error_message_contains: str = None
     predicate: Union[InterpolatedBoolean, str] = ""
     error_message: Union[InterpolatedString, str] = ""
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.action, str):
             self.action = ResponseAction[self.action]
         self.http_codes = self.http_codes or set()
         if isinstance(self.predicate, str):
-            self.predicate = InterpolatedBoolean(condition=self.predicate, parameters=parameters)
-        self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, parameters=parameters)
+            self.predicate = InterpolatedBoolean(condition=self.predicate, options=options)
+        self.error_message = InterpolatedString.create(string_or_interpolated=self.error_message, options=options)
 
     def matches(self, response: requests.Response, backoff_time: Optional[float] = None) -> Optional[ResponseStatus]:
         filter_action = self._matches_filter(response)

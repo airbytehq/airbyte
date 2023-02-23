@@ -1,0 +1,15 @@
+@use "scss/variables";
+@use "scss/mixins";
+
+.leftPanel {
+  > *:last-child {
+    padding-bottom: variables.$spacing-page-bottom-cloud;
+  }
+}
+
+.rightPanel {
+  @include mixins.left-shadow;
+
+  border-top-left-radius: variables.$border-radius-lg;
+  border-bottom-left-radius: variables.$border-radius-lg;
+}

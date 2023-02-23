@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  init:
+    image: airbyte/init:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-config/init
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  bootloader:
+    image: airbyte/bootloader:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-bootloader
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  db:
+    image: airbyte/db:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-db/db-lib
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  worker:
+    image: airbyte/worker:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-workers
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  connector-builder-server:
+    image: airbyte/connector-builder-server:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-connector-builder-server
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  server:
+    image: airbyte/server:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-server
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  webapp:
+    image: airbyte/webapp:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-webapp
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  temporal:
+    image: airbyte/temporal:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-temporal
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  container-orchestrator:
+    image: airbyte/container-orchestrator:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-container-orchestrator
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  metric-reporter:
+    image: airbyte/metrics-reporter:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-metrics/reporter
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

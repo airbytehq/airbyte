@@ -1,0 +1,46 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/mixins";
+
+.container {
+  @include mixins.shadow;
+
+  width: auto;
+  background: colors.$white;
+  border-radius: variables.$border-radius-lg;
+
+  &.fullWidth {
+    width: 100%;
+  }
+
+  &.withPadding {
+    padding: 20px;
+  }
+}
+
+.header {
+  padding: variables.$spacing-xl;
+  color: colors.$dark-blue;
+  border-bottom: colors.$grey-100 variables.$border-thin solid;
+  font-weight: 600;
+  letter-spacing: 0.008em;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+
+  &.lightPadding {
+    padding: 19px 20px 20px;
+  }
+
+  &.roundedBottom {
+    border-radius: variables.$border-radius-lg;
+  }
+
+  &.withDescription {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.infoTooltip {
+  color: colors.$white;
+}

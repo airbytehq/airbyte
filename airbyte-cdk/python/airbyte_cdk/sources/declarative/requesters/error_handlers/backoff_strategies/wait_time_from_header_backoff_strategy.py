@@ -11,10 +11,11 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 from airbyte_cdk.sources.declarative.types import Config
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
+class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
     Extract wait time from http header
 
@@ -24,13 +25,13 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
 
     header: Union[InterpolatedString, str]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     config: Config
     regex: Optional[str] = None
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, options: Mapping[str, Any]):
         self.regex = re.compile(self.regex) if self.regex else None
-        self.header = InterpolatedString.create(self.header, parameters=parameters)
+        self.header = InterpolatedString.create(self.header, options=options)
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         header = self.header.eval(config=self.config)

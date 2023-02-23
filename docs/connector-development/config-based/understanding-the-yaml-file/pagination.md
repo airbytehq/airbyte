@@ -36,19 +36,20 @@ Schema:
     required:
       - page_token_option
       - pagination_strategy
+      - url_base
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       page_size:
         type: integer
       page_size_option:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
-        anyOf:
-          - "$ref": "#/definitions/RequestOption"
-          - "$ref": "#/definitions/RequestPath"
+        "$ref": "#/definitions/RequestOption"
       pagination_strategy:
         "$ref": "#/definitions/PaginationStrategy"
+      url_base:
+        type: string
 ```
 
 3 pagination strategies are supported
@@ -83,8 +84,8 @@ Schema:
     required:
       - page_size
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       page_size:
         type: integer
 ```
@@ -97,14 +98,12 @@ Example:
 paginator:
   type: "DefaultPaginator"
   page_size_option:
-    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "PageIncrement"
     page_size: 5
   page_token_option:
-    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page"
 ```
@@ -129,8 +128,8 @@ Schema:
     required:
       - page_size
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       page_size:
         type: integer
 ```
@@ -143,14 +142,12 @@ Example:
 paginator:
   type: "DefaultPaginator"
   page_size_option:
-    type: "RequestOption"
     inject_into: "request_parameter"
     field_name: "page_size"
   pagination_strategy:
     type: "OffsetIncrement"
     page_size: 5
   page_token_option:
-    type: "RequestOption"
     field_name: "offset"
     inject_into: "request_parameter"
 ```
@@ -178,8 +175,8 @@ Schema:
     required:
       - cursor_value
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       cursor_value:
         type: string
       stop_condition:
@@ -200,7 +197,6 @@ paginator:
     type: "CursorPagination"
     cursor_value: "{{ last_records[-1]['id'] }}"
   page_token_option:
-    type: "RequestPath"
     field_name: "from"
     inject_into: "request_parameter"
 ```
@@ -222,7 +218,7 @@ paginator:
     type: "CursorPagination"
     cursor_value: "{{ headers['urls']['next'] }}"
   page_token_option:
-    type: "RequestPath"
+    inject_into: "path"
 ```
 
 Assuming the endpoint to fetch data from is `https://cloud.airbyte.com/api/get_data`,

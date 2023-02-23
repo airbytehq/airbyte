@@ -16,32 +16,30 @@ definitions:
   retriever:
     type: SimpleRetriever
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     type: DeclarativeStream
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   customers_stream:
-    $ref: "#/definitions/base_stream"
-    name: "customers"
-    primary_key: "id"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customers"
+      primary_key: "id"
       path: "/example"
 
 streams:
-  - "#/definitions/customers_stream"
+  - "*ref(definitions.customers_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "customers"
 
 spec:
-  type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
   connection_specification:
     title: {{capitalCase name}} Spec

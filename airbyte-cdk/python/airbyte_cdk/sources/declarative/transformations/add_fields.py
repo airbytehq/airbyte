@@ -9,28 +9,29 @@ import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass(frozen=True)
-class AddedFieldDefinition:
+class AddedFieldDefinition(JsonSchemaMixin):
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
 
 
 @dataclass(frozen=True)
-class ParsedAddFieldDefinition:
+class ParsedAddFieldDefinition(JsonSchemaMixin):
     """Defines the field to add on a record"""
 
     path: FieldPointer
     value: InterpolatedString
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
 
 
 @dataclass
-class AddFields(RecordTransformation):
+class AddFields(RecordTransformation, JsonSchemaMixin):
     """
     Transformation which adds field to an output record. The path of the added field can be nested. Adding nested fields will create all
     necessary parent objects (like mkdir -p). Adding fields to an array will extend the array to that index (filling intermediate
@@ -82,10 +83,10 @@ class AddFields(RecordTransformation):
     """
 
     fields: List[AddedFieldDefinition]
-    parameters: InitVar[Mapping[str, Any]]
+    options: InitVar[Mapping[str, Any]]
     _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, options: Mapping[str, Any]):
         for add_field in self.fields:
             if len(add_field.path) < 1:
                 raise f"Expected a non-zero-length path for the AddFields transformation {add_field}"
@@ -96,11 +97,11 @@ class AddFields(RecordTransformation):
                 else:
                     self._parsed_fields.append(
                         ParsedAddFieldDefinition(
-                            add_field.path, InterpolatedString.create(add_field.value, parameters=parameters), parameters=parameters
+                            add_field.path, InterpolatedString.create(add_field.value, options=options), options=options
                         )
                     )
             else:
-                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, parameters={}))
+                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, options={}))
 
     def transform(
         self,

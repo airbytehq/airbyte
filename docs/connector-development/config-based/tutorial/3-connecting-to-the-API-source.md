@@ -76,8 +76,8 @@ definitions:
 
 ```yaml
   rates_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/latest"
@@ -87,7 +87,7 @@ We'll also update the reference in the `streams` block
 
 ```yaml
 streams:
-  - "#/definitions/rates_stream"
+  - "*ref(definitions.rates_stream)"
 ```
 
 3. Update the references in the `check` block
@@ -136,7 +136,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: [ ]
+      field_pointer: [ ]
   requester:
     url_base: "https://api.apilayer.com"
     http_method: "GET"
@@ -149,23 +149,23 @@ definitions:
         base: "{{ config['base'] }}"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   rates_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "rates"
       primary_key: "date"
       path: "/exchangerates_data/latest"
 
 streams:
-  - "#/definitions/rates_stream"
+  - "*ref(definitions.rates_stream)"
 check:
   stream_names:
     - "rates"

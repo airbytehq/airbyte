@@ -1,0 +1,25 @@
+@use "scss/variables";
+
+.alignSelfStart {
+  align-items: flex-end;
+}
+
+.alignSelfEnd {
+  align-items: flex-end;
+}
+
+.alignSelfCenter {
+  align-items: center;
+}
+
+.alignSelfBaseline {
+  align-items: baseline;
+}
+
+.alignSelfStretch {
+  align-items: stretch;
+}
+
+.grow {
+  flex-grow: 1;
+}

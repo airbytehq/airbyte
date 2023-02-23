@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: ["{{ parameters['name'] }}"]
+      field_pointer: ["{{ options['name'] }}"]
   requester:
     url_base: "https://api.sendinblue.com/v3"
     http_method: "GET"
@@ -13,11 +13,12 @@ definitions:
       api_token: "{{ config['api_key'] }}"
   offset_paginator:
     type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 100
     page_token_option:
-      type: RequestOption
       field_name: "offset"
       inject_into: "request_parameter"
     page_size_option:
@@ -25,43 +26,43 @@ definitions:
       field_name: "limit"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
-      $ref: "#/definitions/offset_paginator"
+      $ref: "*ref(definitions.offset_paginator)"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   campaigns_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "campaigns"
       primary_key: "id"
       path: "/emailCampaigns"
-  campaign_partition_router:
-    type: SubstreamPartitionRouter
+  campaign_stream_slicer:
+    type: SubstreamSlicer
     parent_stream_configs:
-      - stream: "#/definitions/campaigns_stream"
+      - stream: "*ref(definitions.campaigns_stream)"
         parent_key: id
-        partition_field: campaign_id
+        stream_slice_field: campaign_id
   templates_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: templates
       primary_key: id
       path: "/smtp/templates"
   contacts_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: contacts
       primary_key: id
       path: "/contacts"
 
 streams:
-  - "#/definitions/campaigns_stream"
-  - "#/definitions/templates_stream"
-  - "#/definitions/contacts_stream"
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.templates_stream)"
+  - "*ref(definitions.contacts_stream)"
 
 check:
   stream_names:

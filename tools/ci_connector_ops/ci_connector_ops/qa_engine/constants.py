@@ -11,13 +11,6 @@ INAPPROPRIATE_FOR_CLOUD_USE_CONNECTORS = [
     "8be1cf83-fde1-477f-a4ad-318d23c9f3c6",  # Local CSV
     "a625d593-bba5-4a1c-a53d-2d246268a816",  # Local JSON
     "b76be0a6-27dc-4560-95f6-2623da0bd7b6",  # Local SQL Lite
-    "2300fdcf-a532-419f-9f24-a014336e7966",  # destination-yugabytedb, no strict-encrypt variant
-    "7cf88806-25f5-4e1a-b422-b2fa9e1b0090",  # source-elasticsearch, no strict-encrypt variant
-    "0dad1a35-ccf8-4d03-b73e-6788c00b13ae",  # source-tidb, no strict-encrypt variant
-    "d53f9084-fa6b-4a5a-976c-5b8392f4ad8a",  # source-e2e-testing, a cloud variant already exists
-    "f3802bc4-5406-4752-9e8d-01e504ca8194",  # destination-mqtt, no strict-encrypt variant
-    "825c5ee3-ed9a-4dd1-a2b6-79ed722f7b13",  # destination-redpanda, no strict-encrypt variant
-    "58e6f9da-904e-11ed-a1eb-0242ac120002",  # destination-teradata, no strict-encrypt variant
 ]
 
 GCS_QA_REPORT_PATH = "gs://airbyte-data-connectors-qa-engine/"
@@ -27,19 +20,12 @@ AIRBYTE_PLATFORM_INTERNAL_GITHUB_REPO_URL = (
     f"https://github.com/{AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}/{AIRBYTE_PLATFORM_INTERNAL_REPO_NAME}.git"
 )
 AIRBYTE_PLATFORM_INTERNAL_MAIN_BRANCH_NAME = "master"
-AIRBYTE_PLATFORM_INTERNAL_REPO_ENDPOINT = (
-    f"https://api.github.com/repos/{AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}/{AIRBYTE_PLATFORM_INTERNAL_REPO_NAME}"
+AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT = (
+    f"https://api.github.com/repos/{AIRBYTE_PLATFORM_INTERNAL_REPO_OWNER}/{AIRBYTE_PLATFORM_INTERNAL_REPO_NAME}/pulls"
 )
-AIRBYTE_PLATFORM_INTERNAL_PR_ENDPOINT = f"{AIRBYTE_PLATFORM_INTERNAL_REPO_ENDPOINT}/pulls"
-AIRBYTE_PLATFORM_INTERNAL_ISSUES_ENDPOINT = f"{AIRBYTE_PLATFORM_INTERNAL_REPO_ENDPOINT}/issues"
-
 GITHUB_API_TOKEN = os.environ.get("GITHUB_API_TOKEN")
 GITHUB_API_COMMON_HEADERS = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "Authorization": f"Bearer {GITHUB_API_TOKEN}",
 }
-GIT_USERNAME_FOR_AUTH = "octavia-squidington-iii"
-GIT_USER_EMAIL = f"{GIT_USERNAME_FOR_AUTH}@sers.noreply.github.com"
-GIT_USERNAME = "Octavia Squidington III"
-PR_LABELS = ["team/connector-ops", "cloud-availability-updater"]

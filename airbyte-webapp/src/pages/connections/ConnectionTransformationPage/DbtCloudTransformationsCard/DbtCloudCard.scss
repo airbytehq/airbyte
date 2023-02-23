@@ -1,0 +1,24 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.cardTitle {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cardBodyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: variables.$spacing-xl;
+  background-color: colors.$grey-50;
+}
+
+.contextExplanation {
+  color: colors.$grey-300;
+  width: 100%;
+
+  & a {
+    color: colors.$grey-300;
+  }
+}

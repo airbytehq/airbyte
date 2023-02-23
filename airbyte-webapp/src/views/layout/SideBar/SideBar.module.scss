@@ -1,0 +1,110 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/z-indices";
+
+.nav {
+  z-index: z-indices.$sidebar;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  width: 100px;
+  min-width: 65px;
+  background-color: colors.$white;
+  padding: 23px 4px 15px;
+  text-align: center;
+  box-shadow: variables.$box-shadow-sidebar;
+}
+
+.text {
+  margin-top: 7px;
+}
+
+.helpIcon {
+  font-size: 21px;
+  line-height: 21px;
+}
+
+.menu {
+  width: 100%;
+  padding: 0;
+  margin: variables.$spacing-xl 0 0;
+
+  li {
+    margin-top: 7px;
+  }
+}
+
+.dropdownMenuButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: variables.$border-radius-lg;
+  color: inherit;
+  text-decoration: none;
+  transition: all variables.$transition-out;
+
+  .text {
+    margin-top: 7px;
+  }
+
+  &.open {
+    background-color: colors.$blue-100;
+  }
+
+  &:hover:not(.open),
+  &:focus-visible:not(.open) {
+    background-color: colors.$grey-50;
+  }
+}
+
+.menuItem {
+  background-color: transparent;
+  appearance: none;
+  border: none;
+  color: colors.$dark-blue;
+  width: 100%;
+  cursor: pointer;
+  border-radius: variables.$border-radius-xl;
+  height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+  text-decoration: none;
+  position: relative;
+  transition: all variables.$transition-out;
+
+  &:hover,
+  &:focus-visible {
+    background: colors.$grey-50;
+  }
+
+  &.active {
+    background: colors.$blue-100;
+
+    &:hover,
+    &:focus-visible {
+      background: colors.$blue-100;
+    }
+  }
+
+  &.activeChild {
+    background: colors.$blue-30;
+
+    &:hover,
+    &:focus-visible {
+      background: colors.$blue-100;
+    }
+  }
+}

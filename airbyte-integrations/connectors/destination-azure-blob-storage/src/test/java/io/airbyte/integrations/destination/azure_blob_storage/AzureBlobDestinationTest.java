@@ -96,24 +96,6 @@ public class AzureBlobDestinationTest {
         azureBlobStorageConfig.getOutputStreamBufferSize());
   }
 
-  @Test
-  void testConfigBlobStorageSpillSize() {
-    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("azure_blob_storage_account_name", "accName")
-        .put("azure_blob_storage_account_key", "accKey")
-        .put("azure_blob_storage_endpoint_domain_name", "accDomainName.com")
-        .put("azure_blob_storage_output_buffer_size", 10)
-        .put("azure_blob_storage_spill_size", 500)
-        .put("format", getFormatConfig())
-        .build());
-
-    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
-        .getAzureBlobStorageConfig(config);
-
-    assertEquals((long) 500 * 1024 * 1024,
-        azureBlobStorageConfig.getBlobSpillSize());
-  }
-
   private JsonNode getFormatConfig() {
     return Jsons.deserialize("{\n"
         + "  \"format_type\": \"JSONL\"\n"

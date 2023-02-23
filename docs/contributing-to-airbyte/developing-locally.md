@@ -16,22 +16,12 @@ Manually switching between different language versions can get hairy. We recomme
 
 To start contributing:
 
-1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository. 
+1. Start by [forking](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the repository
 2. Clone the fork on your workstation:
-
-If developing connectors, you can work on connectors locally but additionally start the platform independently locally using :
 
    ```bash
    git clone git@github.com:{YOUR_USERNAME}/airbyte.git
    cd airbyte
-   ./run-ab-platform.sh
-   ```
-If developing platform:
-
-   ```bash
-   git clone git@github.com:{YOUR_USERNAME}/airbyte-platform.git
-   cd airbyte-platform
-   docker compose up
    ```
 
 3. You're ready to start!
@@ -79,7 +69,7 @@ export CPPFLAGS="-I/usr/local/opt/openssl/include"
 
 ## Run in `dev` mode with `docker-compose`
 
-These instructions explain how to run a version of Airbyte Platform that you are developing on (e.g. has not been released yet).
+These instructions explain how to run a version of Airbyte that you are developing on (e.g. has not been released yet).
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew build
@@ -88,22 +78,17 @@ VERSION=dev docker compose up
 
 The build will take a few minutes. Once it completes, Airbyte compiled at current git revision will be running in `dev` mode in your environment.
 
-If you are running just connectors, you don't need the first step:
-
-```bash
-VERSION=dev docker compose up
-```
-
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
 ## Add a connector under development to Airbyte
 
 These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
 
-- First, run Airbyte:
+- First, build the platform images and run Airbyte:
 
 ```bash
-./run-ab-platform
+SUB_BUILD=PLATFORM ./gradlew build
+VERSION=dev docker compose up
 ```
 
 - Then, build the connector image:
@@ -126,9 +111,9 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 Now when you run a sync with that connector, it will use your local docker image
 
-## Run platform acceptance tests
+## Run acceptance tests
 
-To run acceptance \(end-to-end\) tests for the platform:
+To run acceptance \(end-to-end\) tests:
 
 ```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
@@ -181,7 +166,7 @@ Note: If you are contributing a Python file without imports or function definiti
 
 ### Develop on `airbyte-webapp`
 
-- Spin up Airbyte locally in airbyte-platform so the UI can make requests against the local API.
+- Spin up Airbyte locally so the UI can make requests against the local API.
 
 ```bash
 BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker compose up

@@ -3,23 +3,24 @@ version: "0.1.0"
 definitions:
   schema_loader:
     type: JsonFileSchemaLoader
-    file_path: "./source_courier/schemas/{{ parameters['name'] }}.json"
+    file_path: "./source_courier/schemas/{{ options['name'] }}.json"
 
   root_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: []
+      field_pointer: []
 
   results_selector:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path:
+      field_pointer:
         - results
 
   requester:
     type: HttpRequester
+    name: "{{ options['name'] }}"
     url_base: "https://api.courier.com"
     http_method: "GET"
     authenticator:
@@ -28,8 +29,8 @@ definitions:
 
   cursor_paginator:
     type: DefaultPaginator
+    url_base: "*ref(definitions.requester.url_base)"
     page_token_option:
-      type: RequestOption
       field_name: cursor
       inject_into: request_parameter
     page_size_option:
@@ -42,37 +43,39 @@ definitions:
 
   retriever:
     type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
     record_selector:
-      $ref: "#/definitions/results_selector"
+      $ref: "*ref(definitions.results_selector)"
 
   base_stream:
     type: DeclarativeStream
     primary_key: "id"
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
       record_selector:
-        $ref: "#/definitions/root_selector"
+        $ref: "*ref(definitions.root_selector)"
 
   ## MESSAGES API ##
   messages_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     primary_key: id
-    $parameters:
+    $options:
       name: "messages"
       path: "/messages"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/results_selector"
+        $ref: "*ref(definitions.results_selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/messages"
       paginator:
-        $ref: "#/definitions/cursor_paginator"
+        $ref: "*ref(definitions.cursor_paginator)"
 
   ## MESSAGE INFO / HISTORY / OUTPUT STREAMS ##
   message_id_transformer:
@@ -80,72 +83,72 @@ definitions:
     fields:
       - path: ["message_id"]
         value: "{{ stream_slice.id }}"
-  message_partition_router:
-    type: SubstreamPartitionRouter
+  message_stream_slicer:
+    type: SubstreamSlicer
     parent_stream_configs:
-      - stream: "#/definitions/messages_stream"
+      - stream: "*ref(definitions.messages_stream)"
         parent_key: id
-        partition_field: id
+        stream_slice_field: id
 
   message_info_stream:
-    $ref: "#/definitions/base_stream"
+    $ref: "*ref(definitions.base_stream)"
     type: DeclarativeStream
     primary_key: id
-    $parameters:
+    $options:
       name: message_info
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/messages/{{ stream_slice.id }}"
-      partition_router:
-        $ref: "#/definitions/message_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.message_stream_slicer)"
       record_selector:
-        $ref: "#/definitions/root_selector"
+        $ref: "*ref(definitions.root_selector)"
 
   message_history_stream:
     type: DeclarativeStream
-    $parameters:
+    $options:
       name: message_history
     primary_key: message_id
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/results_selector"
+        $ref: "*ref(definitions.results_selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/messages/{{ stream_slice.id }}/history"
-      partition_router:
-        $ref: "#/definitions/message_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.message_stream_slicer)"
     transformations:
-      - $ref: "#/definitions/message_id_transformer"
+      - $ref: "*ref(definitions.message_id_transformer)"
 
   message_output_stream:
     type: DeclarativeStream
-    $parameters:
+    $options:
       name: message_output
     primary_key: message_id
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/results_selector"
+        $ref: "*ref(definitions.results_selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/messages/{{ stream_slice.id }}/output"
-      partition_router:
-        $ref: "#/definitions/message_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.message_stream_slicer)"
     transformations:
-      - $ref: "#/definitions/message_id_transformer"
+      - $ref: "*ref(definitions.message_id_transformer)"
 
 streams:
-  - "#/definitions/messages_stream"
-  - "#/definitions/message_info_stream"
-  - "#/definitions/message_history_stream"
-  - "#/definitions/message_output_stream"
+  - "*ref(definitions.messages_stream)"
+  - "*ref(definitions.message_info_stream)"
+  - "*ref(definitions.message_history_stream)"
+  - "*ref(definitions.message_output_stream)"
 
 check:
   type: CheckStream

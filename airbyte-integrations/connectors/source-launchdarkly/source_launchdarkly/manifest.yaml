@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: ["items"]
+      field_pointer: ["items"]
   requester:
     url_base: "https://app.launchdarkly.com/api/v2"
     http_method: "GET"
@@ -13,11 +13,12 @@ definitions:
       api_token: "{{ config['access_token'] }}"
   offset_paginator:
     type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
     pagination_strategy:
       type: "OffsetIncrement"
       page_size: 20
     page_token_option:
-      type: RequestOption
       field_name: "offset"
       inject_into: "request_parameter"
     page_size_option:
@@ -25,88 +26,88 @@ definitions:
       field_name: "limit"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
-      $ref: "#/definitions/offset_paginator"
+      $ref: "*ref(definitions.offset_paginator)"
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   projects_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "projects"
       primary_key: "_id"
       path: "/projects"
-  project_partition_router:
-    type: SubstreamPartitionRouter
+  project_stream_slicer:
+    type: SubstreamSlicer
     parent_stream_configs:
-      - stream: "#/definitions/projects_stream"
+      - stream: "*ref(definitions.projects_stream)"
         parent_key: key
-        partition_field: project_key
+        stream_slice_field: project_key
   environments_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "environments"
       primary_key: "_id"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/projects/{{ stream_slice.project_key }}/environments"
-      partition_router:
-        $ref: "#/definitions/project_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.project_stream_slicer)"
   metrics_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "metrics"
       primary_key: "_id"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/metrics/{{ stream_slice.project_key }}"
-      partition_router:
-        $ref: "#/definitions/project_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.project_stream_slicer)"
   members_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "members"
       primary_key: "_id"
       path: "/members"
   audit_log_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "auditlog"
       primary_key: "_id"
       path: "/auditlog"
   flags_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "flags"
       primary_key: "key"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
       record_selector:
-        $ref: "#/definitions/selector"
+        $ref: "*ref(definitions.selector)"
       requester:
-        $ref: "#/definitions/requester"
+        $ref: "*ref(definitions.requester)"
         path: "/flags/{{ stream_slice.project_key }}"
-      partition_router:
-        $ref: "#/definitions/project_partition_router"
+      stream_slicer:
+        $ref: "*ref(definitions.project_stream_slicer)"
 
 streams:
-  - "#/definitions/projects_stream"
-  - "#/definitions/environments_stream"
-  - "#/definitions/metrics_stream"
-  - "#/definitions/members_stream"
-  - "#/definitions/audit_log_stream"
-  - "#/definitions/flags_stream"
+  - "*ref(definitions.projects_stream)"
+  - "*ref(definitions.environments_stream)"
+  - "*ref(definitions.metrics_stream)"
+  - "*ref(definitions.members_stream)"
+  - "*ref(definitions.audit_log_stream)"
+  - "*ref(definitions.flags_stream)"
 
 check:
   stream_names:

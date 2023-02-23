@@ -1,0 +1,83 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.mainView {
+  cursor: pointer;
+  height: unset !important;
+  min-height: 70px;
+  gap: variables.$spacing-lg;
+  padding: variables.$spacing-lg 0;
+
+  .titleCell {
+    display: flex;
+    color: colors.$dark-blue;
+    min-width: 0;
+
+    .statusIcon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 75px;
+      min-width: 75px;
+
+      & > div {
+        margin: 0;
+      }
+    }
+
+    .justification {
+      width: 80%;
+      display: flex;
+      flex-grow: 1;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+  }
+
+  .timestampCell {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 0 0 auto;
+
+    .attemptCount {
+      font-size: 12px;
+      line-height: 15px;
+      color: colors.$grey;
+    }
+  }
+
+  border-bottom: variables.$border-thin solid transparent !important;
+
+  &.open:not(.failed) {
+    border-bottom: variables.$border-thin solid colors.$grey-100 !important;
+  }
+
+  &.open.failed {
+    border-bottom: variables.$border-thin solid colors.$red-50 !important;
+  }
+}
+
+.arrow {
+  transform: rotate(-90deg);
+  transition: variables.$transition;
+  opacity: 0;
+  color: colors.$dark-blue-50;
+  font-size: 22px;
+  margin: 0 30px 0 50px;
+
+  .open & {
+    transform: rotate(-0deg);
+  }
+
+  .failed & {
+    color: colors.$red;
+  }
+
+  div:hover > &,
+  div:hover > div > &,
+  div:hover > div > div > & {
+    opacity: 1;
+  }
+}

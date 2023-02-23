@@ -1,0 +1,7 @@
+@use "scss/variables";
+
+.inProgressLabel {
+  height: variables.$button-height-xs;
+  display: flex;
+  align-items: center;
+}

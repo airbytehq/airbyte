@@ -12,23 +12,24 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config, Record
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class DpathExtractor(RecordExtractor):
+class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     """
     Record extractor that searches a decoded response over a path defined as an array of fields.
 
-    If the field path points to an array, that array is returned.
-    If the field path points to an object, that object is returned wrapped as an array.
-    If the field path points to an empty object, an empty array is returned.
-    If the field path points to a non-existing path, an empty array is returned.
+    If the field pointer points to an array, that array is returned.
+    If the field pointer points to an object, that object is returned wrapped as an array.
+    If the field pointer points to an empty object, an empty array is returned.
+    If the field pointer points to a non-existing path, an empty array is returned.
 
     Examples of instantiating this transform:
     ```
       extractor:
         type: DpathExtractor
-        field_path:
+        field_pointer:
           - "root"
           - "data"
     ```
@@ -36,43 +37,43 @@ class DpathExtractor(RecordExtractor):
     ```
       extractor:
         type: DpathExtractor
-        field_path:
+        field_pointer:
           - "root"
-          - "{{ parameters['field'] }}"
+          - "{{ options['field'] }}"
     ```
 
     ```
       extractor:
         type: DpathExtractor
-        field_path: []
+        field_pointer: []
     ```
 
     Attributes:
-        field_path (Union[InterpolatedString, str]): Path to the field that should be extracted
+        transform (Union[InterpolatedString, str]): Pointer to the field that should be extracted
         config (Config): The user-provided configuration as specified by the source's spec
         decoder (Decoder): The decoder responsible to transfom the response in a Mapping
     """
 
-    field_path: List[Union[InterpolatedString, str]]
+    field_pointer: List[Union[InterpolatedString, str]]
     config: Config
-    parameters: InitVar[Mapping[str, Any]]
-    decoder: Decoder = JsonDecoder(parameters={})
+    options: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(options={})
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        for path_index in range(len(self.field_path)):
-            if isinstance(self.field_path[path_index], str):
-                self.field_path[path_index] = InterpolatedString.create(self.field_path[path_index], parameters=parameters)
+    def __post_init__(self, options: Mapping[str, Any]):
+        for pointer_index in range(len(self.field_pointer)):
+            if isinstance(self.field_pointer[pointer_index], str):
+                self.field_pointer[pointer_index] = InterpolatedString.create(self.field_pointer[pointer_index], options=options)
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
-        if len(self.field_path) == 0:
+        if len(self.field_pointer) == 0:
             extracted = response_body
         else:
-            path = [path.eval(self.config) for path in self.field_path]
-            if "*" in path:
-                extracted = dpath.util.values(response_body, path)
+            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
+            if "*" in pointer:
+                extracted = dpath.util.values(response_body, pointer)
             else:
-                extracted = dpath.util.get(response_body, path, default=[])
+                extracted = dpath.util.get(response_body, pointer, default=[])
         if isinstance(extracted, list):
             return extracted
         elif extracted:

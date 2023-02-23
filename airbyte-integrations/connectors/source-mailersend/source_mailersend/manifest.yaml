@@ -3,17 +3,18 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: ["data"]
+      field_pointer: ["data"]
   requester:
     url_base: "https://api.mailersend.com/v1"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
-    request_parameters:
-      limit: "100"
-  incremental_sync:
-    type: "DatetimeBasedCursor"
+    request_options_provider:
+      request_parameters:
+        limit: "100"
+  stream_slicer:
+    type: "DatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%s"
@@ -21,7 +22,7 @@ definitions:
       datetime: "{{ now_utc().strftime('%s') }}"
       datetime_format: "%s"
     step: "P1D"
-    cursor_field: "created_at"
+    cursor_field: "{{ options['stream_cursor_field'] }}"
     start_time_option:
       field_name: "date_from"
       inject_into: "request_parameter"
@@ -36,32 +37,31 @@ definitions:
       type: "PageIncrement"
       page_size: 100
     page_token_option:
-      type: RequestOption
       inject_into: "request_parameter"
       field_name: "page"
+    url_base: "*ref(definitions.requester.url_base)"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
-      $ref: "#/definitions/paginator"
+      $ref: "*ref(definitions.paginator)"
     requester:
-      $ref: "#/definitions/requester"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
   base_stream:
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   activity_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "activity"
       primary_key: "id"
       path: "/activity/{{ config['domain_id'] }}"
+      stream_cursor_field: "created_at"
 
 streams:
-  - "#/definitions/activity_stream"
+  - "*ref(definitions.activity_stream)"
 
 check:
   stream_names:

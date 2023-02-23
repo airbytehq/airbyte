@@ -1,0 +1,10 @@
+task copyScripts(type: Copy) {
+    dependsOn copyDocker
+
+    from('scripts')
+    into 'build/docker/bin/scripts'
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyScripts
+}

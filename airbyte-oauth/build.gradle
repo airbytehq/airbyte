@@ -1,0 +1,14 @@
+plugins {
+    id "java-library"
+    id 'airbyte-integration-test-java'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-json-validation')
+    implementation libs.airbyte.protocol
+    testImplementation project(':airbyte-oauth')
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

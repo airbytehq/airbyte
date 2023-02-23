@@ -1,0 +1,28 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.separator {
+  display: flex;
+  padding: variables.$spacing-md 0;
+  font-size: 16px;
+  text-align: center;
+  font-weight: bold;
+  color: colors.$grey-800;
+  text-transform: uppercase;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1 1;
+    border-bottom: 1px solid colors.$grey-300;
+    margin: auto;
+  }
+
+  &::before {
+    margin-right: variables.$spacing-md;
+  }
+
+  &::after {
+    margin-left: variables.$spacing-md;
+  }
+}

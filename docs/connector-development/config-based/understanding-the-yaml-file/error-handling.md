@@ -27,8 +27,8 @@ Schema:
       - max_retries
     additionalProperties: true
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       response_filters:
         type: array
         items:
@@ -59,8 +59,8 @@ Schema:
       - action
     additionalProperties: true
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       action:
         "$ref": "#/definitions/ResponseAction"
       http_codes:
@@ -174,8 +174,8 @@ Schema:
     type: object
     additionalProperties: true
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       factor:
         type: integer
         default: 5
@@ -194,8 +194,8 @@ Schema:
     required:
       - backoff_time_in_seconds
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       backoff_time_in_seconds:
         type: number
 ```
@@ -214,8 +214,8 @@ Schema:
     required:
       - header
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       header:
         type: string
       regex:
@@ -263,8 +263,8 @@ Schema:
     required:
       - header
     properties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       header:
         type: string
       regex:
@@ -320,8 +320,8 @@ Schema:
     required:
       - error_handlers
     additionalProperties:
-      "$parameters":
-        "$ref": "#/definitions/$parameters"
+      "$options":
+        "$ref": "#/definitions/$options"
       error_handlers:
         type: array
         items:

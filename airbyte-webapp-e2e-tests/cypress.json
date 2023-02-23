@@ -1,0 +1,19 @@
+{
+  "projectId": "916nvw",
+  "baseUrl": "https://localhost:3000",
+  "testFiles": ["**/*.spec.*"],
+  "viewportHeight": 800,
+  "viewportWidth": 1280,
+  "retries": {
+    "runMode": 5,
+    "openMode": 0
+  },
+  "defaultCommandTimeout": 10000,
+  "db": {
+    "user": "postgres",
+    "host": "localhost",
+    "database": "airbyte_ci_source",
+    "password": "secret_password",
+    "port": 5433
+  }
+}

@@ -74,6 +74,12 @@ function docker_tag_exists() {
   fi
 }
 
+checkPlatformImages() {
+  echo -e "$blue_text""Checking platform images exist...""$default_text"
+  # Check dockerhub to see if the images exist
+  check_compose_image_exist docker-compose.yaml $VERSION
+}
+
 checkNormalizationImages() {
   echo -e "$blue_text""Checking Normalization images exist...""$default_text"
   local image_version;
@@ -112,10 +118,11 @@ main() {
   assert_root
 
   SUBSET=${1:-all} # default to all.
-  [[ ! "$SUBSET" =~ ^(all|connectors)$ ]] && echo "Usage ./tools/bin/check_image_exists.sh [all|connectors]" && exit 1
+  [[ ! "$SUBSET" =~ ^(all|platform|connectors)$ ]] && echo "Usage ./tools/bin/check_image_exists.sh [all|platform|connectors]" && exit 1
   echo -e "$blue_text""checking images for: $SUBSET""$default_text"
 
-  [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkNormalizationImages
+  [[ "$SUBSET" =~ ^(all|platform)$ ]] && checkPlatformImages
+  [[ "$SUBSET" =~ ^(all|platform|connectors)$ ]] && checkNormalizationImages
   [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkConnectorImages
   echo -e "$blue_text""Image check complete.""$default_text"
   test -f header.txt     && rm header.txt

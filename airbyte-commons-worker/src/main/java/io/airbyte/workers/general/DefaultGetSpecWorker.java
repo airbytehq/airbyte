@@ -4,11 +4,17 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobGetSpecConfig;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -43,8 +49,10 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     this(integrationLauncher, new DefaultAirbyteStreamFactory());
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public ConnectorJobOutput run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, config.getDockerImage()));
     try {
       process = integrationLauncher.spec(jobRoot);
 
@@ -79,6 +87,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);

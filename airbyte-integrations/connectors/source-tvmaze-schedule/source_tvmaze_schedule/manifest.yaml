@@ -3,21 +3,22 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_path: []
+      field_pointer: []
   requester:
     url_base: "https://api.tvmaze.com"
     http_method: "GET"
-    request_parameters:
-      country: |
-        {{
-          config['domestic_schedule_country_code']
-          if parameters['name'] == 'domestic' 
-          else config['web_schedule_country_code'].replace('global', '')
-          if parameters['name'] == 'web' 
-          else ''
-        }}
-  incremental_sync:
-    type: DatetimeBasedCursor
+    request_options_provider:
+      request_parameters:
+        country: |
+          {{
+            config['domestic_schedule_country_code']
+            if options['name'] == 'domestic' 
+            else config['web_schedule_country_code'].replace('global', '')
+            if options['name'] == 'web' 
+            else ''
+          }}
+  stream_slicer:
+    type: DatetimeStreamSlicer
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       format: "%Y-%m-%d"
@@ -33,39 +34,39 @@ definitions:
       inject_into: "request_parameter"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
   base_stream:
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
   domestic_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "domestic"
       primary_key: "id"
       path: "/schedule"
   web_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "web"
       primary_key: "id"
       path: "/schedule"
   future_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "future"
       primary_key: "id"
       path: "/schedule/full"
 
 streams:
-  - "#/definitions/domestic_stream"
-  - "#/definitions/web_stream"
-  - "#/definitions/future_stream"
+  - "*ref(definitions.domestic_stream)"
+  - "*ref(definitions.web_stream)"
+  - "*ref(definitions.future_stream)"
 
 check:
   stream_names:

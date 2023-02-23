@@ -1,0 +1,415 @@
+
+global:
+  serviceAccountName: placeholderServiceAccount
+  deploymentMode: oss
+  configMapName: ""
+  secretName: ""
+  credVolumeOverride: ""
+  extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+  logs:
+    ##  logs.accessKey.password Logs Access Key
+    ##  logs.accessKey.existingSecret
+    ##  logs.accessKey.existingSecretKey
+    accessKey:
+      password: minio
+      existingSecret: ""
+      existingSecretKey: ""
+    ##  logs.secretKey.password Logs Secret Key
+    ##  logs.secretKey.existingSecret
+    ##  logs.secretKey.existingSecretKey
+    secretKey:
+      password: minio123
+      existingSecret: ""
+      existingSecretKey: ""
+
+    ##  logs.minio.enabled Switch to enable or disable the Minio helm chart
+    minio:
+      enabled: true
+
+    ##  logs.externalMinio.enabled Switch to enable or disable an external Minio instance
+    ##  logs.externalMinio.host External Minio Host
+    ##  logs.externalMinio.port External Minio Port
+    externalMinio:
+      enabled: false
+      host: localhost
+      port: 9000
+
+    ##  logs.s3.enabled Switch to enable or disable custom S3 Log location
+    ##  logs.s3.bucket Bucket name where logs should be stored
+    ##  logs.s3.bucketRegion Region of the bucket (must be empty if using minio)
+    s3:
+      enabled: false
+      bucket: airbyte-dev-logs
+      bucketRegion: ""
+
+    ## Google Cloud Storage (GCS) Log Location Configuration
+    ##  logs.gcs.bucket GCS bucket name
+    ##  logs.gcs.credentials The path the GCS creds are written to
+    ##  logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
+    gcs:
+      bucket: ""
+      # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+      # deployments, then set credentials to the path of the mounted JSON file
+      credentials: ""
+      # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
+      credentialsJson: ""
+
+enabled: true
+##  replicaCount Number of server replicas
+replicaCount: 1
+
+##  image.repository The repository to use for the airbyte server image.
+##  image.pullPolicy the pull policy to use for the airbyte server image
+##  image.tag The airbyte server image tag. Defaults to the chart's AppVersion
+image:
+  repository: airbyte/server
+  pullPolicy: IfNotPresent
+
+##  podAnnotations [object] Add extra annotations to the server pod
+##
+podAnnotations: {}
+
+##  podLabels [object] Add extra labels to the server pod
+##
+podLabels: {}
+
+##  containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+## Configure extra options for the server containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+##  livenessProbe.enabled Enable livenessProbe on the server
+##  livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+##  livenessProbe.periodSeconds Period seconds for livenessProbe
+##  livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+##  livenessProbe.failureThreshold Failure threshold for livenessProbe
+##  livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+##  readinessProbe.enabled Enable readinessProbe on the server
+##  readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+##  readinessProbe.periodSeconds Period seconds for readinessProbe
+##  readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+##  readinessProbe.failureThreshold Failure threshold for readinessProbe
+##  readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+## Server app resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+##  resources.limits [object] The resources limits for the server container
+##  resources.requests [object] The requested resources for the server container
+resources:
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+  ## Examples:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+
+##  service.type The service type to use for the API server
+##  service.port The service port to expose the API server on
+service:
+  type: ClusterIP
+  port: 8001
+  annotations: {}
+
+##  nodeSelector [object] Node labels for pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+##  tolerations [array] Tolerations for server pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+##  affinity [object] Affinity and anti-affinity for server pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+##  log.level The log level to log at
+log:
+  level: "INFO"
+
+##  extraVolumeMounts [array] Additional volumeMounts for server container(s).
+## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: tmpdir
+##     mountPath: /tmp
+##
+extraVolumeMounts: []
+
+##  extraVolumes [array] Additional volumes for server pod(s).
+## Examples (when using `containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: tmpdir
+##     emptyDir: {}
+##
+extraVolumes: []
+
+##  extraContainer [array] Additional container for server pod(s)
+## Example:
+# extraContainers:
+#   - name: otel_collector
+#     image: somerepo/someimage:sometag
+#     args: [
+#         "--important-args"
+#     ]
+#     ports:
+#       - containerPort: 443
+#     volumeMounts:
+#       - name: volumeMountCool
+#         mountPath: /some/path
+#         readOnly: true
+extraContainers: []
+
+##  extraInitContainers [array] Additional init containers for server pod(s)
+## Example:
+# extraInitContainers:
+#   - name: sleepy
+#     image: alpine
+#     command: ['sleep', '60']
+
+extraInitContainers: []
+
+##  extraEnv [array] Supply extra env variables to main container using full notation
+## Example: (With default env vars and values taken from generated config map)
+# extraEnv:
+#   - name: AIRBYTE_VERSION
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: AIRBYTE_VERSION
+#   - name: CONFIG_ROOT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: CONFIG_ROOT
+#   - name: DATABASE_PASSWORD
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: DATABASE_PASSWORD
+#   - name: DATABASE_URL
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: DATABASE_URL
+#   - name: DATABASE_USER
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: DATABASE_USER
+#   - name: TRACKING_STRATEGY
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: TRACKING_STRATEGY
+#   - name: WORKER_ENVIRONMENT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: WORKER_ENVIRONMENT
+#   - name: WORKSPACE_ROOT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: WORKSPACE_ROOT
+#   - name: WEBAPP_URL
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: WEBAPP_URL
+#   - name: TEMPORAL_HOST
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: TEMPORAL_HOST
+#   - name: LOG_LEVEL
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: LOG_LEVEL
+#   - name: JOB_MAIN_CONTAINER_CPU_REQUEST
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: JOB_MAIN_CONTAINER_CPU_REQUEST
+#   - name: JOB_MAIN_CONTAINER_CPU_LIMIT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: JOB_MAIN_CONTAINER_CPU_LIMIT
+#   - name: JOB_MAIN_CONTAINER_MEMORY_REQUEST
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: JOB_MAIN_CONTAINER_MEMORY_REQUEST
+#   - name: JOB_MAIN_CONTAINER_MEMORY_LIMIT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
+#   - name: S3_LOG_BUCKET
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: S3_LOG_BUCKET
+#   - name: S3_LOG_BUCKET_REGION
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: S3_LOG_BUCKET_REGION
+#   - name: AWS_ACCESS_KEY_ID
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: AWS_ACCESS_KEY_ID
+#   - name: AWS_SECRET_ACCESS_KEY
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: AWS_SECRET_ACCESS_KEY
+#   - name: S3_MINIO_ENDPOINT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: S3_MINIO_ENDPOINT
+#   - name: S3_PATH_STYLE_ACCESS
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: S3_PATH_STYLE_ACCESS
+#   - name: GOOGLE_APPLICATION_CREDENTIALS
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: GOOGLE_APPLICATION_CREDENTIALS
+#   - name: GCS_LOG_BUCKET
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: GCS_LOG_BUCKET
+#   - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+#   - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+##
+extraEnv: []
+##  secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example:
+# env_vars:
+#   AIRBYTE_VERSION: 0.40.4
+
+#   # Airbyte Internal Database, see https://docs.airbyte.io/operator-guides/configuring-airbyte-db
+#   DATABASE_HOST: airbyte-db-svc
+#   DATABASE_PORT: 5432
+#   DATABASE_DB: airbyte
+#   # translate manually DATABASE_URL:jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}
+#   DATABASE_URL: jdbc:postgresql://airbyte-db-svc:5432/airbyte
+#   JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: 0.29.15.001
+#   CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION: 0.35.15.001
+
+#   # When using the airbyte-db via default docker image:
+#   CONFIG_ROOT: /configs
+
+#   # Temporal.io worker configuration
+#   TEMPORAL_HOST: airbyte-temporal-svc:7233
+
+#   # Workspace storage for running jobs (logs, etc)
+#   WORKSPACE_ROOT: /workspace
+
+
+#   # Miscellaneous
+#   TRACKING_STRATEGY: segment
+#   WEBAPP_URL: airbyte-webapp-svc:80
+
+
+#   WORKER_ENVIRONMENT: kubernetes
+#   LOG_LEVEL: INFO
+
+#   # S3/Minio Log Configuration
+#   S3_LOG_BUCKET: airbyte-dev-logs
+#   S3_LOG_BUCKET_REGION:
+#   S3_MINIO_ENDPOINT: http://airbyte-minio-svc:9000
+#   S3_PATH_STYLE_ACCESS: true
+
+#   # GCS Log Configuration
+#   GCS_LOG_BUCKET:
+
+
+#   # Docker Resource Limits
+#   JOB_MAIN_CONTAINER_CPU_REQUEST:
+#   JOB_MAIN_CONTAINER_CPU_LIMIT:
+#   JOB_MAIN_CONTAINER_MEMORY_REQUEST:
+#   JOB_MAIN_CONTAINER_MEMORY_LIMIT:
+
+
+#   # Open Telemetry Configuration
+#   METRIC_CLIENT:
+#   OTEL_COLLECTOR_ENDPOINT:
+
+#   # Temporal Activity configuration
+#   ACTIVITY_MAX_ATTEMPT:
+#   ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS:
+#   ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS:
+#   WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:
+
+#   USE_STREAM_CAPABLE_STATE: true
+env_vars: {}
+
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

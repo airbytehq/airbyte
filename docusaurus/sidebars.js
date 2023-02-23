@@ -252,10 +252,9 @@ module.exports = {
                     'connector-development/config-based/understanding-the-yaml-file/error-handling',  
                   ]
               },
-                'connector-development/config-based/understanding-the-yaml-file/incremental-syncs',
                 'connector-development/config-based/understanding-the-yaml-file/pagination',
-                'connector-development/config-based/understanding-the-yaml-file/partition-router',
                 'connector-development/config-based/understanding-the-yaml-file/record-selector',
+                'connector-development/config-based/understanding-the-yaml-file/stream-slicers',
                 'connector-development/config-based/understanding-the-yaml-file/reference',
               ]
             },
@@ -318,7 +317,7 @@ module.exports = {
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
-        'contributing-to-airbyte/python-gradle-setup',
+        'contributing-to-airbyte/monorepo-python-development',
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/issues-and-pull-requests',
         'contributing-to-airbyte/gradle-cheatsheet',

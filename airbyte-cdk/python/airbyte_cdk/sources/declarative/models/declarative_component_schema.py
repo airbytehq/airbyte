@@ -18,20 +18,20 @@ class AddedFieldDefinition(BaseModel):
     type: Literal["AddedFieldDefinition"]
     path: List[str]
     value: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class AddFields(BaseModel):
     type: Literal["AddFields"]
     fields: List[AddedFieldDefinition]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ApiKeyAuthenticator(BaseModel):
     type: Literal["ApiKeyAuthenticator"]
     api_token: str
     header: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class BasicHttpAuthenticator(BaseModel):
@@ -44,13 +44,13 @@ class BasicHttpAuthenticator(BaseModel):
         "",
         description="The password that will be combined with the username, base64 encoded and used to make requests",
     )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class BearerAuthenticator(BaseModel):
     type: Literal["BearerAuthenticator"]
     api_token: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CheckStream(BaseModel):
@@ -61,7 +61,7 @@ class CheckStream(BaseModel):
 class ConstantBackoffStrategy(BaseModel):
     type: Literal["ConstantBackoffStrategy"]
     backoff_time_in_seconds: Union[float, str]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomAuthenticator(BaseModel):
@@ -70,7 +70,7 @@ class CustomAuthenticator(BaseModel):
 
     type: Literal["CustomAuthenticator"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomBackoffStrategy(BaseModel):
@@ -79,7 +79,7 @@ class CustomBackoffStrategy(BaseModel):
 
     type: Literal["CustomBackoffStrategy"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomErrorHandler(BaseModel):
@@ -88,23 +88,7 @@ class CustomErrorHandler(BaseModel):
 
     type: Literal["CustomErrorHandler"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
-
-
-class CustomIncrementalSync(BaseModel):
-    class Config:
-        extra = Extra.allow
-
-    type: Literal["CustomIncrementalSync"]
-    class_name: str = Field(
-        ...,
-        description="The class that will be implementing the custom incremental sync. The format is `source_<name>.<package>.<class_name>`",
-    )
-    cursor_field: str = Field(
-        ...,
-        description="The location of the value on a record that will be used as a bookmark during sync",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomPaginationStrategy(BaseModel):
@@ -113,7 +97,7 @@ class CustomPaginationStrategy(BaseModel):
 
     type: Literal["CustomPaginationStrategy"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRecordExtractor(BaseModel):
@@ -122,7 +106,7 @@ class CustomRecordExtractor(BaseModel):
 
     type: Literal["CustomRecordExtractor"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRequester(BaseModel):
@@ -131,7 +115,16 @@ class CustomRequester(BaseModel):
 
     type: Literal["CustomRequester"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
+class CustomRequestOptionsProvider(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Literal["CustomRequestOptionsProvider"]
+    class_name: str
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomRetriever(BaseModel):
@@ -140,16 +133,16 @@ class CustomRetriever(BaseModel):
 
     type: Literal["CustomRetriever"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
-class CustomPartitionRouter(BaseModel):
+class CustomStreamSlicer(BaseModel):
     class Config:
         extra = Extra.allow
 
-    type: Literal["CustomPartitionRouter"]
+    type: Literal["CustomStreamSlicer"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CustomTransformation(BaseModel):
@@ -158,7 +151,7 @@ class CustomTransformation(BaseModel):
 
     type: Literal["CustomTransformation"]
     class_name: str
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class OAuthAuthenticator(BaseModel):
@@ -177,13 +170,13 @@ class OAuthAuthenticator(BaseModel):
         None,
         description="The format of the datetime; provide it if expires_in is returned in datetime instead of seconds",
     )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ExponentialBackoffStrategy(BaseModel):
     type: Literal["ExponentialBackoffStrategy"]
     factor: Optional[Union[float, str]] = 5
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class HttpMethodEnum(Enum):
@@ -205,7 +198,7 @@ class HttpResponseFilter(BaseModel):
     error_message_contains: Optional[str] = None
     http_codes: Optional[List[int]] = None
     predicate: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class InlineSchemaLoader(BaseModel):
@@ -213,10 +206,24 @@ class InlineSchemaLoader(BaseModel):
     schema_: Optional[Dict[str, Any]] = Field(None, alias="schema")
 
 
+class InterpolatedRequestOptionsProvider(BaseModel):
+    type: Literal["InterpolatedRequestOptionsProvider"]
+    request_body_data: Optional[Union[str, Dict[str, str]]] = None
+    request_body_json: Optional[Union[str, Dict[str, str]]] = None
+    request_headers: Optional[Union[str, Dict[str, str]]] = None
+    request_parameters: Optional[Union[str, Dict[str, str]]] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
+class Type(Enum):
+    JsonFileSchemaLoader = "JsonFileSchemaLoader"
+    JsonSchema = "JsonSchema"
+
+
 class JsonFileSchemaLoader(BaseModel):
-    type: Literal["JsonFileSchemaLoader"]
+    type: Type
     file_path: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class JsonDecoder(BaseModel):
@@ -229,12 +236,12 @@ class MinMaxDatetime(BaseModel):
     datetime_format: Optional[str] = ""
     max_datetime: Optional[str] = None
     min_datetime: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class NoAuth(BaseModel):
     type: Literal["NoAuth"]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class NoPagination(BaseModel):
@@ -244,14 +251,14 @@ class NoPagination(BaseModel):
 class OffsetIncrement(BaseModel):
     type: Literal["OffsetIncrement"]
     page_size: Union[int, str] = Field(..., description="The number of records to request")
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class PageIncrement(BaseModel):
     type: Literal["PageIncrement"]
     page_size: int = Field(..., description="The number of records to request")
     start_from_page: Optional[int] = 0
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class PrimaryKey(BaseModel):
@@ -264,7 +271,7 @@ class RecordFilter(BaseModel):
         "",
         description="The predicate to filter a record. Records will be removed if evaluated to False",
     )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class RemoveFields(BaseModel):
@@ -272,21 +279,18 @@ class RemoveFields(BaseModel):
     field_pointers: List[List[str]]
 
 
-class RequestPath(BaseModel):
-    type: Literal["RequestPath"]
-
-
 class InjectInto(Enum):
     request_parameter = "request_parameter"
     header = "header"
+    path = "path"
     body_data = "body_data"
     body_json = "body_json"
 
 
 class RequestOption(BaseModel):
     type: Literal["RequestOption"]
-    field_name: str
     inject_into: InjectInto
+    field_name: Optional[str] = None
 
 
 class Schemas(BaseModel):
@@ -306,7 +310,12 @@ class SessionTokenAuthenticator(BaseModel):
     username: str
     validate_session_url: str
     password: Optional[str] = ""
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
+class SingleSlice(BaseModel):
+    type: Literal["SingleSlice"]
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class Spec(BaseModel):
@@ -319,7 +328,7 @@ class WaitTimeFromHeader(BaseModel):
     type: Literal["WaitTimeFromHeader"]
     header: str
     regex: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class WaitUntilTimeFromHeader(BaseModel):
@@ -327,7 +336,7 @@ class WaitUntilTimeFromHeader(BaseModel):
     header: str
     min_wait: Optional[Union[float, str]] = None
     regex: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CursorPagination(BaseModel):
@@ -336,38 +345,23 @@ class CursorPagination(BaseModel):
     page_size: Optional[int] = None
     stop_condition: Optional[str] = None
     decoder: Optional[JsonDecoder] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
-class DatetimeBasedCursor(BaseModel):
-    type: Literal["DatetimeBasedCursor"]
-    cursor_field: str = Field(
-        ...,
-        description="The location of the value on a record that will be used as a bookmark during sync",
-    )
-    datetime_format: str = Field(..., description="The format of the datetime")
-    cursor_granularity: str = Field(
-        ...,
-        description="Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one",
-    )
-    end_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
-        description="The datetime that determines the last record that should be synced",
-    )
-    start_datetime: Union[str, MinMaxDatetime] = Field(
-        ...,
-        description="The datetime that determines the earliest record that should be synced",
-    )
-    step: str = Field(..., description="The size of the time window (ISO8601 duration)")
-    end_time_option: Optional[RequestOption] = Field(None, description="Request option for end time")
-    lookback_window: Optional[str] = Field(
-        None,
-        description="How many days before start_datetime to read data for (ISO8601 duration)",
-    )
-    partition_field_end: Optional[str] = Field(None, description="Partition start time field")
-    partition_field_start: Optional[str] = Field(None, description="Partition end time field")
-    start_time_option: Optional[RequestOption] = Field(None, description="Request option for start time")
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+class DatetimeStreamSlicer(BaseModel):
+    type: Literal["DatetimeStreamSlicer"]
+    cursor_field: str
+    datetime_format: str
+    cursor_granularity: str
+    end_datetime: Union[str, MinMaxDatetime]
+    start_datetime: Union[str, MinMaxDatetime]
+    step: str
+    end_time_option: Optional[RequestOption] = None
+    lookback_window: Optional[str] = None
+    start_time_option: Optional[RequestOption] = None
+    stream_state_field_end: Optional[str] = None
+    stream_state_field_start: Optional[str] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DefaultErrorHandler(BaseModel):
@@ -385,50 +379,52 @@ class DefaultErrorHandler(BaseModel):
     ] = None
     max_retries: Optional[int] = 5
     response_filters: Optional[List[HttpResponseFilter]] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DefaultPaginator(BaseModel):
     type: Literal["DefaultPaginator"]
     pagination_strategy: Union[CursorPagination, CustomPaginationStrategy, OffsetIncrement, PageIncrement]
+    url_base: str
     decoder: Optional[JsonDecoder] = None
     page_size_option: Optional[RequestOption] = None
-    page_token_option: Optional[Union[RequestOption, RequestPath]] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    page_token_option: Optional[RequestOption] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DpathExtractor(BaseModel):
     type: Literal["DpathExtractor"]
-    field_path: List[str]
+    field_pointer: List[str]
     decoder: Optional[JsonDecoder] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
-class ListPartitionRouter(BaseModel):
-    type: Literal["ListPartitionRouter"]
+class ListStreamSlicer(BaseModel):
+    type: Literal["ListStreamSlicer"]
     cursor_field: str
-    values: Union[str, List[str]]
+    slice_values: Union[str, List[str]]
     request_option: Optional[RequestOption] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class RecordSelector(BaseModel):
     type: Literal["RecordSelector"]
     extractor: Union[CustomRecordExtractor, DpathExtractor]
     record_filter: Optional[RecordFilter] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CompositeErrorHandler(BaseModel):
     type: Literal["CompositeErrorHandler"]
     error_handlers: List[Union[CompositeErrorHandler, DefaultErrorHandler]]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class HttpRequester(BaseModel):
     type: Literal["HttpRequester"]
-    path: str = Field(..., description="The specific endpoint to fetch data from for a resource.")
-    url_base: str = Field(..., description="The root of the API source.")
+    name: str
+    path: str
+    url_base: str
     authenticator: Optional[
         Union[
             ApiKeyAuthenticator,
@@ -439,34 +435,11 @@ class HttpRequester(BaseModel):
             NoAuth,
             SessionTokenAuthenticator,
         ]
-    ] = Field(
-        None,
-        description="Authenticator component that defines how to authenticate to the source.",
-    )
-    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = Field(
-        None, description="Error handler component that defines how to handle errors."
-    )
-    http_method: Optional[Union[str, HttpMethodEnum]] = Field(
-        "GET",
-        description="The HTTP method used to fetch data from the source (can be GET or POST).",
-    )
-    request_body_data: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Specifies how to populate the body of the request with a non-JSON payload. If returns a ready text that it will be sent as is. If returns a dict that it will be converted to a urlencoded form.",
-    )
-    request_body_json: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Specifies how to populate the body of the request with a JSON payload.",
-    )
-    request_headers: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.",
-    )
-    request_parameters: Optional[Union[str, Dict[str, str]]] = Field(
-        None,
-        description="Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    ] = None
+    error_handler: Optional[Union[DefaultErrorHandler, CustomErrorHandler, CompositeErrorHandler]] = None
+    http_method: Optional[Union[str, HttpMethodEnum]] = "GET"
+    request_options_provider: Optional[Union[CustomRequestOptionsProvider, InterpolatedRequestOptionsProvider]] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DeclarativeSource(BaseModel):
@@ -482,64 +455,72 @@ class DeclarativeSource(BaseModel):
     spec: Optional[Spec] = None
 
 
+class CartesianProductStreamSlicer(BaseModel):
+    type: Literal["CartesianProductStreamSlicer"]
+    stream_slicers: List[
+        Union[
+            CustomStreamSlicer,
+            DatetimeStreamSlicer,
+            ListStreamSlicer,
+            SingleSlice,
+            SubstreamSlicer,
+        ]
+    ]
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
+
+
 class DeclarativeStream(BaseModel):
     class Config:
         extra = Extra.allow
 
     type: Literal["DeclarativeStream"]
     retriever: Union[CustomRetriever, SimpleRetriever]
-    incremental_sync: Optional[Union[CustomIncrementalSync, DatetimeBasedCursor]] = None
+    checkpoint_interval: Optional[int] = None
     name: Optional[str] = ""
-    primary_key: Optional[PrimaryKey] = ""
+    primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
     schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
+    stream_cursor_field: Optional[Union[str, List[str]]] = None
     transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class ParentStreamConfig(BaseModel):
     type: Literal["ParentStreamConfig"]
     parent_key: str
     stream: DeclarativeStream
-    partition_field: str
+    stream_slice_field: str
     request_option: Optional[RequestOption] = None
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class SimpleRetriever(BaseModel):
     type: Literal["SimpleRetriever"]
-    record_selector: RecordSelector = Field(
-        ...,
-        description="Component that describes how to extract records from a HTTP response.",
-    )
-    requester: Union[CustomRequester, HttpRequester] = Field(
-        ...,
-        description="Requester component that describes how to prepare HTTP requests to send to the source API.",
-    )
-    paginator: Optional[Union[DefaultPaginator, NoPagination]] = Field(
-        None,
-        description="Paginator component that describes how to navigate through the API's pages.",
-    )
-    partition_router: Optional[
+    record_selector: RecordSelector
+    requester: Union[CustomRequester, HttpRequester]
+    name: Optional[str] = ""
+    paginator: Optional[Union[DefaultPaginator, NoPagination]] = None
+    primary_key: Optional[PrimaryKey] = None
+    stream_slicer: Optional[
         Union[
-            CustomPartitionRouter,
-            ListPartitionRouter,
-            SubstreamPartitionRouter,
-            List[Union[CustomPartitionRouter, ListPartitionRouter, SubstreamPartitionRouter]],
+            CartesianProductStreamSlicer,
+            CustomStreamSlicer,
+            DatetimeStreamSlicer,
+            ListStreamSlicer,
+            SingleSlice,
+            SubstreamSlicer,
         ]
-    ] = Field(
-        [],
-        description="StreamSlicer component that describes how to partition the stream, enabling incremental syncs and checkpointing.",
-    )
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    ] = None
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
-class SubstreamPartitionRouter(BaseModel):
-    type: Literal["SubstreamPartitionRouter"]
+class SubstreamSlicer(BaseModel):
+    type: Literal["SubstreamSlicer"]
     parent_stream_configs: List[ParentStreamConfig]
-    parameters: Optional[Dict[str, Any]] = Field(None, alias="$parameters")
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 CompositeErrorHandler.update_forward_refs()
 DeclarativeSource.update_forward_refs()
+CartesianProductStreamSlicer.update_forward_refs()
 DeclarativeStream.update_forward_refs()
 SimpleRetriever.update_forward_refs()

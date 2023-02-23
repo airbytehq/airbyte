@@ -4,6 +4,8 @@ area/platform:
   - airbyte-api/**/*
   - airbyte-persistence/*
   - airbyte-persistence/**/*
+  - airbyte-protocol/*
+  - airbyte-protocol/**/*
   - airbyte-server/*
   - airbyte-server/**/*
   - airbyte-workers/*
@@ -26,6 +28,10 @@ area/api:
 area/server:
   - airbyte-server/*
   - airbyte-server/**/*
+
+area/protocol:
+  - airbyte-protocol/*
+  - airbyte-protocol/**/*
 
 area/worker:
   - airbyte-workers/*

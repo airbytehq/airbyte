@@ -8,10 +8,11 @@ from typing import Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ErrorHandler:
+class ErrorHandler(JsonSchemaMixin):
     """
     Defines whether a request was successful and how to handle a failure.
     """

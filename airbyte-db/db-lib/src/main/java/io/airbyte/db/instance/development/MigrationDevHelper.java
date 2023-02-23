@@ -139,7 +139,7 @@ public class MigrationDevHelper {
 
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
-    try (final BufferedReader reader = new BufferedReader(new FileReader("../../gradle.properties", StandardCharsets.UTF_8))) {
+    try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env", StandardCharsets.UTF_8))) {
       String line = reader.readLine();
       while (line != null) {
         if (line.startsWith("VERSION")) {
@@ -148,11 +148,11 @@ public class MigrationDevHelper {
         line = reader.readLine();
       }
     } catch (final FileNotFoundException e) {
-      throw new IllegalStateException("Cannot find the gradle.properties file", e);
+      throw new IllegalStateException("Cannot find the .env file", e);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-    throw new IllegalStateException("Cannot find the gradle.properties file");
+    throw new IllegalStateException("Cannot find current Airbyte version from .env file");
   }
 
   /**

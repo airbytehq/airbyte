@@ -1,0 +1,10 @@
+# Only run this pre-commit hook when npx is actually in the path.
+# Since CI will fail on misformated frontend code we consider this hook optional
+# and don't want to fail if the system doesn't have the requirements to run it.
+if command -v npx &> /dev/null; then
+  # Only run if `npx` is at least version 8, since earlier versions didn't support the --no flag
+  npxMajorVersion=$(npx --version | cut -d. -f1)
+  if [ "$npxMajorVersion" -ge "8" ]; then
+    cd airbyte-webapp && npx --no lint-staged
+  fi
+fi

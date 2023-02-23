@@ -1,0 +1,20 @@
+@use "scss/variables";
+
+@forward "./DbtCloudCard.scss";
+
+.emptyListImage {
+  width: 111px;
+  height: 111px;
+  margin: variables.$spacing-xl 0;
+}
+
+.jobListButtonGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: variables.$spacing-xl;
+  width: 100%;
+}
+
+.jobListButton {
+  margin-left: variables.$spacing-md;
+}

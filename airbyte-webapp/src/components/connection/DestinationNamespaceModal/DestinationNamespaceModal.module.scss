@@ -1,0 +1,54 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.content {
+  display: flex;
+  height: 360px;
+}
+
+.actions,
+.description {
+  display: flex;
+  flex-direction: column;
+  padding: variables.$spacing-xl;
+}
+
+.actions {
+  flex: 0 0 300px;
+
+  .radioButton + .radioButton {
+    margin-top: variables.$spacing-xl;
+  }
+
+  .input {
+    position: relative;
+    margin: variables.$spacing-xl 0 0 variables.$spacing-xl;
+
+    .errorMessage {
+      position: absolute;
+      bottom: -16px;
+      left: 0;
+      color: colors.$red-600;
+    }
+  }
+}
+
+.description {
+  overflow: auto;
+  flex: 1 0 0;
+  background-color: colors.$grey-50;
+
+  .generalInfo {
+    color: colors.$grey;
+    margin: variables.$spacing-lg 0;
+  }
+
+  .namespaceLink {
+    margin-top: variables.$spacing-lg;
+    color: colors.$blue;
+
+    .text {
+      color: colors.$blue;
+    }
+  }
+}

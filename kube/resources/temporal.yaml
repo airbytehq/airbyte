@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: airbyte-temporal-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7233
+      protocol: TCP
+  selector:
+    airbyte: temporal
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: airbyte-temporal-dynamicconfig
+data:
+  "development.yaml": |
+    # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml
+    frontend.enableClientVersionCheck:
+      - value: true
+        constraints: {}
+    history.persistenceMaxQPS:
+      - value: 3000
+        constraints: {}
+    frontend.persistenceMaxQPS:
+      - value: 3000
+        constraints: {}
+    frontend.historyMgrNumConns:
+      - value: 30
+        constraints: {}
+    frontend.throttledLogRPS:
+      - value: 20
+        constraints: {}
+    history.historyMgrNumConns:
+      - value: 50
+        constraints: {}
+    system.advancedVisibilityWritingMode:
+      - value: "off"
+        constraints: {}
+    history.defaultActivityRetryPolicy:
+      - value:
+          InitialIntervalInSeconds: 1
+          MaximumIntervalCoefficient: 100.0
+          BackoffCoefficient: 2.0
+          MaximumAttempts: 0
+    history.defaultWorkflowRetryPolicy:
+      - value:
+          InitialIntervalInSeconds: 1
+          MaximumIntervalCoefficient: 100.0
+          BackoffCoefficient: 2.0
+          MaximumAttempts: 0
+    # Limit for responses. This mostly impacts discovery jobs since they have the largest responses.
+    limit.blobSize.error:
+      - value: 15728640 # 15MB
+        constraints: {}
+    limit.blobSize.warn:
+      - value: 10485760 # 10MB
+        constraints: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-temporal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      airbyte: temporal
+  template:
+    metadata:
+      labels:
+        airbyte: temporal
+    spec:
+      containers:
+        - name: airbyte-temporal
+          image: airbyte/temporal-auto-setup:1.13.0
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_USER
+            - name: POSTGRES_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_PASSWORD
+            - name: DYNAMIC_CONFIG_FILE_PATH
+              value: "config/dynamicconfig/development.yaml"
+            - name: DB
+              value: "postgresql"
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PORT
+            - name: POSTGRES_SEEDS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_HOST
+
+          ports:
+            - containerPort: 7233
+          volumeMounts:
+            - name: airbyte-temporal-dynamicconfig
+              mountPath: "/etc/temporal/config/dynamicconfig/"
+      volumes:
+        - name: airbyte-temporal-dynamicconfig
+          configMap:
+            name: airbyte-temporal-dynamicconfig
+            items:
+              - key: development.yaml
+                path: development.yaml

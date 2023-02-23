@@ -2,52 +2,53 @@ version: "0.1.0"
 
 definitions:
   schema_loader:
-    type: JsonFileSchemaLoader
-    file_path: "./source_pypi/schemas/{{ parameters['name'] }}.json"
+    type: JsonSchema
+    file_path: "./source_pypi/schemas/{{ options['name'] }}.json"
   selector:
     extractor:
-      field_path: []
+      field_pointer: []
   requester:
     url_base: "https://pypi.org"
     http_method: "GET"
-    request_headers:
-      User-Agent: "Airbyte"
-      Accept: "application/json"
+    request_options_provider:
+      request_headers:
+        User-Agent: "Airbyte"
+        Accept: "application/json"
   retriever:
     record_selector:
-      $ref: "#/definitions/selector"
+      $ref: "*ref(definitions.selector)"
     paginator:
       type: NoPagination
     requester:
-      $ref: "#/definitions/requester"
+      $ref: "*ref(definitions.requester)"
   base_stream:
     schema_loader:
-      $ref: "#/definitions/schema_loader"
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "#/definitions/retriever"
+      $ref: "*ref(definitions.retriever)"
 
   project_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "project"
       path: "/pypi/{{ config['project_name'] }}/json"
 
   release_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "release"
       path: "/pypi/{{ config['project_name'] }}/{{ config['version'] }}/json"
 
   stats_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
       name: "stats"
       path: "/stats"
 
 streams:
-  - "#/definitions/project_stream"
-  - "#/definitions/release_stream"
-  - "#/definitions/stats_stream"
+  - "*ref(definitions.project_stream)"
+  - "*ref(definitions.release_stream)"
+  - "*ref(definitions.stats_stream)"
 
 check:
   stream_names:

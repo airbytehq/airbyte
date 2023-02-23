@@ -1,0 +1,9 @@
+.content {
+  > table > tbody > tr > td:first-of-type {
+    padding-left: 32px !important;
+  }
+}
+
+.thEntityName {
+  width: 40%;
+}

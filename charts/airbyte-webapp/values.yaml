@@ -1,0 +1,255 @@
+global:
+  serviceAccountName: placeholderServiceAccount
+  deploymentMode: oss
+  configMapName: ""
+  secretName: ""
+  extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
+  database:
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
+    port: "5432"
+
+enabled: true
+##  webapp.replicaCount Number of webapp replicas
+replicaCount: 1
+
+##  webapp.image.repository The repository to use for the airbyte webapp image.
+##  webapp.image.pullPolicy the pull policy to use for the airbyte webapp image
+##  webapp.image.tag The airbyte webapp image tag. Defaults to the chart's AppVersion
+image:
+  repository: airbyte/webapp
+  pullPolicy: IfNotPresent
+
+##  webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
+##
+podAnnotations: {}
+
+##  webapp.podLabels [object] Add extra labels to the webapp pod(s)
+##
+podLabels: {}
+
+##  webapp.containerSecurityContext Security context for the container
+## Examples:
+## containerSecurityContext:
+##    runAsNonRoot: true
+##    runAsUser: 1000
+##    readOnlyRootFilesystem: true
+containerSecurityContext: {}
+
+## Configure extra options for the webapp containers' liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+##  webapp.livenessProbe.enabled Enable livenessProbe on the webapp
+##  webapp.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+##  webapp.livenessProbe.periodSeconds Period seconds for livenessProbe
+##  webapp.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+##  webapp.livenessProbe.failureThreshold Failure threshold for livenessProbe
+##  webapp.livenessProbe.successThreshold Success threshold for livenessProbe
+##
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+##  webapp.readinessProbe.enabled Enable readinessProbe on the webapp
+##  webapp.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+##  webapp.readinessProbe.periodSeconds Period seconds for readinessProbe
+##  webapp.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+##  webapp.readinessProbe.failureThreshold Failure threshold for readinessProbe
+##  webapp.readinessProbe.successThreshold Success threshold for readinessProbe
+##
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+##  webapp.service.type The service type to use for the webapp service
+##  webapp.service.port The service port to expose the webapp on
+##  webapp.service.annotations Annotations for the webapp service resource
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+## Web app resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+## We usually recommend not to specify default resources and to leave this as a conscious
+## choice for the user. This also increases chances charts run on environments with little
+## resources, such as Minikube. If you do want to specify resources, uncomment the following
+## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+##  webapp.resources.limits [object] The resources limits for the Web container
+##  webapp.resources.requests [object] The requested resources for the Web container
+resources:
+  ## Example:
+  ## limits:
+  ##    cpu: 200m
+  ##    memory: 1Gi
+  limits: {}
+  ## Examples:
+  ## requests:
+  ##    memory: 256Mi
+  ##    cpu: 250m
+  requests: {}
+
+##  webapp.nodeSelector [object] Node labels for pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+##
+nodeSelector: {}
+
+##  webapp.tolerations [array] Tolerations for webapp pod assignment.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []
+
+##  webapp.affinity [object] Affinity and anti-affinity for webapp pod assignment.
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+##
+affinity: {}
+
+## Configure the ingress resource that allows you to access the Airbyte installation.
+## ref: http://kubernetes.io/docs/user-guide/ingress/
+##  webapp.ingress.enabled Set to true to enable ingress record generation
+##  webapp.ingress.className Specifies ingressClassName for clusters >= 1.18+
+##  webapp.ingress.annotations [object] Ingress annotations done as key:value pairs
+##  webapp.ingress.hosts The list of hostnames to be covered with this ingress record.
+##  webapp.ingress.tls [array] Custom ingress TLS configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts: []
+  # - host: chart-example.local
+  #   paths:
+  #   - path: /
+  #     pathType: ImplementationSpecific
+
+  tls: []
+  # - secretName: chart-example-tls
+  #   hosts:
+  #   - chart-example.local
+
+##  webapp.api.url The webapp API url.
+api:
+  url: /api/v1/
+
+##  webapp.fullstory.enabled Whether or not to enable fullstory
+fullstory:
+  enabled: false
+
+
+##  webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
+## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumeMounts:
+##   - name: var-run
+##     mountPath: /var/run/
+##   - name: var-cache-nginx
+##     mountPath: /var/cache/nginx
+##   - mountPath: /etc/nginx/conf.d
+##     name: nginx-conf-d
+##
+extraVolumeMounts: []
+
+##  webapp.extraVolumes [array] Additional volumes for webapp pod(s).
+## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
+## extraVolumes:
+##   - name: var-run
+##     emptyDir: {}
+##   - name: var-cache-nginx
+##     emptyDir: {}
+##   - name: nginx-conf-d
+##     emptyDir: {}
+##
+extraVolumes: []
+
+##  extraContainer [array] Additional container for server pod(s)
+## Example:
+# extraContainers:
+#   - name: otel_collector
+#     image: somerepo/someimage:sometag
+#     args: [
+#         "--important-args"
+#     ]
+#     ports:
+#       - containerPort: 443
+#     volumeMounts:
+#       - name: volumeMountCool
+#         mountPath: /some/path
+#         readOnly: true
+extraContainers: []
+
+##  extraInitContainers [array] Additional init containers for server pod(s)
+## Example:
+# extraInitContainers:
+#   - name: sleepy
+#     image: alpine
+#     command: ['sleep', '60']
+
+extraInitContainers: []
+
+##  extraEnv [array] Supply extra env variables to main container using full notation
+## Example: (With default env vars and values taken from generated config map)
+# extraEnv:
+#   - name: POSTGRES_USER
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: DATABASE_USER
+#   - name: POSTGRES_PWD
+#     valueFrom:
+#       secretKeyRef:
+#         name: airbyte-secrets
+#         key: DATABASE_PASSWORD
+#   - name: DYNAMIC_CONFIG_FILE_PATH
+#     value: "config/dynamicconfig/development.yaml"
+#   - name: DB
+#     value: "postgresql"
+#   - name: DB_PORT
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: DATABASE_PORT
+#   - name: POSTGRES_SEEDS
+#     valueFrom:
+#       configMapKeyRef:
+#         name: airbyte-env
+#         key: DATABASE_HOST
+##
+extraEnv: []
+##  secrets [object] Supply additional secrets to container
+## Example:
+## secrets:
+##   DATABASE_PASSWORD: strong-password
+##   DATABASE_USER: my-db-user
+secrets: {}
+
+##  env_vars [object] Supply extra env variables to main container using simplified notation
+## Example with default vars for webapp:
+# env_vars:
+#   AIRBYTE_VERSION: 0.40.4
+
+#   # Miscellaneous
+#   TRACKING_STRATEGY: segment
+#   API_URL: /api/v1/
+#   INTERNAL_API_HOST: airbyte-server-svc:8001
+
+env_vars: {}
+
+
+
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

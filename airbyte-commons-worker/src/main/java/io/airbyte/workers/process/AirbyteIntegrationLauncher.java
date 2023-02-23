@@ -4,6 +4,10 @@
 
 package io.airbyte.workers.process;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import static io.airbyte.workers.process.Metadata.CHECK_JOB;
 import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
 import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
@@ -17,6 +21,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
@@ -24,6 +29,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -68,8 +74,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.useIsolatedPool = useIsolatedPool;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process spec(final Path jobRoot) throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     return processFactory.create(
         SPEC_JOB,
         jobId,
@@ -88,8 +96,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         "spec");
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     return processFactory.create(
         CHECK_JOB,
         jobId,
@@ -109,8 +119,10 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         CONFIG, configFilename);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     return processFactory.create(
         DISCOVER_JOB,
         jobId,
@@ -130,6 +142,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         CONFIG, configFilename);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process read(final Path jobRoot,
                       final String configFilename,
@@ -139,6 +152,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                       final String stateFilename,
                       final String stateContents)
       throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     final List<String> arguments = Lists.newArrayList(
         "read",
         CONFIG, configFilename,
@@ -174,6 +188,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         arguments.toArray(new String[arguments.size()]));
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Process write(final Path jobRoot,
                        final String configFilename,
@@ -181,6 +196,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                        final String catalogFilename,
                        final String catalogContents)
       throws WorkerException {
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, imageName));
     final Map<String, String> files = ImmutableMap.of(
         configFilename, configContents,
         catalogFilename, catalogContents);

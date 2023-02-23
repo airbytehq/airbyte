@@ -1,0 +1,16 @@
+@use "../../../../../../scss/colors";
+
+.text {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  margin: 0;
+
+  .launch {
+    color: colors.$blue-400;
+  }
+
+  .sum {
+    font-weight: 700;
+  }
+}

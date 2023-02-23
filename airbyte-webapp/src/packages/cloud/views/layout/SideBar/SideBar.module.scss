@@ -1,0 +1,39 @@
+@use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
+@forward "../../../../../views/layout/SideBar/SideBar.module.scss";
+
+$sidebar-workspace-font-size: 9px;
+$sidebar-workspace-font-weight: 400;
+
+.workspaceButton {
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+  height: 21px;
+  width: 100%;
+  border: variables.$border-thin solid colors.$grey-100;
+  border-radius: variables.$border-radius-lg;
+  background-color: rgba(255, 255, 255, 20%);
+  margin-top: variables.$spacing-md;
+  padding: 0 variables.$spacing-md;
+  font-size: $sidebar-workspace-font-size;
+  font-weight: $sidebar-workspace-font-weight;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-align: center;
+  outline: none;
+
+  &:focus-visible {
+    outline: 1px solid colors.$white;
+  }
+}
+
+.creditsButton {
+  position: relative;
+
+  .lowBalanceIndicator {
+    position: absolute;
+    top: 10px;
+    right: 24px;
+  }
+}

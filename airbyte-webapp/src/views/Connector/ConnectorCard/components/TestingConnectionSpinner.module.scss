@@ -1,0 +1,12 @@
+@use "scss/variables";
+
+.container {
+  margin: 34px 0 variables.$spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button {
+  margin-left: variables.$spacing-md;
+}

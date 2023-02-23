@@ -7,10 +7,11 @@ from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class RequestOptionsProvider:
+class RequestOptionsProvider(JsonSchemaMixin):
     """
     Defines the request options to set on an outgoing HTTP request
 

@@ -47,7 +47,6 @@ public class EnvConfigs implements Configs {
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
-  public static final String LOCAL_CONNECTOR_CATALOG_PATH = "LOCAL_CONNECTOR_CATALOG_PATH";
   public static final String GITHUB_STORE_BRANCH = "GITHUB_STORE_BRANCH";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
@@ -343,10 +342,6 @@ public class EnvConfigs implements Configs {
   @Override
   public String getSpecCacheBucket() {
     return getEnvOrDefault(SPEC_CACHE_BUCKET, DEFAULT_SPEC_CACHE_BUCKET);
-  }
-
-  public Optional<String> getLocalCatalogPath() {
-    return Optional.ofNullable(getEnv(LOCAL_CONNECTOR_CATALOG_PATH));
   }
 
   @Override
