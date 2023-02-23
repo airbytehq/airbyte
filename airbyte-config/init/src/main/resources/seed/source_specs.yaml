@@ -932,7 +932,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.31"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.32"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
@@ -1080,9 +1080,6 @@
       - "lwa_app_id"
       - "lwa_client_secret"
       - "refresh_token"
-      - "aws_access_key"
-      - "aws_secret_key"
-      - "role_arn"
       - "replication_start_date"
       - "aws_environment"
       - "region"
@@ -1275,7 +1272,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.21"
+- dockerImage: "airbyte/source-amplitude:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2189,7 +2186,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.16"
+- dockerImage: "airbyte/source-chargebee:0.2.1"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -6044,7 +6041,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.32"
+- dockerImage: "airbyte/source-google-sheets:0.2.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -10910,7 +10907,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.11"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paypal-transactions"
     connectionSpecification:
