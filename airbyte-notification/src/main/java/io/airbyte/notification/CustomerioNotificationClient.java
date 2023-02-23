@@ -7,6 +7,7 @@ package io.airbyte.notification;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.Notification;
+import io.airbyte.config.SlackNotificationConfiguration;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -122,7 +123,10 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifySchemaChange(final UUID connectionId, final boolean isBreaking) {
+  public boolean notifySchemaChange(final UUID connectionId,
+                                    final boolean isBreaking,
+                                    final SlackNotificationConfiguration config,
+                                    final String url) {
     throw new NotImplementedException();
   }
 
