@@ -80,7 +80,9 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-commons' // this wouldn't be necessary if it wasn't from https://github.com/airbytehq/airbyte/blob/645558b74aab0b91fda1b4628b37b7095d92b4cc/build.gradle
     include ':tools:code-generator:airbyteDocker'
     include ':airbyte-cdk:python'
-} else {
+}
+
+if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("SUB_BUILD") && System.getenv().get("SUB_BUILD") != "CDK")) {
     // shared
     include ':airbyte-commons'
     include ':airbyte-api'
