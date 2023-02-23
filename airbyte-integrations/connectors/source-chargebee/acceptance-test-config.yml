@@ -38,6 +38,10 @@ acceptance_tests:
             bypass_reason: "Unstable data. Depends on subscription"
           - name: "event"
             bypass_reason: "Unstable data. Depends on subscription"
+          - name: "unbilled_charge"
+            bypass_reason: "Empty stream. Unstable data"
+          - name: "hosted_page"
+            bypass_reason: "Empty stream. Unstable data"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
           extra_fields: no
