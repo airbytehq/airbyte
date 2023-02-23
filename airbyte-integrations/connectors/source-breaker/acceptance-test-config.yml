@@ -1,0 +1,40 @@
+connector_image: airbyte/source-faker:dev
+test_strictness_level: high
+acceptance_tests:
+  connection:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
+      - config_path: integration_tests/invalid_config.json
+        status: failed
+  spec:
+    tests:
+      - spec_path: source_faker/spec.json
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0" # We changed the cursor field of the Purchases stream in 2.0.0
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        empty_streams: []
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+          exact_order: true
+          extra_fields: false
+          extra_records: false
+  full_refresh:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        ignored_fields:
+          users:
+            - created_at
+            - updated_at
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
