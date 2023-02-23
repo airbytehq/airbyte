@@ -515,7 +515,7 @@ class TestIncrementalFileStream:
             for file_info in stream_instance.filepath_iterator():
                 assert file_info == next(expected_info)
 
-    def test_get_simplified_schema(self):
+    def test_get_schema(self):
         stream_instance = IncrementalFileStreamS3(
             dataset="dummy",
             provider={},
@@ -523,7 +523,7 @@ class TestIncrementalFileStream:
             schema="{\"column_A\": \"string\", \"column_B\": \"integer\", \"column_C\": \"boolean\"}",
             path_pattern="**/prefix*.csv"
         )
-        assert stream_instance._simplified_schema == {
+        assert stream_instance._schema == {
             "_ab_additional_properties": "object",
             "_ab_source_file_last_modified": "string",
             "_ab_source_file_url": "string",

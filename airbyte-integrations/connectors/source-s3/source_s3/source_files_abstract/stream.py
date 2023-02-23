@@ -63,9 +63,9 @@ class FileStream(Stream, ABC):
         self._path_pattern = path_pattern
         self._provider = provider
         self._format = format
-        self._schema: Dict[str, Any] = {}
+        self._user_input_schema: Dict[str, Any] = {}
         if schema:
-            self._schema = self._parse_user_input_schema(schema)
+            self._user_input_schema = self._parse_user_input_schema(schema)
         LOGGER.info(f"initialised stream with format: {format}")
 
     @staticmethod
@@ -159,22 +159,21 @@ class FileStream(Stream, ABC):
         return sorted(self.pattern_matched_filepath_iterator(self.filepath_iterator()), key=lambda file_info: file_info.last_modified)
 
     @property
-    def _simplified_raw_schema(self) -> Mapping[str, Any]:
-        if self._schema != {}:
-            return deepcopy(self._schema)
+    def _raw_schema(self) -> Mapping[str, Any]:
+        if self._user_input_schema != {}:
+            return deepcopy(self._user_input_schema)
         return self._auto_inferred_schema
 
     @property
-    def _simplified_schema(self) -> Mapping[str, Any]:
+    def _schema(self) -> Mapping[str, Any]:
         extra_fields = {self.ab_additional_col: "object", self.ab_last_mod_col: "string", self.ab_file_name_col: "string"}
-        schema = self._simplified_raw_schema
+        schema = self._raw_schema
         return {**schema, **extra_fields}
 
     def get_json_schema(self) -> Mapping[str, Any]:
         # note: making every non-airbyte column nullable for compatibility
         properties: Mapping[str, Any] = {
-            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ}
-            for column, typ in self._simplified_schema.items()
+            column: {"type": ["null", typ]} if column not in self.airbyte_columns else {"type": typ} for column, typ in self._schema.items()
         }
         properties[self.ab_last_mod_col]["format"] = "date-time"
         return {"type": "object", "properties": properties}
@@ -213,7 +212,7 @@ class FileStream(Stream, ABC):
         We start off with a check to see if we're already lined up to target in order to avoid unnecessary iterations (useful if many columns)
 
         :param record: json-like representation of a data row {column:value}
-        :param target_columns: list of column names to mutate this record into (obtained via self._simplified_schema.keys() as of now)
+        :param target_columns: list of column names to mutate this record into (obtained via self._schema.keys() as of now)
         :return: mutated record with columns lining up to target_columns
         """
         compare_columns = [c for c in target_columns if c not in [self.ab_last_mod_col, self.ab_file_name_col]]
@@ -261,7 +260,7 @@ class FileStream(Stream, ABC):
                 with storage_file.open(file_reader.is_binary) as f:
                     # TODO: make this more efficient than mutating every record one-by-one as they stream
                     for record in file_reader.stream_records(f, storage_file.file_info):
-                        schema_matched_record = self._match_target_schema(record, list(self._simplified_schema.keys()))
+                        schema_matched_record = self._match_target_schema(record, list(self._schema.keys()))
                         complete_record = self._add_extra_fields_from_map(
                             schema_matched_record,
                             {
@@ -285,7 +284,7 @@ class FileStream(Stream, ABC):
         The heavy lifting sits in _read_from_slice() which is full refresh / incremental agnostic
         """
         if stream_slice:
-            file_reader = self.fileformatparser_class(self._format, self._simplified_raw_schema)
+            file_reader = self.fileformatparser_class(self._format, self._raw_schema)
             yield from self._read_from_slice(file_reader, stream_slice)
 
 

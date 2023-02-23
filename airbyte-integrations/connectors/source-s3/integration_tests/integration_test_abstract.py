@@ -118,7 +118,7 @@ class AbstractTestIncrementalFileStream(ABC):
             LOGGER.info(f"Testing stream_records() in SyncMode:{sync_mode.value}")
 
             # check we return correct schema from get_json_schema()
-            assert fs._simplified_schema == full_expected_schema
+            assert fs._schema == full_expected_schema
 
             records = []
             for stream_slice in fs.stream_slices(sync_mode=sync_mode, stream_state=current_state):
