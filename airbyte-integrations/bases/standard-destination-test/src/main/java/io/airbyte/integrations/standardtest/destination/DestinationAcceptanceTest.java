@@ -1820,9 +1820,13 @@ public abstract class DestinationAcceptanceTest {
   @Getter
   public static class SpecialNumericTypes {
 
+    @Builder.Default
     boolean supportIntegerNan = false;
+    @Builder.Default
     boolean supportNumberNan = false;
+    @Builder.Default
     boolean supportIntegerInfinity = false;
+    @Builder.Default
     boolean supportNumberInfinity = false;
 
   }
