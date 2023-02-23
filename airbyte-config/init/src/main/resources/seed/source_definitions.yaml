@@ -1821,6 +1821,10 @@
   icon: tiktok.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - sandbox-ads.tiktok.com
+      - business-api.tiktok.com
 - name: Timely
   sourceDefinitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
   dockerRepository: airbyte/source-timely
