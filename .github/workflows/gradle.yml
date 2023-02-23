@@ -96,6 +96,8 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
