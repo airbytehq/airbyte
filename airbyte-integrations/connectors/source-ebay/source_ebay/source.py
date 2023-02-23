@@ -205,6 +205,7 @@ class Payout(Finances):
     basePath = "/sell/finances/v1/payout"
 
 def ge_date(config: Mapping[str, Any], dateFormat: str) -> Mapping[str, Any]:
+    time_f = "T"+dateFormat.split("T")[1]
     today = datetime.datetime.today()
     if config["tunnel_method"]["tunnel_method"] == "PERIODIC":
         days = config["tunnel_method"]["days"]
@@ -213,12 +214,12 @@ def ge_date(config: Mapping[str, Any], dateFormat: str) -> Mapping[str, Any]:
         start_time = yesterday.strftime(dateFormat)
         return {"start_time": start_time, "end_time": end_time}
     else:
-        start_time = config["tunnel_method"]["start_time"] + TIME_F
+        start_time = config["tunnel_method"]["start_time"] + time_f
         end_time = today.strftime(dateFormat)
         if "end_time" in config["tunnel_method"] \
                 and config["tunnel_method"]["end_time"] is not None \
                 and config["tunnel_method"]["end_time"] != "":
-            end_time = config["tunnel_method"]["end_time"] + TIME_F
+            end_time = config["tunnel_method"]["end_time"] + time_f
         else:
             start_date = datetime.datetime.strptime(start_time, dateFormat)
             temp = (today - start_date).days
