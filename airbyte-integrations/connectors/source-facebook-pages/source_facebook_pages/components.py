@@ -30,7 +30,6 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
         request.prepare_url(url=request.url, params={"access_token": page_access_token})
         return request
 
-    # @staticmethod
     def generate_page_access_token(self) -> str:
         # We are expecting to receive User access token from config. To access
         # Pages API we need to generate Page access token. Page access tokens
