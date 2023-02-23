@@ -1614,6 +1614,9 @@
   icon: sendgrid.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.sendgrid.com
 - name: Senseforce
   sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
   dockerRepository: airbyte/source-senseforce
