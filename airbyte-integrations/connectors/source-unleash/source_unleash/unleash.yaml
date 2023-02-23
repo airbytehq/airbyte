@@ -3,10 +3,10 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   selector_features:
     extractor:
-      field_pointer: ["features"]
+      field_path: ["features"]
   requester:
     url_base: "{{ config['api_url'] }}/api/client"
     http_method: "GET"
@@ -25,30 +25,30 @@ definitions:
               action: RETRY
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
 
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
 
   # API Docs: https://docs.getunleash.io/reference/api/legacy/unleash/client/features
   features_stream:
-    $ref: "*ref(definitions.base_stream)" 
+    $ref: "#/definitions/base_stream" 
     retriever:
-      $ref: "*ref(definitions.retriever)" 
+      $ref: "#/definitions/retriever" 
       record_selector:
-          $ref: "*ref(definitions.selector_features)"      
-    $options:
+          $ref: "#/definitions/selector_features"      
+    $parameters:
       name: "features"
       primary_key: "name"
       path: "/features?{{ ('project=' ~ config['project_name']) if config['project_name'] is defined else '' }}&{{ ('namePrefix=' ~ config['nameprefix']) if config['nameprefix'] is defined else '' }}"
 
 streams:
-  - "*ref(definitions.features_stream)"
+  - "$ref": "#/definitions/features_stream"
 
 check:
   stream_names:
