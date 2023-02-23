@@ -4,16 +4,14 @@
 
 from dataclasses import dataclass
 from http import HTTPStatus
-from itertools import chain
-from typing import Any, List, Mapping, Union
+from typing import Any, Mapping, Union
 
-import dpath.util
 import requests
-from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record
 from requests import HTTPError
+
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.types import Config
 
 
 @dataclass
@@ -49,51 +47,3 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
             return r.json().get("access_token")
         except Exception as e:
             raise Exception(f"Error while generating page access token: {e}") from e
-
-
-# TODO To be removed when source-facebook-pages is moved to beta or bugfixed since this is now supported by the CDK as part of
-# https://github.com/airbytehq/airbyte/pull/21690
-@dataclass
-class NestedDpathExtractor(DpathExtractor):
-    """
-    Record extractor that searches a decoded response over a path defined as an array of fields.
-
-    Extends the DpathExtractor to allow for a list of records to be generated from a dpath that points
-    to an array object as first point and iterates over list of records by the rest of path. See the example.
-
-    Example data:
-    ```
-    {
-        "data": [
-            {'insights':
-                {'data': [
-                    {"id": "id1",
-                    "name": "name1",
-                    ...
-                    },
-                    {"id": "id1",
-                    "name": "name1",
-                    ...
-                    },
-                    ...
-            },
-            ...
-        ]
-    }
-    ```
-    """
-
-    def extract_records(self, response: requests.Response) -> List[Record]:
-        response_body = self.decoder.decode(response)
-        if len(self.field_path) == 0:
-            extracted = response_body
-        else:
-            path = [path.eval(self.config) for path in self.field_path]
-            extracted_list = dpath.util.get(response_body, path[0], default=[])
-            extracted = list(chain(*[dpath.util.get(x, path[1:], default=[]) for x in extracted_list])) if extracted_list else []
-        if isinstance(extracted, list):
-            return extracted
-        elif extracted:
-            return [extracted]
-        else:
-            return []

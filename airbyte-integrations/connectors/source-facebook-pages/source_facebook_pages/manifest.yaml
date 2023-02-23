@@ -304,8 +304,7 @@ definitions:
       record_selector:
         type: RecordSelector
         extractor:
-          class_name: source_facebook_pages.components.NestedDpathExtractor
-          field_path: ["data", "insights", "data"]
+          field_path: ["data", "*", "insights", "data", "*"]
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
