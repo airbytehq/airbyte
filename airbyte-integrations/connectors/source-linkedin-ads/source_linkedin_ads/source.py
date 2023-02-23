@@ -338,21 +338,12 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
 
 class AdCreativeName(Creatives):
 
-    endpoint = "adCreativesV2"
     search_param = "projection"
     search_param_value = "(variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title))))))))"
     parent_values_map = {"creative_id": "id"}
     parent_stream = Creatives
 
     sync_mode = SyncMode.full_refresh
-
-    @property
-    def source_defined_cursor(self) -> bool:
-        return False
-
-    @property
-    def cursor_field(self) -> str:
-        return ""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return {}
