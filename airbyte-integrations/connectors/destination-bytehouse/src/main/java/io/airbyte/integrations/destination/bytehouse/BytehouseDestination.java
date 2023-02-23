@@ -48,18 +48,27 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
     LOGGER.info("completed destination: {}", BytehouseDestination.class);
   }
 
+  private void log(Object obj) {
+    LOGGER.info(obj.toString(), BytehouseDestination.class);
+  }
+
   @Override
   public AirbyteConnectionStatus check(JsonNode config) {
-    // TODO
-    final DataSource dataSource = getDataSource(config);
+    DataSource dataSource;
+    try {
+      dataSource = getDataSource(config);
+    } catch (Exception e) {
+      return new AirbyteConnectionStatus()
+              .withStatus(AirbyteConnectionStatus.Status.FAILED)
+              .withMessage("Could not getDataSource: " + e.getMessage());
+    }
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
+      attemptTableOperations(outputSchema, database, namingResolver, getSqlOperations(), true);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
-      LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
               .withStatus(AirbyteConnectionStatus.Status.FAILED)
               .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
@@ -79,19 +88,22 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
 
   @Override
   public JsonNode toJdbcConfig(JsonNode config) {
-    final boolean isSsl = JdbcUtils.useSsl(config);
-    final StringBuilder jdbcUrl = new StringBuilder(
-            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                    isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
-                    config.get(JdbcUtils.HOST_KEY).asText(),
-                    config.get(JdbcUtils.PORT_KEY).asInt(),
-                    config.get(JdbcUtils.DATABASE_KEY).asText()));
+//    final boolean isSsl = JdbcUtils.useSsl(config);
+//    final String jdbcUrl = DatabaseDriver.BYTEHOUSE.getUrlFormatString();
 
-    if (isSsl) {
-      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
-    } else {
-      jdbcUrl.append("?").append(String.join("&", DEFAULT_PARAMETERS));
-    }
+    final StringBuilder jdbcUrl = new StringBuilder(
+            String.format(DatabaseDriver.BYTEHOUSE.getUrlFormatString(),
+                    config.get(JdbcUtils.HOST_KEY).asText(),
+                    config.get(JdbcUtils.PORT_KEY).asInt()
+            ));
+
+//    LOGGER.info("url: " + jdbcUrl);
+
+//    if (isSsl) {
+//      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+//    } else {
+//      jdbcUrl.append("?").append(String.join("&", DEFAULT_PARAMETERS));
+//    }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
             .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -113,4 +125,5 @@ public class BytehouseDestination extends AbstractJdbcDestination implements Des
 //    //TODO
 //    return null;
 //  }
+
 }

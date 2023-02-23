@@ -11,7 +11,7 @@ application {
 repositories {
     // This is public bytedance repository for downloading artifacts
     maven {
-        url "https://artifact.bytedance.com/repository/releases"
+        url "https://maven.byted.org/repository/releases"
     }
 }
 
@@ -21,7 +21,9 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
-    implementation "com.bytedance.bytehouse:driver-java:1.1.12"
+    implementation "com.bytedance.bytehouse:driver-java:1.1.18", {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')

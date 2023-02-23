@@ -40,14 +40,16 @@ public class BytehouseSqlOperations extends JdbcSqlOperations {
         "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
             + "%s String,\n"
             + "%s String,\n"
-            + "%s DateTime64(3, 'GMT') DEFAULT now(),\n"
-            + "PRIMARY KEY(%s)\n"
+            + "%s DateTime64(3, 'GMT') DEFAULT now()\n"
             + ")\n"
-            + "ENGINE = CnchMergeTree;\n",
+            + "ENGINE = CnchMergeTree\n"
+            + "ORDER BY %s\n"
+            + "PRIMARY KEY %s;\n",
         schemaName, tableName,
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_AB_ID);
   }
 
@@ -80,13 +82,8 @@ public class BytehouseSqlOperations extends JdbcSqlOperations {
 
         final ByteHouseConnection conn = connection.unwrap(ByteHouseConnection.class);
         final ByteHouseStatement sth = (ByteHouseStatement) conn.createStatement();
-//        sth.write() // Write API entrypoint
-//            .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
-//            .format(ClickHouseFormat.CSV) // set a format
-//            .data(tmpFile.getAbsolutePath()) // specify input
-//            .send();
         try (Statement stmt = connection.createStatement()) {
-          final String insertSql = String.format("insert into %s.%s format csv infile '%s'", schemaName, tmpTableName, tmpFile.getAbsolutePath());
+          final String insertSql = String.format("INSERT INTO %s.%s FORMAT csv INFILE '%s'", schemaName, tmpTableName, tmpFile.getAbsolutePath());
           stmt.executeUpdate(insertSql);
         } catch (SQLException ex) {
           ex.printStackTrace();
