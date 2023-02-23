@@ -15,7 +15,6 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-    environment: more-secrets
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

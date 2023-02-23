@@ -15,7 +15,6 @@ dependencies {
     implementation project(':airbyte-db:jooq')
     implementation project(':airbyte-json-validation')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-metrics:metrics-lib')
 
     implementation 'commons-io:commons-io:2.7'
     implementation 'com.google.cloud:google-cloud-secretmanager:2.0.5'
