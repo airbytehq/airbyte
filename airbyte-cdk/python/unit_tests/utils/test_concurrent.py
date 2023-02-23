@@ -115,3 +115,13 @@ def test_throw_record_exception():
         g = iter(reader)
         with pytest.raises(StreamException):
             next(g)
+
+    stream_instance = Stream(record_exception=6)
+    stream_instance.logger = MagicMock()
+    with ConcurrentStreamReader(stream_instance, MagicMock()) as reader:
+        records = []
+        with pytest.raises(StreamException):
+            for record in reader:
+                records.append(record)
+        # even exception propagation has maximum priority we had to collect some records
+        assert len(records) > 1
