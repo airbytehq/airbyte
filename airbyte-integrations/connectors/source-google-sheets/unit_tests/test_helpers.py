@@ -15,9 +15,9 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from google_sheets_source.client import GoogleSheetsClient
-from google_sheets_source.helpers import Helpers
-from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+from source_google_sheets.client import GoogleSheetsClient
+from source_google_sheets.helpers import Helpers
+from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
 logger = AirbyteLogger()
 
