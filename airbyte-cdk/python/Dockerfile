@@ -9,10 +9,8 @@ RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
     && apk --no-cache add tzdata build-base
 
-
-COPY setup.py ./
-# install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+# install airbyte-cdk
+RUN pip install --prefix=/install airbyte-cdk==0.29.0
 
 # build a clean environment
 FROM base
@@ -28,11 +26,11 @@ RUN echo "Etc/UTC" > /etc/timezone
 RUN apk --no-cache add bash
 
 # copy payload code only
-COPY main.py ./
-COPY source_google_sheets ./source_google_sheets
+COPY source_declarative_manifest/main.py ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.35
-LABEL io.airbyte.name=airbyte/source-google-sheets
+# needs to be the same as CDK
+LABEL io.airbyte.version=0.29.0
+LABEL io.airbyte.name=airbyte/source-declarative-manifest
