@@ -12,7 +12,7 @@ import ConnectionItemPage from "./pages/ConnectionItemPage";
 import { CreationFormPage } from "./pages/CreationFormPage/CreationFormPage";
 
 export const ConnectionPage: React.FC = () => (
-  <Suspense fallback={<LoadingPage />}>
+  <Suspense fallback={<LoadingPage position="relative" />}>
     <Routes>
       <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
       <Route
