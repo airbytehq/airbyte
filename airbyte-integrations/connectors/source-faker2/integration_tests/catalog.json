@@ -1,0 +1,40 @@
+{
+  "streams": [
+    {
+      "name": "users",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": { "type": "number" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "airbyte_type": "timestamp_with_timezone"
+          },
+          "name": { "type": "string" },
+          "title": { "type": "string" },
+          "age": { "type": "integer" },
+          "email": { "type": "string" },
+          "telephone": { "type": "string" },
+          "gender": { "type": "string" },
+          "language": { "type": "string" },
+          "academic_degree": { "type": "string" },
+          "nationality": { "type": "string" },
+          "occupation": { "type": "string" },
+          "height": { "type": "string" },
+          "blood_type": { "type": "string" },
+          "weight": { "type": "integer" }
+        }
+      },
+      "supported_sync_modes": ["incremental", "full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["created_at"]
+    }
+  ]
+}
