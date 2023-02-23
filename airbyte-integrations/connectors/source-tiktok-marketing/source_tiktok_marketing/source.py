@@ -74,8 +74,7 @@ class SourceTiktokMarketing(AbstractSource):
             # if there is a secret it is a prod config
             access_token = config["access_token"]
             secret = config.get("environment", {}).get("secret")
-            if secret:
-                is_sandbox = False
+            is_sandbox = secret is None
             app_id = int(config.get("environment", {}).get("app_id", 0))
             advertiser_id = int(config.get("environment", {}).get("advertiser_id", 0))
 
