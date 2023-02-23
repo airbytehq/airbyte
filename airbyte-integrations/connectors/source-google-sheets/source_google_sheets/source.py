@@ -19,6 +19,7 @@ from airbyte_cdk.models.airbyte_protocol import (
 )
 from airbyte_cdk.sources.source import Source
 from apiclient import errors
+from google.auth import exceptions as google_exceptions
 from requests.status_codes import codes as status_codes
 
 from .client import GoogleSheetsClient
@@ -62,6 +63,10 @@ class SourceGoogleSheets(Source):
             logger.error(f"Formatted error: {reason}")
             return AirbyteConnectionStatus(
                 status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Error: {reason}"
+            )
+        except google_exceptions.GoogleAuthError as err:
+            return AirbyteConnectionStatus(
+                status=Status.FAILED, message=f"Unable to connect with the provided credentials to spreadsheet. Authentication Error: {err}"
             )
 
         # Check for duplicate headers

@@ -76,7 +76,9 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 0.2.33  | 2023-02-15 | [23057](https://github.com/airbytehq/airbyte/pull/23057) | Slugify column names                                                          |
+| 0.2.35  | 2023-02-23 | [23057](https://github.com/airbytehq/airbyte/pull/23057) | Slugify column names                                                          |
+| 0.2.34  | 2023-02-15 | [23071](https://github.com/airbytehq/airbyte/pull/23071) | Change min spreadsheet id size to 20 symbols                                  |
+| 0.2.33  | 2023-02-13 | [23278](https://github.com/airbytehq/airbyte/pull/23278) | Handle authentication errors                                                  |
 | 0.2.32  | 2023-02-13 | [22884](https://github.com/airbytehq/airbyte/pull/22884) | Do not consume http spreadsheets.                                             |
 | 0.2.31  | 2022-10-09 | [19574](https://github.com/airbytehq/airbyte/pull/19574) | Revert 'Add row_id to rows and use as primary key'                            |
 | 0.2.30  | 2022-10-09 | [19215](https://github.com/airbytehq/airbyte/pull/19215) | Add row_id to rows and use as primary key                                     |
