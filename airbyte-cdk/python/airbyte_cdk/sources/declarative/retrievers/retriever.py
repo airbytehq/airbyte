@@ -9,11 +9,10 @@ from typing import Iterable, List, Optional
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Retriever(JsonSchemaMixin):
+class Retriever:
     """
     Responsible for fetching a stream's records from an HTTP API source.
     """
