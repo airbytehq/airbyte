@@ -20,6 +20,11 @@ connectionSpecification:
       title: Row Batch Size
       description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
       default: 200
+    names_conversion:
+      type: boolean
+      title: Columns Name Conversion
+      description: Columns name conversion using a set of rules, for example, 'My Name' -> 'my-name'.
+      default: false
     credentials:
       type: object
       title: Authentication
