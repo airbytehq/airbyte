@@ -26,6 +26,7 @@ class XeroCustomConnectionsOauth2Authenticator(Oauth2Authenticator):
         client_secret: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
     ):
@@ -37,6 +38,7 @@ class XeroCustomConnectionsOauth2Authenticator(Oauth2Authenticator):
         self.expires_in_name = expires_in_name
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
+        self._token_expiry_date_format = token_expiry_date_format
         self._access_token = None
 
     def __call__(self, request):
