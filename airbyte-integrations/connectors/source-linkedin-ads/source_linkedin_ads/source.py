@@ -14,7 +14,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
@@ -359,40 +359,32 @@ class AdCreativeName(LinkedinAdsStream):
         return {self.search_param: self.search_param_value}
 
     def stream_slices(
-            self, sync_mode: SyncMode.incremental,
-            cursor_field: List[str] = None,
-            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        self, sync_mode: SyncMode.full_refresh, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         parent = Creatives(self.config)
-        parent_stream_slices = parent.stream_slices(
-            sync_mode=SyncMode.incremental,
-            cursor_field=cursor_field,
-            stream_state=stream_state
-        )
+        parent_stream_slices = parent.stream_slices(sync_mode=SyncMode.full_refresh)
 
         for stream_slice in parent_stream_slices:
-            parent_records = parent.read_records(
-                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
+            parent_records = parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
 
             for record in parent_records:
-                yield {
-                    "creative_id": record.get('id')
-                }
+                yield {"creative_id": record.get("id")}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
         if response.json():
-            result = response.json()
-            result.update({"creative_id": stream_slice['creative_id']})
+            result = response.json().get("variables").get("data")
+            result.update({"id": stream_slice["creative_id"]})
             yield result
 
     def path(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return f"{self.endpoint}/{stream_slice['creative_id']}"
 
@@ -487,5 +479,5 @@ class SourceLinkedinAds(AbstractSource):
             CampaignGroups(config),
             Campaigns(config),
             Creatives(config),
-            AdCreativeName(config)
+            AdCreativeName(config),
         ]
