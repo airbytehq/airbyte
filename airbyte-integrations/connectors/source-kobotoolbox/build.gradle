@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_kobotoolbox'
+    moduleDirectory 'source_kobotoolbox_singer'
 }

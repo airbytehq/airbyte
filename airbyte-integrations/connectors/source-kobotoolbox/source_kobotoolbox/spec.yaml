@@ -1,0 +1,26 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/kobotoolbox
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Kobotoolbox Spec
+  type: object
+  required:
+    - username
+    - password
+    - uid
+  properties:
+    username:
+      type: string
+      title: Username
+      description: Username to authenticate into the KoboToolBox server
+      order: 1
+    password:
+      type: string
+      title: Password
+      description: Password to authenticate into the KoboToolBox server
+      airbyte_secret: true
+      order: 2
+    uid: 
+      type: string
+      title: "UID"
+      description: Passw
+      order: 3
