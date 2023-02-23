@@ -1493,7 +1493,7 @@
 - name: Railz
   sourceDefinitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
   dockerRepository: airbyte/source-railz
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/railz
   icon: railz.svg
   sourceType: api
