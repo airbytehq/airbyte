@@ -20,10 +20,11 @@ class StreamException(Exception):
 class Stream:
     max_workers = 5
 
-    def __init__(self, auto_start=True, slice_exception=None):
+    def __init__(self, auto_start=True, slice_exception=None, record_exception=None):
         self._start = threading.Event()
         self.auto_start = auto_start
         self.slice_exception = slice_exception
+        self.record_exception = record_exception
 
     def start(self):
         self._start.set()
@@ -44,6 +45,8 @@ class Stream:
             yield stream_slice, record
             # for thread context switching
             time.sleep(0.01)
+            if self.record_exception == record:
+                raise StreamException()
 
 
 class StopException(Exception):
@@ -92,10 +95,22 @@ def test_threads_shutdown(monkeypatch):
     assert next(StopException.counter) == stream_instance.max_workers + 3
 
 
-def test_throw_exception():
+def test_throw_slice_exception():
     stream_instance = Stream(slice_exception=3)
     stream_instance.logger = MagicMock()
     with ConcurrentStreamReader(stream_instance, MagicMock()) as reader:
+        time.sleep(0.05)
+        g = iter(reader)
+        with pytest.raises(StreamException):
+            next(g)
+
+
+def test_throw_record_exception():
+    stream_instance = Stream(record_exception=3)
+    stream_instance.logger = MagicMock()
+    with ConcurrentStreamReader(stream_instance, MagicMock()) as reader:
+        # If we wait here after trying to read the 1-st record we will get an exception.
+        # Exception propagation has maximum priority over data record and will be raised as fast as possible.
         time.sleep(0.05)
         g = iter(reader)
         with pytest.raises(StreamException):
