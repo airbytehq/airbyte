@@ -55,9 +55,10 @@ public abstract class JdbcSqlOperations implements SqlOperations {
   }
 
   /**
-   * When an exception occurs, we may recognize it as an issue with the users permissions
-   * or other configuration options. In these cases, we can wrap the exception in a {@link ConfigErrorException}
-   * which will exclude the error from our on-call paging/reporting
+   * When an exception occurs, we may recognize it as an issue with the users permissions or other
+   * configuration options. In these cases, we can wrap the exception in a
+   * {@link ConfigErrorException} which will exclude the error from our on-call paging/reporting
+   *
    * @param e the exception to check.
    * @return A ConfigErrorException with a message with actionable feedback to the user.
    */

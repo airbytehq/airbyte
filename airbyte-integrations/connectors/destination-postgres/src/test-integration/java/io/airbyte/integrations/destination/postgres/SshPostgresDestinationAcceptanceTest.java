@@ -71,7 +71,6 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
         .collect(Collectors.toList());
   }
 
-
   @Override
   protected boolean implementsNamespaces() {
     return true;

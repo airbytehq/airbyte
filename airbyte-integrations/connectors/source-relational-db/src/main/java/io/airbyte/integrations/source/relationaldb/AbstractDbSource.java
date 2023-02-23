@@ -680,7 +680,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    *
    * @return set of views to be excluded
    */
-  protected Set<String> getExcludedViews() { return Collections.emptySet(); };
+  protected Set<String> getExcludedViews() {
+    return Collections.emptySet();
+  };
 
   /**
    * Discover all available tables in the source database.

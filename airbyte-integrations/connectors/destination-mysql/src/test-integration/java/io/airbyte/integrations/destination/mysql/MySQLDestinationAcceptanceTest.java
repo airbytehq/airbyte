@@ -50,7 +50,6 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     return "airbyte/destination-mysql:dev";
   }
 
-
   @Override
   protected boolean implementsNamespaces() {
     return true;
