@@ -85,11 +85,14 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.amplitude.com"
 - name: Apify Dataset
   sourceDefinitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
   dockerRepository: airbyte/source-apify-dataset
@@ -237,11 +240,14 @@
 - name: Chargebee
   sourceDefinitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
   dockerRepository: airbyte/source-chargebee
-  dockerImageTag: 0.1.16
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   icon: chargebee.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*.chargebee.com"
 - name: Chargify
   sourceDefinitionId: 9b2d3607-7222-4709-9fa2-c2abdebbdd88
   dockerRepository: airbyte/source-chargify
@@ -1664,6 +1670,9 @@
   icon: slack.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - slack.com
 - name: Smaily
   sourceDefinitionId: 781f8b1d-4e20-4842-a2c3-cd9b119d65fa
   dockerRepository: airbyte/source-smaily
