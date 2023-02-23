@@ -321,7 +321,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.19
+  dockerImageTag: 0.3.20
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
