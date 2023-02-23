@@ -50,7 +50,9 @@ definitions:
       $ref: "#/definitions/schema_loader"
     retriever:
       $ref: "#/definitions/retriever"
-
+    transformations:
+      - type: CustomTransformation
+        class_name: source_facebook_pages.components.CustomFieldTransformation
   page_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
