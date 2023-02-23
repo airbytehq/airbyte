@@ -136,13 +136,16 @@ class RestSalesforceStream(SalesforceStream):
     def chunk_properties(self) -> Iterable[Mapping[str, Any]]:
         selected_properties = self.get_json_schema().get("properties", {})
 
+        def empty_props_with_pk_if_present():
+            return {self.primary_key: selected_properties[self.primary_key]} if self.primary_key else {}
+
         summary_length = 0
-        local_properties = {}
+        local_properties = empty_props_with_pk_if_present()
         for property_name, value in selected_properties.items():
             current_property_length = len(urllib.parse.quote(f"{property_name},"))
             if current_property_length + summary_length >= self.max_properties_length:
                 yield local_properties
-                local_properties = {}
+                local_properties = empty_props_with_pk_if_present()
                 summary_length = 0
 
             local_properties[property_name] = value
