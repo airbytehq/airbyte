@@ -45,6 +45,24 @@ task generateOssConnectorCatalog(type: JavaExec, dependsOn: generateSeedConnecto
     args 'oss_catalog.json'
 }
 
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateOssConnectorCatalog)
+
+task generateConnectorMarkdown(type: JavaExec, dependsOn: generateSeedConnectorSpecs) {
+    classpath = sourceSets.main.runtimeClasspath
+
+    mainClass = 'io.airbyte.config.specs.ConnectorMarkdownGenerator'
+
+    args '--project-root'
+    args new File(project(":").projectDir, "")
+
+    args '--seed-root'
+    args new File(project(":airbyte-config:init").projectDir, '/src/main/resources/seed')
+
+    args '--output-filename'
+    args 'connectors.md'
+}
+
+project(":airbyte-config:init").tasks.processResources.dependsOn(generateConnectorMarkdown)
+
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
 
-project(":airbyte-config:init").tasks.processResources.dependsOn(generateOssConnectorCatalog)
