@@ -349,7 +349,7 @@ class PedidosDetalle(Pedidos):
 
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT00:00:00')
+                current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
             else:
                 current_stream_state_date = current_stream_state[self.cursor_field]
 
