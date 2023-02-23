@@ -412,7 +412,7 @@ class ModelToComponentFactory:
             cursor_field=model.cursor_field,
             cursor_granularity=model.cursor_granularity,
             datetime_format=model.datetime_format,
-            cursor_format=model.cursor_format,
+            cursor_datetime_format=model.cursor_datetime_format,
             end_datetime=end_datetime,
             start_datetime=start_datetime,
             step=model.step,

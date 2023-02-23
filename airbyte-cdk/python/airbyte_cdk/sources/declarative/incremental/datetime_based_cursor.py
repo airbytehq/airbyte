@@ -44,7 +44,7 @@ class DatetimeBasedCursor(StreamSlicer):
         partition_field_start (Optional[str]): partition start time field
         partition_field_end (Optional[str]): stream slice end time field
         lookback_window (Optional[InterpolatedString]): how many days before start_datetime to read data for (ISO8601 duration)
-        cursor_format (str): datetime format of the cursor field in the data record if different from `datetime_format`.
+        cursor_datetime_format (str): the format string used to transform the datetime value in the API response into the format used by the cursor
     """
 
     start_datetime: Union[MinMaxDatetime, str]
@@ -62,7 +62,7 @@ class DatetimeBasedCursor(StreamSlicer):
     partition_field_start: Optional[str] = None
     partition_field_end: Optional[str] = None
     lookback_window: Optional[Union[InterpolatedString, str]] = None
-    cursor_format: str = None
+    cursor_datetime_format: str = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not isinstance(self.start_datetime, MinMaxDatetime):
@@ -102,8 +102,8 @@ class DatetimeBasedCursor(StreamSlicer):
         stream_slice_value = stream_slice.get(self.cursor_field.eval(self.config))
         stream_slice_value_end = stream_slice.get(self.partition_field_end.eval(self.config))
         last_record_value = last_record.get(self.cursor_field.eval(self.config)) if last_record else None
-        if last_record_value and self.cursor_format:
-            last_record_value = self._format_datetime(self._parser.parse(last_record_value, self.cursor_format, self._timezone))
+        if last_record_value and self.cursor_datetime_format:
+            last_record_value = self._format_datetime(self._parser.parse(last_record_value, self.cursor_datetime_format, self._timezone))
         cursor = None
         if stream_slice_value and last_record_value:
             cursor = max(stream_slice_value, last_record_value)

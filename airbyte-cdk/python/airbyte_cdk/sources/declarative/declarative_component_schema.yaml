@@ -379,7 +379,8 @@ definitions:
       datetime_format:
         description: The format of the datetime
         type: string
-      cursor_format:
+      cursor_datetime_format:
+        description: The format string used to transform the datetime value in the API response into the format used by the cursor
         type: string
       cursor_granularity:
         description: Smallest increment the datetime_format has (ISO 8601 duration) that is used to ensure the start of a slice does not overlap with the end of the previous one
