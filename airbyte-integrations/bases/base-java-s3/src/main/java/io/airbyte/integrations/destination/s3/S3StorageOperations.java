@@ -127,13 +127,14 @@ public class S3StorageOperations extends BlobStorageOperations {
       }
 
       try {
-        return loadDataIntoBucket(objectPath, recordsData);
+        final String fileName = loadDataIntoBucket(objectPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} attempt(s)", objectPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", objectPath, e);
         exceptionsThrown.add(e);
       }
     }
-    LOGGER.info("Successfully loaded records to stage {} with {} tries", objectPath, exceptionsThrown.size());
     // Verifying that ALL exceptions are authentication related before assuming this is a configuration
     // issue reduces risk of misidentifying errors or reporting a transient error.
     final boolean areAllExceptionsAuthExceptions = exceptionsThrown.stream().filter(e -> e instanceof AmazonS3Exception)

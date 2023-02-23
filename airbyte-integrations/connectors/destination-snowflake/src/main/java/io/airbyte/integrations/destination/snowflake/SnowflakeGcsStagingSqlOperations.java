@@ -104,13 +104,14 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
       try {
-        return loadDataIntoBucket(stagingPath, recordsData);
+        final String fileName = loadDataIntoBucket(stagingPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} attempt(s)", stagingPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", stagingPath, e);
         exceptionsThrown.add(e);
       }
     }
-    LOGGER.info("Successfully loaded records to stage {} with {} tries", stagingPath, exceptionsThrown.size());
     throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
   }
 

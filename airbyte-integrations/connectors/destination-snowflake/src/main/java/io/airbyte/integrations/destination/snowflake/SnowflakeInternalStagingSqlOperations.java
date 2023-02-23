@@ -84,7 +84,7 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
       throw new RuntimeException(
           String.format("Exceptions thrown while uploading records into stage: %s", Strings.join(exceptionsThrown, "\n")));
     }
-    LOGGER.info("Successfully loaded records to stage {} with {} tries", stagingPath, exceptionsThrown.size());
+    LOGGER.info("Successfully loaded records to stage {} with {} attempt(s)", stagingPath, exceptionsThrown.size());
     return recordsData.getFilename();
   }
 
