@@ -318,9 +318,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       // Verify that a CDC connection can be created
       checkOperations.add(database -> {
-        final String userName = config.get("username").asText();
+        /**
+         * TODO: Next line is required for SSL connections so the JDBC_URL is set with all required parameters. This needs to be handle by createConnection function instead. Created issue https://github.com/airbytehq/airbyte/issues/23380.
+         */
+        JsonNode databaseConfig = database.getDatabaseConfig();
         // Empty try statement as we only need to verify that the connection can be created.
-        try (final Connection connection = PostgresReplicationConnection.createConnection(config)){
+        try (final Connection connection = PostgresReplicationConnection.createConnection(databaseConfig)){
         }
       });
     }
