@@ -1,5 +1,4 @@
 # Airbyte Connectors
-__Generated: 2023/02/23 @ 18:45:15__
 
 ## Sources
 
