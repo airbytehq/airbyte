@@ -70,6 +70,7 @@ class SourceTiktokMarketing(AbstractSource):
             app_id = int(credentials.get("app_id", 0))
             advertiser_id = int(credentials.get("advertiser_id", 0))
         else:
+            is_sandbox = credentials["environment"] == "sandbox"
             access_token = config["access_token"]
             secret = config.get("environment", {}).get("secret")
             app_id = int(config.get("environment", {}).get("app_id", 0))
