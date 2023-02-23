@@ -1,6 +1,10 @@
 name: Release Open Source Airbyte
 concurrency: release-airbyte
 
+
+# TODO: If we continue to use this action from here it needs to be updated to point to airbyte-platform
+# where appropriate
+
 on:
   workflow_dispatch:
     inputs:
@@ -23,10 +27,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -39,7 +41,6 @@ jobs:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
     needs: start-release-airbyte-runner # required to start the main job when the runner is ready
     runs-on: ${{ needs.start-release-airbyte-runner.outputs.label }} # run the job on the newly created runner
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -73,7 +74,6 @@ jobs:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
   releaseOctavia:
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -100,7 +100,6 @@ jobs:
       - releaseAirbyte
       - releaseOctavia
     runs-on: ubuntu-latest
-    environment: more-secrets
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -131,7 +130,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.SLASH_COMMAND_PAT }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           branch: bump-version
           branch-suffix: random
           delete-branch: true
@@ -164,10 +163,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:

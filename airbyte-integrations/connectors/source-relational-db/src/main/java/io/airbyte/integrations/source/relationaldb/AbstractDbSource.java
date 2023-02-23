@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
 
 import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.protocol.models.v0.CatalogHelpers.fieldsToJsonSchema;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -31,6 +32,7 @@ import io.airbyte.integrations.source.relationaldb.InvalidCursorInfoUtil.Invalid
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.Field;
@@ -108,7 +110,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       LOGGER.info("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
-          .withMessage("Could not connect with provided configuration. Error: " + e.getMessage());
+          .withMessage(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage()));
     } finally {
       close();
     }
@@ -173,6 +175,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
     validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
 
+    logSourceSchemaChange(fullyQualifiedTableNameToInfo, catalog);
+
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
             emittedAt);
@@ -192,13 +196,42 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         });
   }
 
+  // in case of user manually modified source table schema but did not refresh it and save into the
+  // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
+  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     ConfiguredAirbyteCatalog catalog) {
+    for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
+      final AirbyteStream stream = airbyteStream.getStream();
+      final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
+          stream.getName());
+      if (!fullyQualifiedTableNameToInfo.containsKey(fullyQualifiedTableName)) {
+        continue;
+      }
+      final TableInfo<CommonField<DataType>> table = fullyQualifiedTableNameToInfo.get(fullyQualifiedTableName);
+      final List<Field> fields = table.getFields()
+          .stream()
+          .map(this::toField)
+          .distinct()
+          .collect(Collectors.toList());
+      final JsonNode currentJsonSchema = fieldsToJsonSchema(fields);
+
+      final JsonNode catalogSchema = stream.getJsonSchema();
+      if (!catalogSchema.equals(currentJsonSchema)) {
+        LOGGER.warn(
+            "Source schema changed for table  {}! Actual schema: {}. Catalog schema:  {}",
+            fullyQualifiedTableName,
+            currentJsonSchema,
+            catalogSchema);
+      }
+    }
+  }
+
   private void validateCursorFieldForIncrementalTables(
                                                        final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
                                                        final ConfiguredAirbyteCatalog catalog,
                                                        final Database database)
       throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
-    final List<InvalidCursorInfo> tablesWithInvalidCursorToWarnAbout = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -231,14 +264,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       }
 
       if (!verifyCursorColumnValues(database, stream.getNamespace(), stream.getName(), cursorField.get())) {
-        tablesWithInvalidCursorToWarnAbout.add(
+        tablesWithInvalidCursor.add(
             new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
                 cursorType.toString(), "Cursor column contains NULL value"));
       }
-    }
-
-    if (!tablesWithInvalidCursorToWarnAbout.isEmpty()) {
-      LOGGER.warn("source-postgres detected null cursor value " + InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor));
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {
@@ -288,10 +317,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                              final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
+    final Set<String> systemViews = getExcludedViews();
     final List<TableInfo<CommonField<DataType>>> discoveredTables = discoverInternal(database);
     return (systemNameSpaces == null || systemNameSpaces.isEmpty() ? discoveredTables
         : discoveredTables.stream()
-            .filter(table -> !systemNameSpaces.contains(table.getNameSpace())).collect(
+            .filter(table -> !systemNameSpaces.contains(table.getNameSpace()) && !systemViews.contains(table.getName())).collect(
                 Collectors.toList()));
   }
 
@@ -654,11 +684,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   protected abstract JsonSchemaType getAirbyteType(DataType columnType);
 
   /**
-   * Get list of system namespaces(schemas) in order to exclude them from the discover result list.
+   * Get list of system namespaces(schemas) in order to exclude them from the `discover` result list.
    *
    * @return set of system namespaces(schemas) to be excluded
    */
   protected abstract Set<String> getExcludedInternalNameSpaces();
+
+  /**
+   * Get list of system views in order to exclude them from the `discover` result list.
+   *
+   * @return set of views to be excluded
+   */
+  protected Set<String> getExcludedViews() { return Collections.emptySet(); };
 
   /**
    * Discover all available tables in the source database.

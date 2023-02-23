@@ -105,7 +105,8 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| 1.0.1   | 2022-01-23 | [21713](https://github.com/airbytehq/airbyte/pull/21713) | Fix missing data issue                                                                     |
+| 1.0.2   | 2023-01-27 | [22001](https://github.com/airbytehq/airbyte/pull/22001) | Set `AvailabilityStrategy` for streams explicitly to `None`                                |
+| 1.0.1   | 2023-01-23 | [21713](https://github.com/airbytehq/airbyte/pull/21713) | Fix missing data issue                                                                     |
 | 1.0.0   | 2022-12-05 | [7506](https://github.com/airbytehq/airbyte/pull/7506)   | Add `OAuth2.0` authentication option                                                       |
 | 0.1.12  | 2022-12-15 | [20542](https://github.com/airbytehq/airbyte/pull/20542) | Revert HttpAvailability changes, run on cdk 0.15.0                                         |
 | 0.1.11  | 2022-12-14 | [20479](https://github.com/airbytehq/airbyte/pull/20479) | Use HttpAvailabilityStrategy + add unit tests                                              |

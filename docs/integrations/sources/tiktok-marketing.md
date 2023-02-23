@@ -550,6 +550,9 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 2.0.2   | 2023-02-02 | [22309](https://github.com/airbytehq/airbyte/pull/22309) | Chunk Advertiser IDs                                                                          |
+| 2.0.1   | 2023-01-27 | [22044](https://github.com/airbytehq/airbyte/pull/22044) | Set `AvailabilityStrategy` for streams explicitly to `None`                                   |
+| 2.0.0   | 2022-12-20 | [20415](https://github.com/airbytehq/airbyte/pull/20415) | Update schema types for `AudienceReports` and `BasicReports` streams.                         |
 | 1.0.1   | 2022-12-16 | [20598](https://github.com/airbytehq/airbyte/pull/20598) | Remove Audience Reports with Hourly granularity due to deprecated dimension.                  |
 | 1.0.0   | 2022-12-05 | [19758](https://github.com/airbytehq/airbyte/pull/19758) | Convert `mobile_app_id` from integer to string in AudienceReport streams.                     |
 | 0.1.17  | 2022-10-04 | [17557](https://github.com/airbytehq/airbyte/pull/17557) | Retry error 50002                                                                             |

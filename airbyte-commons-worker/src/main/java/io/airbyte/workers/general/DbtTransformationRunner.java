@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.general;
@@ -107,6 +107,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               files,
               "/bin/bash",
               resourceRequirements,
+              null,
               Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, CUSTOM_STEP),
               Collections.emptyMap(),
               Collections.emptyMap(),

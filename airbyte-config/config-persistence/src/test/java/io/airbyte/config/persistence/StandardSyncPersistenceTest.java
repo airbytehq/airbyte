@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,6 +24,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
@@ -59,12 +61,16 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
   private StandardSyncPersistence standardSyncPersistence;
 
   private StandardSourceDefinition sourceDef1;
+  private StandardSourceDefinition sourceDefAlpha;
   private SourceConnection source1;
   private SourceConnection source2;
+  private SourceConnection sourceAlpha;
   private StandardDestinationDefinition destDef1;
   private StandardDestinationDefinition destDef2;
+  private StandardDestinationDefinition destDefBeta;
   private DestinationConnection destination1;
   private DestinationConnection destination2;
+  private DestinationConnection destinationBeta;
 
   @BeforeEach
   void beforeEach() throws Exception {
@@ -232,6 +238,23 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
             streamDescriptor -> "stream2".equals(streamDescriptor.getName()) && streamDescriptor.getNamespace() == null));
   }
 
+  @Test
+  void testConnectionHasAlphaOrBetaConnector() throws JsonValidationException, IOException {
+    createBaseObjects();
+
+    final StandardSync syncGa = createStandardSync(source1, destination1);
+    standardSyncPersistence.writeStandardSync(syncGa);
+    assertFalse(configRepository.getConnectionHasAlphaOrBetaConnector(syncGa.getConnectionId()));
+
+    final StandardSync syncAlpha = createStandardSync(sourceAlpha, destination1);
+    standardSyncPersistence.writeStandardSync(syncAlpha);
+    assertTrue(configRepository.getConnectionHasAlphaOrBetaConnector(syncAlpha.getConnectionId()));
+
+    final StandardSync syncBeta = createStandardSync(source1, destinationBeta);
+    standardSyncPersistence.writeStandardSync(syncBeta);
+    assertTrue(configRepository.getConnectionHasAlphaOrBetaConnector(syncBeta.getConnectionId()));
+  }
+
   private Set<StandardSyncProtocolVersionFlag> getProtocolVersionFlagForSyncs(final List<StandardSync> standardSync) throws SQLException {
     return database.query(ctx -> ctx
         .select(CONNECTION.ID, CONNECTION.UNSUPPORTED_PROTOCOL_VERSION)
@@ -276,20 +299,27 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
         .withDefaultGeography(Geography.AUTO);
     configRepository.writeStandardWorkspaceNoSecrets(workspace);
 
-    sourceDef1 = createStandardSourceDefinition("0.2.2");
+    sourceDef1 = createStandardSourceDefinition("0.2.2", ReleaseStage.GENERALLY_AVAILABLE);
     source1 = createSourceConnection(workspaceId, sourceDef1);
 
-    final StandardSourceDefinition sourceDef2 = createStandardSourceDefinition("1.1.0");
+    final StandardSourceDefinition sourceDef2 = createStandardSourceDefinition("1.1.0", ReleaseStage.GENERALLY_AVAILABLE);
     source2 = createSourceConnection(workspaceId, sourceDef2);
 
-    destDef1 = createStandardDestDefinition("0.2.3");
+    sourceDefAlpha = createStandardSourceDefinition("1.0.0", ReleaseStage.ALPHA);
+    sourceAlpha = createSourceConnection(workspaceId, sourceDefAlpha);
+
+    destDef1 = createStandardDestDefinition("0.2.3", StandardDestinationDefinition.ReleaseStage.GENERALLY_AVAILABLE);
     destination1 = createDestinationConnection(workspaceId, destDef1);
 
-    destDef2 = createStandardDestDefinition("1.0.0");
+    destDef2 = createStandardDestDefinition("1.3.0", StandardDestinationDefinition.ReleaseStage.GENERALLY_AVAILABLE);
     destination2 = createDestinationConnection(workspaceId, destDef2);
+
+    destDefBeta = createStandardDestDefinition("1.3.0", StandardDestinationDefinition.ReleaseStage.BETA);
+    destinationBeta = createDestinationConnection(workspaceId, destDefBeta);
   }
 
-  private StandardSourceDefinition createStandardSourceDefinition(final String protocolVersion) throws JsonValidationException, IOException {
+  private StandardSourceDefinition createStandardSourceDefinition(final String protocolVersion, final ReleaseStage releaseStage)
+      throws JsonValidationException, IOException {
     final UUID sourceDefId = UUID.randomUUID();
     final StandardSourceDefinition sourceDef = new StandardSourceDefinition()
         .withSourceDefinitionId(sourceDefId)
@@ -301,6 +331,7 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
         .withIcon("icon-1")
         .withSpec(new ConnectorSpecification())
         .withProtocolVersion(protocolVersion)
+        .withReleaseStage(releaseStage)
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)
@@ -309,7 +340,9 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
     return sourceDef;
   }
 
-  private StandardDestinationDefinition createStandardDestDefinition(final String protocolVersion) throws JsonValidationException, IOException {
+  private StandardDestinationDefinition createStandardDestDefinition(final String protocolVersion,
+                                                                     final StandardDestinationDefinition.ReleaseStage releaseStage)
+      throws JsonValidationException, IOException {
     final UUID destDefId = UUID.randomUUID();
     final StandardDestinationDefinition destDef = new StandardDestinationDefinition()
         .withDestinationDefinitionId(destDefId)
@@ -320,6 +353,7 @@ class StandardSyncPersistenceTest extends BaseConfigDatabaseTest {
         .withIcon("icon-3")
         .withSpec(new ConnectorSpecification())
         .withProtocolVersion(protocolVersion)
+        .withReleaseStage(releaseStage)
         .withTombstone(false)
         .withPublic(true)
         .withCustom(false)

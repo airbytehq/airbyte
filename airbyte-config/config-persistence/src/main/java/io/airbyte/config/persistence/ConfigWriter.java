@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -107,6 +107,8 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
                 : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
+            .set(ACTOR_DEFINITION.SUGGESTED_STREAMS, standardSourceDefinition.getSuggestedStreams() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSuggestedStreams())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardSourceDefinition.getSourceDefinitionId()))
             .execute();
@@ -140,6 +142,8 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getResourceRequirements())))
             .set(ACTOR_DEFINITION.ALLOWED_HOSTS, standardSourceDefinition.getAllowedHosts() == null ? null
                 : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getAllowedHosts())))
+            .set(ACTOR_DEFINITION.SUGGESTED_STREAMS, standardSourceDefinition.getSuggestedStreams() == null ? null
+                : JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSuggestedStreams())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
             .execute();

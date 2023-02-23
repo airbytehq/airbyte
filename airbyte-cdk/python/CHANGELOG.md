@@ -1,5 +1,45 @@
 # Changelog
 
+## 0.29.0
+**Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
+
+The changes are: 
+* Deprecated the concept of Stream Slicers in favor of two individual concepts: Incremental Syncs, and Partition Routers: 
+  * Stream will define an `incremental_sync` field which is responsible for defining how the connector should support incremental syncs using a cursor field. `DatetimeStreamSlicer` has been renamed to `DatetimeBasedCursor` and can be used for this field.
+  * `Retriever`s will now define a `partition_router` field. The remaining slicers are now called `SubstreamPartitionRouter` and `ListPartitionRouter`, both of which can be used here as they already have been.
+  * The `CartesianProductStreamSlicer` because `partition_router` can accept a list of values and will generate that same cartesian product by default.
+* `$options` have been renamed to `$parameters`
+* Changed the notation for component references to the JSON schema notation (`$ref: "#/definitions/requester"`)
+* `DefaultPaginator` no longer has a `url_base` field. Moving forward, paginators will derive the `url_base` from the `HttpRequester`. There are some unique cases for connectors that implement a custom `Retriever`.
+* `primary_key` and `name` no longer need to be defined on `Retriever`s or `Requester`s. They will be derived from the stream’s definition
+* Streams no longer define a `stream_cursor_field` and will derive it from the `incremental_sync` component. `checkpoint_interval` has also been deprecated
+* DpathExtractor `field_pointer` has been renamed to `field_path`
+* `RequestOption` can no longer be used with with `inject_into` set to `path`. There is now a dedicated `RequestPath` component moving forward.
+
+## 0.28.1
+Low-Code CDK: fix signature _parse_records_and_emit_request_and_responses
+
+## 0.28.0
+Low-Code: improve day_delta macro and MinMaxDatetime component
+
+## 0.27.0
+Make HttpAvailabilityStrategy default for HttpStreams
+
+## 0.26.0
+Low-Code CDK: make DatetimeStreamSlicer.step as InterpolatedString
+
+## 0.25.2
+Low-Code: SubstreamSlicer.parent_key - dpath support added
+
+## 0.25.1
+Fix issue when trying to log stream slices that are non-JSON-serializable
+
+## 0.25.0
+Use dpath.util.values method to parse response with nested lists
+
+## 0.24.0
+Use dpath.util.values method to parse response with nested lists
+
 ## 0.23.0
 Limiting the number of HTTP requests during a test read
 

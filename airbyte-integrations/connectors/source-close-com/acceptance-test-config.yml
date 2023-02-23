@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-close-com:dev
 acceptance_tests:
@@ -55,6 +55,8 @@ acceptance_tests:
           - name: zoom_connected_accounts
             bypass_reason: "unable to test due to fast-changing data"
           - name: email_bulk_actions
+            bypass_reason: "unable to test due to fast-changing data"
+          - name: incoming_email_tasks
             bypass_reason: "unable to test due to fast-changing data"
   incremental:
     tests:

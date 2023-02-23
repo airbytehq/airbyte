@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -11,6 +11,7 @@ import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
+import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -132,10 +133,12 @@ class BaseConfigDatabaseTest {
     container.start();
   }
 
-  private static void setDb() {
+  private static void setDb() throws DatabaseInitializationException, IOException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    database = new Database(dslContext);
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
+    database = databaseProviders.createNewConfigsDatabase();
+    databaseProviders.createNewJobsDatabase();
   }
 
   private static void migrateDb() throws IOException, DatabaseInitializationException {

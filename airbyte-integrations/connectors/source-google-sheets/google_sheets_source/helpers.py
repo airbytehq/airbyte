@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -199,9 +199,9 @@ class Helpers(object):
 
     @staticmethod
     def get_spreadsheet_id(id_or_url: str) -> str:
-        if re.match(r"(http://)|(https://)", id_or_url):
+        if re.match(r"(https://)", id_or_url):
             # This is a URL
-            m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
+            m = re.search(r"(/)([-\w]{20,})([/]?)", id_or_url)
             if m is not None and m.group(2):
                 return m.group(2)
         else:

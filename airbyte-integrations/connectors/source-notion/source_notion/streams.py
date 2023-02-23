@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeV
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 from .utils import transform_properties
@@ -27,6 +28,10 @@ class NotionStream(HttpStream, ABC):
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self.start_date = config["start_date"]
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         retry_after = response.headers.get("retry-after")

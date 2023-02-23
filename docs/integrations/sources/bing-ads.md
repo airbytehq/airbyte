@@ -10,7 +10,7 @@ This page contains the setup guide and reference information for the Bing Ads so
 :::note
 
 The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
-
+Please be sure to authenticate with the email (personal or work) that you used to sign in to the Bing ads/Microsoft ads platform.
 :::
 
 4. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
@@ -101,8 +101,9 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 ## Changelog
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                    |
-| :------ |:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
-| 0.1.17  | 2022-12-10 | [20005](https://github.com/airbytehq/airbyte/pull/20005)                                                                         | Add `Keyword` to `keyword_performance_report` stream                         |
+|:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------|
+| 0.1.18  | 2023-01-30 | [22073](https://github.com/airbytehq/airbyte/pull/22073)                                                                         | Fix null values in the `Keyword` column of `keyword_performance_report` streams                                            |
+| 0.1.17  | 2022-12-10 | [20005](https://github.com/airbytehq/airbyte/pull/20005)                                                                         | Add `Keyword` to `keyword_performance_report` stream                                                                       |
 | 0.1.16  | 2022-10-12 | [17873](https://github.com/airbytehq/airbyte/pull/17873)                                                                         | Fix: added missing campaign types in (Audience, Shopping and DynamicSearchAds) in campaigns stream                         |
 | 0.1.15  | 2022-10-03 | [17505](https://github.com/airbytehq/airbyte/pull/17505)                                                                         | Fix: limit cache size for ServiceClient instances                                                                          |
 | 0.1.14  | 2022-09-29 | [17403](https://github.com/airbytehq/airbyte/pull/17403)                                                                         | Fix: limit cache size for ReportingServiceManager instances                                                                |

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -22,9 +22,9 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
     page_id: Union[InterpolatedString, str]
     access_token: Union[InterpolatedString, str]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._page_id = InterpolatedString.create(self.page_id, options=options).eval(self.config)
-        self._access_token = InterpolatedString.create(self.access_token, options=options).eval(self.config)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._page_id = InterpolatedString.create(self.page_id, parameters=parameters).eval(self.config)
+        self._access_token = InterpolatedString.create(self.access_token, parameters=parameters).eval(self.config)
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
@@ -51,6 +51,8 @@ class AuthenticatorFacebookPageAccessToken(NoAuth):
             raise Exception(f"Error while generating page access token: {e}") from e
 
 
+# TODO To be removed when source-facebook-pages is moved to beta or bugfixed since this is now supported by the CDK as part of
+# https://github.com/airbytehq/airbyte/pull/21690
 @dataclass
 class NestedDpathExtractor(DpathExtractor):
     """
@@ -83,12 +85,12 @@ class NestedDpathExtractor(DpathExtractor):
 
     def extract_records(self, response: requests.Response) -> List[Record]:
         response_body = self.decoder.decode(response)
-        if len(self.field_pointer) == 0:
+        if len(self.field_path) == 0:
             extracted = response_body
         else:
-            pointer = [pointer.eval(self.config) for pointer in self.field_pointer]
-            extracted_list = dpath.util.get(response_body, pointer[0], default=[])
-            extracted = list(chain(*[dpath.util.get(x, pointer[1:], default=[]) for x in extracted_list])) if extracted_list else []
+            path = [path.eval(self.config) for path in self.field_path]
+            extracted_list = dpath.util.get(response_body, path[0], default=[])
+            extracted = list(chain(*[dpath.util.get(x, path[1:], default=[]) for x in extracted_list])) if extracted_list else []
         if isinstance(extracted, list):
             return extracted
         elif extracted:

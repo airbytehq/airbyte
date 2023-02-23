@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
-import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
+import io.airbyte.commons.protocol.DefaultProtocolSerializer;
+import io.airbyte.commons.protocol.ProtocolSerializer;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -49,6 +48,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
   private final AirbyteMessageBufferedWriterFactory messageWriterFactory;
+  private final ProtocolSerializer protocolSerializer;
 
   private final AtomicBoolean inputHasEnded = new AtomicBoolean(false);
 
@@ -58,19 +58,21 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   private Integer exitValue = null;
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory());
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER), new DefaultAirbyteMessageBufferedWriterFactory(),
+        new DefaultProtocolSerializer());
 
   }
 
   public DefaultAirbyteDestination(final IntegrationLauncher integrationLauncher,
                                    final AirbyteStreamFactory streamFactory,
-                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory) {
+                                   final AirbyteMessageBufferedWriterFactory messageWriterFactory,
+                                   final ProtocolSerializer protocolSerializer) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
     this.messageWriterFactory = messageWriterFactory;
+    this.protocolSerializer = protocolSerializer;
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, WorkerException {
     Preconditions.checkState(destinationProcess == null);
@@ -81,7 +83,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-        Jsons.serialize(destinationConfig.getCatalog()));
+        protocolSerializer.serialize(destinationConfig.getCatalog()));
     // stdout logs are logged elsewhere since stdout also contains data
     LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 
@@ -93,7 +95,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
         .iterator();
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void accept(final AirbyteMessage message) throws IOException {
     Preconditions.checkState(destinationProcess != null && !inputHasEnded.get());
@@ -101,7 +102,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     writer.write(message);
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void notifyEndOfInput() throws IOException {
     Preconditions.checkState(destinationProcess != null && !inputHasEnded.get());
@@ -111,7 +111,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     inputHasEnded.set(true);
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
     if (destinationProcess == null) {
@@ -132,7 +131,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel destination process...");
@@ -146,7 +144,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean isFinished() {
     Preconditions.checkState(destinationProcess != null);
@@ -157,7 +154,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     return !messageIterator.hasNext() && !destinationProcess.isAlive();
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public int getExitValue() {
     Preconditions.checkState(destinationProcess != null, "Destination process is null, cannot retrieve exit value.");
@@ -170,7 +166,6 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     return exitValue;
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(destinationProcess != null);

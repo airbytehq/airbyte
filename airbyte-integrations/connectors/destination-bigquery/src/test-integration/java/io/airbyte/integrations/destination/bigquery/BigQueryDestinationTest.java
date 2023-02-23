@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,13 +16,18 @@ import static org.mockito.Mockito.spy;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
+import com.google.cloud.bigquery.TimePartitioning;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -131,11 +137,18 @@ class BigQueryDestinationTest {
 
   private AmazonS3 s3Client;
 
-  private Stream<Arguments> successTestConfigProvider() {
+  /* TODO: Migrate all BigQuery Destination configs (GCS, Denormalized, Normalized) to no longer use
+   * #partitionIfUnpartitioned then recombine Base Provider. The reason for breaking this method into
+   * a base class is because #testWritePartitionOverUnpartitioned is no longer used only in GCS Staging
+   */
+  private Stream<Arguments> successTestConfigProviderBase() {
     return Stream.of(
         Arguments.of("config"),
-        Arguments.of("configWithProjectId"),
-        Arguments.of("gcsStagingConfig"));
+        Arguments.of("configWithProjectId"));
+  }
+
+  private Stream<Arguments> successTestConfigProvider() {
+    return Stream.concat(successTestConfigProviderBase(), Stream.of(Arguments.of("gcsStagingConfig")));
   }
 
   private Stream<Arguments> failCheckTestConfigProvider() {
@@ -154,7 +167,7 @@ class BigQueryDestinationTest {
 
   @BeforeAll
   public static void beforeAll() throws IOException {
-    for (Path path : ALL_PATHS) {
+    for (final Path path : ALL_PATHS) {
       if (!Files.exists(path)) {
         throw new IllegalStateException(
             String.format("Must provide path to a big query credentials file. Please add file with credentials to %s", path.toAbsolutePath()));
@@ -215,11 +228,11 @@ class BigQueryDestinationTest {
     };
   }
 
-  protected void initBigQuery(JsonNode config) throws IOException {
+  protected void initBigQuery(final JsonNode config) throws IOException {
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     try {
       dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
-    } catch (Exception ex) {
+    } catch (final Exception ex) {
       // ignore
     }
   }
@@ -256,8 +269,8 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
-  void testCheckSuccess(String configName) throws IOException {
-    JsonNode testConfig = configs.get(configName);
+  void testCheckSuccess(final String configName) throws IOException {
+    final JsonNode testConfig = configs.get(configName);
     final AirbyteConnectionStatus actual = new BigQueryDestination().check(testConfig);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
@@ -265,9 +278,9 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("failCheckTestConfigProvider")
-  void testCheckFailures(String configName, String error) {
+  void testCheckFailures(final String configName, final String error) {
     // TODO: this should always throw ConfigErrorException
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
       new BigQueryDestination().check(testConfig);
     });
@@ -276,9 +289,9 @@ class BigQueryDestinationTest {
 
   @ParameterizedTest
   @MethodSource("successTestConfigProvider")
-  void testWriteSuccess(String configName) throws Exception {
+  void testWriteSuccess(final String configName) throws Exception {
     initBigQuery(config);
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final BigQueryDestination destination = new BigQueryDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
@@ -307,13 +320,38 @@ class BigQueryDestinationTest {
         .collect(Collectors.toList()));
   }
 
+  @Test
+  void testCreateTableSuccessWhenTableAlreadyExists() throws Exception {
+    initBigQuery(config);
+
+    // Test schema where we will try to re-create existing table
+    final String tmpTestSchemaName = "test_create_table_when_exists_schema";
+
+    final com.google.cloud.bigquery.Schema schema = com.google.cloud.bigquery.Schema.of(
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP),
+        com.google.cloud.bigquery.Field.of(JavaBaseConstants.COLUMN_NAME_DATA, StandardSQLTypeName.STRING));
+
+    final TableId tableId = TableId.of(tmpTestSchemaName, "test_already_existing_table");
+
+    BigQueryUtils.getOrCreateDataset(bigquery, tmpTestSchemaName, BigQueryUtils.getDatasetLocation(config));
+
+    assertDoesNotThrow(() -> {
+      // Create table
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+
+      // Try to create it one more time. Shouldn't throw exception
+      BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tableId, schema);
+    });
+  }
+
   @ParameterizedTest
   @MethodSource("failWriteTestConfigProvider")
-  void testWriteFailure(String configName, String error) throws Exception {
+  void testWriteFailure(final String configName, final String error) throws Exception {
     initBigQuery(config);
-    JsonNode testConfig = configs.get(configName);
+    final JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
-      AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+      final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
       consumer.start();
     });
     assertThat(ex.getMessage()).contains(error);
@@ -374,9 +412,9 @@ class BigQueryDestinationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("successTestConfigProvider")
-  void testWritePartitionOverUnpartitioned(String configName) throws Exception {
-    JsonNode testConfig = configs.get(configName);
+  @MethodSource("successTestConfigProviderBase")
+  void testWritePartitionOverUnpartitioned(final String configName) throws Exception {
+    final JsonNode testConfig = configs.get(configName);
     initBigQuery(config);
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);

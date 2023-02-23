@@ -59,6 +59,7 @@ create table "public"."actor_definition"(
   "supports_dbt" bool null,
   "normalization_integration_type" varchar(255) null,
   "allowed_hosts" jsonb null,
+  "suggested_streams" jsonb null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );

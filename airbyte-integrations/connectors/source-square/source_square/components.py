@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
-from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
@@ -30,7 +30,7 @@ class AuthenticatorSquare(DeclarativeAuthenticator, JsonSchemaMixin):
 
 
 @dataclass
-class SquareSubstreamSlicer(DatetimeStreamSlicer):
+class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
     parent_stream: Stream = None
     parent_key: str = None
     parent_records_per_request: int = 10

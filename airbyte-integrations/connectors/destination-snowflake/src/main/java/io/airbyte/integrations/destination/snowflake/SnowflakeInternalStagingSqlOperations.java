@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -130,7 +130,11 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = getCreateStageQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
+    try {
+      database.execute(query);
+    } catch (Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   /**
@@ -145,14 +149,14 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
+  public void copyIntoTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
-                                        final String dstTableName,
+                                        final String tableName,
                                         final String schemaName)
       throws SQLException {
-    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName);
+    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
     LOGGER.debug("Executing query: {}", query);
     database.execute(query);
   }

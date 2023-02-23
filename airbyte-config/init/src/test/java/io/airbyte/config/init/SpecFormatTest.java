@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -21,7 +21,7 @@ class SpecFormatTest {
 
   @Test
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
-    final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+    final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider();
 
     final List<JsonNode> sourceSpecs = definitionsProvider.getSourceDefinitions()
         .stream()
