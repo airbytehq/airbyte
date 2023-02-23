@@ -2,13 +2,6 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": 1624345058 },
-      "stream_descriptor": { "name": "subscription" }
-    }
-  },
-  {
-    "type": "STREAM",
-    "stream": {
       "stream_state": { "updated_at": 1624345056 },
       "stream_descriptor": { "name": "customer" }
     }
