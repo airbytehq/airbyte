@@ -93,10 +93,10 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(IP_NOT_IN_WHITE_LIST_ERR_MSG)) {
       return Optional.of(new ConfigErrorException(
           """
-              Snowflake has blocked access from Airbyte IP address. Please make sure that your Snowflake user account's 
-              network policy allows access from all Airbyte IP addresses. See this page for the list of Airbyte IPs:
-              https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses and this page 
-              for documentation on Snowflake network policies: https://docs.snowflake.com/en/user-guide/network-policies
+              Snowflake has blocked access from Airbyte IP address. Please make sure that your Snowflake user account's
+               network policy allows access from all Airbyte IP addresses. See this page for the list of Airbyte IPs:
+               https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#allowlist-ip-addresses and this page
+               for documentation on Snowflake network policies: https://docs.snowflake.com/en/user-guide/network-policies
           """,
           e));
     }
