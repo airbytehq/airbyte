@@ -5330,7 +5330,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.9"
+- dockerImage: "airbyte/source-google-ads:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -6041,7 +6041,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.34"
+- dockerImage: "airbyte/source-google-sheets:0.2.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -6065,6 +6065,12 @@
           description: "Number of rows fetched when making a Google Sheet API call.\
             \ Defaults to 200."
           default: 200
+        names_conversion:
+          type: "boolean"
+          title: "Columns Name Conversion"
+          description: "Columns name conversion using a set of rules, for example,\
+            \ 'My Name' -> 'my-name'."
+          default: false
         credentials:
           type: "object"
           title: "Authentication"
@@ -15590,7 +15596,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-typeform:0.1.10"
+- dockerImage: "airbyte/source-typeform:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/typeform"
     connectionSpecification:
