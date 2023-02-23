@@ -1,0 +1,93 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  # The output of this job is used to trigger the following builds.
+  changes:
+    name: "Detect Modified Files"
+    # The filtering action does not deal with well scheduled events so skip to avoid errors.
+    # See https://github.com/dorny/paths-filter/issues/100 for more info.
+    # This is okay this workflow is only scheduled on master, where we want to build everything
+    # so filtering is not required. Use always() in each start block to force the start task.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.filter.outputs.build }}
+      connectors: ${{ steps.filter.outputs.connectors }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          # Note, the following glob expression within a filters are ORs.
+          filters: |
+            build:
+              - '.github/**'
+              - 'buildSrc/**'
+              - 'tools/**'
+              - '*.gradle'
+              - 'deps.toml'
+              - 'airbyte-config/**'
+            connectors:
+              - 'airbyte-cdk/**'
+              - 'airbyte-integrations/**'
+
+build-and-commit:
+  if: github.ref == 'refs/heads/master' && (needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors == 'true')
+  name: build-and-commit
+  steps:
+    - name: Checkout Airbyte
+      uses: actions/checkout@v3
+
+    - uses: actions/setup-java@v3
+      with:
+        distribution: "zulu"
+        java-version: "17"
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: "lts/*"
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install Pyenv
+      run: python3 -m pip install virtualenv==16.7.9 --user
+
+    - name: Install automake
+      run: apt-get install -y automake build-essential libtool libtool-bin autoconf
+
+    - name: Set up CI Gradle Properties
+      run: |
+        mkdir -p ~/.gradle/
+        cat > ~/.gradle/gradle.properties <<EOF
+        org.gradle.jvmargs=-Xmx8g -Xss4m \
+          --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+          --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+        org.gradle.workers.max=8
+        org.gradle.vfs.watch=false
+        EOF
+
+    - name: Format
+      run: SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
+
+    - name: Process Resources
+      run: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config:init:processResources --scan
+
+    - name: Commit
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Automated Change
+        commit_user_name: Octavia Squidington III
+        commit_user_email: octavia-squidington-iii@users.noreply.github.com

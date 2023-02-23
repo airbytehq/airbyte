@@ -351,13 +351,14 @@ jobs:
           then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
           else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
           fi
-      - name: Run gradle process changes
-        if: github.event.inputs.auto-bump-version == 'true' && success()
-        uses: Wandalen/wretry.action@master
-        with:
-          command: ./gradlew :airbyte-config:init:processResources
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
+      # <!> moved to master-updates.yaml
+      # - name: Run gradle process changes
+      #   if: github.event.inputs.auto-bump-version == 'true' && success()
+      #   uses: Wandalen/wretry.action@master
+      #   with:
+      #     command: ./gradlew :airbyte-config:init:processResources
+      #     attempt_limit: 3
+      #     attempt_delay: 5000 # in ms
       - name: git config
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
