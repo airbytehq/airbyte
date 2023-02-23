@@ -151,7 +151,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .map(col -> {
           final var quoted = getIdentifierWithQuoting(col, getQuoteString());
           return col.contains("_at")
-//              ? "to_char(%s, 'yyyy-MM-dd\"T\"HH:mm:ss.SSSSSSXXX') as %s".formatted(quoted, quoted)
               ? "to_char(%s, 'YYYYMMDDHHMISSMSOF') as %s".formatted(quoted, quoted)
               : quoted;
         }).collect(Collectors.joining(","));

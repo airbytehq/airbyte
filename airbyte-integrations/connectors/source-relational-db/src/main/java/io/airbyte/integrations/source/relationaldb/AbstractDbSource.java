@@ -186,8 +186,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   // in case of user manually modified source table schema but did not refresh it and save into the
   // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
-  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                     ConfiguredAirbyteCatalog catalog) {
+  private void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     final ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -432,7 +432,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
             emittedAt);
       } else {
         // if no cursor is present then this is the first read for is the same as doing a full refresh read.
-        estimateFullRefreshSyncSize(database, airbyteStream);
+//        estimateFullRefreshSyncSize(database, airbyteStream);
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace,
             selectedDatabaseFields, table, emittedAt);
       }
@@ -451,7 +451,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
               getStateEmissionFrequency()),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
-      estimateFullRefreshSyncSize(database, airbyteStream);
+//      estimateFullRefreshSyncSize(database, airbyteStream);
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields,
           table, emittedAt);
     } else if (airbyteStream.getSyncMode() == null) {
