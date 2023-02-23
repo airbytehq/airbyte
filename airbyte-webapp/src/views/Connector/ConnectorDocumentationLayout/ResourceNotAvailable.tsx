@@ -7,7 +7,6 @@ import { Text } from "components/ui/Text";
 import { isSourceDefinition } from "core/domain/connector/source";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-import octaviaWorker from "./octavia-worker.png";
 import styles from "./ResourceNotAvailable.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 
@@ -32,7 +31,6 @@ export const ResourceNotAvailable: React.FC<React.PropsWithChildren<ResourceNotA
       gap="lg"
       className={styles.requestContainer}
     >
-      <img src={octaviaWorker} alt="" />
       {isRequested ? (
         <Text size="lg">
           <FormattedMessage id="sources.request.thankYou" />
