@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -44,6 +44,7 @@ public class EntrypointEnvChecker {
         false,
         Collections.emptyMap(),
         "printenv",
+        null,
         null,
         Collections.emptyMap(),
         Collections.emptyMap(),

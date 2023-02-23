@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -11,10 +11,15 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Geography;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -25,11 +30,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 @SuppressWarnings({"PMD.LongVariable", "PMD.AvoidInstantiatingObjectsInLoops"})
 class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
+  private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
+  private static final UUID SOURCE_ID = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
+  private static final UUID DESTINATION_ID = UUID.randomUUID();
+  private static final JsonNode CONFIG = Jsons.jsonNode(ImmutableMap.of("key-a", "value-a"));
 
   private ConfigRepository configRepository;
 
@@ -70,6 +81,57 @@ class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
         .withInitialSetupComplete(false)
         .withTombstone(false)
         .withDefaultGeography(Geography.AUTO);
+  }
+
+  private static SourceConnection createBaseSource() {
+    return new SourceConnection()
+        .withSourceId(SOURCE_ID)
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+        .withName("source-a")
+        .withTombstone(false)
+        .withConfiguration(CONFIG)
+        .withWorkspaceId(WORKSPACE_ID);
+  }
+
+  private static DestinationConnection createBaseDestination() {
+    return new DestinationConnection()
+        .withDestinationId(DESTINATION_ID)
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
+        .withName("destination-a")
+        .withTombstone(false)
+        .withConfiguration(CONFIG)
+        .withWorkspaceId(WORKSPACE_ID);
+  }
+
+  private static StandardSourceDefinition createSourceDefinition(final ReleaseStage releaseStage) {
+    return new StandardSourceDefinition()
+        .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+        .withTombstone(false)
+        .withName("source-definition-a")
+        .withDockerRepository("dockerhub")
+        .withDockerImageTag("some-tag")
+        .withReleaseStage(releaseStage);
+  }
+
+  private static StandardDestinationDefinition createDestinationDefinition(final StandardDestinationDefinition.ReleaseStage releaseStage) {
+    return new StandardDestinationDefinition()
+        .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
+        .withTombstone(false)
+        .withName("destination-definition-a")
+        .withDockerRepository("dockerhub")
+        .withDockerImageTag("some-tag")
+        .withReleaseStage(releaseStage);
+  }
+
+  private void persistConnectorsWithReleaseStages(
+                                                  final ReleaseStage sourceReleaseStage,
+                                                  final StandardDestinationDefinition.ReleaseStage destinationReleaseStage)
+      throws JsonValidationException, IOException {
+
+    configRepository.writeStandardSourceDefinition(createSourceDefinition(sourceReleaseStage));
+    configRepository.writeStandardDestinationDefinition(createDestinationDefinition(destinationReleaseStage));
+    configRepository.writeSourceConnectionNoSecrets(createBaseSource());
+    configRepository.writeDestinationConnectionNoSecrets(createBaseDestination());
   }
 
   void assertReturnsWorkspace(final StandardWorkspace workspace) throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -123,6 +185,25 @@ class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
     assertFalse(MoreBooleans.isTruthy(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false).getFeedbackDone()));
     configRepository.setFeedback(workspace.getWorkspaceId());
     assertTrue(configRepository.getStandardWorkspaceNoSecrets(workspace.getWorkspaceId(), false).getFeedbackDone());
+  }
+
+  @Test
+  void testWorkspaceHasAlphaOrBetaConnector() throws JsonValidationException, IOException {
+    final StandardWorkspace workspace = createBaseStandardWorkspace();
+
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+
+    persistConnectorsWithReleaseStages(ReleaseStage.GENERALLY_AVAILABLE, StandardDestinationDefinition.ReleaseStage.GENERALLY_AVAILABLE);
+    assertFalse(configRepository.getWorkspaceHasAlphaOrBetaConnector(WORKSPACE_ID));
+
+    persistConnectorsWithReleaseStages(ReleaseStage.ALPHA, StandardDestinationDefinition.ReleaseStage.GENERALLY_AVAILABLE);
+    assertTrue(configRepository.getWorkspaceHasAlphaOrBetaConnector(WORKSPACE_ID));
+
+    persistConnectorsWithReleaseStages(ReleaseStage.GENERALLY_AVAILABLE, StandardDestinationDefinition.ReleaseStage.BETA);
+    assertTrue(configRepository.getWorkspaceHasAlphaOrBetaConnector(WORKSPACE_ID));
+
+    persistConnectorsWithReleaseStages(ReleaseStage.CUSTOM, StandardDestinationDefinition.ReleaseStage.CUSTOM);
+    assertFalse(configRepository.getWorkspaceHasAlphaOrBetaConnector(WORKSPACE_ID));
   }
 
 }

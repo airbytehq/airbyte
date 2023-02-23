@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -76,6 +76,12 @@ public class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3De
             io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
             io.airbyte.protocol.models.Field.of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", DATASET_ID)));
+    super.tearDown(testEnv);
   }
 
   @Test

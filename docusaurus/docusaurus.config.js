@@ -42,6 +42,10 @@ const config = {
                             to: '/integrations/sources/google-analytics-v4',
                         },
                         {
+                            from: '/integrations/sources/appstore',
+                            to: '/integrations/sources/appstore-singer',
+                        },
+                        {
                             from: '/project-overview/security',
                             to: '/operator-guides/security',
                         },
@@ -52,6 +56,10 @@ const config = {
                         {
                             from: '/connector-development/config-based/',
                             to: '/connector-development/config-based/low-code-cdk-overview',
+                        },
+                        {
+                            from: '/project-overview/changelog',
+                            to: '/category/release-notes',
                         },
 //                        {
 //                         from: '/some-lame-path',
@@ -73,6 +81,7 @@ const config = {
                     sidebarPath: require.resolve('./sidebars.js'),
                     editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
                     path: '../docs',
+                    exclude: ['**/*.inapp.md'],
                 },
                 blog: false,
                 theme: {

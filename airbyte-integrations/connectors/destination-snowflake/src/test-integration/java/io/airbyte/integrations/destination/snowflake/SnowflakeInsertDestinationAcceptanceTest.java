@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -47,7 +47,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       "No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.";
 
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
-      "Schema 'TEXT_SCHEMA' already exists, but current role has no privileges on it.";
+      "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
@@ -109,16 +109,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
         .stream()
         .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
   }
 
   @Override

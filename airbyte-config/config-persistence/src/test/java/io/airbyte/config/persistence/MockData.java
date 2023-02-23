@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -140,6 +140,8 @@ public class MockData {
   private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
   private static final String WEBHOOK_OPERATION_EXECUTION_URL = "test-webhook-url";
   private static final String WEBHOOK_OPERATION_EXECUTION_BODY = "test-webhook-body";
+  public static final String CONFIG_HASH = "1394";
+  public static final String CONNECTOR_VERSION = "1.2.0";
 
   public static List<StandardWorkspace> standardWorkspaces() {
     final Notification notification = new Notification()
@@ -597,6 +599,19 @@ public class MockData {
     return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
   }
 
+  public static ConfiguredAirbyteCatalog getConfiguredCatalogWithV1DataTypes() {
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream(
+            "models",
+            "models_schema",
+            io.airbyte.protocol.models.Field.of("id", JsonSchemaType.NUMBER_V1),
+            io.airbyte.protocol.models.Field.of("make_id", JsonSchemaType.NUMBER_V1),
+            io.airbyte.protocol.models.Field.of("model", JsonSchemaType.STRING_V1))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
+    return CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+  }
+
   public static List<StandardSyncState> standardSyncStates() {
     final StandardSyncState standardSyncState1 = new StandardSyncState()
         .withConnectionId(CONNECTION_ID_1)
@@ -656,8 +671,8 @@ public class MockData {
         .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
         .withActorCatalogId(ACTOR_CATALOG_ID_2)
         .withActorId(SOURCE_ID_1)
-        .withConfigHash("1394")
-        .withConnectorVersion("1.2.0");
+        .withConfigHash(CONFIG_HASH)
+        .withConnectorVersion(CONNECTOR_VERSION);
     return Arrays.asList(actorCatalogFetchEvent1, actorCatalogFetchEvent2);
   }
 
@@ -683,18 +698,25 @@ public class MockData {
         .withId(ACTOR_CATALOG_FETCH_EVENT_ID_2)
         .withActorCatalogId(ACTOR_CATALOG_ID_2)
         .withActorId(SOURCE_ID_2)
-        .withConfigHash("1394")
-        .withConnectorVersion("1.2.0");
+        .withConfigHash(CONFIG_HASH)
+        .withConnectorVersion(CONNECTOR_VERSION);
     final ActorCatalogFetchEvent actorCatalogFetchEvent3 = new ActorCatalogFetchEvent()
         .withId(ACTOR_CATALOG_FETCH_EVENT_ID_3)
         .withActorCatalogId(ACTOR_CATALOG_ID_3)
         .withActorId(SOURCE_ID_2)
-        .withConfigHash("1394")
-        .withConnectorVersion("1.2.0");
+        .withConfigHash(CONFIG_HASH)
+        .withConnectorVersion(CONNECTOR_VERSION);
+    final ActorCatalogFetchEvent actorCatalogFetchEvent4 = new ActorCatalogFetchEvent()
+        .withId(ACTOR_CATALOG_FETCH_EVENT_ID_3)
+        .withActorCatalogId(ACTOR_CATALOG_ID_3)
+        .withActorId(SOURCE_ID_3)
+        .withConfigHash(CONFIG_HASH)
+        .withConnectorVersion(CONNECTOR_VERSION);
     return Arrays.asList(
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent1, now),
         new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent2, yesterday),
-        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now));
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent3, now),
+        new ActorCatalogFetchEventWithCreationDate(actorCatalogFetchEvent4, now));
   }
 
   public static List<WorkspaceServiceAccount> workspaceServiceAccounts() {

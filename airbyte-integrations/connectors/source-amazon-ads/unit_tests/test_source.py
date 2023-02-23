@@ -1,11 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
-from freezegun import freeze_time
 from jsonschema import Draft4Validator
 from source_amazon_ads import SourceAmazonAds
 
@@ -43,7 +41,6 @@ def test_spec():
 
 
 @responses.activate
-@freeze_time("2022-12-20 10:00:00")
 def test_check(config_gen):
     setup_responses()
     source = SourceAmazonAds()
@@ -54,13 +51,7 @@ def test_check(config_gen):
     assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 4
 
-    assert source.check(None, config_gen(start_date="1900-01-01")) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="'Start Date: minimum allowed value is 2022-10-20'"
-    )
-    assert len(responses.calls) == 4
-
-    start_date = pendulum.today().format("YYYY-MM-DD")
-    assert source.check(None, config_gen(start_date=start_date)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert source.check(None, config_gen(start_date="2022-02-20")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 6
 
     assert command_check(source, config_gen(start_date="2022-20-02")) == AirbyteConnectionStatus(
@@ -76,6 +67,8 @@ def test_check(config_gen):
     assert command_check(source, config_gen(region=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 8
     assert url_strip_query(responses.calls[7].request.url) == "https://advertising-api.amazon.com/v2/profiles"
+
+    assert command_check(source, config_gen(look_back_window=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
 
 @responses.activate

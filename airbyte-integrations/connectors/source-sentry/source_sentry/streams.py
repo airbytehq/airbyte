@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -65,6 +65,10 @@ class SentryStreamPagination(SentryStream):
 
 
 class SentryIncremental(SentryStreamPagination, IncrementalMixin):
+    def __init__(self, *args, **kwargs):
+        super(SentryIncremental, self).__init__(*args, **kwargs)
+        self._cursor_value = None
+
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
         Endpoint does not provide query filtering params, but they provide us
@@ -72,7 +76,12 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
         during the parsing.
         """
         start_date = "1900-01-01T00:00:00.0Z"
-        if pendulum.parse(record[self.cursor_field]) >= pendulum.parse((stream_state or {}).get(self.cursor_field, start_date)):
+        if pendulum.parse(record[self.cursor_field]) > pendulum.parse((stream_state or {}).get(self.cursor_field, start_date)):
+            # Persist state.
+            # There is a bug in state setter: because of self._cursor_value is not defined it raises Attribute error
+            # which is ignored in airbyte_cdk/sources/abstract_source.py:320 and we have an empty state in return
+            # See: https://github.com/airbytehq/oncall/issues/1317
+            self.state = record
             yield record
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[MutableMapping]:
@@ -87,7 +96,13 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = value[self.cursor_field]
+        """
+        Define state as a max between given value and current state
+        """
+        if not self._cursor_value:
+            self._cursor_value = value[self.cursor_field]
+        else:
+            self._cursor_value = max(value[self.cursor_field], self.state[self.cursor_field])
 
 
 class Events(SentryIncremental):

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.persistence;
@@ -15,10 +15,12 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OP
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.OPERATION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SERVICE_ACCOUNT;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.jooq.impl.DSL.asterisk;
 import static org.jooq.impl.DSL.groupConcat;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.select;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
@@ -54,7 +56,6 @@ import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
-import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
@@ -82,6 +83,7 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.JoinType;
 import org.jooq.Record;
+import org.jooq.Record1;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.SelectJoinStep;
@@ -94,7 +96,7 @@ import org.slf4j.LoggerFactory;
   "OptionalUsedAsFieldOrParameterType"})
 public class ConfigRepository {
 
-  public record StandardSyncQuery(@Nonnull UUID workspaceId, UUID sourceId, UUID destinationId, boolean includeDeleted) {}
+  public record StandardSyncQuery(@Nonnull UUID workspaceId, List<UUID> sourceId, List<UUID> destinationId, boolean includeDeleted) {}
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
   private static final String OPERATION_IDS_AGG_FIELD = "operation_ids_agg";
@@ -126,7 +128,7 @@ public class ConfigRepository {
    */
   public boolean healthCheck() {
     try {
-      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch()).stream().count();
     } catch (final Exception e) {
       LOGGER.error("Health check error: ", e);
       return false;
@@ -294,7 +296,8 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.source))
         .and(sourceDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(DbConverter::buildStandardSourceDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -356,7 +359,8 @@ public class ConfigRepository {
         .where(ACTOR_DEFINITION.ACTOR_TYPE.eq(ActorType.destination))
         .and(destDefId.map(ACTOR_DEFINITION.ID::eq).orElse(noCondition()))
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
-        .fetchStream())
+        .fetch())
+        .stream()
         .map(DbConverter::buildStandardDestinationDefinition)
         // Ensure version is set. Needed for connectors not upgraded since we added versioning.
         .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
@@ -760,6 +764,25 @@ public class ConfigRepository {
   }
 
   /**
+   * List workspace IDs with most recently running jobs within a given time window (in hours).
+   *
+   * @param timeWindowInHours - integer, e.g. 24, 48, etc
+   * @return List<UUID> - list of workspace IDs
+   * @throws IOException - failed to query data
+   */
+  public List<UUID> listWorkspacesByMostRecentlyRunningJobs(final int timeWindowInHours) throws IOException {
+    final Result<Record1<UUID>> records = database.query(ctx -> ctx.selectDistinct(ACTOR.WORKSPACE_ID)
+        .from(ACTOR)
+        .join(CONNECTION)
+        .on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .join(JOBS)
+        .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.UPDATED_AT.greaterOrEqual(OffsetDateTime.now().minusHours(timeWindowInHours)))
+        .fetch());
+    return records.stream().map(record -> record.get(ACTOR.WORKSPACE_ID)).collect(Collectors.toList());
+  }
+
+  /**
    * Returns all active sources using a definition
    *
    * @param definitionId - id for the definition
@@ -865,8 +888,10 @@ public class ConfigRepository {
         // join with source actors so that we can filter by workspaceId
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(standardSyncQuery.workspaceId)
-            .and(standardSyncQuery.destinationId == null ? noCondition() : CONNECTION.DESTINATION_ID.eq(standardSyncQuery.destinationId))
-            .and(standardSyncQuery.sourceId == null ? noCondition() : CONNECTION.SOURCE_ID.eq(standardSyncQuery.sourceId))
+            .and(standardSyncQuery.destinationId == null || standardSyncQuery.destinationId.isEmpty() ? noCondition()
+                : CONNECTION.DESTINATION_ID.in(standardSyncQuery.destinationId))
+            .and(standardSyncQuery.sourceId == null || standardSyncQuery.sourceId.isEmpty() ? noCondition()
+                : CONNECTION.SOURCE_ID.in(standardSyncQuery.sourceId))
             .and(standardSyncQuery.includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
 
         // group by connection.id so that the groupConcat above works
@@ -1180,8 +1205,10 @@ public class ConfigRepository {
 
     final Map<UUID, AirbyteCatalog> result = new HashMap<>();
     for (final Record record : records) {
-      final AirbyteCatalog catalog = Jsons.deserialize(
-          record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
+      // We do not apply the on-the-fly migration here because the only caller is getOrInsertActorCatalog
+      // which is using this to figure out if the catalog has already been inserted. Migrating on the fly
+      // here will cause us to add a duplicate each time we check for existence of a catalog.
+      final AirbyteCatalog catalog = Jsons.deserialize(record.get(ACTOR_CATALOG.CATALOG).toString(), AirbyteCatalog.class);
       result.put(record.get(ACTOR_CATALOG.ID), catalog);
     }
     return result;
@@ -1344,19 +1371,22 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
-  // todo (cgardens) - following up on why this arg is not used in this comment:
-  // https://github.com/airbytehq/airbyte/pull/18125/files#r1027377700
   @SuppressWarnings({"unused", "SqlNoDataSourceInspection"})
   public Map<UUID, ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSources(final List<UUID> sourceIds) throws IOException {
     // noinspection SqlResolve
+    if (sourceIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
     return database.query(ctx -> ctx.fetch(
         """
-        select actor_catalog_id, actor_id, created_at from
-          (select actor_catalog_id, actor_id, created_at, rank() over (partition by actor_id order by created_at desc) as creation_order_rank
+        select distinct actor_catalog_id, actor_id, created_at from
+          (select actor_catalog_id, actor_id, created_at, row_number() over (partition by actor_id order by created_at desc) as creation_order_row_number
           from public.actor_catalog_fetch_event
+          where actor_id in ({0})
           ) table_with_rank
-        where creation_order_rank = 1;
-        """))
+        where creation_order_row_number = 1;
+        """,
+        DSL.list(sourceIds.stream().map(DSL::value).collect(Collectors.toList()))))
         .stream().map(DbConverter::buildActorCatalogFetchEvent)
         .collect(Collectors.toMap(ActorCatalogFetchEvent::getActorId, record -> record));
   }
@@ -1428,14 +1458,6 @@ public class ConfigRepository {
    * The following methods are present to allow the JobCreationAndStatusUpdateActivity class to emit
    * metrics without exposing the underlying database connection.
    */
-
-  public List<ReleaseStage> getSrcIdAndDestIdToReleaseStages(final UUID srcId, final UUID dstId) throws IOException {
-    return database.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, srcId, dstId));
-  }
-
-  public List<ReleaseStage> getJobIdToReleaseStages(final long jobId) throws IOException {
-    return database.query(ctx -> MetricQueries.jobIdToReleaseStages(ctx, jobId));
-  }
 
   private Condition includeTombstones(final Field<Boolean> tombstoneField, final boolean includeTombstones) {
     if (includeTombstones) {
@@ -1511,6 +1533,62 @@ public class ConfigRepository {
         .where(CONNECTION.ID.eq(connectionId))
         .limit(1))
         .fetchOneInto(Geography.class);
+  }
+
+  public Geography getGeographyForWorkspace(final UUID workspaceId) throws IOException {
+    return database.query(ctx -> ctx.select(WORKSPACE.GEOGRAPHY)
+        .from(WORKSPACE)
+        .where(WORKSPACE.ID.eq(workspaceId))
+        .limit(1))
+        .fetchOneInto(Geography.class);
+  }
+
+  /**
+   * Specialized query for efficiently determining eligibility for the Free Connector Program. If a
+   * workspace has at least one Alpha or Beta connector, users of that workspace will be prompted to
+   * sign up for the program. This check is performed on nearly every page load so the query needs to
+   * be as efficient as possible.
+   *
+   * @param workspaceId ID of the workspace to check connectors for
+   * @return boolean indicating if an alpha or beta connector exists within the workspace
+   */
+  public boolean getWorkspaceHasAlphaOrBetaConnector(final UUID workspaceId) throws IOException {
+    final Condition releaseStageAlphaOrBeta = ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.alpha)
+        .or(ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.beta));
+
+    final Integer countResult = database.query(ctx -> ctx.selectCount()
+        .from(ACTOR)
+        .join(ACTOR_DEFINITION).on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))
+        .and(ACTOR.TOMBSTONE.notEqual(true))
+        .and(releaseStageAlphaOrBeta))
+        .fetchOneInto(Integer.class);
+
+    return countResult > 0;
+  }
+
+  /**
+   * Specialized query for efficiently determining a connection's eligibility for the Free Connector
+   * Program. If a connection has at least one Alpha or Beta connector, it will be free to use as long
+   * as the workspace is enrolled in the Free Connector Program. This check is used to allow free
+   * connections to continue running even when a workspace runs out of credits.
+   *
+   * @param connectionId ID of the connection to check connectors for
+   * @return boolean indicating if an alpha or beta connector is used by the connection
+   */
+  public boolean getConnectionHasAlphaOrBetaConnector(final UUID connectionId) throws IOException {
+    final Condition releaseStageAlphaOrBeta = ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.alpha)
+        .or(ACTOR_DEFINITION.RELEASE_STAGE.eq(ReleaseStage.beta));
+
+    final Integer countResult = database.query(ctx -> ctx.selectCount()
+        .from(CONNECTION)
+        .join(ACTOR).on(ACTOR.ID.eq(CONNECTION.SOURCE_ID).or(ACTOR.ID.eq(CONNECTION.DESTINATION_ID)))
+        .join(ACTOR_DEFINITION).on(ACTOR_DEFINITION.ID.eq(ACTOR.ACTOR_DEFINITION_ID))
+        .where(CONNECTION.ID.eq(connectionId))
+        .and(releaseStageAlphaOrBeta))
+        .fetchOneInto(Integer.class);
+
+    return countResult > 0;
   }
 
   /**

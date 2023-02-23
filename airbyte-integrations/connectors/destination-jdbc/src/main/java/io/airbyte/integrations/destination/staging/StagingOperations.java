@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.staging;
@@ -47,20 +47,20 @@ public interface StagingOperations extends SqlOperations {
       throws Exception;
 
   /**
-   * Load the data stored in the staging area into a temporary table in the destination
+   * Load the data stored in the stage area into a temporary table in the destination
    *
-   * @param database database used for syncing
+   * @param database database interface
    * @param stageName name of staging area folder
-   * @param stagingPath path of staging folder to data files
-   * @param stagedFiles collection of the staging files
-   * @param dstTableName name of the table where staged data will be moved to
+   * @param stagingPath path to staging files
+   * @param stagedFiles collection of staged files
+   * @param tableName name of table to write staging files to
    * @param schemaName name of schema
    */
-  void copyIntoTmpTableFromStage(JdbcDatabase database,
+  void copyIntoTableFromStage(JdbcDatabase database,
                                  String stageName,
                                  String stagingPath,
                                  List<String> stagedFiles,
-                                 String dstTableName,
+                                 String tableName,
                                  String schemaName)
       throws Exception;
 

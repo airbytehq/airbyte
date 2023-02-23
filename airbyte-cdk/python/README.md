@@ -71,7 +71,8 @@ If the iteration you are working on includes changes to the models, you might wa
 ```commandline
 SUB_BUILD=CONNECTORS_BASE ./gradlew format --scan --info --stacktrace
 ```
-This will generate the files based on the schemas, add the license information and format the code. If you want to only do the former and rely on pre-commit to the others, you can run the appropriate generation command i.e. `./gradlew generateProtocolClassFiles` or `./gradlew generateComponentManifestClassFiles`.
+This will generate the files based on the schemas, add the license information and format the code. If you want to only do the former and rely on
+pre-commit to the others, you can run the appropriate generation command i.e. `./gradlew generateComponentManifestClassFiles`.
 
 #### Testing
 
@@ -140,9 +141,8 @@ and the installation should use your local CDK. Note that the local CDK is injec
 **Note:** if your connector uses a `.dockerignore` file, it cannot have `exclude-all` or `exclude-except` patterns, i.e. the `.dockerignore` must specifically say which files to ignore without using any regex. 
 #### Publishing a new version to PyPi
 
-1. Bump the package version in `setup.py`
-2. Open a PR
-3. An Airbyte member must comment `/publish-cdk dry-run=true` to publish the package to test.pypi.org or `/publish-cdk dry-run=false` to publish it to the real index of pypi.org.
+1. Open a PR
+2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
 
 ## Coming Soon
 

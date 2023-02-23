@@ -246,7 +246,7 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
+                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. The `wal2json` plugin is deprecated and will soon be removed so it's not recommended to use. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
                 "order": 2
@@ -400,7 +400,5 @@
       }
     }
   },
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_destination_sync_modes": []
 }

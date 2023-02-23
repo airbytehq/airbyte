@@ -36,13 +36,14 @@ Let's begin by pulling data for the last day's rates by using the `/latest` endp
 
 ```python
 class ExchangeRates(HttpStream):
-    url_base = "https://api.exchangeratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
 
     primary_key = None
 
-    def __init__(self, base: str, **kwargs):
+    def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__()
-        self.base = base
+        self.base = config['base']
+        self.apikey = config['apikey']
 
 
     def path(
@@ -53,6 +54,12 @@ class ExchangeRates(HttpStream):
     ) -> str:
         # The "/latest" path gives us the latest currency exchange rates
         return "latest"  
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        # The api requires that we include apikey as a header so we do that in this method
+        return {'apikey': self.apikey}
 
     def request_params(
             self,
@@ -80,14 +87,20 @@ class ExchangeRates(HttpStream):
         return None
 ```
 
-This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code: 1. Added a constructor `__init__` which stores the `base` currency to query for. 2. `return {'base': self.base}` to add the `?base=<base-value>` query parameter to the request based on the `base` input by the user. 3. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file. 4. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
+This may look big, but that's just because there are lots of \(unused, for now\) parameters in these methods \(those can be hidden with Python's `**kwargs`, but don't worry about it for now\). Really we just added a few lines of "significant" code:
 
-Let's also pass the `base` parameter input by the user to the stream class:
+1. Added a constructor `__init__` which stores the `base` currency to query for and the `apikey` used for authentication.
+2. `return {'base': self.base}` to add the `?base=<base-value>` query parameter to the request based on the `base` input by the user.
+3. `return {'apikey': self.apikey}` to add the header `apikey=<apikey-string>` to the request based on the `apikey` input by the user.
+4. `return [response.json()]` to parse the response from the API to match the schema of our schema `.json` file.
+5. `return "latest"` to indicate that we want to hit the `/latest` endpoint of the API to get the latest exchange rate data.
+
+Let's also pass the config specified by the user to the stream class:
 
 ```python
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = NoAuth()
-        return [ExchangeRates(authenticator=auth, base=config['base'])]
+        return [ExchangeRates(authenticator=auth, config=config)]
 ```
 
 We're now ready to query the API!
@@ -127,20 +140,21 @@ Let's get the easy parts out of the way and pass the `start_date`:
 
 ```python
 def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = NoAuth()
-        # Parse the date from a string into a datetime object
-        start_date = datetime.strptime(config['start_date'], '%Y-%m-%d') 
-        return [ExchangeRates(authenticator=auth, base=config['base'], start_date=start_date)]
+    auth = NoAuth()
+    # Parse the date from a string into a datetime object
+    start_date = datetime.strptime(config['start_date'], '%Y-%m-%d')
+    return [ExchangeRates(authenticator=auth, config=config, start_date=start_date)]
 ```
 
 Let's also add this parameter to the constructor and declare the `cursor_field`:
 
 ```python
 from datetime import datetime, timedelta
+from airbyte_cdk.sources.streams import IncrementalMixin
 
 
 class ExchangeRates(HttpStream, IncrementalMixin):
-    url_base = "https://api.exchangeratesapi.io/"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
     cursor_field = "date"
     primary_key = "date"
 
@@ -176,7 +190,7 @@ Update internal state `cursor_value` inside `read_records` method
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
             if self._cursor_value:
-                latest_record_date = datetime.strptime(latest_record[self.cursor_field], '%Y-%m-%d')
+                latest_record_date = datetime.strptime(record[self.cursor_field], '%Y-%m-%d')
                 self._cursor_value = max(self._cursor_value, latest_record_date)
             yield record
 

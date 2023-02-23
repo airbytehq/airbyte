@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -8,7 +8,6 @@ import static io.debezium.connector.postgresql.PostgresOffsetContext.LAST_COMMIT
 import static io.debezium.connector.postgresql.SourceInfo.LSN_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
@@ -17,15 +16,9 @@ import io.debezium.connector.postgresql.PostgresOffsetContext;
 import io.debezium.connector.postgresql.PostgresOffsetContext.Loader;
 import io.debezium.connector.postgresql.PostgresPartition;
 import io.debezium.connector.postgresql.connection.Lsn;
-import io.debezium.jdbc.JdbcConnection.ResultSetMapper;
-import io.debezium.jdbc.JdbcConnection.StatementFactory;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -86,20 +79,6 @@ public class PostgresDebeziumStateUtil {
     return parseSavedOffset(debeziumProperties);
   }
 
-  private Connection connection(final JsonNode jdbcConfig) throws SQLException {
-    Properties properties = new Properties();
-    properties.setProperty("user", jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText()
-        : null);
-    properties.setProperty("password", jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText()
-        : null);
-    properties.setProperty("assumeMinServerVersion", "9.4");
-    properties.setProperty("ApplicationName", "Airbyte Debezium Streaming");
-    properties.setProperty("replication", "database");
-    properties.setProperty("preferQueryMode", "simple"); // replication protocol only supports simple query mode
-
-    return DriverManager.getConnection(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(), properties);
-  }
-
   public void commitLSNToPostgresDatabase(final JsonNode jdbcConfig,
                                           final OptionalLong savedOffset,
                                           final String slotName,
@@ -111,9 +90,7 @@ public class PostgresDebeziumStateUtil {
 
     final LogSequenceNumber logSequenceNumber = LogSequenceNumber.valueOf(savedOffset.getAsLong());
 
-    try (final BaseConnection pgConnection = ((BaseConnection) connection(jdbcConfig))) {
-      validateReplicationConnection(pgConnection);
-
+    try (final BaseConnection pgConnection = (BaseConnection) PostgresReplicationConnection.createConnection(jdbcConfig)) {
       ChainedLogicalStreamBuilder streamBuilder = pgConnection
           .getReplicationAPI()
           .replicationStream()
@@ -158,26 +135,6 @@ public class PostgresDebeziumStateUtil {
       throw new RuntimeException("Unknown plugin value : " + plugin);
     }
     return streamBuilder;
-  }
-
-  private void validateReplicationConnection(final BaseConnection pgConnection) throws SQLException {
-    final Lsn xlogStart = queryAndMap(pgConnection, "IDENTIFY_SYSTEM", Connection::createStatement, rs -> {
-      if (!rs.next()) {
-        throw new IllegalStateException("The DB connection is not a valid replication connection");
-      }
-      String xlogpos = rs.getString("xlogpos");
-      return Lsn.valueOf(xlogpos);
-    });
-  }
-
-  private <T> T queryAndMap(final Connection conn, final String query, final StatementFactory statementFactory, final ResultSetMapper<T> mapper)
-      throws SQLException {
-    Objects.requireNonNull(mapper, "Mapper must be provided");
-    try (Statement statement = statementFactory.createStatement(conn)) {
-      try (ResultSet resultSet = statement.executeQuery(query);) {
-        return mapper.apply(resultSet);
-      }
-    }
   }
 
   /**

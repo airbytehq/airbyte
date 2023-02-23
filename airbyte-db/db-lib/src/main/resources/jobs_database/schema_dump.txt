@@ -35,6 +35,7 @@ create table "public"."attempts"(
   "temporal_workflow_id" varchar(256) null,
   "failure_summary" jsonb null,
   "processing_task_queue" varchar(255) null,
+  "attempt_sync_config" jsonb null,
   constraint "attempts_pkey"
     primary key ("id")
 );
