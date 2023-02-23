@@ -26,6 +26,7 @@ public class ConnectorMarkdownGenerator {
         .desc("name for the generated catalog json file").build();
     private static final Options OPTIONS = new Options().addOption(PROJECT_ROOT_OPTION).addOption(SEED_ROOT_OPTION).addOption(OUTPUT_FILENAME_OPTION);
 
+    private static final String githubCodeBase = "https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors";
     private static final String githubIconBase = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-config/init/src/main/resources/icons";
     private static final String iconSize = "30";
 
@@ -85,21 +86,24 @@ public class ConnectorMarkdownGenerator {
         headers.add("Image");
         headers.add("Release Stage");
         headers.add("Docs");
+        headers.add("Code");
         headers.add("ID");
 
         bodyParts.add("| " + String.join(" | ", headers) + " |");
-        bodyParts.add("|----|----|----|----|----|----|----|");
+        bodyParts.add("|----|----|----|----|----|----|----|----|");
         for (final JsonNode definition : definitions) {
             final String name = definition.get("name").asText();
+            final String codeName = definition.get("dockerRepository").asText().split("/")[1];
             final String icon = definition.get("icon") != null ? definition.get("icon").asText() : "";
-            final String iconLink = icon.equals("") ? "<img alt=\"" + name + " icon\" src=\"" + githubIconBase + "/" + icon  + "\" height=\"" + iconSize + "\" height=\"" + iconSize + "\"/>" : "x";
+            final String iconLink = !icon.equals("") ? "<img alt=\"" + name + " icon\" src=\"" + githubIconBase + "/" + icon  + "\" height=\"" + iconSize + "\" height=\"" + iconSize + "\"/>" : "x";
             final String dockerImage = definition.get("dockerRepository").asText() + ":" + definition.get("dockerImageTag").asText();
             final String releaseStage = definition.get("releaseStage") != null ? definition.get("releaseStage").asText() : "unknown";
             final String documentationUrl = definition.get("documentationUrl") != null ? definition.get("documentationUrl").asText() : "";
-            final String docLink = documentationUrl.equals("") ? "[link](" + documentationUrl + ")" : "missing";
+            final String docLink = !documentationUrl.equals("") ? "[link](" + documentationUrl + ")" : "missing";
+            final String codeLink = "[code](" + githubCodeBase + "/" + codeName + ")";
             final String id = "<small>`" + definition.get(type.toLowerCase() + "DefinitionId").asText() + "`</small>";
 
-            bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | " + id + " |");
+            bodyParts.add("| **" + name + "** | " + iconLink + " | " + type + " | " + dockerImage + " | " + releaseStage + " | " + docLink + " | " + codeLink + " | " + id + " |");
         }
 
         return String.join("\r\n", bodyParts);
