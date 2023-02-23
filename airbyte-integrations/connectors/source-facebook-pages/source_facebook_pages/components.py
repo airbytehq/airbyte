@@ -2,19 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass, InitVar
+from dataclasses import InitVar, dataclass
 from http import HTTPStatus
-from typing import Any, Mapping, Union, Optional, MutableMapping
+from typing import Any, Mapping, MutableMapping, Optional, Union
+
 import dpath.util
 import pendulum
 import requests
-from requests import HTTPError
-
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamState, StreamSlice
-from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.schema import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from requests import HTTPError
 
 
 @dataclass
@@ -69,9 +69,9 @@ class CustomFieldTransformation(RecordTransformation):
         Get all dpath in format 'a/b/*/c' from schema with format: 'date-time'
         """
         schema = self._get_schema_root_properties()
-        all_results = dpath.util.search(schema, '**', yielded=True, afilter=lambda x: True if "date-time" in str(x) else False)
-        full_dpath = [x[0] for x in all_results if isinstance(x[1], dict) and x[1].get('format') == 'date-time']
-        return [path.replace('/properties', '').replace('items', '*') for path in full_dpath]
+        all_results = dpath.util.search(schema, "**", yielded=True, afilter=lambda x: True if "date-time" in str(x) else False)
+        full_dpath = [x[0] for x in all_results if isinstance(x[1], dict) and x[1].get("format") == "date-time"]
+        return [path.replace("/properties", "").replace("items", "*") for path in full_dpath]
 
     def _date_time_to_rfc3339(self, record: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -79,13 +79,13 @@ class CustomFieldTransformation(RecordTransformation):
         """
         date_time_paths = self._get_date_time_dpath_from_schema()
         for path in date_time_paths:
-            if '*' not in path:
+            if "*" not in path:
                 if field_value := dpath.util.get(record, path, default=None):
                     dpath.util.set(record, path, pendulum.parse(field_value).to_rfc3339_string())
             else:
                 if field_values := dpath.util.values(record, path):
                     for i, date_time_value in enumerate(field_values):
-                        dpath.util.set(record, path.replace('*', str(i)), pendulum.parse(date_time_value).to_rfc3339_string())
+                        dpath.util.set(record, path.replace("*", str(i)), pendulum.parse(date_time_value).to_rfc3339_string())
         return record
 
     def transform(
