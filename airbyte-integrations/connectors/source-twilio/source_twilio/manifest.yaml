@@ -50,7 +50,7 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    cursor_format: "%a, %d %b %Y %H:%M:%S %z"
+    cursor_datetime_format: "%a, %d %b %Y %H:%M:%S %z"
     step: "{{ 'P' + config.slice_step_map[parameters.name]|string() + 'D' if config.slice_step_map and config.slice_step_map[parameters.name] else parameters.step_default }}"
     lookback_window: "{{ 'PT' + config.lookback_window|string() + 'M' if config.lookback_window else '' }}"
   datetime_transformation:
@@ -341,7 +341,7 @@ definitions:
           end_datetime:
             datetime: "{{ today_utc() }}"
           datetime_format: "%Y-%m-%d"
-          cursor_format: ""
+          cursor_datetime_format: ""
     $parameters:
       name: "usage_records"
       cursor_field: "start_date"
