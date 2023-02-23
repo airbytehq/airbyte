@@ -2834,6 +2834,10 @@
               "type": ["null", "object"],
               "properties": {}
             },
+            "customer_tax_ids": {
+              "type": ["null", "array"],
+              "properties": {}
+            },
             "charge": {
               "type": ["null", "string"]
             },

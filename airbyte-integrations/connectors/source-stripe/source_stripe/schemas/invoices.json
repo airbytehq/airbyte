@@ -20,6 +20,9 @@
     "description": {
       "type": ["null", "string"]
     },
+    "customer_tax_ids": {
+      "type": ["null", "array"]
+    },
     "receipt_number": {
       "type": ["null", "string"]
     },

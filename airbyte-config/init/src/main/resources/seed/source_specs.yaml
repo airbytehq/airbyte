@@ -14443,7 +14443,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:2.0.0"
+- dockerImage: "airbyte/source-stripe:2.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
