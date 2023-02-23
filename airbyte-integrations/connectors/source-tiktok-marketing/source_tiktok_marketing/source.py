@@ -61,8 +61,10 @@ class SourceTiktokMarketing(AbstractSource):
         """Converts an input configure to stream arguments"""
 
         credentials = config.get("credentials")
+
         if credentials:
             # used for new config format
+            is_sandbox = credentials["auth_type"] == "sandbox_access_token"
             access_token = credentials["access_token"]
             secret = credentials.get("secret")
             app_id = int(credentials.get("app_id", 0))
@@ -81,6 +83,7 @@ class SourceTiktokMarketing(AbstractSource):
             "app_id": app_id,
             "secret": secret,
             "access_token": access_token,
+            "is_sandbox": is_sandbox,
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -98,7 +101,7 @@ class SourceTiktokMarketing(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
 
-        is_production = not (args["advertiser_id"])
+        is_production = not (args["is_sandbox"])
 
         report_granularity = config.get("report_granularity")
 
