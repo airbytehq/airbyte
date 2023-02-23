@@ -1490,6 +1490,14 @@
   icon: qb.svg
   sourceType: api
   releaseStage: alpha
+- name: Railz
+  sourceDefinitionId: 9b6cc0c0-da81-4103-bbfd-5279e18a849a
+  dockerRepository: airbyte/source-railz
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/railz
+  icon: railz.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Recharge
   sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   dockerRepository: airbyte/source-recharge
