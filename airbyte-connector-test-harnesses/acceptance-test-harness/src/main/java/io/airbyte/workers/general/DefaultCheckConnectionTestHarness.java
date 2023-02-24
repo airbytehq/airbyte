@@ -18,8 +18,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -44,8 +44,8 @@ public class DefaultCheckConnectionTestHarness implements CheckConnectionTestHar
   private Process process;
 
   public DefaultCheckConnectionTestHarness(final IntegrationLauncher integrationLauncher,
-                                      final ConnectorConfigUpdater connectorConfigUpdater,
-                                      final AirbyteStreamFactory streamFactory) {
+                                           final ConnectorConfigUpdater connectorConfigUpdater,
+                                           final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.connectorConfigUpdater = connectorConfigUpdater;
     this.streamFactory = streamFactory;

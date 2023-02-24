@@ -18,8 +18,8 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.helper.CatalogClientConverters;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
@@ -47,9 +47,9 @@ public class DefaultDiscoverCatalogTestHarness implements DiscoverCatalogTestHar
   private volatile Process process;
 
   public DefaultDiscoverCatalogTestHarness(final AirbyteApiClient airbyteApiClient,
-                                      final IntegrationLauncher integrationLauncher,
-                                      final ConnectorConfigUpdater connectorConfigUpdater,
-                                      final AirbyteStreamFactory streamFactory) {
+                                           final IntegrationLauncher integrationLauncher,
+                                           final ConnectorConfigUpdater connectorConfigUpdater,
+                                           final AirbyteStreamFactory streamFactory) {
     this.airbyteApiClient = airbyteApiClient;
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
@@ -57,8 +57,8 @@ public class DefaultDiscoverCatalogTestHarness implements DiscoverCatalogTestHar
   }
 
   public DefaultDiscoverCatalogTestHarness(final AirbyteApiClient airbyteApiClient,
-                                      final IntegrationLauncher integrationLauncher,
-                                      final ConnectorConfigUpdater connectorConfigUpdater) {
+                                           final IntegrationLauncher integrationLauncher,
+                                           final ConnectorConfigUpdater connectorConfigUpdater) {
     this(airbyteApiClient, integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 

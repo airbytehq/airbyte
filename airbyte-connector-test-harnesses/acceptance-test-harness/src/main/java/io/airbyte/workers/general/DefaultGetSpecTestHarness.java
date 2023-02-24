@@ -34,7 +34,7 @@ public class DefaultGetSpecTestHarness implements GetSpecTestHarness {
   private Process process;
 
   public DefaultGetSpecTestHarness(final IntegrationLauncher integrationLauncher,
-                              final AirbyteStreamFactory streamFactory) {
+                                   final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
     this.streamFactory = streamFactory;
   }

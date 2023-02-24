@@ -68,4 +68,5 @@ public class EnvConfigs implements Configs {
   public String getEnv(final String name) {
     return getEnv.apply(name);
   }
+
 }

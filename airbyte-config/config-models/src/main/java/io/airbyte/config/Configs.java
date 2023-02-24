@@ -20,7 +20,6 @@ package io.airbyte.config;
 @SuppressWarnings("PMD.BooleanGetMethodName")
 public interface Configs {
 
-
   /**
    * Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated
    * when new versions are published.
