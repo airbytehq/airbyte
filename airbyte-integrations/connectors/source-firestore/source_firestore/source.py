@@ -15,6 +15,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from google.oauth2 import service_account
 import google.auth.transport.requests
 import requests
@@ -42,18 +43,40 @@ class Helpers(object):
 
 # Basic full refresh stream
 class FirestoreStream(HttpStream, ABC):
+    _cursor_value: Optional[datetime]
+    cursor_field: Union[str, List[str]] = "updatedAt"
+    @property
+    def cursor_key(self):
+        if isinstance(self.cursor_field, list):
+            if (len(self.cursor_field) > 0):
+                return self.cursor_field[0]
+            return None
+        return self.cursor_field
+
+
     url_base = Helpers.url_base
-    primary_key = "name"
+    _primary_key = "name"
     page_size = 100
     http_method = "POST"
     collection_name: str
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
+
+    @primary_key.setter
+    def primary_key(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._primary_key = value
 
     @property
     def name(self):
         return casing.camel_to_snake(self.collection_name)
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str):
-        super().__init__(authenticator=authenticator)
+        super().__init__(
+            authenticator=authenticator,
+        )
         self._cursor_value = None
         self.collection_name = collection_name
 
@@ -62,7 +85,7 @@ class FirestoreStream(HttpStream, ABC):
         if len(documents) == 0:
             return None
         if self.cursor_key is None:
-            return {"stringValue": documents[len(documents) - 1]["name"]}
+            return None
         return { "timestampValue": documents[len(documents) - 1][self.cursor_key] }
 
     def request_params(
@@ -78,6 +101,9 @@ class FirestoreStream(HttpStream, ABC):
     ) -> Optional[Mapping]:
         timestamp_state: Optional[datetime] = stream_state.get(self.cursor_key)
         timestamp_value = Helpers.parse_date(timestamp_state).isoformat() if timestamp_state else None
+
+        self.logger.info(f"Requesting body JSON with cursor {self.cursor_key} value {next_page_token}")
+
         return {
             "structuredQuery": {
                 "from": [{"collectionId": self.collection_name, "allDescendants": True}],
@@ -89,9 +115,7 @@ class FirestoreStream(HttpStream, ABC):
                             "timestampValue": timestamp_value,
                         },
                     }
-                }
-                if timestamp_value
-                else None,
+                } if timestamp_value else None,
                 "limit": self.page_size,
                 "orderBy": [{"field": {"fieldPath": self.cursor_key}, "direction": "ASCENDING"}] if self.cursor_key else None,
                 "startAt": {"values": [next_page_token], "before": False} if next_page_token else None,
@@ -105,7 +129,7 @@ class FirestoreStream(HttpStream, ABC):
             if "document" in entry:
                 result = {
                     "name": entry["document"]["name"],
-                    "json_data": json.dumps(entry["document"]["fields"]),
+                    "json_data": entry["document"]["fields"],
                 }
                 if self.cursor_key:
                     result[self.cursor_key] = entry["document"]["fields"][self.cursor_key]["timestampValue"]
@@ -120,11 +144,10 @@ class FirestoreStream(HttpStream, ABC):
             "additionalProperties": True,
             "required": ["name"],
             "properties": {
-                "name": { "type": ["string"] },
-                "json_data": { "type": ["string"] }
+                "name": { "type": "string" },
+                "json_data": { "type": "object" },
             },
         }
-
         if self.cursor_key:
             result["properties"][self.cursor_key] = { "type": ["null", "string"] }
 
@@ -132,17 +155,7 @@ class FirestoreStream(HttpStream, ABC):
 
 
 class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
-    _cursor_value: Optional[datetime]
-    cursor_field: Union[str, List[str]] = []
     start_date: Optional[datetime]
-
-    @property
-    def cursor_key(self):
-        if isinstance(self.cursor_field, list):
-            if (len(self.cursor_field) > 0):
-                return self.cursor_field[0]
-            return None
-        return self.cursor_field
 
     def __init__(self, authenticator: TokenAuthenticator, collection_name: str):
         super().__init__(authenticator=authenticator, collection_name=collection_name)
@@ -165,16 +178,17 @@ class IncrementalFirestoreStream(FirestoreStream, IncrementalMixin):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        cursor_field: Union[str, List[str]] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        self.logger.info(f"Stream {self.name}: Reading in {sync_mode} (cursor field {cursor_field}). Current cursor value: {self._cursor_value}")
         self.cursor_field = cursor_field
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             yield record
-            record_date = Helpers.parse_date(record[self.cursor_key])
+            record_date = Helpers.parse_date(record[self.cursor_key]) if self.cursor_key else None
             self._cursor_value = max(record_date, self._cursor_value) if self._cursor_value else record_date
 
 class Collection(IncrementalFirestoreStream):

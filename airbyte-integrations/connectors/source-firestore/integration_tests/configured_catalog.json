@@ -4,10 +4,42 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "stream": {
-        "name": "collection",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_primary_key": [["name"]]
+        "name": "account",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "additionalProperties": true,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "json_data": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": [
+                "null",
+                "string"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updatedAt"
+        ],
+        "source_defined_primary_key": [
+          [
+            "name"
+          ]
+        ]
       }
     }
   ]
