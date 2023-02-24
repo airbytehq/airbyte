@@ -41,7 +41,7 @@ class SpecFormatTest {
     Assertions.assertThat(allSpecs)
         .flatMap(spec -> {
           try {
-            if (!JsonSecretsProcessor.isValidJsonSchema(spec)) {
+            if (!isValidJsonSchema(spec)) {
               throw new RuntimeException("Fail JsonSecretsProcessor validation");
             }
             JsonSchemas.traverseJsonSchema(spec, (node, path) -> {});
@@ -52,6 +52,11 @@ class SpecFormatTest {
           }
         })
         .isEmpty();
+  }
+
+  private static boolean isValidJsonSchema(final JsonNode schema) {
+    return schema.isObject() && ((schema.has("properties") && schema.get("properties").isObject())
+        || (schema.has("oneOf") && schema.get("oneOf").isArray()));
   }
 
 }

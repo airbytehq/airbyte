@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.config.persistence;
+package io.airbyte.config.init;
 
 import io.airbyte.config.AirbyteConfig;
 import java.util.UUID;

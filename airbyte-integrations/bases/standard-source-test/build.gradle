@@ -16,7 +16,6 @@ dependencies {
     implementation project(':airbyte-api')
     implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
     implementation libs.airbyte.protocol
     implementation 'org.mockito:mockito-core:4.6.1'
 
