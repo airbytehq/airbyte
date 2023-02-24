@@ -44,7 +44,6 @@ public class TestConfigHelpers {
     final UUID sourceId = UUID.randomUUID();
     final UUID destinationDefinitionId = UUID.randomUUID();
     final UUID destinationId = UUID.randomUUID();
-    final UUID connectionId = UUID.randomUUID();
     final UUID normalizationOperationId = UUID.randomUUID();
     final UUID dbtOperationId = UUID.randomUUID();
 
