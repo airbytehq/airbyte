@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# todo (cgardens) - remove this file. used in platform build script only.
 # List of directories without "airbyte-" prefix.
 projectDir=(
   "bootloader"
@@ -8,7 +9,6 @@ projectDir=(
   "container-orchestrator"
   "cron"
   "connector-builder-server"
-  "db/db-lib"
   "metrics/reporter"
   "proxy"
   "server"

@@ -58,17 +58,4 @@ dependencies {
 
 }
 
-//task copyInitSql(type: Copy) {
-//    dependsOn copyDocker
-//
-//    from('src/main/resources') {
-//        include 'init.sql'
-//    }
-//    into 'build/docker/bin'
-//}
-//
-//tasks.named("buildDockerImage") {
-//    dependsOn copyInitSql
-//}
-
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
