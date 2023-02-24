@@ -469,6 +469,10 @@ class BulkSalesforceStream(SalesforceStream):
                     # Thus we can try to switch to GET sync request because its response returns obvious error message
                     standard_instance = self.get_standard_instance()
                     self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                    stream_is_available, error = standard_instance.check_availability(self.logger, None)
+                    if not stream_is_available:
+                        self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
+                        return
                     yield from standard_instance.read_records(
                         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
                     )
