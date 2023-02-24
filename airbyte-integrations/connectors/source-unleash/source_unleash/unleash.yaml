@@ -8,7 +8,7 @@ definitions:
     extractor:
       field_path: ["features"]
   requester:
-    url_base: "{{ config['api_url'] }}/api/client"
+    url_base: "{{ config['api_url'] }}/client"
     http_method: "GET"
     request_options_provider:
       request_headers:
