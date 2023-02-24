@@ -160,8 +160,8 @@ class FileStream(Stream, ABC):
 
     @property
     def _raw_schema(self) -> Mapping[str, Any]:
-        if self._user_input_schema != {}:
-            return deepcopy(self._user_input_schema)
+        if self._user_input_schema and isinstance(self._user_input_schema, dict):
+            return self._user_input_schema
         return self._auto_inferred_schema
 
     @property
