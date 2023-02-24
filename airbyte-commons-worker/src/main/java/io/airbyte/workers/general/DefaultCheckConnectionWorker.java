@@ -4,11 +4,7 @@
 
 package io.airbyte.workers.general;
 
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
-
 import com.fasterxml.jackson.databind.JsonNode;
-import datadog.trace.api.Trace;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
@@ -18,7 +14,6 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
-import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -60,11 +55,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
     this(integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
     LineGobbler.startSection("CHECK");
-    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ROOT_KEY, jobRoot));
 
     try {
       final JsonNode inputConfig = input.getConnectionConfiguration();
@@ -120,14 +113,12 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
       return jobOutput;
 
     } catch (final Exception e) {
-      ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Unexpected error while checking connection: ", e);
       LineGobbler.endSection("CHECK");
       throw new WorkerException("Unexpected error while getting checking connection.", e);
     }
   }
 
-  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     WorkerUtils.cancelProcess(process);

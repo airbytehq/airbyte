@@ -347,23 +347,18 @@ To get notified when your source schema changes:
 
 4. Toggle **Schema update notifications**.
 
-## Display Connection State
+## Display the connection state
 
-**Connection State** provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
+Connection state provides additional information about incremental syncs. It includes the most recent values for the global or stream-level cursors, which can aid in debugging or determining which data will be included in the next syncs. 
 
-To display **Connection State**:
+To display the connection state:
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection you want to display.
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+2. Click the **Settings** tab on the Connection page.
 
-2. Click **General Settings**.
+3. Click the **Advanced** dropdown arrow. 
 
-3. Toggle **Enable advanced mode** and click **Save changes**.
-
-4. Click **Connections** in the navigation bar and then click the connection in the list you want to display.
-
-5. Click the **Settings** tab on the Connection page.
-
-    The **Connection State** displays.
+    **Connection State** displays.
 
 ## Choose the data residency for a connection
 You can choose the data residency for your connection in the connection settings. You can also choose data residency when creating a [new connection](https://docs.airbyte.com/cloud/getting-started-with-airbyte-cloud#set-up-a-connection), or you can set the [default data residency](#choose-your-default-data-residency) for your workspace.
