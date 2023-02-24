@@ -7,10 +7,10 @@ from pathlib import Path
 import anyio
 import click
 import dagger
-from ci_connector_ops.ci.actions.connector_tests import unit_tests, integration_tests, acceptance_tests
+from ci_connector_ops.ci.actions.build import build_image, install_requirements
 from ci_connector_ops.ci.actions.connector_builder import get_connector_builder
+from ci_connector_ops.ci.actions.connector_tests import acceptance_tests, integration_tests, unit_tests
 from ci_connector_ops.ci.actions.format_checks import check_format
-from ci_connector_ops.ci.actions.build import install_requirements, build_image
 from graphql import GraphQLError
 
 
@@ -21,7 +21,7 @@ async def run_tests(connector_name):
         connector_builder = get_connector_builder(client, connector_name)
         await check_format(connector_builder)
         successful_install, connector_builder = await install_requirements(client, connector_builder, ["dev", "tests", "main"])
-        
+
         if successful_install == 0:
             await unit_tests(connector_builder)
             await integration_tests(connector_builder)

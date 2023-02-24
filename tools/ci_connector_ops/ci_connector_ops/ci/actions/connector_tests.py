@@ -2,8 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pathlib import Path
 import datetime
+from pathlib import Path
+
 from ci_connector_ops.ci.actions.connector_builder import PYPROJECT_TOML_FILE_PATH, connector_has_path
 
 RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
@@ -40,12 +41,9 @@ async def integration_tests(connector_builder):
 
 
 async def acceptance_tests(client, connector_name):
-    source_host_path = client.host().directory(
-        f"airbyte-integrations/connectors/{connector_name}"
-    )
+    source_host_path = client.host().directory(f"airbyte-integrations/connectors/{connector_name}")
 
     docker_host_socket = client.host().unix_socket("/var/run/docker.sock")
-
 
     if Path(f"airbyte-integrations/connectors/{connector_name}/acceptance-test-config.yml").is_file():
         cat_container = (
@@ -67,12 +65,11 @@ async def acceptance_tests(client, connector_name):
         #     .docker_build()
         #     .with_unix_socket("/var/run/docker.sock", docker_host_socket)
         #     .with_workdir("/test_input")
-        #     .with_mounted_directory("/test_input", source_host_path)            
+        #     .with_mounted_directory("/test_input", source_host_path)
         #     .with_entrypoint(["python", "-m", "pytest", "--basetemp=/tmp/toto", "-p", "connector_acceptance_test.plugin", "-r", "fEsx"])
         #     .with_exec(["--acceptance-test-config", "/test_input"])
         #     .stdout()
         # )
-
 
     # return await (
     #     cat_container

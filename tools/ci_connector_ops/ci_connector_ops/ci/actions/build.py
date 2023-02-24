@@ -26,6 +26,7 @@ async def install_requirements(client, connector_builder, extras=None):
 
     return await connector_builder.exit_code(), connector_builder
 
+
 async def build_image(client, connector_name):
     source_host_path = client.host().directory(
         f"airbyte-integrations/connectors/{connector_name}", include=["Dockerfile", "main.py", "setup.py", connector_name.replace("-", "_")]
