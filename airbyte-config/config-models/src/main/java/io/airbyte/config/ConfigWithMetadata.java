@@ -8,41 +8,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 @SuppressWarnings("PMD.ShortVariable")
-public class ConfigWithMetadata<T> {
-
-  private final String configId;
-  private final String configType;
-  private final Instant createdAt;
-  private final Instant updatedAt;
-  private final T config;
-
-  public ConfigWithMetadata(final String configId, final String configType, final Instant createdAt, final Instant updatedAt, final T config) {
-    this.configId = configId;
-    this.configType = configType;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-    this.config = config;
-  }
-
-  public String getConfigId() {
-    return configId;
-  }
-
-  public String getConfigType() {
-    return configType;
-  }
-
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
-
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public T getConfig() {
-    return config;
-  }
+public record ConfigWithMetadata<T>(String configId, String configType, Instant createdAt, Instant updatedAt, T config) {
 
   @Override
   public boolean equals(final Object o) {
@@ -55,11 +21,6 @@ public class ConfigWithMetadata<T> {
     final ConfigWithMetadata<?> that = (ConfigWithMetadata<?>) o;
     return Objects.equals(configId, that.configId) && Objects.equals(configType, that.configType) && Objects.equals(
         createdAt, that.createdAt) && Objects.equals(updatedAt, that.updatedAt) && Objects.equals(config, that.config);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(configId, configType, createdAt, updatedAt, config);
   }
 
 }
