@@ -14,7 +14,7 @@ from airbyte_cdk.models import Type as AirbyteMessageType
 from docker.errors import ContainerError, NotFound
 from docker.models.containers import Container
 from pydantic import ValidationError
-
+from io import BytesIO
 
 class ConnectorRunner:
     def __init__(
@@ -44,14 +44,18 @@ class ConnectorRunner:
     def input_folder(self) -> Path:
         return self._volume_base / f"run_{self._runs}" / "input"
 
-    def _prepare_volumes(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
+    def _prepare_image(self, config: Optional[Mapping], state: Optional[Mapping], catalog: Optional[ConfiguredAirbyteCatalog]):
         self.input_folder.mkdir(parents=True)
-        self.output_folder.mkdir(parents=True)
+
+        current_image_tag = self._image.tags[0]
+        new_image_tag = current_image_tag + "-with-secrets"
+        dockerfile = f"FROM {current_image_tag}\n RUN mkdir /data\n"
 
         # using "is not None" to allow falsey config objects like {} to still write
         if config is not None:
             with open(str(self.input_folder / "tap_config.json"), "w") as outfile:
                 json.dump(dict(config), outfile)
+            dockerfile += f"COPY tap_config.json /data/tap_config.json\n"
 
         if state:
             with open(str(self.input_folder / "state.json"), "w") as outfile:
@@ -59,22 +63,22 @@ class ConnectorRunner:
                     json.dump(state, outfile)
                 else:
                     json.dump(dict(state), outfile)
+            dockerfile += f"COPY state.json /data/state.json\n"
 
         if catalog:
             with open(str(self.input_folder / "catalog.json"), "w") as outfile:
                 outfile.write(catalog.json())
+            dockerfile += f"COPY catalog.json /data/catalog.json\n"
+        
+        with open(self.input_folder / "Dockerfile", "w") as outfile:
+            outfile.write(dockerfile)
 
-        volumes = {
-            str(self.input_folder): {
-                "bind": "/data",
-                # "mode": "ro",
-            },
-            str(self.output_folder): {
-                "bind": "/local",
-                "mode": "rw",
-            },
-        }
-        return volumes
+        new_image, build_logs = self._client.images.build(
+            path=str(self.input_folder),
+            tag=new_image_tag
+        )
+
+        return new_image, build_logs
 
     def call_spec(self, **kwargs) -> List[AirbyteMessage]:
         cmd = "spec"
@@ -104,13 +108,14 @@ class ConnectorRunner:
     def run(self, cmd, config=None, state=None, catalog=None, raise_container_error: bool = True, **kwargs) -> Iterable[AirbyteMessage]:
 
         self._runs += 1
-        volumes = self._prepare_volumes(config, state, catalog)
+        self.output_folder.mkdir(parents=True)
+        new_image, build_logs = self._prepare_image(config, state, catalog)
+        
         logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
 
         container = self._client.containers.run(
-            image=self._image,
+            image=new_image,
             command=cmd,
-            volumes=volumes,
             network_mode="host",
             detach=True,
             environment=self._custom_environment_variables,
