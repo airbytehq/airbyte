@@ -1,4 +1,5 @@
 connector_image: airbyte/source-stripe:dev
+test_strictness_level: high
 tests:
   spec:
     - spec_path: "source_stripe/spec.yaml"
