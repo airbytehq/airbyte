@@ -17,4 +17,4 @@ Authentication and Permissions:
 * No authentication.
 
 
-See [this](https://docs.airbyte.io/integrations/sources/whisky-hunter) link for the connector docs.
+See [this](https://docs.airbyte.com/integrations/sources/whisky-hunter) link for the connector docs.

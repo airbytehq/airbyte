@@ -48,4 +48,4 @@ No published rate limit.
 
 No authentication.
 
-See [this](https://docs.airbyte.io/integrations/sources/gutendex) link for the connector docs.
+See [this](https://docs.airbyte.com/integrations/sources/gutendex) link for the connector docs.

@@ -19,4 +19,4 @@ There are not `state_checkpoint_interval` for *activities* and *events* due to i
 Also, Close.com source has general stream classes for *activities*, *tasks*, *custom fields*, *connected accounts*, and *bulk actions*.
 It is implemented due to different schema for each of stream.
 
-See [this](https://docs.airbyte.io/integrations/sources/close-com) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/close-com) link for the nuances about the connector.

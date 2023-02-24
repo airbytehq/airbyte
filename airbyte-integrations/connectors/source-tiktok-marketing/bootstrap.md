@@ -1,4 +1,4 @@
-The Business Marketing API is [a REST based API](https://business-api.tiktok.com/marketing_api/docs?rid=88iodtuzdt7&id=1701890905779201). Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+The Business Marketing API is [a REST based API](https://business-api.tiktok.com/marketing_api/docs?rid=88iodtuzdt7&id=1701890905779201). Connector is implemented with [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 This service also provides a [sandbox](https://business-api.tiktok.com/marketing_api/docs?rid=88iodtuzdt7&id=1701890920013825) environment for testing with some limitations.
 
 ## Core Advertiser stream

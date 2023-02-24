@@ -2,7 +2,7 @@
 
 This is the repository for the Iceberg destination connector in Java.
 For information about how to use this connector within Airbyte,
-see [the User Documentation](https://docs.airbyte.io/integrations/destinations/iceberg).
+see [the User Documentation](https://docs.airbyte.com/integrations/destinations/iceberg).
 
 ## Local development
 
@@ -24,7 +24,7 @@ information.
 Please get examples in `secrets-examples` directory.
 
 **If you are an Airbyte core member**, follow
-the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
+the [instructions](https://docs.airbyte.com/connector-development#using-credentials-in-ci) to set up the credentials.
 
 ### Locally running the connector docker image
 

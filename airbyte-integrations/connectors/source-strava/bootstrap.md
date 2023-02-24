@@ -1,6 +1,6 @@
 ## Core streams
 
-Strava is a REST based API. Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+Strava is a REST based API. Connector is implemented with [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 Connector supports the following two streams:
 * [Athlete Stats](https://developers.strava.com/docs/reference/#api-Athletes-getStats)
@@ -20,4 +20,4 @@ Authentication and Permissions:
     * Scope of `activity:read` should work as well, but will not include private activities or privacy zone data
 
 
-See [this](https://docs.airbyte.io/integrations/sources/strava) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/strava) link for the nuances about the connector.

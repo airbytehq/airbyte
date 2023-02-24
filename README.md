@@ -75,7 +75,7 @@ Deployment options: [Docker](https://docs.airbyte.com/deploying-airbyte/local-de
 
 Airbyte Cloud is the fastest and most reliable way to run Airbyte. You can get started with free credits in minutes.
 
-Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
+Sign up for [Airbyte Cloud](https://cloud.airbyte.com/signup).
 
 ## Contributing
 
@@ -99,7 +99,7 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 
 ## Resources
 
-- [Weekly office hours](https://airbyte.io/weekly-office-hours/) for live informal sessions with the Airbyte team
+- [Weekly office hours](https://airbyte.com/weekly-office-hours/) for live informal sessions with the Airbyte team
 - [Slack](https://slack.airbyte.io) for quick discussion with the Community and Airbyte team
 - [Discourse](https://discuss.airbyte.io/) for deeper conversations about features, connectors, and problems
 - [GitHub](https://github.com/airbytehq/airbyte) for code, issues and pull requests

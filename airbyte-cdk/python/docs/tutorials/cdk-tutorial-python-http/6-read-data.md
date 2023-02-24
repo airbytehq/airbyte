@@ -105,7 +105,7 @@ Let's also pass the config specified by the user to the stream class:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog#configuredairbytecatalog). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog#configuredairbytecatalog). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
  python main.py read --config sample_files/config.json --catalog sample_files/configured_catalog.json
@@ -132,7 +132,7 @@ To add incremental sync, we'll do a few things:
 6. Update the `path` method to specify the date to pull exchange rates for. 
 7. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
-We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](https://docs.airbyte.io/architecture/connections/incremental-append).
+We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](https://docs.airbyte.com/architecture/connections/incremental-append).
 
 To keep things concise, we'll only show functions as we edit them one by one.
 

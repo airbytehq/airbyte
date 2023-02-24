@@ -1,7 +1,7 @@
 # Destination R2
 
 This is the repository for the R2 destination connector in Java.
-For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/r2).
+For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/destinations/r2).
 
 **Currently, no integration test has been set up for this connector, which requires either a local R2 container, or a remote R2 account.**
 
@@ -17,7 +17,7 @@ From the Airbyte repository root, run:
 **If you are a community contributor**, generate the necessary credentials and place them in `secrets/config.json` conforming to the spec file in `src/main/resources/spec.json`.
 Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
 
-**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.io/connector-development#using-credentials-in-ci) to set up the credentials.
+**If you are an Airbyte core member**, follow the [instructions](https://docs.airbyte.com/connector-development#using-credentials-in-ci) to set up the credentials.
 
 ### Locally running the connector docker image
 

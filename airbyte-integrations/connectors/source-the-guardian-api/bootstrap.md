@@ -43,4 +43,4 @@ The key that you are assigned is rate-limited and as such any applications that 
 To access the API, you will need to sign up for an API key, which should be sent with every request. Visit [this](https://open-platform.theguardian.com/access) link to get an API key.
 The easiest way to see what data is included is to explore the data. You can build complex queries quickly and browse the results. Visit [this](https://open-platform.theguardian.com/explore) link to explore the data.
 
-See [this](https://docs.airbyte.io/integrations/sources/the-guardian-api) link for the connector docs.
+See [this](https://docs.airbyte.com/integrations/sources/the-guardian-api) link for the connector docs.

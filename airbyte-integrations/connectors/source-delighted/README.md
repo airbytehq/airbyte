@@ -1,7 +1,7 @@
 # Delighted Source
 
 This is the repository for the Delighted source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/delighted).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/delighted).
 
 ## Local development
 
@@ -38,7 +38,7 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/delighted)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/delighted)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_delighted/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.

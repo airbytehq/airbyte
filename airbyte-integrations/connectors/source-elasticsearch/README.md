@@ -1,7 +1,7 @@
 # Elasticsearch source
 
 This is the repository for the Elasticsearch source connector, written in Java using Elasticsearch's High Level Rest Client([HLRC](https://www.elastic.co/guide/en/elasticsearch/client/java-rest/current/java-rest-high.html)).
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/elasticsearch).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/elasticsearch).
 
 ## Local development
 

@@ -1,7 +1,7 @@
 # Google Firestore Destination
 
 This is the repository for the Google Firestore destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/firestore).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/firestore).
 
 ## Local development
 

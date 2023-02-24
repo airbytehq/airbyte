@@ -22,4 +22,4 @@ But if you wanted to get reports about the data (a common use case is impression
 
 See the links below for information about specific streams and some nuances about the connector:
 - [information about streams](https://docs.google.com/spreadsheets/d/1s-MAwI5d3eBlBOD8II_sZM7pw5FmZtAJsx1KJjVRFNU/edit#gid=1796337932) (`Google Ads` tab)
-- [nuances about the connector](https://docs.airbyte.io/integrations/sources/google-ads)
+- [nuances about the connector](https://docs.airbyte.com/integrations/sources/google-ads)

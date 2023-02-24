@@ -9,7 +9,7 @@ To set up the Klaviyo source connector, you'll need the [Klaviyo Private API key
 
 ## Set up the Klaviyo connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Klaviyo** from the Source type dropdown.
 4. Enter the name for the Klaviyo connector.

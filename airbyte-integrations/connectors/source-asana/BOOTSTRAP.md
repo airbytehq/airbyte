@@ -2,7 +2,7 @@
 
 Asana is a project management platform designed to organize and manage teams and their work.
 This connector adds ability to fetch projects, tasks, teams etc over REST API.
-Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+Connector is implemented with [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 Some streams depend on:
 - workspaces (Teams, Users, CustomFields, Projects, Tags, Users streams);
@@ -20,4 +20,4 @@ Requests that hit any of Asana rate limits will receive a `429 Too Many Requests
 
 [Here](https://developers.asana.com/docs/pagination) is a link with info on how pagination is implemented.
 
-See [this](https://docs.airbyte.io/integrations/sources/asana) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/asana) link for the nuances about the connector.

@@ -1,6 +1,6 @@
 # End-to-End Testing Destination
 
-This is the repository for the Null destination connector in Java. For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/e2e-test).
+This is the repository for the Null destination connector in Java. For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/destinations/e2e-test).
 
 ## Local development
 

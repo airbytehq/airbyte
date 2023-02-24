@@ -2,7 +2,7 @@
 
 ## Documentation
 This is the repository for the MongoDb source connector in Java.
-For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/mongodb-v2)
+For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.com/integrations/sources/mongodb-v2)
 
 ## Local development
 

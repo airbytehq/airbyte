@@ -1,7 +1,7 @@
 # Smartsheets Source 
 
 This is the repository for the Smartsheets source connector, written in Python. 
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/smartsheets).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/smartsheets).
 
 ### Author
 This connector was created by Nate Nowack, github.com/zzstoatzz.
@@ -53,7 +53,7 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/smartsheets)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/smartsheets)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_smartsheets/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `sample_files/sample_config.json` for a sample config file.

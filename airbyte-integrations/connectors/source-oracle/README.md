@@ -2,7 +2,7 @@
 
 ## Documentation
 This is the repository for the Oracle only source connector in Java.
-For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.io/integrations/sources/oracle)
+For information about how to use this connector within Airbyte, see [User Documentation](https://docs.airbyte.com/integrations/sources/oracle)
 
 ## Local development
 

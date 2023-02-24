@@ -1,6 +1,6 @@
 # End-to-End Testing Source
 
-This is the repository for the mock source connector in Java. For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/e2e-test)
+This is the repository for the mock source connector in Java. For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.com/integrations/sources/e2e-test)
 
 ## Mock Json record generation
 The [airbytehq/jsongenerator](https://github.com/airbytehq/jsongenerator) is used to generate random Json records based on the specified Json schema. This library is forked from [jimblackler/jsongenerator](https://github.com/jimblackler/jsongenerator) authored by [Jim Blackler](https://github.com/jimblackler) and licensed under Apache 2.0.

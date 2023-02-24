@@ -1,7 +1,7 @@
 # Recharge Source
 
 This is the repository for the Recharge source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/recharge).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/recharge).
 
 ## Local development
 
@@ -37,7 +37,7 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/recharge)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/recharge)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_recharge/spec.json` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.

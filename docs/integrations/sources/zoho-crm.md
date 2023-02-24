@@ -6,7 +6,7 @@ The Zoho CRM source supports both Full Refresh and Incremental syncs. You can ch
 
 Airbyte uses [REST API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html) to fetch data from Zoho CRM.
 
-This Source Connector is based on an [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+This Source Connector is based on an [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 ### Output schema
 

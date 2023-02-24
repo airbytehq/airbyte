@@ -1,6 +1,6 @@
 ## Core streams
 
-Marketo is a REST based API. Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+Marketo is a REST based API. Connector is implemented with [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 Connector has such core streams, and all of them except Activity_types support full refresh and incremental sync: 
 * [Activity\_types](https://developers.marketo.com/rest-api/endpoint-reference/lead-database-endpoint-reference/#!/Activities/getAllActivityTypesUsingGET). 
@@ -30,4 +30,4 @@ Connector uses `createdAt` and `updatedAt` config for initial reports sync depen
 
 Connector has `window_in_days` config which allows set the amount of days for each data-chunk begining from start_date. Default: 30 days. Max: 30 days.
 
-See [this](https://docs.airbyte.io/integrations/sources/marketo) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/marketo) link for the nuances about the connector.

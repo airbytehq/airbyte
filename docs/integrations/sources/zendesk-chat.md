@@ -14,7 +14,7 @@ This page contains the setup guide and reference information for the Zendesk Cha
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
 4. Enter the name for the Zendesk Chat connector.

@@ -15,4 +15,4 @@ In general when querying the FB API for insights there are a few things to keep 
 
 Also make sure to read [this overview of insights](https://developers.facebook.com/docs/marketing-api/insights) in its entirety to have a strong understanding of this important aspect of the API. 
 
-See [this](https://docs.airbyte.io/integrations/sources/facebook-marketing) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/facebook-marketing) link for the nuances about the connector.

@@ -1,6 +1,6 @@
 # CDK Speedrun (HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route)
 
-This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http).
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http).
 
 # Dependencies
 
@@ -36,7 +36,7 @@ We're working with the Exchange Rates API, so we need to define our input schema
 
 ```json
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/exchangeratesapi",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Python Http Tutorial Spec",

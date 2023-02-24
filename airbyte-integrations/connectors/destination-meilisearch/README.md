@@ -1,7 +1,7 @@
 # Meilisearch Destination
 
 This is the repository for the Meilisearch destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/meilisearch).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/meilisearch).
 
 ## Local development
 
@@ -36,7 +36,7 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/destinations/meilisearch)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/meilisearch)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_meilisearch/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.

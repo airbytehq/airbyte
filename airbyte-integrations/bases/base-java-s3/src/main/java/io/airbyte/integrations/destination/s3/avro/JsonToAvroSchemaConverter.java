@@ -32,7 +32,7 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  * standardize schema names, and keep track of a mapping from the original names to the standardized
  * ones, which is needed for unit tests. <br/>
  * For limitations of this converter, see the README of this connector:
- * https://docs.airbyte.io/integrations/destinations/s3#avro
+ * https://docs.airbyte.com/integrations/destinations/s3#avro
  */
 public class JsonToAvroSchemaConverter {
 

@@ -16,4 +16,4 @@ The information about all streams can be pulled dynamically using ZOQL queries S
 Auth = OAuth2 with a header of “grant_type” set to “client_credentials” and no refresh token
 
 
-See [this](https://docs.airbyte.io/integrations/sources/zuora) link for the nuances about the connector.
+See [this](https://docs.airbyte.com/integrations/sources/zuora) link for the nuances about the connector.

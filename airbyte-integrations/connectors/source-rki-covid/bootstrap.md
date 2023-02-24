@@ -1,5 +1,5 @@
 The (Robert Koch-Institut - von Marlon Lückert) Covid-19 is [a REST based API](https://api.corona-zahlen.org/). 
-Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+Connector is implemented with [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 ## Cases In Germany Covid api stream
 The basic entry stream is 'germany'. All other streams are extended version of base stream and passing parameters also result in sliced data.

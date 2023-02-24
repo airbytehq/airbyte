@@ -11,4 +11,4 @@ It can be as pedantic as a typo or as titanic as an entire tutorial request.
 
 
 ### If applicable, add links to the relevant docs that should be updated
-- [Link to relevant docs page](https://docs.airbyte.io)
+- [Link to relevant docs page](https://docs.airbyte.com)
