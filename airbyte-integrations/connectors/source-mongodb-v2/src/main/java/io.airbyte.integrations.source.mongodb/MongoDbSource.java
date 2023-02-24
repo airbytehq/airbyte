@@ -69,8 +69,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   @Override
   protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
     final var dbConfig = toDatabaseConfig(config);
-    if(config.get("level")!=null)
-     MongoUtils.MAX_DEPTH_LEVEL_READ = config.get("level").asInt();
     return new MongoDatabase(dbConfig.get("connectionString").asText(),
         dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
   }
@@ -104,9 +102,12 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final List<TableInfo<CommonField<BsonType>>> tableInfos = new ArrayList<>();
 
     final Set<String> authorizedCollections = getAuthorizedCollections(database);
+    final var config = database.getSourceConfig();
+    // check if maxDepth Level exist if not then set default to 2
+    final var maxDepthLevel =  config.has(MongoUtils.MAX_DEPTH_LEVEL_READ) ? config.get(MongoUtils.MAX_DEPTH_LEVEL_READ).asInt(): 2;
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
+      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection,maxDepthLevel).stream().map(MongoUtils::nodeToCommonField).toList();
 
       // The field name _id is reserved for use as a primary key;
       final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
