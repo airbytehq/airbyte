@@ -1,0 +1,9 @@
+flags:
+  - name: performance.backgroundJsonSchemaValidation
+    enabled: false
+  - name: heartbeat.failSync
+    enabled: false
+  - name: normalization.strictComparisonNormalizationEnabled
+    enabled: false
+  - name: platform.commitStatesAsap
+    enabled: false
