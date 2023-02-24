@@ -14,6 +14,7 @@ import requests_mock
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, Type
 from conftest import encoding_symbols_parameters, generate_stream
 from requests.exceptions import HTTPError
+from source_salesforce.api import Salesforce
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -626,7 +627,10 @@ def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_
 
 def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
     stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
-    chunks = len(list(stream.chunk_properties()))
+    chunks = list(stream.chunk_properties())
+    for chunk in chunks:
+        assert stream.primary_key in chunk
+    chunks_len = len(chunks)
     assert stream.too_many_properties
     assert stream.primary_key
     assert type(stream) == RestSalesforceStream
@@ -647,7 +651,7 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
                 }
             },
             # 2 for 2 chunks above and 1 for a chunk below
-            *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks - 3)],
+            *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks_len - 3)],
             {
                 "json": {
                     "records": [{"Id": 1}, {"Id": 2}]
@@ -664,7 +668,7 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
                 }
             },
             # 2 for 2 chunks above and 1 for a chunk below
-            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks - 3)],
+            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 3)],
             {
                 "json": {
                     "records": [{"Id": 3}, {"Id": 4}]
@@ -679,3 +683,5 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
         {"Id": 3, "propertyA": "A", "propertyB": "B"},
         {"Id": 4, "propertyA": "A", "propertyB": "B"}
     ]
+    for call in requests_mock.request_history:
+        assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
