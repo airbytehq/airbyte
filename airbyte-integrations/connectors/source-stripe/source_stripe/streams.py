@@ -177,6 +177,7 @@ class BalanceTransactions(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/balance_transactions/list
     """
+
     cursor_field = "created"
     name = "balance_transactions"
 
