@@ -169,7 +169,7 @@ To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
 
-Finally, if you are working in any module in `:airbyte-integrations:bases` or `:airbyte-cdk:python`, run `SUB_BUILD=CONNECTORS_BASE ./gradlew format`.
+Finally, if you are working in any module in `:airbyte-integrations:bases` run `SUB_BUILD=CONNECTORS_BASE ./gradlew format` and if you are working in `:airbyte-cdk:python`, run `SUB_BUILD=CDK ./gradlew format`.
 
 Note: If you are contributing a Python file without imports or function definitions, place the following comment at the top of your file:
 

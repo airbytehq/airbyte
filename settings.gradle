@@ -65,14 +65,14 @@ dependencyResolutionManagement {
     }
 }
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
+// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, CDK, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
     if (subBuild != "CONNECTORS_BASE" && subBuild != "ALL_CONNECTORS" && subBuild != "OCTAVIA_CLI" && subBuild != "CDK") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or CONNECTORS_BASE, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
+        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or CONNECTORS_BASE, CDK, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
     }
 }
 
