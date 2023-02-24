@@ -40,162 +40,10 @@ public class EnvConfigs implements Configs {
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
 
   // env variable names
-  public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
-  public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
-  public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
-  public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
-  public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
   public static final String LOCAL_CONNECTOR_CATALOG_PATH = "LOCAL_CONNECTOR_CATALOG_PATH";
   public static final String GITHUB_STORE_BRANCH = "GITHUB_STORE_BRANCH";
-  public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
-  public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
-  public static final String LOCAL_ROOT = "LOCAL_ROOT";
-  public static final String LOCAL_DOCKER_MOUNT = "LOCAL_DOCKER_MOUNT";
-  public static final String CONFIG_ROOT = "CONFIG_ROOT";
-  public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
-  public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
-  public static final String JOB_ERROR_REPORTING_STRATEGY = "JOB_ERROR_REPORTING_STRATEGY";
-  public static final String JOB_ERROR_REPORTING_SENTRY_DSN = "JOB_ERROR_REPORTING_SENTRY_DSN";
-  public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
-  public static final String DATABASE_USER = "DATABASE_USER";
-  public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
-  public static final String DATABASE_URL = "DATABASE_URL";
-  public static final String CONFIG_DATABASE_USER = "CONFIG_DATABASE_USER";
-  public static final String CONFIG_DATABASE_PASSWORD = "CONFIG_DATABASE_PASSWORD";
-  public static final String CONFIG_DATABASE_URL = "CONFIG_DATABASE_URL";
-  public static final String RUN_DATABASE_MIGRATION_ON_STARTUP = "RUN_DATABASE_MIGRATION_ON_STARTUP";
-  public static final String WEBAPP_URL = "WEBAPP_URL";
-  public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY";
-  public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
-  public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
-  public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
-  public static final String JOB_ISOLATED_KUBE_NODE_SELECTORS = "JOB_ISOLATED_KUBE_NODE_SELECTORS";
-  public static final String USE_CUSTOM_NODE_SELECTOR = "USE_CUSTOM_NODE_SELECTOR";
-  public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
-  private static final String DEFAULT_SIDECAR_MEMORY_REQUEST = "25Mi";
-  private static final String SIDECAR_MEMORY_REQUEST = "SIDECAR_MEMORY_REQUEST";
-  private static final String DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT = "50Mi";
-  private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
-  private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
-  private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
-  // Test show at least 1.5 CPU is required to hit >20 Mb/s. Overprovision to ensure sidecar resources
-  // do not cause bottlenecks.
-  // This is fine as the limit only affects whether the container is throttled by Kube. It does not
-  // affect scheduling.
-  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "2.0";
-  private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
-  public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
-  public static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
-  public static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
-  public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
-  public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
-  public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
-  public static final String SYNC_JOB_MAX_TIMEOUT_DAYS = "SYNC_JOB_MAX_TIMEOUT_DAYS";
-  private static final String CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED = "CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED";
-  public static final String MAX_SPEC_WORKERS = "MAX_SPEC_WORKERS";
-  public static final String MAX_CHECK_WORKERS = "MAX_CHECK_WORKERS";
-  public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
-  public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
-  public static final String MAX_NOTIFY_WORKERS = "MAX_NOTIFY_WORKERS";
-  private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
-  private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
-  private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
-  public static final String JOB_KUBE_NAMESPACE = "JOB_KUBE_NAMESPACE";
-  public static final String JOB_MAIN_CONTAINER_CPU_REQUEST = "JOB_MAIN_CONTAINER_CPU_REQUEST";
-  public static final String JOB_MAIN_CONTAINER_CPU_LIMIT = "JOB_MAIN_CONTAINER_CPU_LIMIT";
-  public static final String JOB_MAIN_CONTAINER_MEMORY_REQUEST = "JOB_MAIN_CONTAINER_MEMORY_REQUEST";
-  public static final String JOB_MAIN_CONTAINER_MEMORY_LIMIT = "JOB_MAIN_CONTAINER_MEMORY_LIMIT";
-  public static final String JOB_DEFAULT_ENV_MAP = "JOB_DEFAULT_ENV_MAP";
-  public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
-  private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
-  public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
-  public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
-  public static final String DD_AGENT_HOST = "DD_AGENT_HOST";
-  public static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
-  private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
-  private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
-  private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
-  private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
-  private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
-  private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
-  private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
-  private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
-  public static final String DD_CONSTANT_TAGS = "DD_CONSTANT_TAGS";
-  public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
-  public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
-  public static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
-  public static final String STATE_STORAGE_S3_SECRET_ACCESS_KEY = "STATE_STORAGE_S3_SECRET_ACCESS_KEY";
-  public static final String STATE_STORAGE_MINIO_BUCKET_NAME = "STATE_STORAGE_MINIO_BUCKET_NAME";
-  public static final String STATE_STORAGE_MINIO_ENDPOINT = "STATE_STORAGE_MINIO_ENDPOINT";
-  public static final String STATE_STORAGE_MINIO_ACCESS_KEY = "STATE_STORAGE_MINIO_ACCESS_KEY";
-  public static final String STATE_STORAGE_MINIO_SECRET_ACCESS_KEY = "STATE_STORAGE_MINIO_SECRET_ACCESS_KEY";
-  public static final String STATE_STORAGE_GCS_BUCKET_NAME = "STATE_STORAGE_GCS_BUCKET_NAME";
-  public static final String STATE_STORAGE_GCS_APPLICATION_CREDENTIALS = "STATE_STORAGE_GCS_APPLICATION_CREDENTIALS";
-
-  private static final String TEMPORAL_CLOUD_ENABLED = "TEMPORAL_CLOUD_ENABLED";
-  private static final String TEMPORAL_CLOUD_HOST = "TEMPORAL_CLOUD_HOST";
-  private static final String TEMPORAL_CLOUD_NAMESPACE = "TEMPORAL_CLOUD_NAMESPACE";
-  private static final String TEMPORAL_CLOUD_CLIENT_CERT = "TEMPORAL_CLOUD_CLIENT_CERT";
-  private static final String TEMPORAL_CLOUD_CLIENT_KEY = "TEMPORAL_CLOUD_CLIENT_KEY";
-
-  public static final String ACTIVITY_MAX_TIMEOUT_SECOND = "ACTIVITY_MAX_TIMEOUT_SECOND";
-  public static final String ACTIVITY_MAX_ATTEMPT = "ACTIVITY_MAX_ATTEMPT";
-  public static final String ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS";
-  public static final String ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS = "ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS";
-  public static final String WORKFLOW_FAILURE_RESTART_DELAY_SECONDS = "WORKFLOW_FAILURE_RESTART_DELAY_SECONDS";
-
-  private static final String SHOULD_RUN_GET_SPEC_WORKFLOWS = "SHOULD_RUN_GET_SPEC_WORKFLOWS";
-  private static final String SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS = "SHOULD_RUN_CHECK_CONNECTION_WORKFLOWS";
-  private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
-  private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
-  private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
-  private static final String SHOULD_RUN_NOTIFY_WORKFLOWS = "SHOULD_RUN_NOTIFY_WORKFLOWS";
-
-  // Worker - Control plane configs
-  private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
-
-  // Worker - Data Plane configs
-  private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
-  private static final String CONTROL_PLANE_AUTH_ENDPOINT = "CONTROL_PLANE_AUTH_ENDPOINT";
-  private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
-  private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
-
-  private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
-  private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
-
-  public static final String METRIC_CLIENT = "METRIC_CLIENT";
-  private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
-
-  public static final String REMOTE_CONNECTOR_CATALOG_URL = "REMOTE_CONNECTOR_CATALOG_URL";
-
-  // job-type-specific overrides
-  public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
-  public static final String CHECK_JOB_KUBE_NODE_SELECTORS = "CHECK_JOB_KUBE_NODE_SELECTORS";
-  public static final String DISCOVER_JOB_KUBE_NODE_SELECTORS = "DISCOVER_JOB_KUBE_NODE_SELECTORS";
-  public static final String SPEC_JOB_KUBE_ANNOTATIONS = "SPEC_JOB_KUBE_ANNOTATIONS";
-  public static final String CHECK_JOB_KUBE_ANNOTATIONS = "CHECK_JOB_KUBE_ANNOTATIONS";
-  public static final String DISCOVER_JOB_KUBE_ANNOTATIONS = "DISCOVER_JOB_KUBE_ANNOTATIONS";
-
-  private static final String REPLICATION_ORCHESTRATOR_CPU_REQUEST = "REPLICATION_ORCHESTRATOR_CPU_REQUEST";
-  private static final String REPLICATION_ORCHESTRATOR_CPU_LIMIT = "REPLICATION_ORCHESTRATOR_CPU_LIMIT";
-  private static final String REPLICATION_ORCHESTRATOR_MEMORY_REQUEST = "REPLICATION_ORCHESTRATOR_MEMORY_REQUEST";
-  private static final String REPLICATION_ORCHESTRATOR_MEMORY_LIMIT = "REPLICATION_ORCHESTRATOR_MEMORY_LIMIT";
-
-  static final String CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST = "CHECK_JOB_MAIN_CONTAINER_CPU_REQUEST";
-  static final String CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT = "CHECK_JOB_MAIN_CONTAINER_CPU_LIMIT";
-  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
-  static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
-
-  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST";
-  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT";
-  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
-  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
-
-  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
-  private static final String VAULT_PREFIX = "VAULT_PREFIX";
-  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
 
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
@@ -228,12 +76,6 @@ public class EnvConfigs implements Configs {
   private static final String STRICT_COMPARISON_NORMALIZATION_WORKSPACES = "STRICT_COMPARISON_NORMALIZATION_WORKSPACES";
   private static final String STRICT_COMPARISON_NORMALIZATION_TAG = "STRICT_COMPARISON_NORMALIZATION_TAG";
 
-  public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
-      AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
-      AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
-      DEPLOYMENT_MODE, (instance) -> instance.getDeploymentMode().name(),
-      WORKER_ENVIRONMENT, (instance) -> instance.getWorkerEnvironment().name());
-
   public static final int DEFAULT_TEMPORAL_HISTORY_RETENTION_IN_DAYS = 30;
 
   public static final int DEFAULT_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = 100;
@@ -259,10 +101,9 @@ public class EnvConfigs implements Configs {
    * variables from a non-envvar source.
    */
   public EnvConfigs(final Map<String, String> envMap) {
-    this.getEnv = envMap::get;
-    this.getAllEnvKeys = envMap::keySet;
-    this.logConfigs = new LogConfigs(getLogConfiguration());
-    this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
+    getEnv = envMap::get;
+    getAllEnvKeys = envMap::keySet;
+    logConfigs = new LogConfigs(getLogConfiguration());
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -287,53 +128,9 @@ public class EnvConfigs implements Configs {
     }
   }
 
-  private Optional<CloudStorageConfigs> getStateStorageConfiguration() {
-    if (getEnv(STATE_STORAGE_GCS_BUCKET_NAME) != null && !getEnv(STATE_STORAGE_GCS_BUCKET_NAME).isBlank()) {
-      return Optional.of(CloudStorageConfigs.gcs(new GcsConfig(
-          getEnvOrDefault(STATE_STORAGE_GCS_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_GCS_APPLICATION_CREDENTIALS, ""))));
-    } else if (getEnv(STATE_STORAGE_MINIO_ENDPOINT) != null && !getEnv(STATE_STORAGE_MINIO_ENDPOINT).isBlank()) {
-      return Optional.of(CloudStorageConfigs.minio(new MinioConfig(
-          getEnvOrDefault(STATE_STORAGE_MINIO_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_MINIO_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_MINIO_SECRET_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_MINIO_ENDPOINT, ""))));
-    } else if (getEnv(STATE_STORAGE_S3_REGION) != null && !getEnv(STATE_STORAGE_S3_REGION).isBlank()) {
-      return Optional.of(CloudStorageConfigs.s3(new S3Config(
-          getEnvOrDefault(STATE_STORAGE_S3_BUCKET_NAME, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_SECRET_ACCESS_KEY, ""),
-          getEnvOrDefault(STATE_STORAGE_S3_REGION, ""))));
-    } else {
-      return Optional.empty();
-    }
-  }
-
-  // CORE
-  // General
-  @Override
-  public String getAirbyteRole() {
-    return getEnv(AIRBYTE_ROLE);
-  }
-
   @Override
   public AirbyteVersion getAirbyteVersion() {
     return new AirbyteVersion(getEnsureEnv(AIRBYTE_VERSION));
-  }
-
-  @Override
-  public Version getAirbyteProtocolVersionMax() {
-    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX;
-  }
-
-  @Override
-  public Version getAirbyteProtocolVersionMin() {
-    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN;
-  }
-
-  @Override
-  public String getAirbyteVersionOrWarning() {
-    return Optional.ofNullable(getEnv(AIRBYTE_VERSION)).orElse("version not set");
   }
 
   public String getGithubStoreBranch() {
@@ -347,18 +144,6 @@ public class EnvConfigs implements Configs {
 
   public Optional<String> getLocalCatalogPath() {
     return Optional.ofNullable(getEnv(LOCAL_CONNECTOR_CATALOG_PATH));
-  }
-
-  @Override
-  public DeploymentMode getDeploymentMode() {
-    return getEnvOrDefault(DEPLOYMENT_MODE, DeploymentMode.OSS, s -> {
-      try {
-        return DeploymentMode.valueOf(s);
-      } catch (final IllegalArgumentException e) {
-        LOGGER.info(s + " not recognized, defaulting to " + DeploymentMode.OSS);
-        return DeploymentMode.OSS;
-      }
-    });
   }
 
   @Override

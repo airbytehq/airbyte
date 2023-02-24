@@ -31,13 +31,6 @@ import java.util.Set;
 @SuppressWarnings("PMD.BooleanGetMethodName")
 public interface Configs {
 
-  // CORE
-  // General
-
-  /**
-   * Distinguishes internal Airbyte deployments. Internal-use only.
-   */
-  String getAirbyteRole();
 
   /**
    * Defines the Airbyte deployment version.
@@ -45,27 +38,10 @@ public interface Configs {
   AirbyteVersion getAirbyteVersion();
 
   /**
-   * Defines the max supported Airbyte Protocol Version
-   */
-  Version getAirbyteProtocolVersionMax();
-
-  /**
-   * Defines the min supported Airbyte Protocol Version
-   */
-  Version getAirbyteProtocolVersionMin();
-
-  String getAirbyteVersionOrWarning();
-
-  /**
    * Defines the bucket for caching specs. This immensely speeds up spec operations. This is updated
    * when new versions are published.
    */
   String getSpecCacheBucket();
-
-  /**
-   * Distinguishes internal Airbyte deployments. Internal-use only.
-   */
-  DeploymentMode getDeploymentMode();
 
   /**
    * Defines if the deployment is Docker or Kubernetes. Airbyte behaves accordingly.
