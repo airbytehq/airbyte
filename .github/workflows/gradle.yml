@@ -202,8 +202,12 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-      - name: Ensure no file change
-        run: ./tools/bin/check_for_file_changes
+      - name: Commit Formatting Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Commit - Formatting Changes
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
 
       - name: Build
         uses: Wandalen/wretry.action@master
@@ -212,8 +216,6 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-      - name: Ensure no file change from code formatting
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
