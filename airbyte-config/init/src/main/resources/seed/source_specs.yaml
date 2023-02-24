@@ -4005,7 +4005,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.2.2"
+- dockerImage: "airbyte/source-facebook-pages:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -8234,7 +8234,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.28"
+- dockerImage: "airbyte/source-mssql:0.4.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -11620,7 +11620,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.47"
+- dockerImage: "airbyte/source-postgres:1.0.48"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12810,7 +12810,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.32"
+- dockerImage: "airbyte/source-s3:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13924,7 +13924,7 @@
           type: "object"
           additionalProperties: false
           properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.13"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -14481,7 +14481,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:2.0.0"
+- dockerImage: "airbyte/source-stripe:3.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
