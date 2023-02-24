@@ -151,7 +151,6 @@ export const useCalculateSidebarStyles = () => {
 
 export const useCalculateSidebarItemStyles = (route: string) => {
   const { location } = useRouter();
-
   const menuItemStyle = () => {
     // const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
     const isActive = location.pathname.split("/").length >= 2 && location.pathname.split("/")[1] === route;

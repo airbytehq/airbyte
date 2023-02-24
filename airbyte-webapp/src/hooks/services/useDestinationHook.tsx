@@ -1,7 +1,5 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { DropDownRow } from "components";
-
 import { Action, Namespace } from "core/analytics";
 import { useUser } from "core/AuthContext";
 import { ConnectionConfiguration } from "core/domain/connection";
@@ -59,16 +57,6 @@ const useDestinationList = (): DestinationList => {
   const service = useDestinationService();
 
   return useSuspenseQuery(destinationsKeys.lists(), () => service.list(workspace.workspaceId));
-};
-
-const useDestinationOptionList = (): DropDownRow.IDataItem[] => {
-  const { destinations } = useDestinationList();
-  const destinationOptions = destinations.map((destination) => ({
-    label: destination.destinationName,
-    value: destination.destinationDefinitionId,
-  }));
-
-  return [{ label: "All Destinations", value: "" }, ...destinationOptions];
 };
 
 const useGetDestination = <T extends string | undefined | null>(
@@ -192,7 +180,6 @@ const useUpdateDestination = () => {
 
 export {
   useDestinationList,
-  useDestinationOptionList,
   useGetDestination,
   useCreateDestination,
   useDeleteDestination,

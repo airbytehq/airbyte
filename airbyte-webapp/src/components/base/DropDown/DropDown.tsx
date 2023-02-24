@@ -60,7 +60,7 @@ function DropDownInner<T = unknown>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     menuPortal: (base: CSSObjectWithLabel, menuPortalProps: any) => ({
       ...(props.styles?.menuPortal?.(base, menuPortalProps) ?? { ...base }),
-      zIndex: 9999999999,
+      zIndex: 10004,
     }),
   };
 
