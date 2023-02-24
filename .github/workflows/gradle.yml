@@ -239,6 +239,10 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
+      # Verify that the only committed file changes will be those made by the build, formatter or processResources
+      - name: Ensure no file change from code formatting
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+
       - name: Format
         uses: Wandalen/wretry.action@master
         with:
