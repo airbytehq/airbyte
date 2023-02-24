@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from "react";
+import { FormattedMessage } from "react-intl";
 import { Cell, Column, ColumnInstance, SortingRule, useSortBy, useTable } from "react-table";
 import styled from "styled-components";
 
@@ -100,6 +101,19 @@ const Th = styled.th<IThProps>`
   }
 `;
 
+const EmptyListRow = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.05em;
+  color: #6b6b6f;
+`;
+
 interface IProps {
   light?: boolean;
   columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
@@ -154,32 +168,42 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
         ))}
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map((row) => {
-          prepareRow(row);
-          return (
-            <Tr
-              {...row.getRowProps()}
-              key={`table-row-${row.id}`}
-              hasClick={!!onClickRow}
-              onClick={() => onClickRow?.(row.original)}
-              erroredRows={erroredRows && !!row.original.error}
-            >
-              {row.cells.map((cell: ICellProps, key) => {
-                return (
-                  <Td
-                    {...cell.getCellProps()}
-                    collapse={cell.column.collapse}
-                    customPadding={cell.column.customPadding}
-                    customWidth={cell.column.customWidth}
-                    key={`table-cell-${row.id}-${key}`}
-                  >
-                    {cell.render("Cell")}
-                  </Td>
-                );
-              })}
-            </Tr>
-          );
-        })}
+        {rows.length > 0 ? (
+          rows.map((row) => {
+            prepareRow(row);
+            return (
+              <Tr
+                {...row.getRowProps()}
+                key={`table-row-${row.id}`}
+                hasClick={!!onClickRow}
+                onClick={() => onClickRow?.(row.original)}
+                erroredRows={erroredRows && !!row.original.error}
+              >
+                {row.cells.map((cell: ICellProps, key) => {
+                  return (
+                    <Td
+                      {...cell.getCellProps()}
+                      collapse={cell.column.collapse}
+                      customPadding={cell.column.customPadding}
+                      customWidth={cell.column.customWidth}
+                      key={`table-cell-${row.id}-${key}`}
+                    >
+                      {cell.render("Cell")}
+                    </Td>
+                  );
+                })}
+              </Tr>
+            );
+          })
+        ) : (
+          <Tr>
+            <Td colSpan={7} style={{ borderRadius: "0 0 10px 10px" }}>
+              <EmptyListRow>
+                <FormattedMessage id="tables.emptyList" />
+              </EmptyListRow>
+            </Td>
+          </Tr>
+        )}
       </tbody>
     </TableView>
   );

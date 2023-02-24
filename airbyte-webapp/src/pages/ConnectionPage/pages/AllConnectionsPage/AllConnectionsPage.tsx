@@ -1,5 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import _ from "lodash";
 import React, { Suspense, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
@@ -13,9 +14,7 @@ import { Separator } from "components/Separator";
 import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
-import { useFilteredConnectionList } from "hooks/services/useConnectionHook";
-import { useDestinationOptionList } from "hooks/services/useDestinationHook";
-import { useSourceOptionList } from "hooks/services/useSourceHook";
+import { useFilteredConnectionList, useConnectionFilterOptions } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -65,27 +64,23 @@ const Footer = styled.div`
 `;
 
 const AllConnectionsPage: React.FC = () => {
+  const CONNECTION_PAGE_SIZE = 10;
   const { push, pathname, query } = useRouter();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
+  const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
 
-  const sourceOptions = useSourceOptionList();
-  const destinationOptions = useDestinationOptionList();
-  const statusOptions: DropDownRow.IDataItem[] = [
-    { label: "All Status", value: "" },
-    { label: "Active", value: "active" },
-    { label: "Inactive", value: "inactive" },
-  ];
-
-  const [filters, setFilters] = useState<FilterConnectionRequestBody>({
+  const initialFiltersState = {
     workspaceId: workspace.workspaceId,
-    pageSize: 10,
+    pageSize: CONNECTION_PAGE_SIZE,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     status: statusOptions[0].value,
     sourceDefinitionId: sourceOptions[0].value,
     destinationDefinitionId: destinationOptions[0].value,
-  });
+  };
+
+  const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   const { connections, total, pageSize } = useFilteredConnectionList(filters);
 
@@ -100,8 +95,17 @@ const AllConnectionsPage: React.FC = () => {
     }
   };
 
+  const hasConnections = (): boolean => {
+    if (_.isEqual(initialFiltersState, filters) && total === 0) {
+      return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
-    push({ pathname, search: `?pageCurrent=${filters.pageCurrent}` });
+    if (hasConnections()) {
+      push({ pathname, search: `?pageCurrent=${filters.pageCurrent}` });
+    }
   }, [filters.pageCurrent]);
 
   useEffect(() => {
@@ -115,8 +119,8 @@ const AllConnectionsPage: React.FC = () => {
   const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
 
   return (
-    <Suspense fallback={<LoadingPage />}>
-      {connections.length ? (
+    <Suspense fallback={<LoadingPage position="relative" />}>
+      {hasConnections() ? (
         <MainPageWithScroll
           withPadding
           headTitle={<HeadTitle titles={[{ title: "Connections" }]} />}
