@@ -16,6 +16,10 @@ connectionSpecification:
         href="https://docs.getunleash.io/how-to/how-to-create-api-tokens/">here</a>. The token is
         case sensitive.
       airbyte_secret: true
+      examples:
+        - "project:environment.be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178"
+        - "*:environment.be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178"
+        - "be44368985f7fb3237c584ef86f3d6bdada42ddbd63a019d26955178"
     api_url:
       title: API URL
       type: string
