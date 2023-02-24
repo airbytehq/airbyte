@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -15,6 +15,7 @@ class CustomFieldTransformation(RecordTransformation):
     Add custom field based on condition. Jinja interpolation does not support list comprehension.
     https://github.com/airbytehq/airbyte/issues/23134
     """
+
     def transform(
         self,
         record: Record,
