@@ -163,6 +163,9 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Babelforce
   sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
   dockerRepository: airbyte/source-babelforce
@@ -195,6 +198,9 @@
   icon: bigquery.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
@@ -281,6 +287,10 @@
   icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: ClickUp
   sourceDefinitionId: 311a7a27-3fb5-4f7e-8265-5e4afe258b66
   dockerRepository: airbyte/source-clickup-api
@@ -575,7 +585,10 @@
   icon: fauna.svg
   sourceType: database
   releaseStage: alpha
-- name: File (CSV, JSON, Excel, Feather, Parquet)
+  allowedHosts:
+    hosts:
+      - "${host}"
+- name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
   dockerImageTag: 0.2.33
@@ -870,6 +883,9 @@
   icon: db2.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Insightly
   sourceDefinitionId: 38f84314-fe6a-4257-97be-a8dcd942d693
   dockerRepository: airbyte/source-insightly
@@ -962,6 +978,9 @@
   icon: kafka.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Klarna
   sourceDefinitionId: 60c24725-00ae-490c-991d-55b78c3197e0
   dockerRepository: airbyte/source-klarna
@@ -1131,6 +1150,10 @@
   icon: mssql.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Microsoft teams
   sourceDefinitionId: eaf50f04-21dd-4620-913b-2a83f5635227
   dockerRepository: airbyte/source-microsoft-teams
@@ -1187,6 +1210,10 @@
   icon: mysql.svg
   sourceType: database
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: n8n
   sourceDefinitionId: 4a961f66-5e99-4430-8320-a73afe52f7a2
   dockerRepository: airbyte/source-n8n
@@ -1288,6 +1315,10 @@
   icon: oracle.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: Orb
   sourceDefinitionId: 7f0455fb-4518-4ec0-b7a3-d808bf8081cc
   dockerRepository: airbyte/source-orb
@@ -1603,6 +1634,9 @@
   icon: redshift.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Reply.io
   sourceDefinitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
   dockerRepository: airbyte/source-reply-io
@@ -1809,6 +1843,9 @@
   icon: snowflake.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Sonar Cloud
   sourceDefinitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
   dockerRepository: airbyte/source-sonar-cloud
@@ -1914,6 +1951,9 @@
   icon: tidb.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
@@ -2288,6 +2328,9 @@
   icon: firebolt.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Elasticsearch
   sourceDefinitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
   dockerRepository: airbyte/source-elasticsearch
