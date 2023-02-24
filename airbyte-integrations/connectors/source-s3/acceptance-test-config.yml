@@ -21,6 +21,7 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/jsonl_newlines.jsonl
       timeout_seconds: 1800
+
   connection:
     tests:
     - config_path: secrets/config.json
@@ -59,6 +60,7 @@ acceptance_tests:
     - config_path: secrets/jsonl_newlines_config.json
       configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
       timeout_seconds: 1800
+
   incremental:
     tests:
     - config_path: secrets/config.json
