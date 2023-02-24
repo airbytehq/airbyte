@@ -117,7 +117,7 @@ module.exports = {
         },
         {
           type: 'doc',
-          label: 'On Kubernetes',
+          label: 'On Kubernetes using Kustomize',
           id:'deploying-airbyte/on-kubernetes',
         },
         {
