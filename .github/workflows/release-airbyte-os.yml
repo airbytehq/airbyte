@@ -95,6 +95,7 @@ jobs:
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo -e "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          echo $CHANGELOG
 
       - name: Create Release for Airbyte Platform
         if: false # disable
@@ -160,6 +161,7 @@ jobs:
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo -e "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          echo $CHANGELOG
 
       - name: Create Release for Airbyte
         id: create_release
