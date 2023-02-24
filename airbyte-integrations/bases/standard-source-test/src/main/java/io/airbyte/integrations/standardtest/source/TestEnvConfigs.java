@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.standardtest.source;
 
-
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
@@ -19,6 +18,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class passes environment variable to the DockerProcessFactory that runs the source in the
+ * SourceAcceptanceTest.
+ */
 public class TestEnvConfigs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestEnvConfigs.class);
@@ -83,7 +86,6 @@ public class TestEnvConfigs {
     return getEnvOrDefault(WORKER_ENVIRONMENT, WorkerEnvironment.DOCKER, s -> WorkerEnvironment.valueOf(s.toUpperCase()));
   }
 
-
   /**
    * There are two types of environment variables available to the job container:
    * <ul>
@@ -103,7 +105,6 @@ public class TestEnvConfigs {
         entry -> Exceptions.swallowWithDefault(() -> Objects.requireNonNullElse(entry.getValue().apply(this), ""), "")));
     return MoreMaps.merge(jobPrefixedEnvMap, jobSharedEnvMap);
   }
-
 
   public <T> T getEnvOrDefault(final String key, final T defaultValue, final Function<String, T> parser) {
     return getEnvOrDefault(key, defaultValue, parser, false);

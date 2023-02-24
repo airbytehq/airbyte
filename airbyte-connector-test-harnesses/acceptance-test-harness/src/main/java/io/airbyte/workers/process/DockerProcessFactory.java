@@ -48,17 +48,17 @@ public class DockerProcessFactory implements ProcessFactory {
   /**
    * Used to construct a Docker process.
    *
-   * @param workspaceRoot        real root of workspace
+   * @param workspaceRoot real root of workspace
    * @param workspaceMountSource workspace volume
-   * @param localMountSource     local volume
-   * @param networkName          docker network
+   * @param localMountSource local volume
+   * @param networkName docker network
    * @param envMap
    */
   public DockerProcessFactory(final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
                               final String networkName,
-      final Map<String, String> envMap) {
+                              final Map<String, String> envMap) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
