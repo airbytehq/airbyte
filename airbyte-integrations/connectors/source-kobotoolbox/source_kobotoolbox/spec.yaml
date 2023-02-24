@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - username
     - password
-    - uid
   properties:
     username:
       type: string
@@ -19,8 +18,3 @@ connectionSpecification:
       description: Password to authenticate into the KoboToolBox server
       airbyte_secret: true
       order: 2
-    uid: 
-      type: string
-      title: "UID"
-      description: Passw
-      order: 3
