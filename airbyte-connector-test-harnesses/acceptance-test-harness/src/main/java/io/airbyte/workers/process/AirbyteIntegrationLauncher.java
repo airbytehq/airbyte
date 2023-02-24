@@ -21,7 +21,6 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -208,9 +207,9 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     // back to hashmap
     return Maps.newHashMap(
         ImmutableMap.<String, String>builder()
-            .put(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName)
-            .put(WorkerEnvConstants.WORKER_JOB_ID, jobId)
-            .put(WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt))
+            .put("WORKER_CONNECTOR_IMAGE", imageName)
+            .put("WORKER_JOB_ID", jobId)
+            .put("WORKER_JOB_ATTEMPT", String.valueOf(attempt))
             .put(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()))
             .put(EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(featureFlags.autoDetectSchema()))
             .put(EnvVariableFeatureFlags.APPLY_FIELD_SELECTION, String.valueOf(featureFlags.applyFieldSelection()))
