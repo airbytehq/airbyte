@@ -25,6 +25,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
@@ -65,6 +66,10 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.sf_api.instance_url
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return SalesforceAvailabilityStrategy()
 
     @property
     def too_many_properties(self):
@@ -149,36 +154,6 @@ class RestSalesforceStream(SalesforceStream):
 
         if local_properties:
             yield local_properties
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[StreamData]:
-        try:
-            yield from self._read_pages(
-                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
-                stream_slice,
-                stream_state,
-            )
-        except exceptions.HTTPError as error:
-            """
-            There are several types of Salesforce sobjects that require additional processing:
-              1. Sobjects for which the user, after setting up the data using Airbyte, restricted access,
-                 and we will receive 403 HTTP errors.
-              2. There are streams that do not allow you to make a sample using Salesforce `query` or `queryAll`.
-                 And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
-                 we cannot filter out these streams, so we catch them at the stage of reading data.
-            """
-            error_data = error.response.json()[0]
-            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-                error_code = error_data.get("errorCode", "")
-                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
-                    return
-            raise error
 
     def _read_pages(
         self,
