@@ -2,9 +2,9 @@
 
 This page provides guidance on how to manage notifications for Airbyte Cloud, allowing you to stay up-to-date on the activities in your workspace. 
 
-## Set up Slack notifications
+## Set up Webhook notifications
 
-To set up Slack notifications:
+To set up Webhook notifications:
 
 1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
 
@@ -21,7 +21,7 @@ To set up Slack notifications:
 ## Enable schema update notifications
 
 To get notified when your source schema changes: 
-1. Make sure you have [Webhook notifications](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications#set-up-slack-notifications) set up.
+1. Make sure you have [Webhook notifications](#set-up-webhook-notifications) set up.
 
 2. On the [Airbyte Cloud](http://cloud.airbyte.com/) dashboard, click **Connections** and select the connection you want to receive notifications for.
 
