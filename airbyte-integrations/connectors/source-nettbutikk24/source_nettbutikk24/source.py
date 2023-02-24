@@ -41,7 +41,7 @@ class Nettbutikk24Stream(HttpStream, ABC):
 
     @property
     def url_base(self):
-        return f"https://{self.shop_name}/api/v1/"
+        return f"http://{self.shop_name}/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -134,6 +134,17 @@ class Products(IncrementalNettbutikk24Stream):
         self.update_uri_params(next_page_token, stream_state)
         return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
 
+class Products_Flatted(IncrementalNettbutikk24Stream):
+    primary_key = "id"
+
+    # self.flat = False
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        self.update_uri_params(next_page_token, stream_state)
+        return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
+
 
 class Orders(IncrementalNettbutikk24Stream):
     primary_key = "id"
@@ -160,4 +171,4 @@ class SourceNettbutikk24(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Orders(config=config, flat = True), Products(config=config, flat = False)]
+        return [Orders(config=config, flat = True), Products(config=config, flat = False), Products_Flatted(config=config, flat = True)]
