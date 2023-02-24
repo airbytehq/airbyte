@@ -1,0 +1,33 @@
+Configuration:
+  status: warn
+  name: DefaultLog4j2Config
+  thresholdFilter:
+    level: debug
+  appenders:
+    Console:
+      name: STDOUT
+      target: SYSTEM_OUT
+      PatternLayout:
+        Pattern: "[%-6p] %c{3}.%M(%F:%L) – %m%n"
+
+  Loggers:
+    logger:
+      - name: org.apache.http.wire
+        level: trace
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+      - name: co.elastic
+        level: debug
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+      - name: io.airbyte.integrations
+        level: debug
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+    Root:
+      level: info
+      AppenderRef:
+        ref: STDOUT
