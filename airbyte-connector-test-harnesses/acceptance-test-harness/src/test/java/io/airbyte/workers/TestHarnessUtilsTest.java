@@ -124,7 +124,7 @@ class TestHarnessUtilsTest {
 
   @Test
   void testMapStreamNamesToSchemasWithNullNamespace() {
-    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
+    final ImmutablePair<Void, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     final StandardSyncInput syncInput = syncPair.getValue();
     final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
     assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", null)));
@@ -132,7 +132,7 @@ class TestHarnessUtilsTest {
 
   @Test
   void testMapStreamNamesToSchemasWithMultipleNamespaces() {
-    final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
+    final ImmutablePair<Void, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
     final StandardSyncInput syncInput = syncPair.getValue();
     final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
     assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace")));

@@ -12,8 +12,6 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.OperatorNormalization;
 import io.airbyte.config.OperatorNormalization.Option;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -36,11 +34,11 @@ public class TestConfigHelpers {
   private static final String FIELD_NAME = "favorite_color";
   private static final long LAST_SYNC_TIME = 1598565106;
 
-  public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig() {
+  public static ImmutablePair<Void, StandardSyncInput> createSyncConfig() {
     return createSyncConfig(false);
   }
 
-  public static ImmutablePair<StandardSync, StandardSyncInput> createSyncConfig(final Boolean multipleNamespaces) {
+  public static ImmutablePair<Void, StandardSyncInput> createSyncConfig(final Boolean multipleNamespaces) {
     final UUID workspaceId = UUID.randomUUID();
     final UUID sourceDefinitionId = UUID.randomUUID();
     final UUID sourceId = UUID.randomUUID();
@@ -110,34 +108,23 @@ public class TestConfigHelpers {
       catalog.withStreams(Collections.singletonList(stream));
     }
 
-    final StandardSync standardSync = new StandardSync()
-        .withConnectionId(connectionId)
-        .withDestinationId(destinationId)
-        .withSourceId(sourceId)
-        .withStatus(Status.ACTIVE)
-        .withName(CONNECTION_NAME)
-        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
-        .withPrefix(CONNECTION_NAME)
-        .withCatalog(catalog)
-        .withOperationIds(List.of(normalizationOperationId, dbtOperationId));
-
     final String stateValue = Jsons.serialize(Map.of("lastSync", String.valueOf(LAST_SYNC_TIME)));
 
     final State state = new State().withState(Jsons.jsonNode(stateValue));
 
     final StandardSyncInput syncInput = new StandardSyncInput()
-        .withNamespaceDefinition(standardSync.getNamespaceDefinition())
-        .withPrefix(standardSync.getPrefix())
+        .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
+        .withPrefix(CONNECTION_NAME)
         .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withDestinationConfiguration(destinationConnectionConfig.getConfiguration())
-        .withCatalog(standardSync.getCatalog())
+        .withCatalog(catalog)
         .withSourceConfiguration(sourceConnectionConfig.getConfiguration())
         .withState(state)
         .withOperationSequence(List.of(normalizationOperation, customDbtOperation))
         .withWorkspaceId(workspaceId);
 
-    return new ImmutablePair<>(standardSync, syncInput);
+    return new ImmutablePair<>(null, syncInput);
   }
 
 }
