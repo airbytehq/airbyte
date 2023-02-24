@@ -1,0 +1,8 @@
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-liverpool:${_LIVERPOOL_VERSION}', './airbyte-integrations/connectors/source-liverpool' ]
+substitutions:
+  _LIVERPOOL_VERSION: 0.0.1
+images:
+- 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-liverpool:${_LIVERPOOL_VERSION}'
