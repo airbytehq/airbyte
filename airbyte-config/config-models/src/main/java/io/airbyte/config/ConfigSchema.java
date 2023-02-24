@@ -48,7 +48,6 @@ public enum ConfigSchema implements AirbyteConfig {
       destinationOAuthParameter -> destinationOAuthParameter.getOauthParameterId().toString(),
       "oauthParameterId"),
 
-
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput.class),
   STATE("State.yaml", State.class);
