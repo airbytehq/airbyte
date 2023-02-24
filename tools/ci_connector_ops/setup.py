@@ -43,7 +43,7 @@ setup(
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
-            "test-connector = ci_connector_ops.ci.connector_workflow:main",
+            "test-connectors = ci_connector_ops.ci.connectors_ci:main",
         ],
     },
 )
