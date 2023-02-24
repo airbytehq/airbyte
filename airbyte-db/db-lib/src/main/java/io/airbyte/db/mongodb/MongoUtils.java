@@ -279,6 +279,7 @@ public class MongoUtils {
                                    final TreeNode<CommonField<BsonType>> parentNode,
                                    final String pathToField,
                                    int maxLevel) {
+    if(maxLevel<=0) return;
     final var nestedKeys = getFieldsName(collection, pathToField);
     for (String fieldKey : nestedKeys) {
       final var key = (fieldKey == null || fieldKey.length() == 0) ? "-" : fieldKey;

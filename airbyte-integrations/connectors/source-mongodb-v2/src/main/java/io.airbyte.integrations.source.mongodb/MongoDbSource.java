@@ -105,6 +105,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final var config = database.getSourceConfig();
     // check if maxDepth Level exist if not then set default to 2
     final var maxDepthLevel =  config.has(MongoUtils.MAX_DEPTH_LEVEL_READ) ? config.get(MongoUtils.MAX_DEPTH_LEVEL_READ).asInt(): 2;
+    LOGGER.info("max level set to " + maxDepthLevel);
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
       final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection,maxDepthLevel).stream().map(MongoUtils::nodeToCommonField).toList();
