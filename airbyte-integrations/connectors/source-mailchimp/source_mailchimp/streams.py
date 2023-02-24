@@ -128,6 +128,7 @@ class Campaigns(IncrementalMailChimpStream):
     def path(self, **kwargs) -> str:
         return "campaigns"
 
+
 class Automations(IncrementalMailChimpStream):
     cursor_field = "create_time"
     data_field = "automations"

@@ -13,7 +13,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from requests.auth import AuthBase
 
-from .streams import Campaigns, EmailActivity, Lists, Automations
+from .streams import Automations, Campaigns, EmailActivity, Lists
 
 
 class MailChimpAuthenticator:
