@@ -90,7 +90,6 @@ include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-connector-test-harnesses:acceptance-test-harness'
-include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
 
 // connectors base
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
