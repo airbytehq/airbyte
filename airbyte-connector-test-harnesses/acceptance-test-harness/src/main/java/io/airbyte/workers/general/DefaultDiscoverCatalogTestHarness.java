@@ -19,8 +19,8 @@ import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.helper.CatalogClientConverters;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -35,9 +35,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
+public class DefaultDiscoverCatalogTestHarness implements DiscoverCatalogTestHarness {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogTestHarness.class);
   private static final String WRITE_DISCOVER_CATALOG_LOGS_TAG = "call to write discover schema result";
 
   private final IntegrationLauncher integrationLauncher;
@@ -46,7 +46,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   private final AirbyteApiClient airbyteApiClient;
   private volatile Process process;
 
-  public DefaultDiscoverCatalogWorker(final AirbyteApiClient airbyteApiClient,
+  public DefaultDiscoverCatalogTestHarness(final AirbyteApiClient airbyteApiClient,
                                       final IntegrationLauncher integrationLauncher,
                                       final ConnectorConfigUpdater connectorConfigUpdater,
                                       final AirbyteStreamFactory streamFactory) {
@@ -56,14 +56,14 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
     this.connectorConfigUpdater = connectorConfigUpdater;
   }
 
-  public DefaultDiscoverCatalogWorker(final AirbyteApiClient airbyteApiClient,
+  public DefaultDiscoverCatalogTestHarness(final AirbyteApiClient airbyteApiClient,
                                       final IntegrationLauncher integrationLauncher,
                                       final ConnectorConfigUpdater connectorConfigUpdater) {
     this(airbyteApiClient, integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 
   @Override
-  public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
+  public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws TestHarnessException {
     try {
       final JsonNode inputConfig = discoverSchemaInput.getConnectionConfiguration();
       process = integrationLauncher.discover(
@@ -76,22 +76,22 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
+      final Map<Type, List<AirbyteMessage>> messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30);
 
       final Optional<AirbyteCatalog> catalog = messagesByType
           .getOrDefault(Type.CATALOG, new ArrayList<>()).stream()
           .map(AirbyteMessage::getCatalog)
           .findFirst();
 
-      final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
-      if (optionalConfigMsg.isPresent() && WorkerUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+      final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType);
+      if (optionalConfigMsg.isPresent() && TestHarnessUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
         connectorConfigUpdater.updateSource(
             UUID.fromString(discoverSchemaInput.getSourceId()),
             optionalConfigMsg.get().getConfig());
         jobOutput.setConnectorConfigurationUpdated(true);
       }
 
-      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
+      final Optional<FailureReason> failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
@@ -106,13 +106,13 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                 WRITE_DISCOVER_CATALOG_LOGS_TAG);
         jobOutput.setDiscoverCatalogId(result.getCatalogId());
       } else if (failureReason.isEmpty()) {
-        WorkerUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
+        TestHarnessUtils.throwWorkerException("Integration failed to output a catalog struct and did not output a failure reason", process);
       }
       return jobOutput;
-    } catch (final WorkerException e) {
+    } catch (final TestHarnessException e) {
       throw e;
     } catch (final Exception e) {
-      throw new WorkerException("Error while discovering schema", e);
+      throw new TestHarnessException("Error while discovering schema", e);
     }
   }
 
@@ -131,7 +131,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   @Override
   public void cancel() {
-    WorkerUtils.cancelProcess(process);
+    TestHarnessUtils.cancelProcess(process);
   }
 
 }

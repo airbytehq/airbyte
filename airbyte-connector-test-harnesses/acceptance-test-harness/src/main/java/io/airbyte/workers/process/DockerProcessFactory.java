@@ -13,8 +13,8 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -92,10 +92,10 @@ public class DockerProcessFactory implements ProcessFactory {
                         final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
-      throws WorkerException {
+      throws TestHarnessException {
     try {
       if (!checkImageExists(imageName)) {
-        throw new WorkerException("Could not find image: " + imageName);
+        throw new TestHarnessException("Could not find image: " + imageName);
       }
 
       if (!jobRoot.toFile().exists()) {
@@ -165,7 +165,7 @@ public class DockerProcessFactory implements ProcessFactory {
 
       return new ProcessBuilder(cmd).start();
     } catch (final IOException e) {
-      throw new WorkerException(e.getMessage(), e);
+      throw new TestHarnessException(e.getMessage(), e);
     }
   }
 
@@ -200,16 +200,16 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @VisibleForTesting
-  boolean checkImageExists(final String imageName) throws WorkerException {
+  boolean checkImageExists(final String imageName) throws TestHarnessException {
     try {
       final Process process = new ProcessBuilder(imageExistsScriptPath.toString(), imageName).start();
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
       LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-      WorkerUtils.gentleClose(process, 10, TimeUnit.MINUTES);
+      TestHarnessUtils.gentleClose(process, 10, TimeUnit.MINUTES);
 
       if (process.isAlive()) {
-        throw new WorkerException("Process to check if image exists is stuck. Exiting.");
+        throw new TestHarnessException("Process to check if image exists is stuck. Exiting.");
       } else {
         return process.exitValue() == 0;
       }

@@ -19,8 +19,8 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
@@ -92,7 +92,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       final List<String> dbtArguments = new ArrayList<>();
       dbtArguments.add(DBT_ENTRYPOINT_SH);
       if (Strings.isNullOrEmpty(dbtConfig.getDbtArguments())) {
-        throw new WorkerException("Dbt Arguments are required");
+        throw new TestHarnessException("Dbt Arguments are required");
       }
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       process =
@@ -115,13 +115,13 @@ public class DbtTransformationRunner implements AutoCloseable {
       LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
-      WorkerUtils.wait(process);
+      TestHarnessUtils.wait(process);
 
       return process.exitValue() == 0;
     } catch (final Exception e) {
       // make sure we kill the process on failure to avoid zombies.
       if (process != null) {
-        WorkerUtils.cancelProcess(process);
+        TestHarnessUtils.cancelProcess(process);
       }
       throw e;
     }
@@ -136,9 +136,9 @@ public class DbtTransformationRunner implements AutoCloseable {
     }
 
     LOGGER.debug("Closing dbt transformation process");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES);
     if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Dbt transformation process wasn't successful");
+      throw new TestHarnessException("Dbt transformation process wasn't successful");
     }
   }
 

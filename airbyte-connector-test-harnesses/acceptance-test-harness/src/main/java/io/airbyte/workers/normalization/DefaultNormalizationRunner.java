@@ -27,8 +27,8 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -61,7 +61,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                                     final String normalizationImage,
                                     final String normalizationIntegrationType) {
     this.processFactory = processFactory;
-    this.normalizationImageName = normalizationImage;
+    normalizationImageName = normalizationImage;
     this.normalizationIntegrationType = normalizationIntegrationType;
   }
 
@@ -77,7 +77,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config));
     final String gitRepoUrl = dbtConfig.getGitRepoUrl();
     if (Strings.isNullOrEmpty(gitRepoUrl)) {
-      throw new WorkerException("Git Repo Url is required");
+      throw new TestHarnessException("Git Repo Url is required");
     }
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
@@ -167,13 +167,13 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       }
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
-      WorkerUtils.wait(process);
+      TestHarnessUtils.wait(process);
 
       return process.exitValue() == 0;
     } catch (final Exception e) {
       // make sure we kill the process on failure to avoid zombies.
       if (process != null) {
-        WorkerUtils.cancelProcess(process);
+        TestHarnessUtils.cancelProcess(process);
       }
       throw e;
     }
@@ -186,7 +186,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
 
     LOGGER.info("Terminating normalization process...");
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
     /*
      * After attempting to close the process check the following:
@@ -194,9 +194,9 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
      * Did the process actually terminate? If "yes", did it do so nominally?
      */
     if (process.isAlive()) {
-      throw new WorkerException("Normalization process did not terminate after 1 minute.");
+      throw new TestHarnessException("Normalization process did not terminate after 1 minute.");
     } else if (process.exitValue() != 0) {
-      throw new WorkerException("Normalization process did not terminate normally (exit code: " + process.exitValue() + ")");
+      throw new TestHarnessException("Normalization process did not terminate normally (exit code: " + process.exitValue() + ")");
     } else {
       LOGGER.info("Normalization process successfully terminated.");
     }

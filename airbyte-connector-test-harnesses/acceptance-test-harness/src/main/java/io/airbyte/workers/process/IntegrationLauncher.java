@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.process;
 
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
 
 /**
@@ -17,11 +17,11 @@ import java.nio.file.Path;
  */
 public interface IntegrationLauncher {
 
-  Process spec(final Path jobRoot) throws WorkerException;
+  Process spec(final Path jobRoot) throws TestHarnessException;
 
-  Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException;
+  Process check(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException;
 
-  Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException;
+  Process discover(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException;
 
   Process read(final Path jobRoot,
                final String configFilename,
@@ -30,14 +30,14 @@ public interface IntegrationLauncher {
                final String catalogContents,
                final String stateFilename,
                final String stateContents)
-      throws WorkerException;
+      throws TestHarnessException;
 
   default Process read(final Path jobRoot,
                        final String configFilename,
                        final String configContents,
                        final String catalogFilename,
                        final String catalogContents)
-      throws WorkerException {
+      throws TestHarnessException {
     return read(jobRoot, configFilename, configContents, catalogFilename, catalogContents, null, null);
   }
 
@@ -46,6 +46,6 @@ public interface IntegrationLauncher {
                 final String configContents,
                 final String catalogFilename,
                 final String catalogContents)
-      throws WorkerException;
+      throws TestHarnessException;
 
 }

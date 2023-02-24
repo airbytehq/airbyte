@@ -30,10 +30,10 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.general.DefaultCheckConnectionWorker;
-import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
-import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.exception.TestHarnessException;
+import io.airbyte.workers.general.DefaultCheckConnectionTestHarness;
+import io.airbyte.workers.general.DefaultDiscoverCatalogTestHarness;
+import io.airbyte.workers.general.DefaultGetSpecTestHarness;
 import io.airbyte.workers.helper.CatalogClientConverters;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
@@ -162,8 +162,8 @@ public abstract class AbstractSourceConnectorTest {
     tearDown(environment);
   }
 
-  protected ConnectorSpecification runSpec() throws WorkerException {
-    final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecWorker(
+  protected ConnectorSpecification runSpec() throws TestHarnessException {
+    final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
             new EnvVariableFeatureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
@@ -171,7 +171,7 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected StandardCheckConnectionOutput runCheck() throws Exception {
-    return new DefaultCheckConnectionWorker(
+    return new DefaultCheckConnectionTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
             new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
@@ -179,7 +179,7 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected String runCheckAndGetStatusAsString(final JsonNode config) throws Exception {
-    return new DefaultCheckConnectionWorker(
+    return new DefaultCheckConnectionTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
             new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
@@ -187,7 +187,7 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected UUID runDiscover() throws Exception {
-    final UUID toReturn = new DefaultDiscoverCatalogWorker(
+    final UUID toReturn = new DefaultDiscoverCatalogTestHarness(
         mAirbyteApiClient,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
             new EnvVariableFeatureFlags()),

@@ -4,13 +4,13 @@
 
 package io.airbyte.workers.exception;
 
-public class WorkerException extends Exception {
+public class TestHarnessException extends Exception {
 
-  public WorkerException(final String message) {
+  public TestHarnessException(final String message) {
     super(message);
   }
 
-  public WorkerException(final String message, final Throwable cause) {
+  public TestHarnessException(final String message, final Throwable cause) {
     super(message, cause);
   }
 

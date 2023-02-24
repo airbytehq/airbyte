@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.helper;
 
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class EntrypointEnvChecker {
                                                 final int jobAttempt,
                                                 final Path jobRoot,
                                                 final String imageName)
-      throws IOException, InterruptedException, WorkerException {
+      throws IOException, InterruptedException, TestHarnessException {
     final Process process = processFactory.create(
         "entrypoint-checker",
         jobId,

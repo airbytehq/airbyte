@@ -18,8 +18,8 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -74,7 +74,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   }
 
   @Override
-  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, WorkerException {
+  public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, TestHarnessException {
     Preconditions.checkState(destinationProcess == null);
 
     LOGGER.info("Running destination...");
@@ -123,11 +123,11 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     }
 
     LOGGER.debug("Closing destination process");
-    WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
+    TestHarnessUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
     if (destinationProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
       final String message =
           destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();
-      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
+      throw new TestHarnessException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
@@ -139,7 +139,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
       LOGGER.info("Destination process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Destination process exists, cancelling...");
-      WorkerUtils.cancelProcess(destinationProcess);
+      TestHarnessUtils.cancelProcess(destinationProcess);
       LOGGER.info("Cancelled destination process!");
     }
   }

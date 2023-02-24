@@ -19,8 +19,8 @@ import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -33,9 +33,9 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
+public class DefaultCheckConnectionTestHarness implements CheckConnectionTestHarness {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCheckConnectionWorker.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCheckConnectionTestHarness.class);
 
   private final IntegrationLauncher integrationLauncher;
   private final ConnectorConfigUpdater connectorConfigUpdater;
@@ -43,7 +43,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
   private Process process;
 
-  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher,
+  public DefaultCheckConnectionTestHarness(final IntegrationLauncher integrationLauncher,
                                       final ConnectorConfigUpdater connectorConfigUpdater,
                                       final AirbyteStreamFactory streamFactory) {
     this.integrationLauncher = integrationLauncher;
@@ -51,12 +51,12 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
     this.streamFactory = streamFactory;
   }
 
-  public DefaultCheckConnectionWorker(final IntegrationLauncher integrationLauncher, final ConnectorConfigUpdater connectorConfigUpdater) {
+  public DefaultCheckConnectionTestHarness(final IntegrationLauncher integrationLauncher, final ConnectorConfigUpdater connectorConfigUpdater) {
     this(integrationLauncher, connectorConfigUpdater, new DefaultAirbyteStreamFactory());
   }
 
   @Override
-  public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
+  public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws TestHarnessException {
     LineGobbler.startSection("CHECK");
 
     try {
@@ -71,15 +71,15 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
+      final Map<Type, List<AirbyteMessage>> messagesByType = TestHarnessUtils.getMessagesByType(process, streamFactory, 30);
       final Optional<AirbyteConnectionStatus> connectionStatus = messagesByType
           .getOrDefault(Type.CONNECTION_STATUS, new ArrayList<>()).stream()
           .map(AirbyteMessage::getConnectionStatus)
           .findFirst();
 
       if (input.getActorId() != null && input.getActorType() != null) {
-        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getMostRecentConfigControlMessage(messagesByType);
-        if (optionalConfigMsg.isPresent() && WorkerUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
+        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = TestHarnessUtils.getMostRecentConfigControlMessage(messagesByType);
+        if (optionalConfigMsg.isPresent() && TestHarnessUtils.getDidControlMessageChangeConfig(inputConfig, optionalConfigMsg.get())) {
           switch (input.getActorType()) {
             case SOURCE -> connectorConfigUpdater.updateSource(
                 input.getActorId(),
@@ -92,7 +92,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         }
       }
 
-      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
+      final Optional<FailureReason> failureReason = TestHarnessUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
 
       final int exitCode = process.exitValue();
@@ -107,7 +107,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         LOGGER.info("Check connection job received output: {}", output);
         jobOutput.setCheckConnection(output);
       } else if (failureReason.isEmpty()) {
-        WorkerUtils.throwWorkerException("Error checking connection status: no status nor failure reason were outputted", process);
+        TestHarnessUtils.throwWorkerException("Error checking connection status: no status nor failure reason were outputted", process);
       }
       LineGobbler.endSection("CHECK");
       return jobOutput;
@@ -115,13 +115,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
     } catch (final Exception e) {
       LOGGER.error("Unexpected error while checking connection: ", e);
       LineGobbler.endSection("CHECK");
-      throw new WorkerException("Unexpected error while getting checking connection.", e);
+      throw new TestHarnessException("Unexpected error while getting checking connection.", e);
     }
   }
 
   @Override
   public void cancel() {
-    WorkerUtils.cancelProcess(process);
+    TestHarnessUtils.cancelProcess(process);
   }
 
 }

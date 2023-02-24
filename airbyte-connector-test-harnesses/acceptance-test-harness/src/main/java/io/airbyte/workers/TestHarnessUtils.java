@@ -19,7 +19,7 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.Config;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -40,9 +40,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO:(Issue-4824): Figure out how to log Docker process information.
-public class WorkerUtils {
+public class TestHarnessUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtils.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TestHarnessUtils.class);
 
   public static void gentleClose(final Process process, final long timeout, final TimeUnit timeUnit) {
 
@@ -155,7 +155,7 @@ public class WorkerUtils {
       messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
           .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
-      WorkerUtils.gentleClose(process, timeOut, TimeUnit.MINUTES);
+      TestHarnessUtils.gentleClose(process, timeOut, TimeUnit.MINUTES);
       return messagesByType;
     }
   }
@@ -192,12 +192,12 @@ public class WorkerUtils {
   }
 
   public static void throwWorkerException(final String errorMessage, final Process process)
-      throws WorkerException, IOException {
+      throws TestHarnessException, IOException {
     final String stderr = getStdErrFromErrorStream(process.getErrorStream());
     if (stderr.isEmpty()) {
-      throw new WorkerException(errorMessage);
+      throw new TestHarnessException(errorMessage);
     } else {
-      throw new WorkerException(errorMessage + ": \n" + stderr);
+      throw new TestHarnessException(errorMessage + ": \n" + stderr);
     }
   }
 

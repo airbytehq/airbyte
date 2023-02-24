@@ -21,7 +21,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +66,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process spec(final Path jobRoot) throws WorkerException {
+  public Process spec(final Path jobRoot) throws TestHarnessException {
     return processFactory.create(
         SPEC_JOB,
         jobId,
@@ -86,7 +86,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process check(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+  public Process check(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException {
     return processFactory.create(
         CHECK_JOB,
         jobId,
@@ -107,7 +107,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   @Override
-  public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws WorkerException {
+  public Process discover(final Path jobRoot, final String configFilename, final String configContents) throws TestHarnessException {
     return processFactory.create(
         DISCOVER_JOB,
         jobId,
@@ -135,7 +135,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                       final String catalogContents,
                       final String stateFilename,
                       final String stateContents)
-      throws WorkerException {
+      throws TestHarnessException {
     final List<String> arguments = Lists.newArrayList(
         "read",
         CONFIG, configFilename,
@@ -177,7 +177,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                        final String configContents,
                        final String catalogFilename,
                        final String catalogContents)
-      throws WorkerException {
+      throws TestHarnessException {
     final Map<String, String> files = ImmutableMap.of(
         configFilename, configContents,
         catalogFilename, catalogContents);

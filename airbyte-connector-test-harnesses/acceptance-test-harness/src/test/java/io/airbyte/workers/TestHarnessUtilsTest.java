@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class WorkerUtilsTest {
+class TestHarnessUtilsTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GentleCloseWithHeartbeat.class);
 
@@ -126,7 +126,7 @@ class WorkerUtilsTest {
   void testMapStreamNamesToSchemasWithNullNamespace() {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     final StandardSyncInput syncInput = syncPair.getValue();
-    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
+    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
     assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", null)));
   }
 
@@ -134,7 +134,7 @@ class WorkerUtilsTest {
   void testMapStreamNamesToSchemasWithMultipleNamespaces() {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
     final StandardSyncInput syncInput = syncPair.getValue();
-    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
+    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = TestHarnessUtils.mapStreamNamesToSchemas(syncInput);
     assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace")));
     assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace2")));
   }

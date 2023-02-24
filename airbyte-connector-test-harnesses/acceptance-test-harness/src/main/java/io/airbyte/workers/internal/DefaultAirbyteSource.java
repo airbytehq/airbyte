@@ -19,8 +19,8 @@ import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.TestHarnessUtils;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -79,7 +79,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this.streamFactory = streamFactory;
     this.protocolSerializer = protocolSerializer;
     this.heartbeatMonitor = heartbeatMonitor;
-    this.featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
+    featureFlagLogConnectorMsgs = featureFlags.logConnectorMessages();
   }
 
   @Override
@@ -144,14 +144,14 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
 
     LOGGER.debug("Closing source process");
-    WorkerUtils.gentleClose(
+    TestHarnessUtils.gentleClose(
         sourceProcess,
         GRACEFUL_SHUTDOWN_DURATION.toMillis(),
         TimeUnit.MILLISECONDS);
 
     if (sourceProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
       final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
-      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
+      throw new TestHarnessException(message + ". This warning is normal if the job was cancelled.");
     }
   }
 
@@ -163,7 +163,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
       LOGGER.info("Source process no longer exists, cancellation is a no-op.");
     } else {
       LOGGER.info("Source process exists, cancelling...");
-      WorkerUtils.cancelProcess(sourceProcess);
+      TestHarnessUtils.cancelProcess(sourceProcess);
       LOGGER.info("Cancelled source process!");
     }
   }

@@ -52,10 +52,10 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.exception.TestHarnessException;
 import io.airbyte.workers.general.DbtTransformationRunner;
-import io.airbyte.workers.general.DefaultCheckConnectionWorker;
-import io.airbyte.workers.general.DefaultGetSpecWorker;
+import io.airbyte.workers.general.DefaultCheckConnectionTestHarness;
+import io.airbyte.workers.general.DefaultGetSpecTestHarness;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteDestination;
@@ -214,7 +214,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return - a boolean.
    */
-  protected boolean implementsAppend() throws WorkerException {
+  protected boolean implementsAppend() throws TestHarnessException {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
     if (spec.getSupportsIncremental() != null) {
@@ -252,7 +252,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return - a boolean.
    */
-  protected boolean implementsAppendDedup() throws WorkerException {
+  protected boolean implementsAppendDedup() throws TestHarnessException {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
     if (spec.getSupportedDestinationSyncModes() != null) {
@@ -268,7 +268,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return - a boolean.
    */
-  protected boolean implementsOverwrite() throws WorkerException {
+  protected boolean implementsOverwrite() throws TestHarnessException {
     final ConnectorSpecification spec = runSpec();
     assertNotNull(spec);
     if (spec.getSupportedDestinationSyncModes() != null) {
@@ -361,7 +361,7 @@ public abstract class DestinationAcceptanceTest {
    * Verify that when the integrations returns a valid spec.
    */
   @Test
-  public void testGetSpec() throws WorkerException {
+  public void testGetSpec() throws TestHarnessException {
     assertNotNull(runSpec());
   }
 
@@ -944,12 +944,12 @@ public abstract class DestinationAcceptanceTest {
     // 1. First, it tests if connection to the destination works.
     dbtConfig.withDbtArguments("debug");
     if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt debug Failed.");
+      throw new TestHarnessException("dbt debug Failed.");
     }
     // 2. Install any dependencies packages, if any
     dbtConfig.withDbtArguments("deps");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt deps Failed.");
+      throw new TestHarnessException("dbt deps Failed.");
     }
     // 3. It contains seeds that includes some (fake) raw data from a fictional app as CSVs data sets.
     // This materializes the CSVs as tables in your target schema.
@@ -957,19 +957,19 @@ public abstract class DestinationAcceptanceTest {
     // already in your warehouse.
     dbtConfig.withDbtArguments("seed");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt seed Failed.");
+      throw new TestHarnessException("dbt seed Failed.");
     }
     // 4. Run the models:
     // Note: If this steps fails, it might mean that you need to make small changes to the SQL in the
     // models folder to adjust for the flavor of SQL of your target database.
     dbtConfig.withDbtArguments("run");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt run Failed.");
+      throw new TestHarnessException("dbt run Failed.");
     }
     // 5. Test the output of the models and tables have been properly populated:
     dbtConfig.withDbtArguments("test");
     if (!runner.transform(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt test Failed.");
+      throw new TestHarnessException("dbt test Failed.");
     }
     // 6. Generate dbt documentation for the project:
     // This step is commented out because it takes a long time, but is not vital for Airbyte
@@ -1004,7 +1004,7 @@ public abstract class DestinationAcceptanceTest {
         .withDockerImage("fishtownanalytics/dbt:0.19.1")
         .withDbtArguments("debug");
     if (!runner.run(JOB_ID, JOB_ATTEMPT, transformationRoot, config, null, dbtConfig)) {
-      throw new WorkerException("dbt debug Failed.");
+      throw new TestHarnessException("dbt debug Failed.");
     }
 
     dbtConfig.withDbtArguments("test");
@@ -1239,16 +1239,16 @@ public abstract class DestinationAcceptanceTest {
             testCaseId));
   }
 
-  private ConnectorSpecification runSpec() throws WorkerException {
+  private ConnectorSpecification runSpec() throws TestHarnessException {
     return convertProtocolObject(
-        new DefaultGetSpecWorker(
+        new DefaultGetSpecTestHarness(
             new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
         ConnectorSpecification.class);
   }
 
-  protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
-    return new DefaultCheckConnectionWorker(
+  protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws TestHarnessException {
+    return new DefaultCheckConnectionTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
@@ -1258,7 +1258,7 @@ public abstract class DestinationAcceptanceTest {
   protected StandardCheckConnectionOutput.Status runCheckWithCatchedException(
                                                                               final JsonNode config) {
     try {
-      final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
+      final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionTestHarness(
           new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
           mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
@@ -1356,7 +1356,7 @@ public abstract class DestinationAcceptanceTest {
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,
         destinationConfig.getDestinationConnectionConfiguration(),
         destinationConfig.getCatalog(), null)) {
-      throw new WorkerException("Normalization Failed.");
+      throw new TestHarnessException("Normalization Failed.");
     }
     runner.close();
     return destinationOutput;

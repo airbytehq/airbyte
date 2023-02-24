@@ -6,6 +6,6 @@ package io.airbyte.workers.general;
 
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.workers.Worker;
+import io.airbyte.workers.TestHarness;
 
-public interface DiscoverCatalogWorker extends Worker<StandardDiscoverCatalogInput, ConnectorJobOutput> {}
+public interface DiscoverCatalogTestHarness extends TestHarness<StandardDiscoverCatalogInput, ConnectorJobOutput> {}

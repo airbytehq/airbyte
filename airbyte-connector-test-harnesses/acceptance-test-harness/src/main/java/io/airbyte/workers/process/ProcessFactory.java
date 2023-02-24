@@ -6,7 +6,7 @@ package io.airbyte.workers.process;
 
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -38,7 +38,7 @@ public interface ProcessFactory {
    *        variables.
    * @param args Arguments to pass to the docker image being run in the new process.
    * @return ProcessBuilder object to run the process.
-   * @throws WorkerException
+   * @throws TestHarnessException
    */
   Process create(String jobType,
                  String jobId,
@@ -55,7 +55,7 @@ public interface ProcessFactory {
                  final Map<String, String> jobMetadata,
                  final Map<Integer, Integer> portMapping,
                  final String... args)
-      throws WorkerException;
+      throws TestHarnessException;
 
   /**
    * Docker image names are by convention separated by slashes. The last portion is the image's name.
