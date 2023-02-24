@@ -33,7 +33,7 @@ If you use custom connectors, this upgrade requires all of your connector specs 
 
 :::note
 
-Airbyte version 0.40.32 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
+Airbyte version 0.41.0 or later requires [Docker Compose V2](https://docs.docker.com/compose/compose-v2/) to be [installed](https://docs.docker.com/compose/install/) before upgrading.
 
 :::
 
@@ -47,7 +47,7 @@ Airbyte version 0.40.32 or later requires [Docker Compose V2](https://docs.docke
 
    i. If you are running Airbyte from a cloned version of the Airbyte GitHub repo and want to use the current most recent stable version, just `git pull`.
 
-   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,flags.yml,docker-compose.yaml}` to pull the latest versions and overwrite both files.
+   ii. If you are running Airbyte from downloaded `docker-compose.yaml` and `.env` files without a GitHub repo, run `wget -N https://raw.githubusercontent.com/airbytehq/airbyte-platform/main/{.env,flags.yml,docker-compose.yaml}` to pull the latest versions and overwrite both files.
 
 3. Bring Airbyte back online.
 
@@ -109,7 +109,7 @@ If you are upgrading from (i.e. your current version of Airbyte is) Airbyte vers
    Here's an example of what it might look like with the values filled in. It assumes that the downloaded `airbyte_archive.tar.gz` is in `/tmp`.
 
    ```bash
-   docker run --rm -v /tmp:/config airbyte/migration:0.40.32 --\
+   docker run --rm -v /tmp:/config airbyte/migration:0.41.0 --\
    --input /config/airbyte_archive.tar.gz\
    --output /config/airbyte_archive_migrated.tar.gz
    ```

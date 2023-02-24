@@ -19,7 +19,7 @@ public final class FetchSizeConstants {
 
   public static final int MIN_FETCH_SIZE = 1;
   public static final int DEFAULT_FETCH_SIZE = 1000;
-  public static final int MAX_FETCH_SIZE = 2_000_000;
+  public static final int MAX_FETCH_SIZE = 1_000_000_000;
 
   private FetchSizeConstants() {}
 
