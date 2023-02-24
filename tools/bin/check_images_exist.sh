@@ -58,14 +58,13 @@ function docker_tag_exists() {
     # < x-ratelimit-reset: 1665683196
     # < x-ratelimit-remaining: 180
     docker_rate_limit_remaining=$(grep 'x-ratelimit-remaining: ' header.txt | grep --only-matching --extended-regexp "\d+")
-    echo "docker rate limit remaining: $docker_rate_limit_remaining"
     # too noisy when set to < 1.  Dockerhub starts complaining somewhere around 10
     if test "$docker_rate_limit_remaining" -lt 20; then
       echo -e "$red_text""We are close to a sensitive dockerhub rate limit!""$default_text"
       echo -e "$red_text""SLEEPING 60s sad times""$default_text"
       sleep 60
       docker_tag_exists $1 $2
-    elif test "$docker_rate_limit_remaining" -lt 50; then
+    elif test $docker_rate_limit_remaining -lt 50; then
       echo -e "$red_text""Rate limit reported as $docker_rate_limit_remaining""$default_text"
     fi
   fi
