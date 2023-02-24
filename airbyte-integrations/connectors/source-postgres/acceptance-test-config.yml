@@ -6,6 +6,8 @@ custom_environment_variables:
 acceptance_tests:
   spec:
     tests:
+      - backward_compatibility_tests_config:
+          disable_for_version: "1.0.48"
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config.json"
       - spec_path: "src/test-integration/resources/expected_spec.json"
