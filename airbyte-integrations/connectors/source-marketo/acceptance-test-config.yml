@@ -21,6 +21,8 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         empty_streams:
+          - name: "activities_delete_lead"
+            bypass_reason: "Marketo prune deletions older than 14 days"
           - name: "activities_update_opportunity"
             bypass_reason: "Marketo does not provide a way to populate this stream without outside interaction"
           - name: "activities_change_segment"

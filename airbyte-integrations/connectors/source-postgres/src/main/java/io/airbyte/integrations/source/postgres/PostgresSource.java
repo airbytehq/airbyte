@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -38,6 +38,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -54,6 +56,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
 import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
@@ -203,6 +206,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
+  }
+
+  @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
@@ -283,7 +291,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one replication slot but found " + matchingSlots.size()
                   + ". Please read the docs and add a replication slot to your database.");
         }
@@ -299,7 +307,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         }, sourceOperations::rowToJson);
 
         if (matchingPublications.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one publication but found " + matchingPublications.size()
                   + ". Please read the docs and add a publication to your database.");
         }
@@ -308,6 +316,17 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       checkOperations.add(database -> {
         PostgresUtils.checkFirstRecordWaitTime(config);
+      });
+
+      // Verify that a CDC connection can be created
+      checkOperations.add(database -> {
+        /**
+         * TODO: Next line is required for SSL connections so the JDBC_URL is set with all required parameters. This needs to be handle by createConnection function instead. Created issue https://github.com/airbytehq/airbyte/issues/23380.
+         */
+        final JsonNode databaseConfig = database.getDatabaseConfig();
+        // Empty try statement as we only need to verify that the connection can be created.
+        try (final Connection connection = PostgresReplicationConnection.createConnection(databaseConfig)) {
+        }
       });
     }
 

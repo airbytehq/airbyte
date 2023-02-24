@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -112,7 +112,7 @@ public class BigQueryUtils {
       getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createPartitionedTable(bigquery, tmpTableId, schema);
+    BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tmpTableId, schema);
   }
 
   public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
@@ -202,7 +202,7 @@ public class BigQueryUtils {
    * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
    * was not successfully created
    */
-  static void createPartitionedTable(final BigQuery bigquery, final TableId tableId, final Schema schema) {
+  static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
           .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
@@ -220,8 +220,14 @@ public class BigQueryUtils {
               .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
-      bigquery.create(tableInfo);
-      LOGGER.info("Partitioned table created successfully: {}", tableId);
+      final Table table = bigquery.getTable(tableInfo.getTableId());
+      if (table != null && table.exists()) {
+        LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
+      } else {
+        bigquery.create(tableInfo);
+        LOGGER.info("Partitioned table created successfully: {}", tableId);
+      }
+
     } catch (final BigQueryException e) {
       LOGGER.error("Partitioned table was not created: " + tableId, e);
     }
