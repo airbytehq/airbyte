@@ -65,7 +65,6 @@ jobs:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
 
       - name: Release Airbyte Platform
-        if: false # disable
         id: release_airbyte_platform
         working-directory: airbyte-platform
         env:
@@ -78,14 +77,12 @@ jobs:
           ./tools/bin/release_version.sh  # this script calls the bump_version.sh script
 
       - name: Auto Commit Version for Airbyte Platform
-        if: false # disable
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           repository: airbyte-platform
           commit_message: Bump Airbyte version from ${{ steps.release_airbyte_platform.outputs.PREV_VERSION }} to ${{ steps.release_airbyte_platform.outputs.NEW_VERSION }}
 
       - name: Generate Change Log for Airbyte Platform
-        if: false # disable
         working-directory: airbyte-platform
         env:
           PREV_VERSION: ${{ steps.release_airbyte_platform.outputs.PREV_VERSION }}
@@ -95,9 +92,9 @@ jobs:
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo -e "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          echo $CHANGELOG
 
       - name: Create Release for Airbyte Platform
-        if: false # disable
         id: create_release
         uses: ncipollo/release-action@v1
         env:
@@ -160,6 +157,7 @@ jobs:
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           echo -e "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+          echo $CHANGELOG
 
       - name: Create Release for Airbyte
         id: create_release
