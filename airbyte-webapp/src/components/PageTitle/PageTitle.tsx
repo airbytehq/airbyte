@@ -13,7 +13,7 @@ interface PageTitleProps {
 
 export const MainContainer = styled.div<{ withLine?: boolean }>`
   padding-right: 55px;
-  padding-top: 35px;
+  padding-top: 45px;
   border-bottom: ${({ theme, withLine }) => (withLine ? `1px solid ${theme.greyColor20}` : "none")};
   position: relative;
   z-index: 2;
@@ -52,16 +52,18 @@ export const TitleBlock = styled(H3)`
   text-overflow: ellipsis;
 `;
 
-const PageTitle: React.FC<PageTitleProps> = ({ title, withLine, middleComponent, middleTitleBlock, endComponent }) => (
-  <MainContainer withLine={withLine}>
-    <TitleBlock>{title}</TitleBlock>
-    {middleTitleBlock ? (
-      <MiddleTitleBlock>{middleTitleBlock}</MiddleTitleBlock>
-    ) : (
-      <MiddleBlock>{middleComponent}</MiddleBlock>
-    )}
-    <EndBlock>{endComponent}</EndBlock>
-  </MainContainer>
-);
+const PageTitle: React.FC<PageTitleProps> = ({ title, withLine, middleComponent, middleTitleBlock, endComponent }) => {
+  return (
+    <MainContainer withLine={withLine}>
+      <TitleBlock>{title}</TitleBlock>
+      {middleTitleBlock ? (
+        <MiddleTitleBlock>{middleTitleBlock}</MiddleTitleBlock>
+      ) : (
+        <MiddleBlock>{middleComponent}</MiddleBlock>
+      )}
+      <EndBlock>{endComponent}</EndBlock>
+    </MainContainer>
+  );
+};
 
 export default PageTitle;

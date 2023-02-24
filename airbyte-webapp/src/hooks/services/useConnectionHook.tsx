@@ -7,6 +7,11 @@ import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
+import {
+  FilterConnectionRequestBody,
+  ReadConnectionFilters,
+  WebBackendFilteredConnectionReadList,
+} from "core/request/DaspireClient";
 import { useInitService } from "services/useInitService";
 
 // import { useConfig } from "../../config";
@@ -31,6 +36,8 @@ export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
   lists: () => [...connectionsKeys.all, "list"] as const,
   list: (filters: string) => [...connectionsKeys.lists(), { filters }] as const,
+  filtersLists: () => [...connectionsKeys.lists(), "filtersLists"] as const,
+  filteredList: (filters: FilterConnectionRequestBody) => [...connectionsKeys.lists(), { filters }] as const,
   detail: (connectionId: string) => [...connectionsKeys.all, "details", connectionId] as const,
   getState: (connectionId: string) => [...connectionsKeys.all, "getState", connectionId] as const,
 };
@@ -231,6 +238,55 @@ const useConnectionList = (): ListConnection => {
   return useSuspenseQuery(connectionsKeys.lists(), () => service.list(workspace.workspaceId));
 };
 
+const useFilteredConnectionList = (filters: FilterConnectionRequestBody): WebBackendFilteredConnectionReadList => {
+  const service = useWebConnectionService();
+
+  return useSuspenseQuery(connectionsKeys.filteredList(filters), () => service.filteredList(filters));
+};
+
+const useConnectionFilters = (): ReadConnectionFilters => {
+  const service = useWebConnectionService();
+
+  return useSuspenseQuery(connectionsKeys.filtersLists(), () => service.filtersLists());
+};
+
+const useConnectionFilterOptions = () => {
+  const { status, sources, destinations } = useConnectionFilters();
+
+  const statusOptions = status
+    .map((statusOption) => {
+      return {
+        label: statusOption.key,
+        value: statusOption.value,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const sourceOptions = sources
+    .map((source) => {
+      return {
+        label: source.key,
+        value: source.value,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  const destinationOptions = destinations
+    .map((destination) => {
+      return {
+        label: destination.key,
+        value: destination.value,
+      };
+    })
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  return {
+    statusOptions: [{ label: "All Status", value: "" }, ...statusOptions],
+    sourceOptions: [{ label: "All Sources", value: "" }, ...sourceOptions],
+    destinationOptions: [{ label: "All Destinations", value: "" }, ...destinationOptions],
+  };
+};
+
 const invalidateConnectionsList = async (queryClient: QueryClient) => {
   await queryClient.invalidateQueries(connectionsKeys.lists());
 };
@@ -243,6 +299,9 @@ const useGetConnectionState = (connectionId: string) => {
 
 export {
   useConnectionList,
+  useFilteredConnectionList,
+  useConnectionFilters,
+  useConnectionFilterOptions,
   useGetConnection,
   useUpdateConnection,
   useCreateConnection,

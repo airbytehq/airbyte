@@ -62,8 +62,6 @@ const Services: React.FC = ({ children }) => (
   </AuthContextProvider>
 );
 
-// const stripePromise = loadStripe("pk_test_6pRNASCoBOKtIshFeQd4XMUh");
-
 const App: React.FC = () => {
   return (
     <React.StrictMode>

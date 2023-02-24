@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
+
 import { Action, Namespace } from "core/analytics";
 import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";

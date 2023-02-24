@@ -1601,8 +1601,8 @@ export interface WorkspaceIdRequestBody {
 
 export interface WorkspaceIdPageRequestBody {
   workspaceId: WorkspaceId;
-  sourceId?: string;
-  destinationId?: string;
+  sourceDefinitionId?: string;
+  destinationDefinitionId?: string;
   status?: string;
   pageSize?: number;
   pageCurrent?: number;
