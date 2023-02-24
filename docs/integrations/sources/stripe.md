@@ -82,7 +82,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.0.1  | 2023-02-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices` |
+| 3.0.1  | 2023-02-24 | [23389](https://github.com/airbytehq/airbyte/pull/23389) | Add `customer_tax_ids` to `Invoices` |
+| 3.0.0   | 2023-02-21 | [23295](https://github.com/airbytehq/airbyte/pull/23295) | Fix invoice schema                                                                                                                                   |
 | 2.0.0   | 2023-02-14 | [22312](https://github.com/airbytehq/airbyte/pull/22312) | Another fix of `Invoices` stream schema + Remove http urls from openapi_spec.json                                                                    |
 | 1.0.2   | 2023-02-09 | [22659](https://github.com/airbytehq/airbyte/pull/22659) | Set `AvailabilityStrategy` for all streams                                                                                                           |
 | 1.0.1   | 2023-01-27 | [22042](https://github.com/airbytehq/airbyte/pull/22042) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                          |

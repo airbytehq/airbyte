@@ -106,7 +106,7 @@
               "type": ["null", "integer"]
             },
             "redeem_by": {
-              "type": ["null", "number"]
+              "type": ["null", "integer"]
             },
             "duration_in_months": {
               "type": ["null", "integer"]
@@ -147,13 +147,13 @@
           "type": ["null", "integer"]
         },
         "invoice": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "invoice_item": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "promotion_code": {
-          "type": ["null", "integer"]
+          "type": ["null", "string"]
         },
         "start": {
           "type": ["null", "integer"]
