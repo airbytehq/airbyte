@@ -416,6 +416,7 @@ class Executions(IncrementalTwilioStream, TwilioNestedStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"Flows/{stream_slice['flow_sid']}/Executions"
+
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {"flow_sid": record["executions"]["flow_sid"]}
 
