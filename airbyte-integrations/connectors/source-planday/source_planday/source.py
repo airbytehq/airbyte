@@ -149,6 +149,7 @@ class PlandayStream(HttpStream, ABC):
 class IncrementalPlandayStream(PlandayStream, ABC):
     state_checkpoint_interval = math.inf
     slice_range = 35
+    stop_at_today = True
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(config)
@@ -191,7 +192,7 @@ class IncrementalPlandayStream(PlandayStream, ABC):
 
         return start_point
 
-    def chunk_dates(self, start_date_ts: datetime.date, stop_at_today: bool = True) -> Iterable[Tuple[datetime.date, Union[datetime.date, None]]]:
+    def chunk_dates(self, start_date_ts: datetime.date) -> Iterable[Tuple[datetime.date, Union[datetime.date, None]]]:
         today = self.get_today_date()
         step = datetime.timedelta(days=self.slice_range)
         after_ts = start_date_ts
@@ -199,7 +200,7 @@ class IncrementalPlandayStream(PlandayStream, ABC):
             before_ts = min(today, after_ts + step)
             yield after_ts, before_ts
             after_ts = before_ts + datetime.timedelta(days=1)
-        if not stop_at_today:
+        if not self.stop_at_today:
             yield after_ts, None
 
 
@@ -225,7 +226,7 @@ class IncrementalSubPlandayStream(IncrementalPlandayStream, ABC):
             # iterate over all parent records with current stream_slice
             start_ts = self.get_start_timestamp(stream_state)
             for record in parent_records:
-                for start, end in self.chunk_dates(start_ts, stop_at_today=True):
+                for start, end in self.chunk_dates(start_ts):
                     yield {"parent": record, "from": start, "to": end}
 
 
@@ -314,6 +315,7 @@ class Shifts(IncrementalPlandayStream):
 
     primary_key = "id"
     cursor_field = "date"
+    stop_at_today = False
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
