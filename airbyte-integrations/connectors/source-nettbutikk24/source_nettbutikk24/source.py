@@ -41,7 +41,7 @@ class Nettbutikk24Stream(HttpStream, ABC):
 
     @property
     def url_base(self):
-        return f"https://{self.shop_name}/api/v1/"
+        return f"http://{self.shop_name}/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
