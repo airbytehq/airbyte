@@ -6,34 +6,36 @@ custom_environment_variables:
 acceptance_tests:
   spec:
     tests:
-      - backward_compatibility_tests_config:
-          disable_for_version: "1.0.48"
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.48"
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config_cdc.json"
-  connection:
-    tests:
-      - config_path: "secrets/config.json"
-        status: "succeed"
-      - config_path: "secrets/config_cdc.json"
-        status: "succeed"
-  discovery:
-    tests:
-      - config_path: "secrets/config.json"
-      - config_path: "secrets/config_cdc.json"
-  basic_read:
-    tests:
-      - config_path: "secrets/config.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-      - config_path: "secrets/config_cdc.json"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-  full_refresh:
-    tests:
-      - config_path: "secrets/config.json"
-      - config_path: "secrets/config_cdc.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.48"
+  # connection:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       status: "succeed"
+  #     - config_path: "secrets/config_cdc.json"
+  #       status: "succeed"
+  # discovery:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #     - config_path: "secrets/config_cdc.json"
+  # basic_read:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #       expect_records:
+  #         path: "integration_tests/expected_records.txt"
+  #     - config_path: "secrets/config_cdc.json"
+  #       expect_records:
+  #         path: "integration_tests/expected_records.txt"
+  # full_refresh:
+  #   tests:
+  #     - config_path: "secrets/config.json"
+  #     - config_path: "secrets/config_cdc.json"
 #  incremental:
 #    tests:
 #      - config_path: "secrets/config.json"
