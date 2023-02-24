@@ -20,8 +20,6 @@ import com.google.common.collect.Maps;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.AllowedHosts;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.exception.WorkerException;
@@ -206,7 +204,6 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   }
 
   private Map<String, String> getWorkerMetadata() {
-    final Configs configs = new EnvConfigs();
     // We've managed to exceed the maximum number of parameters for Map.of(), so use a builder + convert
     // back to hashmap
     return Maps.newHashMap(
@@ -220,8 +217,6 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
             .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())
             .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES, featureFlags.strictComparisonNormalizationWorkspaces())
             .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.strictComparisonNormalizationTag())
-            .put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey())
-            .put(EnvConfigs.FEATURE_FLAG_CLIENT, configs.getFeatureFlagClient())
             .build());
   }
 
