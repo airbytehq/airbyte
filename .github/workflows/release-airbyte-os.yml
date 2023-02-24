@@ -123,6 +123,7 @@ jobs:
           ref: master
           path: airbyte
           fetch-depth: 0
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
 
       - name: Bump Version for Airbyte
         id: bump_version
@@ -143,6 +144,7 @@ jobs:
         with:
           repository: airbyte
           commit_message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
+          push_options: --force
 
       - name: Generate Change Log for Airbyte
         working-directory: airbyte
