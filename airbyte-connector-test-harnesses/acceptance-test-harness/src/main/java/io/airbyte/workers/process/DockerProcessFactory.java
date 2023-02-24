@@ -10,11 +10,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import java.io.IOException;
@@ -40,7 +38,6 @@ public class DockerProcessFactory implements ProcessFactory {
   private static final String IMAGE_EXISTS_SCRIPT = "image_exists.sh";
 
   private final String workspaceMountSource;
-  private final WorkerConfigs workerConfigs;
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
@@ -54,17 +51,15 @@ public class DockerProcessFactory implements ProcessFactory {
    * @param localMountSource local volume
    * @param networkName docker network
    */
-  public DockerProcessFactory(final WorkerConfigs workerConfigs,
-                              final Path workspaceRoot,
+  public DockerProcessFactory(final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
                               final String networkName) {
-    this.workerConfigs = workerConfigs;
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
-    this.imageExistsScriptPath = prepareImageExistsScript();
+    imageExistsScriptPath = prepareImageExistsScript();
   }
 
   private static Path prepareImageExistsScript() {
@@ -142,8 +137,7 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
-      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap());
-      for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
+      for (final Map.Entry<String, String> envEntry : jobMetadata.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
       }

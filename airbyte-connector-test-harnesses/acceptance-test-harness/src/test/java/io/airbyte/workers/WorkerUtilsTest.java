@@ -59,7 +59,6 @@ class WorkerUtilsTest {
 
     private void runShutdown() {
       gentleCloseWithHeartbeat(
-          new WorkerConfigs(new EnvConfigs()),
           process,
           heartbeatMonitor,
           SHUTDOWN_TIME_DURATION,
@@ -158,8 +157,7 @@ class WorkerUtilsTest {
    * @param forcedShutdownDuration - amount of time to wait if a process needs to be destroyed
    *        forcibly.
    */
-  static void gentleCloseWithHeartbeat(final WorkerConfigs workerConfigs,
-                                       final Process process,
+  static void gentleCloseWithHeartbeat(final Process process,
                                        final HeartbeatMonitor heartbeatMonitor,
                                        final Duration gracefulShutdownDuration,
                                        final Duration checkHeartbeatDuration,
@@ -167,10 +165,6 @@ class WorkerUtilsTest {
                                        final BiConsumer<Process, Duration> forceShutdown) {
     while (process.isAlive() && heartbeatMonitor.isBeating()) {
       try {
-        if (workerConfigs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
-          LOGGER.debug("Gently closing process {} with heartbeat..", process.info().commandLine().get());
-        }
-
         process.waitFor(checkHeartbeatDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
         LOGGER.error("Exception while waiting for process to finish", e);
@@ -179,10 +173,6 @@ class WorkerUtilsTest {
 
     if (process.isAlive()) {
       try {
-        if (workerConfigs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
-          LOGGER.debug("Gently closing process {} without heartbeat..", process.info().commandLine().get());
-        }
-
         process.waitFor(gracefulShutdownDuration.toMillis(), TimeUnit.MILLISECONDS);
       } catch (final InterruptedException e) {
         LOGGER.error("Exception during grace period for process to finish. This can happen when cancelling jobs.");
@@ -191,10 +181,6 @@ class WorkerUtilsTest {
 
     // if we were unable to exist gracefully, force shutdown...
     if (process.isAlive()) {
-      if (workerConfigs.getWorkerEnvironment().equals(Configs.WorkerEnvironment.KUBERNETES)) {
-        LOGGER.debug("Force shutdown process {}..", process.info().commandLine().get());
-      }
-
       forceShutdown.accept(process, forcedShutdownDuration);
     }
   }

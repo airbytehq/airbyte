@@ -53,7 +53,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DefaultCheckConnectionWorker;
@@ -116,7 +115,6 @@ public abstract class DestinationAcceptanceTest {
 
   private Path jobRoot;
   private ProcessFactory processFactory;
-  private WorkerConfigs workerConfigs;
   private ConnectorConfigUpdater mConnectorConfigUpdater;
 
   protected Path localRoot;
@@ -347,12 +345,11 @@ public abstract class DestinationAcceptanceTest {
     LOGGER.info("jobRoot: {}", jobRoot);
     LOGGER.info("localRoot: {}", localRoot);
     testEnv = new TestDestinationEnv(localRoot);
-    workerConfigs = new WorkerConfigs(new EnvConfigs());
     mConnectorConfigUpdater = Mockito.mock(ConnectorConfigUpdater.class);
 
     setup(testEnv);
 
-    processFactory = new DockerProcessFactory(workerConfigs, workspaceRoot,
+    processFactory = new DockerProcessFactory(workspaceRoot,
         workspaceRoot.toString(), localRoot.toString(), "host");
   }
 

@@ -220,8 +220,6 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
             .put(EnvVariableFeatureFlags.FIELD_SELECTION_WORKSPACES, featureFlags.fieldSelectionWorkspaces())
             .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_WORKSPACES, featureFlags.strictComparisonNormalizationWorkspaces())
             .put(EnvVariableFeatureFlags.STRICT_COMPARISON_NORMALIZATION_TAG, featureFlags.strictComparisonNormalizationTag())
-            .put(EnvConfigs.SOCAT_KUBE_CPU_LIMIT, configs.getSocatSidecarKubeCpuLimit())
-            .put(EnvConfigs.SOCAT_KUBE_CPU_REQUEST, configs.getSocatSidecarKubeCpuRequest())
             .put(EnvConfigs.LAUNCHDARKLY_KEY, configs.getLaunchDarklyKey())
             .put(EnvConfigs.FEATURE_FLAG_CLIENT, configs.getFeatureFlagClient())
             .build());
