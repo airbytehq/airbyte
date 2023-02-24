@@ -28,6 +28,7 @@ tests:
     # TEST 2 - Reading data from account that has no records for stream Disputes
     - config_path: "secrets/connected_account_config.json"
       configured_catalog_path: "integration_tests/connected_account_configured_catalog.json"
+      empty_streams: ["early_fraud_warnings"]
       timeout_seconds: 3600
   incremental:
     - config_path: "secrets/config.json"
