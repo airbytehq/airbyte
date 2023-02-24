@@ -348,8 +348,12 @@ public abstract class DestinationAcceptanceTest {
 
     setup(testEnv);
 
-    processFactory = new DockerProcessFactory(workspaceRoot,
-        workspaceRoot.toString(), localRoot.toString(), "host");
+    processFactory = new DockerProcessFactory(
+        workspaceRoot,
+        workspaceRoot.toString(),
+        localRoot.toString(),
+        "host",
+        Collections.emptyMap());
   }
 
   @AfterEach

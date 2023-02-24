@@ -10,6 +10,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.AllowedHosts;
 import io.airbyte.config.ResourceRequirements;
@@ -41,24 +42,28 @@ public class DockerProcessFactory implements ProcessFactory {
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
+  private final Map<String, String> envMap;
   private final Path imageExistsScriptPath;
 
   /**
    * Used to construct a Docker process.
    *
-   * @param workspaceRoot real root of workspace
+   * @param workspaceRoot        real root of workspace
    * @param workspaceMountSource workspace volume
-   * @param localMountSource local volume
-   * @param networkName docker network
+   * @param localMountSource     local volume
+   * @param networkName          docker network
+   * @param envMap
    */
   public DockerProcessFactory(final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
-                              final String networkName) {
+                              final String networkName,
+      final Map<String, String> envMap) {
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
+    this.envMap = envMap;
     imageExistsScriptPath = prepareImageExistsScript();
   }
 
@@ -137,7 +142,8 @@ public class DockerProcessFactory implements ProcessFactory {
         cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
       }
 
-      for (final Map.Entry<String, String> envEntry : jobMetadata.entrySet()) {
+      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, envMap);
+      for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
         cmd.add("-e");
         cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
       }
