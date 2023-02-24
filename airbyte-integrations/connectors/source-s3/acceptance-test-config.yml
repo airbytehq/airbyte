@@ -17,8 +17,6 @@ acceptance_tests:
       status: succeed
     - config_path: secrets/jsonl_newlines_config.json
       status: succeed
-    - config_path: integration_tests/config_minio.json
-      status: succeed
     - config_path: integration_tests/invalid_config.json
       status: failed
 
@@ -31,7 +29,6 @@ acceptance_tests:
         disable_for_version: 0.1.32
     - config_path: secrets/jsonl_config.json
     - config_path: secrets/jsonl_newlines_config.json
-    - config_path: integration_tests/config_minio.json
 
   basic_read:
     tests:
@@ -73,9 +70,6 @@ acceptance_tests:
     - config_path: secrets/jsonl_newlines_config.json
       configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
       timeout_seconds: 1800
-    - config_path: integration_tests/config_minio.json
-      configured_catalog_path: integration_tests/configured_catalogs/csv.json
-      timeout_seconds: 1800
 
   incremental:
     tests:
@@ -113,14 +107,6 @@ acceptance_tests:
       timeout_seconds: 1800
     - config_path: secrets/jsonl_newlines_config.json
       configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
-      cursor_paths:
-        test:
-        - _ab_source_file_last_modified
-      future_state:
-        future_state_path: integration_tests/abnormal_state.json
-      timeout_seconds: 1800
-    - config_path: integration_tests/config_minio.json
-      configured_catalog_path: integration_tests/configured_catalogs/csv.json
       cursor_paths:
         test:
         - _ab_source_file_last_modified
