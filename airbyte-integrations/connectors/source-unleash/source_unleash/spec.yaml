@@ -9,10 +9,10 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_token:
-      title: API Token
+      title: API Token Client
       type: string
       description: >-
-        Your API Token. See <a
+        Your API Token (Server-Side SDK [Client]). See <a
         href="https://docs.getunleash.io/how-to/how-to-create-api-tokens/">here</a>. The token is
         case sensitive.
       airbyte_secret: true
@@ -24,14 +24,16 @@ connectionSpecification:
       title: API URL
       type: string
       description: >-
-        Your API URL. No trailing slash. ex: http://unleash.host.com
+        Your API URL. No trailing slash. ex: http://unleash.host.com/api
     project_name:
       title: Project Name
       type: string
       description: >-
-         Use this if you want to filter the API call for only one given project (can be used in addition to the "Experiment Name Prefix" field)
+         Use this if you want to filter the API call for only one given project (can be used in addition to the "Feature Name Prefix" field).
+         See <a href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
     nameprefix:
-      title: Experiment Name Prefix
+      title: Feature Name Prefix
       type: string
       description: >-
-         Use this if you want to filter the API call for only one given experiment prefix (can be used in addition to the "Project Name" field)
+         Use this if you want to filter the API call for only one given project (can be used in addition to the "Feature Name Prefix" field).
+         See <a href="https://docs.getunleash.io/reference/api/legacy/unleash/client/features#filter-feature-toggles">here</a>
