@@ -47,7 +47,6 @@ jobs:
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.filter.outputs.backend }}
       build: ${{ steps.filter.outputs.build }}
       cli: ${{ steps.filter.outputs.cli }}
       connectors: ${{ steps.filter.outputs.connectors }}
@@ -61,18 +60,13 @@ jobs:
         with:
           # Note, the following glob expression within a filters are ORs.
           filters: |
-            backend:
-              - 'airbyte-!(cdk|integrations|webapp|webapp-e2e-tests)/**'
-              - 'airbyte-integrations/connectors/(destination-jdbc|destination-postgres|source-jdbc|source-postgres)/**'
-              - 'airbyte-config/init/src/main/resources/seed/(source|destination)_definitions.yaml'
-              - 'docker-compose*.yaml'
-              - '(charts|kube)/**'
             build:
               - '.github/**'
               - 'buildSrc/**'
               - 'tools/**'
               - '*.gradle'
               - 'deps.toml'
+              - 'airbyte-config/**'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
@@ -318,7 +312,7 @@ jobs:
           # Specify top-level and second-level modules. Note there cannot be a space between the comma.
           path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
           reporter: java-junit
-          fail-on-error: 'false'
+          fail-on-error: "false"
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:

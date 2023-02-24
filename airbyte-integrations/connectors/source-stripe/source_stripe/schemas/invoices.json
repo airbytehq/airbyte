@@ -91,7 +91,7 @@
               "type": ["null", "integer"]
             },
             "redeem_by": {
-              "type": ["null", "number"]
+              "type": ["null", "integer"]
             },
             "duration_in_months": {
               "type": ["null", "integer"]
@@ -129,6 +129,18 @@
           }
         },
         "customer": {
+          "type": ["null", "string"]
+        },
+        "end": {
+          "type": ["null", "integer"]
+        },
+        "invoice": {
+          "type": ["null", "string"]
+        },
+        "invoice_item": {
+          "type": ["null", "string"]
+        },
+        "promotion_code": {
           "type": ["null", "string"]
         },
         "start": {
@@ -213,28 +225,16 @@
       "type": "object",
       "properties": {
         "finalized_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "marked_uncollectible_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "paid_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         },
         "voided_at": {
-          "type": [
-            "null",
-            "integer"
-          ]
+          "type": ["null", "integer"]
         }
       }
     }
