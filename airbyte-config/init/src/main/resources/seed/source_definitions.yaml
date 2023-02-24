@@ -1409,7 +1409,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.47
+  dockerImageTag: 1.0.48
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1779,7 +1779,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 2.0.0
+  dockerImageTag: 3.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api
