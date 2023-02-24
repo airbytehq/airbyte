@@ -57,6 +57,7 @@ class CustomFieldTransformation(RecordTransformation):
     Transform all 'date-time' fields from schema (nested included) to rfc3339 format
     Issue: https://github.com/airbytehq/airbyte/issues/23407
     """
+
     config: Config
     parameters: InitVar[Mapping[str, Any]]
 
