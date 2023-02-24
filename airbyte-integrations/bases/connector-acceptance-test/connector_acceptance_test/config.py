@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -199,6 +199,9 @@ class Config(BaseConfig):
     test_strictness_level: Optional[TestStrictnessLevel] = Field(
         default=TestStrictnessLevel.low,
         description="Corresponds to a strictness level of the test suite and will change which tests are mandatory for a successful run.",
+    )
+    custom_environment_variables: Optional[Mapping] = Field(
+        default={}, description="Mapping of custom environment variables to pass to the connector under test."
     )
 
     @staticmethod

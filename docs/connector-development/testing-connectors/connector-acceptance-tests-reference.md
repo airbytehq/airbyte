@@ -84,6 +84,8 @@ Example of `acceptance-test-config.yml`:
 ```yaml
 connector_image: string # Docker image to test, for example 'airbyte/source-pokeapi:0.1.0'
 base_path: string # Base path for all relative paths, optional, default - ./
+custom_environment_variables:
+  foo: bar
 acceptance_tests: # Tests configuration
   spec: # list of the test inputs
     bypass_reason: "Explain why you skipped this test"
@@ -398,4 +400,14 @@ or prevent network access for this connector entirely
 ```yaml
 allowedHosts:
   hosts: []
+```
+
+## Custom environment variable
+
+The connector under tests can be run with custom environment variables:
+```yaml
+connector_image: "airbyte/source-pokeapi"
+custom_environment_variables:
+  my_custom_environment_variable: value
+...
 ```

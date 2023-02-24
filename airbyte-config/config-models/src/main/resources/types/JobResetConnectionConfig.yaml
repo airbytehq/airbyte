@@ -6,7 +6,6 @@ description: job reset connection config
 type: object
 additionalProperties: false
 required:
-  - destinationConfiguration
   - configuredAirbyteCatalog
   - destinationDockerImage
 properties:
@@ -19,10 +18,6 @@ properties:
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
-  destinationConfiguration:
-    description: Integration specific blob. Must be a valid JSON string.
-    type: object
-    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   configuredAirbyteCatalog:
     description: the configured airbyte catalog
     type: object
@@ -49,9 +44,6 @@ properties:
     existingJavaType: io.airbyte.config.ResourceRequirements
   resetSourceConfiguration:
     "$ref": ResetSourceConfiguration.yaml
-  state:
-    description: optional current state of the connection
-    "$ref": State.yaml
   isSourceCustomConnector:
     description: determine if the running image of the source is a custom connector.
     type: boolean

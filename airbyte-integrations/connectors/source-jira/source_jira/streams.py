@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -303,7 +303,7 @@ class Issues(IncrementalJiraStream):
 
     cursor_field = "updated"
     extract_field = "issues"
-    use_cache = True
+    use_cache = False  # disable caching due to OOM errors in kubernetes
 
     def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
