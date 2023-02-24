@@ -108,13 +108,19 @@
         "airbyte_secret": true,
         "order": 3
       },
+      "max_depth_level_read": {
+        "title": "Max-Depth-Level",
+        "type": "integer",
+        "description": "Max level of depth you want to flatten objects, by default up to 2 levels",
+        "order": 4
+      },
       "auth_source": {
         "title": "Authentication Source",
         "type": "string",
         "description": "The authentication source where the user information is stored.",
         "default": "admin",
         "examples": ["admin"],
-        "order": 4
+        "order": 5
       }
     }
   },
