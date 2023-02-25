@@ -10,7 +10,7 @@ import click
 import dagger
 from ci_connector_ops.pipelines.actions import build_contexts, builds, tests
 from ci_connector_ops.pipelines.utils import StepStatus
-from ci_connector_ops.utils import Connector, get_changed_connectors
+from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
 from dagger.api.gen import Client, Container
 from graphql import GraphQLError
 
@@ -26,6 +26,9 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     integration_tests_status: StepStatus = await tests.run_integration_tests(installed_connector.pipeline("Integration tests"))
     acceptance_tests_status: StepStatus = await tests.run_acceptance_tests(dagger_client.pipeline("Acceptance tests"), connector, "dev")
 
+    # TODO download secrets from GSM before running acceptance tests
+    # TODO run QA checks
+    # TODO filter by connector
     print(f"Format: {format_check_status}")
     print(f"Unit tests: {unit_tests_status}")
     print(f"Integration tests: {integration_tests_status}")
@@ -37,7 +40,9 @@ async def run_connectors_test_pipelines(connectors: List[Connector]):
 
     async with dagger.Connection(config) as dagger_client:
         for connector in connectors:
-            await run_connector_test_pipelines(dagger_client, connector)
+            # We scoped this POC only for python connectors
+            if connector.language == ConnectorLanguage.PYTHON:
+                await run_connector_test_pipelines(dagger_client, connector)
 
 
 @click.group()
