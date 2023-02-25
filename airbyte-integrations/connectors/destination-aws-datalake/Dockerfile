@@ -2,13 +2,11 @@ FROM python:3.9.11-alpine3.15 as base
 
 # alwyays update dependencies
 RUN apk update && apk upgrade -a
-# FROM python:3.9.11-alpine3.15 as base
 
-# alwyays update dependencies
-RUN apk update && apk upgrade -a
-
-# Bash is installed for more convenient debugging.
-# RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+# upgrade pip and install libs
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base bash
 
 WORKDIR /airbyte/integration_code
 COPY destination_aws_datalake ./destination_aws_datalake

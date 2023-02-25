@@ -2,23 +2,18 @@ FROM python:3.9.11-alpine3.15 as base
 
 # alwyays update dependencies
 RUN apk update && apk upgrade -a
-# FROM python:3.9.11-alpine3.15 as base
 
-# alwyays update dependencies
-RUN apk update && apk upgrade -a
-# switched from alpine as there were tons of errors (in case you want to switch back to alpine)
-# - https://stackoverflow.com/a/57485724/5246670
-# - numpy error: https://stackoverflow.com/a/22411624/5246670
-# - libstdc++ https://github.com/amancevice/docker-pandas/issues/12#issuecomment-717215043
-# - musl-dev linux-headers g++ because of: https://stackoverflow.com/a/40407099/5246670
+# upgrade pip and install libs
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base bash
+
+# Install custom deps for this connector
+RUN apk add libffi-dev musl-dev g++
 
 # build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
-
-# upgrade pip to the latest version
-RUN apt-get update && apt-get -y upgrade \
-    && pip install --upgrade pip
 
 COPY setup.py ./
 # install necessary packages to a temporary folder

@@ -7,11 +7,10 @@ RUN apk update && apk upgrade -a
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
-# RUN apk --no-cache upgrade \
-#     && pip install --upgrade pip \
-#     && apk --no-cache add tzdata
-
+# upgrade pip and install libs
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base bash
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
@@ -26,9 +25,6 @@ COPY --from=builder /install /usr/local
 # add default timezone settings
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
-
-# bash is installed for more convenient debugging.
-# RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./

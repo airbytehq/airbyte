@@ -7,12 +7,13 @@ RUN apk update && apk upgrade -a
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
-RUN apt-get update && apt-get install -y && rm -rf /var/lib/apt/lists/* \
+# upgrade pip and install libs
+RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && python3 -m pip install --upgrade setuptools
+    && apk --no-cache add tzdata build-base bash
 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+# Install custom deps for this connector
+RUN apk add libffi-dev musl-dev g++
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
@@ -27,9 +28,6 @@ COPY --from=builder /install /usr/local
 # add default timezone settings
 COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
-
-# bash is installed for more convenient debugging.
-# RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
