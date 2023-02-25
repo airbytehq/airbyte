@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
  * This class passes environment variable to the DockerProcessFactory that runs the source in the
  * SourceAcceptanceTest.
  */
+// todo (cgardens) - this cloud_deployment implicit interface is going to bite us.
 public class TestEnvConfigs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TestEnvConfigs.class);
