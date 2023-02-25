@@ -15,15 +15,17 @@ MAIN_REQUIREMENTS = [
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0",
     "dagger-io==0.3.2",
+    "pytablewriter~=0.64.2",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2.5",
     "pytest-mock~=3.10.0",
+    "freezegun",
 ]
 
 setup(
-    version="0.1.13",
+    version="0.1.14",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
@@ -43,7 +45,7 @@ setup(
             "allowed-hosts-checks = ci_connector_ops.allowed_hosts_checks:check_allowed_hosts",
             "run-qa-engine = ci_connector_ops.qa_engine.main:main",
             "run-qa-checks = ci_connector_ops.qa_checks:run_qa_checks",
-            "test-connectors = ci_connector_ops.ci.connectors_ci:main",
+            "connectors-ci = ci_connector_ops.pipelines.connectors_ci:connectors_ci",
         ],
     },
 )
