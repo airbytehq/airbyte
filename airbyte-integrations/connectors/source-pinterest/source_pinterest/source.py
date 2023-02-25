@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .utils import to_datetime_str, get_analytics_columns
+from .utils import get_analytics_columns, to_datetime_str
 
 # For Pinterest analytics streams rate limit is 300 calls per day / per user.
 # once hit - response would contain `code` property with int.

@@ -121,7 +121,7 @@ def get_analytics_columns() -> str:
         "WEB_CHECKOUT_COST_PER_ACTION",
         "WEB_CHECKOUT_ROAS",
         "WEB_SESSIONS_1",  #
-        "WEB_SESSIONS_2"  #
+        "WEB_SESSIONS_2",  #
     ]
     return ",".join(analytics_columns)
 
