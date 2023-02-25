@@ -1,5 +1,8 @@
 ARG JDK_VERSION=17.0.4
 FROM amazoncorretto:${JDK_VERSION}
+
+RUN yum update -y
+
 COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 
 RUN yum install -y tar openssl && yum clean all

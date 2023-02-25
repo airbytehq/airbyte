@@ -1,4 +1,7 @@
-FROM python:3.9-slim as base
+FROM python:3.9.11-alpine3.15 as base
+
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
 FROM base as builder
 
 RUN apt-get update

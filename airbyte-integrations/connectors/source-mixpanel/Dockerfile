@@ -1,7 +1,12 @@
-FROM python:3.9-slim
+FROM python:3.9.11-alpine3.15 as base
 
-# Bash is installed for more convenient debugging.
-RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
+
+# upgrade pip and install libs
+RUN apk --no-cache upgrade \
+    && pip install --upgrade pip \
+    && apk --no-cache add tzdata build-base bash
 
 WORKDIR /airbyte/integration_code
 COPY source_mixpanel ./source_mixpanel

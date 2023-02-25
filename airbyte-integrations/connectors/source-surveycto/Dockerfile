@@ -1,4 +1,7 @@
-FROM python:3.10.8-slim-bullseye as base
+FROM python:3.9.11-alpine3.15 as base
+
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
 
 # build and load all requirements
 FROM base as builder
@@ -9,7 +12,7 @@ RUN apt-get update && apt-get install -y && rm -rf /var/lib/apt/lists/* \
     # apk --no-cache upgrade \
     && pip install --upgrade pip \
     && python3 -m pip install --upgrade setuptools
-    
+
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 
 

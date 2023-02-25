@@ -1,5 +1,11 @@
-FROM python:3.9.11 as base
+FROM python:3.9.11-alpine3.15 as base
+
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
 # FROM python:3.9.11-alpine3.15 as base
+
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
 # switched from alpine as there were tons of errors (in case you want to switch back to alpine)
 # - https://stackoverflow.com/a/57485724/5246670
 # - numpy error: https://stackoverflow.com/a/22411624/5246670
