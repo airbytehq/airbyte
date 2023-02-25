@@ -27,6 +27,20 @@
       "cursor_field": ["date_created"],
       "primary_key": [["id"]],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "reports",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["send_time"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["send_time"],
+      "primary_key": [["id"]],
+      "destination_sync_mode": "append"
     }
   ]
 }
