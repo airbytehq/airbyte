@@ -1,8 +1,9 @@
 import classNames from "classnames";
-import { HTMLInputTypeAttribute } from "react";
+import { HTMLInputTypeAttribute, ReactNode } from "react";
 import { Path, useFormContext } from "react-hook-form";
 
 import { Text } from "components/ui/Text";
+import { InfoTooltip } from "components/ui/Tooltip";
 
 import styles from "./RHFControl.module.scss";
 import { RHFDateWrapper } from "./RHFDateWrapper";
@@ -24,6 +25,10 @@ interface RHFControlBaseProps<T extends FormValues> {
    * A label that is displayed above the form control
    */
   label: string;
+  /**
+   * A tooltip that appears next to the form label
+   */
+  labelTooltip?: ReactNode;
   /**
    * An optional description that appears under the label
    */
@@ -55,6 +60,7 @@ export interface RHFDatePickerProps<T> extends RHFControlBaseProps<T> {
 export const RHFControl = <T extends FormValues>({
   fieldType,
   label,
+  labelTooltip,
   description,
   name,
   ...props
@@ -85,7 +91,10 @@ export const RHFControl = <T extends FormValues>({
     <div className={styles.control}>
       <label>
         <div className={classNames(styles.label)}>
-          <Text size="lg">{label}</Text>
+          <Text size="lg">
+            {label}
+            {labelTooltip && <InfoTooltip placement="top-start">{labelTooltip}</InfoTooltip>}
+          </Text>
           {description && <Text className={styles.description}>{description}</Text>}
         </div>
         {renderControl()}

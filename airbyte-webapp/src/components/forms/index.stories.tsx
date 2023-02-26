@@ -49,7 +49,13 @@ export const Primary = () => (
         label="A default text input"
         description="Some default message that appears under the label"
       />
-      <MyFormControl fieldType="input" type="password" name="some_password" label="Password input" />
+      <MyFormControl
+        fieldType="input"
+        type="password"
+        name="some_password"
+        label="Password input"
+        labelTooltip={<span>A tooltip to give the user more context.</span>}
+      />
       <MyFormControl fieldType="date" name="some_date" format="date-time" label="Date input" />
       <FlexContainer justifyContent="flex-end">
         <FlexItem>
