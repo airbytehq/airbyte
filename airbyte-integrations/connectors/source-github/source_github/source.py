@@ -2,16 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from typing import Any, Dict, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
-
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from .streams import (
     Assignees,
@@ -153,7 +151,7 @@ class SourceGithub(AbstractSource):
         return default_branches, branches_to_pull
 
     def user_friendly_error_message(self, message: str) -> str:
-        user_message = ''
+        user_message = ""
         if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
             # HTTPError('404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100')
             full_repo_name = message.split("https://api.github.com/repos/")[1].split("?")[0]
@@ -164,7 +162,7 @@ class SourceGithub(AbstractSource):
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated'
         elif "401 Client Error: Unauthorized for url":
             # HTTPError('401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc')
-            user_message = f'Bad credentials, re-authentication or access token renewal is required'
+            user_message = "Bad credentials, re-authentication or access token renewal is required"
         return user_message
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -189,10 +187,7 @@ class SourceGithub(AbstractSource):
             user_message = self.user_friendly_error_message(message)
             if user_message:
                 raise AirbyteTracedException(
-                    internal_message=message,
-                    message=user_message,
-                    failure_type=FailureType.config_error,
-                    exception=e
+                    internal_message=message, message=user_message, failure_type=FailureType.config_error, exception=e
                 )
             else:
                 raise e
