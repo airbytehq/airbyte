@@ -430,11 +430,7 @@
       "fields": [
         {
           "name": "created_at",
-          "type": [
-            "null",
-            "string",
-            "long"
-          ],
+          "type": ["null", "string", "long"],
           "default": null
         },
         {
@@ -502,11 +498,7 @@
               "fields": [
                 {
                   "name": "created_at",
-                  "type": [
-                    "null",
-                    "string",
-                    "long"
-                  ],
+                  "type": ["null", "string", "long"],
                   "default": null
                 },
                 {
