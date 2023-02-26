@@ -160,7 +160,7 @@ class SourceGithub(AbstractSource):
             # HTTPError('404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100')
             org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated'
-        elif "401 Client Error: Unauthorized for url":
+        elif "401 Client Error: Unauthorized for url" in message:
             # HTTPError('401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc')
             user_message = "Bad credentials, re-authentication or access token renewal is required"
         return user_message
