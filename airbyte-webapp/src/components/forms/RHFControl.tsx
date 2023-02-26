@@ -1,6 +1,6 @@
 import classNames from "classnames";
 import { HTMLInputTypeAttribute, ReactNode } from "react";
-import { Path, useFormContext } from "react-hook-form";
+import { FieldError, Path, useFormContext } from "react-hook-form";
 
 import { Text } from "components/ui/Text";
 import { InfoTooltip } from "components/ui/Tooltip";
@@ -90,20 +90,38 @@ export const RHFControl = <T extends FormValues>({
   return (
     <div className={styles.control}>
       <label>
-        <div className={classNames(styles.label)}>
-          <Text size="lg">
-            {label}
-            {labelTooltip && <InfoTooltip placement="top-start">{labelTooltip}</InfoTooltip>}
-          </Text>
-          {description && <Text className={styles.description}>{description}</Text>}
-        </div>
+        <RHFFormLabel description={description} label={label} labelTooltip={labelTooltip} />
         {renderControl()}
       </label>
-      {error && (
-        <p className={classNames(styles.errorMessage, { [styles["errorMessage--visible"]]: showError })}>
-          {error.message}
-        </p>
-      )}
+      {showError && <RHFControlError error={error} />}
     </div>
+  );
+};
+
+interface RHFFormLabelProps {
+  description?: string;
+  label: string;
+  labelTooltip?: ReactNode;
+}
+
+export const RHFFormLabel: React.FC<RHFFormLabelProps> = ({ description, label, labelTooltip }) => {
+  return (
+    <div className={classNames(styles.label)}>
+      <Text size="lg">
+        {label}
+        {labelTooltip && <InfoTooltip placement="top-start">{labelTooltip}</InfoTooltip>}
+      </Text>
+      {description && <Text className={styles.description}>{description}</Text>}
+    </div>
+  );
+};
+
+interface RHFControlErrorProps {
+  error: FieldError;
+}
+
+export const RHFControlError: React.FC<RHFControlErrorProps> = ({ error }) => {
+  return (
+    <p className={classNames(styles.errorMessage, { [styles["errorMessage--visible"]]: true })}>{error.message}</p>
   );
 };
