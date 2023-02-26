@@ -75,7 +75,7 @@ jobs:
             connectors:
               - 'airbyte-cdk/**'
               - 'airbyte-integrations/**'
-              - 'airbyte-commons-worker/**'
+              - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
               - 'airbyte-db/**'
 
