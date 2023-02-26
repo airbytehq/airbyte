@@ -1,16 +1,17 @@
 import classNames from "classnames";
 import { HTMLInputTypeAttribute } from "react";
-import { useFormContext } from "react-hook-form";
+import { Path, useFormContext } from "react-hook-form";
 
 import { Text } from "components/ui/Text";
 
 import styles from "./RHFControl.module.scss";
 import { RHFDateWrapper } from "./RHFDateWrapper";
+import { FormValues } from "./RHFForm";
 import { RHFInputWrapper } from "./RHFInputWrapper";
 
-type RHFControlProps = RHFInputFieldProps | RHFDatePickerProps;
+type RHFControlProps<T> = RHFInputFieldProps<T> | RHFDatePickerProps<T>;
 
-interface RHFControlBaseProps {
+interface RHFControlBaseProps<T extends FormValues> {
   /**
    * fieldType determines what form element is rendered. Depending on the chosen fieldType, additional props may be optional or required.
    */
@@ -18,7 +19,7 @@ interface RHFControlBaseProps {
   /**
    * The field name must match any provided default value or validation schema.
    */
-  name: string;
+  name: Path<T>;
   /**
    * A label that is displayed above the form control
    */
@@ -34,13 +35,13 @@ interface RHFControlBaseProps {
  */
 export type OmittableProperties = "fieldType" | "label" | "description";
 
-export interface RHFInputFieldProps extends RHFControlBaseProps {
+export interface RHFInputFieldProps<T> extends RHFControlBaseProps<T> {
   fieldType: "input";
   type?: HTMLInputTypeAttribute;
   hasError?: boolean;
 }
 
-export interface RHFDatePickerProps extends RHFControlBaseProps {
+export interface RHFDatePickerProps<T> extends RHFControlBaseProps<T> {
   fieldType: "date";
   /**
    * The desired format for the date string:
@@ -51,8 +52,14 @@ export interface RHFDatePickerProps extends RHFControlBaseProps {
   hasError?: boolean;
 }
 
-export const RHFControl: React.FC<RHFControlProps> = ({ fieldType, label, description, name, ...props }) => {
-  const { formState, getFieldState } = useFormContext();
+export const RHFControl = <T extends FormValues>({
+  fieldType,
+  label,
+  description,
+  name,
+  ...props
+}: RHFControlProps<T>) => {
+  const { formState, getFieldState } = useFormContext<T>();
   const { error, isTouched } = getFieldState(name, formState); // It is subscribed now and reactive to error state updated
   const showError = error && isTouched;
 

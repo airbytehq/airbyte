@@ -4,7 +4,13 @@ import { useFormContext } from "react-hook-form";
 
 import { Input } from "components/ui/Input";
 
-export const RHFInputWrapper: React.FC<Omit<RHFInputFieldProps, OmittableProperties>> = ({ name, type, hasError }) => {
+import { FormValues } from "./RHFForm";
+
+export const RHFInputWrapper = <T extends FormValues>({
+  name,
+  type,
+  hasError,
+}: Omit<RHFInputFieldProps<T>, OmittableProperties>) => {
   const { register } = useFormContext();
 
   return <Input {...register(name)} name={name} type={type} error={hasError} />;
