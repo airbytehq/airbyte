@@ -250,7 +250,8 @@ public class JsonToAvroSchemaConverter {
         final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
         final List<Schema> unionTypes =
             parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) combinedRestriction.get(), appendExtraProps, addStringToLogicalTypes);
-        fieldSchema = Schema.createUnion(unionTypes);
+        fieldSchema = createUnionAndCheckLongTypesDuplications(unionTypes);
+        // fieldSchema = Schema.createUnion(unionTypes);
       }
       case ARRAY -> {
         final JsonNode items = fieldDefinition.get("items");
@@ -285,6 +286,32 @@ public class JsonToAvroSchemaConverter {
       }
     }
     return fieldSchema;
+  }
+
+  private Schema createUnionAndCheckLongTypesDuplications(List<Schema> unionTypes) {
+    boolean hasPlainLong = false;
+    boolean hasTimestampMicrosLong = false;
+    List<Schema> newUnionTypes = new ArrayList<>();
+
+    for (Schema type : unionTypes) {
+      if (type.getType() == Schema.Type.LONG) {
+        if (type.getLogicalType() == null) {
+          hasPlainLong = true;
+        } else if (type.getLogicalType().getName().equals("timestamp-micros")) {
+          hasTimestampMicrosLong = true;
+        }
+      }
+      newUnionTypes.add(type);
+    }
+
+    if (hasPlainLong && hasTimestampMicrosLong) {
+      newUnionTypes.removeIf(type -> type.getType() == Schema.Type.LONG
+          && type.getLogicalType() != null
+          && type.getLogicalType().getName().equals("timestamp-micros"));
+      return Schema.createUnion(newUnionTypes);
+    } else {
+      return Schema.createUnion(unionTypes);
+    }
   }
 
   /**
