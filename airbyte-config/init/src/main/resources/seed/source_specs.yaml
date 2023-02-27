@@ -14166,7 +14166,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-sonar-cloud:0.1.0"
+- dockerImage: "airbyte/source-sonar-cloud:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sonar-cloud"
     connectionSpecification:
@@ -14206,6 +14206,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "YYYY-MM-DD"
+          format: "date"
         end_date:
           title: "End date"
           type: "string"
@@ -14213,6 +14214,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "YYYY-MM-DD"
+          format: "date"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
