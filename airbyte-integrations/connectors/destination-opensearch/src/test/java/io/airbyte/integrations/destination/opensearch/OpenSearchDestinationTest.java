@@ -48,6 +48,8 @@ public class OpenSearchDestinationTest {
             .withExposedPorts(9200)
             .withStartupTimeout(Duration.ofSeconds(60));
 
+    container.start();
+
     config = Jsons.jsonNode(ImmutableMap.builder()
             .put("endpoint", String.format("http://%s:%s", container.getHost(), container.getMappedPort(9200)))
             .build());
