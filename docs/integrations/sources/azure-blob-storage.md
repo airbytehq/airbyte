@@ -51,6 +51,6 @@ Only the line-delimited [JSON](https://jsonlines.org/) format is supported for n
 
 ## Changelog 21210
 
-| Version | Date       | Pull Request                                                                                                   | Subject                                                                 |
-|:--------|:-----------|:---------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------|
-| 0.1.0   | 2023-02-17 |                                                                                                                | Initial release with full-refresh and incremental sync with JSONL files |
+| Version | Date       | Pull Request                                     | Subject                                                                 |
+|:--------|:-----------|:-------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222  | Initial release with full-refresh and incremental sync with JSONL files |
