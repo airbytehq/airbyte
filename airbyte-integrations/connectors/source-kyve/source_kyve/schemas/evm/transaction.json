@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "r": {
+      "type": "string"
+    },
+    "s": {
+      "type": "string"
+    },
+    "v": {
+      "type": "integer"
+    },
+    "to": {
+      "type": "string"
+    },
+    "raw": {
+      "type": "string"
+    },
+    "data": {
+      "type": "string"
+    },
+    "from": {
+      "type": "string"
+    },
+    "hash": {
+      "type": "string"
+    },
+    "type": {
+      "type": "integer"
+    },
+    "nonce": {
+      "type": "integer"
+    },
+    "value": {
+      "type": "object",
+      "properties": {
+        "hex": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hex",
+        "type"
+      ]
+    },
+    "chainId": {
+      "type": "integer"
+    },
+    "creates": {
+      "type": "null"
+    },
+    "gasLimit": {
+      "type": "object",
+      "properties": {
+        "hex": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hex",
+        "type"
+      ]
+    },
+    "gasPrice": {
+      "type": "object",
+      "properties": {
+        "hex": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hex",
+        "type"
+      ]
+    },
+    "blockHash": {
+      "type": "string"
+    },
+    "accessList": {
+      "type": "null"
+    },
+    "blockNumber": {
+      "type": "integer"
+    },
+    "transactionIndex": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "r",
+    "s",
+    "v",
+    "to",
+    "raw",
+    "data",
+    "from",
+    "hash",
+    "type",
+    "nonce",
+    "value",
+    "chainId",
+    "creates",
+    "gasLimit",
+    "gasPrice",
+    "blockHash",
+    "accessList",
+    "blockNumber",
+    "transactionIndex"
+  ]
+}

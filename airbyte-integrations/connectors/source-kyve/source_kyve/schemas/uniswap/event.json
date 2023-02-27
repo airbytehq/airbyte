@@ -1,0 +1,54 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "array",
+  "contains" : {
+    "type" : "object",
+    "properties" : {
+      "blockNumber" : {
+        "type" : "integer"
+      },
+      "blockHash" : {
+        "type" : "string"
+      },
+      "transactionIndex" : {
+        "type" : "integer"
+      },
+      "removed" : {
+        "type" : "boolean"
+      },
+      "address" : {
+        "type" : "string"
+      },
+      "data" : {
+        "type" : "string"
+      },
+      "topics" : {
+        "type" : "array",
+        "items" : {
+          "type" : "string"
+        }
+      },
+      "transactionHash" : {
+        "type" : "string"
+      },
+      "logIndex" : {
+        "type" : "integer"
+      },
+      "parsedEvent" : {
+        "type" : "object"
+      }
+    },
+    "required" : [
+      "blockNumber",
+      "blockHash",
+      "transactionIndex",
+      "removed",
+      "address",
+      "data",
+      "topics",
+      "transactionHash",
+      "logIndex",
+      "parsedEvent"
+    ]
+  }
+}
