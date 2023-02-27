@@ -278,17 +278,17 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
 
 
 @pytest.mark.parametrize(
-    "schema, input_config, expect_records_config, record, expected_records_by_stream, expectation",
+    "schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation",
     [
         (
             {"type": "object"},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {"aa": 23}, {}, does_not_raise()
         ),
         (
             {"type": "object"},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {},
             {},
@@ -296,7 +296,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {"aa": 23},
             {},
@@ -304,7 +304,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {"created": "23"},
             {},
@@ -312,7 +312,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         ),
         (
             {"type": "object", "properties": {"created": {"type": "string"}}},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {"root": {"created": "23"}},
             {},
@@ -321,7 +321,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         # Recharge shop stream case
         (
             {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {"shop": {"a": "23"}, "store": {"b": "23"}},
             {},
@@ -330,7 +330,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         # Fail when expected and actual records are not equal
         (
             {"type": "object"},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
@@ -339,9 +339,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         # Expected and Actual records are not equal but we ignore fast changing field
         (
             {"type": "object"},
-            BasicReadTestConfig(
-                ignored_fields={"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]}
-            ),
+            {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
             ExpectedRecordsConfig(path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
@@ -350,7 +348,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         # Fail when expected and actual records are not equal and exact_order=True
         (
             {"type": "object"},
-            BasicReadTestConfig(),
+            {},
             ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 2}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 1}]}]},
@@ -359,9 +357,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         # Expected and Actual records are not equal but we ignore fast changing field (for case when exact_order=True)
         (
             {"type": "object"},
-            BasicReadTestConfig(
-                ignored_fields={"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]}
-            ),
+            {"test_stream": [IgnoredFieldsConfiguration(name="fast_changing_field/*/field", bypass_reason="test")]},
             ExpectedRecordsConfig(extra_fields=False, exact_order=True, extra_records=True, path="foobar"),
             {"constant_field": "must equal", "fast_changing_field": [{"field": 1}]},
             {"test_stream": [{"constant_field": "must equal", "fast_changing_field": [{"field": 2}]}]},
@@ -369,7 +365,7 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
         ),
     ],
 )
-def test_read(schema, input_config, expect_records_config, record, expected_records_by_stream, expectation):
+def test_read(schema, ignored_fields, expect_records_config, record, expected_records_by_stream, expectation):
     configured_catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -394,7 +390,7 @@ def test_read(schema, input_config, expect_records_config, record, expected_reco
             empty_streams=set(),
             expected_records_by_stream=expected_records_by_stream,
             docker_runner=docker_runner_mock,
-            inputs=input_config,
+            ignored_fields=ignored_fields,
             detailed_logger=MagicMock(),
         )
 

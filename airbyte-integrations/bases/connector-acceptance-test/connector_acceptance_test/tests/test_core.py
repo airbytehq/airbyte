@@ -798,11 +798,11 @@ class TestBasicRead(BaseTest):
         self,
         connector_config,
         configured_catalog,
-        inputs: BasicReadTestConfig,
         expect_records_config: ExpectedRecordsConfig,
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
+        ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
@@ -827,7 +827,6 @@ class TestBasicRead(BaseTest):
             self._validate_field_appears_at_least_once(records=records, configured_catalog=configured_catalog)
 
         if expected_records_by_stream:
-            ignored_fields = getattr(inputs, "ignored_fields") or {}
             self._validate_expected_records(
                 records=records,
                 expected_records_by_stream=expected_records_by_stream,
