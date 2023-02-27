@@ -3,7 +3,7 @@
   "properties": {
     "creation_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "description": {
       "type": ["string", "null"]
@@ -13,7 +13,7 @@
     },
     "last_modified": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "owner": {
       "type": ["string", "null"]
