@@ -33,7 +33,7 @@ public class MySqlCdcProperties {
       // initial snapshot
       props.setProperty("snapshot.mode", sourceConfig.get("snapshot_mode").asText());
     } else {
-      // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-snapshot-mode
+      // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-snapshot-mode
       props.setProperty("snapshot.mode", "when_needed");
     }
 
@@ -48,8 +48,8 @@ public class MySqlCdcProperties {
     props.setProperty("connector.class", "io.debezium.connector.mysql.MySqlConnector");
 
     props.setProperty("database.server.id", String.valueOf(generateServerID()));
-    // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-boolean-values
-    // https://debezium.io/documentation/reference/stable/development/converters.html
+    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-boolean-values
+    // https://debezium.io/documentation/reference/2.1/development/converters.html
     /**
      * {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter}
      * {@link MySQLConverter}
@@ -69,7 +69,7 @@ public class MySqlCdcProperties {
     }
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
-    // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
+    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-database-ssl-mode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
         props.setProperty("database.ssl.mode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
@@ -95,15 +95,15 @@ public class MySqlCdcProperties {
       }
     }
 
-    // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-snapshot-locking-mode
+    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-snapshot-locking-mode
     // This is to make sure other database clients are allowed to write to a table while Airbyte is
     // taking a snapshot. There is a risk involved that
     // if any database client makes a schema change then the sync might break
     props.setProperty("snapshot.locking.mode", "none");
-    // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-include-schema-changes
+    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
     // This to make sure that binary data represented as a base64-encoded String.
-    // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-binary-handling-mode
+    // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-property-binary-handling-mode
     props.setProperty("binary.handling.mode", "base64");
     props.setProperty("database.include.list", sourceConfig.get("database").asText());
 

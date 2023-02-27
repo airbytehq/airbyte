@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * This is a custom debezium converter used in MySQL to handle the DATETIME data type. We need a
  * custom converter cause by default debezium returns the DATETIME values as numbers. We need to
  * convert it to proper format. Ref :
- * https://debezium.io/documentation/reference/1.9/development/converters.html This is built from
+ * https://debezium.io/documentation/reference/2.1/development/converters.html This is built from
  * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
  * rename this class then remember to rename the datetime.type property value in
  * {@link io.airbyte.integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties(JsonNode)}
@@ -51,7 +51,7 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
   }
 
   // Ref :
-  // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
+  // https://debezium.io/documentation/reference/2.1/connectors/mysql.html#mysql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
 

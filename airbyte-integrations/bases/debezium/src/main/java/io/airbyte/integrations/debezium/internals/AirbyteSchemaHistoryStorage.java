@@ -26,8 +26,7 @@ import org.apache.commons.io.FileUtils;
  * The purpose of this class is : to , 1. Read the contents of the file {@link #path} which contains
  * the schema history at the end of the sync so that it can be saved in state for future syncs.
  * Check {@link #read()} 2. Write the saved content back to the file {@link #path} at the beginning
- * of the sync so that debezium can function smoothly. Check persist(Optional&lt;JsonNode&gt;). To
- * understand more about file, please refer {@link FilteredFileDatabaseHistory}
+ * of the sync so that debezium can function smoothly. Check persist(Optional&lt;JsonNode&gt;).
  */
 public class AirbyteSchemaHistoryStorage {
 
@@ -44,10 +43,6 @@ public class AirbyteSchemaHistoryStorage {
     return path;
   }
 
-  /**
-   * This implementation is kind of similar to
-   * {@link io.debezium.relational.history.FileDatabaseHistory#recoverRecords(Consumer)}
-   */
   public String read() {
     final StringBuilder fileAsString = new StringBuilder();
     try {
@@ -65,10 +60,6 @@ public class AirbyteSchemaHistoryStorage {
     }
   }
 
-  /**
-   * This implementation is kind of similar to
-   * {@link io.debezium.relational.history.FileDatabaseHistory#start()}
-   */
   private void makeSureFileExists() {
     try {
       // Make sure the file exists ...
@@ -105,9 +96,6 @@ public class AirbyteSchemaHistoryStorage {
   }
 
   /**
-   * This implementation is kind of similar to
-   * {@link io.debezium.relational.history.FileDatabaseHistory#storeRecord(HistoryRecord)}
-   *
    * @param fileAsString Represents the contents of the file saved in state from previous syncs
    */
   private void writeToFile(final String fileAsString) {

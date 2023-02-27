@@ -46,7 +46,7 @@ public class DebeziumPropertiesManager {
     props.putAll(properties);
 
     // debezium engine configuration
-    // https://debezium.io/documentation/reference/stable/development/engine.html#engine-properties
+    // https://debezium.io/documentation/reference/2.1/development/engine.html#engine-properties
     props.setProperty("offset.storage", "org.apache.kafka.connect.storage.FileOffsetBackingStore");
     props.setProperty("offset.storage.file.filename", offsetManager.getOffsetFilePath().toString());
     props.setProperty("offset.flush.interval.ms", "1000"); // todo: make this longer
@@ -55,7 +55,7 @@ public class DebeziumPropertiesManager {
     props.setProperty("max.queue.size", "8192");
 
     if (schemaHistoryManager.isPresent()) {
-      // https://debezium.io/documentation/reference/stable/operations/debezium-server.html#debezium-source-database-history-class
+      // https://debezium.io/documentation/reference/2.1/operations/debezium-server.html#debezium-source-database-history-class
       // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
       // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
       // changes. If we don't do this, we can't fetch records for the table.
@@ -63,7 +63,7 @@ public class DebeziumPropertiesManager {
       props.setProperty("schema.history.internal.file.filename", schemaHistoryManager.get().getPath().toString());
     }
 
-    // https://debezium.io/documentation/reference/stable/configuration/avro.html
+    // https://debezium.io/documentation/reference/2.1/configuration/avro.html
     props.setProperty("key.converter.schemas.enable", "false");
     props.setProperty("value.converter.schemas.enable", "false");
 
@@ -83,7 +83,7 @@ public class DebeziumPropertiesManager {
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.
     // The "double" type may cause a loss of precision, so set Debezium's config to store it as a String
     // explicitly in its Kafka messages for more details see:
-    // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-decimal-types
+    // https://debezium.io/documentation/reference/2.1/connectors/postgresql.html#postgresql-decimal-types
     // https://debezium.io/documentation/faq/#how_to_retrieve_decimal_field_from_binary_representation
     props.setProperty("decimal.handling.mode", "string");
 
