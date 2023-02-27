@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.48"
+- dockerImage: "airbyte/source-alloydb:1.0.49"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -3398,7 +3398,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-dynamodb:0.1.1"
+- dockerImage: "airbyte/source-dynamodb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
     connectionSpecification:
@@ -3464,6 +3464,13 @@
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+        reserved_attribute_names:
+          title: "Reserved attribute names"
+          type: "string"
+          description: "Comma separated reserved attribute names present in your tables"
+          airbyte_secret: true
+          examples:
+          - "name, field_name, field-name"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3640,7 +3647,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.84"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.85"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -6042,7 +6049,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.36"
+- dockerImage: "airbyte/source-google-sheets:0.2.37"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -6828,7 +6835,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.30"
+- dockerImage: "airbyte/source-intercom:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -11623,7 +11630,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.49"
+- dockerImage: "airbyte/source-postgres:1.0.50"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12813,7 +12820,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:1.0.0"
+- dockerImage: "airbyte/source-s3:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13144,7 +13151,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.3"
+- dockerImage: "airbyte/source-salesforce:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13513,7 +13520,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.3.1"
+- dockerImage: "airbyte/source-shopify:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -14999,7 +15006,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.2"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -16508,7 +16515,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.23"
+- dockerImage: "airbyte/source-zendesk-support:0.2.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
