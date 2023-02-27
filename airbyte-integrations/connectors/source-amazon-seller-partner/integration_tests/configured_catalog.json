@@ -62,6 +62,23 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE_V2",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["createdSince"]
+    },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append",
+      "cursor_field": ["createdSince"] 
     }
   ]
 }
+
+
+
+  
+    
