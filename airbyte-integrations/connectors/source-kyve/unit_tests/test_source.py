@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 from source_kyve.source import SourceKyve
+from . import config
 
 
 def test_check_connection(mocker):
@@ -15,8 +16,6 @@ def test_check_connection(mocker):
 
 def test_streams(mocker):
     source = SourceKyve()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    streams = source.streams(config)
+    expected_streams_number = 1
     assert len(streams) == expected_streams_number

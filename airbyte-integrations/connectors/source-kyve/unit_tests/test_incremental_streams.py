@@ -1,11 +1,13 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from source_kyve.source import IncrementalKyveStream
+from source_kyve.source import KYVEStream as IncrementalKyveStream
+
+from . import config, pool_data
 
 
 @fixture
@@ -17,14 +19,14 @@ def patch_incremental_base_class(mocker):
 
 
 def test_cursor_field(patch_incremental_base_class):
-    stream = IncrementalKyveStream()
+    stream = IncrementalKyveStream(config, pool_data)
     # TODO: replace this with your expected cursor field
-    expected_cursor_field = []
+    expected_cursor_field = "offset"
     assert stream.cursor_field == expected_cursor_field
 
 
 def test_get_updated_state(patch_incremental_base_class):
-    stream = IncrementalKyveStream()
+    stream = IncrementalKyveStream(config, pool_data)
     # TODO: replace this with your input parameters
     inputs = {"current_stream_state": None, "latest_record": None}
     # TODO: replace this with your expected updated stream state
@@ -33,7 +35,7 @@ def test_get_updated_state(patch_incremental_base_class):
 
 
 def test_stream_slices(patch_incremental_base_class):
-    stream = IncrementalKyveStream()
+    stream = IncrementalKyveStream(config, pool_data)
     # TODO: replace this with your input parameters
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     # TODO: replace this with your expected stream slices list
@@ -43,17 +45,17 @@ def test_stream_slices(patch_incremental_base_class):
 
 def test_supports_incremental(patch_incremental_base_class, mocker):
     mocker.patch.object(IncrementalKyveStream, "cursor_field", "dummy_field")
-    stream = IncrementalKyveStream()
+    stream = IncrementalKyveStream(config, pool_data)
     assert stream.supports_incremental
 
 
 def test_source_defined_cursor(patch_incremental_base_class):
-    stream = IncrementalKyveStream()
+    stream = IncrementalKyveStream(config, pool_data)
     assert stream.source_defined_cursor
 
 
 def test_stream_checkpoint_interval(patch_incremental_base_class):
-    stream = IncrementalKyveStream()
+    stream = IncrementalKyveStream(config, pool_data)
     # TODO: replace this with your expected checkpoint interval
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
