@@ -12,7 +12,7 @@
       "type": "integer"
     },
     "to": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "raw": {
       "type": "string"
@@ -51,7 +51,7 @@
       "type": "integer"
     },
     "creates": {
-      "type": "null"
+      "type": ["null", "string"]
     },
     "gasLimit": {
       "type": "object",
@@ -101,7 +101,6 @@
     "s",
     "v",
     "to",
-    "raw",
     "data",
     "from",
     "hash",

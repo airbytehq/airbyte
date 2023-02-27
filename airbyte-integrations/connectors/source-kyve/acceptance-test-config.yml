@@ -5,7 +5,7 @@ test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_kyve/spec.json"
+      - spec_path: "source_kyve/spec.yaml"
         config_path: "integration_tests/config.json"
   connection:
     tests:
