@@ -202,7 +202,7 @@ def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfi
 
 @pytest.fixture(name="ignored_fields")
 def ignored_fields_fixture(inputs, test_strictness_level) -> Optional[Mapping[str, List[IgnoredFieldsConfiguration]]]:
-    ignored_fields = getattr(inputs, "ignored_fields", {})
+    ignored_fields = getattr(inputs, "ignored_fields", {}) or {}
     if test_strictness_level is Config.TestStrictnessLevel.high and ignored_fields:
         all_ignored_fields_have_bypass_reasons = all(
             [
