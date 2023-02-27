@@ -165,17 +165,10 @@ public class OpenSearchConnection {
         var bulkRequest = new BulkRequest.Builder();
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
-//            bulkRequest.operations(
-//                            b -> b.index(
-//                                    c -> c.index(index).id(extractPrimaryKey(doc, config))))
-//                .operations(BulkOperation.of(
-//                    d -> d.create(
-//                        CreateOperation.of(k -> k.document(doc.getData())))))
-//                .refresh(Refresh.True);
-//
             var bulkOperation = new BulkOperation.Builder();
-            bulkOperation.index(c -> c.index(index).id(extractPrimaryKey(doc, config)));
-            bulkOperation.create(CreateOperation.of(k -> k.document(doc.getData())));
+            bulkOperation
+                .index(c -> c.index(index).id(extractPrimaryKey(doc, config))
+                .document(doc.getData()));
             bulkRequest.operations(bulkOperation.build()).refresh(Refresh.True);
 
         }
