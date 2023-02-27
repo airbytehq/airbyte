@@ -1,0 +1,38 @@
+name: "NOT TO BE MERGED: Test publishing docker"
+on:
+  push:
+    branches:
+      - issue-22442_**
+
+jobs:
+  publish-docker:
+    name: Publish Docker Image
+    # TODO validate if it works since it's different from current publish-command.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          ref: issue-22442_publish-docker-image-on-cdk-publish
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Publish source_declarative_manifest Docker Image
+        id: publish
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+        uses: Wandalen/wretry.action@master
+        with:
+          command: |
+            docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+            ./tools/integrations/manage.sh publish airbyte-cdk/python false
+          attempt_limit: 3
+          attempt_delay: 5000 in # ms
