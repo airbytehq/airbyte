@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useIntl } from "react-intl";
 import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { getFrequencyType } from "config/utils";
@@ -251,6 +252,7 @@ const useConnectionFilters = (): ReadConnectionFilters => {
 };
 
 const useConnectionFilterOptions = () => {
+  const { formatMessage } = useIntl();
   const { status, sources, destinations } = useConnectionFilters();
 
   const statusOptions = status
@@ -281,9 +283,12 @@ const useConnectionFilterOptions = () => {
     .sort((a, b) => a.label.localeCompare(b.label));
 
   return {
-    statusOptions: [{ label: "All Status", value: "" }, ...statusOptions],
-    sourceOptions: [{ label: "All Sources", value: "" }, ...sourceOptions],
-    destinationOptions: [{ label: "All Destinations", value: "" }, ...destinationOptions],
+    statusOptions: [{ label: formatMessage({ id: "connection.filter.allStatus" }), value: "" }, ...statusOptions],
+    sourceOptions: [{ label: formatMessage({ id: "connection.filter.allSources" }), value: "" }, ...sourceOptions],
+    destinationOptions: [
+      { label: formatMessage({ id: "connection.filter.allDestinations" }), value: "" },
+      ...destinationOptions,
+    ],
   };
 };
 

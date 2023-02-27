@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedDate, FormattedMessage } from "react-intl";
+import { FormattedDate, FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { LoadingButton } from "components";
@@ -85,11 +85,12 @@ const BillingPaymentStep: React.FC<IProps> = ({
   onUpdadePlan,
   updatePlanLoading,
 }) => {
+  const { formatMessage } = useIntl();
   const seperatorHeight = "47px";
 
   const calculateProductDuePrice = (dueToday: number): string | React.ReactElement => {
     if (productPrice < selectedProductPrice) {
-      return <FormattedMessage id="0 (The difference you have paid will be deducted from next month’s billing)" />;
+      return `0 ${formatMessage({ id: "payment.paymentToReturn" })}`;
     }
     return `${dueToday}`;
   };
@@ -142,7 +143,7 @@ const BillingPaymentStep: React.FC<IProps> = ({
                 year="numeric"
               />
               <br />
-              <FormattedMessage id="payment.cancelTime" />.
+              <FormattedMessage id="payment.cancelTime" />
             </ContentText>
           </ContentItem>
         </ContentContainer>

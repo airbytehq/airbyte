@@ -52,7 +52,10 @@ const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
   return (
     <Container>
       <PricingContainer>
-        <Price>${price}</Price>&nbsp;<PerMonthText>/mo</PerMonthText>
+        <Price>${price}</Price>&nbsp;
+        <PerMonthText>
+          /<FormattedMessage id="feature.cell.professional.perMonth" />
+        </PerMonthText>
       </PricingContainer>
       <Separator />
       <Message>

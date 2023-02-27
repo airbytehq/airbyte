@@ -124,6 +124,23 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
     return "";
   };
 
+  // const getPlanName = (planName: string): string => {
+  //   switch(user?.lang) {
+  //     case LOCALES.ENGLISH:
+  //       if (planName === "Free trial") {
+  //         return planName;
+  //       } else {
+  //         return `${planName} plan`;
+  //       }
+
+  //     case LOCALES.CHINESE_SIMPLIFIED:
+  //       return planName;
+
+  //     default:
+  //       return planName;
+  //   }
+  // };
+
   return (
     <>
       {toggleCancel && (
@@ -148,7 +165,8 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
               <FormattedMessage id="plan.type.heading" />
             </div>
             <div className={styles.planValue}>
-              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name} plan`}
+              {/* {getPlanName(userPlanDetail.name)} */}
+              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name}`}
             </div>
           </div>
           <Separator height="40px" />

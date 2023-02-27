@@ -10,6 +10,7 @@ import { Separator } from "components/Separator";
 
 import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
+import { LOCALES } from "locales";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
@@ -194,7 +195,7 @@ const SeperatorText = styled.div`
 export const SignupForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
-  const { setUser } = useUser();
+  const { setUser, user } = useUser();
 
   const validationSchema = useMemo(() => {
     const shape = {
@@ -250,7 +251,9 @@ export const SignupForm: React.FC = () => {
             <Separator height="28px" />
             <AuthSeperatorContainer>
               <Line />
-              <SeperatorText>Or</SeperatorText>
+              <SeperatorText>
+                <FormattedMessage id="auth.authSeparator" />
+              </SeperatorText>
               <Line />
             </AuthSeperatorContainer>
             <Separator height="40px" />
@@ -275,14 +278,31 @@ export const SignupForm: React.FC = () => {
               {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
             </BottomBlock>
             <div className={styles.termsAndPrivacy}>
-              <FormattedMessage id="signup.description" />
-              <Link target="_blank" href={config.links.termsLink} as="a" $clear className={styles.link}>
-                <FormattedMessage id="signup.terms" />
-              </Link>
-              <FormattedMessage id="signup.and" />
-              <Link target="_blank" href={config.links.privacyLink} as="a" $clear className={styles.link}>
-                <FormattedMessage id="signup.privacy" />
-              </Link>
+              <FormattedMessage
+                id="signup.description"
+                values={{
+                  termLink: (
+                    <Link
+                      target="_blank"
+                      href={user.lang === LOCALES.ENGLISH ? config.links.enTermsLink : config.links.zhTermsLink}
+                      as="a"
+                      $clear
+                    >
+                      <FormattedMessage id="signup.terms" />
+                    </Link>
+                  ),
+                  privacyLink: (
+                    <Link
+                      target="_blank"
+                      href={user.lang === LOCALES.ENGLISH ? config.links.enPrivacyLink : config.links.zhPrivacyLink}
+                      as="a"
+                      $clear
+                    >
+                      <FormattedMessage id="signup.privacy" />
+                    </Link>
+                  ),
+                }}
+              />
             </div>
           </Form>
         )}

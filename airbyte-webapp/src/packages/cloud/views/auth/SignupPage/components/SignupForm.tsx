@@ -138,12 +138,12 @@ export const Disclaimer: React.FC = () => {
         id="login.disclaimer"
         values={{
           terms: (terms: React.ReactNode) => (
-            <Link $clear target="_blank" href={config.links.termsLink} as="a">
+            <Link $clear target="_blank" href={config.links.enTermsLink} as="a">
               {terms}
             </Link>
           ),
           privacy: (privacy: React.ReactNode) => (
-            <Link $clear target="_blank" href={config.links.privacyLink} as="a">
+            <Link $clear target="_blank" href={config.links.enPrivacyLink} as="a">
               {privacy}
             </Link>
           ),
