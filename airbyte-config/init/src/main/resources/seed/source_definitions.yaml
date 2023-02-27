@@ -876,11 +876,14 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.intercom.io
 - name: Intruder
   sourceDefinitionId: 3d15163b-11d8-412f-b808-795c9b2c3a3a
   dockerRepository: airbyte/source-intruder
@@ -1402,11 +1405,14 @@
 - name: Polygon Stock API
   sourceDefinitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
   dockerRepository: airbyte/source-polygon-stock-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   icon: polygon.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.polygon.io
 - name: PostHog
   sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerRepository: airbyte/source-posthog
@@ -1759,11 +1765,14 @@
 - name: Sonar Cloud
   sourceDefinitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
   dockerRepository: airbyte/source-sonar-cloud
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
   icon: sonarcloud.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - sonarcloud.io
 - name: SpaceX API
   sourceDefinitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
   dockerRepository: airbyte/source-spacex-api
