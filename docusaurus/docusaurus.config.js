@@ -61,6 +61,10 @@ const config = {
                             from: '/project-overview/changelog',
                             to: '/category/release-notes',
                         },
+                        {
+                            from: '/connector-development/config-based/understanding-the-yaml-file/stream-slicers/',
+                            to: '/connector-development/config-based/understanding-the-yaml-file/partition-router',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
