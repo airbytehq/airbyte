@@ -3398,7 +3398,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-dynamodb:0.1.1"
+- dockerImage: "airbyte/source-dynamodb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
     connectionSpecification:
@@ -3464,6 +3464,13 @@
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+        reserved_attribute_names:
+          title: "Reserved attribute names"
+          type: "string"
+          description: "Comma separated reserved attribute names present in your tables"
+          airbyte_secret: true
+          examples:
+          - "name, field_name, field-name"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -14999,7 +15006,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.2"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
