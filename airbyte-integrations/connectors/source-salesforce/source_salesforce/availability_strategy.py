@@ -24,7 +24,7 @@ class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
              and we will receive 403 HTTP errors.
           2. There are streams that do not allow you to make a sample using Salesforce `query` or `queryAll`.
              And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
-             we cannot filter out these streams, so we catch them at the stage of reading data.
+             we cannot filter out these streams, so we check for them before reading from the streams.
         """
         if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
             error_data = error.response.json()[0]
