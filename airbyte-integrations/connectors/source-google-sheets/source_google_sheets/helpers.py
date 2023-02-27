@@ -18,7 +18,7 @@ from googleapiclient import discovery
 from .models.spreadsheet import RowData, Spreadsheet
 from .utils import safe_name_conversion
 
-LAST_SYNCED_AT_FIELD = "_ab_last_sync_at"
+LAST_SYNCED_AT_FIELD = "_ab_last_synced_at"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
 logger = logging.getLogger("airbyte")
