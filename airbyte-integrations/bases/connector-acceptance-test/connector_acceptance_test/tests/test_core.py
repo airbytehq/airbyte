@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import functools
 import json
 import logging
@@ -33,10 +34,10 @@ from connector_acceptance_test.config import (
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
-    SpecTestConfig,
     IgnoredFieldsConfiguration,
+    SpecTestConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, delete_fields, verify_records_schema
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
