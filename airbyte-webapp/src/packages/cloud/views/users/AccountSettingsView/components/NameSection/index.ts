@@ -1,1 +1,0 @@
-export { NameSection } from "./NameSection";

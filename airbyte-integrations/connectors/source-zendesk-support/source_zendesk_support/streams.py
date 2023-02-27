@@ -110,6 +110,8 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
 
 
 class BaseSourceZendeskSupportStream(HttpStream, ABC):
+    raise_on_http_errors = True
+
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
@@ -185,6 +187,13 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
                 updated = record[self.cursor_field]
                 if not cursor_date or updated > cursor_date:
                     yield record
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {response.json().get('error')}.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
 
 
 class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
@@ -534,6 +543,14 @@ class Tickets(SourceZendeskIncrementalExportStream):
 
     response_list_name: str = "tickets"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    @staticmethod
+    def check_start_time_param(requested_start_time: int, value: int = 1):
+        """
+        The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
+        Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
+        """
+        return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
