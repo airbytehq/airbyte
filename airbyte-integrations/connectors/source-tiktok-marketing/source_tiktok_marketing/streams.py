@@ -431,7 +431,7 @@ class Advertisers(FullRefreshTiktokStream):
         ids = self.get_advertiser_ids()
         start, end, step = 0, len(ids), 100
         for i in range(start, end, step):
-            yield {"advertiser_ids": ids[i: min(end, i + step)]}
+            yield {"advertiser_ids": ids[i : min(end, i + step)]}
 
 
 class Campaigns(IncrementalTiktokStream):
