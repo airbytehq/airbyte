@@ -6,7 +6,7 @@ import pytest
 from source_google_ads.models import Customer
 
 
-@pytest.fixture(scope="session", name="config")
+@pytest.fixture(name="config")
 def test_config():
     config = {
         "credentials": {
