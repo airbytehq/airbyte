@@ -326,13 +326,6 @@ class PedidosDetalle(Pedidos):
 
         return f"{self.url_base}/{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?action=detallepedido&nopedido={nopedido}"
     
-    def status_list_mapping(self):
-        return  {
-                'entregados': ['listaentregados'],
-                'pendientes': ['listapendientes'],
-                'embarcados': ['listaguiasautomaticas', 'listaguiasmanuales']
-        }
-    
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         response_json = response.json()
