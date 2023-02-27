@@ -7,6 +7,7 @@ import json
 import socket
 from typing import Any, Generator, List, MutableMapping, Union
 
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
@@ -107,6 +108,7 @@ class SourceGoogleSheets(Source):
 
     def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
+        add_last_sync_date = config.get("add_last_sync_date", False)
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
             logger.info(f"Running discovery on sheet {spreadsheet_id}")
@@ -118,7 +120,7 @@ class SourceGoogleSheets(Source):
                     header_row_data = Helpers.get_first_row(client, spreadsheet_id, sheet_name)
                     if config.get("names_conversion"):
                         header_row_data = [safe_name_conversion(h) for h in header_row_data]
-                    stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data)
+                    stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_row_data, add_last_sync_date)
                     streams.append(stream)
                 except Exception as err:
                     if str(err).startswith("Expected data for exactly one row for sheet"):
@@ -140,6 +142,9 @@ class SourceGoogleSheets(Source):
         catalog: ConfiguredAirbyteCatalog,
         state: Union[List[AirbyteStateMessage], MutableMapping[str, Any]] = None,
     ) -> Generator[AirbyteMessage, None, None]:
+        add_last_sync_date = config.get("add_last_sync_date", False)
+        sync_dt = pendulum.now("UTC").strftime("%Y-%m-%dT%H:%M:%SZ") if add_last_sync_date else None
+
         client = GoogleSheetsClient(self.get_credentials(config))
 
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
@@ -181,7 +186,9 @@ class SourceGoogleSheets(Source):
 
                 for row in row_values:
                     if not Helpers.is_row_empty(row) and Helpers.row_contains_relevant_data(row, column_index_to_name.keys()):
-                        yield AirbyteMessage(type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name))
+                        yield AirbyteMessage(
+                            type=Type.RECORD, record=Helpers.row_data_to_record_message(sheet, row, column_index_to_name, sync_dt)
+                        )
         logger.info(f"Finished syncing spreadsheet {spreadsheet_id}")
 
     @staticmethod

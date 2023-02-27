@@ -7,7 +7,7 @@ import logging
 import re
 from collections import defaultdict
 from datetime import datetime
-from typing import Dict, FrozenSet, Iterable, List
+from typing import Dict, FrozenSet, Iterable, List, Optional, Tuple
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
@@ -18,6 +18,7 @@ from googleapiclient import discovery
 from .models.spreadsheet import RowData, Spreadsheet
 from .utils import safe_name_conversion
 
+LAST_SYNCED_AT_FIELD = "_ab_last_sync_at"
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
 
 logger = logging.getLogger("airbyte")
@@ -43,7 +44,9 @@ class Helpers(object):
             return client_account.Credentials.from_authorized_user_info(info=credentials)
 
     @staticmethod
-    def headers_to_airbyte_stream(logger: AirbyteLogger, sheet_name: str, header_row_values: List[str]) -> AirbyteStream:
+    def headers_to_airbyte_stream(
+        logger: AirbyteLogger, sheet_name: str, header_row_values: List[str], add_last_sync_date: bool
+    ) -> AirbyteStream:
         """
         Parses sheet headers from the provided row. This method assumes that data is contiguous
         i.e: every cell contains a value and the first cell which does not contain a value denotes the end
@@ -54,17 +57,22 @@ class Helpers(object):
         if duplicate_fields:
             logger.warn(f"Duplicate headers found in {sheet_name}. Ignoring them :{duplicate_fields}")
 
+        properties = {field: {"type": "string"} for field in fields}
+
+        if add_last_sync_date:
+            properties[LAST_SYNCED_AT_FIELD] = {"type": "string", "format": "date-time"}
+
         sheet_json_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
             # For simplicity, the type of every cell is a string
-            "properties": {field: {"type": "string"} for field in fields},
+            "properties": properties,
         }
 
         return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
     @staticmethod
-    def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
+    def get_valid_headers_and_duplicates(header_row_values: List[str]) -> Tuple[List[str], List[str]]:
         fields = []
         duplicate_fields = set()
         for cell_value in header_row_values:
@@ -127,7 +135,9 @@ class Helpers(object):
         return sheet_to_column_name
 
     @staticmethod
-    def row_data_to_record_message(sheet_name: str, cell_values: List[str], column_index_to_name: Dict[int, str]) -> AirbyteRecordMessage:
+    def row_data_to_record_message(
+        sheet_name: str, cell_values: List[str], column_index_to_name: Dict[int, str], last_sync_dt: Optional[str]
+    ) -> AirbyteRecordMessage:
         data = {}
         for relevant_index in sorted(column_index_to_name.keys()):
             if relevant_index >= len(cell_values):
@@ -136,6 +146,9 @@ class Helpers(object):
             cell_value = cell_values[relevant_index]
             if cell_value.strip() != "":
                 data[column_index_to_name[relevant_index]] = cell_value
+
+        if last_sync_dt:
+            data[LAST_SYNCED_AT_FIELD] = last_sync_dt
 
         return AirbyteRecordMessage(stream=sheet_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000)
 

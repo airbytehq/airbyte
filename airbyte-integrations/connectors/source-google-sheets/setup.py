@@ -14,6 +14,7 @@ MAIN_REQUIREMENTS = [
     "PyYAML==5.4",
     "pydantic~=1.9.2",
     "Unidecode",
+    "pendulum",
 ]
 
 TEST_REQUIREMENTS = [

@@ -25,6 +25,11 @@ connectionSpecification:
       title: Columns Name Conversion
       description: Columns name conversion using a set of rules, for example, 'My Name' -> 'my-name'.
       default: false
+    add_last_sync_date:
+      type: boolean
+      title: Add last sync date
+      description: Add a column in the destination with the last sync date.
+      default: false
     credentials:
       type: object
       title: Authentication

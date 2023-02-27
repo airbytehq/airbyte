@@ -6,6 +6,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
+import pendulum
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteRecordMessage,
@@ -16,7 +17,7 @@ from airbyte_cdk.models.airbyte_protocol import (
     SyncMode,
 )
 from source_google_sheets.client import GoogleSheetsClient
-from source_google_sheets.helpers import Helpers
+from source_google_sheets.helpers import LAST_SYNCED_AT_FIELD, Helpers
 from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
 logger = AirbyteLogger()
@@ -50,10 +51,28 @@ class TestHelpers(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
 
-        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values, add_last_sync_date=False)
         self.assertEqual(expected_stream, actual_stream)
 
-    def test_duplicate_headers_retrived(self):
+    def test_headers_to_airbyte_stream_with_last_sync_date(self):
+        sheet_name = "sheet1"
+        header_values = ["h1", "h2", "h3"]
+
+        expected_stream = AirbyteStream(
+            name=sheet_name,
+            json_schema={
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                # For simplicity, the type of every cell is a string
+                "properties": {**{header: {"type": "string"} for header in header_values}, LAST_SYNCED_AT_FIELD: {"type": "string", "format": "date-time"}},
+            },
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
+
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values, add_last_sync_date=True)
+        self.assertEqual(expected_stream, actual_stream)
+
+    def test_duplicate_headers_retrieved(self):
         header_values = ["h1", "h1", "h3"]
 
         expected_valid_header_values = ["h3"]
@@ -81,7 +100,7 @@ class TestHelpers(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
 
-        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values, add_last_sync_date=False)
         self.assertEqual(expected_stream, actual_stream)
 
     def test_headers_to_airbyte_stream_blank_values_terminate_row(self):
@@ -98,7 +117,7 @@ class TestHelpers(unittest.TestCase):
             },
             supported_sync_modes=[SyncMode.full_refresh],
         )
-        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
+        actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values, add_last_sync_date=False)
 
         self.assertEqual(expected_stream, actual_stream)
 
@@ -155,10 +174,23 @@ class TestHelpers(unittest.TestCase):
         sheet = "my_sheet"
         cell_values = ["v1", "v2", "v3", "v4"]
         column_index_to_name = {0: "c1", 3: "c4"}
+        last_sync_dt = None
 
-        actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name)
+        actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name, last_sync_dt)
 
         expected = AirbyteRecordMessage(stream=sheet, data={"c1": "v1", "c4": "v4"}, emitted_at=1)
+        self.assertEqual(expected.stream, actual.stream)
+        self.assertEqual(expected.data, actual.data)
+
+    def test_row_data_to_record_message_with_last_sync_dt(self):
+        sheet = "my_sheet"
+        cell_values = ["v1", "v2", "v3", "v4"]
+        column_index_to_name = {0: "c1", 3: "c4"}
+        last_sync_dt = pendulum.now("UTC")
+
+        actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name, last_sync_dt)
+
+        expected = AirbyteRecordMessage(stream=sheet, data={"c1": "v1", "c4": "v4", LAST_SYNCED_AT_FIELD: last_sync_dt}, emitted_at=1)
         self.assertEqual(expected.stream, actual.stream)
         self.assertEqual(expected.data, actual.data)
 
