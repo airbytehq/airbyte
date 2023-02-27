@@ -74,9 +74,16 @@ public class AirbyteFileOffsetBackingStore {
   private Map<String, String> updateStateForDebezium2_1(final Map<String, String> mapAsString) {
     final Map<String, String> updatedMap = new LinkedHashMap<>();
     if (mapAsString.size() > 0) {
-      String key = mapAsString.keySet().stream().toList().get(0);
+      final String key = mapAsString.keySet().stream().toList().get(0);
       final int i = key.indexOf('[');
       final int i1 = key.lastIndexOf(']');
+
+      if (i == 0 && i1 == key.length() - 1) {
+        // The state is Debezium 2.1 compatible. No need to change anything.
+        return mapAsString;
+      }
+
+      LOGGER.info("Mutating sate to make it Debezium 2.1 compatible");
       final String newKey = key.substring(i, i1 + 1);
       final String value = mapAsString.get(key);
       updatedMap.put(newKey, value);

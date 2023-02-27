@@ -150,6 +150,28 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
+  protected void addMoneyTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("money")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "null",
+                "'999.99'", "'1,001.01'", "'-1,000'",
+                "'$999.99'", "'$1001.01'", "'-$1,000'"
+                // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+                // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+                // https://github.com/airbytehq/airbyte/issues/7338
+                /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
+            .addExpectedValues(
+                null,
+                "999.99", "1001.01", "-1000.00",
+                "999.99", "1001.01", "-1000.00"
+                /* "-92233720368547758.08", "92233720368547758.07" */)
+            .build());
+  }
+
+  @Override
   protected void addTimeWithTimeZoneTest() {
     // time with time zone
     for (final String fullSourceType : Set.of("timetz", "time with time zone")) {

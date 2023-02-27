@@ -118,8 +118,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
         final long heartbeatPos = getHeartbeatPosition(next);
         // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
         // too long
-        if (targetPosition.reachedTargetPosition(heartbeatPos)
-            || (heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging())) {
+        if (hasSyncFinished(heartbeatPos)) {
           LOGGER.info("Closing: Heartbeat indicates sync is done");
           requestClose();
         }
@@ -145,6 +144,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       return next;
     }
     return endOfData();
+  }
+
+  private boolean hasSyncFinished(final long heartbeatPos) {
+    return targetPosition.reachedTargetPosition(heartbeatPos)
+        || (heartbeatPos == this.lastHeartbeatPosition && heartbeatPosNotChanging());
   }
 
   /**
@@ -174,10 +178,10 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
   }
 
   private boolean heartbeatPosNotChanging() {
-    final Duration tbt = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
-    LOGGER.debug("Time since last hb_pos change {}s", tbt.toSeconds());
+    final Duration timeElapsedSinceLastHeartbeatTs = Duration.between(this.tsLastHeartbeat, LocalDateTime.now());
+    LOGGER.debug("Time since last hb_pos change {}s", timeElapsedSinceLastHeartbeatTs.toSeconds());
     // wait time for no change in heartbeat position is half of initial waitTime
-    return tbt.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
+    return timeElapsedSinceLastHeartbeatTs.compareTo(this.firstRecordWaitTime.dividedBy(2)) > 0;
   }
 
   private boolean hasSnapshotFinished(final JsonNode eventAsJson) {
