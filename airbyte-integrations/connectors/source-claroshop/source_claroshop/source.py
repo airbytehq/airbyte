@@ -397,8 +397,8 @@ class PedidosDetalle(Pedidos):
                 json_return = response.json()
                 read_json = True
             except:
-                logger.info('Handling error for pedido: %s', response.url().split('=')[-1])
-                response = requests.get(response.url())
+                logger.info('Handling error for pedido: %s', response.url.split('=')[-1])
+                response = requests.get(response.url)
                 pass
 
         return json_return
