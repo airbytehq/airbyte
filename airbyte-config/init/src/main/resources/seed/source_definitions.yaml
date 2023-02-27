@@ -498,11 +498,15 @@
 - name: Exchange Rates Api
   sourceDefinitionId: e2b40e36-aa0e-4bed-b41b-bcea6fa348b1
   dockerRepository: airbyte/source-exchange-rates
-  dockerImageTag: 1.2.7
+  dockerImageTag: 1.2.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/exchangeratesapi
   icon: exchangeratesapi.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${subdomain}.apilayer.com"
+      - apilayer.com
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
