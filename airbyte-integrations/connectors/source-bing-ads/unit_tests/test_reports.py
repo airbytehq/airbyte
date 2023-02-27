@@ -38,6 +38,14 @@ def test_get_column_value():
     assert test_report.get_column_value(record, "Spend") == 1.203
 
 
+def test_get_updated_state_init_state():
+    test_report = TestReport()
+    stream_state = {}
+    latest_record = {"AccountId": 123, "Time": "2020-01-02"}
+    new_state = test_report.get_updated_state(stream_state, latest_record)
+    assert new_state["123"]["Time"] == (pendulum.parse("2020-01-02")).timestamp()
+
+
 def test_get_updated_state_new_state():
     test_report = TestReport()
     stream_state = {"123": {"Time": pendulum.parse("2020-01-01").timestamp()}}
