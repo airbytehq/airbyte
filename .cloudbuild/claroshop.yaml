@@ -3,6 +3,6 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-claroshop:${_CLAROSHOP_VERSION}', './airbyte-integrations/connectors/source-claroshop' ]
 substitutions:
-  _CLAROSHOP_VERSION: 0.1.2
+  _CLAROSHOP_VERSION: 0.1.3
 images:
 - 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-claroshop:${_CLAROSHOP_VERSION}'
