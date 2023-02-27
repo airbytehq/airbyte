@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -12,10 +12,11 @@ import requests_mock
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
-from source_square.components import SquareSubstreamSlicer
+from source_square.components import SquareSubstreamIncrementalSync
 from source_square.source import SourceSquare
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+CURSOR_GRANULARITY = "PT0.000001S"
 
 
 @pytest.fixture
@@ -47,7 +48,7 @@ def test_refresh_access_token(req_mock):
         "client_secret": "some_client_secret",
         "token_expiry_date": pendulum.now().subtract(days=2).to_rfc3339_string(),
     }
-    options = {"refresh_token": "some_refresh_token"}
+    parameters = {"refresh_token": "some_refresh_token"}
 
     req_mock.post(URL, json={"access_token": TOKEN, "expires_in": next_day})
     authenticator = DeclarativeOauth2Authenticator(
@@ -57,7 +58,7 @@ def test_refresh_access_token(req_mock):
         refresh_token="refresh_token",
         token_expiry_date_format="YYYY-MM-DDTHH:mm:ss[Z]",
         config=config,
-        options=options
+        parameters=parameters,
     )
     token = authenticator.get_access_token()
     assert token == TOKEN
@@ -68,9 +69,9 @@ def test_refresh_access_token(req_mock):
     "last_record, expected, records",
     [
         (
-                {"updated_at": "2022-09-05T10:10:10.000000Z"},
-                {"updated_at": "2022-09-05T10:10:10.000000Z"},
-                [{"id": "some_id"}],
+            {"updated_at": "2022-09-05T10:10:10.000000Z"},
+            {"updated_at": "2022-09-05T10:10:10.000000Z"},
+            [{"id": "some_id"}],
         ),
         (None, {}, []),
     ],
@@ -78,16 +79,17 @@ def test_refresh_access_token(req_mock):
 def test_sub_slicer(last_record, expected, records):
     parent_stream = MagicMock()
     parent_stream.read_records = MagicMock(return_value=records)
-    slicer = SquareSubstreamSlicer(
-        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),
-        step="1d",
+    slicer = SquareSubstreamIncrementalSync(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", parameters={}),
+        step="P1D",
         cursor_field="updated_at",
         datetime_format=DATETIME_FORMAT,
-        options=None,
+        cursor_granularity=CURSOR_GRANULARITY,
+        parameters=None,
         config={"start_date": "2021-01-01T00:00:00.000000+0000"},
         parent_key="id",
-        parent_stream=parent_stream
+        parent_stream=parent_stream,
     )
     stream_slice = next(slicer.stream_slices(SyncMode, {})) if records else {}
     slicer.update_cursor(stream_slice=stream_slice, last_record=last_record)
@@ -98,37 +100,39 @@ def test_sub_slicer(last_record, expected, records):
     "last_record, records, expected_data",
     [
         (
-                {"updated_at": "2022-09-05T10:10:10.000000Z"},
-                [{"id": "some_id1"}],
-                {"location_ids": ["some_id1"], "start_date": "2022-09-05T10:10:10.000000Z"}
+            {"updated_at": "2022-09-05T10:10:10.000000Z"},
+            [{"id": "some_id1"}],
+            {"location_ids": ["some_id1"], "start_date": "2022-09-05T10:10:10.000000Z"},
         ),
         (
-                {"updated_at": "2022-09-05T10:10:10.000000Z"},
-                [{"id": f"some_id{x}"} for x in range(11)],
-                {"location_ids": [f"some_id{x}" for x in range(10)],
-                 "start_date": "2022-09-05T10:10:10.000000Z"}
+            {"updated_at": "2022-09-05T10:10:10.000000Z"},
+            [{"id": f"some_id{x}"} for x in range(11)],
+            {"location_ids": [f"some_id{x}" for x in range(10)], "start_date": "2022-09-05T10:10:10.000000Z"},
         ),
     ],
 )
 def test_sub_slicer_request_body(last_record, records, expected_data):
     parent_stream = MagicMock
     parent_stream.read_records = MagicMock(return_value=records)
-    slicer = SquareSubstreamSlicer(
-        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000Z", options={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000Z", options={}),
-        step="1d",
+    slicer = SquareSubstreamIncrementalSync(
+        start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000Z", parameters={}),
+        end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000Z", parameters={}),
+        step="P1D",
         cursor_field="updated_at",
         datetime_format=DATETIME_FORMAT,
-        options=None,
+        cursor_granularity=CURSOR_GRANULARITY,
+        parameters=None,
         config={"start_date": "2021-01-01T00:00:00.000000Z"},
         parent_key="id",
-        parent_stream=parent_stream
+        parent_stream=parent_stream,
     )
     stream_slice = next(slicer.stream_slices(SyncMode, {})) if records else {}
     slicer.update_cursor(stream_slice=stream_slice, last_record=last_record)
-    expected_request_body = {"location_ids": expected_data.get("location_ids"),
-                             "query": {"filter": {
-                                 "date_time_filter": {"updated_at": {"start_at": expected_data.get("start_date")}}},
-                                 "sort": {"sort_field": "UPDATED_AT", "sort_order": "ASC"}}}
-    assert slicer.get_request_body_json(stream_state=slicer.get_stream_state(),
-                                        stream_slice=stream_slice) == expected_request_body
+    expected_request_body = {
+        "location_ids": expected_data.get("location_ids"),
+        "query": {
+            "filter": {"date_time_filter": {"updated_at": {"start_at": expected_data.get("start_date")}}},
+            "sort": {"sort_field": "UPDATED_AT", "sort_order": "ASC"},
+        },
+    }
+    assert slicer.get_request_body_json(stream_state=slicer.get_stream_state(), stream_slice=stream_slice) == expected_request_body

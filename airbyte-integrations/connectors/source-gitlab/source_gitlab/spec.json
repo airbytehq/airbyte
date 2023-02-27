@@ -2,22 +2,76 @@
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/gitlab",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Source GitLab Singer Spec",
+    "title": "Source Gitlab Spec",
     "type": "object",
-    "required": ["api_url", "private_token", "start_date"],
+    "required": ["api_url", "start_date", "credentials"],
     "additionalProperties": true,
     "properties": {
-      "private_token": {
-        "type": "string",
-        "title": "Private Token",
-        "description": "Log into your GitLab account and then generate a personal [Access Token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html).",
-        "airbyte_secret": true,
-        "order": 0
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "order": 0,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": ["client_id", "client_secret", "refresh_token", "access_token", "token_expiry_date"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0"
+              },
+              "client_id": {
+                "type": "string",
+                "description": "The API ID of the Gitlab developer application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "description": "The API Secret the Gitlab developer application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              },
+              "token_expiry_date": {
+                "type": "string",
+                "description": "The date-time when the access token should be refreshed.",
+                "format": "date-time"
+              },
+              "refresh_token": {
+                "type": "string",
+                "description": "The key to refresh the expired access_token.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Private Token",
+            "type": "object",
+            "required": ["access_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "access_token"
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Private Token",
+                "description": "Log into your Gitlab account and then generate a personal Access Token.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
       },
       "api_url": {
         "type": "string",
         "examples": ["gitlab.com"],
         "title": "API URL",
+        "default": "gitlab.com",
         "description": "Please enter your basic URL from GitLab instance.",
         "order": 1
       },
@@ -42,6 +96,64 @@
         "examples": ["airbyte.io/documentation"],
         "description": "Space-delimited list of projects. e.g. airbyte.io/documentation meltano/tap-gitlab.",
         "order": 4
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "path_in_connector_config": ["api_url"]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          },
+          "token_expiry_date": {
+            "type": "string",
+            "format": "date-time",
+            "path_in_connector_config": ["credentials", "token_expiry_date"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
       }
     }
   }

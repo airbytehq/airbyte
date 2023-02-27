@@ -1,8 +1,6 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/bigquery",
   "supportsIncremental": true,
-  "supportsNormalization": true,
-  "supportsDBT": true,
   "supported_sync_modes": ["overwrite", "append", "append_dedup"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",

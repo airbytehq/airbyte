@@ -129,6 +129,13 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.3   | 2023-02-17 | [23190](https://github.com/airbytehq/airbyte/pull/23190) | In case properties are chunked, fetch primary key in every chunk                                                                 |
+| 2.0.2   | 2023-02-13 | [22896](https://github.com/airbytehq/airbyte/pull/22896) | Count the URL length based on encoded params                                                                                     |
+| 2.0.1   | 2023-02-08 | [22597](https://github.com/airbytehq/airbyte/pull/22597) | Make multiple requests if a REST stream has too many properties                                                                  |
+| 2.0.0   | 2023-02-02 | [22322](https://github.com/airbytehq/airbyte/pull/22322) | Remove `ActivityMetricRollup` stream                                                                                             |
+| 1.0.30  | 2023-01-27 | [22016](https://github.com/airbytehq/airbyte/pull/22016) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                      |
+| 1.0.29  | 2023-01-05 | [20886](https://github.com/airbytehq/airbyte/pull/20886) | Remove `ActivityMetric` stream                                                                                                   |
+| 1.0.28  | 2022-12-29 | [20927](https://github.com/airbytehq/airbyte/pull/20927) | Fix tests; add expected records                                                                                                  |
 | 1.0.27  | 2022-11-29 | [19869](https://github.com/airbytehq/airbyte/pull/19869) | Remove `AccountHistory` from unsupported BULK streams                                                                            |
 | 1.0.26  | 2022-11-15 | [19286](https://github.com/airbytehq/airbyte/pull/19286) | Bugfix: fallback to REST API if entity is not supported by BULK API                                                              |
 | 1.0.25  | 2022-11-13 | [19294](https://github.com/airbytehq/airbyte/pull/19294) | Use the correct encoding for non UTF-8 objects and data                                                                          |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -84,17 +84,25 @@ class CsvDestinationTest {
       CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, null, Field.of("goal", JsonSchemaType.STRING))));
 
   private Path destinationPath;
+  private JsonNode delimiter;
   private JsonNode config;
 
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString()));
+    delimiter = Jsons.jsonNode(ImmutableMap.of("delimiter", "\\u002c"));
+    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_TYPE, delimiter));
   }
 
   private CsvDestination getDestination() {
     final CsvDestination result = spy(CsvDestination.class);
     doReturn(destinationPath).when(result).getDestinationPath(any());
+    return result;
+  }
+
+  private CsvDestination getDelimiter() {
+    final CsvDestination result = spy(CsvDestination.class);
+    doReturn(delimiter).when(result).getDelimiter(any());
     return result;
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -130,11 +130,16 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) throws Exception {
     final String query = getCreateStageQuery(stageName);
     LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
+    try {
+      database.execute(query);
+    } catch (Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   /**
-   * Creates a SQL query to create a staging folder. This query will create a staging folder if one previously did not exist
+   * Creates a SQL query to create a staging folder. This query will create a staging folder if one
+   * previously did not exist
    *
    * @param stageName name of the staging folder
    * @return SQL query string
@@ -144,21 +149,25 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
-                                        final String stageName,
-                                        final String stagingPath,
-                                        final List<String> stagedFiles,
-                                        final String dstTableName,
-                                        final String schemaName)
+  public void copyIntoTableFromStage(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final List<String> stagedFiles,
+                                     final String tableName,
+                                     final String schemaName)
       throws SQLException {
-    final String query = getCopyQuery(stageName, stagingPath, stagedFiles, dstTableName, schemaName);
-    LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
+    try {
+      final String query = getCopyQuery(stageName, stagingPath, stagedFiles, tableName, schemaName);
+      LOGGER.debug("Executing query: {}", query);
+      database.execute(query);
+    } catch (SQLException e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   /**
-   * Creates a SQL query to bulk copy data into fully qualified destination table
-   * See https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html for more context
+   * Creates a SQL query to bulk copy data into fully qualified destination table See
+   * https://docs.snowflake.com/en/sql-reference/sql/copy-into-table.html for more context
    *
    * @param stageName name of staging folder
    * @param stagingPath path of staging folder to data files
@@ -177,9 +186,13 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
 
   @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) throws Exception {
-    final String query = getDropQuery(stageName);
-    LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
+    try {
+      final String query = getDropQuery(stageName);
+      LOGGER.debug("Executing query: {}", query);
+      database.execute(query);
+    } catch (SQLException e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   /**
@@ -194,14 +207,18 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperation
 
   @Override
   public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) throws Exception {
-    final String query = getRemoveQuery(stageName);
-    LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
+    try {
+      final String query = getRemoveQuery(stageName);
+      LOGGER.debug("Executing query: {}", query);
+      database.execute(query);
+    } catch (SQLException e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
   }
 
   /**
-   * Creates a SQL query used to remove staging files that were just staged
-   * See https://docs.snowflake.com/en/sql-reference/sql/remove.html for more context
+   * Creates a SQL query used to remove staging files that were just staged See
+   * https://docs.snowflake.com/en/sql-reference/sql/remove.html for more context
    *
    * @param stageName name of staging folder
    * @return SQL query string

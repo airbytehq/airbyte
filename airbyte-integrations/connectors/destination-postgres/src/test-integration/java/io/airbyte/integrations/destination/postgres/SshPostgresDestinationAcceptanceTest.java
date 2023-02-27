@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.postgres;
@@ -71,15 +71,6 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
         .collect(Collectors.toList());
   }
 
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
 
   @Override
   protected boolean implementsNamespaces() {

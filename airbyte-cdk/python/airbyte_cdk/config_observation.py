@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from __future__ import (  # Used to evaluate type hints at runtime, a NameError: name 'ConfigObserver' is not defined is thrown otherwise
@@ -55,16 +55,7 @@ class ConfigObserver:
         self.config = config
 
     def update(self) -> None:
-        self._emit_airbyte_control_message()
-
-    def _emit_airbyte_control_message(self) -> None:
-        control_message = AirbyteControlMessage(
-            type=OrchestratorType.CONNECTOR_CONFIG,
-            emitted_at=time.time() * 1000,
-            connectorConfig=AirbyteControlConnectorConfigMessage(config=self.config),
-        )
-        airbyte_message = AirbyteMessage(type=Type.CONTROL, control=control_message)
-        print(airbyte_message.json(exclude_unset=True))
+        emit_configuration_as_airbyte_control_message(self.config)
 
 
 def observe_connector_config(non_observed_connector_config: MutableMapping[str, Any]):
@@ -74,3 +65,13 @@ def observe_connector_config(non_observed_connector_config: MutableMapping[str, 
     observed_connector_config = ObservedDict(non_observed_connector_config, connector_config_observer)
     connector_config_observer.set_config(observed_connector_config)
     return observed_connector_config
+
+
+def emit_configuration_as_airbyte_control_message(config: MutableMapping):
+    control_message = AirbyteControlMessage(
+        type=OrchestratorType.CONNECTOR_CONFIG,
+        emitted_at=time.time() * 1000,
+        connectorConfig=AirbyteControlConnectorConfigMessage(config=config),
+    )
+    airbyte_message = AirbyteMessage(type=Type.CONTROL, control=control_message)
+    print(airbyte_message.json(exclude_unset=True))

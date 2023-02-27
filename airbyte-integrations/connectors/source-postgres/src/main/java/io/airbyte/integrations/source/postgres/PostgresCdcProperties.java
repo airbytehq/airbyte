@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -57,6 +57,9 @@ public class PostgresCdcProperties {
     props.setProperty("datetime.type", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
     props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
+    if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+      props.setProperty("flush.lsn.source", "false");
+    }
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode

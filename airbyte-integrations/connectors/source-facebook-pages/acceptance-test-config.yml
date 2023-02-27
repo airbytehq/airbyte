@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-facebook-pages:dev
 acceptance_tests:
@@ -27,11 +27,8 @@ acceptance_tests:
             bypass_reason: "Data is not permanent"
           - name: page_insights
             bypass_reason: "Data is not permanent"
-        expect_records:
-          path: "integration_tests/expected_records.txt"
-          extra_fields: no
-          exact_order: no
-          extra_records: yes
+          - name: post_insights
+            bypass_reason: "Data is not permanent"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
@@ -40,6 +37,12 @@ acceptance_tests:
           # Since we generating new Page access token for each connector run this
           # field would containt different values.
           page:
+            - "albums/paging/cursors"
+            - "indexed_videos/paging/cursors"
+            - "live_videos/paging/cursors"
+            - "photos/paging/cursors"
             - "posts/paging/next"
             - "published_posts/paging/next"
             - "feed/paging/next"
+            - "feed/paging/cursors"
+            - "feed/data/paging/cursors"
