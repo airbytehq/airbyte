@@ -69,7 +69,7 @@ const config = {
                             from: '/cloud/managing-airbyte-cloud',
                             to: '/category/managing-airbyte-cloud',
                         },
-                        {
+                        {a
                             from: '/cloud/dbt-cloud-integration',
                             to: '/cloud/managing-airbyte-cloud/dbt-cloud-integration',
                         },
