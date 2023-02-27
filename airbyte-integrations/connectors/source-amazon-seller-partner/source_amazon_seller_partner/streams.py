@@ -25,7 +25,7 @@ from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handl
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_amazon_seller_partner.auth import AWSSignature
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
-
+from source_amazon_seller_partner.constants import ProcessingStatus
 
 REPORTS_API_VERSION = "2021-06-30"  # 2020-09-04
 ORDERS_API_VERSION = "v0"
@@ -1291,10 +1291,13 @@ class FlatFileSettlementV2ReportsV2(ReportsAmazonSPStream,IncrementalMixin):
         while not is_processed and seconds_waited < self.max_wait_seconds:
             report_payload = self._retrieve_report(report_id=report_id)
             seconds_waited = (pendulum.now("utc") - start_time).seconds
-            is_processed = report_payload.get("processingStatus") not in ["IN_QUEUE", "IN_PROGRESS"]
-            is_done = report_payload.get("processingStatus") == "DONE"
-            is_cancelled = report_payload.get("processingStatus") == "CANCELLED"
-            is_fatal = report_payload.get("processingStatus") == "FATAL"
+            processing_status = report_payload.get("processingStatus")
+
+            is_processed = ProcessingStatus.is_processed(processing_status)
+            is_done = processing_status == ProcessingStatus.DONE
+            is_cancelled = processing_status == ProcessingStatus.CANCELLED
+            is_fatal = processing_status == ProcessingStatus.FATAL
+            
             time.sleep(self.sleep_seconds)
         
         if is_done:

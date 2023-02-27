@@ -95,3 +95,15 @@ def get_marketplaces(aws_env: AWSEnvironment) -> Dict[AWSRegion, Tuple[str, str,
     }
     marketplaces[AWSRegion.GB] = marketplaces[AWSRegion.UK]
     return marketplaces
+
+
+class ProcessingStatus(str, Enum):
+    IN_QUEUE = "IN_QUEUE"
+    IN_PROGRESS = "IN_PROGRESS"
+    DONE = "DONE"
+    CANCELLED = "CANCELLED"
+    FATAL = "FATAL"
+    
+    @classmethod
+    def is_processed(cls, status: str) -> bool:
+        return status not in [cls.IN_QUEUE, cls.IN_PROGRESS]
