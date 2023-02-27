@@ -3640,7 +3640,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.84"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.85"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -6042,7 +6042,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.36"
+- dockerImage: "airbyte/source-google-sheets:0.2.37"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -12813,7 +12813,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:1.0.0"
+- dockerImage: "airbyte/source-s3:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -16508,7 +16508,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.23"
+- dockerImage: "airbyte/source-zendesk-support:0.2.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:

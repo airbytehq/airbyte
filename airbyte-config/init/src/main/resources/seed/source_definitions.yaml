@@ -510,11 +510,14 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.84
+  dockerImageTag: 0.2.85
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - graph.facebook.com
 - name: Facebook Pages
   sourceDefinitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
   dockerRepository: airbyte/source-facebook-pages
@@ -745,7 +748,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.36
+  dockerImageTag: 0.2.37
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -1606,7 +1609,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -2122,7 +2125,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.23
+  dockerImageTag: 0.2.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api
