@@ -8,9 +8,7 @@ dependencies {
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-persistence:job-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation libs.lombok
     implementation libs.micronaut.cache.caffeine
@@ -19,64 +17,11 @@ dependencies {
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 
-task copyScripts(type: Copy) {
-    dependsOn copyDocker
-
-    from('scripts')
-    into 'build/docker/bin/scripts'
-}
-
-tasks.named("buildDockerImage") {
-    dependsOn copyScripts
-}
-
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
 
-/**
- * Simple task that checks if all icons in the seed definition files exist as well as
- * that no icon in the icons folder is unused.
- */
-class IconValidationTask extends DefaultTask {
-
-    private slurper = new groovy.yaml.YamlSlurper()
-
-    @InputFile
-    File sourceDefinitions = project.file("src/main/resources/seed/source_definitions.yaml")
-
-    @InputFile
-    File destinationDefinitions = project.file("src/main/resources/seed/destination_definitions.yaml")
-
-    @InputDirectory
-    File iconDirectory = project.file("src/main/resources/icons")
-
-    private String[] getIconsFromYaml(File file) {
-        def yaml = this.slurper.parse(file.newReader())
-        return yaml.collect { it.icon }.findAll { it != null }
-    }
-
-    @TaskAction
-    void validateIcons() {
-        def sourceIcons = this.getIconsFromYaml(this.sourceDefinitions)
-        def destinationIcons = this.getIconsFromYaml(this.destinationDefinitions)
-        def icons = sourceIcons.plus(destinationIcons) as Collection<String>
-
-        def iconFiles = project.fileTree(this.iconDirectory).collect { it.name }
-        def nonExistingIconFiles = icons - iconFiles
-        def orphanedFiles = iconFiles - icons.intersect(iconFiles)
-
-        def errors = []
-        if (!nonExistingIconFiles.isEmpty()) {
-            errors.push("The following icon files have been referenced inside the seed files, but don't exist:\n\n${nonExistingIconFiles.join('\n')}")
-        }
-        if (!orphanedFiles.isEmpty()) {
-            errors.push("The following icons are not used in the seed files and should be removed:\n\n${orphanedFiles.join('\n')}")
-        }
-
-        if (!errors.isEmpty()) {
-            throw new Error(errors.join('\n\n'))
-        }
-    }
+task validateIcons(type: JavaExec, dependsOn: [compileJava]) {
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'io.airbyte.config.init.IconValidationTask'
 }
 
-task validateIcons(type: IconValidationTask)
-check.dependsOn validateIcons
+validateIcons.shouldRunAfter processResources
