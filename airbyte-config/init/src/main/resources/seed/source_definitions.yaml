@@ -198,9 +198,6 @@
   icon: bigquery.svg
   sourceType: database
   releaseStage: alpha
-  allowedHosts:
-    hosts:
-      - "${host}"
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
@@ -326,6 +323,9 @@
   icon: cockroachdb.svg
   sourceType: database
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${host}"
 - name: Coda
   sourceDefinitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
   dockerRepository: airbyte/source-coda
@@ -587,7 +587,7 @@
   releaseStage: alpha
   allowedHosts:
     hosts:
-      - "${host}"
+      - "${domain}"
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
@@ -978,9 +978,6 @@
   icon: kafka.svg
   sourceType: database
   releaseStage: alpha
-  allowedHosts:
-    hosts:
-      - "${host}"
 - name: Klarna
   sourceDefinitionId: 60c24725-00ae-490c-991d-55b78c3197e0
   dockerRepository: airbyte/source-klarna
@@ -1636,7 +1633,7 @@
   releaseStage: alpha
   allowedHosts:
     hosts:
-      - "${host}"
+      - "*.redshift.amazonaws.com"
 - name: Reply.io
   sourceDefinitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
   dockerRepository: airbyte/source-reply-io
@@ -1954,6 +1951,7 @@
   allowedHosts:
     hosts:
       - "${host}"
+      - "${tunnel_method.tunnel_host}"
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
