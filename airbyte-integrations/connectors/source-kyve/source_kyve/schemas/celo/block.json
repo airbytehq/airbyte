@@ -1,0 +1,79 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "hash" : {
+      "type" : "string"
+    },
+    "parentHash" : {
+      "type" : "string"
+    },
+    "number" : {
+      "type" : "integer"
+    },
+    "timestamp" : {
+      "type" : "integer"
+    },
+    "nonce" : {
+      "type" : "string"
+    },
+    "difficulty" : {
+      "type" : "integer"
+    },
+    "gasLimit" : {
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string"
+        },
+        "hex" : {
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "type",
+        "hex"
+      ]
+    },
+    "gasUsed" : {
+      "type" : "object",
+      "properties" : {
+        "type" : {
+          "type" : "string"
+        },
+        "hex" : {
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "type",
+        "hex"
+      ]
+    },
+    "miner" : {
+      "type" : "string"
+    },
+    "transactions" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "celo/transaction.json"
+      }
+    },
+    "_difficulty" : {
+      "type" : "null"
+    }
+  },
+  "required" : [
+    "hash",
+    "parentHash",
+    "number",
+    "timestamp",
+    "nonce",
+    "difficulty",
+    "gasLimit",
+    "gasUsed",
+    "miner",
+    "transactions",
+    "_difficulty"
+  ]
+}

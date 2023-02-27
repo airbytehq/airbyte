@@ -1,0 +1,130 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "txid" : {
+      "type" : "string"
+    },
+    "hash" : {
+      "type" : "string"
+    },
+    "version" : {
+      "type" : "integer"
+    },
+    "size" : {
+      "type" : "integer"
+    },
+    "vsize" : {
+      "type" : "integer"
+    },
+    "weight" : {
+      "type" : "integer"
+    },
+    "locktime" : {
+      "type" : "integer"
+    },
+    "vin" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "txid" : {
+            "type" : "string"
+          },
+          "vout" : {
+            "type" : "integer"
+          },
+          "scriptSig" : {
+            "type" : "object",
+            "properties" : {
+              "asm" : {
+                "type" : "string"
+              },
+              "hex" : {
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "asm",
+              "hex"
+            ]
+          },
+          "sequence" : {
+            "type" : "integer"
+          }
+        },
+        "required" : [
+          "txid",
+          "vout",
+          "scriptSig",
+          "sequence"
+        ]
+      }
+    },
+    "vout" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "number"
+          },
+          "n" : {
+            "type" : "integer"
+          },
+          "scriptPubKey" : {
+            "type" : "object",
+            "properties" : {
+              "asm" : {
+                "type" : "string"
+              },
+              "desc" : {
+                "type" : "string"
+              },
+              "hex" : {
+                "type" : "string"
+              },
+              "address" : {
+                "type" : "string"
+              },
+              "type" : {
+                "type" : "string"
+              }
+            },
+            "required" : [
+              "asm",
+              "desc",
+              "hex",
+              "address",
+              "type"
+            ]
+          }
+        },
+        "required" : [
+          "value",
+          "n",
+          "scriptPubKey"
+        ]
+      }
+    },
+    "fee" : {
+      "type" : "number"
+    },
+    "hex" : {
+      "type" : "string"
+    }
+  },
+  "required" : [
+    "txid",
+    "hash",
+    "version",
+    "size",
+    "vsize",
+    "weight",
+    "locktime",
+    "vin",
+    "vout",
+    "fee",
+    "hex"
+  ]
+}

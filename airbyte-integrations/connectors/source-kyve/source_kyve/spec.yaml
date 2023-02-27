@@ -1,12 +1,43 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.kyve.network/developers/accessing-data/using-the-elt-pipeline/
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
-  title: Kyve Spec
+  title: KYVE Spec
   type: object
   required:
-    - TODO
+    - pool_ids
+    - start_ids
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    pool_ids:
       type: string
-      description: describe me
+      title: Pool-IDs
+      description: The IDs of the KYVE storage pool you want to archive. (Comma separated)
+      examples:
+        - '0'
+        - '0,1'
+    start_ids:
+      type: string
+      title: Bundle-Start-IDs
+      description: The start-id defines, from which bundle id the pipeline should
+        start to extract the data (Comma separated)
+      examples:
+        - '0'
+        - '0,0'
+    url_base:
+      type: string
+      title: KYVE-API URL Base
+      description: URL to the KYVE Chain API.
+      default: https://api.korellia.kyve.network
+      examples:
+        - https://api.korellia.kyve.network/
+        - https://api.beta.kyve.network/
+    max_pages:
+      type: integer
+      description: The maximum amount of pages to go trough. Set to 'null' for all
+        pages.
+      airbyte_hidden: true
+    page_size:
+      type: integer
+      description: The pagesize for pagination, smaller numbers are used in integration
+        tests.
+      default: 100
+      airbyte_hidden: true

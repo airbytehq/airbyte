@@ -1,0 +1,83 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "hash" : {
+      "type" : "string"
+    },
+    "height" : {
+      "type" : "integer"
+    },
+    "version" : {
+      "type" : "integer"
+    },
+    "versionHex" : {
+      "type" : "string"
+    },
+    "merkleroot" : {
+      "type" : "string"
+    },
+    "time" : {
+      "type" : "integer"
+    },
+    "mediantime" : {
+      "type" : "integer"
+    },
+    "nonce" : {
+      "type" : "integer"
+    },
+    "bits" : {
+      "type" : "string"
+    },
+    "difficulty" : {
+      "type" : "number"
+    },
+    "chainwork" : {
+      "type" : "string"
+    },
+    "nTx" : {
+      "type" : "integer"
+    },
+    "previousblockhash" : {
+      "type" : "string"
+    },
+    "nextblockhash" : {
+      "type" : "string"
+    },
+    "strippedsize" : {
+      "type" : "integer"
+    },
+    "size" : {
+      "type" : "integer"
+    },
+    "weight" : {
+      "type" : "integer"
+    },
+    "tx" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "bitcoin/transaction.json"
+      }
+    }
+  },
+  "required" : [
+    "hash",
+    "height",
+    "version",
+    "versionHex",
+    "merkleroot",
+    "time",
+    "mediantime",
+    "nonce",
+    "bits",
+    "difficulty",
+    "chainwork",
+    "nTx",
+    "previousblockhash",
+    "nextblockhash",
+    "strippedsize",
+    "size",
+    "weight",
+    "tx"
+  ]
+}

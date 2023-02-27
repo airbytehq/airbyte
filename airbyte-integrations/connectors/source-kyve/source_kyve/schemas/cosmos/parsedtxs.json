@@ -1,0 +1,144 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "height" : {
+      "type" : "string"
+    },
+    "txhash" : {
+      "type" : "string"
+    },
+    "codespace" : {
+      "type" : "string"
+    },
+    "code" : {
+      "type" : "integer"
+    },
+    "data" : {
+      "type" : "string"
+    },
+    "raw_log" : {
+      "type" : "string"
+    },
+    "logs" : {
+      "type" : "array",
+      "items" : {}
+    },
+    "info" : {
+      "type" : "string"
+    },
+    "gas_wanted" : {
+      "type" : "string"
+    },
+    "gas_used" : {
+      "type" : "string"
+    },
+    "tx" : {
+      "type" : "object",
+      "properties" : {
+        "@type" : {
+          "type" : "string"
+        },
+        "body" : {
+          "type" : "object",
+          "properties" : {
+            "messages" : {
+              "type" : "array",
+              "items" : {}
+            },
+            "memo" : {
+              "type" : "string"
+            },
+            "timeout_height" : {
+              "type" : "string"
+            },
+            "extension_options" : {
+              "type" : "array",
+              "items" : {}
+            },
+            "non_critical_extension_options" : {
+              "type" : "array",
+              "items" : {}
+            }
+          },
+          "required" : [
+            "messages",
+            "memo",
+            "timeout_height",
+            "extension_options",
+            "non_critical_extension_options"
+          ]
+        },
+        "auth_info" : {
+          "type" : "object",
+          "properties" : {
+            "signer_infos" : {
+              "type" : "array",
+              "items" : {}
+            },
+            "fee" : {
+              "type" : "object",
+              "properties" : {
+                "amount" : {
+                  "type" : "array",
+                  "items" : {}
+                },
+                "gas_limit" : {
+                  "type" : "string"
+                },
+                "payer" : {
+                  "type" : "string"
+                },
+                "granter" : {
+                  "type" : "string"
+                }
+              },
+              "required" : [
+                "amount",
+                "gas_limit",
+                "payer",
+                "granter"
+              ]
+            }
+          },
+          "required" : [
+            "signer_infos",
+            "fee"
+          ]
+        },
+        "signatures" : {
+          "type" : "array",
+          "items" : {}
+        }
+      },
+      "required" : [
+        "@type",
+        "body",
+        "auth_info",
+        "signatures"
+      ]
+    },
+    "timestamp" : {
+      "type" : "string"
+    },
+    "events" : {
+      "type" : "array",
+      "items" : {}
+    }
+  },
+  "required" : [
+    "height",
+    "txhash",
+    "codespace",
+    "code",
+    "data",
+    "raw_log",
+    "logs",
+    "info",
+    "gas_wanted",
+    "gas_used",
+    "tx",
+    "timestamp",
+    "events"
+  ]
+}
