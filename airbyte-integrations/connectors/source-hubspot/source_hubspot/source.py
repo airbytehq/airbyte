@@ -72,7 +72,6 @@ class SourceHubspot(AbstractSource):
                 s.mount("https://api.hubapi.com/oauth/v1/access-tokens/", HTTPAdapter(max_retries=Retry(
                     total=10, backoff_factor=2, allowed_methods=None, status_forcelist=[429, 500, 502, 503, 504])))
                 response = s.get(url=url)
-                response = requests.get(url=url)
                 response.raise_for_status()
                 response_json = response.json()
                 granted_scopes = response_json["scopes"]
