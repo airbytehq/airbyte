@@ -19,7 +19,9 @@ import base64
 import hashlib
 import json
 import pytz
-
+from threading import Thread
+from threading import Lock
+from source_claroshop.thread_safe_list import ThreadSafeList
 
 
 class ClaroshopBase(HttpStream):
@@ -340,7 +342,30 @@ class PedidosDetalle(Pedidos):
 
                 pedidos.append(record['nopedido'])
 
-        for nopedido in set(pedidos):
+        item_list = ThreadSafeList()
+
+        number_of_threds = 15
+
+        threads = []
+
+        for chunk in self.chunker_list(pedidos, number_of_threds):
+            threads.append(Thread(target=self.read_pedido_detalle, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+
+        return item_list.get_list()
+    
+    def chunker_list(self, list, size):
+        return (list[i::size] for i in range(size))
+    
+    def read_pedido_detalle(self, item_list, pedido_list):
+        for nopedido in pedido_list:
             response_pedido = requests.get(self.pedido_detalle_path(nopedido))
             response_pedido_json = response_pedido.json()
 
@@ -365,7 +390,6 @@ class PedidosDetalle(Pedidos):
 
             item_list.append(item_json)
 
-        return item_list
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         
