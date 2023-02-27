@@ -3,10 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-    - backward_compatibility_tests_config:
-        # skip because allOf gets converted into enum
-        disable_for_version: 0.1.29
-      spec_path: integration_tests/spec.json
+    - spec_path: integration_tests/spec.json
 
   connection:
     tests:
@@ -20,8 +17,6 @@ acceptance_tests:
       status: succeed
     - config_path: secrets/jsonl_newlines_config.json
       status: succeed
-    - config_path: integration_tests/config_minio.json
-      status: succeed
     - config_path: integration_tests/invalid_config.json
       status: failed
 
@@ -30,9 +25,10 @@ acceptance_tests:
     - config_path: secrets/config.json
     - config_path: secrets/parquet_config.json
     - config_path: secrets/avro_config.json
+      backward_compatibility_tests_config:
+        disable_for_version: 0.1.32
     - config_path: secrets/jsonl_config.json
     - config_path: secrets/jsonl_newlines_config.json
-    - config_path: integration_tests/config_minio.json
 
   basic_read:
     tests:
@@ -56,8 +52,6 @@ acceptance_tests:
       expect_records:
         path: integration_tests/expected_records/jsonl_newlines.jsonl
       timeout_seconds: 1800
-#    - config_path: integration_tests/config_minio.json
-#      timeout_seconds: 1800
 
   full_refresh:
     tests:
@@ -75,9 +69,6 @@ acceptance_tests:
       timeout_seconds: 1800
     - config_path: secrets/jsonl_newlines_config.json
       configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
-      timeout_seconds: 1800
-    - config_path: integration_tests/config_minio.json
-      configured_catalog_path: integration_tests/configured_catalogs/csv.json
       timeout_seconds: 1800
 
   incremental:
@@ -116,14 +107,6 @@ acceptance_tests:
       timeout_seconds: 1800
     - config_path: secrets/jsonl_newlines_config.json
       configured_catalog_path: integration_tests/configured_catalogs/jsonl.json
-      cursor_paths:
-        test:
-        - _ab_source_file_last_modified
-      future_state:
-        future_state_path: integration_tests/abnormal_state.json
-      timeout_seconds: 1800
-    - config_path: integration_tests/config_minio.json
-      configured_catalog_path: integration_tests/configured_catalogs/csv.json
       cursor_paths:
         test:
         - _ab_source_file_last_modified

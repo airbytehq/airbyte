@@ -506,11 +506,6 @@ subprojects {
     task listAllDependencies(type: DependencyReportTask) {}
 }
 
-task('generate-docker') {
-    dependsOn(':airbyte-db:db-lib:assemble')
-    dependsOn(':airbyte-config:init:assemble')
-}
-
 // produce reproducible archives
 // (see https://docs.gradle.org/current/userguide/working_with_files.html#sec:reproducible_archives)
 tasks.withType(AbstractArchiveTask) {
