@@ -2,21 +2,23 @@ import classNames from "classnames";
 import { HTMLInputTypeAttribute, ReactNode } from "react";
 import { FieldError, Path, useFormContext } from "react-hook-form";
 
+import { OptionType } from "components/ui/DropDown";
 import { Text } from "components/ui/Text";
 import { InfoTooltip } from "components/ui/Tooltip";
 
 import styles from "./RHFControl.module.scss";
 import { RHFDateWrapper } from "./RHFDateWrapper";
+import { RHFDropDownWrapper } from "./RHFDropDownWrapper";
 import { FormValues } from "./RHFForm";
 import { RHFInputWrapper } from "./RHFInputWrapper";
 
-type RHFControlProps<T> = RHFInputFieldProps<T> | RHFDatePickerProps<T>;
+type RHFControlProps<T> = RHFDropDownProps<T> | RHFInputFieldProps<T> | RHFDatePickerProps<T>;
 
 interface RHFControlBaseProps<T extends FormValues> {
   /**
    * fieldType determines what form element is rendered. Depending on the chosen fieldType, additional props may be optional or required.
    */
-  fieldType: "input" | "date";
+  fieldType: "input" | "date" | "dropdown";
   /**
    * The field name must match any provided default value or validation schema.
    */
@@ -33,17 +35,17 @@ interface RHFControlBaseProps<T extends FormValues> {
    * An optional description that appears under the label
    */
   description?: string;
+  hasError?: boolean;
 }
 
 /**
  * These properties are only relevant at the control level. They can therefore be omitted before passing along to the underlying form input.
  */
-export type OmittableProperties = "fieldType" | "label" | "description";
+export type OmittableProperties = "fieldType" | "label" | "labelTooltip" | "description";
 
 export interface RHFInputFieldProps<T> extends RHFControlBaseProps<T> {
   fieldType: "input";
   type?: HTMLInputTypeAttribute;
-  hasError?: boolean;
 }
 
 export interface RHFDatePickerProps<T> extends RHFControlBaseProps<T> {
@@ -54,37 +56,42 @@ export interface RHFDatePickerProps<T> extends RHFControlBaseProps<T> {
    * - **date-time**  *YYYY-MM-DDTHH:mm:ssZ*
    */
   format?: "date" | "date-time";
-  hasError?: boolean;
+}
+
+export interface RHFDropDownProps<T> extends RHFControlBaseProps<T> {
+  fieldType: "dropdown";
+  options: OptionType[];
 }
 
 export const RHFControl = <T extends FormValues>({
-  fieldType,
   label,
   labelTooltip,
   description,
-  name,
   ...props
 }: RHFControlProps<T>) => {
   const { formState, getFieldState } = useFormContext<T>();
-  const { error, isTouched } = getFieldState(name, formState); // It is subscribed now and reactive to error state updated
-  const showError = error && isTouched;
+  const { error } = getFieldState(props.name, formState); // It is subscribed now and reactive to error state updated
 
   // Properties to pass to the underlying input
   const inputProps = {
     ...props,
-    hasError: showError,
+    hasError: Boolean(error),
   };
 
   function renderControl() {
-    if (fieldType === "input") {
-      return <RHFInputWrapper name={name} {...inputProps} />;
+    if (inputProps.fieldType === "input") {
+      return <RHFInputWrapper {...inputProps} />;
     }
 
-    if (fieldType === "date") {
-      return <RHFDateWrapper name={name} {...inputProps} />;
+    if (inputProps.fieldType === "date") {
+      return <RHFDateWrapper {...inputProps} />;
     }
 
-    throw new Error(`No matching form input found for type: ${fieldType}`);
+    if (inputProps.fieldType === "dropdown") {
+      return <RHFDropDownWrapper {...inputProps} />;
+    }
+
+    throw new Error(`No matching form input found for type: ${props.fieldType}`);
   }
 
   return (
@@ -93,7 +100,7 @@ export const RHFControl = <T extends FormValues>({
         <RHFFormLabel description={description} label={label} labelTooltip={labelTooltip} />
         {renderControl()}
       </label>
-      {showError && <RHFControlError error={error} />}
+      {error && <RHFControlError error={error} />}
     </div>
   );
 };
