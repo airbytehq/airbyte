@@ -348,7 +348,9 @@ class PedidosDetalle(Pedidos):
 
         threads = []
 
-        for chunk in self.chunker_list(set(pedidos), number_of_threds):
+        pedidos = list(set(pedidos))
+
+        for chunk in self.chunker_list(pedidos, number_of_threds):
             threads.append(Thread(target=self.read_pedido_detalle, args=(item_list, chunk)))
 
         # start threads
