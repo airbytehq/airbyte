@@ -57,17 +57,12 @@ Allow user to see tables created in the future:
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
 ```
 
-Additionally, if you plan to configure CDC for the Postgres source connector, grant `REPLICATION` and `LOGIN` permissions to the user:
+Additionally, if you plan to configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user:
 
 ```
-CREATE ROLE <role_name> REPLICATION LOGIN;
+ALTER USER <user_name> REPLICATION;
 ```
 
-and grant that role to the user:
-
-```
-GRANT <role_name> to <user_name>;
-```
 
 **Syncing a subset of columns​**
 
@@ -411,8 +406,11 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 ## Changelog
 
-| Version | Date      | Pull Request                                        | Subject                                                                                                                                                                    |
-|:--------|:----------|:----------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.49  | 2022-02-24 | [23383](https://github.com/airbytehq/airbyte/pull/23383) | Fixed bug with non readable double-quoted values within a database name or column name                                                                                                        |                                                                                                                                                                   |
+| 1.0.48  | 2022-02-23 | [22623](https://github.com/airbytehq/airbyte/pull/22623) | Increase max fetch size of JDBC streaming mode                                                                                                        |                                                                                                                                                                   |
+| 1.0.47  | 2022-02-22 | [22221](https://github.com/airbytehq/airbyte/pull/23138) | Fix previous versions which doesn't verify privileges correctly, preventing CDC syncs to run.                                                                              |                                                                                                                                                                   |
 | 1.0.46  | 2022-02-21 | [23105](https://github.com/airbytehq/airbyte/pull/23105) | Include log levels and location information (class, method and line number) with source connector logs published to Airbyte Platform.                                      |
 | 1.0.45  | 2022-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371) | Ensures that user has required privileges for CDC syncs.                                                                                                                   |  
 |         | 2022-02-15 | [23028](https://github.com/airbytehq/airbyte/pull/23028) |                                                                                                                                                                            |
