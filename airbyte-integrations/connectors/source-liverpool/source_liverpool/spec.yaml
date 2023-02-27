@@ -13,7 +13,7 @@ connectionSpecification:
       title: API Key
       type: string
       description: API Access Key
-      airbyte_secret: false
+      airbyte_secret: true
       order: 0
     shop_id:
       title: Shop ID
