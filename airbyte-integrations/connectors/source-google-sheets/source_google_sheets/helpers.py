@@ -181,8 +181,11 @@ class Helpers(object):
         non_grid_sheets = []
         for sheet in spreadsheet_metadata.sheets:
             sheet_title = sheet.properties.title
-            if hasattr(sheet.properties, "gridProperties") and \
-               hasattr(sheet.properties, "sheetType") and sheet.properties.sheetType == "GRID":
+            if (
+                hasattr(sheet.properties, "gridProperties")
+                and hasattr(sheet.properties, "sheetType")
+                and sheet.properties.sheetType == "GRID"
+            ):
                 grid_sheets.append(sheet_title)
             else:
                 non_grid_sheets.append(sheet_title)

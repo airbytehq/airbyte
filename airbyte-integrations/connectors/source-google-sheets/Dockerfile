@@ -29,6 +29,7 @@ RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
+COPY source_google_sheets ./source_google_sheets
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
