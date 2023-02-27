@@ -1,1 +1,0 @@
-export { UpdateConnectionDataResidency } from "./UpdateConnectionDataResidency";
