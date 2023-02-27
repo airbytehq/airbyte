@@ -1759,11 +1759,14 @@
 - name: Sonar Cloud
   sourceDefinitionId: 3ab1d7d0-1577-4ab9-bcc4-1ff6a4c2c9f2
   dockerRepository: airbyte/source-sonar-cloud
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/sonar-cloud
   icon: sonarcloud.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - sonarcloud.io
 - name: SpaceX API
   sourceDefinitionId: 62235e65-af7a-4138-9130-0bda954eb6a8
   dockerRepository: airbyte/source-spacex-api
