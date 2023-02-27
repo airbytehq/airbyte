@@ -20,6 +20,7 @@ from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
+from functools import cached_property
 
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
@@ -185,7 +186,7 @@ class ShopifySubstream(IncrementalShopifyStream):
     nested_substream = None
     nested_substream_list_field_id = None
 
-    @property
+    @cached_property
     def parent_stream(self) -> object:
         """
         Returns the instance of parent stream, if the substream has a `parent_stream_class` dependency.
