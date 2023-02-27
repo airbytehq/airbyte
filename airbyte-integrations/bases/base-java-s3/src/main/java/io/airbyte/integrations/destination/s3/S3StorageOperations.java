@@ -128,7 +128,7 @@ public class S3StorageOperations extends BlobStorageOperations {
 
       try {
         final String fileName = loadDataIntoBucket(objectPath, recordsData);
-        LOGGER.info("Successfully loaded records to stage {} with {} attempt(s)", objectPath, exceptionsThrown.size());
+        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", objectPath, exceptionsThrown.size());
         return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", objectPath, e);
