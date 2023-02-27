@@ -16,6 +16,8 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -66,11 +68,15 @@ class SourceHubspot(AbstractSource):
         try:
             access_token = authenticator.get_access_token()
             url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
-            response = requests.get(url=url)
-            response.raise_for_status()
-            response_json = response.json()
-            granted_scopes = response_json["scopes"]
-            return granted_scopes
+            with requests.Session() as s:
+                s.mount("https://api.hubapi.com/oauth/v1/access-tokens/", HTTPAdapter(max_retries=Retry(
+                    total=10, backoff_factor=2, allowed_methods=None, status_forcelist=[429, 500, 502, 503, 504])))
+                response = s.get(url=url)
+                response = requests.get(url=url)
+                response.raise_for_status()
+                response_json = response.json()
+                granted_scopes = response_json["scopes"]
+                return granted_scopes
         except Exception as e:
             return False, repr(e)
 
@@ -126,7 +132,7 @@ class SourceHubspot(AbstractSource):
             unavailable_streams = [stream for stream in streams if not stream.scope_is_granted(granted_scopes)]
             self.logger.info(f"The following streams are unavailable: {[s.name for s in unavailable_streams]}")
             partially_available_streams = [stream for stream in streams if not stream.properties_scope_is_granted()]
-            required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))
+            required_scoped = set(chain(*[x.properties_scopes for x in partially_available_streams]))   
             self.logger.info(
                 f"The following streams are partially available: {[s.name for s in partially_available_streams]}, "
                 f"add the following scopes to download all available data: {required_scoped}"
