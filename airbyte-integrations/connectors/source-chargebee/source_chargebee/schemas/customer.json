@@ -32,19 +32,10 @@
       "maxLength": 20
     },
     "auto_collection": {
-      "type": ["string", "null"],
-      "enum": ["on", "off"]
+      "type": ["string", "null"]
     },
     "offline_payment_method": {
-      "type": ["string", "null"],
-      "enum": [
-        "no_preference",
-        "cash",
-        "check",
-        "bank_tranksfer",
-        "ach_credit",
-        "sepa_credit"
-      ]
+      "type": ["string", "null"]
     },
     "net_term_days": {
       "type": ["integer", "null"]
@@ -53,8 +44,7 @@
       "type": ["integer", "null"]
     },
     "vat_number_status": {
-      "type": ["string", "null"],
-      "enum": ["valid", "invalid", "not_validated", "undetermined"]
+      "type": ["string", "null"]
     },
     "allow_direct_debit": {
       "type": ["boolean", "null"]
@@ -77,32 +67,10 @@
       }
     },
     "taxability": {
-      "type": ["string", "null"],
-      "enum": ["taxable", "exempt"]
+      "type": ["string", "null"]
     },
     "entity_code": {
-      "type": ["string", "null"],
-      "enum": [
-        "a",
-        "b",
-        "c",
-        "d",
-        "e",
-        "f",
-        "g",
-        "h",
-        "i",
-        "j",
-        "k",
-        "l",
-        "m",
-        "n",
-        "p",
-        "q",
-        "r",
-        "med1",
-        "med2"
-      ]
+      "type": ["string", "null"]
     },
     "exempt_number": {
       "type": ["string", "null"],
@@ -119,40 +87,25 @@
       "maxLength": 50
     },
     "billing_date": {
-      "type": ["integer", "null"],
-      "maximum": 31,
-      "minimum": 1
+      "type": ["integer", "null"]
     },
     "billing_date_mode": {
-      "type": ["string", "null"],
-      "enum": ["using_default", "manually_set"]
+      "type": ["string", "null"]
     },
     "billing_day_of_week": {
-      "type": ["string", "null"],
-      "enum": [
-        "sunday",
-        "monday",
-        "tuesday",
-        "wednesday",
-        "thursday",
-        "friday",
-        "saturday"
-      ]
+      "type": ["string", "null"]
     },
     "billing_day_of_week_mode": {
-      "type": ["string", "null"],
-      "enum": ["using_default", "manually_set"]
+      "type": ["string", "null"]
     },
     "pii_cleared": {
-      "type": ["string", "null"],
-      "enum": ["active", "scheduled_for_clear", "cleared"]
+      "type": ["string", "null"]
     },
     "auto_close_invoices": {
       "type": ["boolean", "null"]
     },
     "fraud_flag": {
-      "type": ["string", "null"],
-      "enum": ["safe", "suspicious", "fraudulent"]
+      "type": ["string", "null"]
     },
     "primary_payment_source_id": {
       "type": ["string", "null"],
@@ -196,8 +149,7 @@
       "type": ["boolean", "null"]
     },
     "customer_type": {
-      "type": ["string", "null"],
-      "enum": ["residential", "business", "senior_citizen", "industrial"]
+      "type": ["string", "null"]
     },
     "business_customer_without_vat_number": {
       "type": ["boolean", "null"]
@@ -269,8 +221,7 @@
           "maxLength": 20
         },
         "validation_status": {
-          "type": ["string", "null"],
-          "enum": ["not_validated", "valid", "partially_valid", "invalid"]
+          "type": ["string", "null"]
         }
       }
     },
@@ -306,8 +257,7 @@
             "maxLength": 50
           },
           "referral_system": {
-            "type": ["string", "null"],
-            "enum": ["referral_candy", "referral_saasquatch", "friendbuy"]
+            "type": ["string", "null"]
           }
         }
       }
@@ -357,82 +307,17 @@
       "type": ["object", "null"],
       "properties": {
         "type": {
-          "type": ["string", "null"],
-          "enum": [
-            "card",
-            "paypal_express_checkout",
-            "amazon_payments",
-            "direct_debit",
-            "generic",
-            "alipay",
-            "unionpay",
-            "apple_pay",
-            "wechat_pay",
-            "ideal",
-            "google_pay",
-            "sofort",
-            "bancontact",
-            "giropay",
-            "dotpay"
-          ]
+          "type": ["string", "null"]
         },
         "gateway": {
-          "type": ["string", "null"],
-          "enum": [
-            "chargebee",
-            "stripe",
-            "wepay",
-            "braintree",
-            "authorize_net",
-            "paypal_pro",
-            "pin",
-            "eway",
-            "eway_rapid",
-            "worldpay",
-            "balanced_payments",
-            "beanstream",
-            "bluepay",
-            "elavon",
-            "first_data_global",
-            "hdfc",
-            "migs",
-            "nmi",
-            "ogone",
-            "paymill",
-            "paypal_payflow_pro",
-            "sage_pay",
-            "tco",
-            "wirecard",
-            "amazon_payments",
-            "paypal_express_checkout",
-            "gocardless",
-            "adyen",
-            "orbital",
-            "moneris_us",
-            "moneris",
-            "bluesnap",
-            "cybersource",
-            "vantiv",
-            "checkout_com",
-            "paypal",
-            "ingenico_direct",
-            "exact",
-            "not_applicable"
-          ]
+          "type": ["string", "null"]
         },
         "gateway_account_id": {
           "type": ["string", "null"],
           "maxLength": 50
         },
         "status": {
-          "type": ["string", "null"],
-          "enum": [
-            "valid",
-            "expiring",
-            "expired",
-            "invalid",
-            "pending_verification"
-          ]
+          "type": ["string", "null"]
         },
         "reference_id": {
           "type": ["string", "null"],
@@ -489,12 +374,10 @@
       "type": ["object", "null"],
       "properties": {
         "portal_edit_child_subscriptions": {
-          "type": ["string", "null"],
-          "enum": ["yes", "view_only", "no"]
+          "type": ["string", "null"]
         },
         "portal_download_child_invoices": {
-          "type": ["string", "null"],
-          "enum": ["yes", "view_only", "no"]
+          "type": ["string", "null"]
         },
         "send_subscription_emails": {
           "type": ["boolean", "null"]
@@ -511,12 +394,10 @@
       "type": ["object", "null"],
       "properties": {
         "portal_edit_child_subscriptions": {
-          "type": ["string", "null"],
-          "enum": ["yes", "view_only"]
+          "type": ["string", "null"]
         },
         "portal_download_child_invoices": {
-          "type": ["string", "null"],
-          "enum": ["yes", "view_only", "no"]
+          "type": ["string", "null"]
         },
         "send_subscription_emails": {
           "type": ["boolean", "null"]
