@@ -4,6 +4,7 @@
 
 
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
@@ -20,7 +21,6 @@ from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
 
-from functools import cached_property
 
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
