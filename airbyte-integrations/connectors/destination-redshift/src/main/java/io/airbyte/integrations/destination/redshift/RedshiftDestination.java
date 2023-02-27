@@ -27,16 +27,15 @@ import org.slf4j.LoggerFactory;
 public class RedshiftDestination extends SwitchingDestination<RedshiftDestination.DestinationType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftDestination.class);
-  private static final String METHOD = "method";
-
-  private static final Map<DestinationType, Destination> destinationMap = Map.of(
-      DestinationType.STANDARD, new RedshiftInsertDestination(),
-      DestinationType.COPY_S3, new RedshiftStagingS3Destination());
 
   enum DestinationType {
     STANDARD,
     COPY_S3
   }
+
+  private static final Map<DestinationType, Destination> destinationMap = Map.of(
+      DestinationType.STANDARD, RedshiftInsertDestination.sshWrappedDestination(),
+      DestinationType.COPY_S3, RedshiftStagingS3Destination.sshWrappedDestination());
 
   public RedshiftDestination() {
     super(DestinationType.class, RedshiftDestination::getTypeFromConfig, destinationMap);
@@ -47,7 +46,6 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   public static DestinationType determineUploadMode(final JsonNode config) {
-
     final JsonNode jsonNode = findS3Options(config);
 
     if (anyOfS3FieldsAreNullOrEmpty(jsonNode)) {
