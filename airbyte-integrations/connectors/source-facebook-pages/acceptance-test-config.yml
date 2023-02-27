@@ -37,6 +37,12 @@ acceptance_tests:
           # Since we generating new Page access token for each connector run this
           # field would containt different values.
           page:
+            - "albums/paging/cursors"
+            - "indexed_videos/paging/cursors"
+            - "live_videos/paging/cursors"
+            - "photos/paging/cursors"
             - "posts/paging/next"
             - "published_posts/paging/next"
             - "feed/paging/next"
+            - "feed/paging/cursors"
+            - "feed/data/paging/cursors"
