@@ -11503,7 +11503,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-polygon-stock-api:0.1.0"
+- dockerImage: "airbyte/source-polygon-stock-api:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -11551,6 +11551,7 @@
           description: "The beginning date for the aggregate window."
           examples:
           - "2020-10-14"
+          format: "date"
         end_date:
           title: "End Date"
           type: "string"
@@ -11558,6 +11559,7 @@
           description: "The target date for the aggregate window."
           examples:
           - "2020-10-14"
+          format: "date"
         adjusted:
           title: "Adjusted"
           type: "string"
