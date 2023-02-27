@@ -284,7 +284,9 @@ def test_configured_catalog_fixture(mocker, test_strictness_level, configured_ca
             {"type": "object"},
             {},
             ExpectedRecordsConfig(path="foobar"),
-            {"aa": 23}, {}, does_not_raise()
+            {"aa": 23},
+            {},
+            does_not_raise()
         ),
         (
             {"type": "object"},

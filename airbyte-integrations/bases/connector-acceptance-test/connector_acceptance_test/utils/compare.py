@@ -95,7 +95,8 @@ def make_hashable(obj, exclude_fields: List[str] = None) -> str:
     """
     if isinstance(obj, Mapping):
         # If value is Mapping, some fields can be excluded
-        delete_fields(obj, exclude_fields or [])
+        if exclude_fields:
+            delete_fields(obj, exclude_fields)
         return DictWithHashMixin(obj)
     if isinstance(obj, List):
         return ListWithHashMixin(obj)

@@ -196,12 +196,14 @@ In general, the expected_records.jsonl should contain the subset of output of th
 
 This test performs two read operations on all streams which support full refresh syncs. It then verifies that the RECORD messages output from both were identical or the former is a strict subset of the latter.
 
-| Input                     | Type   | Default                                     | Note                                                                   |
-| :------------------------ | :----- | :------------------------------------------ | :--------------------------------------------------------------------- |
-| `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration     |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                             |
-| `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                      |
-| `ignored_fields`          | dict   | None                                        | For each stream, list of fields path ignoring in sequential reads test |
+| Input                                     | Type   | Default                                     | Note                                                                   |
+|:------------------------------------------|:-------|:--------------------------------------------|:-----------------------------------------------------------------------|
+| `config_path`                             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration     |
+| `configured_catalog_path`                 | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                             |
+| `timeout_seconds`                         | int    | 20\*60                                      | Test execution timeout in seconds                                      |
+| `ignored_fields`                          | dict   | None                                        | For each stream, list of fields path ignoring in sequential reads test |
+| `ignored_fields[stream][0].name`          | string |                                             | Name of the ignored field                                              |
+| `ignored_fields[stream][0].bypass_reason` | string | None                                        | Reason why this field is ignored                                       |
 
 ## Test Incremental sync
 
