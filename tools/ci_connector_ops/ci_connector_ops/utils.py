@@ -2,16 +2,20 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
 import logging
+import os
+from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Set, Tuple, List
+from typing import Dict, List, Optional, Set, Tuple
+
 import git
 import requests
 import yaml
+from ci_credentials import SecretsManager
 
 AIRBYTE_REPO = git.Repo(search_parent_directories=True)
-DIFFED_BRANCH = "origin/master"
+DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
@@ -21,26 +25,33 @@ SOURCE_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/sour
 DESTINATION_DEFINITIONS_FILE_PATH = "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
 DEFINITIONS_FILE_PATH = {"source": SOURCE_DEFINITIONS_FILE_PATH, "destination": DESTINATION_DEFINITIONS_FILE_PATH}
 
+
 def download_catalog(catalog_url):
     response = requests.get(catalog_url)
     return response.json()
 
+
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
+
 
 class ConnectorInvalidNameError(Exception):
     pass
 
+
 class ConnectorVersionNotFound(Exception):
     pass
+
 
 def read_definitions(definitions_file_path: str) -> Dict:
     with open(definitions_file_path) as definitions_file:
         return yaml.safe_load(definitions_file)
 
+
 def get_connector_name_from_path(path):
     return path.split("/")[2]
 
-def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[str]:
+
+def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
     """Retrieve a list of connector names for which the acceptance_test_config file was changed in the current branch (compared to master).
 
     Args:
@@ -52,7 +63,7 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[st
     if diff_regex is None:
         diff_command_args = ("--name-only", DIFFED_BRANCH)
     else:
-        diff_command_args = ("--name-only", f'-G{diff_regex}', DIFFED_BRANCH)
+        diff_command_args = ("--name-only", f"-G{diff_regex}", DIFFED_BRANCH)
 
     changed_acceptance_test_config_paths = {
         file_path
@@ -62,9 +73,20 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[st
     return {get_connector_name_from_path(changed_file) for changed_file in changed_acceptance_test_config_paths}
 
 
+class ConnectorLanguage(Enum):
+    PYTHON = 1
+    JAVA = 2
+    LOW_CODE = 3
+
+
+class ConnectorLanguageError(Exception):
+    pass
+
+
 @dataclass(frozen=True)
 class Connector:
     """Utility class to gather metadata about a connector."""
+
     technical_name: str
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
@@ -97,15 +119,28 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def language(self) -> ConnectorLanguage:
+        if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
+            return ConnectorLanguage.LOW_CODE
+        if Path(self.code_directory / "setup.py").is_file():
+            return ConnectorLanguage.PYTHON
+        with open(self.code_directory / "Dockerfile") as dockerfile:
+            if "FROM airbyte/integration-base-java" in dockerfile.read():
+                return ConnectorLanguage.JAVA
+        raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
+
+    @property
     def version(self) -> str:
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
                     return line.split("=")[1].strip()
-        raise ConnectorVersionNotFound("""
+        raise ConnectorVersionNotFound(
+            """
             Could not find the connector version from its Dockerfile.
             The io.airbyte.version tag is missing.
-            """)
+            """
+        )
 
     @property
     def definition(self) -> Optional[dict]:
@@ -148,12 +183,15 @@ class Connector:
             logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}")
             return None
 
+    def get_secret_manager(self, gsm_credentials: str):
+        return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
+
     def __repr__(self) -> str:
         return self.technical_name
 
+
 def get_changed_connectors() -> Set[Connector]:
-    """Retrieve a list of Connectors that were changed in the current branch (compared to master).
-    """
+    """Retrieve a list of Connectors that were changed in the current branch (compared to master)."""
     changed_source_connector_files = {
         file_path
         for file_path in AIRBYTE_REPO.git.diff("--name-only", DIFFED_BRANCH).split("\n")
