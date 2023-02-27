@@ -367,11 +367,11 @@ class PedidosDetalle(Pedidos):
     def read_pedido_detalle(self, item_list, pedido_list):
         for nopedido in pedido_list:
             response_pedido = requests.get(self.pedido_detalle_path(nopedido))
-            response_pedido_json = response_pedido.json()
+            response_pedido_json = self.handle_json_error(response_pedido)
 
             while 'estatuspedido' not in response_pedido_json.keys():
                 new_response = requests.get(self.pedido_detalle_path(nopedido))
-                response_pedido_json = new_response.json()
+                response_pedido_json = self.handle_json_error(new_response)
 
             logger.info('Pedido: %s', nopedido)
 
@@ -389,6 +389,19 @@ class PedidosDetalle(Pedidos):
             }
 
             item_list.append(item_json)
+
+    def handle_json_error(self, response):
+        read_json = False
+        while read_json == False:
+            try:
+                json_return = response.json()
+                read_json = True
+            except:
+                logger.info('Handling error for pedido: %s', response.url.split('=')[-1])
+                response = requests.get(response.url)
+                pass
+
+        return json_return
 
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
