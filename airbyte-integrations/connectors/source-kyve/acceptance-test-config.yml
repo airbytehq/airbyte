@@ -1,39 +1,41 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-kyve:dev
+test_strictness_level: low
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_kyve/spec.yaml"
+      - spec_path: "source_kyve/spec.json"
+        config_path: "integration_tests/config.json"
   connection:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/multiple_pools_config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
+      - config_path: "integration_tests/config.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
   basic_read:
     tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
-# TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
-#        expect_records:
-#          path: "integration_tests/expected_records.jsonl"
-#          extra_fields: no
-#          exact_order: no
-#          extra_records: yes
-  incremental: 
-    bypass_reason: "This connector does not implement incremental sync"
-# TODO uncomment this block this block if your connector implements incremental sync: 
-#    tests:
-#      - config_path: "secrets/config.json"
-#        configured_catalog_path: "integration_tests/configured_catalog.json"
-#        future_state:
-#          future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "integration_tests/config.json"
+        timeout_seconds: 60
+      - config_path: "integration_tests/multiple_pools_config.json"
+        timeout_seconds: 60
   full_refresh:
     tests:
-      - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+      - config_path: "integration_tests/config.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
+  incremental:
+    tests:
+      - config_path: "integration_tests/config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
