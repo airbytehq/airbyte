@@ -253,8 +253,6 @@ class Pedidos(ClaroshopBase):
     def _chunk_slices(self, start_date: datetime) -> List[Mapping[str, any]]:
         slices = []
 
-        original_start_date = start_date
-
         status_list = [
             {
                 'status_name': 'entregados',
@@ -270,17 +268,16 @@ class Pedidos(ClaroshopBase):
             }
         ]
 
-        for status in status_list:
-            while start_date <= datetime.now():
+        while start_date <= datetime.now():
+            for status in status_list:
                 slice = {}
                 slice['status_name'] = status['status_name']
                 slice['list_names'] = status['list_names']
                 slice["start_date"] = datetime.strftime(start_date, "%Y-%m-%d")
                 slice["end_date"] = datetime.strftime(start_date+timedelta(days=15), "%Y-%m-%d")
                 slices.append(slice)
-                start_date += timedelta(days=16)
-
-            start_date = original_start_date
+            
+            start_date += timedelta(days=16)
 
         logger.info(slices)
 
@@ -319,45 +316,58 @@ class PedidosDetalle(Pedidos):
         super().__init__(config, start_date)
         self.config = config
         self.start_date = start_date
-        self.read_pedidos = 0
 
-    def path(
-        self, 
-        stream_state: Mapping[str, Any] = None, 
-        stream_slice: Mapping[str, Any] = None, 
-        next_page_token: Mapping[str, Any] = None
+    def pedido_detalle_path(
+        self,
+        nopedido
     ) -> str:
 
-        logger.info('Pedido: %s', stream_slice['nopedido'])
+        logger.info('Pedido: %s', nopedido)
 
-        return f"{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?action=detallepedido&nopedido={stream_slice['nopedido']}"
+        return f"{self.url_base}/{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?action=detallepedido&nopedido={nopedido}"
+    
+    def status_list_mapping(self):
+        return  {
+                'entregados': ['listaentregados'],
+                'pendientes': ['listapendientes'],
+                'embarcados': ['listaguiasautomaticas', 'listaguiasmanuales']
+        }
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         response_json = response.json()
-        nopedido = response.url.split('=')[-1]
 
-        while 'estatuspedido' not in response_json.keys():
-            new_response = requests.get(response.url)
-            response_json = new_response.json()
-        
-        item_json = {
-            "data":response_json,
-            "merchant": self.merchant.upper(),
-            "source": "MX_CLAROSHOP",
-            "type": f"{self.merchant.lower()}_{self.record_key_name}",
-            "id": nopedido,
-            "timeline": "historic",
-            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-            "sensible": False
-        }
+        item_list = []
 
-        self.read_pedidos += 1
-        self.log_percentage_progress(self.read_pedidos, self.total_pedidos)
+        record_lists = [key for key in response_json.keys() if 'lista' in key]
 
-        return [item_json]
+        for record_list in record_lists:
+            for record in response_json[record_list]:
+                nopedido = record['nopedido']
+
+                response_pedido = requests.get(self.pedido_detalle_path(nopedido))
+                response_pedido_json = response_pedido.json()
+
+                while 'estatuspedido' not in response_pedido_json.keys():
+                    new_response = requests.get(self.pedido_detalle_path(nopedido))
+                    response_pedido_json = new_response.json()
+                
+                item_json = {
+                    "data":response_pedido_json,
+                    "merchant": self.merchant.upper(),
+                    "source": "MX_CLAROSHOP",
+                    "type": f"{self.merchant.lower()}_{self.record_key_name}",
+                    "id": nopedido,
+                    "timeline": "historic",
+                    "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                    "sensible": False
+                }
+
+                item_list.append(item_json)
+
+        return item_list
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         
@@ -372,28 +382,6 @@ class PedidosDetalle(Pedidos):
             return {self.cursor_field: max(latest_record_date, current_stream_state_date)}
 
         return {self.cursor_field: latest_record_date}
-    
-    def _chunk_slices(self, start_date: datetime) -> List[Mapping[str, any]]:
-
-        slices = []
-        auth = NoAuth()
-        stream = Pedidos(authenticator=auth, config=self.config, start_date=self.start_date)
-
-        all_pedidos_slices = super()._chunk_slices(start_date)
-
-        logger.info('GENERATING PEDIDOS NUMBER LIST USING PEDIDOS ENDPOINT')
-        pedidos = []
-        for slice in all_pedidos_slices:
-            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
-            for record in records:
-                pedidos.append(record['data']['nopedido'])
-
-        for pedido in set(pedidos):
-            slices.append({"nopedido": pedido})
-
-        self.total_pedidos = len(slices)
-
-        return slices
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -408,7 +396,8 @@ class PedidosDetalle(Pedidos):
                 current_stream_state_date = stream_state[self.cursor_field]
 
         start_date = current_stream_state_date - timedelta(days=15) if stream_state and self.cursor_field in stream_state else self.start_date
-        return self._chunk_slices(start_date)
+        
+        return super()._chunk_slices(start_date)
 
 
 class SourceClaroshop(AbstractSource):
