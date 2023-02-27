@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
+
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
@@ -16,13 +18,24 @@ MAIN_REQUIREMENTS = [
     "gcsfs~=2023.1.0",
     "dagger-io==0.3.2",
     "pytablewriter~=0.64.2",
+    "docker~=6.0.0",
 ]
+
+
+def local_pkg(name: str) -> str:
+    """Returns a path to a local package."""
+    return f"{name} @ file://{Path.cwd().parent / name}"
+
+
+# These internal packages are not yet published to a Pypi repository.
+LOCAL_REQUIREMENTS = [local_pkg("ci_credentials")]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2.5",
     "pytest-mock~=3.10.0",
     "freezegun",
 ]
+
 
 setup(
     version="0.1.14",
@@ -31,7 +44,7 @@ setup(
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
-    install_requires=MAIN_REQUIREMENTS,
+    install_requires=MAIN_REQUIREMENTS + LOCAL_REQUIREMENTS,
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

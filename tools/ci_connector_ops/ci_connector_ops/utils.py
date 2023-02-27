@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import git
 import requests
 import yaml
+from ci_credentials import SecretsManager
 
 AIRBYTE_REPO = git.Repo(search_parent_directories=True)
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
@@ -181,6 +182,9 @@ class Connector:
         except FileNotFoundError:
             logging.warning(f"No {ACCEPTANCE_TEST_CONFIG_FILE_NAME} file found for {self.technical_name}")
             return None
+
+    def get_secret_manager(self, gsm_credentials: str):
+        return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 
     def __repr__(self) -> str:
         return self.technical_name

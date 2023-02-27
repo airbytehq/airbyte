@@ -4,6 +4,7 @@
 from enum import Enum, auto
 from pathlib import Path
 
+from ci_connector_ops.utils import Connector
 from dagger.api.gen import Container
 
 
@@ -37,3 +38,20 @@ async def check_path_in_workdir(container: Container, path: str):
         return expected_file_path.is_file() or expected_file_path.is_dir()
     else:
         return False
+
+
+def write_connector_secrets_to_local_storage(connector: Connector, gsm_credentials: str):
+    """Download and write connector's secrets locally.
+
+    Args:
+        connector (Connector): The connector for which you want to download secrets.
+        gsm_credentials (str): The credentials to connect to GSM.
+    """
+    connector_secrets = connector.get_secret_manager(gsm_credentials).read_from_gsm()
+
+    for secret in connector_secrets:
+        secret_directory = Path(secret.directory)
+        secret_directory.mkdir(parents=True, exist_ok=True)
+        filepath = secret_directory / secret.configuration_file_name
+        with open(filepath, "w") as file:
+            file.write(secret.value)

@@ -3,7 +3,7 @@
 #
 
 from ci_connector_ops.utils import Connector
-from dagger.api.gen import Container, Directory
+from dagger.api.gen import Client, Container, Directory
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
@@ -17,16 +17,27 @@ REQUIREMENTS = [
     "isort==5.6.4",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
-    "pytest-custom_exit_code",
+    "pytest-custom_exit_code",  # I installed this plugin to work around the problem described in tests._run_tests_in_directory
 ]
 
 
-def get_build_context(client, connector: Connector) -> Container:
+def get_build_context(dagger_client: Client, connector: Connector) -> Container:
+    """Create a Python container in which the connector source code will be mounted alongside with the pyproject.toml.
+    We install the dependency required for our testing tools: formatting, unit tests, pip etc.
+    The pyproject.toml file gathers configurations for the formatting and testing tools eventually used downstream.
+
+    Args:
+        client (Client): The dagger client to use.
+        connector (Connector): The connector for which the build context is created.
+
+    Returns:
+        Container: A container with a ready to use build context: connector source code and required artifacts are mounted.
+    """
     connector_code_path = str(connector.code_directory)
-    connector_code_directory: Directory = client.host().directory(connector_code_path, exclude=[".venv"])
-    pyproject_toml_file = client.host().directory(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
+    connector_code_directory: Directory = dagger_client.host().directory(connector_code_path, exclude=[".venv"])
+    pyproject_toml_file = dagger_client.host().directory(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
     return (
-        client.container()
+        dagger_client.container()
         .from_(DOCKER_IMAGE)
         .with_exec(["pip", "install"] + REQUIREMENTS)
         .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
