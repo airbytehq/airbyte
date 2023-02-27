@@ -258,12 +258,12 @@ class Pedidos(ClaroshopBase):
 
         status_list = [
             {
-                'status_name': 'entregados',
-                'list_names': ['listaentregados']
-            },
-            {
                 'status_name': 'pendientes',
                 'list_names': ['listapendientes']
+            },
+            {
+                'status_name': 'entregados',
+                'list_names': ['listaentregados']
             },
             {
                 'status_name': 'embarcados',
