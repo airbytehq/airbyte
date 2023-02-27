@@ -323,8 +323,6 @@ class PedidosDetalle(Pedidos):
         nopedido
     ) -> str:
 
-        logger.info('Pedido: %s', nopedido)
-
         return f"{self.url_base}/{self.get_credentials_url(self.api_keys)}/pedidos?action=detallepedido&nopedido={nopedido}"
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -334,32 +332,38 @@ class PedidosDetalle(Pedidos):
         item_list = []
 
         record_lists = [key for key in response_json.keys() if 'lista' in key]
+        
+        pedidos = []
 
         for record_list in record_lists:
             for record in response_json[record_list]:
-                nopedido = record['nopedido']
 
-                response_pedido = requests.get(self.pedido_detalle_path(nopedido))
-                response_pedido_json = response_pedido.json()
+                pedidos.append(record['nopedido'])
 
-                while 'estatuspedido' not in response_pedido_json.keys():
-                    new_response = requests.get(self.pedido_detalle_path(nopedido))
-                    response_pedido_json = new_response.json()
-                
-                item_json = {
-                    "data":response_pedido_json,
-                    "merchant": self.merchant.upper(),
-                    "source": "MX_CLAROSHOP",
-                    "type": f"{self.merchant.lower()}_{self.record_key_name}",
-                    "id": nopedido,
-                    "timeline": "historic",
-                    "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                    "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                    "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                    "sensible": False
-                }
+        for nopedido in set(pedidos):
+            response_pedido = requests.get(self.pedido_detalle_path(nopedido))
+            response_pedido_json = response_pedido.json()
 
-                item_list.append(item_json)
+            while 'estatuspedido' not in response_pedido_json.keys():
+                new_response = requests.get(self.pedido_detalle_path(nopedido))
+                response_pedido_json = new_response.json()
+
+            logger.info('Pedido: %s', nopedido)
+
+            item_json = {
+                "data":response_pedido_json,
+                "merchant": self.merchant.upper(),
+                "source": "MX_CLAROSHOP",
+                "type": f"{self.merchant.lower()}_{self.record_key_name}",
+                "id": nopedido,
+                "timeline": "historic",
+                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "sensible": False
+            }
+
+            item_list.append(item_json)
 
         return item_list
     
