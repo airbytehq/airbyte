@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -36,7 +37,7 @@ public class MssqlCdcHelper {
    * The default "SNAPSHOT" mode can prevent other (non-Airbyte) transactions from updating table rows
    * while we snapshot. References:
    * https://docs.microsoft.com/en-us/sql/t-sql/statements/set-transaction-isolation-level-transact-sql?view=sql-server-ver15
-   * https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
+   * https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-isolation-mode
    */
   public enum SnapshotIsolation {
 
@@ -66,7 +67,7 @@ public class MssqlCdcHelper {
 
   }
 
-  // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-snapshot-mode
+  // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-snapshot-mode
   public enum DataToSync {
 
     EXISTING_AND_NEW("Existing and New", "initial"),
@@ -140,9 +141,9 @@ public class MssqlCdcHelper {
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
-    // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-include-schema-changes
+    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-include-schema-changes
     props.setProperty("include.schema.changes", "false");
-    // https://debezium.io/documentation/reference/stable/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
+    // https://debezium.io/documentation/reference/2.1/connectors/sqlserver.html#sqlserver-property-provide-transaction-metadata
     props.setProperty("provide.transaction.metadata", "false");
 
     props.setProperty("converters", "mssql_converter");
@@ -152,6 +153,10 @@ public class MssqlCdcHelper {
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
     props.setProperty("schema.include.list", getSchema(catalog));
+    props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+    if (config.has("is_test") && config.get("is_test").asBoolean()) {
+      props.setProperty("database.encrypt", "false");
+    }
 
     return props;
   }

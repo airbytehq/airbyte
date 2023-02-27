@@ -4,12 +4,15 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.CdcMssqlSourceDatatypeTest.CONNECTION_PROPERTIES;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -112,14 +115,14 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("is_test", true)
         .build());
 
-    dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        null);
+        CONNECTION_PROPERTIES), null);
     database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");

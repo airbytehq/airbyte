@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.CdcMssqlSourceTest.CONNECTION_PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,6 +22,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.sql.JDBCType;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -46,6 +48,20 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     dbContainer.start();
   }
 
+  @Override
+  protected DataSource getDataSource(final JsonNode jdbcConfig) {
+    final Map<String, String> connectionProperties = JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY,
+        getJdbcParameterDelimiter());
+    connectionProperties.putAll(CONNECTION_PROPERTIES);
+    return DataSourceFactory.create(
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        getDriverClass(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        connectionProperties
+    );
+  }
+
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
@@ -59,9 +75,10 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d",
+        String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
+        CONNECTION_PROPERTIES);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -72,6 +89,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+      ((ObjectNode) config).put("is_test", true);
 
       super.setup();
     } finally {

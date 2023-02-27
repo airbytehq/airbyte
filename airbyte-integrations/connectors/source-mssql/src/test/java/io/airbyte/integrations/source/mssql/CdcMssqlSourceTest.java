@@ -40,6 +40,7 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +56,10 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private static final String CDC_ROLE_NAME = "cdc_selector";
   private static final String TEST_USER_NAME = "tester";
   private static final String TEST_USER_PASSWORD = "testerjester[1]";
-
+  public static final Map<String,String> CONNECTION_PROPERTIES = new HashMap<>();
+  static {
+    CONNECTION_PROPERTIES.put("encrypt", "false");
+  }
   private MSSQLServerContainer<?> container;
 
   private String dbName;
@@ -108,7 +112,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort()));
+            container.getFirstMappedPort()),
+        CONNECTION_PROPERTIES);
 
     testDataSource = DataSourceFactory.create(
         TEST_USER_NAME,
@@ -116,7 +121,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
-            container.getFirstMappedPort()));
+            container.getFirstMappedPort()),
+        CONNECTION_PROPERTIES);
 
     dslContext = DSLContextFactory.create(dataSource, null);
 
@@ -375,7 +381,8 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
-                dbName)),
+                dbName),
+            CONNECTION_PROPERTIES),
         new MssqlSourceOperations(),
         AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.source.mssql.CdcMssqlSourceTest.CONNECTION_PROPERTIES;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -50,9 +52,10 @@ public class MssqlStressTest extends JdbcStressTest {
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%d",
+        String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
+        CONNECTION_PROPERTIES);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -63,6 +66,7 @@ public class MssqlStressTest extends JdbcStressTest {
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+      ((ObjectNode) config).put("is_test", true);
 
       super.setup();
     } finally {

@@ -12,11 +12,15 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import java.util.HashMap;
 import java.util.Map;
-import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
+  public static final Map<String,String> CONNECTION_PROPERTIES = new HashMap<>();
+  static {
+    CONNECTION_PROPERTIES.put("encrypt", "false");
+  }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
@@ -47,14 +51,14 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put("is_test", true)
         .build());
 
-    dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(DataSourceFactory.create(
         container.getUsername(),
         container.getPassword(),
         container.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s;",
+        String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        null);
+        CONNECTION_PROPERTIES), null);
     final Database database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + DB_NAME + ";");
@@ -65,15 +69,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
   }
 
   private void executeQuery(final String query) {
-    try (final DSLContext dslContext = DSLContextFactory.create(
-        DataSourceFactory.create(
-            container.getUsername(),
-            container.getPassword(),
-            container.getDriverClassName(),
-            String.format("jdbc:sqlserver://%s:%d;",
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt())),
-        null)) {
+    try {
       final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
