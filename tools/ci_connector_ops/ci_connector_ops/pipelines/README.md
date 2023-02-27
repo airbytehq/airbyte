@@ -74,7 +74,8 @@ Please ignore the `Set your environment variables` step and focus on running `co
 2. How to use DIND with volume binding. Code context [here](https://github.com/airbytehq/airbyte/blob/7d7e48b2a342a328fa74c6fd11a9268e1dcdcd64/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/tests.py#L119)
 
 3. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9). 
-4. What are the best practices to report success failure details?
-5. What are the best practices to write tests for pipelines?
-6. What would be your suggestion to run `docker scan` from dagger to spot vulnerabilities on our connectors?
-7. Do you have a tool to re-order logs line by order of pipeline after execution?
+4. Can we build and tag an image in Dagger?
+5. What are the best practices to report success failure details?
+6. What are the best practices to write tests for pipelines?
+7. What would be your suggestion to run `docker scan` from dagger to spot vulnerabilities on our connectors?
+8. Do you have a tool to re-order logs line by order of pipeline after execution?
