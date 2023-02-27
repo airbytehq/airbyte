@@ -205,11 +205,7 @@ def ignored_fields_fixture(inputs, test_strictness_level) -> Optional[Mapping[st
     ignored_fields = getattr(inputs, "ignored_fields", {}) or {}
     if test_strictness_level is Config.TestStrictnessLevel.high and ignored_fields:
         all_ignored_fields_have_bypass_reasons = all(
-            [
-                bool(ignored_field.bypass_reason)
-                for ignored_field
-                in itertools.chain.from_iterable(inputs.ignored_fields.values())
-            ]
+            [bool(ignored_field.bypass_reason) for ignored_field in itertools.chain.from_iterable(inputs.ignored_fields.values())]
         )
         if not all_ignored_fields_have_bypass_reasons:
             pytest.fail("A bypass_reason must be filled in for all ignored fields when test_strictness_level is set to high.")
