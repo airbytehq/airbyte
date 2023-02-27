@@ -1102,6 +1102,7 @@ class FbaCustomerReturnsReports(ReportsAmazonSPStream):
 class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
 
     name = "GET_V2_SETTLEMENT_REPORT_DATA_FLAT_FILE"
+    page_size = 100
 
     def _create_report(
         self,
@@ -1136,7 +1137,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
 
         params = {
             "reportTypes": self.name,
-            "pageSize": 100,
+            "pageSize": self.page_size,
             "createdSince": create_date.strftime(DATE_TIME_FORMAT),
             "createdUntil": end_date.strftime(DATE_TIME_FORMAT),
         }
