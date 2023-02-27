@@ -46,6 +46,18 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     return true;
   }
 
+  protected String getValueFromJsonNode(final JsonNode jsonNode) {
+    if (jsonNode != null) {
+      if (jsonNode.isArray() || jsonNode.isObject()) {
+        return jsonNode.toString();
+      }
+
+      String value = jsonNode.asText();
+      return (value != null && value.equals("null") ? null : value);
+    }
+    return null;
+  }
+
   // Test cases are sorted alphabetically based on the source type
   // See https://www.postgresql.org/docs/14/datatype.html
   @Override
@@ -253,9 +265,12 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("jsonb")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'[1, 2, 3]'::jsonb")
-            .addExpectedValues(null, "[1, 2, 3]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.JSONB)
+                .withLegacyAirbyteTypeProperty("json")
+                .build())
+            .addInsertValues("null", "'10000'::jsonb", "'true'::jsonb", "'[1,2,3]'::jsonb",
+                "'{\"Janet\": 1, \"Melissa\": {\"loves\": \"trees\", \"married\": true}}'::jsonb")
+            .addExpectedValues(null, "10000", "true", "[1,2,3]", "{\"Janet\":1,\"Melissa\":{\"loves\":\"trees\",\"married\":true}}")
             .build());
 
     addDataTypeTestData(
@@ -558,7 +573,23 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addTimeWithTimeZoneTest();
     addArraysTestData();
     addMoneyTest();
+    addJsonbArrayTest();
+  }
 
+  protected void addJsonbArrayTest() {
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.JSONB)
+                .build())
+            .addInsertValues(
+                "ARRAY['[1,2,1]', 'false']::jsonb[]",
+                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
+            .addExpectedValues("[[1,2,1],false]", "[{\"digit\":30,\"letter\":\"A\"},{\"digit\":31,\"letter\":\"B\"}]")
+            .build());
   }
 
   protected void addMoneyTest() {
