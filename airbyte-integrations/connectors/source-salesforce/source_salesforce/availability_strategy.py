@@ -26,9 +26,10 @@ class SalesforceAvailabilityStrategy(HttpAvailabilityStrategy):
              And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
              we cannot filter out these streams, so we catch them at the stage of reading data.
         """
-        error_data = error.response.json()[0]
         if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
+            error_data = error.response.json()[0]
             error_code = error_data.get("errorCode", "")
             if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
                 return False, f"Cannot receive data for stream '{stream.name}', error message: '{error_data.get('message')}'"
-        return True, None
+            return True, None
+        raise error
