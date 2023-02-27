@@ -168,7 +168,7 @@ class ConnectorRunner:
             logging.error(f"Waiting error: {err}, logs: {exception or line}")
             raise
         if exit_status["StatusCode"]:
-            error = exit_status["Error"] or exception or line
+            error = exit_status.get("Error") or exception or line
             logging.error(f"Docker container failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')
             if with_ext:
                 raise ContainerError(
