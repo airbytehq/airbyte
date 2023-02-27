@@ -6,7 +6,7 @@ const BASE_DOCS_LINK = "https://docs.airbyte.com";
 
 export const links = {
   dbtCommandsReference: "https://docs.getdbt.com/reference/dbt-commands",
-  dbtCloudIntegrationDocs: `${BASE_DOCS_LINK}/cloud/managing-airbyte-cloud/dbt-cloud-integration`,
+  dbtCloudIntegrationDocs: dbtCloudIntegrationDocs: `${BASE_DOCS_LINK}/cloud/dbt-cloud-integration`,
   technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
   termsLink: "https://airbyte.com/terms",
   privacyLink: "https://airbyte.com/privacy-policy",
@@ -35,7 +35,7 @@ export const links = {
   cloudAllowlistIPsLink: `${BASE_DOCS_LINK}/cloud/getting-started-with-airbyte-cloud/#allowlist-ip-addresses`,
   dataResidencySurvey: "https://forms.gle/Dr7MPTdt9k3xTinL8",
   connectionDataResidency:
-    "https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-the-data-residency-for-a-connection",
+    "https://docs.airbyte.com/cloud/managing-airbyte-cloud/#choose-the-data-residency-for-a-connection",
   lowCodeYamlDescription: `${BASE_DOCS_LINK}/connector-development/config-based/understanding-the-yaml-file/yaml-overview`,
   newTableFeedbackUrl: "https://forms.gle/5wDQHf6hL5sCvLgK7",
 } as const;
