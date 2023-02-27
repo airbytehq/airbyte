@@ -1399,11 +1399,14 @@
 - name: Polygon Stock API
   sourceDefinitionId: 5807d72f-0abc-49f9-8fa5-ae820007032b
   dockerRepository: airbyte/source-polygon-stock-api
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/polygon-stock-api
   icon: polygon.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.polygon.io
 - name: PostHog
   sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerRepository: airbyte/source-posthog
