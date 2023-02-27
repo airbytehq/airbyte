@@ -21,6 +21,7 @@ import json
 import pytz
 
 
+
 class ClaroshopBase(HttpStream):
     '''
     Claroshop base class with default ingestion methods
@@ -302,7 +303,7 @@ class PedidosDetalle(Pedidos):
     cursor_field = "data_pedido_detalle"
     primary_key = "data_pedido_detalle"
 
-    endpoint_name = 'pedidos'
+    endpoint_name = 'pedidosfiltros'
     record_key_name = 'pedido'
     record_primary_key = 'nopedido'
     record_date_field = 'fechacolocado'
@@ -324,11 +325,11 @@ class PedidosDetalle(Pedidos):
 
         logger.info('Pedido: %s', nopedido)
 
-        return f"{self.url_base}/{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?action=detallepedido&nopedido={nopedido}"
+        return f"{self.url_base}/{self.get_credentials_url(self.api_keys)}/pedidos?action=detallepedido&nopedido={nopedido}"
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
-        response_json = response.json()
+        response_json = response.json()['0']
 
         item_list = []
 
