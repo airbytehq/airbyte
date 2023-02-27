@@ -34,5 +34,5 @@ jobs:
           command: |
             docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
             ./tools/integrations/manage.sh publish airbyte-cdk/python false
-          attempt_limit: 3
+          attempt_limit: 1
           attempt_delay: 5000 in # ms
