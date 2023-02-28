@@ -13111,7 +13111,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-salesloft:0.1.3"
+- dockerImage: "airbyte/source-salesloft:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesloft"
     connectionSpecification:
@@ -13123,7 +13123,7 @@
       - "client_secret"
       - "refresh_token"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         client_id:
           type: "string"
