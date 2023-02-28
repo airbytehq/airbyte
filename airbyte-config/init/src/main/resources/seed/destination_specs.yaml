@@ -5424,7 +5424,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.19"
+- dockerImage: "airbyte/destination-s3:0.3.20"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/s3"
     connectionSpecification:
@@ -5634,7 +5634,7 @@
                 default: "CSV"
               flattening:
                 type: "string"
-                title: "Normalization (Flattening)"
+                title: "Flattening"
                 description: "Whether the input json data should be normalized (flattened)\
                   \ in the output CSV. Please refer to docs for details."
                 default: "No flattening"
@@ -5676,6 +5676,15 @@
                 enum:
                 - "JSONL"
                 default: "JSONL"
+              flattening:
+                type: "string"
+                title: "Flattening"
+                description: "Whether the input json data should be normalized (flattened)\
+                  \ in the output JSON Lines. Please refer to docs for details."
+                default: "No flattening"
+                enum:
+                - "No flattening"
+                - "Root level flattening"
               compression:
                 title: "Compression"
                 type: "object"
@@ -6041,7 +6050,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.47"
+- dockerImage: "airbyte/destination-snowflake:0.4.49"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
