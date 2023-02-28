@@ -65,7 +65,7 @@ List of available streams:
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------|
-| 0.1.4   | 2023-02-28 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Allow additional properties in spec and stream schemas            |
+| 0.1.4   | 2023-02-28 | [23564](https://github.com/airbytehq/airbyte/pull/23564) | Allow additional properties in spec and stream schemas            |
 | 0.1.3   | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
 | 0.1.3   | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
 | 0.1.2   | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream                                           |
