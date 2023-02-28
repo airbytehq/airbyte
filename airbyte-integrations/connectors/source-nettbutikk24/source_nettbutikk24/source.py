@@ -132,6 +132,7 @@ class Products(IncrementalNettbutikk24Stream):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         self.update_uri_params(next_page_token, stream_state)
+        self.uri_params.update({"limit": 10000})
         return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
 
 class Products_Flatted(IncrementalNettbutikk24Stream):
@@ -143,6 +144,7 @@ class Products_Flatted(IncrementalNettbutikk24Stream):
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         self.update_uri_params(next_page_token, stream_state)
+        self.uri_params.update({"limit": 10000})
         return "products/{limit}/{offset}/{since}".format_map(self.uri_params)
 
 
