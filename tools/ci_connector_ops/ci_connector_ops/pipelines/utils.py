@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from enum import Enum, auto
+from enum import Enum
 from pathlib import Path
 
 from ci_connector_ops.utils import Connector
@@ -9,9 +9,9 @@ from dagger import Container
 
 
 class StepStatus(Enum):
-    SUCCESS = auto()
-    FAILURE = auto()
-    SKIPPED = auto()
+    SUCCESS = "🟢"
+    FAILURE = "🔴"
+    SKIPPED = "🟡"
 
     def from_exit_code(exit_code: int):
         if exit_code == 0:
@@ -20,14 +20,7 @@ class StepStatus(Enum):
             return StepStatus.FAILURE
 
     def __str__(self) -> str:
-        if self is StepStatus.SUCCESS:
-            return "🟢"
-        elif self is StepStatus.FAILURE:
-            return "🔴"
-        elif self is StepStatus.SKIPPED:
-            return "🟡"
-        else:
-            return super().__str__()
+        return self.value
 
 
 async def check_path_in_workdir(container: Container, path: str):
