@@ -374,7 +374,12 @@ class NotaFiscal(IncrementalBlingBase):
         for item in nf_item_list:
             xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
             
-            item['data_xml'] = xmltodict.parse(xml)
+            try:
+                item['data_xml'] = xmltodict.parse(xml)
+            except:
+                logger.info('Error for xml: %s', item['data']['xml'])
+                item['data_xml'] = {}
+                pass
 
             item_list.append(item)
 
