@@ -10,6 +10,8 @@ import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
@@ -21,6 +23,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -75,6 +79,7 @@ import org.slf4j.LoggerFactory;
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
+  private static final Configs configs = new EnvConfigs();
 
   private final VoidCallable onStart;
   private final CheckedConsumer<Boolean, Exception> onClose;
@@ -88,6 +93,9 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   private boolean hasStarted;
   private boolean hasClosed;
+
+  private Instant lastFlushEmission;
+  Duration BUFFER_FLUSH_FREQUENCY = Duration.ofMinutes(configs.getFlushBufferFrequencyInMinutes());
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
@@ -113,13 +121,19 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     // todo (cgardens) - if we reuse this pattern, consider moving it into FailureTrackingConsumer.
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
-
+    lastFlushEmission = Instant.now();
     streamToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
-
     onStart.call();
   }
 
+  /**
+   * AcceptTracked will still process AirbyteMessages as usual with the addition of periodically
+   * flushing buffer and writing data to destination storage
+   *
+   * @param message {@link AirbyteMessage} to be processed
+   * @throws Exception
+   */
   @Override
   protected void acceptTracked(final AirbyteMessage message) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot accept records until consumer has started");
@@ -141,7 +155,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // if present means that a flush occurred
       if (flushType.isPresent()) {
         if (BufferFlushType.FLUSH_ALL.equals(flushType.get())) {
-          // when all buffers have been flushed then we can update all states as flushed
           markStatesAsFlushedToDestination();
         } else if (BufferFlushType.FLUSH_SINGLE_STREAM.equals(flushType.get())) {
           if (stateManager.supportsPerStreamFlush()) {
@@ -155,29 +168,42 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
            */
         }
       }
-      /*
-       * TODO: (ryankfu) after record has added and time has been met then to see if time has elapsed then
-       * flush the buffer
-       *
-       * The reason that this is where time component should exist here is primarily due to #acceptTracked
-       * is the method that processes each AirbyteMessage. Method to call is
-       * bufferingStrategy.flushWriter(stream, streamBuffer)
-       */
     } else if (message.getType() == Type.STATE) {
       stateManager.addState(message);
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
+    periodicBufferFlush();
   }
 
   /**
-   * After marking states as committed, emit the state message to platform then clear state messages
-   * to avoid resending the same state message to the platform
+   * After marking states as committed, return the state message to platform then clear state messages
+   * to avoid resending the same state message to the platform. Also updates the last flushed time
+   * since it can be deterministic that a state message can be returned to the platform
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
     stateManager.listCommitted().forEach(outputRecordCollector);
     stateManager.clearCommitted();
+    lastFlushEmission = Instant.now();
+  }
+
+  /**
+   * Periodically flushes buffered data to destination storage when exceeding BUFFER_FLUSH_FREQUENCY.
+   * Also resets the last time a flush occurred
+   */
+  private void periodicBufferFlush() {
+    final Duration timeElapsed = Duration.between(lastFlushEmission, Instant.now());
+    // When the last time the buffered has been flushed exceed the frequency, flush the current
+    // buffer before receiving incoming AirbyteMessage
+    if (timeElapsed.compareTo(BUFFER_FLUSH_FREQUENCY) >= 0) {
+      try {
+        bufferingStrategy.flushAll();
+        markStatesAsFlushedToDestination();
+      } catch (final Exception e) {
+        LOGGER.error("Periodic buffer flush failed");
+      }
+    }
   }
 
   private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
