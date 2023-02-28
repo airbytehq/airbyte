@@ -2,7 +2,7 @@
     "streams": [
       {
         "stream": {
-          "name": "pedidos_detalle",
+          "name": "productos",
           "json_schema": {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
