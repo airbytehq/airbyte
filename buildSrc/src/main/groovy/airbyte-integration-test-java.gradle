@@ -39,6 +39,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 // showStandardStreams = true
             }
 
+            outputs.upToDateWhen { false }
+
             if(project.hasProperty('airbyteDocker')) {
                 dependsOn project.airbyteDocker
             }
