@@ -2,30 +2,7 @@
     "streams": [
       {
         "stream": {
-          "name": "produtos",
-          "json_schema": {
-            "$schema": "http://json-schema.org/draft-04/schema#",
-            "type": "object",
-            "properties": {
-              "api_key": {
-                "type": "string"
-              },
-              "merchant": {
-                "type": "string"
-              },
-              "start_date": {
-                "type": "string"
-              }
-            }
-          },
-          "supported_sync_modes": ["full_refresh"]
-        },
-        "sync_mode": "full_refresh",
-        "destination_sync_mode": "overwrite"
-      },
-      {
-        "stream": {
-          "name": "pedidos",
+          "name": "nota_fiscal",
           "json_schema": {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",

@@ -14,6 +14,9 @@ from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.models import SyncMode
 from datetime import datetime, timedelta
 from time import sleep
+import xmltodict
+from source_bling.thread_safe_list import ThreadSafeList
+from threading import Thread
 
 
 class BlingBase(HttpStream):
@@ -125,6 +128,21 @@ class BlingBase(HttpStream):
         sleep(5)
             
         return item_list
+    
+    def chunker_list(self, list, size):
+        return (list[i::size] for i in range(size))
+    
+    def handle_request_error(self, url):
+        read_response = False
+        while read_response == False:
+            try:
+                response = requests.get(url)
+                read_response = True
+            except:
+                response = requests.get(url)
+                pass
+
+        return response
 
 
 class Produtos(BlingBase):
@@ -223,11 +241,11 @@ class IncrementalBlingBase(BlingBase):
         and returning an updated state object.
         """
         
-        latest_record_date = datetime.strptime(latest_record['data'][self.record_date_field], '%Y-%m-%d')
+        latest_record_date = datetime.strptime(latest_record['data'][self.record_date_field], self.record_date_field_format)
 
         if current_stream_state.get(self.cursor_field):
             if isinstance(current_stream_state[self.cursor_field], str):
-                current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT00:00:00')
+                current_stream_state_date = datetime.strptime(current_stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S')
             else:
                 current_stream_state_date = current_stream_state[self.cursor_field]
 
@@ -250,7 +268,115 @@ class Pedidos(IncrementalBlingBase):
     record_key_name = 'pedido'
     record_primary_key = 'numero'
     record_date_field = 'data'
+    record_date_field_format = '%Y-%m-%d'
     api_date_filter_field = 'dataEmissao'
+
+class NotaFiscal(IncrementalBlingBase):
+    '''
+    NotaF fiscal endpoint for Bling
+
+    API Doc: https://ajuda.bling.com.br/hc/pt-br/articles/360046379394-GET-notasfiscais
+    '''
+
+    cursor_field = "data_nota_fiscal"
+    primary_key = "data_nota_fiscal"
+
+    endpoint_name = 'notasfiscais'
+    record_list_name = 'notasfiscais'
+    record_key_name = 'notafiscal'
+    record_primary_key = 'numero'
+    record_date_field = 'dataEmissao'
+    record_date_field_format = '%Y-%m-%d %H:%M:%S'
+    api_date_filter_field = 'dataEmissao'
+
+    def path(
+        self, 
+        stream_state: Mapping[str, Any] = None, 
+        stream_slice: Mapping[str, Any] = None, 
+        next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        '''
+        Returns the path to be used in the next ingestion interaction \n
+
+        Runs after the 'next_page_token' function (Only after the first run) \n
+        Overrides BaseBling path in order to add dataEmissao filter \n
+
+        Checks if a value is available on stream_state dict. After the first run,
+        stream_state will have a key with cursor_field name with last ingested date
+        as value
+
+        '''
+
+
+        start_ingestion_date = self.start_date
+        if self.cursor_field in stream_state.keys():
+            start_ingestion_date = datetime.strptime(stream_state[self.cursor_field], '%Y-%m-%dT%H:%M:%S') - timedelta(hours=2)
+        
+        logger.info(start_ingestion_date)
+
+        return f"{self.endpoint_name}/page={self.page}/json/?filters={self.api_date_filter_field}[{datetime.strftime(start_ingestion_date, '%d/%m/%Y %H')}:00:00 TO {datetime.strftime(datetime.now(), '%d/%m/%Y 23:59:59')}]" 
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        '''
+        Responsible for parsing and creating data records
+
+        Bling endpoints work with a 'page' parameter that sets which data will be read \n
+        When a page without data is reached, it returns on the response body a 'erros' key \n
+        When the record_list_name is not available on the response, the 'end_of_pages' variable is set to NULL in order to
+        'next_page_token' finish the ingestion process \n
+        Otherwise, the JSON with all necessary attributes is built and will be ingested
+        '''
+
+        response_json = response.json()
+
+        if self.record_list_name not in response_json['retorno'].keys():
+            self.end_of_pages = True
+            return []
+
+        nf_list = []
+
+        item_list = ThreadSafeList()
+
+        number_of_threds = 15
+
+        threads = []
+
+        for item in response_json['retorno'][self.record_list_name]:
+            item_json = {
+                "data":item[self.record_key_name],
+                "merchant": self.merchant.upper(),
+                "source": "BR_BLING",
+                "type": f"{self.merchant.lower()}_{self.record_key_name}",
+                "id": item[self.record_key_name][self.record_primary_key],
+                "timeline": "historic",
+                "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                "sensible": False
+            }
+
+            nf_list.append(item_json)
+
+        for chunk in self.chunker_list(nf_list, number_of_threds):
+            threads.append(Thread(target=self.get_nf_xml, args=(item_list, chunk,)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+
+        return item_list.get_list()
+
+    def get_nf_xml(self, item_list, nf_item_list):
+        for item in nf_item_list:
+            xml = self.handle_request_error(item['data']['xml'] + f'&{self.api_key}').content
+            
+            item['data_xml'] = xmltodict.parse(xml)
+
+            item_list.append(item)
 
 class SourceBling(AbstractSource):
 
@@ -271,5 +397,6 @@ class SourceBling(AbstractSource):
 
         return [
             Produtos(authenticator=auth, config=config),
-            Pedidos(authenticator=auth, config=config, start_date=start_date)
+            Pedidos(authenticator=auth, config=config, start_date=start_date),
+            NotaFiscal(authenticator=auth, config=config, start_date=start_date)
         ]
