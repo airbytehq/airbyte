@@ -45,6 +45,8 @@ acceptance_tests:
           charges:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
+            - name: receipt_number
+              bypass_reason: "fast changing data"
           payment_intents:
             - name: receipt_url
               bypass_reason: "URL changes upon each request for privacy/security"
