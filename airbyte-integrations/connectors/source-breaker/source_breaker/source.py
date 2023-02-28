@@ -47,20 +47,22 @@ class SourceBreaker(AbstractSource):
         """Implements the Check Connection operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#check.
         """
-        try:
-            check_succeeded, error = self.check_connection(logger, config)
-            if not check_succeeded:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(e))
+        check_outcome = config["check_outcome"]["check_outcome"]
+        if check_outcome == "check_job_failure_with_trace":
+            raise Exception("Test Exception - shout @ Ella if you see this")
 
-        return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        check_succeeded, error = self.check_connection(logger, config)
+        if check_succeeded:
+            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        if not check_succeeded:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=repr(error))
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        if type(config["count"]) == int or type(config["count"]) == float:
+        check_outcome = config["check_outcome"]["check_outcome"]
+        if check_outcome == "success":
             return True, None
-        else:
-            return False, "Count option is missing"
+        elif check_outcome == "check_job_success_check_connection_failure":
+            return False, "Some error message"
 
     def discover(self, logger: logging.Logger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """Implements the Discover operation from the Airbyte Specification.

@@ -45,6 +45,50 @@
         "minimum": 1,
         "default": 4,
         "order": 4
+      },
+      "check_outcome": {
+        "title": "Outcome of check method",
+        "description": "foobar",
+        "type": "object",
+        "order": 5,
+        "oneOf": [
+          {
+            "title": "Success",
+            "required": ["check_outcome"],
+            "properties": {
+              "check_outcome": {
+                "description": "Check should succeed",
+                "type": "string",
+                "const": "success",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Check connection failure",
+            "required": ["check_outcome"],
+            "properties": {
+              "check_outcome": {
+                "description": "Check should fail",
+                "type": "string",
+                "const": "check_job_success_check_connection_failure",
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "Check job failure with trace",
+            "required": ["check_outcome"],
+            "properties": {
+              "check_outcome" : {
+                "description" : "Check should fail with trace",
+                "type" : "string",
+                "const" : "check_job_failure_with_trace",
+                "order" : 3
+              }
+            }
+          }
+        ]
       }
     }
   }
