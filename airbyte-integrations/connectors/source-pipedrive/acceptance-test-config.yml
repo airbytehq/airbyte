@@ -24,6 +24,12 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+        ignored_fields:
+          users:
+            - name: modified
+              bypass_reason: "constantly increasing date-time field"
+            - name: last_login
+              bypass_reason: "constantly increasing date-time field"
   incremental:
     tests:
       - config_path: "secrets/config.json"
