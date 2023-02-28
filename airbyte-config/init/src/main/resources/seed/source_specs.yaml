@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.44"
+- dockerImage: "airbyte/source-alloydb:1.0.49"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -608,9 +608,9 @@
                 type: "string"
                 title: "Plugin"
                 description: "A logical decoding plugin installed on the PostgreSQL\
-                  \ server. The `pgoutput` plugin is used by default. If the replication\
-                  \ table contains a lot of big jsonb values it is recommended to\
-                  \ use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\"\
+                  \ server. The `pgoutput` plugin is used by default. The `wal2json`\
+                  \ plugin is deprecated and will soon be removed so it's not recommended\
+                  \ to use. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\"\
                   >selecting replication plugins</a>."
                 enum:
                 - "pgoutput"
@@ -932,7 +932,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-amazon-seller-partner:0.2.31"
+- dockerImage: "airbyte/source-amazon-seller-partner:0.2.32"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/amazon-seller-partner"
@@ -1080,9 +1080,6 @@
       - "lwa_app_id"
       - "lwa_client_secret"
       - "refresh_token"
-      - "aws_access_key"
-      - "aws_secret_key"
-      - "role_arn"
       - "replication_start_date"
       - "aws_environment"
       - "region"
@@ -1275,7 +1272,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.21"
+- dockerImage: "airbyte/source-amplitude:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -2189,7 +2186,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.16"
+- dockerImage: "airbyte/source-chargebee:0.2.1"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -3401,7 +3398,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-dynamodb:0.1.1"
+- dockerImage: "airbyte/source-dynamodb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
     connectionSpecification:
@@ -3467,6 +3464,13 @@
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+        reserved_attribute_names:
+          title: "Reserved attribute names"
+          type: "string"
+          description: "Comma separated reserved attribute names present in your tables"
+          airbyte_secret: true
+          examples:
+          - "name, field_name, field-name"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3604,7 +3608,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-exchange-rates:1.2.7"
+- dockerImage: "airbyte/source-exchange-rates:1.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/exchangeratesapi"
     connectionSpecification:
@@ -3622,6 +3626,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "YYYY-MM-DD"
+          format: "date"
         access_key:
           type: "string"
           description: "Your API Key. See <a href=\"https://apilayer.com/marketplace/exchangerates_data-api\"\
@@ -3642,7 +3647,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.84"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.85"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4008,7 +4013,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.2.2"
+- dockerImage: "airbyte/source-facebook-pages:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -4034,7 +4039,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-faker:2.0.1"
+- dockerImage: "airbyte/source-faker:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -5333,7 +5338,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.2.9"
+- dockerImage: "airbyte/source-google-ads:0.2.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -6044,7 +6049,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.31"
+- dockerImage: "airbyte/source-google-sheets:0.2.37"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-sheets"
     connectionSpecification:
@@ -6068,6 +6073,12 @@
           description: "Number of rows fetched when making a Google Sheet API call.\
             \ Defaults to 200."
           default: 200
+        names_conversion:
+          type: "boolean"
+          title: "Columns Name Conversion"
+          description: "Columns name conversion using a set of rules, for example,\
+            \ 'My Name' -> 'my-name'."
+          default: false
         credentials:
           type: "object"
           title: "Authentication"
@@ -6336,7 +6347,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-harvest:0.1.15"
+- dockerImage: "airbyte/source-harvest:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/harvest"
     connectionSpecification:
@@ -6824,7 +6835,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-intercom:0.1.30"
+- dockerImage: "airbyte/source-intercom:0.1.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/intercom"
     connectionSpecification:
@@ -6959,7 +6970,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-jira:0.3.3"
+- dockerImage: "airbyte/source-jira:0.3.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/jira"
     connectionSpecification:
@@ -8231,7 +8242,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.28"
+- dockerImage: "airbyte/source-mssql:0.4.29"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -9970,7 +9981,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.1"
+- dockerImage: "airbyte/source-notion:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -10910,7 +10921,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.11"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -11499,7 +11510,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-polygon-stock-api:0.1.0"
+- dockerImage: "airbyte/source-polygon-stock-api:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/airtable"
     connectionSpecification:
@@ -11547,6 +11558,7 @@
           description: "The beginning date for the aggregate window."
           examples:
           - "2020-10-14"
+          format: "date"
         end_date:
           title: "End Date"
           type: "string"
@@ -11554,6 +11566,7 @@
           description: "The target date for the aggregate window."
           examples:
           - "2020-10-14"
+          format: "date"
         adjusted:
           title: "Adjusted"
           type: "string"
@@ -11617,7 +11630,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.45"
+- dockerImage: "airbyte/source-postgres:1.0.50"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11855,9 +11868,9 @@
                 type: "string"
                 title: "Plugin"
                 description: "A logical decoding plugin installed on the PostgreSQL\
-                  \ server. The `pgoutput` plugin is used by default. If the replication\
-                  \ table contains a lot of big jsonb values it is recommended to\
-                  \ use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\"\
+                  \ server. The `pgoutput` plugin is used by default. The `wal2json`\
+                  \ plugin is deprecated and will soon be removed so it's not recommended\
+                  \ to use. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\"\
                   >selecting replication plugins</a>."
                 enum:
                 - "pgoutput"
@@ -12338,7 +12351,39 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.5"
+- dockerImage: "airbyte/source-railz:0.1.1"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Railz Spec"
+      type: "object"
+      required:
+      - "client_id"
+      - "secret_key"
+      - "start_date"
+      properties:
+        client_id:
+          type: "string"
+          title: "Client ID"
+          description: "Client ID (client_id)"
+          order: 0
+        secret_key:
+          type: "string"
+          title: "Secret key"
+          description: "Secret key (secret_key)"
+          order: 1
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          title: "Start date"
+          description: "Start date"
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 2
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-recharge:0.2.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -12775,7 +12820,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.32"
+- dockerImage: "airbyte/source-s3:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13106,7 +13151,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.1"
+- dockerImage: "airbyte/source-salesforce:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13475,7 +13520,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-shopify:0.3.1"
+- dockerImage: "airbyte/source-shopify:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/shopify"
     connectionSpecification:
@@ -13634,7 +13679,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.22"
+- dockerImage: "airbyte/source-slack:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
@@ -13889,7 +13934,7 @@
           type: "object"
           additionalProperties: false
           properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.13"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -13950,7 +13995,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.29"
+- dockerImage: "airbyte/source-snowflake:0.1.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -14128,7 +14173,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-sonar-cloud:0.1.0"
+- dockerImage: "airbyte/source-sonar-cloud:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sonar-cloud"
     connectionSpecification:
@@ -14168,6 +14213,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "YYYY-MM-DD"
+          format: "date"
         end_date:
           title: "End date"
           type: "string"
@@ -14175,6 +14221,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "YYYY-MM-DD"
+          format: "date"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -14446,7 +14493,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-stripe:1.0.1"
+- dockerImage: "airbyte/source-stripe:3.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/stripe"
     connectionSpecification:
@@ -14959,7 +15006,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.1"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -15593,7 +15640,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-typeform:0.1.10"
+- dockerImage: "airbyte/source-typeform:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/typeform"
     connectionSpecification:
@@ -16468,7 +16515,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.21"
+- dockerImage: "airbyte/source-zendesk-support:0.2.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:

@@ -38,6 +38,8 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -396,6 +398,29 @@ class TestJdbcUtils {
     expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
     return expected;
+  }
+
+  @ParameterizedTest
+  @CsvSource({"'3E+1', 30",
+    "'30', 30",
+    "'999000000000', 999000000000",
+    "'999E+9', 999000000000",
+    "'1.79E+3', 1790"})
+  void testSetStatementSpecialValues(final String colValue, final long value) throws SQLException {
+    try (final Connection connection = dataSource.getConnection()) {
+      createTableWithAllTypes(connection);
+
+      final PreparedStatement ps = connection.prepareStatement("INSERT INTO data(bigint) VALUES(?);");
+
+      // insert the bit here to stay consistent even though setStatementField does not support it yet.
+      sourceOperations.setCursorField(ps, 1, JDBCType.BIGINT, colValue);
+      ps.execute();
+
+      assertExpectedOutputValues(connection,
+          ((ObjectNode) Jsons.jsonNode(Collections.emptyMap()))
+              .put("bigint", (long) value));
+      assertExpectedOutputTypes(connection);
+    }
   }
 
 }
