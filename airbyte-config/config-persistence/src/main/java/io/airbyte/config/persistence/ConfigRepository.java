@@ -1074,7 +1074,7 @@ public class ConfigRepository {
   }
 
   public Map<String, String> mapStatus() {
-    return Map.of(StatusType.active.name(), StatusType.active.name(), StatusType.inactive.name(), StatusType.inactive.name());
+      return Map.of("Active", StatusType.active.name(), "Inactive", StatusType.inactive.name());
   }
 
   public List<Map<String, String>> listFilterParam(ActorType actorType) throws IOException {

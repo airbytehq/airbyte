@@ -55,8 +55,6 @@ For `CDC` replication method, `SELECT`, `RELOAD`, `SHOW DATABASES`, `REPLICATION
 GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'daspire'@'%'; 
 ```
 
-Your database user should now be ready for use with Daspire.
-
 **3. Set up CDC**
 
 For `STANDARD` replication method this is not applicable. If you select the `CDC` replication method then only this is required. Please read the [section on CDC](#change-data-capture-cdc) below for more information.

@@ -430,10 +430,11 @@ public class ConnectionsHandler {
 
   public List<WebBackendConnectionFilterParamItem> listStatus() {
     List<WebBackendConnectionFilterParamItem> list = new ArrayList<>();
-    configRepository.mapStatus().keySet().forEach(key -> {
+    Map<String, String> map = configRepository.mapStatus();
+    map.keySet().forEach(key -> {
       WebBackendConnectionFilterParamItem item = new WebBackendConnectionFilterParamItem();
       item.setKey(key);
-      item.setValue(configRepository.mapStatus().get(key));
+      item.setValue(map.get(key));
       list.add(item);
     });
     return list;

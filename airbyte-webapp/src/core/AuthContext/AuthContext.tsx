@@ -11,6 +11,7 @@ interface IUserContext {
   setUser?: (user: IAuthUser) => void;
   updateUserStatus?: (status: number) => void;
   updateUserRole?: (role: number) => void;
+  updateUserLang?: (lang: string) => void;
   removeUser?: () => void;
 }
 
@@ -19,6 +20,9 @@ const AUTH_USER_KEY = "daspire-user";
 export const getUser = (): IAuthUser => {
   const user: IAuthUser | null = JSON.parse(localStorage.getItem(AUTH_USER_KEY) as string);
   if (user?.token) {
+    return user;
+  }
+  if (user?.lang) {
     return user;
   }
   return MyAuthUser.userJSON();
@@ -49,9 +53,15 @@ export const AuthContextProvider: React.FC = ({ children }) => {
     setAuthenticatedUser(updatedUser);
   };
 
+  const updateUserLang = (lang: string) => {
+    const updatedUser = { ...authenticatedUser, lang };
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+    setAuthenticatedUser(updatedUser);
+  };
+
   const removeUser = () => {
-    localStorage.removeItem(AUTH_USER_KEY);
-    setAuthenticatedUser(MyAuthUser.userJSON(), () => window.location.reload());
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(MyAuthUser.logoutUser(authenticatedUser)));
+    setAuthenticatedUser(MyAuthUser.logoutUser(authenticatedUser), () => window.location.reload());
   };
 
   return (
@@ -61,6 +71,7 @@ export const AuthContextProvider: React.FC = ({ children }) => {
         setUser,
         updateUserStatus,
         updateUserRole,
+        updateUserLang,
         removeUser,
       }}
     >

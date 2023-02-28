@@ -68,14 +68,22 @@ export const CancelPlanModal: React.FC<IProps> = ({ onClose, onConfirm, onNotNow
     <Modal size="md" onClose={onClose}>
       <ModalBody>
         <ModalBodyContainer>
-          <ModalHeading>Cancel subscription?</ModalHeading>
+          <ModalHeading>
+            <FormattedMessage id="subscription.cancelSubscriptionModal.title" />
+          </ModalHeading>
           <ModalBodyText>
-            Your current plan expires on{" "}
-            <FormattedDate value={(expiresOn as number) * 1000} day="numeric" month="long" year="numeric" />.
+            <FormattedMessage
+              id="subscription.cancelSubscriptionModal.desc1"
+              values={{
+                expiryDate: (
+                  <FormattedDate value={(expiresOn as number) * 1000} day="numeric" month="long" year="numeric" />
+                ),
+              }}
+            />
             <br />
-            You will still be able to use your current plan until it expires.
+            <FormattedMessage id="subscription.cancelSubscriptionModal.desc2" />
             <br />
-            Are you sure you want to cancel your subscription?
+            <FormattedMessage id="subscription.cancelSubscriptionModal.desc3" />
           </ModalBodyText>
           <ButtonsContainer>
             <ConfirmBtn size="lg" onClick={onConfirmModal} isLoading={confirmLoading} disabled={confirmLoading}>

@@ -104,8 +104,8 @@ const FeaturesCard: React.FC<IProps> = ({
         {packagesMap.features.map((item) => (
           <FeatureBodyRow borderBottom="1px solid #E5E7EB">
             <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>{item.professional?.itemScope}</FeatureBodyCell>
-            <FeatureBodyCell>{item.enterprise?.itemScope}</FeatureBodyCell>
+            <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
+            <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
           </FeatureBodyRow>
         ))}
         <HighlightedRow borderBottom="1px solid #E5E7EB">
@@ -116,8 +116,8 @@ const FeaturesCard: React.FC<IProps> = ({
         {packagesMap.dataReplication.map((item) => (
           <FeatureBodyRow borderBottom="1px solid #E5E7EB">
             <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>{item.professional?.itemScope}</FeatureBodyCell>
-            <FeatureBodyCell>{item.enterprise?.itemScope}</FeatureBodyCell>
+            <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
+            <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
           </FeatureBodyRow>
         ))}
         <HighlightedRow borderBottom="1px solid #E5E7EB">
@@ -136,7 +136,7 @@ const FeaturesCard: React.FC<IProps> = ({
                   <TickIcon />
                 )
               ) : (
-                item.professional?.itemScope
+                item.professional?.itemScopeLang
               )}
             </FeatureBodyCell>
             <FeatureBodyCell>
@@ -147,7 +147,7 @@ const FeaturesCard: React.FC<IProps> = ({
                   <TickIcon />
                 )
               ) : (
-                item.enterprise?.itemScope
+                item.enterprise?.itemScopeLang
               )}
             </FeatureBodyCell>
           </FeatureBodyRow>

@@ -18,6 +18,7 @@ export interface User {
   roleDesc: string;
   roleIndex: number;
   status: string;
+  statusLang: string;
 }
 
 export interface UsersList {

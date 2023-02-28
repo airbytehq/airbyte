@@ -65,11 +65,12 @@ const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole,
           <BodyCell>
             <UserRoleDropdown
               value={user.roleIndex}
+              roleDesc={user.roleDesc}
               options={roles}
               onChange={(option) => onChangeRole(user.id, option)}
             />
           </BodyCell>
-          <BodyCell>{user.status}</BodyCell>
+          <BodyCell>{user.statusLang}</BodyCell>
           <BodyCell>
             <ActionCell>
               {getRoleAgainstRoleNumber(user.roleIndex) !== ROLES.Administrator_Owner && (

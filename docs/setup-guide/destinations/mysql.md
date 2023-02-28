@@ -7,6 +7,28 @@ There are two types of connection for this destination:
 1. destination-mysql. Supports both SSL and non SSL connections.
 2. destination-mysql-strict-encrypt. Pretty same as connector above, but supports SSL connections only.
 
+## Prerequisites
+
+* To sync data to MySQL **with normalization** you'll need MySQL 8.0.0 or above
+* To sync data to MySQL **without normalization** you'll need MySQL 5.0 or above.
+* Host
+* Port
+* Database
+* Username
+* Password
+
+### Permission
+
+You will need a MySQL user with `CREATE, INSERT, SELECT, DROP` permissions. We highly recommend creating a Daspire-specific user for this purpose.
+
+### Network Access
+
+Make sure your MySQL database can be accessed by Daspire. If your database is within a VPC, you may need to allow access from the IP you're using to expose Daspire.
+
+### Target Database
+
+MySQL doesn't differentiate between a database and schema. A database is essentially a schema where all the tables live in. You will need to choose an existing database or create a new database. This will act as a default database/schema where the tables will be created if the source doesn't provide a namespace.
+
 ## Features
 
 | Feature | Supported? |
@@ -26,23 +48,6 @@ Each stream will be output into its own table in MySQL. Each table will contain 
 * `_daspire_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in MySQL is `TIMESTAMP(6)`.
 
 * `_daspire_data`: a json blob representing with the event data. The column type in MySQL is `JSON`.
-
-## Prerequisites
-
-* To sync data to MySQL **with normalization** you'll need MySQL 8.0.0 or above
-* To sync data to MySQL **without normalization** you'll need MySQL 5.0 or above.
-
-### Network Access
-
-Make sure your MySQL database can be accessed by Daspire. If your database is within a VPC, you may need to allow access from the IP you're using to expose Daspire.
-
-### Permissions
-
-You need a MySQL user with `CREATE, INSERT, SELECT, DROP` permissions. We highly recommend creating a Daspire-specific user for this purpose.
-
-### Target Database
-
-MySQL doesn't differentiate between a database and schema. A database is essentially a schema where all the tables live in. You will need to choose an existing database or create a new database. This will act as a default database/schema where the tables will be created if the source doesn't provide a namespace.
 
 ## Setup guide
 

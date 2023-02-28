@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <HeadTitle titles={[{ title: "Sign In" }]} />
+      <HeadTitle titles={[{ id: "login.pageTitle" }]} />
       <Alert
         message={errorMessage}
         onClose={() => {
@@ -87,7 +87,9 @@ const LoginPage: React.FC = () => {
             <Separator height="28px" />
             <AuthSeperatorContainer>
               <Line />
-              <SeperatorText>Or</SeperatorText>
+              <SeperatorText>
+                <FormattedMessage id="auth.authSeparator" />
+              </SeperatorText>
               <Line />
             </AuthSeperatorContainer>
             <Separator height="40px" />
@@ -135,11 +137,16 @@ const LoginPage: React.FC = () => {
               </LoadingButton>
             </BottomBlock>
             <div className={styles.signupLink}>
-              <FormattedMessage id="login.signupDescription" />
-              <Link to={`/${RoutePaths.Signup}`} className={styles.link}>
-                <FormattedMessage id="login.signup" />
-              </Link>
-              <FormattedMessage id="login.here" />
+              <FormattedMessage
+                id="login.signupDescription"
+                values={{
+                  signupLink: (
+                    <Link to={`/${RoutePaths.Signup}`} $clear>
+                      <FormattedMessage id="login.signup" />
+                    </Link>
+                  ),
+                }}
+              />
             </div>
           </Form>
         )}

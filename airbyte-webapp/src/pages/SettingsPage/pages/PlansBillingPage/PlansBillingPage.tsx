@@ -44,9 +44,9 @@ const ButtonSeparator = styled.div`
   width: 50px;
 `;
 
-export const convert_M_To_Million = (string: string): string => {
+export const convert_M_To_Million = (string: string): string | React.ReactElement => {
   if (string.includes("M")) {
-    return `${string.substring(0, string.length - 1)} million`;
+    return <FormattedMessage id="payment.amount" values={{ amount: string.substring(0, string.length - 1) }} />;
   }
   return string;
 };
@@ -105,19 +105,41 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
 
   const upgradePlan = () => push(`/${RoutePaths.Payment}`);
 
-  const manipulatePlanDetail = (planItem: PlanItem): string => {
+  const manipulatePlanDetail = (planItem: PlanItem): string | React.ReactElement => {
     if (planItem.planItemType === PlanItemTypeEnum.Features) {
-      return `${planItem.planItemName}: ${convert_M_To_Million(planItem.planItemScope as string)}`;
+      return (
+        <>
+          {`${planItem.planItemName}: `}
+          {convert_M_To_Million(planItem.planItemScopeLang as string)}
+        </>
+      );
     } else if (planItem.planItemType === PlanItemTypeEnum.Data_Replication) {
-      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+      return `${planItem.planItemName}: ${planItem.planItemScopeLang}`;
     } else if (planItem.planItemType === PlanItemTypeEnum.Support) {
       if (planItem.planItemScope === "false") {
         return "";
       }
-      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+      return `${planItem.planItemName}: ${planItem.planItemScopeLang}`;
     }
     return "";
   };
+
+  // const getPlanName = (planName: string): string => {
+  //   switch(user?.lang) {
+  //     case LOCALES.ENGLISH:
+  //       if (planName === "Free trial") {
+  //         return planName;
+  //       } else {
+  //         return `${planName} plan`;
+  //       }
+
+  //     case LOCALES.CHINESE_SIMPLIFIED:
+  //       return planName;
+
+  //     default:
+  //       return planName;
+  //   }
+  // };
 
   return (
     <>
@@ -143,7 +165,8 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId, setMessageType }) =>
               <FormattedMessage id="plan.type.heading" />
             </div>
             <div className={styles.planValue}>
-              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name} plan`}
+              {/* {getPlanName(userPlanDetail.name)} */}
+              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name}`}
             </div>
           </div>
           <Separator height="40px" />

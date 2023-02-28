@@ -1,7 +1,10 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { RightArrowHeadIcon } from "components/icons/RightArrowHeadIcon";
+
+import { PaymentSteps } from "../PaymentPage";
 
 interface IProps {
   steps: string[];
@@ -35,12 +38,23 @@ const ArrowIconContainer = styled.div`
 `;
 
 const PaymentNav: React.FC<IProps> = ({ steps, currentStep }) => {
+  const setStep = (step: string): string => {
+    if (step === PaymentSteps.SELECT_PLAN) {
+      return "plan.select.plan";
+    } else if (step === PaymentSteps.BILLING_PAYMENT) {
+      return "plan.billing.payment";
+    }
+    return step;
+  };
+
   return (
     <Navbar>
       <StepsContent>
         {steps.map((step, index) => (
           <>
-            <Step isActive={step === currentStep}>{step}</Step>
+            <Step isActive={step === currentStep}>
+              <FormattedMessage id={setStep(step)} />
+            </Step>
             {!(index + 1 >= steps.length) && (
               <ArrowIconContainer>
                 <RightArrowHeadIcon />

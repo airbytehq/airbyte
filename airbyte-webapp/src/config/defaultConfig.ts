@@ -12,7 +12,6 @@ const defaultConfig: Config = {
   apiUrl: `http://143.198.204.26:8888/daspire`,
   integrationUrl: "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
-  // oauthRedirectUrl: "https://www.baidu.com",
 };
 
 export { defaultConfig };

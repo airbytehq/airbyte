@@ -26,7 +26,6 @@ import {
   windowConfigProvider,
 } from "./config";
 import GlobalStyle from "./global-styles";
-import en from "./locales/en.json";
 import { Routing } from "./pages/routes";
 import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
 import { theme } from "./theme";
@@ -66,23 +65,23 @@ const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18nProvider locale="en" messages={en}>
-          <StoreProvider>
-            <ServicesProvider>
-              <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
-                  <Router>
-                    <Services>
+        <StoreProvider>
+          <ServicesProvider>
+            <Suspense fallback={<LoadingPage />}>
+              <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
+                <Router>
+                  <Services>
+                    <I18nProvider>
                       <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
                         <Routing />
                       </GoogleOAuthProvider>
-                    </Services>
-                  </Router>
-                </ConfigServiceProvider>
-              </Suspense>
-            </ServicesProvider>
-          </StoreProvider>
-        </I18nProvider>
+                    </I18nProvider>
+                  </Services>
+                </Router>
+              </ConfigServiceProvider>
+            </Suspense>
+          </ServicesProvider>
+        </StoreProvider>
       </StyleProvider>
     </React.StrictMode>
   );

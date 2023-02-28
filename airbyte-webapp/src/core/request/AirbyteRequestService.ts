@@ -37,7 +37,7 @@ abstract class AirbyteRequestService {
         body: body ? JSON.stringify(body) : undefined,
         headers: {
           "Content-Type": "application/json",
-          "Accept-Language": "en",
+          "Accept-Language": "zh",
         },
       },
       options
