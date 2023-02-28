@@ -3,7 +3,7 @@
 #
 
 from ci_connector_ops.utils import Connector
-from dagger import Client, Container, Directory
+from dagger import CacheVolume, Client, Container, Directory
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
@@ -36,9 +36,11 @@ def get_build_context(dagger_client: Client, connector: Connector) -> Container:
     connector_code_path = str(connector.code_directory)
     connector_code_directory: Directory = dagger_client.host().directory(connector_code_path, exclude=[".venv"])
     pyproject_toml_file = dagger_client.host().directory(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
+    pip_cache: CacheVolume = dagger_client.cache_volume("pip_cache")
     return (
         dagger_client.container()
         .from_(DOCKER_IMAGE)
+        .with_mounted_cache("/root/.cache/pip", pip_cache)
         .with_exec(["pip", "install"] + REQUIREMENTS)
         .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
         .with_mounted_directory("/" + connector_code_path, connector_code_directory)
