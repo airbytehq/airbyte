@@ -169,12 +169,6 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
-- name: Heap Analytics
-  destinationDefinitionId: f8e68742-407a-4a3c-99ad-dfd42ae2cba8
-  dockerRepository: airbyte/destination-heap-analytics
-  dockerImageTag: 0.1.0
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/heap-analytics
-  releaseStage: alpha
 - name: Kafka
   destinationDefinitionId: 9f760101-60ae-462f-9ee6-b7a9dafd454d
   dockerRepository: airbyte/destination-kafka
@@ -327,7 +321,7 @@
 - name: S3
   destinationDefinitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
   dockerRepository: airbyte/destination-s3
-  dockerImageTag: 0.3.19
+  dockerImageTag: 0.3.20
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3
   icon: s3.svg
   resourceRequirements:
@@ -354,7 +348,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.47
+  dockerImageTag: 0.4.49
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
