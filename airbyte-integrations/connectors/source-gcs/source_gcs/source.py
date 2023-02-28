@@ -20,7 +20,8 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .helpers import construct_file_schema, get_gcs_blobs, read_csv_file
+from .helpers import construct_file_schema, get_gcs_blobs, read_csv_file, get_stream_name
+MIN_BYTES_READ_GENERATE_SCHEMA = 102400
 
 
 class SourceGCS(Source):
@@ -30,9 +31,7 @@ class SourceGCS(Source):
         """
         try:
             blobs = get_gcs_blobs(config)
-            # TODO: only support CSV intially. Change this check if implementing other file formats.
-            files = [blob.name for blob in blobs if "csv" in blob.name.lower()]
-            if not files:
+            if not blobs:
                 return AirbyteConnectionStatus(status=Status.FAILED, message=f"No compatible file found in bucket")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -44,10 +43,12 @@ class SourceGCS(Source):
         blobs = get_gcs_blobs(config)
         for blob in blobs:
             # Read the first 0.1MB of the file to determine schema
-            df = read_csv_file(blob, limit_bytes=102400)
-            stream_name = blob.name.replace(".csv", "")
+            df = read_csv_file(
+                blob, limit_bytes=MIN_BYTES_READ_GENERATE_SCHEMA)
+            stream_name = get_stream_name(blob)
             json_schema = construct_file_schema(df)
-            streams.append(AirbyteStream(name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
+            streams.append(AirbyteStream(
+                name=stream_name, json_schema=json_schema, supported_sync_modes=["full_refresh"]))
 
         return AirbyteCatalog(streams=streams)
 
@@ -59,11 +60,12 @@ class SourceGCS(Source):
         for blob in blobs:
             logger.info(blob.name)
             df = read_csv_file(blob)
-            stream_name = blob.name.replace(".csv", "")
+            stream_name = get_stream_name(blob)
             for _, row in df.iterrows():
                 row_dict = row.to_dict()
                 row_dict = {k: str(v) for k, v in row_dict.items()}
                 yield AirbyteMessage(
                     type=Type.RECORD,
-                    record=AirbyteRecordMessage(stream=stream_name, data=row_dict, emitted_at=int(datetime.now().timestamp()) * 1000),
+                    record=AirbyteRecordMessage(stream=stream_name, data=row_dict, emitted_at=int(
+                        datetime.now().timestamp()) * 1000),
                 )
