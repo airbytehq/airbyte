@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -70,7 +70,9 @@ public enum PostgresType implements SQLType {
   OID_ARRAY(Types.ARRAY),
   FLOAT4_ARRAY(Types.ARRAY),
   FLOAT8_ARRAY(Types.ARRAY),
-  BYTEA_ARRAY(Types.ARRAY);
+  BYTEA_ARRAY(Types.ARRAY),
+  JSONB_ARRAY(Types.ARRAY),
+  JSONB(Types.JAVA_OBJECT);
 
   /**
    * The Integer value for the JDBCType. It maps to a value in {@code Types.java}
@@ -122,7 +124,7 @@ public enum PostgresType implements SQLType {
    *         {@code Types} value
    * @see Types
    */
-  public static PostgresType valueOf(final int type,  final Map<Integer, PostgresType> postgresTypeMap) {
+  public static PostgresType valueOf(final int type, final Map<Integer, PostgresType> postgresTypeMap) {
     if (postgresTypeMap.containsKey(type)) {
       return postgresTypeMap.get(type);
     }
@@ -130,7 +132,7 @@ public enum PostgresType implements SQLType {
         + "Types.java value.");
   }
 
-  public static PostgresType safeGetJdbcType(final int columnTypeInt,  final Map<Integer, PostgresType> postgresTypeMap) {
+  public static PostgresType safeGetJdbcType(final int columnTypeInt, final Map<Integer, PostgresType> postgresTypeMap) {
     try {
       return PostgresType.valueOf(columnTypeInt, postgresTypeMap);
     } catch (final Exception e) {

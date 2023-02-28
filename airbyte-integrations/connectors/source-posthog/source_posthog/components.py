@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import dataclass
@@ -69,9 +69,9 @@ class EventsCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     Slicer also produces separate datetime slices for each project
     """
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]):
         self._cursor = {}
-        self._options = options
+        self._parameters = parameters
 
     def get_stream_state(self) -> Mapping[str, Any]:
         return self._cursor or {}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -11,8 +11,11 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.List;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -93,6 +96,24 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
   protected void tearDown(final TestDestinationEnv testEnv) {
     dslContext.close();
     container.close();
+  }
+
+  @Override
+  protected void addJsonbArrayTest() {
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.JSONB)
+                .build())
+            .addInsertValues(
+                "ARRAY['[1,2,1]', 'false']::jsonb[]",
+                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
+            .addExpectedValues("[\"[1, 2, 1]\",\"false\"]",
+                "[\"{\\\"digit\\\": 30, \\\"letter\\\": \\\"A\\\"}\",\"{\\\"digit\\\": 31, \\\"letter\\\": \\\"B\\\"}\"]")
+            .build());
   }
 
   public boolean testCatalog() {

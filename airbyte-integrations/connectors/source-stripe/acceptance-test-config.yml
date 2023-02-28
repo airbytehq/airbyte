@@ -12,17 +12,18 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.37"
+        disable_for_version: "2.0.0"
     - config_path: "secrets/connected_account_config.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.37"
+        disable_for_version: "2.0.0"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/full_refresh_configured_catalog.json"
-      empty_streams: ["external_account_bank_accounts"]
+      empty_streams: ["bank_accounts", "checkout_sessions", "checkout_sessions_line_items", "external_account_bank_accounts"]
     # TEST 1 - Reading catalog without invoice_line_items
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/non_invoice_line_items_catalog.json"
+      empty_streams: ["transfers"]
       timeout_seconds: 3600
     # TEST 2 - Reading data from account that has no records for stream Disputes
     - config_path: "secrets/connected_account_config.json"
