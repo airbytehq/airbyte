@@ -7,12 +7,23 @@ import useRouter from "hooks/useRouter";
 import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
 interface ConnectionCreateDestinationFormProps {
   afterSubmit: () => void;
+  onBack?: () => void;
+  onShowLoading?: (isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => void;
+  fetchingConnectorError?: JSX.Element | string | null;
+  formValues: ServiceFormValues;
 }
 
-export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinationFormProps> = ({ afterSubmit }) => {
+export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinationFormProps> = ({
+  afterSubmit,
+  onBack,
+  onShowLoading,
+  formValues,
+  fetchingConnectorError,
+}) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
 
@@ -58,6 +69,10 @@ export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinati
       onSubmit={onSubmitDestinationForm}
       destinationDefinitions={destinationDefinitions}
       hasSuccess={successRequest}
+      onBack={onBack}
+      error={fetchingConnectorError}
+      onShowLoading={onShowLoading}
+      formValues={formValues}
     />
   );
 };

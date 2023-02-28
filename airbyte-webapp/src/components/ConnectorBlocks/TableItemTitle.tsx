@@ -1,10 +1,13 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Button, DropDownRow, H3, H5 } from "components";
+import { Button, DropDownRow } from "components"; // H3, H5
 import { Popout } from "components/base/Popout/Popout";
-import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
+// import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -17,43 +20,73 @@ interface TableItemTitleProps {
   entityName: string;
   entityIcon?: React.ReactNode;
   releaseStage?: ReleaseStage;
+  num: number;
+  btnText: React.ReactNode;
 }
 
 const Content = styled.div`
   display: flex;
-  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  padding: 0 32px 18px 27px;
+  margin: 0 0 40px 0;
 `;
 
-const EntityType = styled(H5)`
+// const EntityType = styled(H5)`
+//   display: flex;
+//   gap: 6px;
+//   align-items: center;
+//   color: ${({ theme }) => theme.greyColor55};
+// `;
+
+// const EntityInfo = styled(Content)`
+//   justify-content: left;
+//   padding-top: 15px;
+//   padding-bottom: 39px;
+//   gap: 15px;
+// `;
+
+// const EntityIcon = styled.div`
+//   height: 40px;
+//   width: 40px;
+// `;
+
+const BtnInnerContainer = styled.div`
+  width: 100%;
   display: flex;
-  gap: 6px;
+  flex-direction: row;
   align-items: center;
-  color: ${({ theme }) => theme.greyColor55};
+  padding: 8px 4px;
 `;
 
-const EntityInfo = styled(Content)`
-  justify-content: left;
-  padding-top: 15px;
-  padding-bottom: 39px;
-  gap: 15px;
+const BtnText = styled.div`
+  font-weight: 500;
+  font-size: 16px;
+  color: #ffffff;
 `;
 
-const EntityIcon = styled.div`
-  height: 40px;
-  width: 40px;
+const LeftPanel = styled.div`
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 30px;
+  color: #27272a;
+`;
+
+const BtnIcon = styled(FontAwesomeIcon)`
+  font-size: 16px;
+  margin-right: 10px;
 `;
 
 const TableItemTitle: React.FC<TableItemTitleProps> = ({
   type,
   dropDownData,
   onSelect,
-  entity,
-  entityName,
-  entityIcon,
-  releaseStage,
+  btnText,
+  // entity,
+  // entityName,
+  // entityIcon,
+  // releaseStage,
+  // onClick,
+  num,
 }) => {
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
   const { formatMessage } = useIntl();
@@ -70,7 +103,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
 
   return (
     <>
-      <EntityInfo>
+      {/* <EntityInfo>
         {entityIcon && <EntityIcon>{entityIcon}</EntityIcon>}
         <div>
           <H3 bold>{entityName}</H3>
@@ -79,11 +112,12 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
             <ReleaseStageBadge stage={releaseStage} />
           </EntityType>
         </div>
-      </EntityInfo>
+      </EntityInfo> */}
       <Content>
-        <H5>
-          <FormattedMessage id="tables.connections" />
-        </H5>
+        <LeftPanel>
+          <FormattedMessage id={`tables.${type}ConnectWithNum`} values={{ num }} />
+        </LeftPanel>
+
         <Popout
           data-testid={`select-${type}`}
           options={options}
@@ -92,14 +126,20 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
             // TODO: hack to position select
             menuPortal: (base) => ({
               ...base,
-              "margin-left": "-130px",
+              "margin-left": "-70px",
             }),
           }}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
             <Button onClick={onOpen} disabled={!allowCreateConnection}>
-              <FormattedMessage id={`tables.${type}Add`} />
+              <BtnInnerContainer>
+                <BtnIcon icon={faPlus} />
+                <BtnText>{btnText}</BtnText>
+              </BtnInnerContainer>
             </Button>
+            // <Button onClick={onOpen} disabled={!allowCreateConnection}>
+            //   <FormattedMessage id={`tables.${type}Add`} />
+            // </Button>
           )}
         />
       </Content>

@@ -3,15 +3,15 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { LabeledRadioButton, Link } from "components";
+import { LabeledRadioButton } from "components"; // Link
 
-import { useConfig } from "config";
+// import { useConfig } from "config";
 import { NormalizationType } from "core/domain/connection/operation";
 
 import { ConnectionFormMode } from "../ConnectionForm";
 
 const Normalization = styled.div`
-  margin: 16px 0;
+  // margin: 16px 0;
 `;
 
 type NormalizationBlockProps = FieldProps<string> & {
@@ -19,7 +19,7 @@ type NormalizationBlockProps = FieldProps<string> & {
 };
 
 const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mode }) => {
-  const config = useConfig();
+  // const config = useConfig();
   return (
     <Normalization>
       <LabeledRadioButton
@@ -37,20 +37,20 @@ const NormalizationField: React.FC<NormalizationBlockProps> = ({ form, field, mo
         value={NormalizationType.basic}
         checked={field.value === NormalizationType.basic}
         disabled={mode === "readonly"}
-        message={
-          mode !== "readonly" && (
-            <FormattedMessage
-              id="form.basicNormalization.message"
-              values={{
-                lnk: (lnk: React.ReactNode) => (
-                  <Link target="_blank" href={config.links.normalizationLink} as="a">
-                    {lnk}
-                  </Link>
-                ),
-              }}
-            />
-          )
-        }
+        // message={
+        //   mode !== "readonly" && (
+        //     <FormattedMessage
+        //       id="form.basicNormalization.message"
+        //       values={{
+        //         lnk: (lnk: React.ReactNode) => (
+        //           <Link target="_blank" href={config.links.normalizationLink} as="a">
+        //             {lnk}
+        //           </Link>
+        //         ),
+        //       }}
+        //     />
+        //   )
+        // }
       />
     </Normalization>
   );

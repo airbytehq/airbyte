@@ -6,12 +6,22 @@ import useRouter from "hooks/useRouter";
 import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
-
+import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 interface ConnectionCreateSourceFormProps {
   afterSubmit: () => void;
+  onShowLoading?: (isLoading: boolean, formValues: ServiceFormValues, error: JSX.Element | string | null) => void;
+  onBack?: () => void;
+  fetchingConnectorError?: JSX.Element | string | null;
+  formValues: ServiceFormValues;
 }
 
-export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
+export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({
+  afterSubmit,
+  onShowLoading,
+  onBack,
+  formValues,
+  fetchingConnectorError,
+}) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -52,5 +62,15 @@ export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProp
     };
   }, [setDocumentationPanelOpen]);
 
-  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
+  return (
+    <SourceForm
+      onSubmit={onSubmitSourceStep}
+      sourceDefinitions={sourceDefinitions}
+      hasSuccess={successRequest}
+      onShowLoading={onShowLoading}
+      onBack={onBack}
+      error={fetchingConnectorError}
+      formValues={formValues}
+    />
+  );
 };

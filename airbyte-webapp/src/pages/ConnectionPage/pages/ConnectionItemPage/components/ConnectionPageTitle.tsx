@@ -2,7 +2,6 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { H6 } from "components";
 import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
@@ -10,7 +9,7 @@ import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead
 import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
-import ConnectionName from "./ConnectionName";
+// import ConnectionName from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
 
@@ -20,6 +19,9 @@ interface ConnectionPageTitleProps {
   connection: WebBackendConnectionRead;
   currentStep: ConnectionSettingsRoutes;
   onStatusUpdating?: (updating: boolean) => void;
+  onSync: () => void;
+  disabled?: boolean;
+  lastSyncTime?: number;
 }
 
 const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
@@ -27,7 +29,10 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   destination,
   connection,
   currentStep,
+  disabled,
+  lastSyncTime,
   onStatusUpdating,
+  onSync,
 }) => {
   const { push } = useRouter<{ id: string }>();
 
@@ -38,19 +43,23 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
         name: <FormattedMessage id="sources.status" />,
       },
       {
-        id: ConnectionSettingsRoutes.REPLICATION,
-        name: <FormattedMessage id="connection.replication" />,
+        id: ConnectionSettingsRoutes.CONFIGURATIONS,
+        name: <FormattedMessage id="onboarding.configurations" />,
       },
-      {
-        id: ConnectionSettingsRoutes.TRANSFORMATION,
-        name: <FormattedMessage id="connectionForm.transformation.title" />,
-      },
+      // {
+      //   id: ConnectionSettingsRoutes.REPLICATION,
+      //   name: <FormattedMessage id="connection.replication" />,
+      // },
+      // {
+      //   id: ConnectionSettingsRoutes.TRANSFORMATION,
+      //   name: <FormattedMessage id="connectionForm.transformation.title" />,
+      // },
     ];
 
     connection.status !== ConnectionStatus.deprecated &&
       steps.push({
-        id: ConnectionSettingsRoutes.SETTINGS,
-        name: <FormattedMessage id="sources.settings" />,
+        id: ConnectionSettingsRoutes.DANGERZONE,
+        name: <FormattedMessage id="tables.dangerZone" />,
       });
 
     return steps;
@@ -69,24 +78,24 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
 
   return (
     <div className={styles.container}>
+      <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
       {connection.status === ConnectionStatus.deprecated && (
         <InfoBox className={styles.connectionDeleted} icon={faTrash}>
           <FormattedMessage id="connection.connectionDeletedView" />
         </InfoBox>
       )}
-      <H6 center bold highlighted>
-        <FormattedMessage id="connection.title" />
-      </H6>
-      <ConnectionName connection={connection} />
+      {/* <ConnectionName connection={connection} /> */}
       <div className={styles.statusContainer}>
         <StatusMainInfo
           connection={connection}
           source={source}
           destination={destination}
           onStatusUpdating={onStatusUpdating}
+          onSync={onSync}
+          disabled={disabled}
+          lastSyncTime={lastSyncTime}
         />
       </div>
-      <StepsMenu lightMode data={steps} onSelect={onSelectStep} activeStep={currentStep} />
     </div>
   );
 };

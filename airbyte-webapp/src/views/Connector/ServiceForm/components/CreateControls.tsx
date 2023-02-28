@@ -5,8 +5,8 @@ import styled from "styled-components";
 import { Button } from "components";
 
 import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
-import TestingConnectionSpinner from "./TestingConnectionSpinner";
-import TestingConnectionSuccess from "./TestingConnectionSuccess";
+// import TestingConnectionSpinner from "./TestingConnectionSpinner";
+// import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
 interface CreateControlProps {
   formType: "source" | "destination";
@@ -15,47 +15,82 @@ interface CreateControlProps {
   hasSuccess?: boolean;
   isLoadSchema?: boolean;
   fetchingConnectorError?: Error | null;
-
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
+  onBack?: () => void;
+  disabled?: boolean;
 }
 
 const ButtonContainer = styled.div`
   margin-top: 34px;
   display: flex;
-  align-items: center;
+  //align-items: center;
   justify-content: space-between;
+  flex-direction: column;
 `;
 
 const SubmitButton = styled(Button)`
-  margin-left: auto;
+  // margin-left: auto;
+  width: 264px;
+  height: 68px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 22px;
+`;
+
+const BackButton = styled(Button)`
+  // margin-left: auto;
+  width: 264px;
+  height: 68px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 22px;
+  background: #fff;
+  color: #6b6b6f;
+  border-color: #d1d5db;
+`;
+
+const ButtonRows = styled.div`
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 40px;
+  width: 100%;
 `;
 
 const CreateControls: React.FC<CreateControlProps> = ({
-  isTestConnectionInProgress,
+  // isTestConnectionInProgress,
   isSubmitting,
-  formType,
+  // formType,
+  disabled,
   hasSuccess,
   errorMessage,
   fetchingConnectorError,
-  isLoadSchema,
-  onCancelTesting,
+  // isLoadSchema,
+  // onCancelTesting,
+  onBack,
 }) => {
   if (isSubmitting) {
-    return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
+    // return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
   }
 
   if (hasSuccess) {
-    return <TestingConnectionSuccess />;
+    // return <TestingConnectionSuccess />;
   }
-
   return (
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <SubmitButton type="submit" disabled={isLoadSchema}>
-        <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
-      </SubmitButton>
+      <ButtonRows>
+        <BackButton type="button" onClick={onBack}>
+          <FormattedMessage id="form.button.back" />
+        </BackButton>
+        <SubmitButton type="submit" disabled={disabled}>
+          <FormattedMessage id="form.button.saveTest" />
+        </SubmitButton>
+      </ButtonRows>
     </ButtonContainer>
   );
 };
