@@ -1,14 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
+import logging
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, MutableMapping
 
+import backoff
 import pendulum
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v11.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.api_core.exceptions import ServerError, TooManyRequests
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
@@ -31,6 +34,7 @@ REPORT_MAPPING = {
     "keyword_report": "keyword_view",
 }
 API_VERSION = "v11"
+logger = logging.getLogger("airbyte")
 
 
 class GoogleAds:
@@ -43,13 +47,21 @@ class GoogleAds:
         self.client = GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
         self.ga_service = self.client.get_service("GoogleAdsService")
 
+    @backoff.on_exception(
+        backoff.expo,
+        (ServerError, TooManyRequests),
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_tries=5,
+    )
     def send_request(self, query: str, customer_id: str) -> Iterator[SearchGoogleAdsResponse]:
         client = self.client
         search_request = client.get_type("SearchGoogleAdsRequest")
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
         search_request.customer_id = customer_id
-        yield self.ga_service.search(search_request)
+        return [self.ga_service.search(search_request)]
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """

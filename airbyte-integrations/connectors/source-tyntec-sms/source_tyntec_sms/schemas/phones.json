@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "provisioningRequests": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "accountId": {
+            "type": ["null", "string"]
+          },
+          "contactId": {
+            "type": ["null", "string"]
+          },
+          "friendlyName": {
+            "type": ["null", "string"]
+          },
+          "requestId": {
+            "type": ["null", "string"]
+          },
+          "status": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "size": {
+      "type": ["null", "integer"]
+    }
+  }
+}

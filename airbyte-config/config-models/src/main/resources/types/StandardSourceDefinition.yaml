@@ -65,3 +65,7 @@ properties:
   protocolVersion:
     type: string
     description: the Airbyte Protocol version supported by the connector
+  allowedHosts:
+    "$ref": AllowedHosts.yaml
+  suggestedStreams:
+    "$ref": SuggestedStreams.yaml

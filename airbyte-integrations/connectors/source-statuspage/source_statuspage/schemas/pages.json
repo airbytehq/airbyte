@@ -1,0 +1,182 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"],
+      "example": "j7m9j8brdt3h",
+      "description": "Page identifier"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "Timestamp the record was created"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "description": "Timestamp the record was last updated"
+    },
+    "name": {
+      "type": ["null", "string"],
+      "example": "My Company Status",
+      "description": "Name of your page to be displayed"
+    },
+    "page_description": {
+      "type": ["null", "string"]
+    },
+    "headline": {
+      "type": ["null", "string"]
+    },
+    "branding": {
+      "type": ["null", "string"],
+      "description": "The main template your statuspage will use"
+    },
+    "subdomain": {
+      "type": ["null", "string"],
+      "example": "your-subdomain.statuspage.io",
+      "description": "Subdomain at which to access your status page"
+    },
+    "domain": {
+      "type": ["null", "string"],
+      "example": "status.mycompany.com",
+      "description": "CNAME alias for your status page"
+    },
+    "url": {
+      "type": ["null", "string"],
+      "example": "https://www.mycompany.com",
+      "description": "Website of your page.  Clicking on your statuspage image will link here."
+    },
+    "support_url": {
+      "type": ["null", "string"]
+    },
+    "hidden_from_search": {
+      "type": ["null", "boolean"],
+      "description": "Should your page hide itself from search engines"
+    },
+    "allow_page_subscribers": {
+      "type": ["null", "boolean"],
+      "description": "Can your users subscribe to all notifications on the page"
+    },
+    "allow_incident_subscribers": {
+      "type": ["null", "boolean"],
+      "description": "Can your users subscribe to notifications for a single incident"
+    },
+    "allow_email_subscribers": {
+      "type": ["null", "boolean"],
+      "description": "Can your users choose to receive notifications via email"
+    },
+    "allow_sms_subscribers": {
+      "type": ["null", "boolean"],
+      "description": "Can your users choose to receive notifications via SMS"
+    },
+    "allow_rss_atom_feeds": {
+      "type": ["null", "boolean"],
+      "description": "Can your users choose to access incident feeds via RSS/Atom (not functional on Audience-Specific pages)"
+    },
+    "allow_webhook_subscribers": {
+      "type": ["null", "boolean"],
+      "description": "Can your users choose to receive notifications via Webhooks"
+    },
+    "notifications_from_email": {
+      "type": ["null", "string"],
+      "example": "no-reply@status.mycompany.com",
+      "description": "Allows you to customize the email address your page notifications come from"
+    },
+    "notifications_email_footer": {
+      "type": ["null", "string"],
+      "description": "Allows you to customize the footer appearing on your notification emails.  Accepts Markdown for formatting"
+    },
+    "activity_score": {
+      "type": "number",
+      "format": "float"
+    },
+    "twitter_username": {
+      "type": ["null", "string"]
+    },
+    "viewers_must_be_team_members": {
+      "type": ["null", "boolean"]
+    },
+    "ip_restrictions": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "time_zone": {
+      "type": ["null", "string"],
+      "example": "UTC",
+      "description": "Timezone configured for your page"
+    },
+    "css_body_background_color": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_font_color": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_light_font_color": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_greens": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_yellows": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_oranges": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_blues": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_reds": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_border_color": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_graph_color": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_link_color": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "css_no_data": {
+      "type": ["null", "string"],
+      "description": "CSS Color"
+    },
+    "favicon_logo": {
+      "type": ["null", "object"]
+    },
+    "transactional_logo": {
+      "type": ["null", "object"]
+    },
+    "hero_cover": {
+      "type": ["null", "object"]
+    },
+    "email_logo": {
+      "type": ["null", "object"]
+    },
+    "twitter_logo": {
+      "type": ["null", "object"]
+    }
+  },
+  "description": "Get a page",
+  "$schema": "http://json-schema.org/schema#"
+}

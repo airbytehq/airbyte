@@ -13,7 +13,7 @@ To set up the Chargebee source connector, you'll need the [Chargebee API key](ht
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
 5. For **Site**, enter the site prefix for your Chargebee instance.
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
 8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
 9. Click **Set up source**.
@@ -74,6 +74,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request | Subject                                                                                                                     |
 |:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------------------------------|
+| 0.2.1  | 2023-02-17 | [23207](https://github.com/airbytehq/airbyte/pull/23207) | Edited stream schemas to get rid of unnecessary `enum` |
 | 0.1.16  | 2022-10-06 | [17661](https://github.com/airbytehq/airbyte/pull/17661) | Make `transaction` stream to be consistent with `S3` by using type transformer |
 | 0.1.15  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                                                |
 | 0.1.14  | 2022-09-23 | [17056](https://github.com/airbytehq/airbyte/pull/17056) | Add "custom fields" to the relevant Chargebee source data streams                                                           |

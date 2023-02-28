@@ -10,33 +10,33 @@ This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connec
 
 This Source is capable of syncing the following data as streams:
 
-* [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)
-* [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)
-* [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)
-* [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders)
-* [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)
+- [StockLocations](https://apps.linnworks.net/Api/Method/Inventory-GetStockLocations)
+- [StockLocationDetails](https://apps.linnworks.net/Api/Method/Locations-GetLocation)
+- [StockItems](https://apps.linnworks.net//Api/Method/Stock-GetStockItemsFull)
+- [ProcessedOrders](https://apps.linnworks.net/Api/Method/ProcessedOrders-SearchProcessedOrders)
+- [ProcessedOrderDetails](https://apps.linnworks.net/Api/Method/Orders-GetOrdersById)
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `number` | `number` | float number |
-| `integer` | `integer` | whole number |
-| `date` | `string` | FORMAT YYYY-MM-DD |
-| `datetime` | `string` | FORMAT YYYY-MM-DDThh:mm:ss |
-| `array` | `array` |  |
-| `boolean` | `boolean` | True/False |
-| `string` | `string` |  |
+| Integration Type | Airbyte Type | Notes                      |
+| :--------------- | :----------- | :------------------------- |
+| `number`         | `number`     | float number               |
+| `integer`        | `integer`    | whole number               |
+| `date`           | `string`     | FORMAT YYYY-MM-DD          |
+| `datetime`       | `string`     | FORMAT YYYY-MM-DDThh:mm:ss |
+| `array`          | `array`      |                            |
+| `boolean`        | `boolean`    | True/False                 |
+| `string`         | `string`     |                            |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Overwrite Sync | Yes |  |
-| Full Refresh Append Sync | Yes |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Append + Deduplication Sync | Yes |  |
-| Namespaces | No |  |
+| Feature                                   | Supported?\(Yes/No\) | Notes |
+| :---------------------------------------- | :------------------- | :---- |
+| Full Refresh Overwrite Sync               | Yes                  |       |
+| Full Refresh Append Sync                  | Yes                  |       |
+| Incremental - Append Sync                 | Yes                  |       |
+| Incremental - Append + Deduplication Sync | Yes                  |       |
+| Namespaces                                | No                   |       |
 
 ### Performance considerations
 
@@ -52,10 +52,10 @@ Authentication credentials can be obtained on developer portal section Applicati
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.4 | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226) | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |
-| 0.1.3 | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169) | Source Linnworks: refactor stream StockLocations |
-| 0.1.2 | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177) | Source Linnworks: add stream ProcessedOrderDetails |
-| 0.1.0 | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588) | New Source: Linnworks |
-
+| Version | Date       | Pull Request                                           | Subject                                                                     |
+| :------ | :--------- | :----------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 0.1.5   | Unknown    | Unknown                                                | Bump Version                                                                |
+| 0.1.4   | 2021-11-24 | [8226](https://github.com/airbytehq/airbyte/pull/8226) | Source Linnworks: improve streams ProcessedOrders and ProcessedOrderDetails |
+| 0.1.3   | 2021-11-24 | [8169](https://github.com/airbytehq/airbyte/pull/8169) | Source Linnworks: refactor stream StockLocations                            |
+| 0.1.2   | 2021-11-23 | [8177](https://github.com/airbytehq/airbyte/pull/8177) | Source Linnworks: add stream ProcessedOrderDetails                          |
+| 0.1.0   | 2021-11-09 | [7588](https://github.com/airbytehq/airbyte/pull/7588) | New Source: Linnworks                                                       |

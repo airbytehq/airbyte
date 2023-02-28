@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "cases7Days": {
+      "type": "integer"
+    },
+    "incidence7Days": {
+      "type": ["number", "null"]
+    },
+    "date": {
+      "type": ["string", "null"]
+    },
+    "fixedCases7Days": {
+      "type": ["integer", "null"]
+    },
+    "updatedCases7Days": {
+      "type": ["integer", "null"]
+    },
+    "adjustedLowerCases7Days": {
+      "type": ["integer", "null"]
+    },
+    "adjustedCases7Days": {
+      "type": ["integer", "null"]
+    },
+    "adjustedUpperCases7Days": {
+      "type": ["integer", "null"]
+    },
+    "fixedIncidence7Days": {
+      "type": ["number", "null"]
+    },
+    "updatedIncidence7Days": {
+      "type": ["number", "null"]
+    },
+    "adjustedLowerIncidence7Days": {
+      "type": ["number", "null"]
+    },
+    "adjustedIncidence7Days": {
+      "type": ["number", "null"]
+    },
+    "adjustedUpperIncidence7Days": {
+      "type": ["number", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "abbreviation": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": [
+    "abbreviation",
+    "adjustedCases7Days",
+    "adjustedIncidence7Days",
+    "adjustedLowerCases7Days",
+    "adjustedLowerIncidence7Days",
+    "adjustedUpperCases7Days",
+    "adjustedUpperIncidence7Days",
+    "cases7Days",
+    "date",
+    "fixedCases7Days",
+    "fixedIncidence7Days",
+    "incidence7Days",
+    "name",
+    "updatedCases7Days",
+    "updatedIncidence7Days"
+  ]
+}

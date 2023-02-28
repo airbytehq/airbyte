@@ -13,15 +13,6 @@ jobs:
       comment-id: ${{ steps.comment-info.outputs.comment-id }}
       command: ${{ steps.regex.outputs.first_match }}
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
       - name: Get PR repo and ref
         id: getref
         run: |
@@ -55,7 +46,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Pull Testing Tool docker image
-        run: docker pull airbyte/airbyte-e2e-testing-tool:latest
+        run: ./tools/bin/pull_image.sh -i airbyte/airbyte-e2e-testing-tool:latest
       - name: Create input and output folders
         run: |
           mkdir secrets
@@ -97,20 +88,20 @@ jobs:
           comment-id: ${{ needs.set-params.outputs.comment-id }}
           reactions: eyes, rocket
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{  needs.set-params.outputs.repo }}
           ref: ${{  needs.set-params.outputs.ref }}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Pull Testing Tool docker image
-        run: docker pull airbyte/airbyte-e2e-testing-tool:latest
+        run: ./tools/bin/pull_image.sh -i airbyte/airbyte-e2e-testing-tool:latest
       - name: Change wrapper permissions
         run: |
           mkdir secrets
           mkdir result
       - name: Run Airbyte
-        run: docker-compose up -d
+        run: docker compose up -d
       - name: Connect to secret manager
         uses: jsdaniell/create-json@1.1.2
         with:

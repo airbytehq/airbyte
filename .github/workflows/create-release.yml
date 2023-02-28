@@ -57,7 +57,7 @@ jobs:
           echo -e "$CHANGELOG" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Get Version
         id: get_version
         shell: bash

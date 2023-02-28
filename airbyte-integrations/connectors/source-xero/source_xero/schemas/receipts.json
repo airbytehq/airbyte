@@ -1,0 +1,71 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Date": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "Contact": {
+      "$ref": "contacts.json"
+    },
+    "LineItems": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "line_items.json"
+      }
+    },
+    "User": {
+      "$ref": "users.json"
+    },
+    "Reference": {
+      "type": ["null", "string"]
+    },
+    "LineAmountTypes": {
+      "type": ["null", "string"]
+    },
+    "SubTotal": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalTax": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Total": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "ReceiptID": {
+      "type": ["string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "ReceiptNumber": {
+      "type": ["null", "integer"]
+    },
+    "UpdatedDateUTC": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "HasAttachments": {
+      "type": ["null", "boolean"]
+    },
+    "Url": {
+      "type": ["null", "string"]
+    },
+    "ID": {
+      "type": ["null", "string"]
+    },
+    "ValidationErrors": {
+      "$ref": "validation_errors.json"
+    },
+    "Attachments": {
+      "$ref": "attachments.json"
+    }
+  },
+  "additionalProperties": true
+}

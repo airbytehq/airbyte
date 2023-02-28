@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_maintainer": {
+      "type": ["null", "object"]
+    },
+    "_version": {
+      "type": ["null", "integer"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "clientSideAvailability": {
+      "type": ["null", "object"]
+    },
+    "creationDate": {
+      "type": ["null", "integer"]
+    },
+    "customProperties": {
+      "type": ["null", "object"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "environments": {
+      "type": ["null", "object"]
+    },
+    "experiments": {
+      "type": ["null", "object"]
+    },
+    "goalIds": {
+      "type": ["null", "array"]
+    },
+    "includeInSnippet": {
+      "type": ["null", "boolean"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "maintainerId": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"]
+    },
+    "temporary": {
+      "type": ["null", "boolean"]
+    },
+    "variationJsonSchema": {
+      "type": ["null", "object"]
+    },
+    "variations": {
+      "type": ["null", "array"]
+    }
+  }
+}

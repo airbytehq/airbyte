@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "email": { "type": ["null", "string"] },
+    "id": { "type": ["null", "string"] },
+    "created_at": { "type": ["null", "string"], "format": "date-time" },
+    "role": { "type": ["null", "string"] },
+    "first_name": { "type": ["null", "string"] },
+    "last_name": { "type": ["null", "string"] },
+    "name": { "type": ["null", "string"] },
+    "accepted": { "type": ["null", "boolean"] }
+  }
+}

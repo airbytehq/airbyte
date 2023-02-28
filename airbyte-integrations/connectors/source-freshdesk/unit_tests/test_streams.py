@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import random
 from typing import Any, MutableMapping
-from unittest.mock import PropertyMock, patch
+from unittest.mock import PropertyMock
 
 import pytest
 from airbyte_cdk.models import SyncMode
@@ -39,6 +39,11 @@ from source_freshdesk.streams import (
     Tickets,
     TimeEntries,
 )
+
+
+@pytest.fixture(autouse=True)
+def mock_tickets_use_cache(mocker):
+    mocker.patch("source_freshdesk.streams.Tickets.use_cache", new_callable=PropertyMock, return_value=False)
 
 
 def _read_full_refresh(stream_instance: Stream):
@@ -126,19 +131,19 @@ def test_incremental(stream, resource, authenticator, config, requests_mock):
     highest_updated_at = "2022-04-25T22:00:00Z"
     other_updated_at = "2022-04-01T00:00:00Z"
     highest_index = random.randint(0, 24)
-    with patch(f"source_freshdesk.streams.{stream.__name__}.use_cache", new_callable=PropertyMock, return_value=False):
-        requests_mock.register_uri(
-            "GET",
-            f"/api/v2/{resource}",
-            json=[{"id": x, "updated_at": highest_updated_at if x == highest_index else other_updated_at} for x in range(25)],
-        )
 
-        stream = stream(authenticator=authenticator, config=config)
-        records, state = _read_incremental(stream, {})
+    requests_mock.register_uri(
+        "GET",
+        f"/api/v2/{resource}",
+        json=[{"id": x, "updated_at": highest_updated_at if x == highest_index else other_updated_at} for x in range(25)],
+    )
 
-        assert len(records) == 25
-        assert "updated_at" in state
-        assert state["updated_at"] == highest_updated_at
+    stream = stream(authenticator=authenticator, config=config)
+    records, state = _read_incremental(stream, {})
+
+    assert len(records) == 25
+    assert "updated_at" in state
+    assert state["updated_at"] == highest_updated_at
 
 
 @pytest.mark.parametrize(

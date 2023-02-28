@@ -1,0 +1,12 @@
+{
+    "score": { "type": "integer" },
+    "scoreSum": { "type": "integer" },
+    "metricsType": { "type": "string" },
+    "promoters": { "type": "integer" },
+    "passives": { "type": "integer" },
+    "detractors": { "type": "integer" },
+    "promotersCount": { "type": "integer" },
+    "passivesCount": { "type": "integer" },
+    "detractorsCount": { "type": "integer" },
+    "totalResponses": { "type": "integer" }
+}

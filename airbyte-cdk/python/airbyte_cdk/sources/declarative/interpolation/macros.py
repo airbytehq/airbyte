@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import builtins
@@ -83,7 +83,7 @@ def max(*args):
     return builtins.max(*args)
 
 
-def day_delta(num_days: int) -> str:
+def day_delta(num_days: int, format: str = "%Y-%m-%dT%H:%M:%S.%f%z") -> str:
     """
     Returns datetime of now() + num_days
 
@@ -93,8 +93,20 @@ def day_delta(num_days: int) -> str:
     :param num_days: number of days to add to current date time
     :return: datetime formatted as RFC3339
     """
-    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime(format)
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta]
+def format_datetime(dt: Union[str, datetime.datetime], format: str):
+    """
+    Converts datetime to another format
+
+    Usage:
+    `"{{ format_datetime(config.start_date, '%Y-%m-%d') }}"`
+    """
+    if isinstance(dt, datetime.datetime):
+        return dt.strftime(format)
+    return parser.parse(dt).strftime(format)
+
+
+_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime]
 macros = {f.__name__: f for f in _macros_list}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -9,18 +9,16 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.integrations.base.errors.messages.ErrorMessage;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -157,11 +155,11 @@ public class IntegrationRunner {
       // to
       // find the root exception that corresponds to a configuration error. If that does not exist, we
       // just return the original exception.
-      final Throwable rootThrowable = getRootConfigError(e);
-      final String displayMessage = getDisplayMessage(rootThrowable);
+      final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
+      final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
-      if (isConfigError(rootThrowable)) {
+      if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
       }
       if (parsed.getCommand().equals(Command.CHECK)) {
@@ -182,37 +180,6 @@ public class IntegrationRunner {
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
-  }
-
-  /**
-   * Returns the first instance of an exception associated with a configuration error (if it exists).
-   * Otherwise, the original exception is returned.
-   */
-  private Throwable getRootConfigError(final Exception e) {
-    Throwable current = e;
-    while (current != null) {
-      if (isConfigError(current)) {
-        return current;
-      } else {
-        current = current.getCause();
-      }
-    }
-    return e;
-  }
-
-  private boolean isConfigError(final Throwable e) {
-    return e instanceof ConfigErrorException || e instanceof ConnectionErrorException;
-  }
-
-  private String getDisplayMessage(final Throwable e) {
-    if (e instanceof ConfigErrorException) {
-      return ((ConfigErrorException) e).getDisplayMessage();
-    } else if (e instanceof ConnectionErrorException) {
-      final ConnectionErrorException connEx = (ConnectionErrorException) e;
-      return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), connEx);
-    } else {
-      return "Could not connect with provided configuration. Error: " + e.getMessage() != null ? e.getMessage() : "";
-    }
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
@@ -317,6 +284,7 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
+
     final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
     if (messageOptional.isPresent()) {
       consumer.accept(messageOptional.get());

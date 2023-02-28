@@ -10,7 +10,7 @@ connectionSpecification:
     token:
       title: Access Token
       type: string
-      description: >- 
+      description: >-
         Your access token. See <a
         href="https://dev.mailjet.com/sms/reference/overview/authentication">here</a>.
       airbyte_secret: true

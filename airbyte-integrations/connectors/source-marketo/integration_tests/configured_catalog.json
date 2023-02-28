@@ -4,65 +4,84 @@
       "stream": {
         "name": "programs",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updatedAt"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "campaigns",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["createdAt"],
+        "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "cursor_field": ["createdAt"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "lists",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["createdAt"],
+        "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "cursor_field": ["createdAt"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "leads",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": []
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "default_cursor_field": ["updatedAt"],
+        "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "cursor_field": ["updatedAt"],
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "activity_types",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": null,
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "cursor_field": null,
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "activities_visit_webpage",
         "json_schema": {},
-        "supported_sync_modes": ["incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": []
+        "default_cursor_field": ["activityDate"],
+        "source_defined_primary_key": [["marketoGUID"]]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append",
+      "cursor_field": ["activityDate"],
+      "primary_key": [["marketoGUID"]]
     }
   ]
 }

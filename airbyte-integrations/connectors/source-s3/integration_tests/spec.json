@@ -110,6 +110,8 @@
                 "title": "Block Size",
                 "description": "The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
                 "default": 10000,
+                "minimum": 1,
+                "maximum": 2147483647,
                 "order": 9,
                 "type": "integer"
               }
@@ -184,19 +186,12 @@
                 "default": "infer",
                 "examples": ["ignore", "infer", "error"],
                 "order": 1,
-                "allOf": [
-                  {
-                    "title": "UnexpectedFieldBehaviorEnum",
-                    "description": "An enumeration.",
-                    "enum": ["ignore", "infer", "error"],
-                    "type": "string"
-                  }
-                ]
+                "enum": ["ignore", "infer", "error"]
               },
               "block_size": {
                 "title": "Block Size",
                 "description": "The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
-                "default": 10000,
+                "default": 0,
                 "order": 2,
                 "type": "integer"
               }

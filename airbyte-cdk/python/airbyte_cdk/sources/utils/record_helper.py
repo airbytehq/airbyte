@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
@@ -30,11 +30,9 @@ def stream_data_to_airbyte_message(
         transformer.transform(data, schema)  # type: ignore
         message = AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=now_millis)
         return AirbyteMessage(type=MessageType.RECORD, record=message)
-    elif isinstance(data_or_message, AirbyteRecordMessage):
-        return AirbyteMessage(type=MessageType.RECORD, record=data_or_message)
     elif isinstance(data_or_message, AirbyteTraceMessage):
         return AirbyteMessage(type=MessageType.TRACE, trace=data_or_message)
     elif isinstance(data_or_message, AirbyteLogMessage):
         return AirbyteMessage(type=MessageType.LOG, log=data_or_message)
     else:
-        raise ValueError(f"Unexpected type for data_or_message: {type(data_or_message)}")
+        raise ValueError(f"Unexpected type for data_or_message: {type(data_or_message)}: {data_or_message}")

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
 
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -81,7 +81,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     checkList.add(database -> {
       if (isDatasetConfigured(database)) {
         database.query(String.format("select 1 from %s where 1=0",
-            getFullTableName(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES", getQuoteString())));
+            getFullyQualifiedTableNameWithQuoting(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES", getQuoteString())));
         LOGGER.info("The source passed the Dataset query test!");
       } else {
         LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
@@ -92,8 +92,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @Override
-  protected JsonSchemaType getType(final StandardSQLTypeName columnType) {
-    return sourceOperations.getJsonType(columnType);
+  protected JsonSchemaType getAirbyteType(final StandardSQLTypeName columnType) {
+    return sourceOperations.getAirbyteType(columnType);
   }
 
   @Override
@@ -146,20 +146,20 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final StandardSQLTypeName cursorFieldType) {
     return queryTableWithParams(database, String.format("SELECT %s FROM %s WHERE %s > ?",
         RelationalDbQueryUtils.enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullTableName(schemaName, tableName, getQuoteString()),
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()),
         cursorInfo.getCursorField()),
         sourceOperations.getQueryParameter(cursorFieldType, cursorInfo.getCursor()));
   }
 
   @Override
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final BigQueryDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullTableName(schemaName, tableName, getQuoteString())));
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
   }
 
   @Override

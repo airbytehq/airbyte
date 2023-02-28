@@ -1,52 +1,19 @@
 # Metabase
+This page contains the setup guide and reference information for the Metabase source connector.
 
-## Sync overview
+## Prerequisites
 
-This source can sync data for the [Metabase API](https://www.metabase.com/docs/latest/api-documentation.html). It supports only Full Refresh syncs.
-
-### Output schema
-
-This Source is capable of syncing the following Streams:
-
-* [Activity](https://www.metabase.com/docs/latest/api/activity.html#get-apiactivity)
-* [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
-* [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
-* [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
-* [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
-
-### Data type mapping
-
-| Integration Type    | Airbyte Type | Notes |
-|:--------------------|:-------------|:------|
-| `string`            | `string`     |       |
-| `integer`, `number` | `number`     |       |
-| `array`             | `array`      |       |
-| `object`            | `object`     |       |
-
-### Features
-
-| Feature           | Supported?\(Yes/No\) | Notes |
-|:------------------|:---------------------|:------|
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
-| SSL connection    | Yes                  |
-| Namespaces        | No                   |       |
-
-## Getting started
-
-### Requirements
-
-* Credentials:
+To set up Metabase you need:
   * `username` and `password` - Credential pairs to authenticate with Metabase instance. This may be used to generate a new `session_token` if necessary. An email from Metabase may be sent to the owner's account everytime this is being used to open a new session.
   * `session_token` - Credential token to authenticate requests sent to Metabase API. Usually expires after 14 days.   
-* `instance_api_url` - URL to interact with metabase instance API
+  * `instance_api_url` - URL to interact with metabase instance API, that uses https.
 
-### Setup guide
+## Setup guide
 
 You can find or create authentication tokens from [Metabase](https://www.metabase.com/learn/administration/metabase-api.html#authenticate-your-requests-with-a-session-token) by running the following command:`
 
-```
-    curl -X POST \
+```bash
+curl -X POST \
 -H "Content-Type: application/json" \
 -d '{"username": "person@metabase.com", "password": "fakepassword"}' \
 http://localhost:3000/api/session
@@ -66,9 +33,45 @@ If you are hosting your own metabase instance, you can configure this session du
 If the connector is supplied with only username and password, a session_token will be generated everytime an
 authenticated query is running, which might trigger security alerts on the user's metabase account.
 
+## Supported sync modes
+
+The Metabase source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+
+## Supported Streams
+* [Activity](https://www.metabase.com/docs/latest/api/activity.html#get-apiactivity)
+* [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
+* [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
+* [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
+* [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
+
+## Tutorials
+
+### Data type mapping
+
+| Integration Type    | Airbyte Type | Notes |
+|:--------------------|:-------------|:------|
+| `string`            | `string`     |       |
+| `integer`, `number` | `number`     |       |
+| `array`             | `array`      |       |
+| `object`            | `object`     |       |
+
+### Features
+
+| Feature           | Supported?\(Yes/No\) | Notes |
+|:------------------|:---------------------|:------|
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
+| SSL connection    | Yes                  |
+| Namespaces        | No                   |       |
+
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 0.3.1   | 2022-12-15 | [20535](https://github.com/airbytehq/airbyte/pull/20535) | Run on CDK 0.15.0          |
+| 0.3.0   | 2022-12-13 | [19236](https://github.com/airbytehq/airbyte/pull/19236) | Migrate to YAML.           |
 | 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
 | 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release    |

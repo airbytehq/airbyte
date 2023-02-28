@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -14,11 +14,12 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;
 import java.util.Set;
 import org.jooq.SQLDialect;
@@ -34,7 +35,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private JsonNode stateAfterFirstSync;
 
   @Override
-  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync is null");
     }
@@ -42,7 +43,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void postSetup() throws Exception {
     final Database database = setupDatabase();
     initTests();
     for (final TestDataHolder test : testDataHolders) {
@@ -184,6 +185,24 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
                   "+290309-12-21T19:59:27.600000 BC")
               .build());
     }
+  }
+
+  @Override
+  protected void addJsonbArrayTest() {
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.JSONB)
+                .build())
+            .addInsertValues(
+                "ARRAY['[1,2,1]', 'false']::jsonb[]",
+                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
+            .addExpectedValues("[\"[1, 2, 1]\",\"false\"]",
+                "[\"{\\\"digit\\\": 30, \\\"letter\\\": \\\"A\\\"}\",\"{\\\"digit\\\": 31, \\\"letter\\\": \\\"B\\\"}\"]")
+            .build());
   }
 
 }

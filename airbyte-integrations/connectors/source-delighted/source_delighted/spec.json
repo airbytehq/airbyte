@@ -5,21 +5,21 @@
     "title": "Delighted Spec",
     "type": "object",
     "required": ["since", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
-      "since": {
-        "title": "Since",
-        "type": "string",
-        "description": "The date from which you'd like to replicate the data",
-        "examples": ["2022-05-30 04:50:23"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:[0-9]{2}:[0-9]{2})?$",
-        "order": 0
-      },
       "api_key": {
         "title": "Delighted API Key",
         "type": "string",
         "description": "A Delighted API key.",
         "airbyte_secret": true,
+        "order": 0
+      },
+      "since": {
+        "title": "Date Since",
+        "type": "string",
+        "description": "The date from which you'd like to replicate the data",
+        "examples": ["2022-05-30 04:50:23"],
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:[0-9]{2}:[0-9]{2})?$",
         "order": 1
       }
     }

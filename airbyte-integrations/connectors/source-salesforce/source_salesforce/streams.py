@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -7,15 +7,17 @@ import ctypes
 import math
 import os
 import time
+import urllib.parse
 from abc import ABC
 from contextlib import closing
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from numpy import nan
@@ -23,6 +25,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
@@ -49,6 +52,10 @@ class SalesforceStream(HttpStream, ABC):
         self.sobject_options = sobject_options
 
     @property
+    def max_properties_length(self) -> int:
+        return Salesforce.REQUEST_SIZE_LIMITS - len(self.url_base) - 2000
+
+    @property
     def name(self) -> str:
         return self.stream_name
 
@@ -59,6 +66,35 @@ class SalesforceStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.sf_api.instance_url
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return SalesforceAvailabilityStrategy()
+
+    @property
+    def too_many_properties(self):
+        selected_properties = self.get_json_schema().get("properties", {})
+        properties_length = len(urllib.parse.quote(",".join(p for p in selected_properties)))
+        return properties_length > self.max_properties_length
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from response.json()["records"]
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if not self.schema:
+            self.schema = self.sf_api.generate_schema(self.name)
+        return self.schema
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, exceptions.ConnectionError):
+            return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
+        return super().get_error_display_message(exception)
+
+
+class RestSalesforceStream(SalesforceStream):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert self.primary_key or not self.too_many_properties
 
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs: Any) -> str:
         if next_page_token:
@@ -75,7 +111,11 @@ class SalesforceStream(HttpStream, ABC):
         return {"next_token": next_token} if next_token else None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        property_chunk: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Salesforce SOQL Query: https://developer.salesforce.com/docs/atlas.en-us.232.0.api_rest.meta/api_rest/dome_queryall.htm
@@ -86,54 +126,112 @@ class SalesforceStream(HttpStream, ABC):
             """
             return {}
 
-        selected_properties = self.get_json_schema().get("properties", {})
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        property_chunk = property_chunk or {}
+        query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC"
 
         return {"q": query}
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from response.json()["records"]
+    def chunk_properties(self) -> Iterable[Mapping[str, Any]]:
+        selected_properties = self.get_json_schema().get("properties", {})
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        if not self.schema:
-            self.schema = self.sf_api.generate_schema(self.name)
-        return self.schema
+        def empty_props_with_pk_if_present():
+            return {self.primary_key: selected_properties[self.primary_key]} if self.primary_key else {}
 
-    def read_records(
+        summary_length = 0
+        local_properties = empty_props_with_pk_if_present()
+        for property_name, value in selected_properties.items():
+            current_property_length = len(urllib.parse.quote(f"{property_name},"))
+            if current_property_length + summary_length >= self.max_properties_length:
+                yield local_properties
+                local_properties = empty_props_with_pk_if_present()
+                summary_length = 0
+
+            local_properties[property_name] = value
+            summary_length += current_property_length
+
+        if local_properties:
+            yield local_properties
+
+    def _read_pages(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+        ],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-        except exceptions.HTTPError as error:
-            """
-            There are several types of Salesforce sobjects that require additional processing:
-              1. Sobjects for which the user, after setting up the data using Airbyte, restricted access,
-                 and we will receive 403 HTTP errors.
-              2. There are streams that do not allow you to make a sample using Salesforce `query` or `queryAll`.
-                 And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
-                 we cannot filter out these streams, so we catch them at the stage of reading data.
-            """
-            error_data = error.response.json()[0]
-            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-                error_code = error_data.get("errorCode", "")
-                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
-                    return
-            raise error
+    ) -> Iterable[StreamData]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        records = {}
+        next_pages = {}
 
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        if isinstance(exception, exceptions.ConnectionError):
-            return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
-        return super().get_error_display_message(exception)
+        while not pagination_complete:
+            index = 0
+            for index, property_chunk in enumerate(self.chunk_properties()):
+                request, response = self._fetch_next_page(stream_slice, stream_state, next_pages.get(index), property_chunk)
+                next_pages[index] = self.next_page_token(response)
+                chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
+                if not self.too_many_properties:
+                    # this is the case when a stream has no primary key
+                    # (is allowed when properties length does not exceed the maximum value)
+                    # so there would be a single iteration, therefore we may and should yield records immediately
+                    yield from chunk_page_records
+                    break
+                chunk_page_records = {record[self.primary_key]: record for record in chunk_page_records}
+
+                for record_id, record in chunk_page_records.items():
+                    if record_id not in records:
+                        records[record_id] = (record, 1)
+                        continue
+                    incomplete_record, counter = records[record_id]
+                    incomplete_record.update(record)
+                    counter += 1
+                    records[record_id] = (incomplete_record, counter)
+
+            for record_id, (record, counter) in records.items():
+                if counter != index + 1:
+                    # Because we make multiple calls to query N records (each call to fetch X properties of all the N records),
+                    # there's a chance that the number of records corresponding to the query may change between the calls. This
+                    # may result in data inconsistency. We skip such records for now and log a warning message.
+                    self.logger.warning(
+                        f"Inconsistent record with primary key {record_id} found. It consists of {counter} chunks instead of {index + 1}. "
+                        f"Skipping it."
+                    )
+                    continue
+                yield record
+
+            records = {}
+
+            if not any(next_pages.values()):
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
+    def _fetch_next_page(
+        self,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        property_chunk: Mapping[str, Any] = None,
+    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, property_chunk=property_chunk
+            ),
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        response = self._send_request(request, request_kwargs)
+        return request, response
 
 
 class BulkSalesforceStream(SalesforceStream):
@@ -251,7 +349,7 @@ class BulkSalesforceStream(SalesforceStream):
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None, None
+                return None, job_status
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
@@ -284,7 +382,7 @@ class BulkSalesforceStream(SalesforceStream):
         # set filepath for binary data from response
         tmp_file = os.path.realpath(os.path.basename(url))
         with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
-            response_encoding = response.encoding or response.apparent_encoding or self.encoding
+            response_encoding = response.apparent_encoding or response.encoding or self.encoding
             for chunk in response.iter_content(chunk_size=chunk_size):
                 data_file.write(self.filter_null_bytes(chunk))
         # check the file exists
@@ -323,6 +421,10 @@ class BulkSalesforceStream(SalesforceStream):
 
     def delete_job(self, url: str):
         self._send_http_request("DELETE", url=url)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -367,6 +469,10 @@ class BulkSalesforceStream(SalesforceStream):
                     # Thus we can try to switch to GET sync request because its response returns obvious error message
                     standard_instance = self.get_standard_instance()
                     self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                    stream_is_available, error = standard_instance.check_availability(self.logger, None)
+                    if not stream_is_available:
+                        self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
+                        return
                     yield from standard_instance.read_records(
                         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
                     )
@@ -401,10 +507,10 @@ class BulkSalesforceStream(SalesforceStream):
             sobject_options=self.sobject_options,
             authenticator=self.authenticator,
         )
-        new_cls: Type[SalesforceStream] = SalesforceStream
+        new_cls: Type[SalesforceStream] = RestSalesforceStream
         if isinstance(self, BulkIncrementalSalesforceStream):
             stream_kwargs.update({"replication_key": self.replication_key, "start_date": self.start_date})
-            new_cls = IncrementalSalesforceStream
+            new_cls = IncrementalRestSalesforceStream
 
         return new_cls(**stream_kwargs)
 
@@ -421,7 +527,7 @@ def transform_empty_string_to_none(instance: Any, schema: Any):
     return instance
 
 
-class IncrementalSalesforceStream(SalesforceStream, ABC):
+class IncrementalRestSalesforceStream(RestSalesforceStream, ABC):
     state_checkpoint_interval = 500
 
     def __init__(self, replication_key: str, start_date: Optional[str], **kwargs):
@@ -437,7 +543,11 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         return None
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        property_chunk: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         if next_page_token:
             """
@@ -445,12 +555,12 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
             """
             return {}
 
-        selected_properties = self.get_json_schema().get("properties", {})
+        property_chunk = property_chunk or {}
 
         stream_date = stream_state.get(self.cursor_field)
         start_date = stream_date or self.start_date
 
-        query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
+        query = f"SELECT {','.join(property_chunk.keys())} FROM {self.name} "
         if start_date:
             query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
@@ -472,7 +582,7 @@ class IncrementalSalesforceStream(SalesforceStream, ABC):
         return {self.cursor_field: latest_benchmark}
 
 
-class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforceStream):
+class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalRestSalesforceStream):
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             page_token: str = last_record[self.cursor_field]

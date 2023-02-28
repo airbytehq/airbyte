@@ -6,27 +6,31 @@ This page contains the setup guide and reference information for the Pinterest s
 
 To set up the Pinterest source connector with Airbyte Open Source, you'll need your Pinterest [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/) and the [refresh token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
 
-## Set up the Pinterest connector in Airbyte
+## Setup guide
 
-### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Pinterest** from the Source type dropdown. 
-4. Enter the name for the Pinterest connector. 
+3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
+4. Enter the name for the Pinterest connector.
 5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API restriction, the date cannot be more than 914 days in the past.
 6. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest account**. Log in and authorize your Pinterest account.
 7. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Pinterest** from the Source type dropdown. 
-4. Enter the name for the Pinterest connector. 
+3. On the Set up the source page, select **Pinterest** from the Source type dropdown.
+4. Enter the name for the Pinterest connector.
 5. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. As per Pinterest API restriction, the date cannot be more than 914 days in the past.
 6. The **OAuth2.0** authorization method is selected by default. For **Client ID** and **Client Secret**, enter your Pinterest [App ID and secret key](https://developers.pinterest.com/docs/getting-started/set-up-app/). For **Refresh Token**, enter your Pinterest [Refresh Token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
 7. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -66,7 +70,10 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+|:--------| :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------ |
+| 0.2.2   | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 0.2.1   | 2022-12-15 | [20532](https://github.com/airbytehq/airbyte/pull/20532) | Bump CDK version|
+| 0.2.0   | 2022-12-13 | [20242](https://github.com/airbytehq/airbyte/pull/20242) | Added data-type normalization up to the schemas declared |
 | 0.1.9   | 2022-09-06 | [15074](https://github.com/airbytehq/airbyte/pull/15074) | Added filter based on statuses |
 | 0.1.8   | 2022-10-21 | [18285](https://github.com/airbytehq/airbyte/pull/18285) | Fix type of `start_date`                                                                                |
 | 0.1.7   | 2022-09-29 | [17387](https://github.com/airbytehq/airbyte/pull/17387) | Set `start_date` dynamically based on API restrictions.                                                 |

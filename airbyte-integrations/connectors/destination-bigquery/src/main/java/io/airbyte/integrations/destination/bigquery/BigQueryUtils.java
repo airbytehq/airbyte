@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -11,12 +11,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Clustering;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.InsertAllRequest;
+import com.google.cloud.bigquery.InsertAllResponse;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -25,18 +28,19 @@ import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
+import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -45,6 +49,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -64,6 +69,8 @@ public class BigQueryUtils {
       DateTimeFormatter.ofPattern("[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]" +
           "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]]");
   private static final String USER_AGENT_FORMAT = "%s (GPN: Airbyte)";
+  private static final String CHECK_TEST_DATASET_SUFFIX = "_airbyte_check_stage_tmp_";
+  private static final String CHECK_TEST_TMP_TABLE_NAME = "test_connection_table_name";
 
   public static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
     final JobId jobId = JobId.of(UUID.randomUUID().toString());
@@ -101,22 +108,100 @@ public class BigQueryUtils {
                                                   final String datasetLocation,
                                                   final Schema schema) {
     if (!existingSchemas.contains(schemaName)) {
-      createDataset(bigquery, schemaName, datasetLocation);
+      getOrCreateDataset(bigquery, schemaName, datasetLocation);
       existingSchemas.add(schemaName);
     }
-    BigQueryUtils.createPartitionedTable(bigquery, tmpTableId, schema);
+    BigQueryUtils.createPartitionedTableIfNotExists(bigquery, tmpTableId, schema);
   }
 
-  public static void createDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
-    final Dataset dataset = bigquery.getDataset(datasetId);
+  public static Dataset getOrCreateDataset(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
+    Dataset dataset = bigquery.getDataset(datasetId);
     if (dataset == null || !dataset.exists()) {
       final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
-      bigquery.create(datasetInfo);
+      dataset = bigquery.create(datasetInfo);
+    }
+    return dataset;
+  }
+
+  public static void checkHasCreateAndDeleteDatasetRole(final BigQuery bigquery, final String datasetId, final String datasetLocation) {
+    final String tmpTestDatasetId = datasetId + CHECK_TEST_DATASET_SUFFIX + System.currentTimeMillis();
+    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(tmpTestDatasetId).setLocation(datasetLocation).build();
+
+    bigquery.create(datasetInfo);
+
+    try {
+      attemptCreateTableAndTestInsert(bigquery, tmpTestDatasetId);
+    } finally {
+      bigquery.delete(tmpTestDatasetId);
     }
   }
 
-  // https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
-  static void createPartitionedTable(final BigQuery bigquery, final TableId tableId, final Schema schema) {
+  /**
+   * Method is used to create tmp table and make dummy record insert. It's used in Check() connection
+   * method to make sure that user has all required roles for upcoming data sync/migration. It also
+   * verifies if BigQuery project is billable, if not - later sync will fail as non-billable project
+   * has limitations with stream uploading and DML queries. More details may be found there:
+   * https://cloud.google.com/bigquery/docs/streaming-data-into-bigquery
+   * https://cloud.google.com/bigquery/docs/reference/standard-sql/data-manipulation-language
+   *
+   * @param bigquery - initialized bigquery client
+   * @param tmpTestDatasetId - dataset name where tmp table will be created
+   */
+  private static void attemptCreateTableAndTestInsert(final BigQuery bigquery, final String tmpTestDatasetId) {
+    // Create dummy schema that will be used for tmp table creation
+    final Schema testTableSchema = Schema.of(
+        Field.of("id", StandardSQLTypeName.INT64),
+        Field.of("name", StandardSQLTypeName.STRING));
+
+    // Create tmp table to verify if user has a create table permission. Also below we will do test
+    // records insert in it
+    final Table test_connection_table_name = createTable(bigquery, tmpTestDatasetId,
+        CHECK_TEST_TMP_TABLE_NAME, testTableSchema);
+
+    // Try to make test (dummy records) insert to make sure that user has required permissions
+    try {
+      final InsertAllResponse response =
+          bigquery.insertAll(InsertAllRequest
+              .newBuilder(test_connection_table_name)
+              .addRow(Map.of("id", 1, "name", "James"))
+              .addRow(Map.of("id", 2, "name", "Eugene"))
+              .addRow(Map.of("id", 3, "name", "Angelina"))
+              .build());
+
+      if (response.hasErrors()) {
+        // If any of the insertions failed, this lets you inspect the errors
+        for (final Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
+          throw new ConfigErrorException("Failed to check connection: \n" + entry.getValue());
+        }
+      }
+    } catch (final BigQueryException e) {
+      throw new ConfigErrorException("Failed to check connection: \n" + e.getMessage());
+    } finally {
+      test_connection_table_name.delete();
+    }
+  }
+
+  public static Table createTable(final BigQuery bigquery, final String datasetName, final String tableName, final Schema schema) {
+    final TableId tableId = TableId.of(datasetName, tableName);
+    final TableDefinition tableDefinition = StandardTableDefinition.of(schema);
+    final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
+    return bigquery.create(tableInfo);
+  }
+
+  /**
+   * Creates a partitioned table with clustering based on time
+   *
+   * <p>
+   * https://cloud.google.com/bigquery/docs/creating-partitioned-tables#java
+   * </p>
+   *
+   * @param bigquery BigQuery interface
+   * @param tableId equivalent to table name
+   * @param schema representation for table schema
+   * @return Table BigQuery table object to be referenced for deleting, otherwise empty meaning table
+   * was not successfully created
+   */
+  static void createPartitionedTableIfNotExists(final BigQuery bigquery, final TableId tableId, final Schema schema) {
     try {
       final TimePartitioning partitioning = TimePartitioning.newBuilder(TimePartitioning.Type.DAY)
           .setField(JavaBaseConstants.COLUMN_NAME_EMITTED_AT)
@@ -134,8 +219,14 @@ public class BigQueryUtils {
               .build();
       final TableInfo tableInfo = TableInfo.newBuilder(tableId, tableDefinition).build();
 
-      bigquery.create(tableInfo);
-      LOGGER.info("Partitioned table created successfully: {}", tableId);
+      final Table table = bigquery.getTable(tableInfo.getTableId());
+      if (table != null && table.exists()) {
+        LOGGER.info("Partitioned table ALREADY EXISTS: {}", tableId);
+      } else {
+        bigquery.create(tableInfo);
+        LOGGER.info("Partitioned table created successfully: {}", tableId);
+      }
+
     } catch (final BigQueryException e) {
       LOGGER.error("Partitioned table was not created: " + tableId, e);
     }
@@ -241,11 +332,11 @@ public class BigQueryUtils {
   public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final JsonNode data) {
     dateTimeFields.forEach(e -> {
       if (data.isObject() && data.findValue(e) != null && !data.get(e).isNull()) {
-        ObjectNode dataObject = (ObjectNode) data;
-        JsonNode value = data.findValue(e);
+        final ObjectNode dataObject = (ObjectNode) data;
+        final JsonNode value = data.findValue(e);
         if (value.isArray()) {
-          ArrayNode arrayNode = (ArrayNode) value;
-          ArrayNode newArrayNode = dataObject.putArray(e);
+          final ArrayNode arrayNode = (ArrayNode) value;
+          final ArrayNode newArrayNode = dataObject.putArray(e);
           arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
         } else if (value.isTextual()) {
           dataObject.put(e, getFormattedBigQueryDateTime(value.asText()));
@@ -271,10 +362,16 @@ public class BigQueryUtils {
     return sanitizeDatasetId(schemaName);
   }
 
-  public static String sanitizeDatasetId(String datasetId) {
+  public static String sanitizeDatasetId(final String datasetId) {
     return NAME_TRANSFORMER.getNamespace(datasetId);
   }
 
+  /**
+   * Maps Airbyte internal sync modes with that of BigQuery's sync modes (aka Write Disposition)
+   *
+   * @param syncMode {@link DestinationSyncMode} represents how data is supposed to be written
+   * @return converted sync mode to map to BigQuery's Write Disposition
+   */
   public static JobInfo.WriteDisposition getWriteDisposition(final DestinationSyncMode syncMode) {
     if (syncMode == null) {
       throw new IllegalStateException("Undefined destination sync mode");
@@ -355,12 +452,12 @@ public class BigQueryUtils {
   }
 
   public static HeaderProvider getHeaderProvider() {
-    String connectorName = getConnectorNameOrDefault();
+    final String connectorName = getConnectorNameOrDefault();
     return () -> ImmutableMap.of("user-agent", String.format(USER_AGENT_FORMAT, connectorName));
   }
 
   private static String getConnectorNameOrDefault() {
-    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+    return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
         .orElse("destination-bigquery");
   }

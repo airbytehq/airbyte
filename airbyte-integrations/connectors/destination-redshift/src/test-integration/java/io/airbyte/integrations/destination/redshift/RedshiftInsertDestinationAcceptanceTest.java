@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -16,13 +16,13 @@ import io.airbyte.db.Database;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
  * contain S3 credentials by default, we remove these credentials.
  */
-class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
+public class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
 
   public static final String DATASET_ID = Strings.addRandomSuffix("airbyte_tests", "_", 8);
   private static final String TYPE = "type";
@@ -76,6 +76,12 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3Destinati
             io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
             io.airbyte.protocol.models.Field.of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
+  }
+
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", DATASET_ID)));
+    super.tearDown(testEnv);
   }
 
   @Test

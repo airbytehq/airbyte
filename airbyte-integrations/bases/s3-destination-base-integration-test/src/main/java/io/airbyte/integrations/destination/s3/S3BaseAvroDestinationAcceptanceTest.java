@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -73,7 +73,7 @@ public abstract class S3BaseAvroDestinationAcceptanceTest extends S3AvroParquetD
 
   @Override
   protected TestDataComparator getTestDataComparator() {
-    return new S3AvroParquetTestDataComparator();
+    return new S3BaseAvroParquetTestDataComparator();
   }
 
   @Override

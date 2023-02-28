@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -217,7 +217,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1999-01-08'", "null")
-            .addExpectedValues("1999-01-08T00:00:00Z", null)
+            .addExpectedValues("1999-01-08", null)
             .build());
 
     addDataTypeTestData(
@@ -313,14 +313,12 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
             .build());
 
-    // JdbcUtils-> DATE_FORMAT is set as ""yyyy-MM-dd'T'HH:mm:ss'Z'"" for both Date and Time types.
-    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06'", null)
-            .addExpectedValues("1970-01-01T04:05:06Z")
+            .addExpectedValues("04:05:06.000000")
             .addNullExpectedValue()
             .build());
 
@@ -330,7 +328,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .sourceType("timetz")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06Z'", null)
-            .addExpectedValues("1970-01-01T04:05:06Z")
+            .addExpectedValues("04:05:06.000000Z")
             .addNullExpectedValue()
             .build());
 

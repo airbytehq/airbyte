@@ -6,7 +6,7 @@ on:
 
 jobs:
   label_issues:
-    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'team/platform-workflow' }}
+    if: ${{ github.event.action == 'labeled' && github.event.label.name == 'team/platform-move' }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -14,7 +14,7 @@ jobs:
       - name: Label Issue
         uses: andymckay/labeler@1.0.4
         with:
-          add-labels: "platform-workflow/requires-grooming"
+          add-labels: "platform-move/requires-grooming"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Add Issue To Project
         uses: actions/add-to-project@v0.3.0
@@ -22,7 +22,7 @@ jobs:
           project-url: https://github.com/orgs/airbytehq/projects/25
           github-token: ${{ secrets.PLATFORM_WORKFLOW_PROJECT_AUTOMATION }}
   unlabel_issues:
-    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'team/platform-workflow' }}
+    if: ${{ github.event.action == 'unlabeled' && github.event.label.name == 'team/platform-move' }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -30,7 +30,7 @@ jobs:
       - name: Unlabel Issue
         uses: andymckay/labeler@1.0.4
         with:
-          remove-labels: "platform-workflow/requires-grooming"
+          remove-labels: "platform-move/requires-grooming"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Remove Issue From Project
         uses: monry/actions-delete-issue-from-project@v2.0.1
