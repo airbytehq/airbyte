@@ -555,7 +555,7 @@
 - name: Fauna
   sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
   dockerRepository: airbyte/source-fauna
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   icon: fauna.svg
   sourceType: database

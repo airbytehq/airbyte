@@ -4111,7 +4111,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-fauna:0.1.0"
+- dockerImage: "airbyte/source-fauna:0.1.1"
   spec:
     documentationUrl: "https://github.com/fauna/airbyte/blob/source-fauna/docs/integrations/sources/fauna.md"
     connectionSpecification:
