@@ -15,7 +15,6 @@ from ci_connector_ops.pipelines.actions import build_contexts, builds, tests
 from ci_connector_ops.pipelines.utils import StepStatus, write_connector_secrets_to_local_storage
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
 from dagger import Client, Container
-from graphql import GraphQLError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -131,7 +130,7 @@ def test_connectors(ctx: click.Context, connector_name: str):
     connectors = [Connector(cn) for cn in connector_name]
     try:
         anyio.run(run_connectors_test_pipelines, connectors, ctx.obj["gsm_credentials"])
-    except GraphQLError as e:
+    except dagger.DaggerError as e:
         logger.error(e.message)
         sys.exit(1)
 
@@ -148,7 +147,7 @@ def test_all_modified_connectors(ctx: click.Context):
     if changed_connectors:
         try:
             anyio.run(run_connectors_test_pipelines, changed_connectors, ctx.obj["gsm_credentials"])
-        except GraphQLError as e:
+        except dagger.DaggerError as e:
             logger.error(e.message)
             sys.exit(1)
     else:
