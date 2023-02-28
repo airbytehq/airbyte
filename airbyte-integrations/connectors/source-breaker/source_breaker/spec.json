@@ -89,6 +89,13 @@
             }
           }
         ]
+      },
+      "discover_should_fail": {
+        "title": "Fail Discover",
+        "description": "Check this if you want catalog discovery to fail.",
+        "type": "boolean",
+        "default": false,
+        "order": 6
       }
     }
   }

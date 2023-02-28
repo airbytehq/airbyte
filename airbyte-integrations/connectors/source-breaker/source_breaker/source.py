@@ -49,7 +49,7 @@ class SourceBreaker(AbstractSource):
         """
         check_outcome = config["check_outcome"]["check_outcome"]
         if check_outcome == "check_job_failure_with_trace":
-            raise Exception("Test Exception - shout @ Ella if you see this")
+            raise Exception("Test Check Exception - shout @ Ella if you see this")
 
         check_succeeded, error = self.check_connection(logger, config)
         if check_succeeded:
@@ -68,6 +68,8 @@ class SourceBreaker(AbstractSource):
         """Implements the Discover operation from the Airbyte Specification.
         See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#discover.
         """
+        if config["discover_should_fail"]:
+            raise Exception("Test Discover Exception - shout @ Ella if you see this")
         streams = [stream.as_airbyte_stream() for stream in self.streams(config=config)]
         return AirbyteCatalog(streams=streams)
 
