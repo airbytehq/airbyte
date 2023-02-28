@@ -5,7 +5,7 @@
 from ci_connector_ops.pipelines.actions.build_contexts import PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import StepStatus, check_path_in_workdir
 from ci_connector_ops.utils import Connector
-from dagger.api.gen import Client, Container
+from dagger import Client, Container
 
 RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
 RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]

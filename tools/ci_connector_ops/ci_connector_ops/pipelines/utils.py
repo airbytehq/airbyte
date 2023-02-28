@@ -5,7 +5,7 @@ from enum import Enum, auto
 from pathlib import Path
 
 from ci_connector_ops.utils import Connector
-from dagger.api.gen import Container
+from dagger import Container
 
 
 class StepStatus(Enum):

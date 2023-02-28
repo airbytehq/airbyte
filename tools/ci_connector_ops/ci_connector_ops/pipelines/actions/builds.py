@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 import docker
 from ci_connector_ops.pipelines.utils import check_path_in_workdir
 from ci_connector_ops.utils import Connector
-from dagger.api.gen import Client, Container
+from dagger import Client, Container
 
 INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
 INSTALL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "."]

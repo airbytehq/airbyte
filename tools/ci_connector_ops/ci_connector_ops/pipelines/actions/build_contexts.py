@@ -3,7 +3,7 @@
 #
 
 from ci_connector_ops.utils import Connector
-from dagger.api.gen import Client, Container, Directory
+from dagger import Client, Container, Directory
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
