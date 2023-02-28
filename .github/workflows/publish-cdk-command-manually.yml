@@ -286,26 +286,6 @@ jobs:
             ./tools/integrations/manage.sh publish airbyte-cdk/python false
           attempt_limit: 3
           attempt_delay: 5000 in # ms
-      - name: Prepare Sentry
-        uses: Wandalen/wretry.action@master
-        with:
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
-      - name: Set Name and Version Environment Vars
-        run: |
-          source tools/lib/lib.sh
-          echo "IMAGE_NAME=source-declarative-manifest" >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(_get_docker_image_version airbyte-cdk/python/Dockerfile)" >> $GITHUB_ENV
-      - name: Create Sentry Release
-        run: |
-          SENTRY_RELEASE_NAME="airbyte-${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
-          sentry-cli releases set-commits "$SENTRY_RELEASE_NAME" --auto --ignore-missing &&
-          sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbytehq
-          SENTRY_PROJECT: connector-incident-management
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-publish-docker-image-runner-0:
