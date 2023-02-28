@@ -13,11 +13,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -32,10 +30,7 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
 
   private ObjectMapper schemaObjectMapper;
 
-  private DynamodbConfig dynamodbConfig;
-
   public DynamodbOperations(DynamodbConfig dynamodbConfig) {
-    this.dynamodbConfig = dynamodbConfig;
     this.dynamoDbClient = DynamodbUtils.createDynamoDbClient(dynamodbConfig);
     initMappers();
   }
@@ -110,30 +105,11 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   public List<JsonNode> scanTable(String tableName, Set<String> attributes, FilterAttribute filterAttribute) {
     List<JsonNode> items = new ArrayList<>();
 
-    String prefix = "dyndb";
-    // remove and replace reserved attribute names
-    Set<String> copyAttributes = new HashSet<>(attributes);
-    dynamodbConfig.reservedAttributeNames().forEach(copyAttributes::remove);
-    dynamodbConfig.reservedAttributeNames().stream()
-        .filter(attributes::contains)
-        .map(str -> str.replaceAll("[-.]", ""))
-        .forEach(attr -> copyAttributes.add("#" + prefix + "_" + attr));
-
-    Map<String, String> mappingAttributes = dynamodbConfig.reservedAttributeNames().stream()
-        .filter(attributes::contains)
-        .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
-
-    var projectionAttributes = String.join(", ", copyAttributes);
-
+    var projectionAttributes = String.join(", ", attributes);
 
     ScanRequest.Builder scanRequestBuilder = ScanRequest.builder()
         .tableName(tableName)
         .projectionExpression(projectionAttributes);
-
-    if (!mappingAttributes.isEmpty()) {
-      scanRequestBuilder
-          .expressionAttributeNames(mappingAttributes);
-    }
 
     if (filterAttribute != null && filterAttribute.name() != null &&
         filterAttribute.value() != null && filterAttribute.type() != null) {
@@ -158,10 +134,8 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         comparator = ">";
       }
 
-      String filterPlaceholder = dynamodbConfig.reservedAttributeNames().contains(filterName) ?
-          "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
       scanRequestBuilder
-          .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
+          .filterExpression(filterName + " " + comparator + " :timestamp")
           .expressionAttributeValues(Map.of(":timestamp", attributeValue));
 
     }
