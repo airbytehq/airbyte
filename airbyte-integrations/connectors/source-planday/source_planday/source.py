@@ -293,7 +293,6 @@ class TimeAndCosts(IncrementalSubPlandayStream):
                        stream_state: Mapping[str, Any],
                        stream_slice: Mapping[str, Any] = None,
                        next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
-        print(response.url)
         data = response.json().get("data", {})
         costs = data.get("costs", [])
         yield from [{**cost, "departmentId": stream_slice['parent']['id']} for cost in costs]
