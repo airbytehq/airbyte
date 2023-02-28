@@ -80,7 +80,6 @@ public class DynamodbDataFactory {
         .put("region", dynamodbContainer.getRegion())
         .put("access_key_id", dynamodbContainer.getAccessKey())
         .put("secret_access_key", dynamodbContainer.getSecretKey())
-        .put("reserved_attribute_names", "name, field.name, field-name")
         .build());
   }
 
