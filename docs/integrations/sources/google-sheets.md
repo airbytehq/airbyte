@@ -75,7 +75,10 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
-| ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+|---------| ---------- | -------------------------------------------------------- |-------------------------------------------------------------------------------|
+| 0.2.37  | 2023-02-21 | [23292](https://github.com/airbytehq/airbyte/pull/23292) | Skip non grid sheets.                                                         |
+| 0.2.36  | 2023-02-21 | [23272](https://github.com/airbytehq/airbyte/pull/23272) | Handle empty sheets gracefully.                                               |
+| 0.2.35  | 2023-02-23 | [23057](https://github.com/airbytehq/airbyte/pull/23057) | Slugify column names                                                          |
 | 0.2.34  | 2023-02-15 | [23071](https://github.com/airbytehq/airbyte/pull/23071) | Change min spreadsheet id size to 20 symbols                                  |
 | 0.2.33  | 2023-02-13 | [23278](https://github.com/airbytehq/airbyte/pull/23278) | Handle authentication errors                                                  |
 | 0.2.32  | 2023-02-13 | [22884](https://github.com/airbytehq/airbyte/pull/22884) | Do not consume http spreadsheets.                                             |

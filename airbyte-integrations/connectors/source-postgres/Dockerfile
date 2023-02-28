@@ -23,5 +23,5 @@ ENV DD_CONNECTOR_ENABLE_ENV_VAR: true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.0.35-dd
+LABEL io.airbyte.version=1.0.36-dd
 LABEL io.airbyte.name=airbyte/source-postgres
