@@ -14,7 +14,7 @@ import dagger
 from ci_connector_ops.pipelines.actions import build_contexts, builds, tests
 from ci_connector_ops.pipelines.utils import StepStatus, write_connector_secrets_to_local_storage
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
-from dagger.api.gen import Client, Container
+from dagger import Client, Container
 from graphql import GraphQLError
 
 logging.basicConfig(level=logging.INFO)
@@ -80,15 +80,16 @@ async def run_connectors_test_pipelines(connectors: List[Connector], gsm_credent
         connectors (List[Connector]): List of connectors for which a CI pipeline needs to be run.
         gsm_credentials (str): The GSM credentials to read/write connectors' secrets.
     """
-    config = dagger.Config(log_output=sys.stdout)
+    config = dagger.Config(log_output=sys.stderr)
 
     async with dagger.Connection(config) as dagger_client:
-        for connector in connectors:
-            # We scoped this POC only for python and low-code connectors
-            if connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-                await run_connector_test_pipelines(dagger_client, connector, gsm_credentials)
-            else:
-                logger.warning(f"Not running test pipeline for {connector.technical_name} as it's not a Python or Low code connector")
+        async with anyio.create_task_group() as tg:
+            for connector in connectors:
+                # We scoped this POC only for python and low-code connectors
+                if connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+                    tg.start_soon(run_connector_test_pipelines, dagger_client, connector, gsm_credentials)
+                else:
+                    logger.warning(f"Not running test pipeline for {connector.technical_name} as it's not a Python or Low code connector")
 
 
 @click.group()
