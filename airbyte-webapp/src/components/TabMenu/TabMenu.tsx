@@ -61,7 +61,7 @@ export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect }) => {
                   id={route.id}
                   key={route.path}
                   name={route.name}
-                  isActive={activeItem?.split("/")[2] === route.path}
+                  isActive={activeItem?.endsWith(route.path)}
                   onClick={() => onSelect(route.path)}
                 />
               )

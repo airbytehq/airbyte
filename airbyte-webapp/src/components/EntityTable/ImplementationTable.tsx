@@ -5,11 +5,11 @@ import { CellProps } from "react-table";
 
 import Table from "components/Table";
 
-import { useCloneDestination } from "hooks/services/useDestinationHook";
-import { useCloneSource } from "hooks/services/useSourceHook";
+// import { useCloneDestination } from "hooks/services/useDestinationHook";
+// import { useCloneSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 
-import { SourceCloneRequestBody, DestinationCloneRequestBody } from "../../core/request/AirbyteClient";
+// import { SourceCloneRequestBody, DestinationCloneRequestBody } from "../../core/request/AirbyteClient";
 import { RoutePaths } from "../../pages/routePaths";
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
@@ -21,6 +21,8 @@ import NameCell from "./components/NameCell";
 import SortButton from "./components/SortButton";
 import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
+// import { useGetSource } from "hooks/services/useSourceHook";
+// import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 interface IProps {
   data: EntityTableDataItem[];
@@ -32,9 +34,10 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
   const { query, push } = useRouter();
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;
+  // const source = useGetSource();
 
-  const { mutateAsync: cloneSource } = useCloneSource();
-  const { mutateAsync: cloneDestination } = useCloneDestination();
+  // const { mutateAsync: cloneSource } = useCloneSource();
+  // const { mutateAsync: cloneDestination } = useCloneDestination();
 
   const onSortClick = useCallback(
     (field: string) => {
@@ -76,22 +79,27 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
 
   const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
 
-  const copySourceRow = async (entityId: string) => {
-    const cloneSourceData: SourceCloneRequestBody = {
-      sourceCloneId: entityId,
-    };
-    await cloneSource({ source: cloneSourceData });
-  };
+  // const copySourceRow = async (entityId: string) => {
+  //   const cloneSourceData: SourceCloneRequestBody = {
+  //     sourceCloneId: entityId,
+  //   };
+  //   await cloneSource({ source: cloneSourceData });
+  // };
 
-  const copyDestinationRow = async (entityId: string) => {
-    const cloneDestinationRow: DestinationCloneRequestBody = {
-      destinationCloneId: entityId,
-    };
-    await cloneDestination({ destination: cloneDestinationRow });
-  };
+  // const copyDestinationRow = async (entityId: string) => {
+  //   const cloneDestinationRow: DestinationCloneRequestBody = {
+  //     destinationCloneId: entityId,
+  //   };
+  //   await cloneDestination({ destination: cloneDestinationRow });
+  // };
 
   const clickCopyRow = (entityId: string) => {
-    entity === "source" ? copySourceRow(entityId) : copyDestinationRow(entityId);
+    // if (entity === "source") {
+    // const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
+    push(`${entityId}/copy`, {});
+    // }
+
+    // entity === "source" ? copySourceRow(entityId) : copyDestinationRow(entityId);
   };
 
   const columns = React.useMemo(
@@ -172,7 +180,11 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
         id: "copy",
         accessor: "entityId",
         Cell: ({ cell }: CellProps<EntityTableDataItem>) => (
-          <ConnectionCopyCell onClick={() => clickCopyRow(cell.value)} />
+          <ConnectionCopyCell
+            onClick={() => {
+              clickCopyRow(cell.value);
+            }}
+          />
         ),
       },
     ],

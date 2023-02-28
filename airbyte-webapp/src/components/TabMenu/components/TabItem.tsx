@@ -13,7 +13,7 @@ const Item = styled.div<{ isActive?: boolean }>`
   cursor: pointer;
   font-style: normal;
   font-weight: 500;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 15px;
   color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : "#999999")};
   border-bottom: 2px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : "transparent")};

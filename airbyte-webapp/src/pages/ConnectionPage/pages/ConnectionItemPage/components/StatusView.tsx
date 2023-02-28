@@ -4,10 +4,10 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, LoadingButton } from "components";
-import { Card } from "components/base/Card";
+// import { Card } from "components/base/Card";
 import { Tooltip } from "components/base/Tooltip";
 import EmptyResource from "components/EmptyResourceBlock";
-import { RotateIcon } from "components/icons/RotateIcon";
+// import { RotateIcon } from "components/icons/RotateIcon";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
@@ -15,7 +15,7 @@ import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from 
 import Status from "core/statuses";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
+// import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
 
@@ -38,6 +38,10 @@ interface ActiveJob {
 interface StatusViewProps {
   connection: WebBackendConnectionRead;
   isStatusUpdating?: boolean;
+  isSync?: boolean;
+  afterSync?: (disabled?: boolean) => void;
+  getLastSyncTime: (dateTime?: number) => void;
+  onOpenMessageBox: (id: string) => void;
 }
 
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
@@ -47,7 +51,13 @@ const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   });
 };
 
-const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+const StatusView: React.FC<StatusViewProps> = ({
+  connection,
+  isSync,
+  afterSync,
+  getLastSyncTime,
+  onOpenMessageBox,
+}) => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_STATUS);
   const [activeJob, setActiveJob] = useState<ActiveJob>();
   const [jobPageSize, setJobPageSize] = useState(JOB_PAGE_SIZE_INCREMENT);
@@ -63,22 +73,22 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   const moreJobPagesAvailable = jobs.length === jobPageSize;
 
   useEffect(() => {
-    const jobRunningOrPending = getJobRunningOrPending(jobs);
+    if (isSync) {
+      onSyncNowButtonClick();
+    }
+  }, [isSync]);
 
-    setActiveJob(
-      (state) =>
-        ({
-          id: jobRunningOrPending?.job?.id,
-          action: jobRunningOrPending?.job?.configType,
-          isCanceling: state?.isCanceling && !!jobRunningOrPending,
-          // We need to disable button when job is canceled but the job list still has a running job
-        } as ActiveJob)
-    );
-  }, [jobs]);
+  const findLastSyncTime = () => {
+    if (jobs.length === 0) {
+      return;
+    }
+    const lastSyncTime = jobs.find((val) => val.job && val.job.configType === "sync")?.job?.updatedAt;
+    getLastSyncTime(lastSyncTime);
+  };
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
-  const allowSync = useFeature(FeatureItem.AllowSync);
+  // const allowSync = useFeature(FeatureItem.AllowSync);
   const cancelJob = useCancelJob();
 
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -92,7 +102,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       text: `form.resetDataText`,
       title: `form.resetData`,
       submitButtonText: "form.reset",
-      cancelButtonText: "form.noNeed",
+      cancelButtonText: "form.cancel",
       onSubmit: async () => {
         await onReset();
         setActiveJob((state) => ({ ...state, action: ActionType.RESET } as ActiveJob));
@@ -101,6 +111,46 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       submitButtonDataId: "reset",
     });
   };
+
+  const onCancelButtonClick = () => {
+    openConfirmationModal({
+      text: `connection.cancelDataText`,
+      title: `connection.cancelData`,
+      submitButtonText: "connection.cancelSync.modal.buttom.confirm",
+      cancelButtonText: "connection.cancelSync.modal.buttom.notNow",
+      onSubmit: async () => {
+        closeConfirmationModal();
+        onOpenMessageBox("connection.messagebox.cancel");
+        await onCancelJob();
+        // setActiveJob((state) => ({ ...state, action: ActionType.RESET } as ActiveJob));
+      },
+      submitButtonDataId: "cancel",
+      center: true,
+    });
+  };
+
+  useEffect(() => {
+    const jobRunningOrPending = getJobRunningOrPending(jobs);
+    // console.log(JSON.stringify(jobs[0], null, 2));
+    // getLastSyncTime(jobs[0].job?.updatedAt);
+    findLastSyncTime();
+
+    setActiveJob(
+      (state) =>
+        ({
+          id: jobRunningOrPending?.job?.id,
+          action: jobRunningOrPending?.job?.configType,
+          isCanceling: state?.isCanceling && !!jobRunningOrPending,
+          // We need to disable button when job is canceled but the job list still has a running job
+        } as ActiveJob)
+    );
+  }, [jobs]);
+
+  useEffect(() => {
+    if (afterSync) {
+      afterSync(!!activeJob?.action);
+    }
+  }, [activeJob]);
 
   const onSyncNowButtonClick = () => {
     setActiveJob((state) => ({ ...state, action: ActionType.SYNC } as ActiveJob));
@@ -131,7 +181,11 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
   };
 
   const cancelJobBtn = (
-    <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
+    <Button
+      className={styles.cancelButton}
+      disabled={!activeJob?.id || activeJob.isCanceling}
+      onClick={onCancelButtonClick}
+    >
       <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
       {activeJob?.action === ActionType.RESET && <FormattedMessage id="connection.cancelReset" />}
       {activeJob?.action === ActionType.SYNC && <FormattedMessage id="connection.cancelSync" />}
@@ -140,43 +194,40 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
 
   return (
     <div className={styles.statusView}>
-      <Card
-        className={styles.contentCard}
-        title={
-          <div className={styles.title}>
+      <div className={styles.contentCard}>
+        <div className={styles.title}>
+          <div className={styles.titleText}>
             <FormattedMessage id="sources.syncHistory" />
-            {connection.status === ConnectionStatus.active && (
-              <div className={styles.actions}>
-                {!activeJob?.action && (
-                  <>
-                    <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
-                      <FormattedMessage id="connection.resetData" />
-                    </Button>
-                    <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
-                      <div className={styles.iconRotate}>
-                        <RotateIcon />
-                      </div>
-                      <FormattedMessage id="sources.syncNow" />
-                    </Button>
-                  </>
-                )}
-                {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
-                {activeJob?.action && activeJob.isCanceling && (
-                  <Tooltip control={cancelJobBtn} cursor="not-allowed">
-                    <FormattedMessage id="connection.canceling" />
-                  </Tooltip>
-                )}
-              </div>
-            )}
           </div>
-        }
-      >
+          {connection.status === ConnectionStatus.active && (
+            <div className={styles.actions}>
+              {!activeJob?.action && (
+                <>
+                  <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
+                    <FormattedMessage id="connection.resetData" />
+                  </Button>
+                  {/* <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
+                    <div className={styles.iconRotate}>
+                      <RotateIcon />
+                    </div>
+                    <FormattedMessage id="sources.syncNow" />
+                  </Button> */}
+                </>
+              )}
+              {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
+              {activeJob?.action && activeJob.isCanceling && (
+                <Tooltip control={cancelJobBtn} cursor="not-allowed">
+                  <FormattedMessage id="connection.canceling" />
+                </Tooltip>
+              )}
+            </div>
+          )}
+        </div>
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-      </Card>
-
+      </div>
       {(moreJobPagesAvailable || isJobPageLoading) && (
         <footer className={styles.footer}>
-          <LoadingButton isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
+          <LoadingButton className={styles.loadButton} isLoading={isJobPageLoading} onClick={onLoadMoreJobs}>
             <FormattedMessage id="connection.loadMoreJobs" />
           </LoadingButton>
         </footer>

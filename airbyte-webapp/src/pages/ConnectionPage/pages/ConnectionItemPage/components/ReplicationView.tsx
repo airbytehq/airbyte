@@ -6,6 +6,7 @@ import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
 import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
+import { Tooltip } from "components/base/Tooltip";
 import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
@@ -19,6 +20,8 @@ import {
   useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
 import { equal, naturalComparatorBy } from "utils/objects";
 import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import { ConnectionForm, ConnectionFormSubmitResult } from "views/Connection/ConnectionForm";
@@ -71,8 +74,8 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
 };
 
 const Content = styled.div`
-  max-width: 1279px;
-  margin: 0 auto;
+  // max-width: 1279px;
+  margin: 0 26px;
   padding-bottom: 10px;
 `;
 
@@ -83,11 +86,12 @@ const TryArrow = styled(FontAwesomeIcon)`
 
 export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
   const { formatMessage } = useIntl();
+  const { push } = useRouter();
   const { openModal, closeModal } = useModalService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const connectionFormDirtyRef = useRef<boolean>(false);
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
-  const [saved, setSaved] = useState(false);
+  // const [saved, setSaved] = useState(false);
   const connectionService = useConnectionService();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
@@ -127,7 +131,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       skipReset,
     });
 
-    setSaved(true);
+    // setSaved(true);
     if (!equal(values.syncCatalog, initialSyncSchema)) {
       onAfterSaveSchema();
     }
@@ -174,7 +178,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   };
 
   const refreshSourceSchema = async () => {
-    setSaved(false);
+    // setSaved(false);
     setActiveUpdatingSchemaMode(true);
     const { catalogDiff, syncCatalog } = await refreshCatalog();
     if (catalogDiff?.transforms && catalogDiff.transforms.length > 0) {
@@ -207,8 +211,12 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   };
 
   const onCancelConnectionFormEdit = () => {
-    setSaved(false);
+    // setSaved(false);
     setActiveUpdatingSchemaMode(false);
+  };
+
+  const onBack = () => {
+    push(`/${RoutePaths.Connections}`);
   };
 
   const onDirtyChanges = useCallback((dirty: boolean) => {
@@ -222,16 +230,23 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
           mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
           connection={connection}
           onSubmit={onSubmitForm}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+          // successMessage={saved && <FormattedMessage id="form.changesSaved" />}
           onCancel={onCancelConnectionFormEdit}
           canSubmitUntouchedForm={activeUpdatingSchemaMode}
           additionalSchemaControl={
-            <Button onClick={onRefreshSourceSchema} type="button" secondary>
-              <TryArrow icon={faSyncAlt} />
+            <Tooltip
+              placement="top"
+              control={
+                <Button onClick={onRefreshSourceSchema} type="button" iconOnly>
+                  <TryArrow icon={faSyncAlt} />
+                </Button>
+              }
+            >
               <FormattedMessage id="connection.updateSchema" />
-            </Button>
+            </Tooltip>
           }
           onFormDirtyChanges={onDirtyChanges}
+          onBack={onBack}
         />
       ) : (
         <LoadingSchema />

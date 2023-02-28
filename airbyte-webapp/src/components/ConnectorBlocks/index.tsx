@@ -1,5 +1,6 @@
+import DefinitioDetails from "./DefinitioDetails";
 import FormPageContent from "./FormPageContent";
 import ItemTabs, { StepsTypes } from "./ItemTabs";
 import TableItemTitle from "./TableItemTitle";
 
-export { ItemTabs, StepsTypes, TableItemTitle, FormPageContent };
+export { ItemTabs, StepsTypes, TableItemTitle, FormPageContent, DefinitioDetails };

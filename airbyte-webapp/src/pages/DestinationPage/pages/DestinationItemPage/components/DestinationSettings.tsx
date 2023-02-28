@@ -1,37 +1,55 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
-import DeleteBlock from "components/DeleteBlock";
-
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Connector } from "core/domain/connector";
-import { DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { DestinationRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
+import { useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ServiceFormValues } from "views/Connector/ServiceForm";
 
 import styles from "./DestinationSettings.module.scss";
 
 interface DestinationsSettingsProps {
   currentDestination: DestinationRead;
-  connectionsWithDestination: WebBackendConnectionRead[];
+  errorMessage?: JSX.Element | string | null;
+  onBack?: () => void;
+  formValues?: ServiceFormValues | null;
+  afterSubmit?: () => void;
+  onShowLoading?: (
+    isLoading: boolean,
+    formValues: ServiceFormValues | null,
+    error: JSX.Element | string | null
+  ) => void;
 }
 
 const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   currentDestination,
-  connectionsWithDestination,
+  errorMessage,
+  formValues,
+  onBack,
+  onShowLoading,
+  afterSubmit,
 }) => {
   const destinationSpecification = useGetDestinationDefinitionSpecification(currentDestination.destinationDefinitionId);
   const destinationDefinition = useDestinationDefinition(currentDestination.destinationDefinitionId);
   const { mutateAsync: updateDestination } = useUpdateDestination();
-  const { mutateAsync: deleteDestination } = useDeleteDestination();
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+  // const { mutateAsync: deleteDestination } = useDeleteDestination();
   const formId = useUniqueFormId();
-  const { clearFormChange } = useFormChangeTrackerService();
+  // const { clearFormChange } = useFormChangeTrackerService();
 
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM_SETTINGS);
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const onSubmitForm = async (values: {
     name: string;
@@ -42,15 +60,15 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
       values,
       destinationId: currentDestination.destinationId,
     });
+
+    if (afterSubmit) {
+      afterSubmit();
+    }
   };
 
-  const onDelete = async () => {
-    clearFormChange(formId);
-    await deleteDestination({
-      connectionsWithDestination,
-      destination: currentDestination,
-    });
-  };
+  const defaultFormValues = formValues?.serviceType
+    ? formValues
+    : { ...currentDestination, serviceType: currentDestination.destinationDefinitionId };
 
   return (
     <div className={styles.content}>
@@ -60,15 +78,14 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
         onSubmit={onSubmitForm}
         formType="destination"
         availableServices={[destinationDefinition]}
-        formValues={{
-          ...currentDestination,
-          serviceType: Connector.id(destinationDefinition),
-        }}
+        formValues={defaultFormValues}
+        errorMessage={errorMessage}
         connector={currentDestination}
+        onBack={onBack}
+        onShowLoading={onShowLoading}
         selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
       />
-      <DeleteBlock type="destination" onDelete={onDelete} />
     </div>
   );
 };

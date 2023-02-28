@@ -15,7 +15,7 @@ const GlobalStyle = createGlobalStyle<ThemeProps<Theme>>`
     -webkit-font-smoothing: antialiased;
     color: ${({ theme }) => theme.textColor};
     font-family: ${({ theme }) => theme.regularFont};
-    background: ${({ theme }) => theme.backgroundColor};
+  //  background: ${({ theme }) => theme.backgroundColor};
     font-size: 14px;
   }
   
