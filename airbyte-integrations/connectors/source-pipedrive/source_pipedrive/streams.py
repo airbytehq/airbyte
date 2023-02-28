@@ -8,7 +8,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import NoAuth, Oauth2Authenticator
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
 
@@ -19,13 +18,8 @@ class PipedriveStream(HttpStream, ABC):
     data_field = "data"
     page_size = 50
 
-    def __init__(self, authenticator, replication_start_date=None, **kwargs):
-        if isinstance(authenticator, Oauth2Authenticator):
-            super().__init__(authenticator=authenticator, **kwargs)
-        else:
-            super().__init__(**kwargs)
-            self._api_token = authenticator["api_token"]
-
+    def __init__(self, replication_start_date=None, **kwargs):
+        super().__init__(**kwargs)
         self._replication_start_date = replication_start_date
 
     @property
@@ -62,9 +56,6 @@ class PipedriveStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         next_page_token = next_page_token or {}
         params = {"limit": self.page_size, **next_page_token}
-
-        if isinstance(self.authenticator, NoAuth):
-            params["api_token"] = self._api_token
 
         replication_start_date = self._replication_start_date
         if replication_start_date:

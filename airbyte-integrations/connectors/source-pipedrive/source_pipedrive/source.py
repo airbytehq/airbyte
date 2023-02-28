@@ -11,6 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from source_pipedrive.auth import QueryStringTokenAuthenticator
 from source_pipedrive.streams import (
     Activities,
     ActivityFields,
@@ -30,10 +31,9 @@ from source_pipedrive.streams import (
 class SourcePipedrive(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            stream_kwargs = self.get_stream_kwargs(config)
-            deals = Deals(**stream_kwargs)
-            deals_gen = deals.read_records(sync_mode=SyncMode.full_refresh)
-            next(deals_gen)
+            stream = Deals(authenticator=self.get_authenticator(config))
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)
+            next(records, None)
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Pipedrive API with the provided credentials - {repr(error)}"
@@ -42,7 +42,7 @@ class SourcePipedrive(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        stream_kwargs = self.get_stream_kwargs(config)
+        stream_kwargs = {"authenticator": self.get_authenticator(config)}
         incremental_kwargs = {**stream_kwargs, "replication_start_date": pendulum.parse(config["replication_start_date"])}
         streams = [
             Activities(**incremental_kwargs),
@@ -61,25 +61,17 @@ class SourcePipedrive(AbstractSource):
         return streams
 
     @staticmethod
-    def get_stream_kwargs(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        authorization = config.get("authorization", {})
-        stream_kwargs = dict()
-
-        auth_type = authorization.get("auth_type")
-        if auth_type == "Client":
-            stream_kwargs["authenticator"] = Oauth2Authenticator(
-                token_refresh_endpoint="https://oauth.pipedrive.com/oauth/token",
-                client_secret=authorization.get("client_secret"),
-                client_id=authorization.get("client_id"),
-                refresh_token=authorization.get("refresh_token"),
-            )
-        elif auth_type == "Token":
-            stream_kwargs["authenticator"] = {"api_token": authorization.get("api_token")}
+    def get_authenticator(config: Mapping[str, Any]):
+        authorization = config.get("authorization")
+        if authorization:
+            if authorization["auth_type"] == "Client":
+                return Oauth2Authenticator(
+                    token_refresh_endpoint="https://oauth.pipedrive.com/oauth/token",
+                    client_id=authorization["client_id"],
+                    client_secret=authorization["client_secret"],
+                    refresh_token=authorization["refresh_token"],
+                )
+            elif authorization["auth_type"] == "Token":
+                return QueryStringTokenAuthenticator(api_token=authorization["api_token"])
         # backward compatibility
-        else:
-            if config.get("api_token"):
-                stream_kwargs["authenticator"] = {"api_token": config.get("api_token")}
-            else:
-                raise Exception(f"Invalid auth type: {auth_type}")
-
-        return stream_kwargs
+        return QueryStringTokenAuthenticator(api_token=config["api_token"])
