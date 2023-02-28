@@ -50,6 +50,12 @@
   icon: alloydb.svg
   sourceType: database
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "${host}"
+      - "*.cloud.google.com"
+      - "*.googleapis.com"
+      - "${tunnel_method.tunnel_host}"
 - name: AWS CloudTrail
   sourceDefinitionId: 6ff047c0-f5d5-4ce5-8c81-204a830fa7e1
   dockerRepository: airbyte/source-aws-cloudtrail
