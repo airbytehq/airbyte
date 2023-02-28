@@ -38,8 +38,3 @@ setup(
         ],
     },
 )
-
-
-def local_pkg(name: str) -> str:
-    """Returns a path to a local package."""
-    return f"{name} @ file://{Path.cwd().parent / name}"
