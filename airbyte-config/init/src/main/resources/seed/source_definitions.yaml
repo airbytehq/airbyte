@@ -1620,7 +1620,7 @@
 - name: SalesLoft
   sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
   dockerRepository: airbyte/source-salesloft
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesloft
   icon: salesloft.svg
   sourceType: api
@@ -1867,11 +1867,15 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 2.0.2
+  dockerImageTag: 2.0.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - sandbox-ads.tiktok.com
+      - business-api.tiktok.com
 - name: Timely
   sourceDefinitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
   dockerRepository: airbyte/source-timely
@@ -2125,7 +2129,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.24
+  dockerImageTag: 0.2.25
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk-support.svg
   sourceType: api

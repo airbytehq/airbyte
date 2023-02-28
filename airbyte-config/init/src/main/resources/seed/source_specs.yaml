@@ -13104,7 +13104,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-salesloft:0.1.3"
+- dockerImage: "airbyte/source-salesloft:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesloft"
     connectionSpecification:
@@ -13116,7 +13116,7 @@
       - "client_secret"
       - "refresh_token"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         client_id:
           type: "string"
@@ -14999,7 +14999,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.2"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -16508,7 +16508,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.24"
+- dockerImage: "airbyte/source-zendesk-support:0.2.25"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
