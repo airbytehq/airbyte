@@ -178,7 +178,10 @@ public class OpenSearchConnection {
      *                     server
      */
 <<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
+<<<<<<< HEAD
 <<<<<<< HEAD:airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpenSearchConnection.java
+=======
+>>>>>>> db0a33f5c8 (add bulk operations)
     public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpenSearchWriteConfig config) throws IOException {
         var bulkRequest = new BulkRequest.Builder();
         for (var doc : records) {
@@ -196,6 +199,13 @@ public class OpenSearchConnection {
 >>>>>>> 7edf6edbf6 (capitalize class name):airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
         var bulkRequest = new BulkRequest.Builder();
 
+<<<<<<< HEAD
+=======
+=======
+    public BulkResponse indexDocuments(String index, List<AirbyteRecordMessage> records, OpensearchWriteConfig config) throws IOException {
+        var bulkRequest = new BulkRequest.Builder();
+
+>>>>>>> db0a33f5c8 (add bulk operations)
 
         for (var doc : records) {
             log.debug("adding record to bulk create: {}", doc.getData());
@@ -207,9 +217,12 @@ public class OpenSearchConnection {
                         CreateOperation.of(k -> k.document(doc.getData())))))
                 .refresh(Refresh.True);
 >>>>>>> 2d7fd5647e (add bulk operations):airbyte-integrations/connectors/destination-opensearch/src/main/java/io/airbyte/integrations/destination/opensearch/OpensearchConnection.java
+<<<<<<< HEAD
 =======
 
 >>>>>>> c01deb78a5 (fix error)
+=======
+>>>>>>> db0a33f5c8 (add bulk operations)
         }
 
         try {
