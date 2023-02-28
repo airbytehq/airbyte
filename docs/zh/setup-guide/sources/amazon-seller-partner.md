@@ -5,20 +5,20 @@
 ## 前提条件
 
 * 店铺名称
-* 应用编号（App Id）
+* 应用ID
 * 亚马逊卖家合作伙伴账号
-* AWS Access Key
-* AWS Secret Access Key
-* Role ARN
-* AWS环境（AWS Environment）
-* AWS区域（AWS Region）
+* AWS访问密钥
+* AWS秘密访问密钥
+* 亚马逊资源名称角色
+* AWS环境
+* AWS区域
 
 ## 设置指南
 
 ### 第1步：设置亚马逊卖家合作伙伴
 
-[注册（Register）](https://developer-docs.amazon.com/sp-api/docs/registering-your-application)亚马逊卖家合作伙伴申请。
-[创建（Create）](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html)IAM用户.
+[注册](https://developer-docs.amazon.com/sp-api/docs/registering-your-application)亚马逊卖家合作伙伴申请。
+[创建](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html)IAM用户.
 
 ### 第1步：在Daspire中设置亚马逊卖家合作伙伴数据源
 
@@ -28,15 +28,15 @@
 
 3. 填写亚马逊**店铺名称**。
 
-4. 填写亚马逊**应用编号（App Id）**。
+4. 填写亚马逊**应用ID**。
 
 5. **验证您的亚马逊广告账户**。
 
-6. 填写**AWS Access Key**。
+6. 填写**AWS访问密钥**。
 
-7. 填写**AWS Secret Access Key**。
+7. 填写**AWS秘密访问密钥**。
 
-8. 填写亚马逊**Role ARN**。
+8. 填写亚马逊**资源名称角色**。
 
 9. 选择**AWS环境**。
 
@@ -73,7 +73,7 @@
 * [补充库存报告（Restock Inventory Reports）](https://sellercentral.amazon.com/help/hub/reference/202105670)
 * [文件打开列表报告（Flat File Open Listings Reports）](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 * [文件订单报告（Flat File Orders Reports）](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
-* [文件订单报告最近更新（Flat File Orders Reports By Last Update）](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) (incremental)
+* [文件订单报告最近更新（Flat File Orders Reports By Last Update）](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)（增量）
 * [FBA发货报告（Amazon-Fulfilled Shipments Report）](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 * [商家列表报告（Merchant Listings Reports）](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 * [供应商直接履行配送（Vendor Direct Fulfillment Shipping）](https://developer-docs.amazon.com/sp-api/docs/vendor-direct-fulfillment-shipping-api-v1-reference)
