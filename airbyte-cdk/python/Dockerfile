@@ -32,5 +32,5 @@ ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
 # needs to be the same as CDK
-LABEL io.airbyte.version=0.0.1-test_c
+LABEL io.airbyte.version=0.29.0
 LABEL io.airbyte.name=airbyte/source-declarative-manifest
