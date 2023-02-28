@@ -5,15 +5,45 @@ on:
       - issue-22442_**
 
 jobs:
-  publish-docker:
-    name: Publish Docker Image
-    # TODO validate if it works since it's different from current publish-command.yml
+  ## Gradle Build
+  # In case of self-hosted EC2 errors, remove this block.
+  start-publish-image-runner-0:
+    name: Start Build EC2 Runner 0
     runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           repository: airbytehq/airbyte
+          # FIXME
+          ref: issue-22442_publish-docker-image-on-cdk-publish
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+  publish-image:
+    timeout-minutes: 240
+    needs:
+      - start-publish-image-runner-0
+    runs-on: runner-pool-${{ github.run_id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          # FIXME
           ref: issue-22442_publish-docker-image-on-cdk-publish
       - name: Install Java
         uses: actions/setup-java@v3
@@ -24,15 +54,75 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Publish source_declarative_manifest Docker Image
+      - name: Install Pyenv
+        # FIXME confirm if it is useful
+        run: |
+          python3 -m pip install --quiet virtualenv==16.7.9 --user
+          rm -r venv || echo "no pre-existing venv"
+          python3 -m virtualenv venv
+          source venv/bin/activate
+      - name: Set Name and Version Environment Vars
+        if: startsWith(matrix.connector, 'connectors')
+        run: |
+          source tools/lib/lib.sh
+          echo "IMAGE_NAME=source-declarative-manifest >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$(_get_docker_image_version airbyte-cdk/python/Dockerfile)" >> $GITHUB_ENV
+      - name: Prepare Sentry
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Publish ${{ matrix.connector }}
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          TZ: UTC
         uses: Wandalen/wretry.action@master
         with:
           command: |
             docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
             ./tools/integrations/manage.sh publish airbyte-cdk/python false
-          attempt_limit: 1
+          attempt_limit: 3
           attempt_delay: 5000 in # ms
+        # FIXME uncomment and test
+      #- name: Create Sentry Release
+      #  run: |
+      #    SENTRY_RELEASE_NAME="airbyte-${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+      #    sentry-cli releases set-commits "$SENTRY_RELEASE_NAME" --auto --ignore-missing &&
+      #    sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
+      #  env:
+      #    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+      #    SENTRY_ORG: airbytehq
+      #    SENTRY_PROJECT: connector-incident-management
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-publish-image-runner-0:
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    name: Stop Build EC2 Runner
+    needs:
+      - start-publish-image-runner-0 # required to get output from the start-runner job
+      - publish-image # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: airbytehq/ec2-github-runner@base64v1.1.0
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-publish-image-runner-0.outputs.label }}
+          ec2-instance-id: ${{ needs.start-publish-image-runner-0.outputs.ec2-instance-id }}
