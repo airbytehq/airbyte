@@ -48,7 +48,7 @@ setup(
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
-    python_requires=">=3.9",
+    python_requires=">=3.10",
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={
         "console_scripts": [
