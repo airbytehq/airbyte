@@ -1,4 +1,4 @@
-import { ComponentMeta } from "@storybook/react";
+import { StoryObj } from "@storybook/react";
 import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
@@ -6,12 +6,6 @@ import { Card } from "components/ui/Card";
 import { FlexContainer, FlexItem } from "components/ui/Flex";
 
 import { RHFForm, RHFControl } from "./index";
-
-/**
- * todo:
- * - Add Dropdown control
- * - Add TS typing (see 'any' in RHFForm's props)
- */
 
 const schema = yup.object({
   some_input: yup.string().required("This is a required field."),
@@ -23,10 +17,8 @@ const schema = yup.object({
 export default {
   title: "Forms",
   component: RHFForm,
-  argTypes: {
-    onSubmit: { action: "submitted" },
-  },
-} as ComponentMeta<typeof RHFForm>;
+  parameters: { actions: { argTypesRegex: "^on.*" } },
+} as StoryObj<typeof RHFForm>;
 
 interface MyFormValues {
   some_input: string;
@@ -46,45 +38,40 @@ const listOptions = ["one", "two", "three"].map((v) => ({ label: v, value: v }))
 
 const MyFormControl = RHFControl<MyFormValues>;
 
-export const Primary = () => (
-  <RHFForm
-    onSubmit={(values) => {
-      console.log(values);
-      return Promise.resolve(values);
-    }}
-    schema={schema}
-    defaultValues={defaultValues}
-  >
-    <Card withPadding>
-      <RHFControl<MyFormValues>
-        fieldType="input"
-        name="some_input"
-        label="A default text input"
-        description="Some default message that appears under the label"
-      />
-      <MyFormControl
-        fieldType="input"
-        type="password"
-        name="some_password"
-        label="Password input"
-        labelTooltip={
-          <>
-            <p>A tooltip to give the user more context. Can also include HTML:</p>
-            <ol>
-              <li>One</li>
-              <li>Two</li>
-              <li>Three</li>
-            </ol>
-          </>
-        }
-      />
-      <MyFormControl fieldType="date" name="some_date" format="date-time" label="Date input" />
-      <MyFormControl fieldType="dropdown" name="some_select" label="DropDown input" options={listOptions} />
-      <FlexContainer justifyContent="flex-end">
-        <FlexItem>
-          <Button type="submit">Submit</Button>
-        </FlexItem>
-      </FlexContainer>
-    </Card>
-  </RHFForm>
-);
+export const Primary: StoryObj<typeof RHFForm> = {
+  render: (props) => (
+    <RHFForm {...props} schema={schema} defaultValues={defaultValues}>
+      <Card withPadding>
+        <RHFControl<MyFormValues>
+          fieldType="input"
+          name="some_input"
+          label="A default text input"
+          description="Some default message that appears under the label"
+        />
+        <MyFormControl
+          fieldType="input"
+          type="password"
+          name="some_password"
+          label="Password input"
+          labelTooltip={
+            <>
+              <p>A tooltip to give the user more context. Can also include HTML:</p>
+              <ol>
+                <li>One</li>
+                <li>Two</li>
+                <li>Three</li>
+              </ol>
+            </>
+          }
+        />
+        <MyFormControl fieldType="date" name="some_date" format="date-time" label="Date input" />
+        <MyFormControl fieldType="dropdown" name="some_select" label="DropDown input" options={listOptions} />
+        <FlexContainer justifyContent="flex-end">
+          <FlexItem>
+            <Button type="submit">Submit</Button>
+          </FlexItem>
+        </FlexContainer>
+      </Card>
+    </RHFForm>
+  ),
+};

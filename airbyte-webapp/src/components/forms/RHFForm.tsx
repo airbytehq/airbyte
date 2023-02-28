@@ -7,7 +7,6 @@ import { ObjectSchema } from "yup";
 export type FormValues = Record<string, any>;
 
 interface RHFFormProps<T extends FormValues> {
-  // todo: type values correctly
   onSubmit: (values: T) => Promise<unknown>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: ObjectSchema<T>;
