@@ -50,6 +50,7 @@ The Kafka source connector supports the following [sync modes](https://docs.airb
 
 | Version | Date       | Pull Request                                           | Subject                                   |
 | :------ | :--------  | :------------------------------------------------------| :---------------------------------------- |
+| 0.2.3 | 2022-12-06 | [19587](https://github.com/airbytehq/airbyte/pull/19587) | Fix missing data before consumer is closed |
 | 0.2.2 | 2022-11-04 | [18648](https://github.com/airbytehq/airbyte/pull/18648) | Add missing record_count increment for JSON|
 | 0.2.1 | 2022-11-04 | This version was the same as 0.2.0 and was committed so using 0.2.2 next to keep versions in order|
 | 0.2.0 | 2022-08-22 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Added AVRO format support and Support for maximum records to process|

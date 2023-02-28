@@ -79,10 +79,10 @@
       "type": ["null", "string"]
     },
     "billing": {
-      "$ref": "billing.json"
+      "$ref": "order_billing.json"
     },
     "shipping": {
-      "$ref": "shipping.json"
+      "$ref": "order_shipping.json"
     },
     "payment_method": {
       "type": ["null", "string"]

@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "metric": {
+      "type": "string"
+    }
+  },
+  "required": ["id", "name", "channel", "metric"]
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
@@ -14,14 +14,16 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DefaultDestStateLifecycleManager;
 import io.airbyte.integrations.destination.dest_state_lifecycle_manager.DestStateLifecycleManager;
+import io.airbyte.integrations.destination.record_buffer.BufferFlushType;
 import io.airbyte.integrations.destination.record_buffer.BufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
@@ -125,6 +127,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final AirbyteStreamNameNamespacePair stream = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
 
+      // if stream is not part of list of streams to sync to then throw invalid stream exception
       if (!streamNames.contains(stream)) {
         throwUnrecognizedStream(catalog, message);
       }
@@ -134,21 +137,47 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      // if the buffer flushes, update the states appropriately.
-      if (bufferingStrategy.addRecord(stream, message)) {
-        markStatesAsFlushedToTmpDestination();
+      final Optional<BufferFlushType> flushType = bufferingStrategy.addRecord(stream, message);
+      // if present means that a flush occurred
+      if (flushType.isPresent()) {
+        if (BufferFlushType.FLUSH_ALL.equals(flushType.get())) {
+          // when all buffers have been flushed then we can update all states as flushed
+          markStatesAsFlushedToDestination();
+        } else if (BufferFlushType.FLUSH_SINGLE_STREAM.equals(flushType.get())) {
+          if (stateManager.supportsPerStreamFlush()) {
+            // per-stream instance can handle flush of just a single stream
+            markStatesAsFlushedToDestination();
+          }
+          /*
+           * We don't mark {@link AirbyteStateMessage} as committed in the case with GLOBAL/LEGACY because
+           * within a single stream being flushed it is not deterministic that all the AirbyteRecordMessages
+           * have been committed
+           */
+        }
       }
-
+      /*
+       * TODO: (ryankfu) after record has added and time has been met then to see if time has elapsed then
+       * flush the buffer
+       *
+       * The reason that this is where time component should exist here is primarily due to #acceptTracked
+       * is the method that processes each AirbyteMessage. Method to call is
+       * bufferingStrategy.flushWriter(stream, streamBuffer)
+       */
     } else if (message.getType() == Type.STATE) {
       stateManager.addState(message);
     } else {
       LOGGER.warn("Unexpected message: " + message.getType());
     }
-
   }
 
-  private void markStatesAsFlushedToTmpDestination() {
-    stateManager.markPendingAsFlushed();
+  /**
+   * After marking states as committed, emit the state message to platform then clear state messages
+   * to avoid resending the same state message to the platform
+   */
+  private void markStatesAsFlushedToDestination() {
+    stateManager.markPendingAsCommitted();
+    stateManager.listCommitted().forEach(outputRecordCollector);
+    stateManager.clearCommitted();
   }
 
   private static void throwUnrecognizedStream(final ConfiguredAirbyteCatalog catalog, final AirbyteMessage message) {
@@ -157,6 +186,15 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
             Jsons.serialize(catalog), Jsons.serialize(message)));
   }
 
+  /**
+   * Cleans up buffer based on whether the sync was successful or some exception occurred. In the case
+   * where a failure occurred we do a simple clean up any lingering data. Otherwise, flush any
+   * remaining data that has been stored. This is fine even if the state has not been received since
+   * this Airbyte promises at least once delivery
+   *
+   * @param hasFailed true if the stream replication failed partway through, false otherwise
+   * @throws Exception
+   */
   @Override
   protected void close(final boolean hasFailed) throws Exception {
     Preconditions.checkState(hasStarted, "Cannot close; has not started.");
@@ -169,17 +207,22 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       LOGGER.error("executing on failed close procedure.");
     } else {
       LOGGER.info("executing on success close procedure.");
+      // When flushing the buffer, this will call the respective #flushBufferFunction which bundles
+      // the flush and commit operation, so if successful then mark state as committed
       bufferingStrategy.flushAll();
-      markStatesAsFlushedToTmpDestination();
+      markStatesAsFlushedToDestination();
     }
     bufferingStrategy.close();
 
     try {
-      // flushed is empty in 2 cases:
-      // 1. either it is full refresh (no state is emitted necessarily).
-      // 2. it is stream but no states were flushed.
-      // in both of these cases, if there was a failure, we should not bother committing. otherwise,
-      // attempt to commit.
+      /*
+       * TODO: (ryankfu) Remove usage of hasFailed with onClose after all destination connectors have been
+       * updated to support checkpointing
+       *
+       * flushed is empty in 2 cases: 1. either it is full refresh (no state is emitted necessarily) 2. it
+       * is stream but no states were flushed in both of these cases, if there was a failure, we should
+       * not bother committing. otherwise attempt to commit
+       */
       if (stateManager.listFlushed().isEmpty()) {
         onClose.accept(hasFailed);
       } else {
@@ -191,9 +234,6 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose.accept(false);
       }
 
-      // if onClose succeeds without exception then we can emit the state record because it means its
-      // records were not only flushed, but committed.
-      stateManager.markFlushedAsCommitted();
       stateManager.listCommitted().forEach(outputRecordCollector);
     } catch (final Exception e) {
       LOGGER.error("Close failed.", e);

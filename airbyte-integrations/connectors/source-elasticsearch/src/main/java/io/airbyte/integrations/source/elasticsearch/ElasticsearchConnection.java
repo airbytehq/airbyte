@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.elasticsearch;
@@ -150,7 +150,7 @@ public class ElasticsearchConnection {
     Map<String, MappingMetadata> mappings = new HashMap<>();
     // Avoid too_long_frame_exception error by "batching"
     // the indexes mapping calls
-    for(int i = 0; i < indices.size(); i += chunk){
+    for (int i = 0; i < indices.size(); i += chunk) {
       String[] copiedIndices = indices.subList(i, Math.min(indices.size(), i + chunk)).toArray(String[]::new);
       GetMappingsRequest request = new GetMappingsRequest();
       request.indices(copiedIndices);

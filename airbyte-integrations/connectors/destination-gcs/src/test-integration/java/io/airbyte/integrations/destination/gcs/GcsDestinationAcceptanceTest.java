@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -23,9 +23,10 @@ import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -64,12 +65,17 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected NamingConventionTransformer nameTransformer;
   protected S3StorageOperations s3StorageOperations;
 
-  protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
+  public GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
   }
 
   protected JsonNode getBaseConfigJson() {
     return Jsons.deserialize(IOs.readFile(Path.of(SECRET_FILE_PATH)));
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   @Override

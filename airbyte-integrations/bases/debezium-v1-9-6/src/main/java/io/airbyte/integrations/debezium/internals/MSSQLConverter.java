@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -8,6 +8,7 @@ import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.DateTimeConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
@@ -107,7 +108,9 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
-
+      if (field.typeName().equalsIgnoreCase("DATE")) {
+        return DateTimeConverter.convertToDate(input);
+      }
       return DebeziumConverterUtils.convertDate(input);
     });
   }

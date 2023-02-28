@@ -1,15 +1,10 @@
 # API documentation
 
-:::caution
+Airbyte has 2 APIs. Please see the table below for differences between them.
 
-For Airbyte Open-Source you don't need the API Token for Authentication!
-All endpoints are possible to access using the API without it. **Note**: Airbyte Cloud does not currently support API access. 
-
-:::
-
-Our Configuration API is still in alpha and might change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API.
-
-**Check it out** [**here**](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html)**.** It is still rudimentary, and we will improve in the next couple of weeks.
-
-Don't hesitate to ask us on [Slack](https://slack.airbyte.io), if you have any questions about it.
-
+| **Configuration API**                                                                                                                                                          | **Airbyte API**                                                                                                                                                                              |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Purpose:** Enables OSS users to configure their own Self-Hosted Airbyte deployment (ex UI, internal state, etc)                                                              | **Purpose:** Enables users to control Airbyte programmatically and use with Orchestration tools (ex: Airflow)                                                                                |
+| **Purpose:** Enables Airbyte team to configure Airbyte Cloud (ex UI, internal state, etc)                                                                                      | **Purpose:** Exists for Airbyte users to write applications against and enable [Powered by Airbyte](https://airbyte.com/embed-airbyte-connectors-with-api) (Headless version and UI version) |
+| **Status:** Alpha state and might change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API. | **Status:** Closed Beta. See [Airbyte roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap) for more details.                                                             |
+| **Documentation** [Available here](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html)                                                           | **Documentation:** Available to Closed Beta participants.                                                                                                                                    |

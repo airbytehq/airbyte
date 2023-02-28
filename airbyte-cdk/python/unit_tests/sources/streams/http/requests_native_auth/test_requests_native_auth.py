@@ -1,14 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
 import logging
 
+import freezegun
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.config_observation import ObservedDict
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
@@ -188,6 +188,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
                 "refresh_token": "my_refresh_token",
                 "client_id": "my_client_id",
                 "client_secret": "my_client_secret",
+                "token_expiry_date": "2022-12-31T00:00:00+00:00"
             }
         }
 
@@ -200,7 +201,9 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
             connector_config,
             token_refresh_endpoint="foobar",
         )
-        assert isinstance(authenticator._connector_config, ObservedDict)
+        assert authenticator.access_token == connector_config["credentials"]["access_token"]
+        assert authenticator.get_refresh_token() == connector_config["credentials"]["refresh_token"]
+        assert authenticator.get_token_expiry_date() == pendulum.parse(connector_config["credentials"]["token_expiry_date"])
 
     def test_init_with_invalid_config(self, invalid_connector_config):
         with pytest.raises(ValueError):
@@ -209,6 +212,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
                 token_refresh_endpoint="foobar",
             )
 
+    @freezegun.freeze_time("2022-12-31")
     def test_get_access_token(self, capsys, mocker, connector_config):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
@@ -220,7 +224,9 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         captured = capsys.readouterr()
         airbyte_message = json.loads(captured.out)
         expected_new_config = connector_config.copy()
+        expected_new_config["credentials"]["access_token"] = "new_access_token"
         expected_new_config["credentials"]["refresh_token"] = "new_refresh_token"
+        expected_new_config["credentials"]["token_expiry_date"] = "2022-12-31T00:00:42+00:00"
         assert airbyte_message["control"]["connectorConfig"]["config"] == expected_new_config
         assert authenticator.access_token == access_token == "new_access_token"
         assert authenticator.get_refresh_token() == "new_refresh_token"

@@ -5,13 +5,14 @@ This page guides you through the process of setting up the S3 destination connec
 ## Prerequisites
 
 List of required fields:
-* **Access Key ID**
-* **Secret Access Key**
-* **S3 Bucket Name**
-* **S3 Bucket Path**
-* **S3 Bucket Region**
-* **Glue database**
-* **Glue serialization library**
+
+- **Access Key ID**
+- **Secret Access Key**
+- **S3 Bucket Name**
+- **S3 Bucket Path**
+- **S3 Bucket Region**
+- **Glue database**
+- **Glue serialization library**
 
 1. Allow connections from Airbyte server to your AWS S3/ Minio S3 cluster \(if they exist in separate VPCs\).
 2. An S3 bucket with credentials or an instance profile with read/write permissions configured for the host (ec2, eks).
@@ -28,6 +29,7 @@ Prepare S3 bucket that will be used as destination, see [this](https://docs.aws.
 NOTE: If the S3 cluster is not configured to use TLS, the connection to Amazon S3 silently reverts to an unencrypted connection. Airbyte recommends all connections be configured to use TLS/SSL as support for AWS's [shared responsibility model](https://aws.amazon.com/compliance/shared-responsibility-model/)
 
 ## Step 2: Set up Glue
+
 [Sign in](https://signin.aws.amazon.com/signin) to your AWS account.
 Use an existing or create new [Access Key ID and Secret Access Key](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#:~:text=IAM%20User%20Guide.-,Programmatic%20access,-You%20must%20provide).
 
@@ -35,34 +37,33 @@ Prepare the Glue database that will be used as destination, see [this](https://d
 
 ## Step 3: Set up the S3-Glue destination connector in Airbyte
 
-
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **S3** from the Destination type dropdown and enter a name for this connector.
 4. Configure fields:
-    * **Access Key Id**
-        * See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
-        * We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the bucket.
-    * **Secret Access Key**
-        * Corresponding key to the above key id.
-    * **S3 Bucket Name**
-        * See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.
-    * **S3 Bucket Path**
-        * Subdirectory under the above bucket to sync the data into.
-    * **S3 Bucket Region**
-        * See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.
-    * **S3 Path Format**
-        *  Additional string format on how to store data under S3 Bucket Path. Default value is `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`.
-    * **S3 Endpoint**
-        * Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
-    * **S3 Filename pattern**
-        * The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
-    * **Glue database**
-        * The Glue database name that was previously created through the management console or the cli.
-    * **Glue serialization library**
-        * The library that your query engine will use for reading and writing data in your lake
+   - **Access Key Id**
+     - See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
+     - We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the bucket.
+   - **Secret Access Key**
+     - Corresponding key to the above key id.
+   - **S3 Bucket Name**
+     - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.
+   - **S3 Bucket Path**
+     - Subdirectory under the above bucket to sync the data into.
+   - **S3 Bucket Region**
+     - See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.
+   - **S3 Path Format**
+     - Additional string format on how to store data under S3 Bucket Path. Default value is `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`.
+   - **S3 Endpoint**
+     - Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
+   - **S3 Filename pattern**
+     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+   - **Glue database**
+     - The Glue database name that was previously created through the management console or the cli.
+   - **Glue serialization library**
+     - The library that your query engine will use for reading and writing data in your lake
 5. Click `Set up destination`.
 
 **For Airbyte Open Source:**
@@ -71,51 +72,53 @@ Prepare the Glue database that will be used as destination, see [this](https://d
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the destination setup page, select **S3** from the Destination type dropdown and enter a name for this connector.
 4. Configure fields:
-    * **Access Key Id**
-        * See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
-        * See [this](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html) on how to create a instanceprofile.
-        * We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the staging bucket.
-        * If the Access Key and Secret Access Key are not provided, the authentication will rely on the instanceprofile.
-    * **Secret Access Key**
-        * Corresponding key to the above key id.
-    * Make sure your S3 bucket is accessible from the machine running Airbyte.
-        * This depends on your networking setup.
-        * You can check AWS S3 documentation with a tutorial on how to properly configure your S3's access [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-overview.html).
-        * If you use instance profile authentication, make sure the role has permission to read/write on the bucket.
-        * The easiest way to verify if Airbyte is able to connect to your S3 bucket is via the check connection tool in the UI.
-    * **S3 Bucket Name**
-        * See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.
-    * **S3 Bucket Path**
-        * Subdirectory under the above bucket to sync the data into.
-    * **S3 Bucket Region**
-        * See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.
-    * **S3 Path Format**
-        * Additional string format on how to store data under S3 Bucket Path. Default value is `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`.
-    * **S3 Endpoint**
-        * Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
-    * **S3 Filename pattern**
-        * The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
-   * **Glue database**
-       * The Glue database name that was previously created through the management console or the cli.
-   * **Glue serialization library**
-       * The library that your query engine will use for reading and writing data in your lake
+
+   - **Access Key Id**
+     - See [this](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) on how to generate an access key.
+     - See [this](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html) on how to create a instanceprofile.
+     - We recommend creating an Airbyte-specific user. This user will require [read and write permissions](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_s3_rw-bucket.html) to objects in the staging bucket.
+     - If the Access Key and Secret Access Key are not provided, the authentication will rely on the instanceprofile.
+   - **Secret Access Key**
+     - Corresponding key to the above key id.
+   - Make sure your S3 bucket is accessible from the machine running Airbyte.
+     - This depends on your networking setup.
+     - You can check AWS S3 documentation with a tutorial on how to properly configure your S3's access [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-overview.html).
+     - If you use instance profile authentication, make sure the role has permission to read/write on the bucket.
+     - The easiest way to verify if Airbyte is able to connect to your S3 bucket is via the check connection tool in the UI.
+   - **S3 Bucket Name**
+     - See [this](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) to create an S3 bucket.
+   - **S3 Bucket Path**
+     - Subdirectory under the above bucket to sync the data into.
+   - **S3 Bucket Region**
+     - See [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions) for all region codes.
+   - **S3 Path Format**
+     - Additional string format on how to store data under S3 Bucket Path. Default value is `${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_`.
+   - **S3 Endpoint**
+     - Leave empty if using AWS S3, fill in S3 URL if using Minio S3.
+   - **S3 Filename pattern**
+     - The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
+   - **Glue database**
+     - The Glue database name that was previously created through the management console or the cli.
+   - **Glue serialization library**
+     - The library that your query engine will use for reading and writing data in your lake
 
 5. Click `Set up destination`.
 
 In order for everything to work correctly, it is also necessary that the user whose "S3 Key Id" and "S3 Access Key" are used have access to both the bucket and its contents. Policies to use:
+
 ```json
 {
   "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "s3:*",
-            "Resource": [
-                "arn:aws:s3:::YOUR_BUCKET_NAME/*",
-                "arn:aws:s3:::YOUR_BUCKET_NAME"
-            ]
-            }
-    ]
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::YOUR_BUCKET_NAME/*",
+        "arn:aws:s3:::YOUR_BUCKET_NAME"
+      ]
+    }
+  ]
 }
 ```
 
@@ -149,6 +152,7 @@ The rationales behind this naming pattern are:
 3. The upload time composes of a date part and millis part so that it is both readable and unique.
 
 But it is possible to further customize by using the available variables to format the bucket path:
+
 - `${NAMESPACE}`: Namespace where the stream comes from or configured by the connection namespace fields.
 - `${STREAM_NAME}`: Name of the stream
 - `${YEAR}`: Year in which the sync was writing the output data in.
@@ -162,6 +166,7 @@ But it is possible to further customize by using the available variables to form
 - `${UUID}`: random uuid string
 
 Note:
+
 - Multiple `/` characters in the S3 path are collapsed into a single `/` character.
 - If the output bucket contains too many files, the part id variable is using a `UUID` instead. It uses sequential ID otherwise.
 
@@ -170,12 +175,12 @@ A data sync may create multiple files as the output files can be partitioned by 
 
 ## Supported sync modes
 
-| Feature | Support | Notes |
-| :--- | :---: | :--- |
-| Full Refresh Sync | ✅ | Warning: this mode deletes all previously synced data in the configured bucket path. |
-| Incremental - Append Sync | ✅ |  |
-| Incremental - Deduped History | ❌ | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | ❌ | Setting a specific bucket path is equivalent to having separate namespaces. |
+| Feature                       | Support | Notes                                                                                        |
+| :---------------------------- | :-----: | :------------------------------------------------------------------------------------------- |
+| Full Refresh Sync             |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.         |
+| Incremental - Append Sync     |   ✅    |                                                                                              |
+| Incremental - Deduped History |   ❌    | As this connector does not support dbt, we don't support this sync mode on this destination. |
+| Namespaces                    |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                  |
 
 The Airbyte S3 destination allows you to sync data to AWS S3 or Minio S3. Each stream is written to its own directory under the bucket.
 ⚠️ Please note that under "Full Refresh Sync" mode, data in the configured bucket and path will be wiped out before each sync. We recommend you to provision a dedicated S3 resource for this sync to prevent unexpected data deletion from misconfiguration. ⚠️
@@ -184,9 +189,8 @@ The Airbyte S3 destination allows you to sync data to AWS S3 or Minio S3. Each s
 
 Each stream will be outputted to its dedicated directory according to the configuration. The complete datastore of each stream includes all the output files under that directory. You can think of the directory as equivalent of a Table in the database world.
 
-* Under Full Refresh Sync mode, old output files will be purged before new files are created.
-* Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
-
+- Under Full Refresh Sync mode, old output files will be purged before new files are created.
+- Under Incremental - Append Sync mode, new output files will be added that only contain the new data.
 
 ### JSON Lines \(JSONL\)
 
@@ -231,15 +235,16 @@ The json objects can have the following formats:
 ```
 
 ```text
-{ "_airbyte_ab_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_emitted_at": "1622135805000", "user_id": 123, "name": { "first": "John", "last": "Doe" } } 
-{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "user_id": 456, "name": { "first": "Jane", "last": "Roe" } } 
+{ "_airbyte_ab_id": "26d73cde-7eb1-4e1e-b7db-a4c03b4cf206", "_airbyte_emitted_at": "1622135805000", "user_id": 123, "name": { "first": "John", "last": "Doe" } }
+{ "_airbyte_ab_id": "0a61de1b-9cdd-4455-a739-93572c9a5f20", "_airbyte_emitted_at": "1631948170000", "user_id": 456, "name": { "first": "Jane", "last": "Roe" } }
 ```
 
 Output files can be compressed. The default option is GZIP compression. If compression is selected, the output filename will have an extra extension (GZIP: `.jsonl.gz`).
 
 ## CHANGELOG
 
-| Version | Date | Pull Request | Subject |
-|:--------|:-----|:-------------|:--------|
-|         |      |              |         |
-
+| Version | Date       | Pull Request                                             | Subject                                                                                 |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 0.1.2   | 2023-02-01 | [22220](https://github.com/airbytehq/airbyte/pull/22220) | Fix race condition in test, table metadata, add Airbyte sync fields to table definition |
+| 0.1.1   | 2022-12-13 | [19907](https://github.com/airbytehq/airbyte/pull/19907) | Fix parsing empty object in schema                                                      |
+| 0.1.0   | 2022-11-17 | [18695](https://github.com/airbytehq/airbyte/pull/18695) | Initial Commit                                                                          |

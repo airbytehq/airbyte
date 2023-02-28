@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
@@ -21,15 +21,15 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -199,7 +199,7 @@ public class BufferedStreamConsumerTest {
     assertThrows(IllegalStateException.class, () -> consumer.accept(expectedRecordsBatch3.get(0)));
     consumer.close();
 
-    verifyStartAndClose();
+    verifyStartAndCloseFailure();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
@@ -219,8 +219,7 @@ public class BufferedStreamConsumerTest {
     assertThrows(IllegalStateException.class, () -> consumer.accept(expectedRecordsBatch3.get(0)));
     consumer.close();
 
-    verify(onStart).call();
-    verify(onClose).accept(true);
+    verifyStartAndCloseFailure();
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
@@ -244,7 +243,7 @@ public class BufferedStreamConsumerTest {
 
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsBatch1);
 
-    verifyNoInteractions(outputRecordCollector);
+    verify(outputRecordCollector).accept(STATE_MESSAGE1);
   }
 
   @Test
@@ -297,6 +296,12 @@ public class BufferedStreamConsumerTest {
   private void verifyStartAndClose() throws Exception {
     verify(onStart).call();
     verify(onClose).accept(false);
+  }
+
+  /** Indicates that a failure occurred while consuming AirbyteMessages */
+  private void verifyStartAndCloseFailure() throws Exception {
+    verify(onStart).call();
+    verify(onClose).accept(true);
   }
 
   private static void consumeRecords(final BufferedStreamConsumer consumer, final Collection<AirbyteMessage> records) {

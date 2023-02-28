@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -56,14 +56,20 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final PgLsn eventLsn = extractLsn(valueAsJson);
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
 
-    if (targetLsn.compareTo(eventLsn) > 0) {
+    if (SnapshotMetadata.TRUE == snapshotMetadata) {
       return false;
+    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+      LOGGER.info("Signalling close because Snapshot is complete");
+      return true;
     } else {
-      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-      // if not snapshot or is snapshot but last record in snapshot.
-      return SnapshotMetadata.TRUE != snapshotMetadata;
+      final PgLsn eventLsn = extractLsn(valueAsJson);
+      boolean isEventLSNAfter = targetLsn.compareTo(eventLsn) <= 0;
+      if (isEventLSNAfter) {
+        LOGGER.info("Signalling close because record's LSN : " + eventLsn + " is after target LSN : " + targetLsn);
+      }
+      return isEventLSNAfter;
     }
   }
 

@@ -1,13 +1,15 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeS3StagingDestination.isPurgeStagingData;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -23,12 +25,13 @@ import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
@@ -40,7 +43,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStagingDestination.class);
-  private String airbyteEnvironment;
+  private final String airbyteEnvironment;
 
   public SnowflakeGcsStagingDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
@@ -53,7 +56,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
+    final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final SnowflakeGcsStagingSqlOperations snowflakeGcsStagingSqlOperations =
         new SnowflakeGcsStagingSqlOperations(nameTransformer, gcsConfig);
@@ -83,12 +86,19 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   private static void attemptWriteAndDeleteGcsObject(final GcsConfig gcsConfig, final String outputTableName) throws IOException {
-    final var storage = getStorageClient(gcsConfig);
-    final var blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
-    final var blobInfo = BlobInfo.newBuilder(blobId).build();
+    final Storage storageClient = getStorageClient(gcsConfig);
+    final BlobId blobId = BlobId.of(gcsConfig.getBucketName(), "check-content/" + outputTableName);
+    final BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
 
-    storage.create(blobInfo, "".getBytes(StandardCharsets.UTF_8));
-    storage.delete(blobId);
+    storageClient.create(blobInfo);
+
+    try (WriteChannel writer = storageClient.writer(blobInfo)) {
+      // Try to write a dummy message to make sure user has all required permissions
+      final byte[] content = "Hello, World!".getBytes(UTF_8);
+      writer.write(ByteBuffer.wrap(content, 0, content.length));
+    } finally {
+      storageClient.delete(blobId);
+    }
   }
 
   public static Storage getStorageClient(final GcsConfig gcsConfig) throws IOException {
@@ -112,7 +122,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  protected Map<String, String> getDefaultConnectionProperties(JsonNode config) {
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return Collections.emptyMap();
   }
 
@@ -123,10 +133,10 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
   }
 
   @Override
-  public AirbyteMessageConsumer getConsumer(JsonNode config,
-                                            ConfiguredAirbyteCatalog catalog,
-                                            Consumer<AirbyteMessage> outputRecordCollector) {
-    GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
+  public AirbyteMessageConsumer getConsumer(final JsonNode config,
+                                            final ConfiguredAirbyteCatalog catalog,
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    final GcsConfig gcsConfig = GcsConfig.getGcsConfig(config);
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),

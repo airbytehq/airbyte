@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.api.client;
@@ -7,7 +7,6 @@ package io.airbyte.api.client;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.api.client.generated.ConnectionApi;
-import io.airbyte.api.client.generated.DbMigrationApi;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.DestinationDefinitionApi;
 import io.airbyte.api.client.generated.DestinationDefinitionSpecificationApi;
@@ -29,12 +28,12 @@ import org.slf4j.LoggerFactory;
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
  * open API generators create a separate class per API "root-route". For example, if our API has two
  * routes "/v1/First/get" and "/v1/Second/get", OpenAPI generates (essentially) the following files:
- *
+ * <p>
  * ApiClient.java, FirstApi.java, SecondApi.java
- *
+ * <p>
  * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get() or new SecondApi(new
  * ApiClient()).get(), which can get cumbersome if we're interacting with many pieces of the API.
- *
+ * <p>
  * This is currently manually maintained. We could look into autogenerating it if needed.
  */
 public class AirbyteApiClient {
@@ -58,7 +57,6 @@ public class AirbyteApiClient {
   private final SourceDefinitionSpecificationApi sourceDefinitionSpecificationApi;
   private final WorkspaceApi workspaceApi;
   private final HealthApi healthApi;
-  private final DbMigrationApi dbMigrationApi;
   private final AttemptApi attemptApi;
   private final StateApi stateApi;
 
@@ -75,7 +73,6 @@ public class AirbyteApiClient {
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(apiClient);
-    dbMigrationApi = new DbMigrationApi(apiClient);
     attemptApi = new AttemptApi(apiClient);
     stateApi = new StateApi(apiClient);
   }
@@ -126,10 +123,6 @@ public class AirbyteApiClient {
 
   public HealthApi getHealthApi() {
     return healthApi;
-  }
-
-  public DbMigrationApi getDbMigrationApi() {
-    return dbMigrationApi;
   }
 
   public AttemptApi getAttemptApi() {

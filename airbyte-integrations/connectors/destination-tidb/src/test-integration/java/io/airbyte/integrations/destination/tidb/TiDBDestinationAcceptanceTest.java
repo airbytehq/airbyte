@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.tidb;
@@ -38,18 +38,9 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
     return "airbyte/destination-tidb:dev";
   }
 
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
 
   @Override
   protected boolean implementsNamespaces() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
     return true;
   }
 

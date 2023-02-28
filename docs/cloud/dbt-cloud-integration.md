@@ -1,9 +1,16 @@
-# Using the dbt Cloud integration
+# Using the dbt Cloud integration 
 
 ## Step 1: Generate a service token
 
-Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-tokens#generating-service-account-tokens) for your dbt Cloud transformation.
+Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-tokens#generating-service-account-tokens) for your dbt Cloud transformation.  
+
+:::note
+
+* To use the dbt Cloud integration, you must use a paid version of dbt Cloud.
+* The service token must have Member, Job Admin, or Account Admin permissions.
  
+:::
+
 ## Step 2: Set up the dbt Cloud integration in Airbyte Cloud
 
 To set up the dbt Cloud integration in Airbyte Cloud:

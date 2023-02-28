@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
 import requests
@@ -29,10 +29,10 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            t0 = pendulum.now()
+            current_datetime = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(t0.add(seconds=expires_in))
+            self.set_token_expiry_date(current_datetime, expires_in)
 
         return self.access_token
 
@@ -102,11 +102,11 @@ class AbstractOauth2Authenticator(AuthBase):
         """List of requested scopes"""
 
     @abstractmethod
-    def get_token_expiry_date(self) -> pendulum.datetime:
+    def get_token_expiry_date(self) -> pendulum.DateTime:
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: pendulum.datetime):
+    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod

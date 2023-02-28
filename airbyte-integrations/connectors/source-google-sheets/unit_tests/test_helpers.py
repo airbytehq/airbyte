@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,11 +15,23 @@ from airbyte_cdk.models.airbyte_protocol import (
     DestinationSyncMode,
     SyncMode,
 )
-from google_sheets_source.client import GoogleSheetsClient
-from google_sheets_source.helpers import Helpers
-from google_sheets_source.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
+from source_google_sheets.client import GoogleSheetsClient
+from source_google_sheets.helpers import Helpers
+from source_google_sheets.models import CellData, GridData, RowData, Sheet, SheetProperties, Spreadsheet
 
 logger = AirbyteLogger()
+
+
+def google_sheet_client(row_data, spreadsheet_id, client):
+    fake_response = Spreadsheet(
+        spreadsheetId=spreadsheet_id,
+        sheets=[Sheet(data=[GridData(rowData=row_data)])],
+    )
+    client.get.return_value.execute.return_value = fake_response
+    with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
+        sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
+        sheet_client.client = client
+    return sheet_client
 
 
 class TestHelpers(unittest.TestCase):
@@ -162,18 +174,20 @@ class TestHelpers(unittest.TestCase):
         spreadsheet_id = "123"
         sheet = "s1"
         expected_first_row = ["1", "2", "3", "4"]
-        fake_response = Spreadsheet(
-            spreadsheetId=spreadsheet_id,
-            sheets=[Sheet(data=[GridData(rowData=[RowData(values=[CellData(formattedValue=v) for v in expected_first_row])])])],
-        )
-
+        row_data = [RowData(values=[CellData(formattedValue=v) for v in expected_first_row])]
         client = Mock()
-        client.get.return_value.execute.return_value = fake_response
-        with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
-            sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
-            sheet_client.client = client
+        sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
         actual = Helpers.get_first_row(sheet_client, spreadsheet_id, sheet)
         self.assertEqual(expected_first_row, actual)
+        client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
+
+    def test_get_first_row_empty_sheet(self):
+        spreadsheet_id = "123"
+        sheet = "s1"
+        row_data = []
+        client = Mock()
+        sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
+        self.assertEqual(Helpers.get_first_row(sheet_client, spreadsheet_id, sheet), [])
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
 
     def test_get_sheets_in_spreadsheet(self):
@@ -236,15 +250,11 @@ class TestHelpers(unittest.TestCase):
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGa-gwYGdV1BjcPP9re66xI8uJK25dtY9Q", result)
 
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/"
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
 
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
-        result = Helpers.get_spreadsheet_id(test_url)
-        self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
-
-        test_url = "http://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q"
+        test_url = "https://docs.google.com/spreadsheets/d/18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q/#"
         result = Helpers.get_spreadsheet_id(test_url)
         self.assertEqual("18vWlVH8BfjGegwY_GdV1BjcPP9re_6xI8uJ-25dtY9Q", result)
 

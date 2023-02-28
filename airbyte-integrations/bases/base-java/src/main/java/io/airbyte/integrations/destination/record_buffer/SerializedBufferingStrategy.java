@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
@@ -7,18 +7,27 @@ package io.airbyte.integrations.destination.record_buffer;
 import io.airbyte.commons.functional.CheckedBiConsumer;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Buffering Strategy used to convert {@link io.airbyte.protocol.models.AirbyteRecordMessage} into a
+ * stream of bytes to more readily save and transmit information
+ *
+ * <p>
+ * This class is meant to be used in conjunction with {@link SerializableBuffer}
+ * </p>
+ */
 public class SerializedBufferingStrategy implements BufferingStrategy {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SerializedBufferingStrategy.class);
@@ -30,6 +39,14 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private long totalBufferSizeInBytes;
   private final ConfiguredAirbyteCatalog catalog;
 
+  /**
+   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer
+   * with an associated buffer type
+   *
+   * @param onCreateBuffer type of buffer used upon creation
+   * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
+   * @param onStreamFlush buffer flush logic used throughout the streaming of messages
+   */
   public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                      final ConfiguredAirbyteCatalog catalog,
                                      final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush) {
@@ -39,10 +56,22 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     this.totalBufferSizeInBytes = 0;
   }
 
+  /**
+   * Handles both adding records and when buffer is full to also flush
+   *
+   * @param stream stream associated with record
+   * @param message {@link AirbyteMessage} to buffer
+   * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty)
+   * @throws Exception
+   */
   @Override
-  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
-    boolean didFlush = false;
+  public Optional<BufferFlushType> addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    Optional<BufferFlushType> flushed = Optional.empty();
 
+    /*
+     * Creates a new buffer for each stream if buffers do not already exist, else return already
+     * computed buffer
+     */
     final SerializableBuffer streamBuffer = allBuffers.computeIfAbsent(stream, k -> {
       LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
           stream.getName(),
@@ -60,18 +89,18 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     }
     final long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
     totalBufferSizeInBytes += actualMessageSizeInBytes;
+    // Flushes buffer when either the buffer was completely filled or only a single stream was filled
     if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
         || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
       flushAll();
-      didFlush = true;
-      totalBufferSizeInBytes = 0;
+      flushed = Optional.of(BufferFlushType.FLUSH_ALL);
     } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
       flushWriter(stream, streamBuffer);
       /*
-       * Note: We intentionally do not mark didFlush as true in the branch of this conditional. Because
-       * this branch flushes individual streams, there is no guaranteee that it will flush records in the
-       * same order that state messages were received. The outcome here is that records get flushed but
-       * our updating of which state messages have been flushed falls behind.
+       * Note: This branch is needed to indicate to the {@link DefaultDestStateLifeCycleManager} that an
+       * individual stream was flushed, there is no guarantee that it will flush records in the same order
+       * that state messages were received. The outcome here is that records get flushed but our updating
+       * of which state messages have been flushed falls behind.
        *
        * This is not ideal from a checkpoint point of view, because it means in the case where there is a
        * failure, we will not be able to report that those records that were flushed and committed were
@@ -82,9 +111,9 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
        * by some other means. That can be caused by the previous branch in this conditional. It is
        * guaranteed by the fact that we always flush all state messages at the end of a sync.
        */
+      flushed = Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM);
     }
-
-    return didFlush;
+    return flushed;
   }
 
   @Override
@@ -93,6 +122,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     onStreamFlush.accept(stream, writer);
     totalBufferSizeInBytes -= writer.getByteCount();
     allBuffers.remove(stream);
+    LOGGER.info("Flushing completed for {}", stream.getName());
   }
 
   @Override
@@ -101,10 +131,10 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     for (final Entry<AirbyteStreamNameNamespacePair, SerializableBuffer> entry : allBuffers.entrySet()) {
       LOGGER.info("Flushing buffer of stream {} ({})", entry.getKey().getName(), FileUtils.byteCountToDisplaySize(entry.getValue().getByteCount()));
       onStreamFlush.accept(entry.getKey(), entry.getValue());
+      LOGGER.info("Flushing completed for {}", entry.getKey().getName());
     }
     close();
     clear();
-
     totalBufferSizeInBytes = 0;
   }
 

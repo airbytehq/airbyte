@@ -61,14 +61,14 @@
       },
       "ssl_mode": {
         "title": "SSL Modes",
-        "description": "SSL connection modes. \n <ul><li><b>disable</b> - Disables encryption of communication between Airbyte and source database</li>\n <li><b>allow</b> - Enables encryption only when required by the source database</li>\n <li><b>prefer</b> - allows unencrypted connection only if the source database does not support encryption</li>\n <li><b>require</b> - Always require encryption. If the source database server does not support encryption, connection will fail</li>\n  <li><b>verify-ca</b> - Always require encryption and verifies that the source database server has a valid SSL certificate</li>\n  <li><b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the source database server</li></ul>\n Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
+        "description": "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
           {
             "title": "allow",
             "additionalProperties": true,
-            "description": "Allow SSL mode.",
+            "description": "Enables encryption only when required by the source database.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -81,7 +81,7 @@
           {
             "title": "prefer",
             "additionalProperties": true,
-            "description": "Prefer SSL mode.",
+            "description": "Allows unencrypted connection only if the source database does not support encryption.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -94,7 +94,7 @@
           {
             "title": "require",
             "additionalProperties": true,
-            "description": "Require SSL mode.",
+            "description": "Always require encryption. If the source database server does not support encryption, connection will fail.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -107,7 +107,7 @@
           {
             "title": "verify-ca",
             "additionalProperties": true,
-            "description": "Verify-ca SSL mode.",
+            "description": "Always require encryption and verifies that the source database server has a valid SSL certificate.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
@@ -151,7 +151,7 @@
           {
             "title": "verify-full",
             "additionalProperties": true,
-            "description": "Verify-full SSL mode.",
+            "description": "This is the most secure mode. Always require encryption and verifies the identity of the source database server.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
@@ -225,7 +225,7 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
+                "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. The `wal2json` plugin is deprecated and will soon be removed so it's not recommended to use. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
                 "order": 2
@@ -250,6 +250,14 @@
                 "order": 5,
                 "min": 120,
                 "max": 1200
+              },
+              "lsn_commit_behaviour": {
+                "type": "string",
+                "title": "LSN commit behaviour",
+                "description": "Determines when Airbtye should flush the LSN of processed WAL logs in the source database. `After loading Data in the destination` is default. If `While reading Data` is selected, in case of a downstream failure (while loading data into the destination), next sync would result in a full sync.",
+                "enum": ["While reading Data", "After loading Data in the destination"],
+                "default": "After loading Data in the destination",
+                "order": 6
               }
             }
           }
@@ -371,7 +379,5 @@
       }
     }
   },
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_destination_sync_modes": []
 }

@@ -30,26 +30,49 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 Several output streams are available from this source:
 
 * [Agents](https://developers.freshdesk.com/api/#agents)
+* [Business Hours](https://developers.freshdesk.com/api/#business-hours)
+* [Canned Responses](https://developers.freshdesk.com/api/#canned-responses)
+* [Canned Response Folders](https://developers.freshdesk.com/api/#list_all_canned_response_folders)
 * [Companies](https://developers.freshdesk.com/api/#companies)
 * [Contacts](https://developers.freshdesk.com/api/#contacts) \(Native Incremental Sync\)
 * [Conversations](https://developers.freshdesk.com/api/#conversations)
+* [Discussion Categories](https://developers.freshdesk.com/api/#category_attributes)
+* [Discussion Comments](https://developers.freshdesk.com/api/#comment_attributes)
+* [Discussion Forums](https://developers.freshdesk.com/api/#forum_attributes)
+* [Discussion Topics](https://developers.freshdesk.com/api/#topic_attributes)
+* [Email Configs](https://developers.freshdesk.com/api/#email-configs)
+* [Email Mailboxes](https://developers.freshdesk.com/api/#email-mailboxes)
 * [Groups](https://developers.freshdesk.com/api/#groups)
+* [Products](https://developers.freshdesk.com/api/#products)
 * [Roles](https://developers.freshdesk.com/api/#roles)
 * [Satisfaction Ratings](https://developers.freshdesk.com/api/#satisfaction-ratings)
+* [Scenario Automations](https://developers.freshdesk.com/api/#scenario-automations)
+* [Settings](https://developers.freshdesk.com/api/#settings)
 * [Skills](https://developers.freshdesk.com/api/#skills)
+* [SLA Policies](https://developers.freshdesk.com/api/#sla-policies)
+* [Solution Articles](https://developers.freshdesk.com/api/#solution_article_attributes)
+* [Solution Categories](https://developers.freshdesk.com/api/#solution_category_attributes)
+* [Solution Folders](https://developers.freshdesk.com/api/#solution_folder_attributes)
 * [Surveys](https://developers.freshdesk.com/api/#surveys)
 * [Tickets](https://developers.freshdesk.com/api/#tickets) \(Native Incremental Sync\)
+* [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
 * [Time Entries](https://developers.freshdesk.com/api/#time-entries)
 
 ## Performance considerations
 
 The Freshdesk connector should not run into Freshdesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
+If you don't use the start date Freshdesk will retrieve only the last 30 days. More information [here](https://developers.freshdesk.com/api/#list_all_tickets).
+
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 3.0.2   | 2023-02-06 | [21970](https://github.com/airbytehq/airbyte/pull/21970) | Enable availability strategy for all streams                                                       |
+| 3.0.0   | 2023-01-31 | [22164](https://github.com/airbytehq/airbyte/pull/22164) | Rename nested `business_hours` table to `working_hours`                               |
+| 2.0.1   | 2023-01-27 | [21888](https://github.com/airbytehq/airbyte/pull/21888) | Set `AvailabilityStrategy` for streams explicitly to `None`                           |
+| 2.0.0   | 2022-12-20 | [20416](https://github.com/airbytehq/airbyte/pull/20416) | Fix `SlaPolicies` stream schema                                                       |
 | 1.0.0   | 2022-11-16 | [19496](https://github.com/airbytehq/airbyte/pull/19496) | Fix `Contacts` stream schema                                                          |
 | 0.3.8   | 2022-11-11 | [19349](https://github.com/airbytehq/airbyte/pull/19349) | Do not rely on response.json() when deciding to retry a request                       |
 | 0.3.7   | 2022-11-03 | [18397](https://github.com/airbytehq/airbyte/pull/18397) | Fix base url for v2 API.                                                              |

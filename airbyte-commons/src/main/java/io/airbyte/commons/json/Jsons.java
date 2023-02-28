@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -253,17 +253,29 @@ public class Jsons {
   }
 
   /**
-   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. When
+   * applyFlattenToArray is true, each element in the array will be one entry in the returned map.
+   * This behavior is used in the Redshift SUPER type. When it is false, the whole array will be one
+   * entry. This is used in the JobTracker.
    */
   @SuppressWarnings("PMD.ForLoopCanBeForeach")
-  public static Map<String, Object> flatten(final JsonNode node) {
+  public static Map<String, Object> flatten(final JsonNode node, final Boolean applyFlattenToArray) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
       for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
         final Entry<String, JsonNode> entry = it.next();
         final String field = entry.getKey();
         final JsonNode value = entry.getValue();
-        mergeMaps(output, field, flatten(value));
+        mergeMaps(output, field, flatten(value, applyFlattenToArray));
+      }
+      return output;
+    } else if (node.isArray() && applyFlattenToArray) {
+      final Map<String, Object> output = new HashMap<>();
+      final int arrayLen = node.size();
+      for (int i = 0; i < arrayLen; i++) {
+        final String field = String.format("[%d]", i);
+        final JsonNode value = node.get(i);
+        mergeMaps(output, field, flatten(value, applyFlattenToArray));
       }
       return output;
     } else {
@@ -284,6 +296,15 @@ public class Jsons {
       }
       return singletonMap(null, value);
     }
+  }
+
+  /**
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. New usage of
+   * this function is best to explicitly declare the intended array mode. This version is provided for
+   * backward compatibility.
+   */
+  public static Map<String, Object> flatten(final JsonNode node) {
+    return flatten(node, false);
   }
 
   /**

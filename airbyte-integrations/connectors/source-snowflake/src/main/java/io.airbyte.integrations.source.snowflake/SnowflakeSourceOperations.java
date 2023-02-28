@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
 
+import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
+import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
@@ -23,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       return "TIMESTAMPLTZ".equalsIgnoreCase(typeName)
@@ -74,7 +75,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
@@ -94,7 +95,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
@@ -103,7 +104,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       return;
     }
-    super.setJsonField(resultSet, colIndex, json);
+    super.copyToJsonField(resultSet, colIndex, json);
   }
 
   @Override
@@ -113,7 +114,8 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
   }
@@ -125,16 +127,21 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final Date date = resultSet.getDate(index);
-    node.put(columnName, DateTimeConverter.convertToDate(date));
+  protected void putDate(final ObjectNode node,
+                         final String columnName,
+                         final ResultSet resultSet,
+                         final int index)
+      throws SQLException {
+    putJavaSQLDate(node, columnName, resultSet, index);
   }
 
   @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    // resultSet.getTime() will lose nanoseconds precision
-    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
-    node.put(columnName, DateTimeConverter.convertToTime(localTime));
+  protected void putTime(final ObjectNode node,
+                         final String columnName,
+                         final ResultSet resultSet,
+                         final int index)
+      throws SQLException {
+    putJavaSQLTime(node, columnName, resultSet, index);
   }
 
 }

@@ -13,11 +13,10 @@ import org.jsoup.Jsoup;
 
 dependencies {
     implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
-    implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-commons-worker')
+    implementation libs.airbyte.protocol
     implementation 'org.mockito:mockito-core:4.6.1'
 
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
@@ -30,7 +29,7 @@ dependencies {
 
 def getFullPath(String className) {
     def matchingFiles = project.fileTree("src/main/java")
-            .filter { file -> file.getName().equals("${className}.java".toString())}.asCollection()
+            .filter { file -> file.getName().equals("${className}.java".toString()) }.asCollection()
     if (matchingFiles.size() == 0) {
         throw new IllegalArgumentException("Ambiguous class name ${className}: no file found.")
     }
@@ -51,14 +50,15 @@ task generateSourceTestDocs(type: Javadoc) {
     destinationDir = javadocOutputDir
 
     doLast {
-        def className = "SourceAcceptanceTest" // this can be made into a list once we have multiple standard tests, and can also be used for destinations
+        def className = "SourceAcceptanceTest"
+        // this can be made into a list once we have multiple standard tests, and can also be used for destinations
         def pathInPackage = getFullPath(className)
         def stdSrcTest = project.file("${javadocOutputDir}/${pathInPackage}.html").readLines().join("\n")
         def methodList = Jsoup.parse(stdSrcTest).body().select("section.methodDetails>ul>li>section")
         def md = ""
-        for (methodInfo in methodList){
+        for (methodInfo in methodList) {
             def annotations = methodInfo.select(".memberSignature>.annotations").text()
-            if (!annotations.contains("@Test")){
+            if (!annotations.contains("@Test")) {
                 continue
             }
             def methodName = methodInfo.selectFirst("div>span.memberName").text()
@@ -73,7 +73,7 @@ task generateSourceTestDocs(type: Javadoc) {
         outputDoc.append md
     }
 
-    outputs.upToDateWhen {false}
+    outputs.upToDateWhen { false }
 }
 
 project.build.dependsOn(generateSourceTestDocs)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -20,16 +20,16 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -45,12 +45,12 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 @ExtendWith(SystemStubsExtension.class)
 public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
+  private static final String STREAM_NAME_MATERIALIZED_VIEW = "testview";
+  private static final String SCHEMA_NAME = "public";
   @SystemStub
   private EnvironmentVariables environmentVariables;
-
-  private static final String STREAM_NAME = "public.id_and_name";
-  private static final String STREAM_NAME2 = "public.starships";
-  private static final String STREAM_NAME_MATERIALIZED_VIEW = "public.testview";
   public static final String LIMIT_PERMISSION_SCHEMA = "limit_perm_schema";
   public static final String LIMIT_PERMISSION_ROLE = "limit_perm_role";
   public static final String LIMIT_PERMISSION_ROLE_PASSWORD = "test";
@@ -66,9 +66,9 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
-    String username = container.getUsername();
-    String password = container.getPassword();
-    List<String> schemas = List.of("public");
+    final String username = container.getUsername();
+    final String password = container.getPassword();
+    final List<String> schemas = List.of("public");
     config = getConfig(username, password, schemas);
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -93,7 +93,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     }
   }
 
-  private JsonNode getConfig(String username, String password, List<String> schemas) {
+  private JsonNode getConfig(final String username, final String password, final List<String> schemas) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -170,19 +170,19 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     config = getConfig(LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD, List.of(LIMIT_PERMISSION_SCHEMA));
 
     runDiscover();
-    AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
+    final AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
     final String assertionMessageWithoutPermission = "Expected no streams after discover for user without schema permissions";
     assertTrue(lastPersistedCatalogSecond.getStreams().isEmpty(), assertionMessageWithoutPermission);
   }
 
-  private void revokeSchemaPermissions(Database database) throws SQLException {
+  private void revokeSchemaPermissions(final Database database) throws SQLException {
     database.query(ctx -> {
       ctx.fetch(String.format("REVOKE USAGE ON schema %s FROM %s;", LIMIT_PERMISSION_SCHEMA, LIMIT_PERMISSION_ROLE));
       return null;
     });
   }
 
-  private void prepareEnvForUserWithoutPermissions(Database database) throws SQLException {
+  private void prepareEnvForUserWithoutPermissions(final Database database) throws SQLException {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE ROLE %s WITH LOGIN PASSWORD '%s';", LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD));
       ctx.fetch(String.format("CREATE SCHEMA %s;", LIMIT_PERMISSION_SCHEMA));
@@ -202,28 +202,31 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
+                STREAM_NAME, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME_MATERIALIZED_VIEW,
+                STREAM_NAME_MATERIALIZED_VIEW, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
 
   private ConfiguredAirbyteCatalog getLimitPermissionConfiguredCatalog() {
@@ -233,7 +236,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
+                "id_and_name", LIMIT_PERMISSION_SCHEMA,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

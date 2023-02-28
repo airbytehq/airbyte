@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
@@ -13,6 +13,8 @@ import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.jdbc.DateTimeConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
@@ -53,6 +55,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] NUMERIC_TYPES = {"NUMERIC", "DECIMAL"};
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ"};
   private final String BYTEA_TYPE = "BYTEA";
+  private final String JSONB_TYPE = "JSONB";
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public void configure(final Properties props) {}
@@ -69,11 +73,26 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       registerMoney(field, registration);
     } else if (BYTEA_TYPE.equalsIgnoreCase(field.typeName())) {
       registerBytea(field, registration);
+    } else if (JSONB_TYPE.equalsIgnoreCase(field.typeName())) {
+      registerJsonb(field, registration);
     } else if (Arrays.stream(NUMERIC_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerNumber(field, registration);
     } else if (Arrays.stream(ARRAY_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerArray(field, registration);
     }
+  }
+
+  private void registerJsonb(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+    registration.register(SchemaBuilder.string().optional(), x -> {
+      if (x == null) {
+        return DebeziumConverterUtils.convertDefaultValue(field);
+      }
+      try {
+        return objectMapper.readTree(x.toString()).toString();
+      } catch (JsonProcessingException e) {
+        throw new RuntimeException("Could not parse 'jsonb' value:" + e);
+      }
+    });
   }
 
   private void registerArray(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
@@ -138,14 +157,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     });
   }
 
-  private Object convertArray(Object x, RelationalColumn field) {
-    final String fieldType = field.typeName().toUpperCase();
-    Object[] values = new Object[0];
-    try {
-      values = (Object[]) ((PgArray) x).getArray();
-    } catch (SQLException e) {
-      LOGGER.error("Failed to convert PgArray:" + e);
+  private Object convertArray(final Object x, final RelationalColumn field) {
+    if (x == null) {
+      return DebeziumConverterUtils.convertDefaultValue(field);
     }
+    final String fieldType = field.typeName().toUpperCase();
     switch (fieldType) {
       // debezium currently cannot handle MONEY[] datatype and it's not implemented
       case "_MONEY":
@@ -167,15 +183,15 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
             .map(Double::valueOf)
             .collect(Collectors.toList());
       case "_NUMERIC":
-        return Arrays.stream(values).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
       case "_TIME":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToTime(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTime(value)).collect(Collectors.toList());
       case "_DATE":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToDate(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToDate(value)).collect(Collectors.toList());
       case "_TIMESTAMP":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToTimestamp(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTimestamp(value)).collect(Collectors.toList());
       case "_TIMESTAMPTZ":
-        return Arrays.stream(values).map(value -> value == null ? null : convertToTimestampWithTimezone(value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTimestampWithTimezone(value)).collect(Collectors.toList());
       case "_TIMETZ":
 
         final List<String> timetzArr = new ArrayList<>();
@@ -194,13 +210,22 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         });
         return timetzArr;
       case "_BYTEA":
-        return Arrays.stream(values).map(value -> Base64.getEncoder().encodeToString((byte[]) value)).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> Base64.getEncoder().encodeToString((byte[]) value)).collect(Collectors.toList());
       case "_BIT":
-        return Arrays.stream(values).map(value -> (Boolean) value).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> (Boolean) value).collect(Collectors.toList());
       case "_NAME":
-        return Arrays.stream(values).map(value -> (String) value).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> (String) value).collect(Collectors.toList());
       default:
-        return new ArrayList<>();
+        throw new RuntimeException("Unknown array type detected " + fieldType);
+    }
+  }
+
+  private Object[] getArray(final Object x) {
+    try {
+      return (Object[]) ((PgArray) x).getArray();
+    } catch (final SQLException e) {
+      LOGGER.error("Failed to convert PgArray:" + e);
+      throw new RuntimeException(e);
     }
   }
 

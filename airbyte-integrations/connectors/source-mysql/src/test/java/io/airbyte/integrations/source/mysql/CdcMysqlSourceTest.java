@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -32,10 +32,12 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -104,6 +106,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private void revokeAllPermissions() {
     executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void revokeReplicationClientPermission() {
+    executeQuery("REVOKE REPLICATION CLIENT ON *.* FROM " + container.getUsername() + "@'%';");
   }
 
   private void grantCorrectPermissions() {
@@ -211,6 +217,16 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   @Override
   protected String randomTableSchema() {
     return MODELS_SCHEMA;
+  }
+
+  @Test
+  protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
+    revokeReplicationClientPermission();
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
+    final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+        + " for CDC mode.";
+    assertTrue(status.getStatus().equals(Status.FAILED));
+    assertTrue(status.getMessage().contains(expectedErrorMessage));
   }
 
   @Test

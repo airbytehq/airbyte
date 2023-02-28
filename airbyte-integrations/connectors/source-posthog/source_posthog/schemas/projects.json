@@ -1,0 +1,38 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "number"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "organization": {
+      "type": "string"
+    },
+    "api_token": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "completed_snippet_onboarding": {
+      "type": "boolean"
+    },
+    "ingested_event": {
+      "type": "boolean"
+    },
+    "is_demo": {
+      "type": "boolean"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "access_control": {
+      "type": "boolean"
+    },
+    "effective_membership_level": {
+      "type": "number"
+    }
+  }
+}

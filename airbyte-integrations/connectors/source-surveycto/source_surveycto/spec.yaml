@@ -34,7 +34,7 @@ connectionSpecification:
       type: "string"
       description: "initial date for survey cto"
       title: "Start Date"
-      examples: 
+      examples:
         - "Jan 09, 2022 00:00:00 AM"
       default: "Jan 09, 2022 00:00:00 AM"
       order: 4
