@@ -70,13 +70,13 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
                 <Router>
-                  <Services>
-                    <I18nProvider>
+                  <I18nProvider>
+                    <Services>
                       <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
                         <Routing />
                       </GoogleOAuthProvider>
-                    </I18nProvider>
-                  </Services>
+                    </Services>
+                  </I18nProvider>
                 </Router>
               </ConfigServiceProvider>
             </Suspense>
