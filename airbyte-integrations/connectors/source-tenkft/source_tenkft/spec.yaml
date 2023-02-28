@@ -1,0 +1,23 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/tenkft
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: 10kft API Spec
+  type: object
+  required:
+    - api_key
+  properties:
+    api_key:
+      type: string
+      description: API Key for accessing the 10kft API.
+      airbyte_secret: true
+    per_page:
+      type: integer
+      description: Number of records to fetch per API request.
+      default: 100
+      minimum: 1
+      maximum: 1000
+    page:
+      type: integer
+      description: The page number of results to fetch.
+      default: 1
+      minimum: 1

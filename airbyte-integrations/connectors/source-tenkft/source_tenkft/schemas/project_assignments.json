@@ -1,0 +1,127 @@
+{
+  "$schema" : "http://json-schema.org/draft-07/schema#",
+  "type" : "object",
+  "properties" : {
+    "data" : {
+      "type" : "array",
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer"
+          },
+          "allocation_mode" : {
+            "type" : "string"
+          },
+          "percent" : {
+            "type" : "integer"
+          },
+          "user_id" : {
+            "type" : [
+              "integer",
+              "null"
+            ]
+          },
+          "assignable_id" : {
+            "type" : "integer"
+          },
+          "ends_at" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "starts_at" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "bill_rate" : {
+            "type" : [
+              "number",
+              "null"
+            ]
+          },
+          "bill_rate_id" : {
+            "type" : [
+              "integer",
+              "null"
+            ]
+          },
+          "repetition_id" : {
+            "type" : [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "updated_at" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "all_day_assignment" : {
+            "type" : "boolean"
+          },
+          "resource_request_id" : {
+            "type" : [
+              "integer",
+              "null"
+            ]
+          },
+          "status" : {
+            "type" : [
+              "string",
+              "null"
+            ]
+          },
+          "status_option_id" : {
+            "type" : [
+              "integer",
+              "null"
+            ]
+          },
+          "description" : {
+            "type" : "string"
+          },
+          "note" : {
+            "type" : [
+              "string",
+              "null"
+            ]
+          },
+          "subtasks" : {
+            "type" : "object",
+            "properties" : {
+              "paging" : {
+                "type" : "object",
+                "properties" : {
+                  "self" : {
+                    "type" : "string"
+                  },
+                  "next" : {
+                    "type" : [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "previous" : {
+                    "type" : [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "page" : {
+                    "type" : "integer"
+                  },
+                  "per_page" : {
+                    "type" : "integer"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
