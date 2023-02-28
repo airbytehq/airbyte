@@ -1827,11 +1827,14 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.surveymonkey.com
 - name: SurveySparrow
   sourceDefinitionId: 4a4d887b-0f2d-4b33-ab7f-9b01b9072804
   dockerRepository: airbyte/source-survey-sparrow
