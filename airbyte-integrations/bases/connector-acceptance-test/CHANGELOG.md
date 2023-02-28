@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.2
+## 0.7.0
 Basic read test: add `ignored_fields`, change configuration format by adding optional `bypass_reason` [#22996](https://github.com/airbytehq/airbyte/pull/22996)
 
 ## 0.6.1

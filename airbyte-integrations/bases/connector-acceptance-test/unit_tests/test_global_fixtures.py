@@ -8,8 +8,13 @@ import time
 import pytest
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from connector_acceptance_test import conftest
-from connector_acceptance_test.config import BasicReadTestConfig, Config, EmptyStreamConfiguration, ExpectedRecordsConfig, \
-    IgnoredFieldsConfiguration
+from connector_acceptance_test.config import (
+    BasicReadTestConfig,
+    Config,
+    EmptyStreamConfiguration,
+    ExpectedRecordsConfig,
+    IgnoredFieldsConfiguration,
+)
 
 
 @pytest.mark.parametrize(
