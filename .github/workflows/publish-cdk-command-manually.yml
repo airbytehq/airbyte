@@ -31,6 +31,9 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # We are using these runners because they are the same as the one for `publish-command.yml`
+  # One problem we had using `ubuntu-latest` for example is that the user is not root and some commands would fail in
+  # `manage.sh` (specifically `apt-get`)
   start-publish-docker-image-runner-0:
     name: Start Build EC2 Runner 0
     runs-on: ubuntu-latest
