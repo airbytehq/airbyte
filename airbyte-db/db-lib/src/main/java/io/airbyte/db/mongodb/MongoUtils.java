@@ -74,7 +74,7 @@ public class MongoUtils {
   public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
   public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
   public static final String USER = "user";
-  public static final String MAX_DEPTH_LEVEL_READ = "Max-Depth-Level";
+  public static final String MAX_DEPTH_LEVEL_READ = "max_depth_level_read";
   public static final String INSTANCE_TYPE = "instance_type";
   public static final String INSTANCE = "instance";
   public static final String CLUSTER_URL = "cluster_url";
