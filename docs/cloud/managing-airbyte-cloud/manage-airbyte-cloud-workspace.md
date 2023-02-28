@@ -60,7 +60,7 @@ To delete a workspace:
 
 ## Single workspace vs. multiple workspaces
  
-You can use one or multiple workspaces with Airbyte Cloud. 
+You can use one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing.
  
 ### Access
 | Number of workspaces | Benefits                                                                      | Considerations                                                                                                                              |
