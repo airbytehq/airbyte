@@ -18,7 +18,7 @@ ADD https://dtdg.co/latest-java-tracer dd-java-agent.jar
 ENV APPLICATION source-postgres
 
 ENV DD_SERVICE: "source-postgres"
-ENV DD_VERSION: 1.0.35-dd
+ENV DD_VERSION: 1.0.36-dd
 ENV DD_CONNECTOR_ENABLE_ENV_VAR: true
 
 COPY --from=build /airbyte /airbyte
