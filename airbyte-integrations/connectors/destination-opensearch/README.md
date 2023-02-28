@@ -50,7 +50,7 @@ Airbyte has a standard test suite that all destination connectors must pass. Imp
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-opensearch:unitTest
+./gradlew :airbyte-integrations:connectors:destination-opensearch:test
 ```
 To run acceptance and custom integration tests:
 ```
