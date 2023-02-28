@@ -10,8 +10,8 @@ Daspire中的Redshift目的地有两种复制策略。Daspire会根据给定的�
 
 对于INSERT策略：
 
-* **主机（Host）**
-* **端口（Port）**
+* **主机**
+* **端口**
 * **用户名**
 * **密码**
 * **架构**
@@ -60,9 +60,9 @@ Daspire中的Redshift目的地有两种复制策略。Daspire会根据给定的�
 
 3. [创建](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html)并激活AWS Redshift集群（如果您还没有准备好的话）
 
-4.（可选）[允许](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/)从Daspire连接到您的Redshift集群（如果它们存在于单独的VPC中）
+4. （可选）[允许](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/)从Daspire连接到您的Redshift集群（如果它们存在于单独的VPC中）
 
-5. （可选）[创建](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) 暂存 S3 存储桶（用于 COPY 策略）。
+5. （可选）[创建](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)暂存S3存储桶（用于COPY策略）。
 
 ### 第2步：在Daspire中设置目的地接口
 
@@ -81,8 +81,8 @@ Daspire中的Redshift目的地有两种复制策略。Daspire会根据给定的�
 Redshift目的地支持以下同步模式：
 
 * 完全刷新同步
-* 增量 - 追加同步
-* 增量 - 去重历史
+* 增量同步 - 追加同步
+* 增量同步 - 去重历史
 
 ## 性能考虑
 
@@ -112,7 +112,7 @@ Redshift目的地支持以下同步模式：
 
 ### 数据大小限制
 
-Redshift指定最大限制为1MB（JSON记录中的任何VARCHAR字段为65535字节）以存储原始JSON记录数据。因此，当一行太大而无法容纳时，Redshift，目的地无法加载此类数据并且当前会忽略该记录。请参阅[SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) 和[SUPER 限制](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)的文档。
+Redshift指定最大限制为1MB（JSON记录中的任何VARCHAR字段为65535字节）以存储原始JSON记录数据。因此，当一行太大而无法容纳时，Redshift，目的地无法加载此类数据并且当前会忽略该记录。请参阅[SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) 和[SUPER限制](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)的文档。
 
 ### 加密
 
@@ -132,12 +132,12 @@ Daspire将每个数据流输出到Redshift中它自己的原始表中。每个�
 
 | Daspire类型 | Redshift类型 |
 | --- | --- |
-| boolean | boolean |
-| int | integer |
-| float | number |
-| varchar | string |
-| date/varchar | date |
-| time/varchar | time |
-| timestamptz/varchar | timestamp\_with\_timezone |
-| varchar | array |
-| varchar | object |
+| `boolean` | `boolean` |
+| `int` | `integer` |
+| `float` | `number` |
+| `varchar` | `string` |
+| `date/varchar` | `date` |
+| `time/varchar` | `time` |
+| `timestamptz/varchar` | `timestamp_with_timezone` |
+| `varchar` | `array` |
+| `varchar` | `object` |

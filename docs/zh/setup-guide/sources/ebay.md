@@ -4,35 +4,22 @@
 
 ## 前提条件
 
-* Client ID
-* Client Secret
-* Refresh Token
+* eBay店铺名称
+* eBay账号登录信息（用户名和密码）
 
 ## 设置指南
 
-### 第1步：获取eBay API密钥
-
-1. 登录eBay开发者账号并导航至**您的帐户 > 应用程序密钥（Application Keys）**。
-
-2. 在Application Keys页面上，获取**Production environment**的**App ID（Client ID）**、**Cert ID（Client Secret）**和**Refresh Token** 值。这些将用于在Daspire中创建该接口。
-
-### 第2步：在Daspire中设置eBay数据源
-
 1. 从数据源列表中选择**eBay**。
 
-2. 填写**数据源名称（Source Name）**。
+2. 填写**数据源名称**。
 
-3. 填写eBay**店铺名称（Store Name）**。
+3. 填写eBay**店铺名称**。
 
-4. 填写eBay**Client Id**.
+4. **验证您的eBay账户**。
 
-5. 填写eBay**Client Secret**.
+5. 在**数据复制方式**中，在**根据开始日期复制**或**周期性复制**中选择。
 
-6. 填写eBay**Refresh Token**.
-
-7. 在获取方式（Acquisition Method）中，输入**开始时间（Start Time）**，用于从指定的开始日期开始生成报告。应采用年年年年-月月-日日（YYYY-MM-DD）格式且过去不超过60天。如果未指定，则使用今天的日期。特定配置文件的日期是根据其时区计算的，应在格林威治标准时间时区中指定此参数。由于生成当天的报告没有意义（指标可能会更改），因此它会生成前一天的报告（例如，如果开始日期是2022-10-11，它将使用20221010作为请求的reportDate参数）。
-
-8. 点击**设置数据源**。
+6. 点击**设置数据源**。
 
 ## 支持的同步模式
 

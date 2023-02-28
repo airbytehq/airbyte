@@ -11,8 +11,8 @@ Daspire实施[SuiteTalk REST Web服务](https://docs.oracle.com/en/cloud/saas/ne
 * 领域（Realm）
 * 消费者密钥（Consumer Key）
 * 消费者秘密（Consumer Secret）
-* Token ID
-* Token Secret
+* 令牌ID（Token ID）
+* 令牌秘密（Token Secret）
 
 ## 设置指南
 
@@ -24,7 +24,7 @@ Daspire实施[SuiteTalk REST Web服务](https://docs.oracle.com/en/cloud/saas/ne
 
 2. 转到**Setup** » **Company** » **Company Information**
 
-3. 复制您的账户ID（Account ID）。您的帐户ID就是您的领域（Realm）。如果您使用普通帐户，它看起来像**1234567**，如果是测试账户，它看起来像**1234567\_SB2**
+3. 复制您的**账户ID**。您的帐户ID就是您的领域。如果您使用普通帐户，它看起来像**1234567**，如果是测试账户，它看起来像**1234567\_SB2**
 
 #### 步骤1.2：启用功能
 
@@ -99,8 +99,8 @@ Daspire实施[SuiteTalk REST Web服务](https://docs.oracle.com/en/cloud/saas/ne
 * 领域/Realm（账户ID/Account ID）
 * 消费者密钥（Consumer Key）
 * 消费者秘密（Consumer Secret）
-* Token ID
-* Token Secret 
+* 令牌ID（Token ID）
+* 令牌秘密（Token Secret）
 * 此外，您还为您早先创建的用户和角色正确地配置了具有**正确权限**和**Access Token**的**帐户**。
 
 ### 第2步：在Daspire中设置数据源
@@ -117,9 +117,9 @@ Daspire实施[SuiteTalk REST Web服务](https://docs.oracle.com/en/cloud/saas/ne
 
 6. 添加**消费者秘密（Consumer Secret）**
 
-7. 添加**Token ID**
+7. 添加**令牌ID（Token ID）**
 
-8. 添加**Token Secret**
+8. 添加**令牌秘密（Token Secret）**
 
 9. 点击设置数据源
 

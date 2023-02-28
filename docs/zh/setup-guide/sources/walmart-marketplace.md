@@ -1,17 +1,17 @@
-# 沃尔玛（Walmart Marketplace）
+# 沃尔玛商城（Walmart Marketplace）
 
 此页面包含沃尔玛商城（Walmart Marketplace）的设置指南和参考信息。
 
 ## 前提条件
 
-* Client ID
-* Client Secret
+* 客户ID（Client ID）
+* 客户秘密（Client Secret）
 
 ## 设置指南
 
-### 第1步：获取您的沃尔玛API密钥（API key）
+### 第1步：获取您的沃尔玛API密钥
 
-1. 登录您的[沃尔玛卖家控制面板（Walmart seller dashboard）](https://seller.walmart.com)。
+1. 登录您的[沃尔玛卖家后台（Walmart seller dashboard）](https://seller.walmart.com)。
 
 2. 点击**Settings** -> **API Key Management**
 
@@ -19,25 +19,25 @@
 
 4. 记下**Production keys**选项卡内的**Client ID**和**Client secret**。这些将用于在Daspire中创建该数据源。
 
-### 第2步：在Daspire中设置沃尔玛（Walmart）数据源
+### 第2步：在Daspire中设置沃尔玛数据源
 
-1. 从数据源列表中选择**Walmart**。
+1. 从数据源列表中选择**沃尔玛商城（Walmart Marketplace）**。
 
-2. 填写**数据源名称（Source Name）**。
+2. 填写**数据源名称**。
 
-3. 填写Walmart**店铺名称（Store Name）**。
+3. 填写沃尔玛**店铺名称**。
 
-4. 填写Walmart**Client Id**.
+4. 填写沃尔玛**Client Id**.
 
-5. 填写Walmart**Client Secret**.
+5. 填写沃尔玛**Client Secret**.
 
-6. 在获取方式（Acquisition Method）中，输入**开始时间（Start Time）**，用于从指定的开始日期开始生成报告。应采用年年年年-月月-日日（YYYY-MM-DD）格式且过去不超过60天。如果未指定，则使用今天的日期。特定配置文件的日期是根据其时区计算的，应在格林威治标准时间时区中指定此参数。由于生成当天的报告没有意义（指标可能会更改），因此它会生成前一天的报告（例如，如果开始日期是2022-10-11，它将使用20221010作为请求的reportDate参数）。
+6. 在**数据复制方式**中，在**根据开始日期复制**或**周期性复制**中选择。
 
 7. 点击**设置数据源**。
 
 ## 支持的同步模式
 
-沃尔玛（Walmart）数据源支持以下同步模式：
+沃尔玛商城（Walmart Marketplace）数据源支持以下同步模式：
 
 * 完全复制
 * 增量复制

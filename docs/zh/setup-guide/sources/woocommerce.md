@@ -26,7 +26,7 @@
 
 ## 同步概述
 
-WooCommerce数据源支持**完全刷新**和**增量**同步。每次运行同步时，您可以选择仅复制新数据或更新数据，或您为复制设置的表和列中的所有行。
+WooCommerce数据源支持**完全刷新复制**和**增量复制**。每次运行同步时，您可以选择仅复制新数据或更新数据，或您为复制设置的表和列中的所有行。
 
 Daspire可以为[WooCommerce API](https://woocommerce.github.io/woocommerce-rest-api-docs/)同步数据。
 
@@ -42,7 +42,7 @@ Daspire可以为[WooCommerce API](https://woocommerce.github.io/woocommerce-rest
 
 | 集成类型 | Daspire类型 |
 | --- | --- |
-| string | string |
-| number | number |
-| array | array |
-| object | object |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |

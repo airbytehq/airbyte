@@ -2,7 +2,7 @@
 
 此页面包含BigQuery的设置指南和参考信息。
 
-设置BigQuery目的地包括设置数据加载方法（BigQuery标准方法和Google Cloud Storage (GCS) 存储桶）和使用Daspire配置BigQuery目的地接口。
+设置BigQuery目的地包括设置数据加载方法（BigQuery标准方法和谷歌云存储桶）和使用Daspire配置BigQuery目的地接口。
 
 ## 前提条件
 
@@ -11,9 +11,9 @@
 
   > **注意：**用BigQuery编写的查询只能引用同一物理位置的数据集。如果您计划将Daspire同步的数据与查询中其他数据集的数据相结合，请在谷歌云上的相同位置创建数据集。有关详细信息，请阅读[数据集简介](https://cloud.google.com/bigquery/docs/datasets-intro)
 
-* 具有[BigQuery用户（User）](https://cloud.google.com/bigquery/docs/access- control#bigquery)和[BigQuery数据编辑器（Data Editor）](https://cloud.google.com/bigquery/docs/access-control#bigquery)角色和[JSON格式的服务帐户密钥（ServiceAccountKey）](https://cloud.google.com/iam/docs/creating-managing-service-account-keys）。
+* 具有[BigQuery用户](https://cloud.google.com/bigquery/docs/access-control#bigquery)和[BigQuery数据编辑器](https://cloud.google.com/bigquery/docs/access-control#bigquery)角色和[JSON格式的服务帐户密钥](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)。
 
-## 链接模式
+## 连接模式
 
 在设置BigQuery时，您可以将其配置为以下模式：
 
@@ -25,17 +25,17 @@
 
 ### 第一步：设置数据加载方式
 
-虽然您可以使用BigQuery的[INSERTS](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax)加载数据，但我们强烈建议您使用[谷歌云存储桶（Google Cloud Storage bucket）](https://cloud.google.com/storage/docs/introduction）。
+虽然您可以使用BigQuery的[INSERTS](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax)加载数据，但我们强烈建议您使用[谷歌云存储桶](https://cloud.google.com/storage/docs/introduction)。
 
 #### 使用谷歌云存储桶（推荐）
 
-使用谷歌云存储桶（Google Cloud Storage bucket）：
+使用谷歌云存储桶：
 
-1. [创建谷歌云存储桶（Cloud Storage bucket）](https://cloud.google.com/storage/docs/creating-buckets)，将保护工具设置为无或对象版本控制。确保存储桶没有[保留策略（retention policy）](https://cloud.google.com/storage/docs/samples/storage-set-retention-policy)。
+1. [创建谷歌云存储桶](https://cloud.google.com/storage/docs/creating-buckets)，将保护工具设置为无或对象版本控制。确保存储桶没有[保留策略](https://cloud.google.com/storage/docs/samples/storage-set-retention-policy)。
 
-2. [创建HMAC密钥（HMAC key）和访问ID（access ID）](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create)。
+2. [创建HMAC密钥和访问ID](https://cloud.google.com/storage/docs/authentication/managing-hmackeys#create)。
 
-3. 授予[存储对象管理员（Storage Object Admin）](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles)[权限（role）](https://cloud.google.com/ storage/docs/access-control/iam-roles#standard-roles)到谷歌云[服务帐户（Service Account）](https://cloud.google.com/iam/docs/service-accounts)。
+3. 授予[存储对象管理员](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles) [权限](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles)到谷歌云[服务帐户](https://cloud.google.com/iam/docs/service-accounts)。
 
 4. 确保可以从运行Daspire的机器访问您的云存储存储桶。验证Daspire是否能够连接到您的存储桶的最简单方法是通过控制面板中的检查连接工具。
 
@@ -61,11 +61,11 @@
 
 7. 对于**默认数据集ID**，输入BigQuery[数据集ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset)。
 
-8. 对于**加载方式**，选择标准插入（Standard Inserts）或谷歌云存储暂存（GCS Staging）。
+8. 对于**加载方式**，选择标准插入或谷歌云存储暂存。
 
   **提示：**我们建议使用谷歌云存储暂存选项。
 
-9. 对于**服务帐户密钥JSON（云端必需，开源可选）**，输入谷歌云[JSON格式的服务帐户密钥](https://cloud.google.com/iam/docs/creating-managing-service-account-keys）。
+9. 对于**服务帐户密钥JSON（云端必需，开源可选）**，输入谷歌云[JSON格式的服务帐户密钥](https://cloud.google.com/iam/docs/creating-managing-service-account-keys)。
 
 10. 对于**转换查询运行类型（可选）**，选择**交互**以让[BigQuery运行交互式查询作业](https://cloud.google.com/bigquery/docs/running-queries#queries ) 或**批量**让[BigQuery运行批量查询](https://cloud.google.com/bigquery/docs/running-queries#batch)。
 
@@ -78,8 +78,8 @@
 BigQuery目的地支持以下同步模式：
 
 * 完全刷新同步
-* 增量 - 追加同步
-* 增量 - 去重历史
+* 增量同步 - 追加同步
+* 增量同步 - 去重历史
 
 ## 输出模式
 
@@ -103,24 +103,24 @@ Daspire在写入数据时将任何无效字符转换为`_`字符。但是，由�
 
 | Daspire类型 | BigQuery类型 | BigQuery非规范化类型 |
 | --- | --- | --- |
-| DATE | DATE | DATE |
-| STRING (BASE64) | STRING | STRING |
-| NUMBER | FLOAT | FLOAT |
-| OBJECT | STRING | RECORD |
-| STRING | STRING | STRING |
-| BOOLEAN | BOOLEAN | BOOLEAN |
-| INTEGER | INTEGER | INTEGER |
-| STRING (BIG\_NUMBER) | STRING | STRING |
-| STRING (BIG\_INTEGER) | STRING | STRING |
-| ARRAY | REPEATED | REPEATED |
-| STRING (TIMESTAMP\_WITH\_TIMEZONE) | TIMESTAMP | DATETIME |
-| STRING (TIMESTAMP\_WITHOUT\_TIMEZONE) | TIMESTAMP | DATETIME |
+| `DATE` | `DATE` | `DATE` |
+| `STRING (BASE64)` | `STRING` | `STRING` |
+| `NUMBER` | `FLOAT` | `FLOAT` |
+| `OBJECT` | `STRING` | `RECORD` |
+| `STRING` | `STRING` | `STRING` |
+| `BOOLEAN` | `BOOLEAN` | `BOOLEAN` |
+| `INTEGER` | `INTEGER` | `INTEGER` |
+| `STRING (BIG_NUMBER)` | `STRING` | `STRING` |
+| `STRING (BIG_INTEGER)` | `STRING` | `STRING` |
+| `ARRAY` | `REPEATED` | `REPEATED` |
+| `STRING (TIMESTAMP_WITH_TIMEZONE)` | `TIMESTAMP` | `DATETIME` |
+| `STRING (TIMESTAMP_WITHOUT_TIMEZONE)` | `TIMESTAMP` | `DATETIME` |
 
 ## 解决权限问题
 
 服务帐户没有适当的权限：
 
-* 确保BigQuery服务帐户具有BigQuery User和BigQuery Data Editor权限或与这两个权限等效的权限。
+* 确保BigQuery服务帐户具有BigQuery用户和BigQuery数据编辑权限或与这两个权限等效的权限。
 
 * 如果选择谷歌云存储暂存模式，请确保BigQuery服务帐户对谷歌云存储存储桶和路径或云存储管理员权限具有正确的权限，其中包括所需权限的超集。
 

@@ -14,13 +14,13 @@
 
 1. 导航到您店铺的控制面板（Advanced Settings \> API Accounts \> Create API Account）
 
-2. 创建一个API帐户（API account）。
+2. 创建一个API帐户。
 
 3. 选择您要允许访问的资源。Daspire只需要读取级别的访问权限。
 
   > **注意：** 用户界面将显示所有可能的数据源，如果它没有访问资源的权限，则会在同步时显示错误。
 
-4. 生成的Access Token将用作接口的access\_token。
+4. 生成的刷新令牌将用作接口的access\_token。
 
 5. 您已准备好在Daspire中设置BigCommerce！
 
@@ -44,10 +44,10 @@ Daspire可以为[BigCommerce API](https://developer.bigcommerce.com/api-docs/get
 
 | 集成类型 | Daspire类型 |
 | --- | --- |
-| string | string |
-| number | number |
-| array | array |
-| object | object |
+| `string` | `string` |
+| `number` | `number` |
+| `array` | `array` |
+| `object` | `object` |
 
 ## 性能考虑
 
