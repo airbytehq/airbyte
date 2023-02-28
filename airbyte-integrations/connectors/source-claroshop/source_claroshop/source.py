@@ -69,6 +69,21 @@ class ClaroshopBase(HttpStream):
 
     def log_percentage_progress(self, part, whole):
         logger.info(f'Progress: {round(100 * float(part)/float(whole), 2)}%')
+
+    def chunker_list(self, list, size):
+        return (list[i::size] for i in range(size))
+    
+    def handle_json_error(self, response):
+        read_json = False
+        while read_json == False:
+            try:
+                json_return = response.json()
+                read_json = True
+            except:
+                response = requests.get(response.url)
+                pass
+
+        return json_return
     
 
 
@@ -88,7 +103,8 @@ class Productos(ClaroshopBase):
         **kwargs
     ):
         super().__init__(config)
-        self.read_products = 0
+        self.page = 1
+        self.end_of_pages = False
 
 
     def path(
@@ -98,70 +114,82 @@ class Productos(ClaroshopBase):
         next_page_token: Mapping[str, Any] = None
     ) -> str:
 
-        transactionid = stream_slice['transactionid']
-
-        logger.info('Producto ID: %s', transactionid)
-        
-        return f"{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}/{transactionid}"  
+        return f"{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?page={self.page}"
+          
     
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
 
-        return None
+        if self.end_of_pages == True:
+            return None
+
+        self.page += 1
+
+        return self.page
     
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
-        response_json = response.json()
+        response_json = self.handle_json_error(response)
 
-        item_json = {
-                "data":response_json[self.record_key_name],
+        product_list = response_json['productos']
+
+        if len(product_list) == 0:
+            self.end_of_pages = True
+            return []
+        
+        productos = []
+
+        for record in product_list:
+            productos.append(record['transactionid'])
+
+        item_list = ThreadSafeList()
+
+        number_of_threds = 15
+
+        threads = []
+
+        productos = list(set(productos))
+
+        for chunk in self.chunker_list(productos, number_of_threds):
+            threads.append(Thread(target=self.read_producto_detalle, args=(item_list, chunk)))
+
+        # start threads
+        for thread in threads:
+            thread.start()
+        
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+
+        return item_list.get_list()
+
+    def read_producto_detalle(self, item_list, producto_list):
+        for producto in producto_list:
+            response_producto = requests.get(self.producto_detalle_path(producto))
+            response_producto_json = self.handle_json_error(response_producto)
+
+            logger.info('Producto: %s', producto)
+
+            item_json = {
+                "data":response_producto_json,
                 "merchant": self.merchant.upper(),
-                "source": "MX_Claroshop",
+                "source": "MX_CLAROSHOP",
                 "type": f"{self.merchant.lower()}_{self.record_key_name}",
-                "id": response_json[self.record_key_name][self.record_primary_key],
+                "id": producto,
                 "timeline": "historic",
                 "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "updated_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "timestamp": datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
                 "sensible": False
-        }
+            }
 
-        self.read_products += 1
-        self.log_percentage_progress(self.read_products, self.total_products)
-            
-        return [item_json]  
+            item_list.append(item_json)
 
-    def get_transactionid_list(self):
-        path = self.url_base + self.initial_path()
+    def producto_detalle_path(
+        self,
+        producto
+    ) -> str:
 
-        total_number_of_pages = requests.get(path).json()['totalpaginas']
-
-        transactionid_list = []
-
-        logger.info('GENERATING PRODUCT ID LIST')
-
-        for i in range(1, total_number_of_pages+1):
-            self.page = i
-
-            path = self.url_base + self.initial_path()
-
-            item_list = requests.get(path).json()['productos']
-
-            [transactionid_list.append({'transactionid': item['transactionid']}) for item in item_list]
-        
-        logger.info('Products list: %s', transactionid_list)
-
-        self.total_products = len(transactionid_list)
-
-        return transactionid_list
-
-    def initial_path(self):
-        return f"{self.get_credentials_url(self.api_keys)}/{self.endpoint_name}?page={self.page}"  
-
-    def stream_slices(
-        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, any]]]:
-
-        return self.get_transactionid_list()
+        return f"{self.url_base}/{self.get_credentials_url(self.api_keys)}/producto/{producto}"
     
 class Pedidos(ClaroshopBase):
 
@@ -363,9 +391,6 @@ class PedidosDetalle(Pedidos):
 
         return item_list.get_list()
     
-    def chunker_list(self, list, size):
-        return (list[i::size] for i in range(size))
-    
     def read_pedido_detalle(self, item_list, pedido_list):
         for nopedido in pedido_list:
             response_pedido = requests.get(self.pedido_detalle_path(nopedido))
@@ -391,20 +416,6 @@ class PedidosDetalle(Pedidos):
             }
 
             item_list.append(item_json)
-
-    def handle_json_error(self, response):
-        read_json = False
-        while read_json == False:
-            try:
-                json_return = response.json()
-                read_json = True
-            except:
-                logger.info('Handling error for pedido: %s', response.url.split('=')[-1])
-                response = requests.get(response.url)
-                pass
-
-        return json_return
-
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         
