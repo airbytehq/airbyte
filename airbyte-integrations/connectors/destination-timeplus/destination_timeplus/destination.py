@@ -64,7 +64,6 @@ class DestinationTimeplus(Destination):
             else:
                 # ignore other message types for now
                 continue
-        pass
 
     @staticmethod
     def create_stream(env,stream: AirbyteStream):
