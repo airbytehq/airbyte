@@ -472,9 +472,10 @@ public class JsonToAvroSchemaConverter {
   }
 
   /**
-   * Method checks unionTypes list for content. If we have both "long" and "long-timestamp" types
-   * then it keeps the "long" only. Need to do it for Schema creation otherwise it would fail with a
+   * Method checks unionTypes list for content. If we have both "long" and "long-timestamp" types then
+   * it keeps the "long" only. Need to do it for Schema creation otherwise it would fail with a
    * duplicated types exception.
+   *
    * @param unionTypes - list of union types
    * @return new Schema
    */
