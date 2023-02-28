@@ -5,8 +5,9 @@ on:
       - issue-22442_**
 
 jobs:
-  ## Gradle Build
-  # In case of self-hosted EC2 errors, remove this block.
+  # We are using these runners because they are the same as the one for `publish-command.yml`
+  # One problem we had using `ubuntu-latest` for example is that the user is not root and some commands would fail in
+  # `manage.sh` (specifically `apt-get`)
   start-publish-image-runner-0:
     name: Start Build EC2 Runner 0
     runs-on: ubuntu-latest
@@ -54,25 +55,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Pyenv
-        # FIXME confirm if it is useful
-        run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
-          rm -r venv || echo "no pre-existing venv"
-          python3 -m virtualenv venv
-          source venv/bin/activate
-      - name: Set Name and Version Environment Vars
-        if: startsWith(matrix.connector, 'connectors')
-        run: |
-          source tools/lib/lib.sh
-          echo "IMAGE_NAME=source-declarative-manifest >> $GITHUB_ENV
-          echo "IMAGE_VERSION=$(_get_docker_image_version airbyte-cdk/python/Dockerfile)" >> $GITHUB_ENV
-      - name: Prepare Sentry
-        uses: Wandalen/wretry.action@master
-        with:
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
       - name: Publish ${{ matrix.connector }}
         id: publish
         env:
@@ -87,16 +69,27 @@ jobs:
             ./tools/integrations/manage.sh publish airbyte-cdk/python false
           attempt_limit: 3
           attempt_delay: 5000 in # ms
-        # FIXME uncomment and test
-      #- name: Create Sentry Release
-      #  run: |
-      #    SENTRY_RELEASE_NAME="airbyte-${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
-      #    sentry-cli releases set-commits "$SENTRY_RELEASE_NAME" --auto --ignore-missing &&
-      #    sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
-      #  env:
-      #    SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-      #    SENTRY_ORG: airbytehq
-      #    SENTRY_PROJECT: connector-incident-management
+      - name: Prepare Sentry
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Set Name and Version Environment Vars
+        if: startsWith(matrix.connector, 'connectors')
+        run: |
+          source tools/lib/lib.sh
+          echo "IMAGE_NAME=source-declarative-manifest >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$(_get_docker_image_version airbyte-cdk/python/Dockerfile)" >> $GITHUB_ENV
+      - name: Create Sentry Release
+        run: |
+          SENTRY_RELEASE_NAME="airbyte-${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+          sentry-cli releases set-commits "$SENTRY_RELEASE_NAME" --auto --ignore-missing &&
+          sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+          SENTRY_ORG: airbytehq
+          SENTRY_PROJECT: connector-incident-management
   # In case of self-hosted EC2 errors, remove this block.
   stop-publish-image-runner-0:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
