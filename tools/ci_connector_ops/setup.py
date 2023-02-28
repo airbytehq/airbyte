@@ -16,7 +16,7 @@ MAIN_REQUIREMENTS = [
     "pydantic~=1.10.4",
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0",
-    "dagger-io==0.3.2",
+    "dagger-io==0.3.3",
     "pytablewriter~=0.64.2",
     "docker~=6.0.0",
 ]
