@@ -21,7 +21,7 @@ public abstract class SshOpenSearchDestinationAcceptanceTest extends OpenSearchD
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static OpensearchContainer container;
   private ObjectMapper mapper = new ObjectMapper();
-  private final static String ELASTIC_PASSWORD = "MagicWord";
+  private final static String OPENSEARCH_PASSWORD = "HelloWorld";
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -35,8 +35,8 @@ public abstract class SshOpenSearchDestinationAcceptanceTest extends OpenSearchD
     return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder().put("endpoint", getEndPoint())
         .put("upsert", false)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
-            .put("username", "elastic")
-            .put("password", ELASTIC_PASSWORD).build())));
+            .put("username", "opensearch")
+            .put("password", OPENSEARCH_PASSWORD).build())));
   }
 
   @Override
@@ -45,7 +45,7 @@ public abstract class SshOpenSearchDestinationAcceptanceTest extends OpenSearchD
     return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder().put("endpoint", getEndPoint())
         .put("upsert", true)
         .put("authenticationMethod", Jsons.jsonNode(ImmutableMap.builder().put("method", "basic")
-            .put("username", "elastic")
+            .put("username", "opensearch")
             .put("password", "wrongpassword").build())));
   }
 

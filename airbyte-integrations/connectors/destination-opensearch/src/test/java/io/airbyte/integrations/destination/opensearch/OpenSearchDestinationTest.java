@@ -41,7 +41,7 @@ public class OpenSearchDestinationTest {
 
   @BeforeAll
   public static void beforeAll() {
-    container = new OpensearchContainer("opensearchproject/opensearch:2.0.0")
+    container = new OpensearchContainer("opensearchproject/opensearch:2.5.0")
             .withEnv("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
             .withEnv("discovery.type", "single-node")
             .withEnv("network.host", "0.0.0.0")

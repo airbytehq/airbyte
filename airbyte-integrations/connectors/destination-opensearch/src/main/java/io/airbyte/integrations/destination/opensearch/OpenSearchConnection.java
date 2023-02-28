@@ -297,11 +297,6 @@ public class OpenSearchConnection {
                 deleteIndexIfPresent(destinationIndexName);
             }
 
-            // make the source index read-only before cloning
-            // I think theres a bug in the client
-            // https://github.com/elastic/elasticsearch-java/issues/37
-            // client.indices().addBlock(b -> b.index(sourceIndexName).block(IndicesBlockOptions.Write));
-            // so we need to do it a different way
             client.indices().putSettings(b -> b.index(sourceIndexName).settings(s -> s.blocks(w -> w.write(true))));
 
             // clone to the destination
