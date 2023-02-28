@@ -97,7 +97,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
 
   return (
     <Container>
-      <HeadTitle titles={[{ title: resourceType === "connections" ? "Dashboard" : "" }]} />
+      <HeadTitle titles={[{ id: resourceType === "connections" ? "admin.dashboard" : "" }]} />
       {/* <Heading>
         <FormattedMessage id={headingMessageId} />
       </Heading> */}
