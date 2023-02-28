@@ -67,27 +67,29 @@ class PlandayStream(HttpStream, ABC):
                                                            client_id=config["client_id"], client_secret="", refresh_token=config["refresh_token"]))
         self.client_id = config["client_id"]
         self.sync_from = config["sync_from"]
-        self.loockback_window = config.get("loockback_window")
-        self.use_lookback = self.loockback_window is not None
+        self.lookback_window = config.get("lookback_window")
+        delta_from_start = config.get("delta_from_start")
+        self.delta_from_start = delta_from_start if delta_from_start is not None and delta_from_start >= 0 else None
+        self.use_lookback = self.lookback_window is not None
 
         self.uri_params = {
             "offset": 0,
             "limit": 50,
-            "from": self.sync_from if not self.use_lookback else self.get_today_string(delta=self.loockback_window),
+            "from": self.sync_from if not self.use_lookback else self.get_today_string(delta=self.lookback_window),
         }
 
     @staticmethod
-    def get_today_string(delta: int = 0):
+    def get_today_string(delta: int = 0) -> str:
         return (datetime.datetime.now()-datetime.timedelta(days=delta)).strftime("%Y-%m-%d")
 
     @staticmethod
-    def get_today_date():
+    def get_today_date() -> datetime.date:
         return datetime.datetime.now().date()
 
-    def get_date(self):
+    def get_start_date(self):
         sync_from = self.sync_from
         if self.use_lookback:
-            sync_from = self.get_today_string(delta=self.loockback_window)
+            sync_from = self.get_today_string(delta=self.lookback_window)
         return dateutil.parser.isoparse(sync_from).date()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -169,7 +171,7 @@ class IncrementalPlandayStream(PlandayStream, ABC):
         and returning an updated state object.
         """
         old_state_date = current_stream_state.get(
-            self.cursor_field, self.get_date())
+            self.cursor_field, self.get_start_date())
         if isinstance(old_state_date, str):
             old_state_date = dateutil.parser.isoparse(old_state_date).date()
         latest_record_date = latest_record.get(self.cursor_field)
@@ -183,7 +185,7 @@ class IncrementalPlandayStream(PlandayStream, ABC):
             yield {"from": start, "to": end}
 
     def get_start_timestamp(self, stream_state) -> datetime.date:
-        start_point = self.get_date()
+        start_point = self.get_start_date()
         if stream_state and self.cursor_field in stream_state:
             state_start = stream_state[self.cursor_field]
             if isinstance(stream_state[self.cursor_field], str):
@@ -192,15 +194,20 @@ class IncrementalPlandayStream(PlandayStream, ABC):
 
         return start_point
 
+    def get_end_timestamp(self, start_point: datetime.date) -> datetime.date:
+        if self.delta_from_start is not None:
+            return start_point + datetime.timedelta(days=self.delta_from_start)
+        return self.get_today_date()
+
     def chunk_dates(self, start_date_ts: datetime.date) -> Iterable[Tuple[datetime.date, Union[datetime.date, None]]]:
-        today = self.get_today_date()
+        stop = self.get_end_timestamp(start_date_ts)
         step = datetime.timedelta(days=self.slice_range)
         after_ts = start_date_ts
-        while after_ts < today:
-            before_ts = min(today, after_ts + step)
+        while after_ts <= stop:
+            before_ts = min(stop, after_ts + step)
             yield after_ts, before_ts
             after_ts = before_ts + datetime.timedelta(days=1)
-        if not self.stop_at_today:
+        if not self.stop_at_today and self.delta_from_start is None:
             yield after_ts, None
 
 

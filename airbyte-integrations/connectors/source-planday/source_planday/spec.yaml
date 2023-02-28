@@ -23,8 +23,12 @@ connectionSpecification:
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - "%Y-%m-%d"
-    loockback_window:
+    lookback_window:
       type: integer
-      description: If set to a number, sync_from is irrelevant and data from today()-loocback_window days will be fetched.
+      description: If set to a number, sync_from is irrelevant and data from today()-loocback_window days will be fetched. Only works with shifts and time_and_costs.
+    delta_from_start:
+      type: integer
+      description: If set to a number, only data up to and including start+delta_from_start days will be fetched. Will be ignored if <0.
+      default: -1
     
     
