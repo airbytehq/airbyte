@@ -10,12 +10,9 @@ RUN apk --no-cache upgrade \
     && apk --no-cache add tzdata build-base \
     && apk add libffi-dev
 
-
-
 COPY setup.py ./
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
-
 
 # build a clean environment
 FROM base
