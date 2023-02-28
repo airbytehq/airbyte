@@ -1,13 +1,16 @@
 FROM python:3.9.11-alpine3.15 as base
 
-# build and load all requirements 
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
+
+# build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
-# upgrade pip to the latest version
+# upgrade pip and install libs
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+    && apk --no-cache add tzdata build-base bash
 
 COPY setup.py ./
 # install necessary packages to a temporary folder

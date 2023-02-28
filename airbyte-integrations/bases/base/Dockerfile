@@ -1,5 +1,7 @@
 FROM amazonlinux:2022.0.20220831.1
 
+RUN yum update -y
+
 WORKDIR /airbyte
 
 COPY base.sh .

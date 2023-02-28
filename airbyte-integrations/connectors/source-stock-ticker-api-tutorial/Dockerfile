@@ -1,4 +1,7 @@
-FROM python:3.9-slim
+FROM python:3.9.11-alpine3.15 as base
+
+# alwyays update dependencies
+RUN apk update && apk upgrade -a
 
 # We change to a directory unique to us
 WORKDIR /airbyte/integration_code

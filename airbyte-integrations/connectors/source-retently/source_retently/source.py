@@ -106,16 +106,16 @@ class RetentlyStream(HttpStream):
             **next_page,
         }
 
+# Duplicated below, does not compile
+# class Campaigns(RetentlyStream):
+#     json_path = "campaigns"
 
-class Campaigns(RetentlyStream):
-    json_path = "campaigns"
+#     def path(self, **kwargs) -> str:
+#         return "campaigns"
 
-    def path(self, **kwargs) -> str:
-        return "campaigns"
-
-    # does not support pagination
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+#     # does not support pagination
+#     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+#         return None
 
 
 class Companies(RetentlyStream):
@@ -137,15 +137,15 @@ class Customers(RetentlyStream):
     ) -> str:
         return "nps/customers"
 
+# Duplicated below, does not compile
+# class Feedback(RetentlyStream):
+#     json_path = "responses"
 
-class Feedback(RetentlyStream):
-    json_path = "responses"
-
-    def path(
-        self,
-        **kwargs,
-    ) -> str:
-        return "feedback"
+#     def path(
+#         self,
+#         **kwargs,
+#     ) -> str:
+#         return "feedback"
 
 
 class Outbox(RetentlyStream):
@@ -166,9 +166,11 @@ class Reports(RetentlyStream):
         **kwargs,
     ) -> str:
         return "reports"
+
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
 
 class Nps(RetentlyStream):
     json_path = None
@@ -202,6 +204,7 @@ class Templates(RetentlyStream):
         data = response.json().get("data")
         yield data
 
+
 class Campaigns(RetentlyStream):
     json_path = "campaigns"
 
@@ -222,6 +225,7 @@ class Campaigns(RetentlyStream):
         for d in stream_data:
             yield d
 
+
 class Feedback(RetentlyStream):
     json_path = "responses"
 
@@ -229,4 +233,3 @@ class Feedback(RetentlyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "feedback"
-
