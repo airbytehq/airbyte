@@ -440,7 +440,7 @@
 - name: Weaviate
   destinationDefinitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
   dockerRepository: airbyte/destination-weaviate
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
   icon: weaviate.svg
