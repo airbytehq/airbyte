@@ -10,9 +10,6 @@ import java.nio.file.Path;
 /*
  * SshKeyRedshiftInsertDestinationAcceptanceTest runs basic Redshift Destination Tests using the SQL Insert
  * mechanism for upload of data and "key" authentication for the SSH bastion configuration.
- *
- * Check Google Secrets for a new secret config called "SECRET_DESTINATION-REDSHIFT-BASTION__KEY". Place the contents
- * in your secrets directory under 'redshift-bastion-key-pair.pem'
  */
 public class SshKeyRedshiftInsertDestinationAcceptanceTest extends SshRedshiftDestinationBaseAcceptanceTest {
 

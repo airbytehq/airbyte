@@ -54,16 +54,14 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
   }
 
   protected JsonNode getTunnelConfig(final SshTunnel.TunnelMethod tunnelMethod, final ImmutableMap.Builder<Object, Object> builderWithSchema) {
-    final Path keyPath = Path.of("secrets/redshift-bastion-key-pair.pem");
-    final String keyAsString = IOs.readFile(keyPath);
-
     final JsonNode sshBastionHost = config.get("ssh_bastion_host");
     final JsonNode sshBastionPort = config.get("ssh_bastion_port");
     final JsonNode sshBastionUser = config.get("ssh_bastion_user");
     final JsonNode sshBastionPassword = config.get("ssh_bastion_password");
+    final JsonNode sshBastionKey = config.get("ssh_bastion_key");
 
     final String tunnelUserPassword = tunnelMethod.equals(SSH_PASSWORD_AUTH) ? sshBastionPassword.asText() : "";
-    final String sshKey = tunnelMethod.equals(SSH_KEY_AUTH) ? keyAsString : "";
+    final String sshKey = tunnelMethod.equals(SSH_KEY_AUTH) ? sshBastionKey.asText() : "";
 
     return Jsons.jsonNode(builderWithSchema
         .put("tunnel_method", Jsons.jsonNode(ImmutableMap.builder()

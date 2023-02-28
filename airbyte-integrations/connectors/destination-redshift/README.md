@@ -24,4 +24,3 @@ The actual secrets for integration tests can be found in Google Cloud Secrets Ma
 
 - SECRET_DESTINATION-REDSHIFT__CREDS - used for Standard tests. (__config.json__)
 - SECRET_DESTINATION-REDSHIFT_STAGING__CREDS - used for S3 Staging tests. (__config_staging.json__)
-- SECRET_DESTINATION-REDSHIFT-BASTION__KEY - secret key for the EC2 bastion host (__redshift-bastion-key-pair.pem__)

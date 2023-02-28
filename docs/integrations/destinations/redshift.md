@@ -56,6 +56,11 @@ Optional parameters:
 4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
 5. (Optional) [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a staging S3 bucket \(for the COPY strategy\).
 
+### Optional Use of SSH Bastion Host
+This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH Tunneling.
+Setup of the host is beyond the scope of this document but several tutorials are available online to fascilitate this task.
+Enter the bastion host, port and credentials in the destination configuration.
+
 ## Step 2: Set up the destination connector in Airbyte
 
 **For Airbyte Cloud:**
@@ -141,6 +146,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.57  | 2023-02-28 | [\#23523](https://github.com/airbytehq/airbyte/pull/23523) | Add SSH Bastion Host configuration options                                                                                                                                                                       |
 | 0.3.56  | 2023-01-26 | [\#21890](https://github.com/airbytehq/airbyte/pull/21890) | Fixed configurable parameter for number of file buffers                                                                                                                                                          |
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
