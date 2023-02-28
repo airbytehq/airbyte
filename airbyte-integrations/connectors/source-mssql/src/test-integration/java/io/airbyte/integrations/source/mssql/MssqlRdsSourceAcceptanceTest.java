@@ -40,6 +40,10 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     }
 
     config = Jsons.clone(baseConfig);
+
+    if ("unencrypted".equals(baseConfig.get("ssl_method").get("ssl_method").asText())) {
+      ((ObjectNode) config).put("is_test", true);
+    }
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 

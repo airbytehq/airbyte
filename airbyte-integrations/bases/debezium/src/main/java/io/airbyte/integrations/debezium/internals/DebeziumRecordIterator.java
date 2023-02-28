@@ -204,13 +204,17 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     }
   }
 
+  /**
+   * {@link DebeziumRecordIterator#heartbeatEventSourceField} acts as a cache so that we avoid using
+   * reflection to setAccessible for each event
+   */
   @VisibleForTesting
-  protected Long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
-    try {
-      if (heartbeatEvent == null) {
-        return null;
-      }
+  protected long getHeartbeatPosition(final ChangeEvent<String, String> heartbeatEvent) {
+    if (heartbeatEvent == null) {
+      return -1;
+    }
 
+    try {
       final Class<? extends ChangeEvent> eventClass = heartbeatEvent.getClass();
       final Field f;
       if (heartbeatEventSourceField.containsKey(eventClass)) {
