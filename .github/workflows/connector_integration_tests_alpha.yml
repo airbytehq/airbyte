@@ -5,8 +5,8 @@ name: Connector Integration Tests (Alpha connectors only)
 on:
   workflow_dispatch:
   schedule:
-    # 11am UTC is 4am PDT.
-    - cron: "0 11 * * 0"
+    # 4Am UTC is 6AM EET, 5AM CET, 9PM PST.
+    - cron: "0 4 * * 0"
 
 jobs:
   launch_integration_tests_alpha_only:
