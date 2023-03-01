@@ -63,7 +63,7 @@ connectors-ci test-all-modified-connectors #the source-pokeapi pipeline should r
 6. Download remote connector secrets from GSM (only if GCP_GSM_CREDENTIALS)
 7. Run acceptance tests
 8. TODO: Upload modified connector secrets to GSM
-9. Run QA checks
+9. TODO: Run QA checks
 
 ## Questions for the Dagger team (in priority order)
 
