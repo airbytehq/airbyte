@@ -1,4 +1,6 @@
-# Using the dbt Cloud integration 
+# Use the dbt Cloud integration 
+
+By using the dbt Cloud integration, you can create and run dbt transformations during syncs in Airbyte Cloud. This allows you to transform raw data into a format that is suitable for analysis and reporting, including cleaning and enriching the data. 
 
 ## Step 1: Generate a service token
 
@@ -19,7 +21,7 @@ To set up the dbt Cloud integration in Airbyte Cloud:
 
 2. Click **dbt Cloud integration**.
 
-3. Paste the service token from [Step 1](#step-1-prerequisites) and click **Save changes**.
+3. Paste the service token from [Step 1](#step-1-generate-a-service-token) and click **Save changes**.
 
 4. Click **Connections** and select the connection you want to add a dbt transformation to.
 
