@@ -14,13 +14,13 @@ INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requi
 INSTALL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "."]
 
 
-async def install(dagger_client: Client, connector_container: Container, extras: Optional[List] = None) -> Container:
+async def install(dagger_client: Client, connector_container: Container, additional_dependency_groups: Optional[List] = None) -> Container:
     """Create container in which the connector python package is installed with all its dependencies.
 
     Args:
         dagger_client (Client): _description_
         connector_container (Container): _description_
-        extras (List, optional): List of extra_requires to intall e.g: tests, dev, main. (pip install -e .[tests]). Defaults to None.
+        additional_dependency_groups (List, optional): List of 'extra_requires' declared in setup.py to install e.g: tests, dev, main. (pip install -e .[tests]). Defaults to None.
 
     Returns:
         Container: A container in which the connector python package is installed with all its dependencies
@@ -36,9 +36,9 @@ async def install(dagger_client: Client, connector_container: Container, extras:
         connector_container = connector_container.with_exec(INSTALL_LOCAL_REQUIREMENTS_CMD)
     connector_container = connector_container.with_exec(INSTALL_REQUIREMENTS_CMD)
 
-    if extras:
+    if additional_dependency_groups:
         connector_container = connector_container.with_exec(
-            INSTALL_REQUIREMENTS_CMD[:-1] + [INSTALL_REQUIREMENTS_CMD[-1] + f"[{','.join(extras)}]"]
+            INSTALL_REQUIREMENTS_CMD[:-1] + [INSTALL_REQUIREMENTS_CMD[-1] + f"[{','.join(additional_dependency_groups)}]"]
         )
 
     return connector_container

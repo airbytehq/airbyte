@@ -44,7 +44,9 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     format_check_status: StepStatus = await tests.check_format(format_check_container)
 
     install_container: Container = build_context.pipeline(f"{connector.technical_name} - Install connector")
-    installed_connector: Container = await builds.install(connector_ci_client, install_container, extras=["tests", "dev", "main"])
+    installed_connector: Container = await builds.install(
+        connector_ci_client, install_container, additional_dependency_groups=["tests", "dev", "main"]
+    )
 
     unit_test_container: Container = installed_connector.pipeline(f"{connector.technical_name} - Unit tests")
     unit_tests_status: StepStatus = await tests.run_unit_tests(unit_test_container)
@@ -131,7 +133,7 @@ def test_connectors(ctx: click.Context, connector_name: str):
     try:
         anyio.run(run_connectors_test_pipelines, connectors, ctx.obj["gsm_credentials"])
     except dagger.DaggerError as e:
-        logger.error(e.message)
+        logger.error(e)
         sys.exit(1)
 
 
@@ -148,7 +150,7 @@ def test_all_modified_connectors(ctx: click.Context):
         try:
             anyio.run(run_connectors_test_pipelines, changed_connectors, ctx.obj["gsm_credentials"])
         except dagger.DaggerError as e:
-            logger.error(e.message)
+            logger.error(e)
             sys.exit(1)
     else:
         logger.info(f"No connector modified after comparing the current branch with {os.environ['DIFFED_BRANCH']}")
