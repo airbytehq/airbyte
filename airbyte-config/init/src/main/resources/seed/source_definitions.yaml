@@ -2093,6 +2093,9 @@
   icon: woocommerce.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${domain}"
 - name: Workable
   sourceDefinitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
   dockerRepository: airbyte/source-workable
