@@ -71,13 +71,13 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
         super(SentryIncremental, self).__init__(*args, **kwargs)
         self._cursor_value = None
 
+    def validate_state_value(self, state_value: str = None) -> str:
+        none_or_empty = state_value == "None" if state_value else True
+        return self.start_date if none_or_empty else state_value
+
     def get_state_value(self, stream_state: Mapping[str, Any] = None) -> str:
-        bad_state_values = [None, "None", ""]
-        state = self.start_date
-        if stream_state:
-            state_value = stream_state.get(self.cursor_field)
-            state = state if state_value in bad_state_values else state_value
-        return pendulum.parse(state)
+        state_value = self.validate_state_value(stream_state.get(self.cursor_field, self.start_date) if stream_state else self.start_date)
+        return pendulum.parse(state_value)
 
     def filter_by_state(self, stream_state: Mapping[str, Any] = None, record: Mapping[str, Any] = None) -> Iterable:
         """
@@ -110,7 +110,7 @@ class SentryIncremental(SentryStreamPagination, IncrementalMixin):
         """
         if not self._cursor_value:
             self._cursor_value = value.get(self.cursor_field)
-        else:            
+        else:
             current_value = value.get(self.cursor_field) or self.start_date
             current_state = str(self.get_state_value(self.state))
             self._cursor_value = max(current_value, current_state)
