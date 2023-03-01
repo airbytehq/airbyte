@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.28.1",
+    version="0.29.1",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -46,8 +46,6 @@ setup(
     install_requires=[
         "airbyte-protocol-models==1.0.0",
         "backoff",
-        # pinned to the last working version for us temporarily while we fix
-        "dataclasses-jsonschema==2.15.1",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
