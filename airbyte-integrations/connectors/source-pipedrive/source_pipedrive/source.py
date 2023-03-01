@@ -29,9 +29,14 @@ from source_pipedrive.streams import (
 
 
 class SourcePipedrive(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        config["replication_start_date"] = pendulum.parse(config["replication_start_date"])
+        return config
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        config = self._validate_and_transform(config)
         try:
-            stream = Deals(authenticator=self.get_authenticator(config))
+            stream = Deals(authenticator=self.get_authenticator(config), replication_start_date=config["replication_start_date"])
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records, None)
             return True, None
@@ -42,8 +47,9 @@ class SourcePipedrive(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        config = self._validate_and_transform(config)
         stream_kwargs = {"authenticator": self.get_authenticator(config)}
-        incremental_kwargs = {**stream_kwargs, "replication_start_date": pendulum.parse(config["replication_start_date"])}
+        incremental_kwargs = {**stream_kwargs, "replication_start_date": config["replication_start_date"]}
         streams = [
             Activities(**incremental_kwargs),
             ActivityFields(**stream_kwargs),
