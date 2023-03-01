@@ -99,6 +99,7 @@ This source is capable of syncing the following tables and their data:
 - [Inventory Ledger Report - Detailed View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [FBA Manage Inventory Health Report](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Inventory Ledger Report - Summary View](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
+- [FBA Reimbursements Report](https://sellercentral.amazon.com/help/hub/reference/G200732720)
 
 ## Report options
 
