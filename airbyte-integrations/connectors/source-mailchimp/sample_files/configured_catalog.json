@@ -752,465 +752,272 @@
           "title": "Automation",
           "description": "A summary of an individual campaign's settings and content.",
           "properties": {
-            "automations": {
-              "$id": "#root/automations",
-              "title": "Automations",
-              "type": ["array", "null"],
-              "default": [],
-              "items": {
-                "$id": "#root/automations/items",
-                "title": "Items",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "$id": "#root/automations/items/id",
-                    "title": "Id",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
-                  },
-                  "create_time": {
-                    "$id": "#root/automations/items/create_time",
-                    "title": "Create_time",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
-                  },
-                  "start_time": {
-                    "$id": "#root/automations/items/start_time",
-                    "title": "Start_time",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
-                  },
-                  "status": {
-                    "$id": "#root/automations/items/status",
-                    "title": "Status",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
-                  },
-                  "emails_sent": {
-                    "$id": "#root/automations/items/emails_sent",
-                    "title": "Emails_sent",
-                    "type": "integer",
-                    "default": 0
-                  },
-                  "recipients": {
-                    "$id": "#root/automations/items/recipients",
-                    "title": "Recipients",
-                    "type": "object",
-                    "properties": {
-                      "list_id": {
-                        "$id": "#root/automations/items/recipients/list_id",
-                        "title": "List_id",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "list_is_active": {
-                        "$id": "#root/automations/items/recipients/list_is_active",
-                        "title": "List_is_active",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "list_name": {
-                        "$id": "#root/automations/items/recipients/list_name",
-                        "title": "List_name",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "segment_opts": {
-                        "$id": "#root/automations/items/recipients/segment_opts",
-                        "title": "Segment_opts",
-                        "type": "object",
-                        "properties": {
-                          "saved_segment_id": {
-                            "$id": "#root/automations/items/recipients/segment_opts/saved_segment_id",
-                            "title": "Saved_segment_id",
-                            "type": "integer",
-                            "default": 0
-                          },
-                          "match": {
-                            "$id": "#root/automations/items/recipients/segment_opts/match",
-                            "title": "Match",
-                            "type": "string",
-                            "default": "",
-                            "pattern": "^.*$"
-                          },
-                          "conditions": {
-                            "$id": "#root/automations/items/recipients/segment_opts/conditions",
-                            "title": "Conditions",
-                            "type": "array",
-                            "default": [],
-                            "items": {
-                              "$id": "#root/automations/items/recipients/segment_opts/conditions/items",
-                              "title": "Items",
-                              "type": "null",
-                              "default": null
-                            }
-                          }
-                        }
-                      },
-                      "store_id": {
-                        "$id": "#root/automations/items/recipients/store_id",
-                        "title": "Store_id",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      }
+            "id": {
+              "type": "string"
+            },
+            "create_time": {
+              "type": "string"
+            },
+            "start_time": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "emails_sent": {
+              "type": "number"
+            },
+            "recipients": {
+              "type": "object",
+              "properties": {
+                "list_id": {
+                  "type": "string"
+                },
+                "list_is_active": {
+                  "type": "boolean"
+                },
+                "list_name": {
+                  "type": "string"
+                },
+                "segment_opts": {
+                  "type": "object",
+                  "properties": {
+                    "saved_segment_id": {
+                      "type": "number"
+                    },
+                    "match": {
+                      "type": "string"
+                    },
+                    "conditions": {
+                      "type": "array",
+                      "items": {}
                     }
                   },
-                  "settings": {
-                    "$id": "#root/automations/items/settings",
-                    "title": "Settings",
-                    "type": "object",
-                    "properties": {
-                      "title": {
-                        "$id": "#root/automations/items/settings/title",
-                        "title": "Title",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "from_name": {
-                        "$id": "#root/automations/items/settings/from_name",
-                        "title": "From_name",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "reply_to": {
-                        "$id": "#root/automations/items/settings/reply_to",
-                        "title": "Reply_to",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "use_conversation": {
-                        "$id": "#root/automations/items/settings/use_conversation",
-                        "title": "Use_conversation",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "to_name": {
-                        "$id": "#root/automations/items/settings/to_name",
-                        "title": "To_name",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "authenticate": {
-                        "$id": "#root/automations/items/settings/authenticate",
-                        "title": "Authenticate",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "auto_footer": {
-                        "$id": "#root/automations/items/settings/auto_footer",
-                        "title": "Auto_footer",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "inline_css": {
-                        "$id": "#root/automations/items/settings/inline_css",
-                        "title": "Inline_css",
-                        "type": "boolean",
-                        "default": true
-                      }
+                  "required": [
+                    "saved_segment_id",
+                    "match",
+                    "conditions"
+                  ]
+                },
+                "store_id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "list_id",
+                "list_is_active",
+                "list_name",
+                "segment_opts",
+                "store_id"
+              ]
+            },
+            "settings": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "from_name": {
+                  "type": "string"
+                },
+                "reply_to": {
+                  "type": "string"
+                },
+                "use_conversation": {
+                  "type": "boolean"
+                },
+                "to_name": {
+                  "type": "string"
+                },
+                "authenticate": {
+                  "type": "boolean"
+                },
+                "auto_footer": {
+                  "type": "boolean"
+                },
+                "inline_css": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "title",
+                "from_name",
+                "reply_to",
+                "use_conversation",
+                "to_name",
+                "authenticate",
+                "auto_footer",
+                "inline_css"
+              ]
+            },
+            "tracking": {
+              "type": "object",
+              "properties": {
+                "opens": {
+                  "type": "boolean"
+                },
+                "html_clicks": {
+                  "type": "boolean"
+                },
+                "text_clicks": {
+                  "type": "boolean"
+                },
+                "goal_tracking": {
+                  "type": "boolean"
+                },
+                "ecomm360": {
+                  "type": "boolean"
+                },
+                "google_analytics": {
+                  "type": "string"
+                },
+                "clicktale": {
+                  "type": "string"
+                },
+                "salesforce": {
+                  "type": "object",
+                  "properties": {
+                    "campaign": {
+                      "type": "boolean"
+                    },
+                    "notes": {
+                      "type": "boolean"
                     }
                   },
-                  "tracking": {
-                    "$id": "#root/automations/items/tracking",
-                    "title": "Tracking",
-                    "type": "object",
-                    "properties": {
-                      "opens": {
-                        "$id": "#root/automations/items/tracking/opens",
-                        "title": "Opens",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "html_clicks": {
-                        "$id": "#root/automations/items/tracking/html_clicks",
-                        "title": "Html_clicks",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "text_clicks": {
-                        "$id": "#root/automations/items/tracking/text_clicks",
-                        "title": "Text_clicks",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "goal_tracking": {
-                        "$id": "#root/automations/items/tracking/goal_tracking",
-                        "title": "Goal_tracking",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "ecomm360": {
-                        "$id": "#root/automations/items/tracking/ecomm360",
-                        "title": "Ecomm360",
-                        "type": "boolean",
-                        "default": true
-                      },
-                      "google_analytics": {
-                        "$id": "#root/automations/items/tracking/google_analytics",
-                        "title": "Google_analytics",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "clicktale": {
-                        "$id": "#root/automations/items/tracking/clicktale",
-                        "title": "Clicktale",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "salesforce": {
-                        "$id": "#root/automations/items/tracking/salesforce",
-                        "title": "Salesforce",
-                        "type": "object",
-                        "properties": {
-                          "campaign": {
-                            "$id": "#root/automations/items/tracking/salesforce/campaign",
-                            "title": "Campaign",
-                            "type": "boolean",
-                            "default": true
-                          },
-                          "notes": {
-                            "$id": "#root/automations/items/tracking/salesforce/notes",
-                            "title": "Notes",
-                            "type": "boolean",
-                            "default": true
-                          }
-                        }
-                      },
-                      "capsule": {
-                        "$id": "#root/automations/items/tracking/capsule",
-                        "title": "Capsule",
-                        "type": "object",
-                        "properties": {
-                          "notes": {
-                            "$id": "#root/automations/items/tracking/capsule/notes",
-                            "title": "Notes",
-                            "type": "boolean",
-                            "default": true
-                          }
-                        }
-                      }
+                  "required": [
+                    "campaign",
+                    "notes"
+                  ]
+                },
+                "capsule": {
+                  "type": "object",
+                  "properties": {
+                    "notes": {
+                      "type": "boolean"
                     }
                   },
-                  "trigger_settings": {
-                    "$id": "#root/automations/items/trigger_settings",
-                    "title": "Trigger_settings",
-                    "type": "object",
-                    "properties": {
-                      "workflow_type": {
-                        "$id": "#root/automations/items/trigger_settings/workflow_type",
-                        "title": "Workflow_type",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "workflow_title": {
-                        "$id": "#root/automations/items/trigger_settings/workflow_title",
-                        "title": "Workflow_title",
-                        "type": "string",
-                        "default": "",
-                        "pattern": "^.*$"
-                      },
-                      "runtime": {
-                        "$id": "#root/automations/items/trigger_settings/runtime",
-                        "title": "Runtime",
-                        "type": "object",
-                        "properties": {
-                          "days": {
-                            "$id": "#root/automations/items/trigger_settings/runtime/days",
-                            "title": "Days",
-                            "type": "array",
-                            "default": [],
-                            "items": {
-                              "$id": "#root/automations/items/trigger_settings/runtime/days/items",
-                              "title": "Items",
-                              "type": "string",
-                              "default": "",
-                              "pattern": "^.*$"
-                            }
-                          },
-                          "hours": {
-                            "$id": "#root/automations/items/trigger_settings/runtime/hours",
-                            "title": "Hours",
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "$id": "#root/automations/items/trigger_settings/runtime/hours/type",
-                                "title": "Type",
-                                "type": "string",
-                                "default": "",
-                                "pattern": "^.*$"
-                              }
-                            }
-                          }
-                        }
-                      },
-                      "workflow_emails_count": {
-                        "$id": "#root/automations/items/trigger_settings/workflow_emails_count",
-                        "title": "Workflow_emails_count",
-                        "type": "integer",
-                        "default": 0
+                  "required": [
+                    "notes"
+                  ]
+                }
+              },
+              "required": [
+                "opens",
+                "html_clicks",
+                "text_clicks",
+                "goal_tracking",
+                "ecomm360",
+                "google_analytics",
+                "clicktale",
+                "salesforce",
+                "capsule"
+              ]
+            },
+            "trigger_settings": {
+              "type": "object",
+              "properties": {
+                "workflow_type": {
+                  "type": "string"
+                },
+                "workflow_title": {
+                  "type": "string"
+                },
+                "runtime": {
+                  "type": "object",
+                  "properties": {
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
                       }
-                    }
-                  },
-                  "report_summary": {
-                    "$id": "#root/automations/items/report_summary",
-                    "title": "Report_summary",
-                    "type": "object",
-                    "properties": {
-                      "opens": {
-                        "$id": "#root/automations/items/report_summary/opens",
-                        "title": "Opens",
-                        "type": "integer",
-                        "default": 0
-                      },
-                      "unique_opens": {
-                        "$id": "#root/automations/items/report_summary/unique_opens",
-                        "title": "Unique_opens",
-                        "type": "integer",
-                        "default": 0
-                      },
-                      "open_rate": {
-                        "$id": "#root/automations/items/report_summary/open_rate",
-                        "title": "Open_rate",
-                        "type": "integer",
-                        "default": 0
-                      },
-                      "clicks": {
-                        "$id": "#root/automations/items/report_summary/clicks",
-                        "title": "Clicks",
-                        "type": "integer",
-                        "default": 0
-                      },
-                      "subscriber_clicks": {
-                        "$id": "#root/automations/items/report_summary/subscriber_clicks",
-                        "title": "Subscriber_clicks",
-                        "type": "integer",
-                        "default": 0
-                      },
-                      "click_rate": {
-                        "$id": "#root/automations/items/report_summary/click_rate",
-                        "title": "Click_rate",
-                        "type": "integer",
-                        "default": 0
-                      }
-                    }
-                  },
-                  "_links": {
-                    "$id": "#root/automations/items/_links",
-                    "title": "_links",
-                    "type": "array",
-                    "default": [],
-                    "items": {
-                      "$id": "#root/automations/items/_links/items",
-                      "title": "Items",
+                    },
+                    "hours": {
                       "type": "object",
                       "properties": {
-                        "rel": {
-                          "$id": "#root/automations/items/_links/items/rel",
-                          "title": "Rel",
-                          "type": "string",
-                          "default": "",
-                          "pattern": "^.*$"
-                        },
-                        "href": {
-                          "$id": "#root/automations/items/_links/items/href",
-                          "title": "Href",
-                          "type": "string",
-                          "default": "",
-                          "pattern": "^.*$"
-                        },
-                        "method": {
-                          "$id": "#root/automations/items/_links/items/method",
-                          "title": "Method",
-                          "type": "string",
-                          "default": "",
-                          "pattern": "^.*$"
-                        },
-                        "targetSchema": {
-                          "$id": "#root/automations/items/_links/items/targetSchema",
-                          "title": "Targetschema",
-                          "type": "string",
-                          "default": "",
-                          "pattern": "^.*$"
-                        },
-                        "schema": {
-                          "$id": "#root/automations/items/_links/items/schema",
-                          "title": "Schema",
-                          "type": "string",
-                          "default": "",
-                          "pattern": "^.*$"
+                        "type": {
+                          "type": "string"
                         }
-                      }
+                      },
+                      "required": [
+                        "type"
+                      ]
                     }
-                  }
+                  },
+                  "required": [
+                    "days",
+                    "hours"
+                  ]
+                },
+                "workflow_emails_count": {
+                  "type": "number"
                 }
-              }
+              },
+              "required": [
+                "workflow_type",
+                "workflow_title",
+                "runtime",
+                "workflow_emails_count"
+              ]
             },
-            "total_items": {
-              "$id": "#root/total_items",
-              "title": "Total_items",
-              "type": "integer",
-              "default": 0
+            "report_summary": {
+              "type": "object",
+              "properties": {
+                "opens": {
+                  "type": "number"
+                },
+                "unique_opens": {
+                  "type": "number"
+                },
+                "open_rate": {
+                  "type": "number"
+                },
+                "clicks": {
+                  "type": "number"
+                },
+                "subscriber_clicks": {
+                  "type": "number"
+                },
+                "click_rate": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "opens",
+                "unique_opens",
+                "open_rate",
+                "clicks",
+                "subscriber_clicks",
+                "click_rate"
+              ]
             },
             "_links": {
-              "$id": "#root/_links",
-              "title": "_links",
               "type": "array",
-              "default": [],
               "items": {
-                "$id": "#root/_links/items",
-                "title": "Items",
                 "type": "object",
                 "properties": {
                   "rel": {
-                    "$id": "#root/_links/items/rel",
-                    "title": "Rel",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
+                    "type": "string"
                   },
                   "href": {
-                    "$id": "#root/_links/items/href",
-                    "title": "Href",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
+                    "type": "string"
                   },
                   "method": {
-                    "$id": "#root/_links/items/method",
-                    "title": "Method",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
+                    "type": "string"
                   },
                   "targetSchema": {
-                    "$id": "#root/_links/items/targetSchema",
-                    "title": "Targetschema",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
+                    "type": "string"
                   },
                   "schema": {
-                    "$id": "#root/_links/items/schema",
-                    "title": "Schema",
-                    "type": "string",
-                    "default": "",
-                    "pattern": "^.*$"
+                    "type": "string"
                   }
-                }
+                },
+                "required": [
+                  "rel",
+                  "href",
+                  "method",
+                  "targetSchema",
+                  "schema"
+                ]
               }
             }
           }
