@@ -46,7 +46,6 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             }
 
             maxHeapSize = '3g'
-
             maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
 
             // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
