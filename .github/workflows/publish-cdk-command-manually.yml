@@ -83,7 +83,7 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md
+          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md airbyte-cdk/python/Dockerfile
           commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
