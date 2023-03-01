@@ -147,6 +147,10 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         self.logger.info(f"Syncing division {division}...")
 
+        # Reset state for full refresh
+        if sync_mode == SyncMode.full_refresh:
+            self._state_per_division[division] = {}
+
         for record in super().read_records(sync_mode=sync_mode, stream_slice=stream_slice, **kwargs):
             # Track the largest cursor value
             if self.cursor_field and sync_mode == SyncMode.incremental:
