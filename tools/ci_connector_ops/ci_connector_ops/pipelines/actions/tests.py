@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from ci_connector_ops.pipelines.actions.build_contexts import PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.actions import PYPROJECT_TOML_FILE_PATH
 from ci_connector_ops.pipelines.utils import StepStatus, check_path_in_workdir, with_exit_code
 from ci_connector_ops.utils import Connector
 from dagger import Client, Container
@@ -22,11 +22,6 @@ async def _run_tests_in_directory(connector_container: Container, test_directory
     Returns:
         StepStatus: Failure or success status of the tests.
     """
-    # Question to dagger team: according to https://github.com/dagger/dagger/issues/3192 :
-    # A with_exec returning a non 0 status code will throw a TransportQueryError
-    # How can we execute with_exec commands that may return non 0 status code and decide further in the pipeline how to handle these status code
-    # If I'm not mistaken these TransportQueryError will stop the global pipeline execution
-    # In other words, if this with_exec fails we can't run other tests and get their results.
     test_config = "pytest.ini" if await check_path_in_workdir(connector_container, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
     if await check_path_in_workdir(connector_container, test_directory):
         tester = connector_container.with_exec(
@@ -132,6 +127,7 @@ async def run_acceptance_tests(
     # I'd love to find a workaround that would allow me to not patch connector-acceptance-test.
     # This was already extensively discussed here with no workaround found ATM: https://discord.com/channels/707636530424053791/1078038429163597854
     # The critical code path on connector-acceptance-test is here: https://github.com/airbytehq/airbyte/blob/fbd6dbf091e5605b140971ef049a261c59ff1f9a/airbyte-integrations/bases/connector-acceptance-test/connector_acceptance_test/utils/connector_runner.py#L104
+
     source_host_path = dagger_client.host().directory(str(connector.code_directory))
     docker_host_socket = dagger_client.host().unix_socket("/var/run/docker.sock")
 

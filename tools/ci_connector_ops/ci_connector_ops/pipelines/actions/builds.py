@@ -6,42 +6,8 @@ import tempfile
 from typing import List, Optional, Tuple
 
 import docker
-from ci_connector_ops.pipelines.utils import get_file_contents
 from ci_connector_ops.utils import Connector
-from dagger import Client, Container
-
-INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
-INSTALL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "."]
-
-
-async def install(dagger_client: Client, connector_container: Container, additional_dependency_groups: Optional[List] = None) -> Container:
-    """Create container in which the connector python package is installed with all its dependencies.
-
-    Args:
-        dagger_client (Client): The dagger client.
-        connector_container (Container): The connector container on which we want to install the connector python package.
-        additional_dependency_groups (List, optional): List of 'extra_requires' declared in setup.py to install e.g: tests, dev, main. (pip install -e .[tests]). Defaults to None.
-
-    Returns:
-        Container: A container in which the connector python package is installed with all its dependencies
-    """
-    if requirements_txt := await get_file_contents(connector_container, "requirements.txt"):
-        for line in requirements_txt.split("\n"):
-            if line.startswith("-e ../../"):
-                local_dependency_to_mount = line.replace("-e ../..", "airbyte-integrations")
-                connector_container = connector_container.with_mounted_directory(
-                    "/" + local_dependency_to_mount, dagger_client.host().directory(local_dependency_to_mount, exclude=[".venv"])
-                )
-        connector_container = connector_container.with_exec(INSTALL_LOCAL_REQUIREMENTS_CMD)
-
-    connector_container = connector_container.with_exec(INSTALL_REQUIREMENTS_CMD)
-
-    if additional_dependency_groups:
-        connector_container = connector_container.with_exec(
-            INSTALL_REQUIREMENTS_CMD[:-1] + [INSTALL_REQUIREMENTS_CMD[-1] + f"[{','.join(additional_dependency_groups)}]"]
-        )
-
-    return connector_container
+from dagger import Client
 
 
 async def build_dev_image(dagger_client: Client, connector: Connector, exclude=Optional[List]) -> Tuple[str, str]:
@@ -59,7 +25,6 @@ async def build_dev_image(dagger_client: Client, connector: Connector, exclude=O
     Returns:
         Tuple[str, str]: The built image name and tag, the built image short id.
     """
-    # Question to Dagger team: Can build and tag an image in Dagger?
     local_image_tarball_path = tempfile.NamedTemporaryFile()
     local_docker_client = docker.from_env()
     dev_tag = connector.definition["dockerRepository"].split(":")[0] + ":dev"

@@ -11,13 +11,15 @@ from typing import List, Optional
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import build_contexts, builds, tests
+from ci_connector_ops.pipelines.actions import builds, environments, tests
 from ci_connector_ops.pipelines.utils import StepStatus, write_connector_secrets_to_local_storage
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
 from dagger import Client, Container
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+CI_CREDENTIALS_PACKAGE_PATH = "tools/ci_credentials"
 
 
 async def run_connector_test_pipelines(dagger_client: Client, connector: Connector, gsm_credentials: Optional[str]):
@@ -38,20 +40,17 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     main_pipeline_name = f"CI test for {connector.technical_name}"
     pipeline_logger = logging.getLogger(main_pipeline_name)
     connector_ci_client: Client = dagger_client.pipeline(main_pipeline_name)
-    build_context_client: Client = connector_ci_client.pipeline(f"{connector.technical_name} - Build context")
-    build_context: Container = build_contexts.get_build_context(build_context_client, connector)
-    format_check_container: Container = build_context.pipeline(f"{connector.technical_name} - Format Check")
+
+    connector_client = connector_ci_client.pipeline(f"{connector.technical_name} - Install connector python package")
+    connector_under_test: Container = await environments.with_airbyte_connector(connector_client, connector)
+
+    format_check_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Format Check")
     format_check_status: StepStatus = await tests.check_format(format_check_container)
 
-    install_container: Container = build_context.pipeline(f"{connector.technical_name} - Install connector")
-    installed_connector: Container = await builds.install(
-        connector_ci_client, install_container, additional_dependency_groups=["tests", "dev", "main"]
-    )
-
-    unit_test_container: Container = installed_connector.pipeline(f"{connector.technical_name} - Unit tests")
+    unit_test_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Unit tests")
     unit_tests_status: StepStatus = await tests.run_unit_tests(unit_test_container)
 
-    integration_test_container: Container = installed_connector.pipeline(f"{connector.technical_name} - Integration tests")
+    integration_test_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Integration tests")
     integration_tests_status: StepStatus = await tests.run_integration_tests(integration_test_container)
 
     build_dev_image_client = connector_ci_client.pipeline(f"{connector.technical_name} - Build dev image")
