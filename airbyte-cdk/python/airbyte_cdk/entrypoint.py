@@ -65,6 +65,7 @@ class AirbyteEntrypoint(object):
         return main_parser.parse_args(args)
 
     def run(self, parsed_args: argparse.Namespace) -> Iterable[str]:
+        raise Exception("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         cmd = parsed_args.command
         if not cmd:
             raise Exception("No command passed")
