@@ -115,6 +115,8 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: ListFinancialEvents
             bypass_reason: "no records"
+          - name: GET_FBA_REIMBURSEMENTS_DATA
+            bypass_reason: "no records"
   incremental:
     tests:
       - config_path: "secrets/config_old_data.json"
