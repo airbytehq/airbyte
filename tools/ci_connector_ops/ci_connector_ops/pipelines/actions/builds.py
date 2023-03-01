@@ -6,7 +6,7 @@ import tempfile
 from typing import List, Optional, Tuple
 
 import docker
-from ci_connector_ops.pipelines.utils import check_path_in_workdir
+from ci_connector_ops.pipelines.utils import get_file_contents
 from ci_connector_ops.utils import Connector
 from dagger import Client, Container
 
@@ -25,8 +25,7 @@ async def install(dagger_client: Client, connector_container: Container, additio
     Returns:
         Container: A container in which the connector python package is installed with all its dependencies
     """
-    if await check_path_in_workdir(connector_container, "requirements.txt"):
-        requirements_txt = await connector_container.file("requirements.txt").contents()
+    if requirements_txt := await get_file_contents(connector_container, "requirements.txt"):
         for line in requirements_txt.split("\n"):
             if line.startswith("-e ../../"):
                 local_dependency_to_mount = line.replace("-e ../..", "airbyte-integrations")
@@ -34,6 +33,7 @@ async def install(dagger_client: Client, connector_container: Container, additio
                     "/" + local_dependency_to_mount, dagger_client.host().directory(local_dependency_to_mount, exclude=[".venv"])
                 )
         connector_container = connector_container.with_exec(INSTALL_LOCAL_REQUIREMENTS_CMD)
+
     connector_container = connector_container.with_exec(INSTALL_REQUIREMENTS_CMD)
 
     if additional_dependency_groups:

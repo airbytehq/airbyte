@@ -3,9 +3,10 @@
 #
 from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 from ci_connector_ops.utils import Connector
-from dagger import Container
+from dagger import Container, QueryError
 
 
 class StepStatus(Enum):
@@ -41,6 +42,27 @@ async def check_path_in_workdir(container: Container, path: str) -> bool:
         return expected_file_path.is_file() or expected_file_path.is_dir()
     else:
         return False
+
+
+# This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
+async def get_file_contents(container: Container, path: str) -> Optional[str]:
+    """Retrieve a container file contents.
+
+    Args:
+        container (Container): The container hosting the file you want to read.
+        path (str): Path, in the container, to the file you want to read.
+
+    Returns:
+        Optional[str]: The file content if the file exists in the container, None otherwise.
+    """
+    try:
+        return await container.file(path).contents()
+    except QueryError as e:
+        if "no such file or directory" not in str(e):
+            # this is the hicky bit of the stopgap because
+            # this error could come from a network issue
+            raise
+    return None
 
 
 def write_connector_secrets_to_local_storage(connector: Connector, gsm_credentials: str):
