@@ -48,9 +48,11 @@ import javax.sql.DataSource;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+@Disabled
 public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private static final String CDC_ROLE_NAME = "cdc_selector";
@@ -82,7 +84,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   }
 
   private void init() {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 

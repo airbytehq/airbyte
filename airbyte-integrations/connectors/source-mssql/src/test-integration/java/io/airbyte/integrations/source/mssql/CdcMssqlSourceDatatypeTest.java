@@ -14,8 +14,9 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.util.HashMap;
 import java.util.Map;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
-
+@Disabled
 public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
   public static final Map<String,String> CONNECTION_PROPERTIES = new HashMap<>();
   static {

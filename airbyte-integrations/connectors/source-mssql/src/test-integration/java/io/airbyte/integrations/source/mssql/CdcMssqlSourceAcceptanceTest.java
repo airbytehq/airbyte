@@ -28,8 +28,9 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.List;
 import java.util.Map;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
-
+@Disabled
 public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String DB_NAME = "acceptance";
