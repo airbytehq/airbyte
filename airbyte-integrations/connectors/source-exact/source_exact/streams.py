@@ -10,6 +10,7 @@ from urllib.parse import unquote
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -138,7 +139,7 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return [self._parse_item(x) for x in results]
 
-    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[StreamData]:
+    def read_records(self, sync_mode: SyncMode, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[StreamData]:
         """Overridden to change the url_base based on the current division, and to keep track of the cursor."""
 
         division = str(stream_slice["division"])
@@ -146,9 +147,9 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         self.logger.info(f"Syncing division {division}...")
 
-        for record in super().read_records(stream_slice=stream_slice, **kwargs):
+        for record in super().read_records(sync_mode=sync_mode, stream_slice=stream_slice, **kwargs):
             # Track the largest cursor value
-            if self.cursor_field:
+            if self.cursor_field and sync_mode == SyncMode.incremental:
                 cursor_value = record[self.cursor_field]
                 current_cursor_value = self._state_per_division[division].get(self.cursor_field)
                 current_cursor_value = cursor_value if not current_cursor_value else current_cursor_value
