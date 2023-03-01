@@ -32,7 +32,7 @@ class SourceGCS(Source):
         try:
             blobs = get_gcs_blobs(config)
             if not blobs:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=f"No compatible file found in bucket")
+                return AirbyteConnectionStatus(status=Status.FAILED, message="No compatible file found in bucket")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
