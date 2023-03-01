@@ -11,6 +11,7 @@ RUN pip install .
 COPY oauth2.patch.json ./
 COPY spec.patch.json ./
 COPY spec.map.json ./
+COPY streams/* ./streams/
 COPY documentation_url.patch.json ./
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
