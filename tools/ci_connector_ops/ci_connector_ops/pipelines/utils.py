@@ -23,7 +23,17 @@ class StepStatus(Enum):
         return self.value
 
 
-async def check_path_in_workdir(container: Container, path: str):
+# This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
+async def check_path_in_workdir(container: Container, path: str) -> bool:
+    """Check if a local path is mounted to the working directory of a container
+
+    Args:
+        container (Container): The container on which we want the check the path existence.
+        path (str): Directory or file path we want to check the existence in the container working directory.
+
+    Returns:
+        bool: Whether the path exists in the container working directory.
+    """
     workdir = (await container.with_exec(["pwd"]).stdout()).strip()
     mounts = await container.mounts()
     if workdir in mounts:
