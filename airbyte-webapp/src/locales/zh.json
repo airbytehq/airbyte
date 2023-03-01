@@ -260,6 +260,7 @@
   "sources.emptySchema": "架构为空",
   "sources.noSources": "数据源列表为空",
   "sources.sourceSettings": "数据源设置",
+  "sources.failed": "失败的",
   "sources.completed": "已完成",
   "sources.succeeded": "成功",
   "sources.pending": "待处理",

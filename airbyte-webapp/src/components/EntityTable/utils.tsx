@@ -103,6 +103,7 @@ export const getConnectionTableData = (
       enabled: connection.status === ConnectionStatus.active,
       schedule: connection.scheduleData?.basicSchedule,
       status: `${connection.status[0].toUpperCase()}${connection.status.slice(1)}`,
+      statusLang: connection.statusLang,
       isSyncing: connection.isSyncing,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
       connectorIcon: type === "destination" ? sourceIcon : destinationIcon,
