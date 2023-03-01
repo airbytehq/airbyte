@@ -174,12 +174,8 @@ def test_check_connection(config_gen, mocker, requests_mock):
     )
 
     # test custom_reports
-    assert command_check(source, config_gen(custom_reports="")) == AirbyteConnectionStatus(
-        status=Status.FAILED,
-        message="\"Unable to connect to Google Search Console API with the provided credentials - Exception('custom_reports is not valid JSON')\"",
-    )
-    assert command_check(source, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
+    assert command_check(source, config_gen(custom_reports=[])) == AirbyteConnectionStatus(
+        status=Status.SUCCEEDED,
     )
 
 

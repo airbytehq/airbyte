@@ -19,7 +19,7 @@ def config_fixture(requests_mock):
             "client_secret": "client_secret",
             "refresh_token": "refresh_token",
         },
-        "custom_reports": '[{"name": "custom_dimensions", "dimensions": ["date", "country", "device"]}]',
+        "custom_reports": [{"name": "custom_dimensions", "dimensions": ["date", "country", "device"]}],
     }
 
 

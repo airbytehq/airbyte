@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from typing import Any, List, Mapping, Optional, Tuple
 from urllib.parse import urlparse
 
@@ -10,12 +11,13 @@ import jsonschema
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from source_google_search_console.exceptions import InvalidSiteURLValidationError
 from source_google_search_console.service_account_authenticator import ServiceAccountAuthenticator
+from source_google_search_console.spec import ConnectorConfig, advanced_auth
 from source_google_search_console.streams import (
     SearchAnalyticsAllFields,
     SearchAnalyticsByCountry,
@@ -58,10 +60,11 @@ class SourceGoogleSearchConsole(AbstractSource):
                 raise Exception("authorization.service_account_info is not valid JSON")
 
         if "custom_reports" in config:
-            try:
-                config["custom_reports"] = json.loads(config["custom_reports"])
-            except ValueError:
-                raise Exception("custom_reports is not valid JSON")
+            if isinstance(config.get("custom_reports"), str):
+                try:
+                    config["custom_reports"] = json.loads(config["custom_reports"])
+                except ValueError:
+                    raise Exception("custom_reports is not valid JSON")
             jsonschema.validate(config["custom_reports"], custom_reports_schema)
             for report in config["custom_reports"]:
                 for dimension in report["dimensions"]:
@@ -167,3 +170,12 @@ class SourceGoogleSearchConsole(AbstractSource):
                 service_account_info=authorization["service_account_info"],
                 email=authorization["email"],
             )
+
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.com/integrations/sources/google-search-console",
+            changelogUrl="https://docs.airbyte.com/integrations/sources/google-search-console",
+            supported_destination_sync_modes=[DestinationSyncMode.append],
+            connectionSpecification=ConnectorConfig.schema(),
+            advanced_auth=advanced_auth,
+        )

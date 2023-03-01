@@ -72,9 +72,10 @@ At the end of this process, you should have JSON credentials to this Google Serv
 3. On the Set up the source page, enter the name for the google search console connector and select **google search console** from the Source type dropdown.
 4. Click Authenticate your account to sign in with Google and authorize your account.
 5. Fill in the `site_urls` field.
-5. Fill in the `start date` field.
-6. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-7. You should be ready to sync data.
+6. Fill in the `start date` field.
+7. Fill in the `end date` field (optionally).
+8. Fill in the `custom reports` (optionally).
+9. You should be ready to sync data.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -83,8 +84,9 @@ At the end of this process, you should have JSON credentials to this Google Serv
 1. Fill in the `service_account_info` and `email` fields for authentication.
 2. Fill in the `site_urls` field.
 3. Fill in the `start date` field.
-4. Fill in the `custom reports` (optionally) in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...]}`
-5. You should be ready to sync data.
+4. Fill in the `end date` field (optionally).
+5. Fill in the `custom reports` (optionally).
+6. You should be ready to sync data.
 <!-- /env:oss -->
 
 
