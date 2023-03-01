@@ -83,7 +83,7 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md
+          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md airbyte-cdk/python/Dockerfile
           commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
@@ -194,33 +194,6 @@ jobs:
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
           TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-      - name: Post success to Slack channel dev-connectors-extensibility
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "A new version of Airbyte CDK has been released!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "A new version of Airbyte CDK has been released with changelog: ${{ github.event.inputs.changelog-message }}!\n\n"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
@@ -286,6 +259,61 @@ jobs:
             ./tools/integrations/manage.sh publish airbyte-cdk/python false
           attempt_limit: 3
           attempt_delay: 5000 in # ms
+      - name: Post success to Slack channel dev-connectors-extensibility
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C04J1M66D8B
+          payload: |
+            {
+                "text": "A new version of Airbyte CDK has been released!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "A new version of Airbyte CDK has been released with changelog: ${{ github.event.inputs.changelog-message }}!\n\n"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+      - name: Post failure to Slack channel dev-connectors-extensibility
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C04J1M66D8B
+          payload: |
+            {
+                "text": "Error during `publish-cdk` while publishing Airbyte CDK!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Error while publishing Airbyte CDK!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-publish-docker-image-runner-0:
