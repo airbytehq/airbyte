@@ -606,9 +606,9 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 .withItems(JsonSchemaType.JSONB)
                 .build())
             .addInsertValues(
-                "ARRAY['[1,2,1]', 'false']::jsonb[]",
-                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
-            .addExpectedValues("[[1,2,1],false]", "[{\"digit\":30,\"letter\":\"A\"},{\"digit\":31,\"letter\":\"B\"}]")
+                "ARRAY['[1,2,1]', 'false', '[4,5,6]', '[7,8,9]']::jsonb[]",
+                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}', '{\"letter\":\"C\", \"digit\":29}']::jsonb[]")
+            .addExpectedValues("[[1,2,1],false,[4,5,6],[7,8,9]]", "[{\"digit\":30,\"letter\":\"A\"},{\"digit\":31,\"letter\":\"B\"},{\"digit\":29,\"letter\":\"C\"}]")
             .build());
   }
 
