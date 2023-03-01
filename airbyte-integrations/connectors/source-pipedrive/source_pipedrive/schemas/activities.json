@@ -45,8 +45,7 @@
       "type": ["null", "boolean"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "marked_as_done_time": {
       "type": ["null", "string"]
@@ -88,8 +87,7 @@
       "type": ["null", "boolean"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_user_id": {
       "type": ["null", "integer"]

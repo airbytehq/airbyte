@@ -18,12 +18,10 @@
       "type": ["null", "string"]
     },
     "add_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "last_updated_by_user_id": {
       "type": ["null", "integer"]

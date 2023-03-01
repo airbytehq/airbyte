@@ -59,10 +59,8 @@ class PipedriveStream(HttpStream, ABC):
 
         replication_start_date = self._replication_start_date
         if replication_start_date:
-            cursor_value = stream_state.get(self.cursor_field)
-            if cursor_value:
-                cursor_value = pendulum.parse(cursor_value)
-                replication_start_date = max(replication_start_date, cursor_value)
+            if stream_state.get(self.cursor_field):
+                replication_start_date = max(pendulum.parse(stream_state[self.cursor_field]), replication_start_date)
 
             params.update(
                 {
@@ -70,6 +68,7 @@ class PipedriveStream(HttpStream, ABC):
                     "since_timestamp": replication_start_date.strftime("%Y-%m-%d %H:%M:%S"),
                 }
             )
+
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
