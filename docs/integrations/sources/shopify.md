@@ -148,7 +148,8 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.3.1   | 2023-01-16 | [21461](https://github.com/airbytehq/airbyte/pull/21461)  | Add `discount_applications` to `orders` stream                                                 |
+| 0.3.2   | 2023-02-27 | [23473](https://github.com/airbytehq/airbyte/pull/23473)  | Fixed OOM / Memory leak issue for Airbyte Cloud                                                           |
+| 0.3.1   | 2023-01-16 | [21461](https://github.com/airbytehq/airbyte/pull/21461)  | Add `discount_applications` to `orders` stream                                                            |
 | 0.3.0   | 2022-11-16 | [19492](https://github.com/airbytehq/airbyte/pull/19492)  | Add support for graphql and add a graphql products stream                                                 |
 | 0.2.0   | 2022-10-21 | [18298](https://github.com/airbytehq/airbyte/pull/18298)  | Updated API version to the `2022-10`, make stream schemas backward cpmpatible                             |
 | 0.1.39  | 2022-10-13 | [17962](https://github.com/airbytehq/airbyte/pull/17962)  | Add metafield streams; support for nested list streams                                                    |
