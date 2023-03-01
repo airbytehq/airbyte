@@ -27,8 +27,9 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.SQLException;
 import java.util.HashMap;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
-
+@Disabled
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String SCHEMA_NAME = "dbo";

@@ -4,15 +4,12 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.CdcMssqlSourceDatatypeTest.CONNECTION_PROPERTIES;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
@@ -65,19 +62,18 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
-        .put(JdbcUtils.DATABASE_KEY, dbName).
-        put("is_test", true);
+        .put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    final DSLContext dslContext = DSLContextFactory.create(DataSourceFactory.create(
+    final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        CONNECTION_PROPERTIES), null);
+        null);
     return new Database(dslContext);
   }
 

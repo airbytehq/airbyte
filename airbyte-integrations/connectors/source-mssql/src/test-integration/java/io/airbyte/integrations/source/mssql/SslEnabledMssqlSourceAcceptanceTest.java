@@ -54,6 +54,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+    ((ObjectNode) config).put("jdbc_url_params", "encrypt=true&trustServerCertificate=true");
   }
 
   private static DSLContext getDslContext(final JsonNode baseConfig) {

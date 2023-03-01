@@ -17,9 +17,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.Disabled;
 
-@Disabled
 public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   private JsonNode baseConfig;
