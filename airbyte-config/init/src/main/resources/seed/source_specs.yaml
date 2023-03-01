@@ -11204,7 +11204,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.13"
+- dockerImage: "airbyte/source-pipedrive:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -11271,6 +11271,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           type: "string"
+          format: "date-time"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false

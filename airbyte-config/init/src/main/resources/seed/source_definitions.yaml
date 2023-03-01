@@ -1369,11 +1369,14 @@
 - name: Pipedrive
   sourceDefinitionId: d8286229-c680-4063-8c59-23b9b391c700
   dockerRepository: airbyte/source-pipedrive
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   icon: pipedrive.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.pipedrive.com
 - name: Pivotal Tracker
   sourceDefinitionId: d60f5393-f99e-4310-8d05-b1876820f40e
   dockerRepository: airbyte/source-pivotal-tracker
