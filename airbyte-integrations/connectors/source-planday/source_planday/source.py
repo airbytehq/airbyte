@@ -34,8 +34,6 @@ There are additional required TODOs in the files within the integration_tests fo
 # Basic full refresh stream
 class PlandayStream(HttpStream, ABC):
     """
-    TODO remove this comment
-
     This class represents a stream output by the connector.
     This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
     parsing responses etc..
@@ -136,6 +134,7 @@ class PlandayStream(HttpStream, ABC):
                        stream_state: Mapping[str, Any],
                        stream_slice: Mapping[str, Any] = None,
                        next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
+        print(response.url)
         data = response.json().get("data", [])
         yield from data if isinstance(data, list) else [data]
 
@@ -277,7 +276,7 @@ class EmployeeGroups(PlandayStream):
 class TimeAndCosts(IncrementalSubPlandayStream):
 
     primary_key = "shiftId"
-    cursor_field = "from"
+    cursor_field = "date"
 
     def __init__(self, parent: Departments, config: Mapping[str, Any]):
         super().__init__(parent=parent, config=config)
@@ -293,6 +292,7 @@ class TimeAndCosts(IncrementalSubPlandayStream):
                        stream_state: Mapping[str, Any],
                        stream_slice: Mapping[str, Any] = None,
                        next_page_token: Mapping[str, Any] = None,) -> Iterable[Mapping]:
+        print(response.url)
         data = response.json().get("data", {})
         costs = data.get("costs", [])
         yield from [{**cost, "departmentId": stream_slice['parent']['id']} for cost in costs]
