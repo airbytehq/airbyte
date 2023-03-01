@@ -18,8 +18,8 @@ async def install(dagger_client: Client, connector_container: Container, additio
     """Create container in which the connector python package is installed with all its dependencies.
 
     Args:
-        dagger_client (Client): _description_
-        connector_container (Container): _description_
+        dagger_client (Client): The dagger client.
+        connector_container (Container): The connector container on which we want to install the connector python package.
         additional_dependency_groups (List, optional): List of 'extra_requires' declared in setup.py to install e.g: tests, dev, main. (pip install -e .[tests]). Defaults to None.
 
     Returns:
