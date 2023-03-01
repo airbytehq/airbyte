@@ -72,12 +72,18 @@ Please ignore the `Set your environment variables` step and focus on running `co
 
 1. ~~How to handle exit codes: if exit_code != 0 an exception is thrown and stops the other pipeline execution. Code context [here](https://github.com/airbytehq/airbyte/blob/7d7e48b2a342a328fa74c6fd11a9268e1dcdcd64/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/tests.py#L25)~~ A stop-gap solution was implemented waiting for this [issue](https://github.com/dagger/dagger/issues/3192) to be fixed.
 2. Can we make with_mounted_directory writable so that the container can write to the host FS? Code context [here](https://github.com/airbytehq/airbyte/blob/7d7e48b2a342a328fa74c6fd11a9268e1dcdcd64/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/tests.py#L119)
-3. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9). 
+Dagger team answer: We'll implement a flag to run privileged `with_exec` that will allow containers to write on the host FS.
+3. How to get access to visualizations: We'd love to have dynamic status checks on our GitHub PRs, with links to pipeline visualization [like](https://propeller.fly.dev/runs/da68273e-48d8-4354-8d8b-efaccf2792b9).
+Dagger team answer: coming soon. 
 4. Can we build and tag an image in Dagger?
+Dagger team answer: Run a local docker registry and publish images to this directory during the pipeline execution.
 5. What are the best practices to report success failure details?
 6. What are the best practices to write tests for pipelines?
+Dagger team answer: Get inspirations from their own repo [here](https://github.com/dagger/dagger/tree/main/sdk/python/tests). 
 7. What would be your suggestion to run `docker scan` from dagger to spot vulnerabilities on our connectors?
+Dagger team answer: A scanning tool should be wrapped in a container to scan images from Dagger.
 8. Do you have a tool to re-order logs line by order of pipeline after execution?
+A log grouping tool is under construction: https://www.youtube.com/watch&ab_channel=Dagger
 
 ### Airbyte specific context that could help you understand our workflow.
 - We always use a :dev tag to tag images of connector we build locally. We try to never publish these images to a public repository.
