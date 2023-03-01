@@ -165,7 +165,7 @@ class RestSalesforceStream(SalesforceStream):
             # If records > 0 and no next_page: pagination is complete, skip this chunk
             chunk_id: records_number
             for chunk_id, records_number in records_by_chunk_counter.items()
-            if not chunk_id or next_pages.get(chunk_id)
+            if not records_number or next_pages.get(chunk_id)
         }
         if not non_exhausted_chunks:
             return None
@@ -200,12 +200,15 @@ class RestSalesforceStream(SalesforceStream):
                 # this is the case when a stream has no primary key
                 # (it is allowed when properties length does not exceed the maximum value)
                 # so there would be a single chunk, therefore we may and should yield records immediately
-                yield from chunk_page_records
+                for record in chunk_page_records:
+                    records_by_chunk_counter[chunk_id] += 1
+                    yield record
                 continue
-            chunk_page_records = {record[self.primary_key]: record for record in chunk_page_records}
-            records_by_chunk_counter[chunk_id] += len(chunk_page_records)
+
             # stick together different parts of records by their primary key and emit if a record is complete
-            for record_id, record in chunk_page_records.items():
+            for record in chunk_page_records:
+                records_by_chunk_counter[chunk_id] += 1
+                record_id = record[self.primary_key]
                 if record_id not in records_by_primary_key:
                     records_by_primary_key[record_id] = (record, 1)
                     continue
@@ -229,7 +232,7 @@ class RestSalesforceStream(SalesforceStream):
         # Select 'c', 'd' from table order by pk -> returns records with ids `1`, `3`
         # Then records `2` and `3` would be incomplete.
         # This may result in data inconsistency. We skip such records for now and log a warning message.
-        incomplete_record_ids = ",".join(records_by_primary_key.keys())
+        incomplete_record_ids = ",".join([str(key) for key in records_by_primary_key])
         if incomplete_record_ids:
             self.logger.warning(f"Inconsistent record(s) with primary keys {incomplete_record_ids} found. Skipping them.")
 

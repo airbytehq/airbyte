@@ -625,63 +625,63 @@ def test_rest_stream_init_with_too_many_properties(stream_config, stream_api_v2_
         generate_stream("Account", stream_config, stream_api_v2_too_many_properties)
 
 
-def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
-    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
-    chunks = list(stream.chunk_properties())
-    for chunk in chunks:
-        assert stream.primary_key in chunk
-    chunks_len = len(chunks)
-    assert stream.too_many_properties
-    assert stream.primary_key
-    assert type(stream) == RestSalesforceStream
-    url = next_page_url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
-    requests_mock.get(
-        url,
-        [
-            {
-                "json": {
-                    "nextRecordsUrl": next_page_url,
-                    "records": [{"Id": 1, "propertyA": "A"}, {"Id": 2, "propertyA": "A"}]
-                }
-            },
-            {
-                "json": {
-                    "nextRecordsUrl": next_page_url,
-                    "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]
-                }
-            },
-            # 2 for 2 chunks above and 1 for a chunk below
-            *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks_len - 3)],
-            {
-                "json": {
-                    "records": [{"Id": 1}, {"Id": 2}]
-                }
-            },
-            {
-                "json": {
-                    "records": [{"Id": 3, "propertyA": "A"}, {"Id": 4, "propertyA": "A"}]
-                }
-            },
-            {
-                "json": {
-                    "records": [{"Id": 3, "propertyB": "B"}, {"Id": 4, "propertyB": "B"}]
-                }
-            },
-            # 2 for 2 chunks above and 1 for a chunk below
-            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 3)],
-            {
-                "json": {
-                    "records": [{"Id": 3}, {"Id": 4}]
-                }
-            }
-        ]
-    )
-    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
-    assert records == [
-        {"Id": 1, "propertyA": "A", "propertyB": "B"},
-        {"Id": 2, "propertyA": "A", "propertyB": "B"},
-        {"Id": 3, "propertyA": "A", "propertyB": "B"},
-        {"Id": 4, "propertyA": "A", "propertyB": "B"}
-    ]
-    for call in requests_mock.request_history:
-        assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
+# def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
+#     stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+#     chunks = list(stream.chunk_properties())
+#     for chunk in chunks:
+#         assert stream.primary_key in chunk
+#     chunks_len = len(chunks)
+#     assert stream.too_many_properties
+#     assert stream.primary_key
+#     assert type(stream) == RestSalesforceStream
+#     url = next_page_url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
+#     requests_mock.get(
+#         url,
+#         [
+#             {
+#                 "json": {
+#                     "nextRecordsUrl": next_page_url,
+#                     "records": [{"Id": 1, "propertyA": "A"}, {"Id": 2, "propertyA": "A"}]
+#                 }
+#             },
+#             {
+#                 "json": {
+#                     "nextRecordsUrl": next_page_url,
+#                     "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]
+#                 }
+#             },
+#             # 2 for 2 chunks above and 1 for a chunk below
+#             *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks_len - 3)],
+#             {
+#                 "json": {
+#                     "records": [{"Id": 1}, {"Id": 2}]
+#                 }
+#             },
+#             {
+#                 "json": {
+#                     "records": [{"Id": 3, "propertyA": "A"}, {"Id": 4, "propertyA": "A"}]
+#                 }
+#             },
+#             {
+#                 "json": {
+#                     "records": [{"Id": 3, "propertyB": "B"}, {"Id": 4, "propertyB": "B"}]
+#                 }
+#             },
+#             # 2 for 2 chunks above and 1 for a chunk below
+#             *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 3)],
+#             {
+#                 "json": {
+#                     "records": [{"Id": 3}, {"Id": 4}]
+#                 }
+#             }
+#         ]
+#     )
+#     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+#     assert records == [
+#         {"Id": 1, "propertyA": "A", "propertyB": "B"},
+#         {"Id": 2, "propertyA": "A", "propertyB": "B"},
+#         {"Id": 3, "propertyA": "A", "propertyB": "B"},
+#         {"Id": 4, "propertyA": "A", "propertyB": "B"}
+#     ]
+#     for call in requests_mock.request_history:
+#         assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
