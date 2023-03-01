@@ -42,10 +42,28 @@ class DestinationTimeplus(Destination):
         for configured_stream in configured_catalog.streams:
             is_overwrite = configured_stream.destination_sync_mode == DestinationSyncMode.overwrite
             stream_exists = configured_stream.stream.name in all_streams
-            if is_overwrite and stream_exists:
+            need_delete_stream = False
+            need_create_stream = False
+            if is_overwrite:
+                if stream_exists:
+                    # delete all data in the existing stream and recreate the stream.
+                    need_delete_stream=True
+                    need_create_stream=True
+                else:
+                    # only need to create the stream
+                    need_create_stream=True
+            else:
+                if stream_exists:
+                    # for append mode, just add more data to the existing stream. No need to do anything.
+                    pass
+                else:
+                    # for append mode, create the stream and append data to it.
+                    need_create_stream = True
+            
+            if need_delete_stream:
                 # delete the existing stream
                 Stream(env=env).name(configured_stream.stream.name).get().delete()
-            if is_overwrite or not stream_exists:
+            if need_create_stream:    
                 # create a new stream
                 DestinationTimeplus.create_stream(env, configured_stream.stream)
                 
