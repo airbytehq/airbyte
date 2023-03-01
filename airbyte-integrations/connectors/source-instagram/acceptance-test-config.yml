@@ -43,6 +43,8 @@ acceptance_tests:
           user_insights:
           - name: date
             bypass_reason: Anonymization for exactly for which date statistics anonymization
+          - name: online_followers
+            bypass_reason: Depend on each online user
           media:
           - name: media_url
             bypass_reason: Contains auto generated hash
