@@ -6,11 +6,11 @@
     },
     "broadcast_start_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "creation_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "dash_ingest_url": {
       "type": ["string", "null"]
@@ -47,7 +47,7 @@
     },
     "planned_start_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "seconds_left": {
       "type": ["integer", "null"]

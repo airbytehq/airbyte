@@ -160,9 +160,22 @@ Once you've finished iterating on the changes to a connector as specified in its
         * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
-   
-5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
-6. The new version of the connector is now available for everyone who uses it. Thank you!
+
+5. The new version of the connector is now available for everyone who uses it. Thank you!
+
+
+### Updating Connector Metadata
+
+When a new (or updated version) of a connector is ready to be published, our automations will check your branch for a few things:
+* Does the connector have an icon?
+* Does the connector have documentation and is it in the proper format?
+* Does the connector have a changelog entry for this version?
+
+If any of the above are failing, you won't be able to merge your PR or publish your connector.
+
+Connector icons should be square SVGs and be located in [this directory](https://github.com/airbytehq/airbyte/tree/master/airbyte-config/init/src/main/resources/icons).
+
+Connector documentation and changelogs are markdown files which live either [here for sources](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/sources), or [here for destinations](https://github.com/airbytehq/airbyte/tree/master/docs/integrations/destinations).
 
 ### The /publish command
 
