@@ -17,7 +17,6 @@ REQUIREMENTS = [
     "isort==5.6.4",
     "pytest==6.2.5",
     "coverage[toml]==6.3.1",
-    "pytest-custom_exit_code",  # I installed this plugin to work around the problem described in tests._run_tests_in_directory
 ]
 
 

@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import re
 from enum import Enum
 from pathlib import Path
 from typing import Optional
@@ -10,15 +11,19 @@ from dagger import Container, QueryError
 
 
 class StepStatus(Enum):
-    SUCCESS = "🟢"
-    FAILURE = "🔴"
-    SKIPPED = "🟡"
+    SUCCESS = "🟢 — Successful"
+    FAILURE = "🔴 - Failed"
+    SKIPPED = "🟡 - Skipped"
 
     def from_exit_code(exit_code: int):
         if exit_code == 0:
             return StepStatus.SUCCESS
         if exit_code == 1:
             return StepStatus.FAILURE
+        if exit_code == 5:
+            return StepStatus.SKIPPED
+        else:
+            raise ValueError(f"No step status is mapped to exit code {exit_code}")
 
     def __str__(self) -> str:
         return self.value
@@ -80,3 +85,28 @@ def write_connector_secrets_to_local_storage(connector: Connector, gsm_credentia
         filepath = secret_directory / secret.configuration_file_name
         with open(filepath, "w") as file:
             file.write(secret.value)
+
+
+# This is a stop-gap solution to capture non 0 exit code on Containers
+# The original issue is tracked here https://github.com/dagger/dagger/issues/3192
+async def with_exit_code(container: Container) -> int:
+    """Read the container exit code. If the exit code is not 0 a QueryError is raised. We extract the non-zero exit code from the QueryError message.
+
+    Args:
+        container (Container): The container from which you want to read the exit code.
+
+    Returns:
+        int: The exit code.
+    """
+    try:
+        await container.exit_code()
+    except QueryError as e:
+        error_message = str(e)
+        if "exit code: " in error_message:
+            exit_code = re.search(r"exit code: (\d+)", error_message)
+            if exit_code:
+                return int(exit_code.group(1))
+            else:
+                return 1
+        raise
+    return 0

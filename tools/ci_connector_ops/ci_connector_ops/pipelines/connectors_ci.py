@@ -133,7 +133,7 @@ def test_connectors(ctx: click.Context, connector_name: str):
     try:
         anyio.run(run_connectors_test_pipelines, connectors, ctx.obj["gsm_credentials"])
     except dagger.DaggerError as e:
-        logger.error(e)
+        logger.error(str(e))
         sys.exit(1)
 
 
@@ -150,7 +150,7 @@ def test_all_modified_connectors(ctx: click.Context):
         try:
             anyio.run(run_connectors_test_pipelines, changed_connectors, ctx.obj["gsm_credentials"])
         except dagger.DaggerError as e:
-            logger.error(e)
+            logger.error(str(e))
             sys.exit(1)
     else:
         logger.info(f"No connector modified after comparing the current branch with {os.environ['DIFFED_BRANCH']}")

@@ -3,7 +3,7 @@
 #
 
 from ci_connector_ops.pipelines.actions.build_contexts import PYPROJECT_TOML_FILE_PATH
-from ci_connector_ops.pipelines.utils import StepStatus, check_path_in_workdir
+from ci_connector_ops.pipelines.utils import StepStatus, check_path_in_workdir, with_exit_code
 from ci_connector_ops.utils import Connector
 from dagger import Client, Container
 
@@ -34,14 +34,13 @@ async def _run_tests_in_directory(connector_container: Container, test_directory
                 "python",
                 "-m",
                 "pytest",
-                "--suppress-no-test-exit-code",  # This is a patch until https://github.com/dagger/dagger/issues/3192 is fixed
                 "-s",
                 test_directory,
                 "-c",
                 test_config,
             ]
         )
-        return StepStatus.from_exit_code(await tester.exit_code())
+        return StepStatus.from_exit_code(await with_exit_code(tester))
     else:
         return StepStatus.SKIPPED
 
