@@ -34,6 +34,7 @@ async def build_dev_image(dagger_client: Client, connector: Connector, exclude=O
         .docker_build()
         .export(local_image_tarball_path.name)
     )
+
     if exported:
         with open(local_image_tarball_path.name, "rb") as image_archive:
             connector_image = local_docker_client.images.load(image_archive.read())[0]

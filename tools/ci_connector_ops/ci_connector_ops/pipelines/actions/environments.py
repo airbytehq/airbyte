@@ -6,7 +6,7 @@ from typing import List, Optional
 
 from ci_connector_ops.pipelines.utils import get_file_contents
 from ci_connector_ops.utils import Connector
-from dagger import CacheVolume, Client, Container, Directory
+from dagger import CacheSharingMode, CacheVolume, Client, Container, Directory, Secret
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
@@ -24,7 +24,7 @@ CONNECTOR_TESTING_REQUIREMENTS = [
 INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
 INSTALL_CONNECTOR_PACKAGE_CMD = ["python", "-m", "pip", "install", "."]
 DEFAULT_PYTHON_EXCLUDE = [".venv"]
-CI_CREDENTIALS_SOURCE_PATH = ["tools/ci_credentials"]
+CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 
 
 async def with_python_base(dagger_client: Client, python_image_name: str = "python:3.9-slim") -> Container:
@@ -32,7 +32,7 @@ async def with_python_base(dagger_client: Client, python_image_name: str = "pyth
 
     Args:
         dagger_client (Client): The dagger client to use.
-        python_image_name (_type_, optional): The python image to use to build the python base environment. Defaults to "python:3.9-slim".
+        python_image_name (str, optional): The python image to use to build the python base environment. Defaults to "python:3.9-slim".
 
     Raises:
         ValueError: Raised if the python_image_name is not a python image.
@@ -43,7 +43,14 @@ async def with_python_base(dagger_client: Client, python_image_name: str = "pyth
     if not python_image_name.startswith("python:3"):
         raise ValueError("You have to use a python image to build the python base environment")
     pip_cache: CacheVolume = dagger_client.cache_volume("pip_cache")
-    return dagger_client.container().from_(python_image_name).with_mounted_cache("/root/.cache/pip", pip_cache)
+    return (
+        dagger_client.container()
+        .from_(python_image_name)
+        .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.SHARED)
+        .with_mounted_directory(
+            "/tools", dagger_client.host().directory("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"])
+        )
+    )
 
 
 async def with_testing_dependencies(dagger_client: Client) -> Container:
@@ -63,7 +70,11 @@ async def with_testing_dependencies(dagger_client: Client) -> Container:
 
 
 async def with_python_package(
-    dagger_client: Client, python_environment: Container, package_source_code_path: str, additional_dependency_groups: Optional[List] = None
+    dagger_client: Client,
+    python_environment: Container,
+    package_source_code_path: str,
+    additional_dependency_groups: Optional[List] = None,
+    exclude: Optional[List] = None,
 ) -> Container:
     """Installs a python package in a python environment container.
 
@@ -76,7 +87,11 @@ async def with_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    package_source_code_directory: Directory = dagger_client.host().directory(package_source_code_path, exclude=DEFAULT_PYTHON_EXCLUDE)
+    if exclude:
+        exclude = DEFAULT_PYTHON_EXCLUDE + exclude
+    else:
+        exclude = DEFAULT_PYTHON_EXCLUDE
+    package_source_code_directory: Directory = dagger_client.host().directory(package_source_code_path, exclude=exclude)
     container = python_environment.with_mounted_directory("/" + package_source_code_path, package_source_code_directory).with_workdir(
         "/" + package_source_code_path
     )
@@ -109,4 +124,11 @@ async def with_airbyte_connector(dagger_client: Client, connector: Connector) ->
     """
     connector_source_path = str(connector.code_directory)
     testing_environment: Container = await with_testing_dependencies(dagger_client)
-    return await with_python_package(dagger_client, testing_environment, connector_source_path, ["dev", "tests", "main"])
+    return await with_python_package(dagger_client, testing_environment, connector_source_path, ["dev", "tests", "main"], ["secrets"])
+
+
+async def with_ci_credentials(dagger_client: Client, gsm_secret: Secret) -> Container:
+    python_base_environment: Container = await with_python_base(dagger_client)
+    ci_credentials = await with_python_package(dagger_client, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
+
+    return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")

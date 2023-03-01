@@ -1,28 +1,25 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import json
 import logging
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import builds, environments, tests
-from ci_connector_ops.pipelines.utils import StepStatus, write_connector_secrets_to_local_storage
+from ci_connector_ops.pipelines.actions import builds, environments, secrets, tests
+from ci_connector_ops.pipelines.utils import StepStatus
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
 from dagger import Client, Container
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-CI_CREDENTIALS_PACKAGE_PATH = "tools/ci_credentials"
 
-
-async def run_connector_test_pipelines(dagger_client: Client, connector: Connector, gsm_credentials: Optional[str]):
+async def run_connector_test_pipelines(dagger_client: Client, connector: Connector, use_gsm_secrets: bool):
     """Runs a CI pipeline for a single connector.
     1. Create a build context
     2. Check code format
@@ -40,7 +37,6 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     main_pipeline_name = f"CI test for {connector.technical_name}"
     pipeline_logger = logging.getLogger(main_pipeline_name)
     connector_ci_client: Client = dagger_client.pipeline(main_pipeline_name)
-
     connector_client = connector_ci_client.pipeline(f"{connector.technical_name} - Install connector python package")
     connector_under_test: Container = await environments.with_airbyte_connector(connector_client, connector)
 
@@ -56,17 +52,33 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     build_dev_image_client = connector_ci_client.pipeline(f"{connector.technical_name} - Build dev image")
     _, connector_image_short_id = await builds.build_dev_image(build_dev_image_client, connector, exclude=[".venv"])
 
-    if gsm_credentials:
-        write_connector_secrets_to_local_storage(connector, gsm_credentials)
+    if not connector.acceptance_test_config:
+        acceptance_tests_status = StepStatus.SKIPPED
+    else:
+        if use_gsm_secrets:
+            download_credentials_client = connector_ci_client.pipeline(f"{connector.technical_name} - Download credentials")
+            secrets_dir = await secrets.download(download_credentials_client, connector)
+            await secrets_dir.export(str(connector.code_directory) + "/secrets")  # TODO remove
+        else:
+            secrets_dir = connector_ci_client.host().directory(str(connector.code_directory) + "/secrets")
 
-    acceptance_tests_container: Container = build_dev_image_client.pipeline(f"{connector.technical_name} - Acceptance tests")
-    # The connector_image_short_id  is used as a cache buster. If it changed the acceptance tests will run.
-    acceptance_tests_status: StepStatus = await tests.run_acceptance_tests(
-        acceptance_tests_container, connector, connector_image_short_id, "airbyte/connector-acceptance-test:dev"
-    )
+        acceptance_tests_container: Container = build_dev_image_client.pipeline(f"{connector.technical_name} - Acceptance tests")
+        # The connector_image_short_id  is used as a cache buster. If it changed the acceptance tests will run.
+        connector_source_host_dir = dagger_client.host().directory(str(connector.code_directory), exclude=[".venv", "secrets"])
+
+        acceptance_tests_status, updated_secrets_dir = await tests.run_acceptance_tests(
+            acceptance_tests_container,
+            connector_source_host_dir,
+            secrets_dir,
+            connector_image_short_id,
+            "airbyte/connector-acceptance-test:dev",
+        )
+
+        if use_gsm_secrets and updated_secrets_dir:
+            upload_credentials_client = connector_ci_client.pipeline(f"{connector.technical_name} - Upload credentials")
+            await secrets.upload(upload_credentials_client, connector, updated_secrets_dir)
 
     # TODO run QA checks: this should probably be done inside a dagger container to benefit from caching?
-    # TODO Upload modified secrets to GSM
     pipeline_logger.info(f"Format -> {format_check_status}")
     pipeline_logger.info(f"Unit tests -> {unit_tests_status}")
     pipeline_logger.info(f"Integration tests -> {integration_tests_status}")
@@ -94,9 +106,9 @@ async def run_connectors_test_pipelines(connectors: List[Connector], gsm_credent
 
 @click.group()
 @click.option("--diffed-branch", default="master")
-@click.option("--gcp-gsm-credentials", envvar="GCP_GSM_CREDENTIALS")
+@click.option("--use-gsm-secrets", default=True)
 @click.pass_context
-def connectors_ci(ctx: click.Context, diffed_branch: str, gcp_gsm_credentials: str):
+def connectors_ci(ctx: click.Context, diffed_branch: str, use_gsm_secrets: str):
     """A command group to gather all the connectors-ci command
 
     Args:
@@ -111,11 +123,11 @@ def connectors_ci(ctx: click.Context, diffed_branch: str, gcp_gsm_credentials: s
         raise click.ClickException("You need to run this command from the airbyte repository root.")
     os.environ["DIFFED_BRANCH"] = diffed_branch
     ctx.ensure_object(dict)
-    if not gcp_gsm_credentials:
-        logger.warning("You did not set GCP_GSM_CREDENTIALS. Acceptances test on connector requiring secrets won't run as expected.")
-        ctx.obj["gsm_credentials"] = None
-    else:
-        ctx.obj["gsm_credentials"] = json.loads(gcp_gsm_credentials)
+    if use_gsm_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
+        raise click.UsageError(
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-gsm-secrets option to false otherwise."
+        )
+    ctx.obj["use_gsm_secrets"] = use_gsm_secrets
 
 
 @connectors_ci.command()
@@ -130,7 +142,7 @@ def test_connectors(ctx: click.Context, connector_name: str):
     """
     connectors = [Connector(cn) for cn in connector_name]
     try:
-        anyio.run(run_connectors_test_pipelines, connectors, ctx.obj["gsm_credentials"])
+        anyio.run(run_connectors_test_pipelines, connectors, ctx.obj["use_gsm_secrets"])
     except dagger.DaggerError as e:
         logger.error(str(e))
         sys.exit(1)
@@ -147,7 +159,7 @@ def test_all_modified_connectors(ctx: click.Context):
     changed_connectors = get_changed_connectors()
     if changed_connectors:
         try:
-            anyio.run(run_connectors_test_pipelines, changed_connectors, ctx.obj["gsm_credentials"])
+            anyio.run(run_connectors_test_pipelines, changed_connectors, ctx.obj["use_gsm_secrets"])
         except dagger.DaggerError as e:
             logger.error(str(e))
             sys.exit(1)
