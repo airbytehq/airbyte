@@ -4,11 +4,11 @@ connectionSpecification:
   title: 10kft API Spec
   type: object
   required:
-    - auth
+    - api_key
   properties:
-    auth:
+    api_key:
       type: string
-      description: API auth for accessing the 10kft API.
+      description: API Key for accessing the 10kft API.
       airbyte_secret: true
     per_page:
       type: integer
