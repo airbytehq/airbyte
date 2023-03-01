@@ -288,6 +288,9 @@
   icon: close.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.close.com
 - name: CoinGecko Coins
   sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
   dockerRepository: airbyte/source-coingecko-coins
@@ -661,6 +664,9 @@
   icon: gitlab.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "*"
 - name: Glassfrog
   sourceDefinitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
   dockerRepository: airbyte/source-glassfrog
@@ -780,6 +786,9 @@
   icon: greenhouse.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - harvest.greenhouse.io
 - name: Gutendex
   sourceDefinitionId: bff9a277-e01d-420d-81ee-80f28a307318
   dockerRepository: airbyte/source-gutendex
@@ -1939,6 +1948,10 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.twilio.com
+      - monitor.twilio.com
 - name: Twilio Taskrouter
   sourceDefinitionId: 2446953b-b794-429b-a9b3-c821ba992a48
   dockerRepository: airbyte/source-twilio-taskrouter
