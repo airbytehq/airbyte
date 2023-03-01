@@ -10,10 +10,11 @@ interface PageTitleProps {
   endComponent?: React.ReactNode;
   title?: React.ReactNode;
   subText?: React.ReactNode;
+  withPadding?: boolean;
 }
 
-export const MainContainer = styled.div<{ withLine?: boolean }>`
-  padding: 38px;
+export const MainContainer = styled.div<{ withLine?: boolean; withPadding?: boolean }>`
+  padding: ${({ withPadding }) => (withPadding ? `24px 38px` : "0")};
   // padding-top: 35px;
   border-bottom: ${({ withLine }) => (withLine ? `1px solid #D1D5DB` : "none")};
   position: relative;
@@ -53,8 +54,8 @@ export const TitleBlock = styled(H3)`
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
-  font-size: 32px;
-  line-height: 30px;
+  font-size: 28px;
+  line-height: 32px;
   color: #000;
 `;
 
@@ -72,8 +73,9 @@ const PageTitle: React.FC<PageTitleProps> = ({
   middleComponent,
   middleTitleBlock,
   endComponent,
+  withPadding,
 }) => (
-  <MainContainer withLine={withLine}>
+  <MainContainer withLine={withLine} withPadding={withPadding}>
     <TitleBlock>{title}</TitleBlock>
     {subText && <RemarkBlock>{subText}</RemarkBlock>}
     {middleTitleBlock ? (

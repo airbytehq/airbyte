@@ -54,6 +54,7 @@ export const DocumentationPanel: React.FC = () => {
     <div className={styles.container}>
       <PageTitle
         withLine
+        withPadding
         title={<FormattedMessage id="connector.setupGuide" />}
         subText={<FormattedMessage id="connector.setupGuide.subTitle" values={{ value: selectedServiceName }} />}
       />

@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
@@ -89,6 +90,7 @@ export const UpgradePlanBar: React.FC = () => {
           </Button>
         </Container>
         {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
+        <Separator height="40px" />
       </>
     );
   }

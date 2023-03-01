@@ -72,7 +72,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections, onSetMessageId }) => 
     [changeStatus, connections, queryClient]
   );
 
-  const onChangeStatus = (connectionId: string, status: string) => {
+  const onChangeStatus = (connectionId: string, status: string | undefined) => {
     if (status === "Inactive") {
       updateStatus(connectionId);
       return;
