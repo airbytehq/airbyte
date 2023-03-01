@@ -28,7 +28,7 @@ const CreditsPage: React.FC = () => {
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
-      pageTitle={<PageTitle title={<FormattedMessage id="credits.credits" />} />}
+      pageTitle={<PageTitle withPadding title={<FormattedMessage id="credits.credits" />} />}
       withPadding
     >
       <Content>

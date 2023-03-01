@@ -129,6 +129,7 @@ const AllConnectionsPage: React.FC = () => {
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
             <PageTitle
+              withPadding
               title=""
               endComponent={
                 <>
@@ -178,7 +179,7 @@ const AllConnectionsPage: React.FC = () => {
           </DDsContainer>
           <Separator height="24px" />
           <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
-          <Separator height="54px" />
+          <Separator height="24px" />
           <Footer>
             <Pagination
               pages={total / pageSize}
@@ -186,6 +187,7 @@ const AllConnectionsPage: React.FC = () => {
               onChange={(value: number) => onSelectFilter("pageCurrent", value)}
             />
           </Footer>
+          <Separator height="24px" />
         </MainPageWithScroll>
       ) : (
         <EmptyResourceListView

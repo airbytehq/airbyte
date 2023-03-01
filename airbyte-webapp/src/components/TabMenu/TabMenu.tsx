@@ -21,6 +21,7 @@ interface IProps {
   data: CategoryItem[];
   activeItem?: string;
   onSelect: (id: string) => void;
+  size?: string;
 }
 
 const Content = styled.div`
@@ -48,7 +49,7 @@ const TabName = styled.div`
   text-transform: uppercase;
 `;
 
-export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect }) => {
+export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect, size }) => {
   return (
     <Content>
       {data.map((tabItem, index) => (
@@ -63,6 +64,7 @@ export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect }) => {
                   name={route.name}
                   isActive={activeItem?.endsWith(route.path)}
                   onClick={() => onSelect(route.path)}
+                  size={size}
                 />
               )
           )}
