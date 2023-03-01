@@ -13,6 +13,7 @@ import { Sidebar } from "./components";
 // import PasswordPage from "./pages/PasswordPage";
 
 import LanguagePage from "./pages/LanguagePage";
+import NotificationPage from "./pages/NotificationPage";
 
 const Container = styled.div`
   width: 100%;
@@ -25,13 +26,14 @@ const Container = styled.div`
 `;
 
 const ContentContainer = styled.div`
-  padding: 50px 100px;
+  padding: 20px 30px;
   width: 100%;
 `;
 
 export const AccountSettingsRoute = {
   Account: "account",
   Language: "language",
+  Notifications: "notifications",
   Password: "password",
 } as const;
 
@@ -43,6 +45,11 @@ const AccountSettingsPage: React.FC = () => {
       path: `${AccountSettingsRoute.Language}`,
       name: <FormattedMessage id="settings.accountSetting.language" />,
       component: <LanguagePage />,
+    },
+    {
+      path: `${AccountSettingsRoute.Notifications}`,
+      name: <FormattedMessage id="settings.accountSetting.notifications" />,
+      component: <NotificationPage />,
     },
     // {
     //   path: `${AccountSettingsRoute.Account}`,

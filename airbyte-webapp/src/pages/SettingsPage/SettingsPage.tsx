@@ -78,7 +78,7 @@ export const SettingsRoute = {
 } as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
-  const { push, pathname } = useRouter();
+  const { push } = useRouter();
   const { user } = useUser();
 
   const [messageId, setMessageId] = useState<string>("");
@@ -151,7 +151,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         >
           <Content>
             <TabContainer>
-              <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
+              <TabMenu data={menuItems} onSelect={onSelectMenuItem} />
             </TabContainer>
             <MainView>
               <Suspense fallback={<LoadingPage />}>
