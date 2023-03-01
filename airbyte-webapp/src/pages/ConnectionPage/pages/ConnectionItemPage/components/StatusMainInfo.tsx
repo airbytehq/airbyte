@@ -60,7 +60,9 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
   const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
 
-  const lastSyncTimeText = `${formatMessage({ id: "sources.lastSync" })} ${timestampToUTCFormat(lastSyncTime)} `;
+  const lastSyncTimeText = lastSyncTime
+    ? `${formatMessage({ id: "sources.lastSync" })} ${timestampToUTCFormat(lastSyncTime)} `
+    : "";
 
   return (
     <div className={styles.container}>

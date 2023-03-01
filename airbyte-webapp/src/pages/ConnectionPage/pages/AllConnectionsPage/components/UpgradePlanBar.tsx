@@ -23,7 +23,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   position: fixed;
-  z-index: 10000;
+  z-index: 1000;
 `;
 
 const Text = styled.div`

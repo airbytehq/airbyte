@@ -46,6 +46,7 @@ const ConnectionName = styled.div`
   font-weight: 500;
   line-height: 30px;
   color: #27272a;
+  flex: 1;
 `;
 
 const ConnectorDetails = styled.div`

@@ -12,9 +12,10 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   error?: boolean;
   light?: boolean;
   focusedStyle?: boolean;
+  grey?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({ light, error, focusedStyle, ...props }) => {
+export const Input: React.FC<InputProps> = ({ light, error, grey, focusedStyle, ...props }) => {
   const { formatMessage } = useIntl();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -75,6 +76,7 @@ export const Input: React.FC<InputProps> = ({ light, error, focusedStyle, ...pro
         [styles.focused]: focused && focusedStyle,
         [styles.light]: light,
         [styles.error]: error,
+        [styles.grey]: grey,
       })}
       data-testid="input-container"
       onFocus={onContainerFocus}

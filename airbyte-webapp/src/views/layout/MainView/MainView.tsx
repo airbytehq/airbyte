@@ -81,6 +81,8 @@ const MainView: React.FC = (props) => {
       } else {
         setBackgroundColor(theme.white);
       }
+    } else if (lastPathName === RoutePaths.Payment) {
+      setBackgroundColor(theme.backgroundColor);
     } else if (isSidebarBol) {
       // In the page with sidebar, the background color of these three pages is #F8F8FE, and the others are the theme background color.
       if (
