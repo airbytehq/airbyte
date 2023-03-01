@@ -134,7 +134,7 @@ if test $(tput cols) -ge 64; then
 fi
 
 ########## Dependency Check ##########
-if ! which -s docker-compose; then
+if ! which docker-compose > /dev/null; then
   echo "$red_text""docker compose not found! please install docker compose!""$default_text"
 fi
 
