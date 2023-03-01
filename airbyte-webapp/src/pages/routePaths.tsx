@@ -18,7 +18,25 @@ export enum RoutePaths {
   SourceNew = "new-source",
   DestinationNew = "new-destination",
 
+  SelectSource = "select-source",
+  CreateSource = "create-source",
+
+  SelectDestination = "select-destination",
+  SelectConnection = "select-connection",
+
   UserSignup = "user_signup",
   Signup = "signup",
   Signin = "signin",
+
+  UserManagement = "user-management",
+  AccountSettings = "account-settings",
+  PlanAndBilling = "plan-and-billing",
+  Notifications = "notifications",
+  Language = "language",
+
+  Status = "status",
+  Overview = "overview",
+  DangerZone = "danger-zone",
+  Configurations = "configurations",
+  Copy = "copy",
 }

@@ -5,6 +5,7 @@ export type DocumentationPanelContext = ReturnType<typeof useDocumentationPanelS
 export const useDocumentationPanelState = () => {
   const [documentationPanelOpen, setDocumentationPanelOpen] = useState(false);
   const [documentationUrl, setDocumentationUrlState] = useState("");
+  const [selectedServiceName, setSelectedServiceName] = useState<string | undefined>("");
 
   /* Ad blockers prevent the Google Ads docs .md file from rendering.  Because these URLs are
    * standardized, we work around this without changing the main file URL by:
@@ -23,6 +24,8 @@ export const useDocumentationPanelState = () => {
     setDocumentationPanelOpen,
     documentationUrl,
     setDocumentationUrl,
+    selectedServiceName,
+    setSelectedServiceName,
   };
 };
 

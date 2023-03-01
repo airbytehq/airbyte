@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { theme } from "theme";
 
 import { LoadingPage } from "components";
+import { CreateStepTypes } from "components/ConnectionStep";
+import { Separator } from "components/Separator";
 
 import useRouter from "hooks/useRouter";
 import { UpgradePlanBar } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpgradePlanBar";
@@ -19,26 +22,92 @@ const MainContainer = styled.div`
   min-height: 680px;
 `;
 
-const Content = styled.div`
+const Content = styled.div<{
+  backgroundColor?: string;
+}>`
+  background: ${({ backgroundColor }) => backgroundColor};
   overflow-y: auto;
   width: 100%;
   height: 100%;
 `;
 
+const hasCurrentStep = (state: unknown): state is { currentStep: string } => {
+  return (
+    typeof state === "object" && state !== null && typeof (state as { currentStep?: string }).currentStep === "string"
+  );
+};
+
 const MainView: React.FC = (props) => {
-  const { pathname } = useRouter();
+  const { pathname, location } = useRouter();
+  const [isSidebar, setIsSidebar] = useState<boolean>(true);
+  const [backgroundColor, setBackgroundColor] = useState<string>(theme.backgroundColor);
+
+  const hasSidebarRoutes: string[] = [
+    RoutePaths.Source,
+    RoutePaths.SelectSource,
+    RoutePaths.Connections,
+    RoutePaths.Status,
+    RoutePaths.SelectConnection,
+    RoutePaths.Destination,
+    RoutePaths.SelectDestination,
+    RoutePaths.UserManagement,
+    RoutePaths.AccountSettings,
+    RoutePaths.PlanAndBilling,
+    RoutePaths.Notifications,
+    RoutePaths.Configurations,
+    RoutePaths.Language,
+  ];
 
   // TODO: not the proper solution but works for now
-  const isSidebar =
-    !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
+  // const isSidebar =
+  //   !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
+
+  useEffect(() => {
+    const pathnames = pathname.split("/");
+    const lastPathName = pathnames[pathnames.length - 1];
+    let isSidebarBol = false;
+
+    // connection has sidebar but source/destination no
+    if (lastPathName === RoutePaths.DangerZone) {
+      isSidebarBol = pathnames.includes(RoutePaths.Connections);
+    } else {
+      isSidebarBol = hasSidebarRoutes.includes(lastPathName);
+    }
+
+    // The configuration step background color in Add Connection is #F8F8FE , and the page color of the previous steps is white.
+    if (lastPathName === RoutePaths.ConnectionNew) {
+      if (hasCurrentStep(location.state) && location.state.currentStep === CreateStepTypes.CREATE_CONNECTION) {
+        setBackgroundColor("#F8F8FE");
+        isSidebarBol = false;
+      } else {
+        setBackgroundColor(theme.white);
+      }
+    } else if (isSidebarBol) {
+      // In the page with sidebar, the background color of these three pages is #F8F8FE, and the others are the theme background color.
+      if (
+        lastPathName === RoutePaths.SelectSource ||
+        lastPathName === RoutePaths.SelectDestination ||
+        lastPathName === RoutePaths.SelectConnection
+      ) {
+        setBackgroundColor("#F8F8FE");
+      } else {
+        setBackgroundColor(theme.backgroundColor);
+      }
+    } else {
+      // Other page background color is white.
+      setBackgroundColor(theme.white);
+    }
+    setIsSidebar(isSidebarBol);
+  }, [pathname, hasSidebarRoutes]);
 
   return (
     <MainContainer>
       {isSidebar && <SideBar />}
-      <Content>
+      <Content backgroundColor={backgroundColor}>
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
             <UpgradePlanBar />
+            <Separator height="40px" />
             {props.children}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>

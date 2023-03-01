@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox, H5 } from "components";
+import { CheckBox, H3 } from "components";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
 import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
@@ -50,6 +50,8 @@ const HeaderBlock = styled.div`
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
+  border-top: 1px solid #e5e7eb;
+  padding: 30px 0;
 `;
 
 const NextLineText = styled.div`
@@ -202,15 +204,15 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         <HeaderBlock>
           {mode !== "readonly" ? (
             <>
-              <H5 bold>
+              <H3 bold>
                 <FormattedMessage id="form.dataSync" />
-              </H5>
+              </H3>
               {additionalControl}
             </>
           ) : (
-            <H5 bold>
+            <H3 bold>
               <FormattedMessage id="form.dataSync.readonly" />
-            </H5>
+            </H3>
           )}
         </HeaderBlock>
         {mode !== "readonly" && <Search onSearch={setSearchString} />}

@@ -13,20 +13,29 @@ import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
 const ToggleLabel = styled.label`
-  text-transform: uppercase;
-  font-size: 14px;
+  //text-transform: uppercase;
+  font-size: 16px;
   line-height: 19px;
   font-weight: 500;
-  color: ${({ theme }) => theme.greyColor40};
+  color: ${({ theme }) => theme.black};
   display: inline-block;
-  min-width: 75px;
-  text-align: left;
+  text-align: right;
   cursor: pointer;
+  margin-left: 16px;
 `;
 
 const Content = styled.div`
   display: flex;
   align-items: center;
+  justify-content: center;
+  border: 1px solid #d1d5db;
+  width: 168px;
+  height: 46px;
+  border-radius: 6px;
+
+  &:hover {
+    box-shadow: 0 1px 3px rgba(53, 53, 66, 0.2), 0 1px 2px rgba(53, 53, 66, 0.12), 0 1px 1px rgba(53, 53, 66, 0.14);
+  }
 `;
 
 interface EnabledControlProps {
@@ -65,9 +74,6 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
 
   return (
     <Content>
-      <ToggleLabel htmlFor="toggle-enabled-source">
-        <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
-      </ToggleLabel>
       <Switch
         disabled={disabled}
         onChange={onChangeStatus}
@@ -75,6 +81,9 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
         loading={isLoading}
         id="toggle-enabled-source"
       />
+      <ToggleLabel htmlFor="toggle-enabled-source">
+        <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
+      </ToggleLabel>
     </Content>
   );
 };

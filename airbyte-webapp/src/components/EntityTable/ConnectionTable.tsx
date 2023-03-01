@@ -21,15 +21,20 @@ import LastSyncCell from "./components/LastSyncCell";
 // import SwitchButton from "./components/SwitchButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
-const Content = styled.div`
-  margin: 0 32px 0 27px;
+// const Content = styled.div`
+//   margin: 0 32px 0 27px;
+// `;
+
+const SwitchContent = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
 interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string) => void;
+  onChangeStatus: (id: string, status: string) => void;
   onSync: (id: string) => void;
   rowId?: string;
   statusLoading?: boolean;
@@ -89,14 +94,21 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         customWidth: 1,
         Cell: ({ cell }: CellProps<ITableDataItem>) => {
           return (
-            <LabeledSwitch
-              id={`${cell.row.original.connectionId}`}
-              checked={cell.row.original.status === "Active" ? true : false}
-              onClick={() => {
-                onChangeStatus(cell.row.original.connectionId);
+            <SwitchContent
+              onClick={(e) => {
+                onChangeStatus(cell.row.original.connectionId, cell.row.values.status);
+                e.preventDefault();
               }}
-              loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
-            />
+            >
+              <LabeledSwitch
+                id={`${cell.row.original.connectionId}`}
+                checked={cell.row.values.status === "Active" ? true : false}
+                // onClick={() => {
+                //   onChangeStatus(cell.row.original.connectionId);
+                // }}
+                loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
+              />
+            </SwitchContent>
           );
         },
       },
@@ -231,14 +243,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
   );
 
   return (
-    <Content>
-      <Table
-        columns={columns}
-        data={data}
-        // onClickRow={onClickRow}
-        erroredRows
-      />
-    </Content>
+    // <Content>
+    <Table
+      columns={columns}
+      data={data}
+      // onClickRow={onClickRow}
+      erroredRows
+    />
+    // </Content>
   );
 };
 

@@ -6,6 +6,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
+import Messagebox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import { Pagination } from "components/Pagination";
@@ -66,6 +67,7 @@ const Footer = styled.div`
 const AllConnectionsPage: React.FC = () => {
   const CONNECTION_PAGE_SIZE = 10;
   const { push, pathname, query } = useRouter();
+  const [messageId, setMessageId] = useState<string | undefined>("");
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
@@ -116,31 +118,35 @@ const AllConnectionsPage: React.FC = () => {
 
   const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
 
-  const onCreateClick = () => push(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = () => push(`${RoutePaths.SelectConnection}`); // ConnectionNew
+  const onSetMessageId = (id: string) => setMessageId(id);
 
   return (
     <Suspense fallback={<LoadingPage position="relative" />}>
       {hasConnections() ? (
         <MainPageWithScroll
-          withPadding
+          // withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
           pageTitle={
             <PageTitle
               title=""
               endComponent={
-                <Button onClick={onCreateClick} disabled={!allowCreateConnection} size="m">
-                  <BtnInnerContainer>
-                    <BtnIcon icon={faPlus} />
-                    <BtnText>
-                      <FormattedMessage id="connection.newConnection" />
-                    </BtnText>
-                  </BtnInnerContainer>
-                </Button>
+                <>
+                  <Button onClick={onCreateClick} disabled={!allowCreateConnection} size="m">
+                    <BtnInnerContainer>
+                      <BtnIcon icon={faPlus} />
+                      <BtnText>
+                        <FormattedMessage id="connection.newConnection" />
+                      </BtnText>
+                    </BtnInnerContainer>
+                  </Button>
+                  <Messagebox message={messageId} onClose={() => setMessageId("")} />
+                </>
               }
             />
           }
         >
-          <Separator />
+          {/* <Separator /> */}
           <DDsContainer>
             <DDContainer margin="0 24px 0 0">
               <DropDown
@@ -171,7 +177,7 @@ const AllConnectionsPage: React.FC = () => {
             </DDContainer>
           </DDsContainer>
           <Separator height="24px" />
-          <ConnectionsTable connections={connections} />
+          <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
           <Separator height="54px" />
           <Footer>
             <Pagination
