@@ -248,12 +248,14 @@ class FileStream(Stream, ABC):
             for i in range(0, len(file_infos), self.parallel_tasks_size):
                 chunk_infos = file_infos[i : i + self.parallel_tasks_size]
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    executor.map(
-                        lambda args: self.guess_file_schema(*args),
-                        [
-                            (self.storagefile_class(file_info, self._provider), file_reader, file_info, processed_files, schemas)
-                            for file_info in chunk_infos
-                        ],
+                    list(
+                        executor.map(
+                            lambda args: self.guess_file_schema(*args),
+                            [
+                                (self.storagefile_class(file_info, self._provider), file_reader, file_info, processed_files, schemas)
+                                for file_info in chunk_infos
+                            ],
+                        )
                     )
 
             for file_info in file_infos:
