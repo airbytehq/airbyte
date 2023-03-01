@@ -227,6 +227,7 @@ class PinterestAnalyticsStream(IncrementalPinterestSubStream):
 
         if isinstance(response.json(), dict):
             return response.json().get("code", 0) and response.status_code == 400
+        return False
 
     def should_retry(self, response: requests.Response) -> bool:
         return super().should_retry(response) or self.lookback_date_limt_reached(response)
