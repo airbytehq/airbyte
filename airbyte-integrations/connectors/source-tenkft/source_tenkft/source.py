@@ -2,40 +2,60 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import pandas as pd
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from ratelimit import limits
-from shared import get_vault_secret_client
+
+
+# Source
+class SourceTenkft(AbstractSource):
+    @staticmethod
+    def _get_authenticator(config: Mapping[str, Any]):
+        return TenkftAuthenticator(api_key=config["api_key"])
+
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
+        try:
+            args = self.connector_config(config)
+            users = Users(**args).read_records(sync_mode=SyncMode.full_refresh)
+            next(users, None)
+            return True, None
+        except Exception as e:
+            return False, e
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        args = self.connector_config(config)
+        return [Users(**args)]
+
+    def connector_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "authenticator": self._get_authenticator(config),
+        }
+
+
+class TenkftAuthenticator(requests.auth.AuthBase):
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    def __call__(self, r):
+        r.headers["auth"] = self.api_key
+        return r
 
 
 # Basic full refresh stream
 class TenkftStream(HttpStream):
-
-    API_KEY = None
-
-    def get_api_base_url(self):
+    @property
+    def url_base(self) -> str:
         return "https://api.rm.smartsheet.com"
 
-    def get_api_key(self):
-        global API_KEY
-        if not API_KEY:
-            secret_client = get_vault_secret_client()
-            API_KEY = secret_client.get_secret("10k-feet-api-token").value
-        return API_KEY
-
-    @limits(calls=500, period=60)
-    def call_url(self, url):
-        print(f"GET: {url}")
-        headers = {"auth": self.get_api_key()}
-        response = requests.get(url, headers)
-        return response.json()
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -49,20 +69,21 @@ class TenkftStream(HttpStream):
         yield {}
 
 
-class Users(TenkftStream):
+class UsersTenkftStream(TenkftStream):
+    @property
+    def url_base(self) -> str:
+        return f"{super().url_base}/api/v1/users?per_page=1000"
+
+    @property
+    def http_method(self) -> str:
+        return "GET"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+
+class Users(UsersTenkftStream):
     primary_key: Optional[str] = id
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        base_url = self.get_api_base_url()
-        return self.call_url(f"{base_url}/api/v1/users?per_page=1000")
-
-
-# Source
-class SourceTenkft(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
-        return True, None
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Users()]
+    def path(self, **kwargs) -> str:
+        return "users"
