@@ -1374,6 +1374,9 @@
   icon: pipedrive.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.pipedrive.com
 - name: Pivotal Tracker
   sourceDefinitionId: d60f5393-f99e-4310-8d05-b1876820f40e
   dockerRepository: airbyte/source-pivotal-tracker
