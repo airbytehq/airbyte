@@ -249,6 +249,13 @@ class ExactStream(HttpStream, IncrementalMixin):
                     time.sleep(2**num_retry + random.random())
                     continue
 
+                # Retry on 429 (Too Many Requests)
+                # Exact rate limit resets after 1 minute, so we just wait 1 minute and retry
+                if response.status_code == 429:
+                    self.logger.debug("Rate limit exceeded: will retry after 1 minute")
+                    time.sleep(61)
+                    continue
+
                 if not self._is_token_expired(response):
                     raise exc
 
