@@ -79,74 +79,76 @@ const ConnectionItemPage: React.FC = () => {
   };
 
   return (
-    <MainPageWithScroll
-      withPadding
-      headTitle={
-        <HeadTitle
-          titles={[
-            { id: "sidebar.connections" },
-            {
-              id: "connection.fromTo",
-              values: {
-                source: source.name,
-                destination: destination.name,
+    <>
+      <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
+      <MainPageWithScroll
+        withPadding
+        headTitle={
+          <HeadTitle
+            titles={[
+              { id: "sidebar.connections" },
+              {
+                id: "connection.fromTo",
+                values: {
+                  source: source.name,
+                  destination: destination.name,
+                },
               },
-            },
-          ]}
+            ]}
+          />
+        }
+        // pageTitle={
+        //   //   <ConnectionPageTitle
+        //   //     source={source}
+        //   //     destination={destination}
+        //   //     connection={connection}
+        //   //     currentStep={currentStep}
+        //   //     onStatusUpdating={setStatusUpdating}
+        //   //   />
+        // }
+      >
+        <ConnectionPageTitle
+          source={source}
+          destination={destination}
+          connection={connection}
+          currentStep={currentStep}
+          onStatusUpdating={setStatusUpdating}
+          onSync={onSync}
+          disabled={disabled}
+          lastSyncTime={lastSyncTime}
         />
-      }
-      pageTitle={
-        <MessageBox message={messageId} onClose={() => setMessageId("")} />
-        //   <ConnectionPageTitle
-        //     source={source}
-        //     destination={destination}
-        //     connection={connection}
-        //     currentStep={currentStep}
-        //     onStatusUpdating={setStatusUpdating}
-        //   />
-      }
-    >
-      <ConnectionPageTitle
-        source={source}
-        destination={destination}
-        connection={connection}
-        currentStep={currentStep}
-        onStatusUpdating={setStatusUpdating}
-        onSync={onSync}
-        disabled={disabled}
-        lastSyncTime={lastSyncTime}
-      />
-      <Suspense fallback={<LoadingPage />}>
-        <Routes>
-          <Route
-            path={ConnectionSettingsRoutes.STATUS}
-            element={
-              <StatusView
-                onOpenMessageBox={onOpenMessageBox}
-                connection={connection}
-                isStatusUpdating={isStatusUpdating}
-                isSync={isSync}
-                afterSync={afterSync}
-                getLastSyncTime={getLastSyncTime}
-              />
-            }
-          />
-          <Route
-            path={ConnectionSettingsRoutes.CONFIGURATIONS}
-            element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
-          />
-          {/* <Route
+        <Suspense fallback={<LoadingPage />}>
+          <Routes>
+            <Route
+              path={ConnectionSettingsRoutes.STATUS}
+              element={
+                <StatusView
+                  onOpenMessageBox={onOpenMessageBox}
+                  connection={connection}
+                  isStatusUpdating={isStatusUpdating}
+                  isSync={isSync}
+                  afterSync={afterSync}
+                  getLastSyncTime={getLastSyncTime}
+                />
+              }
+            />
+            <Route
+              path={ConnectionSettingsRoutes.CONFIGURATIONS}
+              element={<ReplicationView onAfterSaveSchema={onAfterSaveSchema} connectionId={connectionId} />}
+            />
+            {/* <Route
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           /> */}
-          <Route
-            path={ConnectionSettingsRoutes.DANGERZONE}
-            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
-          />
-          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
-        </Routes>
-      </Suspense>
-    </MainPageWithScroll>
+            <Route
+              path={ConnectionSettingsRoutes.DANGERZONE}
+              element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connection={connection} />}
+            />
+            <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
+          </Routes>
+        </Suspense>
+      </MainPageWithScroll>
+    </>
   );
 };
 

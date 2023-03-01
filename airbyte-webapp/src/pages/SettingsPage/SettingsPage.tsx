@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
 
+import MessageBox from "components/base/MessageBox";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
@@ -13,7 +14,6 @@ import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
-import { MessageBox } from "./components/MessageBox";
 import AccountSettingsPage from "./pages/AccountSettingsPage";
 import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
@@ -137,6 +137,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <PageContainer>
       <Seperator />
       <ContentContainer>
+        <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
         <MainPageWithScroll
           withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
@@ -145,7 +146,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               <div style={{ padding: "24px 0 0 20px" }}>
                 <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
               </div>
-              <MessageBox message={messageId} onClose={() => setMessageId("")} type={messageType} />
             </PageHeaderContainer>
           }
         >

@@ -33,6 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.01
+1. Supplementary modal styles and adjust some background colors.
+#### 2023.02.28
+1. Change source/destination/connection ui
 #### 2023.02.21
 1. Change sidebar settings style as same as other buttons(files:sidebar.tsx)
 2. User management page, small screen automatic adaptation problem (files.CustomSelect.tsx)

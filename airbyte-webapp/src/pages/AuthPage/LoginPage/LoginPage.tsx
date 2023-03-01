@@ -98,6 +98,7 @@ const LoginPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
+                    grey
                     label={<FormattedMessage id="login.yourEmail" />}
                     placeholder={formatMessage({
                       id: "login.yourEmail.placeholder",
@@ -114,6 +115,7 @@ const LoginPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
+                    grey
                     label={<FormattedMessage id="login.yourPassword" />}
                     placeholder={formatMessage({
                       id: "login.yourPassword.placeholder",

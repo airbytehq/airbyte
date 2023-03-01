@@ -120,7 +120,6 @@ const StatusView: React.FC<StatusViewProps> = ({
       cancelButtonText: "connection.cancelSync.modal.buttom.notNow",
       onSubmit: async () => {
         closeConfirmationModal();
-        onOpenMessageBox("connection.messagebox.cancel");
         await onCancelJob();
         // setActiveJob((state) => ({ ...state, action: ActionType.RESET } as ActiveJob));
       },
@@ -153,6 +152,7 @@ const StatusView: React.FC<StatusViewProps> = ({
   }, [activeJob]);
 
   const onSyncNowButtonClick = () => {
+    onOpenMessageBox("connection.messagebox.cancel");
     setActiveJob((state) => ({ ...state, action: ActionType.SYNC } as ActiveJob));
     return onSync();
   };

@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Card } from "components";
+// import { Card } from "components";
 import { DashIcon } from "components/icons/DashIcon";
 import { TickIcon } from "components/icons/TickIcon";
 import { Separator } from "components/Separator";
@@ -22,7 +22,9 @@ interface IProps {
 }
 
 const CardContainer = styled.div`
-  padding: 10px 20px;
+  padding: 20px 20px;
+  background: #fff;
+  border-radius: 16px;
 `;
 
 const HeaderCell = styled(Cell)<{ padding?: string }>`
@@ -66,94 +68,94 @@ const FeaturesCard: React.FC<IProps> = ({
   packagesMap,
 }) => {
   return (
-    <Card withPadding roundedBottom>
-      <CardContainer>
-        <Row borderBottom="1px solid #E5E7EB">
-          <HeaderCell>
-            <FormattedMessage id="feature.header.plan" />
-          </HeaderCell>
-          <HeaderCell>
-            <FormattedMessage id="feature.header.professional" />
-          </HeaderCell>
-          <HeaderCell>
-            <FormattedMessage id="feature.header.enterprise" />
-          </HeaderCell>
-        </Row>
-        <Row alignItems="flex-start" height="auto">
-          <BodyCell>
-            <FormattedMessage id="feature.cell.pricing" />
-          </BodyCell>
-          <BodyCell>
-            <ProfessionalCell
-              price={product?.price}
-              selectPlanBtnDisability={selectPlanBtnDisability}
-              paymentLoading={paymentLoading}
-              onSelectPlan={onSelectPlan}
-            />
-          </BodyCell>
-          <BodyCell>
-            <EnterpriseCell />
-          </BodyCell>
-        </Row>
-        <Separator height="30px" />
-        <HighlightedRow borderTop="1px solid #E5E7EB" borderBottom="1px solid #E5E7EB">
-          <HeaderCell padding="12px 16px">
-            <FormattedMessage id="plan.feature.heading" />
-          </HeaderCell>
-        </HighlightedRow>
-        {packagesMap.features.map((item) => (
-          <FeatureBodyRow borderBottom="1px solid #E5E7EB">
-            <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
-            <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
-          </FeatureBodyRow>
-        ))}
-        <HighlightedRow borderBottom="1px solid #E5E7EB">
-          <HeaderCell padding="12px 16px">
-            <FormattedMessage id="plan.dataReplication.heading" />
-          </HeaderCell>
-        </HighlightedRow>
-        {packagesMap.dataReplication.map((item) => (
-          <FeatureBodyRow borderBottom="1px solid #E5E7EB">
-            <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
-            <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
-          </FeatureBodyRow>
-        ))}
-        <HighlightedRow borderBottom="1px solid #E5E7EB">
-          <HeaderCell padding="12px 16px">
-            <FormattedMessage id="plan.support.heading" />
-          </HeaderCell>
-        </HighlightedRow>
-        {packagesMap.support.map((item) => (
-          <FeatureBodyRow borderBottom="1px solid #E5E7EB">
-            <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>
-              {item.professional?.itemScope === "false" || item.professional?.itemScope === "true" ? (
-                item.professional?.itemScope === "false" ? (
-                  <DashIcon />
-                ) : (
-                  <TickIcon />
-                )
+    // <Card withPadding roundedBottom>
+    <CardContainer>
+      <Row borderBottom="1px solid #E5E7EB">
+        <HeaderCell>
+          <FormattedMessage id="feature.header.plan" />
+        </HeaderCell>
+        <HeaderCell>
+          <FormattedMessage id="feature.header.professional" />
+        </HeaderCell>
+        <HeaderCell>
+          <FormattedMessage id="feature.header.enterprise" />
+        </HeaderCell>
+      </Row>
+      <Row alignItems="flex-start" height="auto">
+        <BodyCell>
+          <FormattedMessage id="feature.cell.pricing" />
+        </BodyCell>
+        <BodyCell>
+          <ProfessionalCell
+            price={product?.price}
+            selectPlanBtnDisability={selectPlanBtnDisability}
+            paymentLoading={paymentLoading}
+            onSelectPlan={onSelectPlan}
+          />
+        </BodyCell>
+        <BodyCell>
+          <EnterpriseCell />
+        </BodyCell>
+      </Row>
+      <Separator height="30px" />
+      <HighlightedRow borderTop="1px solid #E5E7EB" borderBottom="1px solid #E5E7EB">
+        <HeaderCell padding="12px 16px">
+          <FormattedMessage id="plan.feature.heading" />
+        </HeaderCell>
+      </HighlightedRow>
+      {packagesMap.features.map((item) => (
+        <FeatureBodyRow borderBottom="1px solid #E5E7EB">
+          <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
+          <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
+          <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
+        </FeatureBodyRow>
+      ))}
+      <HighlightedRow borderBottom="1px solid #E5E7EB">
+        <HeaderCell padding="12px 16px">
+          <FormattedMessage id="plan.dataReplication.heading" />
+        </HeaderCell>
+      </HighlightedRow>
+      {packagesMap.dataReplication.map((item) => (
+        <FeatureBodyRow borderBottom="1px solid #E5E7EB">
+          <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
+          <FeatureBodyCell>{item.professional?.itemScopeLang}</FeatureBodyCell>
+          <FeatureBodyCell>{item.enterprise?.itemScopeLang}</FeatureBodyCell>
+        </FeatureBodyRow>
+      ))}
+      <HighlightedRow borderBottom="1px solid #E5E7EB">
+        <HeaderCell padding="12px 16px">
+          <FormattedMessage id="plan.support.heading" />
+        </HeaderCell>
+      </HighlightedRow>
+      {packagesMap.support.map((item) => (
+        <FeatureBodyRow borderBottom="1px solid #E5E7EB">
+          <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
+          <FeatureBodyCell>
+            {item.professional?.itemScope === "false" || item.professional?.itemScope === "true" ? (
+              item.professional?.itemScope === "false" ? (
+                <DashIcon />
               ) : (
-                item.professional?.itemScopeLang
-              )}
-            </FeatureBodyCell>
-            <FeatureBodyCell>
-              {item.enterprise?.itemScope === "false" || item.enterprise?.itemScope === "true" ? (
-                item.enterprise?.itemScope === "false" ? (
-                  <DashIcon />
-                ) : (
-                  <TickIcon />
-                )
+                <TickIcon />
+              )
+            ) : (
+              item.professional?.itemScopeLang
+            )}
+          </FeatureBodyCell>
+          <FeatureBodyCell>
+            {item.enterprise?.itemScope === "false" || item.enterprise?.itemScope === "true" ? (
+              item.enterprise?.itemScope === "false" ? (
+                <DashIcon />
               ) : (
-                item.enterprise?.itemScopeLang
-              )}
-            </FeatureBodyCell>
-          </FeatureBodyRow>
-        ))}
-      </CardContainer>
-    </Card>
+                <TickIcon />
+              )
+            ) : (
+              item.enterprise?.itemScopeLang
+            )}
+          </FeatureBodyCell>
+        </FeatureBodyRow>
+      ))}
+    </CardContainer>
+    // </Card>
   );
 };
 
