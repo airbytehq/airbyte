@@ -73,9 +73,9 @@ class ConnectorRunner:
         with open(self.input_folder / "Dockerfile", "w") as outfile:
             outfile.write(dockerfile)
 
-        new_image, build_logs = self._client.images.build(path=str(self.input_folder), tag=new_image_tag)
+        new_image, _ = self._client.images.build(path=str(self.input_folder), tag=new_image_tag)
 
-        return new_image, build_logs
+        return new_image, new_image_tag
 
     def call_spec(self, **kwargs) -> List[AirbyteMessage]:
         cmd = "spec"
@@ -106,7 +106,7 @@ class ConnectorRunner:
 
         self._runs += 1
         self.output_folder.mkdir(parents=True)
-        new_image, build_logs = self._prepare_image(config, state, catalog)
+        new_image, new_image_tag = self._prepare_image(config, state, catalog)
 
         logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
 
@@ -133,6 +133,7 @@ class ConnectorRunner:
                     yield airbyte_message
                 except ValidationError as exc:
                     logging.warning("Unable to parse connector's output %s, error: %s", line, exc)
+        self._client.images.remove(new_image.tags[-1], force=True)
 
     @classmethod
     def read(cls, container: Container, command: str = None, with_ext: bool = True) -> Iterable[str]:
