@@ -6,7 +6,7 @@ name: Generate Build Report
 on:
   workflow_dispatch:
   schedule:
-    # 6Am UTC is 8AM EET, 7AM CET, 11PM PST.
+    # 6AM UTC is 8AM EET, 7AM CET, 11PM PST.
     - cron: "0 6 * * *"
 
 jobs:
