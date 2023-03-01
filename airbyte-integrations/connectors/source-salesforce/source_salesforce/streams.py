@@ -180,12 +180,11 @@ class RestSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
-        pagination_complete = False
         next_pages_by_chunk_id = {}
         records_by_primary_key = {}
         property_chunks = {index: chunk for index, chunk in enumerate(self.chunk_properties())}
         records_by_chunk_counter = {index: 0 for index in property_chunks}
-        while not pagination_complete:
+        while True:
             chunk_id = self._next_chunk_id(records_by_chunk_counter, next_pages_by_chunk_id)
             if chunk_id is None:
                 # pagination complete
@@ -212,17 +211,14 @@ class RestSalesforceStream(SalesforceStream):
                 if record_id not in records_by_primary_key:
                     records_by_primary_key[record_id] = (record, 1)
                     continue
-                incomplete_record, counter = records_by_primary_key[record_id]
-                incomplete_record.update(record)
+                partial_record, counter = records_by_primary_key[record_id]
+                partial_record.update(record)
                 counter += 1
                 if counter == len(property_chunks):
-                    yield incomplete_record  # it's actually complete now
+                    yield partial_record  # now it's complete
                     records_by_primary_key.pop(record_id)
                 else:
-                    records_by_primary_key[record_id] = (incomplete_record, counter)
-
-            if not any(next_pages_by_chunk_id.values()):
-                pagination_complete = True
+                    records_by_primary_key[record_id] = (partial_record, counter)
 
         # Process what's left.
         # Because we make multiple calls to query N records (each call to fetch X properties of all the N records),
