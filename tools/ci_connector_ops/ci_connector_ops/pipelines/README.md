@@ -78,3 +78,9 @@ Please ignore the `Set your environment variables` step and focus on running `co
 6. What are the best practices to write tests for pipelines?
 7. What would be your suggestion to run `docker scan` from dagger to spot vulnerabilities on our connectors?
 8. Do you have a tool to re-order logs line by order of pipeline after execution?
+
+### Airbyte specific context that could help you understand our workflow.
+- We always use a :dev tag to tag images of connector we build locally. We try to never publish these images to a public repository.
+- We run a container called connector-acceptance-test which is a global test suite for all our connectors. This test suite is ran against a connector under test container, (usually using its :dev image).
+- Connector-acceptance-test is a customizable test suite (built with pytest) configured with per-connector `acceptance-test-config.yml` files ([e.g.](https://github.com/airbytehq/airbyte/blob/b0c5f14db6a905899d0f9c043954abcc5ec296f0/airbyte-integrations/connectors/source-pokeapi/acceptance-test-config.yml#L1))
+- As connector-acceptance-test is running connector containers, it triggers actual HTTP requests the public API of our source/destination connector. This is why we need to load secrets configuration with our test account credentials to these connector containers. connector-acceptance-test is also generating dynamic connector configurations to check the behavior of a connector under test when it is  it different structure of configuration files. 
