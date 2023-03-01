@@ -157,8 +157,10 @@ public class IntegrationRunner {
       // just return the original exception.
       final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
       final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
-      // If the source connector throws a config error, a trace message with the relevant message should
+      // If the source connector throws a config error, a trace message with the relevant message should.
       // be surfaced.
+
+      // Top-level where config errors are caught
       if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
       }
@@ -166,6 +168,10 @@ public class IntegrationRunner {
         // Currently, special handling is required for the CHECK case since the user display information in
         // the trace message is
         // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
+
+        // If a ConfigErrorException is thrown and we're running a CHECK - we still output connectionStatus = failed. This was mainly so that
+        // the internal message shows up in the UI
+        // If you want the connection status to not be returned, you can comment this out.
         outputRecordCollector
             .accept(
                 new AirbyteMessage()

@@ -82,12 +82,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     try {
+      /*
       final Database database = createDatabaseInternal(config);
       for (final CheckedConsumer<Database, Exception> checkOperation : getCheckOperations(config)) {
         checkOperation.accept(database);
-      }
+      }*/
 
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+      // You can throw a config error here to simulate (i) a trace message being emitted. (ii) connection_status = failed;
+      throw new ConfigErrorException("config-error");
+      // throw new Exception();
+      //return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(),
           ex.getExceptionMessage(), ex);
@@ -186,8 +190,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   // in case of user manually modified source table schema but did not refresh it and save into the
   // catalog - it can lead to sync failure. This method compare actual schema vs catalog schema
-  private void logSourceSchemaChange(Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
-                                     ConfiguredAirbyteCatalog catalog) {
+  private void logSourceSchemaChange(final Map<String, TableInfo<CommonField<DataType>>> fullyQualifiedTableNameToInfo,
+                                     final ConfiguredAirbyteCatalog catalog) {
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
