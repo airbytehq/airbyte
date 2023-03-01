@@ -4,7 +4,19 @@
 
 ## Setup guide
 
+### For Airbyte Cloud:
+
+**To set up Facebook Marketing as a source in Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
+4. For Name, enter a name for the Facebook Marketing connector.
+
+**Facebook Marketing Source Settings:**
+
 1. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
+2. Account ID: [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762): Open your Meta Ads Manager. Ad account ID number in the account dropdown menu or in your browser's address bar.
 2. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 
     :::warning
@@ -12,15 +24,16 @@
     :::
 
 3. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-4. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762).
-5. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
+4. For **Access Token**, if you don't use OAuth. [Generate Access Token:](https://docs.airbyte.com/integrations/sources/facebook-marketing) The value of the access token generated. From your App’s Dashboard, click Marketing API --> Tools. Use permissions **ads_management, ads_read, read_insights, business_management**. And click Get token.
+5. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762).
+6. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
 
     :::info
     The Facebook Marketing API does not have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
     :::
 
-6. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
-7. (Optional) In the Custom Insights section, click **Add**.
+7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
+8. (Optional) In the Custom Insights section, click **Add**.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
 
     :::warning
@@ -42,6 +55,6 @@
     7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
     8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
     9. Click **Done**.
-8. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
-9. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
-10. Click **Set up source**.
+9. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases. 
+10. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter. 
+11. Click **Set up source**.
