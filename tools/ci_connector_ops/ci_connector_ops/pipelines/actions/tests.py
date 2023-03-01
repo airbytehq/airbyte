@@ -65,7 +65,7 @@ async def check_format(connector_container: Container) -> StepStatus:
         .with_exec(["echo", "Running Flake"])
         .with_exec(RUN_FLAKE_CMD)
     )
-    return StepStatus.from_exit_code(await formatter.exit_code())
+    return StepStatus.from_exit_code(await with_exit_code(formatter))
 
 
 async def run_unit_tests(connector_container: Container) -> StepStatus:
