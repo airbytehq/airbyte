@@ -21,10 +21,12 @@
       "type": ["null", "boolean"]
     },
     "add_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "selected": {
       "type": ["null", "boolean"]

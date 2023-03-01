@@ -27,13 +27,16 @@
       "type": ["null", "boolean"]
     },
     "last_login": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "created": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "modified": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "signup_flow_variation": {
       "type": ["null", "string"]

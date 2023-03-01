@@ -132,10 +132,12 @@
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "add_time": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "visible_to": {
       "type": ["null", "number", "string"]
