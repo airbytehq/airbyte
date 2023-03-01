@@ -4,6 +4,7 @@
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
@@ -53,7 +54,7 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
             "filter": {
                 "date_time_filter": {
                     "updated_at": {
-                        "start_at": stream_state.get(self.cursor_field.eval(self.config), initial_start_time),
+                        "start_at": stream_slice.get(self.cursor_field.eval(self.config), initial_start_time),
                     }
                 }
             },
@@ -75,4 +76,16 @@ class SquareSubstreamIncrementalSync(DatetimeBasedCursor):
             location_ids[i : i + self.parent_records_per_request] for i in range(0, len(location_ids), self.parent_records_per_request)
         ]
         for location in separated_locations:
-            yield {"location_ids": location}
+            stream_slice = {"location_ids": location}
+            cursor_field = self.cursor_field.eval(self.config)
+            if cursor_field and cursor_field in stream_state:
+                # The Square API throws an error if when a datetime is greater than the current time
+                current_datetime = datetime.now(timezone.utc)
+                cursor_datetime = self.parse_date(stream_state[cursor_field])
+                slice_datetime = (
+                    current_datetime.strftime(self.datetime_format)
+                    if cursor_datetime > current_datetime
+                    else cursor_datetime.strftime(self.datetime_format)
+                )
+                stream_slice[cursor_field] = slice_datetime
+            yield stream_slice
