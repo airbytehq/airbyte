@@ -575,7 +575,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @throws Exception might throw an error during connection to database
    */
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  public List<TableInfo<Field>> getTables(final Database database) throws Exception {
+  private List<TableInfo<Field>> getTables(final Database database) throws Exception {
     final List<TableInfo<CommonField<DataType>>> tableInfos = discoverWithoutSystemTables(database);
     final Map<String, List<String>> fullyQualifiedTableNameToPrimaryKeys = discoverPrimaryKeys(
         database, tableInfos);
@@ -705,7 +705,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @throws Exception access to the database might lead to an exceptions.
    */
   @Trace(operationName = DISCOVER_TRACE_OPERATION_NAME)
-  public abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
+  protected abstract List<TableInfo<CommonField<DataType>>> discoverInternal(
                                                                              final Database database)
       throws Exception;
 
