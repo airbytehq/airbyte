@@ -100,6 +100,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("S
     include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
     include ':airbyte-db:jooq' // transitively used by airbyte-workers.
     include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
+    include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 }
 
 // connectors base
