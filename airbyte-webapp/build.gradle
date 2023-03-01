@@ -96,6 +96,14 @@ task copySetupGuide(type: Copy) {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
 
+task copyZhSetupGuide(type: Copy) {
+    dependsOn copyDocker, copyBuildOutput
+
+    from "${project.rootProject.projectDir}/docs/zh"
+    into "build/docker/bin/build/docs/zh"
+    duplicatesStrategy DuplicatesStrategy.INCLUDE
+}
+
 // Copy images that are used in .md integration documentation docs
 task copyDocAssets(type: Copy) {
     dependsOn copyDocker, copyBuildOutput
@@ -132,4 +140,5 @@ tasks.named("buildDockerImage") {
     dependsOn copyDocs
     dependsOn copyDocAssets
     dependsOn copySetupGuide
+    dependsOn copyZhSetupGuide
 }
