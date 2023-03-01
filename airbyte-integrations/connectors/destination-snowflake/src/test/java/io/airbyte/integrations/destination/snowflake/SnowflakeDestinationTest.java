@@ -77,4 +77,5 @@ public class SnowflakeDestinationTest {
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
         arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
+
 }
