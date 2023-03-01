@@ -154,3 +154,7 @@ def test_all_modified_connectors(ctx: click.Context):
             sys.exit(1)
     else:
         logger.info(f"No connector modified after comparing the current branch with {os.environ['DIFFED_BRANCH']}")
+
+
+if __name__ == "__main__":
+    connectors_ci()

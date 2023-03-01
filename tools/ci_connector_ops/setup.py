@@ -36,6 +36,7 @@ TEST_REQUIREMENTS = [
     "freezegun",
 ]
 
+DEV_REQUIREMENTS = ["pyinstrument"]
 
 setup(
     version="0.1.14",
@@ -45,9 +46,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS + LOCAL_REQUIREMENTS,
-    extras_require={
-        "tests": TEST_REQUIREMENTS,
-    },
+    extras_require={"tests": TEST_REQUIREMENTS, "dev": TEST_REQUIREMENTS + DEV_REQUIREMENTS},
     python_requires=">=3.10",
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={
