@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import abstractmethod
@@ -17,7 +17,7 @@ class DeclarativeSource(AbstractSource):
     @property
     @abstractmethod
     def connection_checker(self) -> ConnectionChecker:
-        """Returns the ConnectioChecker to use for the `check` operation"""
+        """Returns the ConnectionChecker to use for the `check` operation"""
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """

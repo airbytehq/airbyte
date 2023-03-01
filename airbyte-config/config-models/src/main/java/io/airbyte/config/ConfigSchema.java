@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config;
@@ -13,16 +13,6 @@ import java.util.function.Function;
 public enum ConfigSchema implements AirbyteConfig {
 
   // workspace
-  STANDARD_WORKSPACE("StandardWorkspace.yaml",
-      StandardWorkspace.class,
-      standardWorkspace -> standardWorkspace.getWorkspaceId().toString(),
-      "workspaceId"),
-
-  WORKSPACE_SERVICE_ACCOUNT("WorkspaceServiceAccount.yaml",
-      WorkspaceServiceAccount.class,
-      workspaceServiceAccount -> workspaceServiceAccount.getWorkspaceId().toString(),
-      "workspaceId"),
-
   WORKSPACE_WEBHOOK_OPERATION_CONFIGS("WebhookOperationConfigs.yaml",
       WebhookOperationConfigs.class),
 
@@ -46,19 +36,10 @@ public enum ConfigSchema implements AirbyteConfig {
       destinationConnection -> destinationConnection.getDestinationId().toString(),
       "destinationId"),
 
-  // sync (i.e. connection)
-  STANDARD_SYNC("StandardSync.yaml",
-      StandardSync.class,
-      standardSync -> standardSync.getConnectionId().toString(),
-      "connectionId"),
   STANDARD_SYNC_OPERATION("StandardSyncOperation.yaml",
       StandardSyncOperation.class,
       standardSyncOperation -> standardSyncOperation.getOperationId().toString(),
       "operationId"),
-  STANDARD_SYNC_STATE("StandardSyncState.yaml",
-      StandardSyncState.class,
-      standardSyncState -> standardSyncState.getConnectionId().toString(),
-      "connectionId"),
 
   SOURCE_OAUTH_PARAM("SourceOAuthParameter.yaml", SourceOAuthParameter.class,
       sourceOAuthParameter -> sourceOAuthParameter.getOauthParameterId().toString(),
@@ -67,17 +48,8 @@ public enum ConfigSchema implements AirbyteConfig {
       destinationOAuthParameter -> destinationOAuthParameter.getOauthParameterId().toString(),
       "oauthParameterId"),
 
-  STANDARD_SYNC_SUMMARY("StandardSyncSummary.yaml", StandardSyncSummary.class),
-
-  ACTOR_CATALOG("ActorCatalog.yaml", ActorCatalog.class),
-  ACTOR_CATALOG_FETCH_EVENT("ActorCatalogFetchEvent.yaml", ActorCatalogFetchEvent.class),
-
   // worker
   STANDARD_SYNC_INPUT("StandardSyncInput.yaml", StandardSyncInput.class),
-  NORMALIZATION_INPUT("NormalizationInput.yaml", NormalizationInput.class),
-  OPERATOR_DBT_INPUT("OperatorDbtInput.yaml", OperatorDbtInput.class),
-  STANDARD_SYNC_OUTPUT("StandardSyncOutput.yaml", StandardSyncOutput.class),
-  REPLICATION_OUTPUT("ReplicationOutput.yaml", ReplicationOutput.class),
   STATE("State.yaml", State.class);
 
   static final Path KNOWN_SCHEMAS_ROOT = JsonSchemas.prepareSchemas("types", ConfigSchema.class);
@@ -101,10 +73,10 @@ public enum ConfigSchema implements AirbyteConfig {
                    final Class<T> className) {
     this.schemaFilename = schemaFilename;
     this.className = className;
-    this.extractId = object -> {
+    extractId = object -> {
       throw new RuntimeException(className.getSimpleName() + " doesn't have an id");
     };
-    this.idFieldName = null;
+    idFieldName = null;
   }
 
   @Override

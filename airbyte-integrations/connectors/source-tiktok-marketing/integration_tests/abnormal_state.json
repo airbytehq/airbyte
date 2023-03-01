@@ -27,7 +27,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "ads_reports_daily" }
+      "stream_descriptor": { "name": "ads_reports" }
     }
   },
   {
@@ -37,7 +37,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "advertisers_reports_daily" }
+      "stream_descriptor": { "name": "advertisers_reports" }
     }
   },
   {
@@ -47,7 +47,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "ad_groups_reports_daily" }
+      "stream_descriptor": { "name": "ad_groups_reports" }
     }
   },
   {
@@ -57,7 +57,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "campaigns_reports_daily" }
+      "stream_descriptor": { "name": "campaigns_reports" }
     }
   },
   {
@@ -67,7 +67,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "ads_audience_reports_daily" }
+      "stream_descriptor": { "name": "ads_audience_reports" }
     }
   },
   {
@@ -77,7 +77,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "advertisers_audience_reports_daily" }
+      "stream_descriptor": { "name": "advertisers_audience_reports" }
     }
   },
   {
@@ -87,7 +87,7 @@
         "stat_time_day": "2030-01-01",
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
-      "stream_descriptor": { "name": "ad_group_audience_reports_daily" }
+      "stream_descriptor": { "name": "ad_group_audience_reports" }
     }
   },
   {
@@ -98,7 +98,7 @@
         "dimensions": { "stat_time_day": "2030-01-01" }
       },
       "stream_descriptor": {
-        "name": "campaigns_audience_reports_by_country_daily"
+        "name": "campaigns_audience_reports_by_country"
       }
     }
   }

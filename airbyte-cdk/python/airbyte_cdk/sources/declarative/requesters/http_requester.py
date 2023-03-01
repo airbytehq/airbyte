@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import os
@@ -18,11 +18,10 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class HttpRequester(Requester, JsonSchemaMixin):
+class HttpRequester(Requester):
     """
     Default implementation of a Requester
 
@@ -41,27 +40,27 @@ class HttpRequester(Requester, JsonSchemaMixin):
     url_base: Union[InterpolatedString, str]
     path: Union[InterpolatedString, str]
     config: Config
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     authenticator: DeclarativeAuthenticator = None
     error_handler: Optional[ErrorHandler] = None
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self.url_base = InterpolatedString.create(self.url_base, options=options)
-        self.path = InterpolatedString.create(self.path, options=options)
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self.url_base = InterpolatedString.create(self.url_base, parameters=parameters)
+        self.path = InterpolatedString.create(self.path, parameters=parameters)
         if self.request_options_provider is None:
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, options=options)
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, parameters=parameters)
         elif isinstance(self.request_options_provider, dict):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
             self._request_options_provider = self.request_options_provider
-        self.authenticator = self.authenticator or NoAuth(options)
+        self.authenticator = self.authenticator or NoAuth(parameters=parameters)
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(options=options, config=self.config)
-        self._options = options
+        self.error_handler = self.error_handler or DefaultErrorHandler(parameters=parameters, config=self.config)
+        self._parameters = parameters
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),

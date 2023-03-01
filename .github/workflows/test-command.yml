@@ -19,14 +19,18 @@ on:
       uuid:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         required: false
-
+      connector-acceptance-test-version:
+        description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
+        required: false
+        default: "latest"
+      local_cdk:
+        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
+        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
     timeout-minutes: 10
     runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
     steps:
       - name: UUID ${{ github.event.inputs.uuid }}
         run: true
@@ -47,10 +51,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
@@ -62,7 +64,6 @@ jobs:
     timeout-minutes: 240
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
-    environment: more-secrets
     steps:
       - name: Link comment to workflow run
         if: github.event.inputs.comment-id
@@ -95,21 +96,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-      - name: Install Pyenv and Tox
-        run: |
-          python3 -m pip install --quiet virtualenv==16.7.9 --user
-          python3 -m virtualenv venv
-          source venv/bin/activate
-          pip install --quiet tox==3.24.4
-      - name: Test and install CI scripts
+      - name: Install CI scripts
         # all CI python packages have the prefix "ci_"
         run: |
-          source venv/bin/activate
-          tox -r -c ./tools/tox_ci.ini
           pip install --quiet -e ./tools/ci_*
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
-          source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }} write-to-storage
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
@@ -119,22 +111,23 @@ jobs:
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-
       - name: Test ${{ github.event.inputs.connector }}
         id: test
         env:
           ACTION_RUN_ID: ${{github.run_id}}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+          ORG_GRADLE_PROJECT_connectorAcceptanceTestVersion: ${{github.event.inputs.connector-acceptance-test-version}}
+          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
         uses: Wandalen/wretry.action@master
         with:
-          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
+          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.local_cdk }}
           attempt_limit: 3
           attempt_delay: 10000 # in ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
         if: always()
         run: |
-          source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }} update-secrets
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
@@ -157,7 +150,6 @@ jobs:
             **/normalization_test_output/**/build/compiled/airbyte_utils/**
             **/normalization_test_output/**/build/run/airbyte_utils/**
             **/normalization_test_output/**/models/generated/**
-
       - name: Test coverage reports artifacts
         if: github.event.inputs.comment-id && success()
         uses: actions/upload-artifact@v3
@@ -166,10 +158,14 @@ jobs:
           path: |
             **/${{ github.event.inputs.connector }}/htmlcov/**
           retention-days: 3
-
+      - name: Run QA checks for ${{ github.event.inputs.connector }}
+        id: qa_checks
+        if: always()
+        run: |
+          run-qa-checks ${{ github.event.inputs.connector }}
       - name: Report Status
-        if: github.ref == 'refs/heads/master' && always()
-        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}}
+        if: github.event.inputs.gitref == 'master' && always()
+        run: ./tools/status/report.sh ${{ github.event.inputs.connector }} ${{github.repository}} ${{github.run_id}} ${{steps.test.outcome}} ${{steps.qa_checks.outcome}}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
@@ -214,10 +210,8 @@ jobs:
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Stop EC2 runner
         uses: supertopher/ec2-github-runner@base64v1.0.10
         with:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -401,11 +401,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     return "record_count";
   }
 
-  private long getActualCursorRecordCount(final Connection connection,
-                                          final String fullTableName,
-                                          final String quotedCursorField,
-                                          final Datatype cursorFieldType,
-                                          final String cursor)
+  protected long getActualCursorRecordCount(final Connection connection,
+                                            final String fullTableName,
+                                            final String quotedCursorField,
+                                            final Datatype cursorFieldType,
+                                            final String cursor)
       throws SQLException {
     final String columnName = getCountColumnName();
     final PreparedStatement cursorRecordStatement;

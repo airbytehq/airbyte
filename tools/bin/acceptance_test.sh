@@ -13,7 +13,7 @@ get_epoch_time() {
 }
 
 check_success() {
-  docker compose ps | grep "^$1" | grep -ie 'exit 0' -ie 'exited (0)' >/dev/null || (echo "$1 didn't run successfully"; exit 1)
+  docker compose ps --all | grep "^$1" | grep -ie 'exit 0' -ie 'exited (0)' >/dev/null || (echo "$1 didn't run successfully"; exit 1)
 }
 
 ##

@@ -25,7 +25,7 @@ $ pip install -r requirements.txt
 To use a connectors `run` command we first need an AirbyteConfiguredCatalog:
 
 ```bash
-$ cd ../../connectors/<your-connector> # you need to use the tool at the root folder of a connector
+$ ../../airbyte-integrations/connectors/<your-connector> # you need to use the tool at the root folder of a connector
 $ docker run --rm -v $(pwd)/secrets:/secrets airbyte/<your-connector-image-name>:dev discover --config /secrets/config.json | schema_generator --configure-catalog
 ```
 This will created the file **configured_catalog.json** in the **integration_tests** folder in the current working directory.

@@ -186,14 +186,7 @@
                 "default": "infer",
                 "examples": ["ignore", "infer", "error"],
                 "order": 1,
-                "allOf": [
-                  {
-                    "title": "UnexpectedFieldBehaviorEnum",
-                    "description": "An enumeration.",
-                    "enum": ["ignore", "infer", "error"],
-                    "type": "string"
-                  }
-                ]
+                "enum": ["ignore", "infer", "error"]
               },
               "block_size": {
                 "title": "Block Size",

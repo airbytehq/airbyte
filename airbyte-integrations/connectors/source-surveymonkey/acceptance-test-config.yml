@@ -1,4 +1,5 @@
 connector_image: airbyte/source-surveymonkey:dev
+test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
@@ -15,7 +16,8 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
   incremental:
     tests:
       - config_path: "secrets/config.json"
