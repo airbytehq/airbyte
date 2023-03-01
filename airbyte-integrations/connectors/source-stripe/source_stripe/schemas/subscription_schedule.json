@@ -1,0 +1,240 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Generated schema for Root",
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": ["null", "string"]
+        },
+      "object": {
+        "type": ["null", "string"]
+      },
+      "url": {
+        "type": "string"
+      },
+      "has_more": {
+        "type": "boolean"
+      },
+      "data": {
+        "type": ["null","array"],
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "object": {
+              "type": "string"
+            },
+            "application": {},
+            "canceled_at": {},
+            "completed_at": {},
+            "created": {
+              "type": "number"
+            },
+            "current_phase": {
+              "type": "object",
+              "properties": {
+                "end_date": {
+                  "type": "number"
+                },
+                "start_date": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "end_date",
+                "start_date"
+              ]
+            },
+            "customer": {
+              "type": "string"
+            },
+            "default_settings": {
+              "type": "object",
+              "properties": {
+                "application_fee_percent": {},
+                "automatic_tax": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "enabled"
+                  ]
+                },
+                "billing_cycle_anchor": {
+                  "type": "string"
+                },
+                "billing_thresholds": {},
+                "collection_method": {
+                  "type": "string"
+                },
+                "default_payment_method": {},
+                "description": {},
+                "invoice_settings": {},
+                "on_behalf_of": {},
+                "transfer_data": {}
+              },
+              "required": [
+                "application_fee_percent",
+                "automatic_tax",
+                "billing_cycle_anchor",
+                "billing_thresholds",
+                "collection_method",
+                "default_payment_method",
+                "description",
+                "invoice_settings",
+                "on_behalf_of",
+                "transfer_data"
+              ]
+            },
+            "end_behavior": {
+              "type": "string"
+            },
+            "livemode": {
+              "type": "boolean"
+            },
+            "metadata": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            },
+            "phases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "add_invoice_items": {
+                    "type": "array",
+                    "items": {}
+                  },
+                  "application_fee_percent": {},
+                  "billing_cycle_anchor": {},
+                  "billing_thresholds": {},
+                  "collection_method": {},
+                  "coupon": {},
+                  "currency": {
+                    "type": "string"
+                  },
+                  "default_payment_method": {},
+                  "default_tax_rates": {
+                    "type": "array",
+                    "items": {}
+                  },
+                  "description": {},
+                  "end_date": {
+                    "type": "number"
+                  },
+                  "invoice_settings": {},
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "billing_thresholds": {},
+                        "metadata": {
+                          "type": "object",
+                          "properties": {},
+                          "required": []
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "number"
+                        },
+                        "tax_rates": {
+                          "type": "array",
+                          "items": {}
+                        }
+                      },
+                      "required": [
+                        "billing_thresholds",
+                        "metadata",
+                        "price",
+                        "quantity",
+                        "tax_rates"
+                      ]
+                    }
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                  },
+                  "on_behalf_of": {},
+                  "proration_behavior": {
+                    "type": "string"
+                  },
+                  "start_date": {
+                    "type": "number"
+                  },
+                  "transfer_data": {},
+                  "trial_end": {}
+                },
+                "required": [
+                  "add_invoice_items",
+                  "application_fee_percent",
+                  "billing_cycle_anchor",
+                  "billing_thresholds",
+                  "collection_method",
+                  "coupon",
+                  "currency",
+                  "default_payment_method",
+                  "default_tax_rates",
+                  "description",
+                  "end_date",
+                  "invoice_settings",
+                  "items",
+                  "metadata",
+                  "on_behalf_of",
+                  "proration_behavior",
+                  "start_date",
+                  "transfer_data",
+                  "trial_end"
+                ]
+              }
+            },
+            "released_at": {},
+            "released_subscription": {},
+            "status": {
+              "type": "string"
+            },
+            "subscription": {
+              "type": "string"
+            },
+            "test_clock": {}
+          },
+          "required": [
+            "id",
+            "object",
+            "application",
+            "canceled_at",
+            "completed_at",
+            "created",
+            "current_phase",
+            "customer",
+            "default_settings",
+            "end_behavior",
+            "livemode",
+            "metadata",
+            "phases",
+            "released_at",
+            "released_subscription",
+            "status",
+            "subscription",
+            "test_clock"
+          ]
+        }
+      }
+    },
+    "required": [
+      "object",
+      "url",
+      "has_more",
+      "data"
+    ]
+  }
