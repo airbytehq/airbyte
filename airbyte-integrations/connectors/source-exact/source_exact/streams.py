@@ -118,6 +118,9 @@ class ExactStream(HttpStream, IncrementalMixin):
             else:
                 raise RuntimeError(f"Source not capable of incremental syncing with cursor field '{self.cursor_field}'")
 
+        if self.cursor_field == "Modified":
+            params["$orderby"] = "Modified asc"
+
         return params
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
