@@ -133,7 +133,7 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
       - name: Build CDK Package
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
+        run: SUB_BUILD=CDK ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
