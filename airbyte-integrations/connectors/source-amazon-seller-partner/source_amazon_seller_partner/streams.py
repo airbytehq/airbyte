@@ -241,7 +241,11 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        return {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **stream_slice}
+        params = {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **stream_slice}
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
+        return params
 
     def _create_report(
         self,
@@ -521,36 +525,10 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
 
 
 class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
 
 
 class MerchantCancelledListingsReport(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
 
 
@@ -585,19 +563,6 @@ class FbaInventoryPlaningReport(ReportsAmazonSPStream):
 
 
 class LedgerSummaryViewReport(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_LEDGER_SUMMARY_VIEW_DATA"
 
 
@@ -615,45 +580,42 @@ class AnalyticsStream(ReportsAmazonSPStream):
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
-        if options is not None:
+        if options.get("reportPeriod") is not None:
             data.update(self._augmented_data(self, options))
         return data
 
     @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
-        if report_options.get("reportPeriod") is None:
-            return {"reportOptions": report_options}
+        now = pendulum.now("utc")
+        if report_options["reportPeriod"] == "DAY":
+            now = now.subtract(days=self.availability_sla_days)
+            data_start_time = now.start_of("day")
+            data_end_time = now.end_of("day")
+        elif report_options["reportPeriod"] == "WEEK":
+            now = now.subtract(days=self.availability_sla_days).subtract(weeks=1)
+            # According to report api docs
+            # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
+            pendulum.week_starts_at(pendulum.SUNDAY)
+            pendulum.week_ends_at(pendulum.SATURDAY)
+
+            data_start_time = now.start_of("week")
+            data_end_time = now.end_of("week")
+
+            # Reset week start and end
+            pendulum.week_starts_at(pendulum.MONDAY)
+            pendulum.week_ends_at(pendulum.SUNDAY)
+        elif report_options["reportPeriod"] == "MONTH":
+            now = now.subtract(months=1)
+            data_start_time = now.start_of("month")
+            data_end_time = now.end_of("month")
         else:
-            now = pendulum.now("utc")
-            if report_options["reportPeriod"] == "DAY":
-                now = now.subtract(days=self.availability_sla_days)
-                data_start_time = now.start_of("day")
-                data_end_time = now.end_of("day")
-            elif report_options["reportPeriod"] == "WEEK":
-                now = now.subtract(days=self.availability_sla_days).subtract(weeks=1)
-                # According to report api docs
-                # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
-                pendulum.week_starts_at(pendulum.SUNDAY)
-                pendulum.week_ends_at(pendulum.SATURDAY)
+            raise Exception([{"message": "This reportPeriod is not implemented."}])
 
-                data_start_time = now.start_of("week")
-                data_end_time = now.end_of("week")
-
-                # Reset week start and end
-                pendulum.week_starts_at(pendulum.MONDAY)
-                pendulum.week_ends_at(pendulum.SUNDAY)
-            elif report_options["reportPeriod"] == "MONTH":
-                now = now.subtract(months=1)
-                data_start_time = now.start_of("month")
-                data_end_time = now.end_of("month")
-            else:
-                raise Exception([{"message": "This reportPeriod is not implemented."}])
-
-            return {
-                "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
-                "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
-                "reportOptions": report_options,
-            }
+        return {
+            "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
+            "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
+            "reportOptions": report_options,
+        }
 
 
 class BrandAnalyticsMarketBasketReports(AnalyticsStream):
