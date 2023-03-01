@@ -132,7 +132,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
       },
       {
         Header: <FormattedMessage id="tables.status" />,
-        accessor: "status",
+        accessor: "statusLang",
         // Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
         //     <FrequencyCell value={cell.value} enabled={row.original.enabled} />
         // ),

@@ -154,6 +154,7 @@ export interface WebBackendConnectionRead {
   scheduleType?: ConnectionScheduleType;
   scheduleData?: ConnectionScheduleData;
   status: ConnectionStatus;
+  statusLang?: string;
   operationIds?: OperationId[];
   source: SourceRead;
   destination: DestinationRead;

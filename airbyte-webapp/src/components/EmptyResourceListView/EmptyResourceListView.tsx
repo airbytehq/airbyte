@@ -95,9 +95,25 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
     return { headingMessageId, buttonMessageId, singularResourceType };
   }, [resourceType]);
 
+  const getPageTitle = (resourceType: "connections" | "destinations" | "sources"): string => {
+    switch (resourceType) {
+      case "connections":
+        return "admin.dashboard";
+
+      case "sources":
+        return "admin.sources";
+
+      case "destinations":
+        return "admin.destinations";
+
+      default:
+        return "admin.dashboard";
+    }
+  };
+
   return (
     <Container>
-      <HeadTitle titles={[{ id: resourceType === "connections" ? "admin.dashboard" : "" }]} />
+      <HeadTitle titles={[{ id: getPageTitle(resourceType) }]} />
       {/* <Heading>
         <FormattedMessage id={headingMessageId} />
       </Heading> */}

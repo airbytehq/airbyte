@@ -7,7 +7,9 @@ import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-
 import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
+import { useUser } from "core/AuthContext";
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
+import { LOCALES } from "locales";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
 import { getJobStatus } from "../JobItem";
@@ -36,6 +38,7 @@ interface MainInfoProps {
 }
 
 const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpand, isFailed }) => {
+  const { user } = useUser();
   const jobStatus = getJobStatus(job);
   const isPartialSuccess = partialSuccessCheck(attempts);
 
@@ -84,7 +87,11 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
       <Cell className={styles.timestampCell}>
         <div>
           <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
-            {(parts) => <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>}
+            {(parts) => (
+              <span>{`${parts[0].value}:${parts[2].value}${
+                user.lang === LOCALES.ENGLISH ? parts[4].value : ""
+              } `}</span>
+            )}
           </FormattedTimeParts>
           <FormattedDateParts value={getJobCreatedAt(job) * 1000} month="2-digit" day="2-digit">
             {(parts) => <span>{`${parts[0].value}/${parts[2].value}`}</span>}

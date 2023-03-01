@@ -40,25 +40,23 @@ const StyleProvider: React.FC = ({ children }) => (
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
 const Services: React.FC = ({ children }) => (
-  <AuthContextProvider>
-    <AnalyticsProvider>
-      <ApiErrorBoundary>
-        <WorkspaceServiceProvider>
-          <FeatureService features={defaultFeatures}>
-            <NotificationService>
-              <ConfirmationModalService>
-                <ModalServiceProvider>
-                  <FormChangeTrackerService>
-                    <ApiServices>{children}</ApiServices>
-                  </FormChangeTrackerService>
-                </ModalServiceProvider>
-              </ConfirmationModalService>
-            </NotificationService>
-          </FeatureService>
-        </WorkspaceServiceProvider>
-      </ApiErrorBoundary>
-    </AnalyticsProvider>
-  </AuthContextProvider>
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <WorkspaceServiceProvider>
+        <FeatureService features={defaultFeatures}>
+          <NotificationService>
+            <ConfirmationModalService>
+              <ModalServiceProvider>
+                <FormChangeTrackerService>
+                  <ApiServices>{children}</ApiServices>
+                </FormChangeTrackerService>
+              </ModalServiceProvider>
+            </ConfirmationModalService>
+          </NotificationService>
+        </FeatureService>
+      </WorkspaceServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
 
 const App: React.FC = () => {
@@ -70,13 +68,15 @@ const App: React.FC = () => {
             <Suspense fallback={<LoadingPage />}>
               <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
                 <Router>
-                  <Services>
+                  <AuthContextProvider>
                     <I18nProvider>
-                      <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
-                        <Routing />
-                      </GoogleOAuthProvider>
+                      <Services>
+                        <GoogleOAuthProvider clientId="797465575128-he9j9jrtastc66su472tnv3uvbtkllid.apps.googleusercontent.com">
+                          <Routing />
+                        </GoogleOAuthProvider>
+                      </Services>
                     </I18nProvider>
-                  </Services>
+                  </AuthContextProvider>
                 </Router>
               </ConfigServiceProvider>
             </Suspense>
