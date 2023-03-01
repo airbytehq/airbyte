@@ -216,7 +216,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
 
     while (arrayResultSet.next()) {
-      final PGobject object = getObject(arrayResultSet, colIndex, PGobject.class);
+      final PGobject object = getObject(arrayResultSet, 2, PGobject.class);
       final JsonNode value;
       try {
         value = new ObjectMapper().readTree(object.getValue());
