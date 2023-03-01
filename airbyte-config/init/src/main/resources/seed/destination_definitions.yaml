@@ -348,7 +348,7 @@
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
   dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.48
+  dockerImageTag: 0.4.49
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationConfig:
@@ -440,9 +440,10 @@
 - name: Weaviate
   destinationDefinitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
   dockerRepository: airbyte/destination-weaviate
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   releaseStage: alpha
+  icon: weaviate.svg
 - name: DuckDB
   destinationDefinitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
   dockerRepository: airbyte/destination-duckdb

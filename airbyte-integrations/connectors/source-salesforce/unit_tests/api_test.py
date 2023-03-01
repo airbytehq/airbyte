@@ -56,7 +56,7 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
         {"id": 11, "name": "custom entity", "created": "2020-01-02"}
     ]
     # mock REST API
-    mocker.patch("source_salesforce.source.RestSalesforceStream.read_records", Mock(return_value=rest_stream_records))
+    mocker.patch("source_salesforce.source.RestSalesforceStream.read_records", lambda *args, **kwargs: iter(rest_stream_records))
     assert type(stream) is BulkIncrementalSalesforceStream
     assert list(stream.read_records(sync_mode=SyncMode.full_refresh)) == rest_stream_records
 
