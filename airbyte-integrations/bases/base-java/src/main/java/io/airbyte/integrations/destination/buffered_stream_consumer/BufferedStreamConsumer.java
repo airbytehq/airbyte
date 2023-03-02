@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -94,8 +95,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasStarted;
   private boolean hasClosed;
 
-  private Instant lastFlushEmission;
-  Duration BUFFER_FLUSH_FREQUENCY = Duration.ofMinutes(configs.getFlushBufferFrequencyInMinutes());
+  private Instant nextFlushDeadline;
+  private Duration BUFFER_FLUSH_FREQUENCY = Duration.ofMinutes(1);
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
@@ -116,12 +117,38 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
     this.stateManager = new DefaultDestStateLifecycleManager();
   }
 
+  /*
+   * NOTE: this is only used for testing purposes, future work would be re-visit if #acceptTracked
+   * should take in an Instant parameter which would require refactoring all MessageConsumers
+   */
+  @VisibleForTesting
+  BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
+                         final VoidCallable onStart,
+                         final BufferingStrategy bufferingStrategy,
+                         final CheckedConsumer<Boolean, Exception> onClose,
+                         final ConfiguredAirbyteCatalog catalog,
+                         final CheckedFunction<JsonNode, Boolean, Exception> isValidRecord,
+                         final Duration flushFrequency) {
+    this.outputRecordCollector = outputRecordCollector;
+    this.hasStarted = false;
+    this.hasClosed = false;
+    this.onStart = onStart;
+    this.onClose = onClose;
+    this.catalog = catalog;
+    this.streamNames = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+    this.isValidRecord = isValidRecord;
+    this.streamToIgnoredRecordCount = new HashMap<>();
+    this.bufferingStrategy = bufferingStrategy;
+    this.stateManager = new DefaultDestStateLifecycleManager();
+    this.BUFFER_FLUSH_FREQUENCY = flushFrequency;
+  }
+
   @Override
   protected void startTracked() throws Exception {
     // todo (cgardens) - if we reuse this pattern, consider moving it into FailureTrackingConsumer.
     Preconditions.checkState(!hasStarted, "Consumer has already been started.");
     hasStarted = true;
-    lastFlushEmission = Instant.now();
+    nextFlushDeadline = Instant.now().plus(BUFFER_FLUSH_FREQUENCY);
     streamToIgnoredRecordCount.clear();
     LOGGER.info("{} started.", BufferedStreamConsumer.class);
     onStart.call();
@@ -178,30 +205,31 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
 
   /**
    * After marking states as committed, return the state message to platform then clear state messages
-   * to avoid resending the same state message to the platform. Also updates the last flushed time
-   * since it can be deterministic that a state message can be returned to the platform
+   * to avoid resending the same state message to the platform. Also updates the next time a buffer
+   * flush should occur since it is deterministic that when this method is called all data has been
+   * successfully committed to destination
    */
   private void markStatesAsFlushedToDestination() {
     stateManager.markPendingAsCommitted();
     stateManager.listCommitted().forEach(outputRecordCollector);
     stateManager.clearCommitted();
-    lastFlushEmission = Instant.now();
+    nextFlushDeadline = Instant.now().plus(BUFFER_FLUSH_FREQUENCY);
   }
 
   /**
-   * Periodically flushes buffered data to destination storage when exceeding BUFFER_FLUSH_FREQUENCY.
-   * Also resets the last time a flush occurred
+   * Periodically flushes buffered data to destination storage when exceeding flush deadline. Also
+   * resets the last time a flush occurred
    */
   private void periodicBufferFlush() {
-    final Duration timeElapsed = Duration.between(lastFlushEmission, Instant.now());
     // When the last time the buffered has been flushed exceed the frequency, flush the current
     // buffer before receiving incoming AirbyteMessage
-    if (timeElapsed.compareTo(BUFFER_FLUSH_FREQUENCY) >= 0) {
+    if (Instant.now().isAfter(nextFlushDeadline)) {
+      LOGGER.info("Periodic buffer flush started");
       try {
         bufferingStrategy.flushAll();
         markStatesAsFlushedToDestination();
       } catch (final Exception e) {
-        LOGGER.error("Periodic buffer flush failed");
+        LOGGER.error("Periodic buffer flush failed", e);
       }
     }
   }

@@ -304,18 +304,19 @@ public class BufferedStreamConsumerTest {
     final List<AirbyteMessage> expectedRecordsStream1Batch2 = generateRecords(200L);
 
     // Overrides flush frequency for testing purposes to one min
-    consumer.BUFFER_FLUSH_FREQUENCY = Duration.ofSeconds(5);
-    consumer.start();
-    consumeRecords(consumer, expectedRecordsStream1);
-    consumer.accept(STATE_MESSAGE1);
+    final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
+    flushConsumer.start();
+    consumeRecords(flushConsumer, expectedRecordsStream1);
+    flushConsumer.accept(STATE_MESSAGE1);
     // NOTE: Sleeps process for 1 minute, if tests are slow this can be updated to reduce slowdowns
     TimeUnit.SECONDS.sleep(5);
-    consumeRecords(consumer, expectedRecordsStream1Batch2);
-    consumer.close();
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
+    flushConsumer.close();
 
     verifyStartAndClose();
     // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
-    verifyRecords(STREAM_NAME, SCHEMA_NAME, Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
+    verifyRecords(STREAM_NAME, SCHEMA_NAME,
+        Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
     verify(outputRecordCollector).accept(STATE_MESSAGE1);
   }
 
@@ -328,25 +329,38 @@ public class BufferedStreamConsumerTest {
     final List<AirbyteMessage> expectedRecordsStream1Batch3 = generateRecords(1_000L);
 
     // Overrides flush frequency for testing purposes to 5 seconds
-    consumer.BUFFER_FLUSH_FREQUENCY = Duration.ofSeconds(5);
-    consumer.start();
-    consumeRecords(consumer, expectedRecordsStream1);
-    consumer.accept(STATE_MESSAGE1);
+    final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
+    flushConsumer.start();
+    consumeRecords(flushConsumer, expectedRecordsStream1);
+    flushConsumer.accept(STATE_MESSAGE1);
     // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
     TimeUnit.SECONDS.sleep(5);
-    consumeRecords(consumer, expectedRecordsStream1Batch2);
-    consumeRecords(consumer, expectedRecordsStream1Batch3);
-    consumer.accept(STATE_MESSAGE2);
-    consumer.close();
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
+    consumeRecords(flushConsumer, expectedRecordsStream1Batch3);
+    flushConsumer.accept(STATE_MESSAGE2);
+    flushConsumer.close();
 
     verifyStartAndClose();
     // expects the records to be grouped because periodicBufferFlush occurs at the end of acceptTracked
-    verifyRecords(STREAM_NAME, SCHEMA_NAME, Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
+    verifyRecords(STREAM_NAME, SCHEMA_NAME,
+        Stream.concat(expectedRecordsStream1.stream(), expectedRecordsStream1Batch2.stream()).collect(Collectors.toList()));
     verifyRecords(STREAM_NAME, SCHEMA_NAME, expectedRecordsStream1Batch3);
     // expects two STATE messages returned since one will be flushed after periodic flushing occurs
     // and the other after buffer has been filled
     verify(outputRecordCollector).accept(STATE_MESSAGE1);
     verify(outputRecordCollector).accept(STATE_MESSAGE2);
+  }
+
+  private BufferedStreamConsumer getConsumerWithFlushFrequency() {
+    final BufferedStreamConsumer flushFrequencyConsumer = new BufferedStreamConsumer(
+        outputRecordCollector,
+        onStart,
+        new InMemoryRecordBufferingStrategy(recordWriter, 10_000),
+        onClose,
+        CATALOG,
+        isValidRecord,
+        Duration.ofSeconds(5));
+    return flushFrequencyConsumer;
   }
 
   private void verifyStartAndClose() throws Exception {
