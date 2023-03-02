@@ -16,18 +16,29 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.sql.SQLException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
+  @AfterAll
+  public static void closeContainer() {
+    if (db != null) {
+      db.close();
+      db.stop();
+    }
+  }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    db = new MSSQLServerContainer<>(DockerImageName
-        .parse("airbyte/mssql_ssltest:dev")
-        .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-            .acceptLicense();
-    db.start();
+    if (db == null) {
+      db = new MSSQLServerContainer<>(DockerImageName
+          .parse("airbyte/mssql_ssltest:dev")
+          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+          .acceptLicense();
+      db.start();
+    }
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())

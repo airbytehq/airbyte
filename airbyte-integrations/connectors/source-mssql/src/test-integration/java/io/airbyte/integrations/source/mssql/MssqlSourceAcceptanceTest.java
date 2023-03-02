@@ -27,9 +27,9 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.sql.SQLException;
 import java.util.HashMap;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
-@Disabled
+
 public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String SCHEMA_NAME = "dbo";
@@ -37,10 +37,20 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   protected static MSSQLServerContainer<?> db;
   protected JsonNode config;
 
+  @AfterAll
+  public static void closeContainer() {
+    if (db != null) {
+      db.close();
+      db.stop();
+    }
+  }
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
-    db.start();
+    if (db == null) {
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
+      db.start();
+    }
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
@@ -71,8 +81,6 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    db.stop();
-    db.close();
   }
 
   @Override

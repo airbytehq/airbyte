@@ -17,9 +17,8 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.MSSQLServerContainer;
-@Disabled
+
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   @Override

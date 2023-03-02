@@ -28,10 +28,9 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
-@Disabled
+
 public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";

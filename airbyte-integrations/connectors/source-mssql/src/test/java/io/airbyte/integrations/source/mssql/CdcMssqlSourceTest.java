@@ -46,24 +46,24 @@ import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MSSQLServerContainer;
 
-@Disabled
 public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private static final String CDC_ROLE_NAME = "cdc_selector";
-  private static final String TEST_USER_NAME = "tester";
   private static final String TEST_USER_PASSWORD = "testerjester[1]";
   public static final Map<String,String> CONNECTION_PROPERTIES = new HashMap<>();
   static {
     CONNECTION_PROPERTIES.put("encrypt", "false");
   }
-  private MSSQLServerContainer<?> container;
+  public static MSSQLServerContainer<?> container;
 
+  private String testUserName;
   private String dbName;
   private String dbNamewithDot;
   private Database database;
@@ -83,12 +83,26 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     grantCorrectPermissions();
   }
 
-  private void init() {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
-    container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
-    container.start();
+  @BeforeAll
+  public static void createContainer() {
+    if (container == null) {
+      container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-latest").acceptLicense();
+      container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
+      container.start();
+    }
+  }
 
+  @AfterAll
+  public static void closeContainer() {
+    if (container != null) {
+      container.close();
+      container.stop();
+    }
+  }
+
+  private void init() {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    testUserName = Strings.addRandomSuffix("test", "_", 5).toLowerCase();
     dbNamewithDot = Strings.addRandomSuffix("db", ".", 10).toLowerCase();
     source = new MssqlSource();
 
@@ -102,7 +116,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
+        .put(JdbcUtils.USERNAME_KEY, testUserName)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
         .put("is_test", true)
@@ -118,7 +132,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         CONNECTION_PROPERTIES);
 
     testDataSource = DataSourceFactory.create(
-        TEST_USER_NAME,
+        testUserName,
         TEST_USER_PASSWORD,
         DRIVER_CLASS,
         String.format("jdbc:sqlserver://%s:%d",
@@ -144,25 +158,25 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private void setupTestUser() {
     executeQuery("USE " + dbName);
-    executeQuery("CREATE LOGIN " + TEST_USER_NAME + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
-    executeQuery("CREATE USER " + TEST_USER_NAME + " FOR LOGIN " + TEST_USER_NAME + ";");
+    executeQuery("CREATE LOGIN " + testUserName + " WITH PASSWORD = '" + TEST_USER_PASSWORD + "';");
+    executeQuery("CREATE USER " + testUserName + " FOR LOGIN " + testUserName + ";");
   }
 
   private void revokeAllPermissions() {
-    executeQuery("REVOKE ALL FROM " + TEST_USER_NAME + " CASCADE;");
-    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + TEST_USER_NAME + ";\"");
+    executeQuery("REVOKE ALL FROM " + testUserName + " CASCADE;");
+    executeQuery("EXEC sp_msforeachtable \"REVOKE ALL ON '?' TO " + testUserName + ";\"");
   }
 
   private void alterPermissionsOnSchema(final Boolean grant, final String schema) {
     final String grantOrRemove = grant ? "GRANT" : "REVOKE";
-    executeQuery(String.format("USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s", dbName, grantOrRemove, schema, TEST_USER_NAME));
+    executeQuery(String.format("USE %s;\n" + "%s SELECT ON SCHEMA :: [%s] TO %s", dbName, grantOrRemove, schema, testUserName));
   }
 
   private void grantCorrectPermissions() {
     alterPermissionsOnSchema(true, MODELS_SCHEMA);
     alterPermissionsOnSchema(true, MODELS_SCHEMA + "_random");
     alterPermissionsOnSchema(true, "cdc");
-    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, TEST_USER_NAME));
+    executeQuery(String.format("EXEC sp_addrolemember N'%s', N'%s';", CDC_ROLE_NAME, testUserName));
   }
 
   @Override
@@ -248,7 +262,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       dslContext.close();
       DataSourceFactory.close(dataSource);
       DataSourceFactory.close(testDataSource);
-      container.close();
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
@@ -280,7 +293,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   @Test
   void testAssertSqlServerAgentRunning() throws InterruptedException {
-    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", TEST_USER_NAME));
+    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     // assert expected failure if sql server agent stopped
     switchSqlServerAgentAndWait(false);
     assertThrows(RuntimeException.class, () -> source.assertSqlServerAgentRunning(testJdbcDatabase));
@@ -327,7 +340,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
     alterPermissionsOnSchema(true, "cdc");
     // assertSqlServerAgentRunning
-    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", TEST_USER_NAME));
+    executeQuery(String.format("USE master;\n" + "GRANT VIEW SERVER STATE TO %s", testUserName));
     switchSqlServerAgentAndWait(false);
     status = getSource().check(getConfig());
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
