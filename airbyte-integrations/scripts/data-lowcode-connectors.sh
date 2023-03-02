@@ -10,6 +10,10 @@ if [[ `git status --porcelain` ]]; then
   exit 1
 fi
 
+BRANCH_NAME="$(git symbolic-ref HEAD 2>/dev/null)" ||
+BRANCH_NAME="(unnamed branch)"     # detached HEAD
+BRANCH_NAME=${branch_name##refs/heads/}
+
 OUTPUT_FILE="num_lowcode_connectors.csv"
 echo "date,num_lowcode_connectors,num_python_connectors" > $OUTPUT_FILE
 
@@ -70,6 +74,8 @@ done
 
 
 
-git checkout master
+git checkout $BRANCH_NAME
+git checkout -- .
+
 #uncomment to upload to GCS 
 #gcloud storage cp num_lowcode_connectors.csv gs://sherif-airbyte-metabase-backing-bucket/
