@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -137,7 +138,10 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  static Properties getDebeziumProperties(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
+  static Properties getDebeziumProperties(final JdbcDatabase database, final ConfiguredAirbyteCatalog catalog) {
+    final JsonNode config = database.getSourceConfig();
+    final JsonNode dbConfig = database.getDatabaseConfig();
+
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
@@ -154,6 +158,31 @@ public class MssqlCdcHelper {
 
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
+
+    if (config.has("ssl_method")) {
+      final JsonNode sslConfig = config.get("ssl_method");
+      final String sslMethod = sslConfig.get("ssl_method").asText();
+      if ("unencrypted".equals(sslMethod)) {
+        props.setProperty("database.encrypt", "false");
+      } else if ("encrypted_trust_server_certificate".equals(sslMethod)) {
+        props.setProperty("driver.encrypt", "true");
+        props.setProperty("driver.trustServerCertificate", "true");
+      } else if ("encrypted_verify_certificate".equals(sslMethod)) {
+        props.setProperty("driver.encrypt", "true");
+        if (dbConfig.has("trustStore") && !dbConfig.get("trustStore").asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore", dbConfig.get("trustStore").asText());
+        }
+
+        if (dbConfig.has("trustStorePassword") && !dbConfig.get("trustStorePassword").asText().isEmpty()) {
+          props.setProperty("database.ssl.truststore.password", dbConfig.get("trustStorePassword").asText());
+        }
+
+        if (dbConfig.has("hostNameInCertificate") && !dbConfig.get("hostNameInCertificate").asText().isEmpty()) {
+          props.setProperty("driver.hostNameInCertificate", dbConfig.get("hostNameInCertificate").asText());
+        }
+      }
+    }
+
     if (config.has("is_test") && config.get("is_test").asBoolean()) {
       props.setProperty("database.encrypt", "false");
     }
