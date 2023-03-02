@@ -47,7 +47,7 @@ class PurchaseGenerator:
         random_date = start_date + datetime.timedelta(days=random_number_of_days)
         return random_date
 
-    def generate(self, user_id: int) -> list[Dict]:
+    def generate(self, user_id: int) -> List[Dict]:
         """
         Because we are doing this work in parallel processes, we need a deterministic way to know what a purchase's ID should be given on the input of a user_id.
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
