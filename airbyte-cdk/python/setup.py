@@ -33,7 +33,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="airbyte connector-development-kit cdk",
     project_urls={
@@ -61,7 +61,7 @@ setup(
         "Jinja2~=3.1.2",
         "cachetools",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     extras_require={
         "dev": [
             "freezegun",
