@@ -970,7 +970,7 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
