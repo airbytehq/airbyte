@@ -31,6 +31,7 @@ acceptance_tests:
         cursor_paths:
           contacts: ["updated_at"]
           expenses_clients: ["to"]
+        timeout_seconds: 2400
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
