@@ -87,7 +87,6 @@ public class OpenSearchDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected JsonNode getFailCheckConfig() throws Exception {
-    // should result in a failed connection check
     var configJson = mapper.createObjectNode();
     configJson.put("endpoint", String.format("htp::/%s:-%s", container.getHost(), container.getMappedPort(9200)));
     return configJson;
@@ -99,8 +98,6 @@ public class OpenSearchDestinationAcceptanceTest extends DestinationAcceptanceTe
                                            String namespace,
                                            JsonNode streamSchema)
           throws Exception {
-    // Records returned from this method will be compared against records provided to the connector
-    // to verify they were written correctly
     final String indexName = new OpenSearchWriteConfig()
             .setNamespace(namespace)
             .setStreamName(streamName)
