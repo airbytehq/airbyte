@@ -44,6 +44,7 @@ connectionSpecification:
       description: The beginning date for the aggregate window.
       examples:
         - "2020-10-14"
+      format: date
     end_date:
       title: End Date
       type: string
@@ -51,6 +52,7 @@ connectionSpecification:
       description: The target date for the aggregate window.
       examples:
         - "2020-10-14"
+      format: date
     adjusted:
       title: Adjusted
       type: string

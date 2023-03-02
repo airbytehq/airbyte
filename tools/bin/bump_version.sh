@@ -9,13 +9,13 @@ if ! test "$(tty)" == "not a tty"; then
 fi
 
 set -o xtrace
-PREV_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+PREV_VERSION=$(grep -w VERSION gradle.properties | cut -d"=" -f2)
 GIT_REVISION=$(git rev-parse HEAD)
 
 pip install bumpversion
 bumpversion "$PART_TO_BUMP" # PART_TO_BUMP comes from the Github action (patch,major,minor)
 
-NEW_VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+NEW_VERSION=$(grep -w VERSION gradle.properties | cut -d"=" -f2)
 export VERSION=$NEW_VERSION # for safety, since lib.sh exports a VERSION that is now outdated
 
 set +o xtrace
