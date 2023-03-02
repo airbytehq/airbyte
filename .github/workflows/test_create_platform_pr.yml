@@ -13,6 +13,8 @@ jobs:
         with:
           repository: airbytehq/airbyte-platform
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+      - name: Update CDK version
+        run: echo "This is a test" > airbyte-connector-builder-server/CDK_VERSION
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
@@ -22,3 +24,4 @@ jobs:
           body: This is an automatically generated PR triggered by a CDK release
           branch: automatic-cdk-release
           base: main
+          delete-branch: true
