@@ -13,8 +13,6 @@ import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.db.jdbc.DateTimeConverter;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
@@ -55,8 +53,6 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] NUMERIC_TYPES = {"NUMERIC", "DECIMAL"};
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ"};
   private final String BYTEA_TYPE = "BYTEA";
-  private final String JSONB_TYPE = "JSONB";
-  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public void configure(final Properties props) {}
@@ -73,26 +69,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       registerMoney(field, registration);
     } else if (BYTEA_TYPE.equalsIgnoreCase(field.typeName())) {
       registerBytea(field, registration);
-    } else if (JSONB_TYPE.equalsIgnoreCase(field.typeName())) {
-      registerJsonb(field, registration);
     } else if (Arrays.stream(NUMERIC_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerNumber(field, registration);
     } else if (Arrays.stream(ARRAY_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerArray(field, registration);
     }
-  }
-
-  private void registerJsonb(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string().optional(), x -> {
-      if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
-      }
-      try {
-        return objectMapper.readTree(x.toString()).toString();
-      } catch (JsonProcessingException e) {
-        throw new RuntimeException("Could not parse 'jsonb' value:" + e);
-      }
-    });
   }
 
   private void registerArray(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {

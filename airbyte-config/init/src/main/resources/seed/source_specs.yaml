@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.49"
+- dockerImage: "airbyte/source-alloydb:1.0.51"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1273,7 +1273,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.22"
+- dockerImage: "airbyte/source-amplitude:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -1314,6 +1314,7 @@
             \ data before this date will not be replicated."
           examples:
           - "2021-01-25T00:00:00Z"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2187,7 +2188,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.2.1"
+- dockerImage: "airbyte/source-chargebee:0.2.2"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -2201,37 +2202,40 @@
       - "product_catalog"
       additionalProperties: true
       properties:
+        site_api_key:
+          type: "string"
+          title: "API Key"
+          description: "Chargebee API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/chargebee\"\
+            >docs</a> for more information on how to obtain this key."
+          airbyte_secret: true
+          order: 0
         site:
           type: "string"
           title: "Site"
           description: "The site prefix for your Chargebee instance."
           examples:
           - "airbyte-test"
-        site_api_key:
-          type: "string"
-          title: "API Key"
-          description: "Chargebee API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/chargebee\"\
-            >docs</a> for more information on how to obtain this key."
-          examples:
-          - "test_3yzfanAXF66USdWC9wQcM555DQJkSYoppu"
-          airbyte_secret: true
+          order: 1
         start_date:
           type: "string"
+          format: "date-time"
           title: "Start Date"
-          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           description: "UTC date and time in the format 2021-01-25T00:00:00Z. Any\
             \ data before this date will not be replicated."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           examples:
           - "2021-01-25T00:00:00Z"
+          order: 2
         product_catalog:
-          title: "Product Catalog"
           type: "string"
+          title: "Product Catalog"
           description: "Product Catalog version of your Chargebee site. Instructions\
             \ on how to find your version you may find <a href=\"https://apidocs.chargebee.com/docs/api?prod_cat_ver=2\"\
             >here</a> under `API Version` section."
           enum:
           - "1.0"
           - "2.0"
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3139,7 +3143,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-delighted:0.2.0"
+- dockerImage: "airbyte/source-delighted:0.2.1"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -3165,6 +3169,7 @@
           - "2022-05-30 04:50:23"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2} ([0-9]{2}:[0-9]{2}:[0-9]{2})?$"
           order: 1
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -6886,7 +6891,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-iterable:0.1.23"
+- dockerImage: "airbyte/source-iterable:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -6915,6 +6920,7 @@
           - "2021-04-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 1
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7380,7 +7386,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-klaviyo:0.1.12"
+- dockerImage: "airbyte/source-klaviyo:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
@@ -7403,6 +7409,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           type: "string"
+          format: "date-time"
       required:
       - "api_key"
       - "start_date"
@@ -9455,7 +9462,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-nasa:0.1.0"
+- dockerImage: "airbyte/source-nasa:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/nasa-apod"
     connectionSpecification:
@@ -9493,6 +9500,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-10-20"
+          format: "date"
         end_date:
           type: "string"
           description: "Indicates that end of a date range. If `start_date` is specified\
@@ -9500,6 +9508,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-10-20"
+          format: "date"
         thumbs:
           type: "boolean"
           default: false
@@ -9975,7 +9984,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.2"
+- dockerImage: "airbyte/source-notion:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -9993,6 +10002,7 @@
           examples:
           - "2020-11-16T00:00:00.000Z"
           type: "string"
+          format: "date-time"
         credentials:
           title: "Authenticate using"
           description: "Pick an authentication method."
@@ -11083,7 +11093,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.2"
+- dockerImage: "airbyte/source-pinterest:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -11201,7 +11211,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.13"
+- dockerImage: "airbyte/source-pipedrive:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -11268,6 +11278,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           type: "string"
+          format: "date-time"
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -11624,7 +11635,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.50"
+- dockerImage: "airbyte/source-postgres:1.0.51"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12377,7 +12388,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.6"
+- dockerImage: "airbyte/source-recharge:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -12398,6 +12409,7 @@
           examples:
           - "2021-05-14T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         access_token:
           type: "string"
           title: "Access Token"
@@ -13418,7 +13430,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-senseforce:0.1.0"
+- dockerImage: "airbyte/source-senseforce:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/senseforce"
     connectionSpecification:
@@ -13468,6 +13480,7 @@
             \ to 2020-10-10 or later"
           examples:
           - "2017-01-25"
+          format: "date"
         slice_range:
           type: "integer"
           title: "Data request time increment in days"
@@ -13928,7 +13941,7 @@
           type: "object"
           additionalProperties: false
           properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.14"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -13968,6 +13981,7 @@
           default: "2022-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 3
+          format: "date"
         end_date:
           type: "string"
           title: "End Date"
@@ -13977,6 +13991,7 @@
           examples:
           - "2022-01-30"
           order: 4
+          format: "date"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -16090,7 +16105,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-woocommerce:0.2.0"
+- dockerImage: "airbyte/source-woocommerce:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/woocommerce"
     connectionSpecification:
@@ -16129,6 +16144,7 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           order: 3
         conversion_window_days:
           type: "integer"

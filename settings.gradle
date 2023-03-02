@@ -95,11 +95,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("S
     include ':airbyte-json-validation'
     include ':airbyte-test-utils'
 
-    // airbyte-workers has a lot of dependencies.
-    include ':airbyte-commons-worker'
-    include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-    include ':airbyte-db:jooq' // transitively used by airbyte-workers.
-    include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
     include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 }
 

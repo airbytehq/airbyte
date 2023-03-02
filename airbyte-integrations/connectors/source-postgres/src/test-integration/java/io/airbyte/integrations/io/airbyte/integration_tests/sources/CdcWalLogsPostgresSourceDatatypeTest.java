@@ -14,7 +14,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -207,24 +206,6 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
                   "+290309-12-21T19:59:27.600000 BC")
               .build());
     }
-  }
-
-  @Override
-  protected void addJsonbArrayTest() {
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("jsonb_array")
-            .fullSourceDataType("JSONB[]")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
-                .withItems(JsonSchemaType.JSONB)
-                .build())
-            .addInsertValues(
-                "ARRAY['[1,2,1]', 'false']::jsonb[]",
-                "ARRAY['{\"letter\":\"A\", \"digit\":30}', '{\"letter\":\"B\", \"digit\":31}']::jsonb[]")
-            .addExpectedValues("[\"[1, 2, 1]\",\"false\"]",
-                "[\"{\\\"digit\\\": 30, \\\"letter\\\": \\\"A\\\"}\",\"{\\\"digit\\\": 31, \\\"letter\\\": \\\"B\\\"}\"]")
-            .build());
   }
 
 }
