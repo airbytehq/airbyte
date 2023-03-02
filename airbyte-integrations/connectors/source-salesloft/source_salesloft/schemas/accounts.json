@@ -98,7 +98,7 @@
     },
     "counts": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "people": {
           "type": ["null", "integer"]
@@ -107,7 +107,7 @@
     },
     "owner": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -119,7 +119,7 @@
     },
     "creator": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -131,7 +131,7 @@
     },
     "last_contacted_by": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -143,7 +143,7 @@
     },
     "last_contacted_person": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -155,7 +155,7 @@
     },
     "company_stage": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]
@@ -167,7 +167,7 @@
     },
     "account_tier": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["null", "integer"]

@@ -25,6 +25,7 @@ from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
+from .availability_strategy import SalesforceAvailabilityStrategy
 from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
@@ -68,7 +69,7 @@ class SalesforceStream(HttpStream, ABC):
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+        return SalesforceAvailabilityStrategy()
 
     @property
     def too_many_properties(self):
@@ -136,13 +137,16 @@ class RestSalesforceStream(SalesforceStream):
     def chunk_properties(self) -> Iterable[Mapping[str, Any]]:
         selected_properties = self.get_json_schema().get("properties", {})
 
+        def empty_props_with_pk_if_present():
+            return {self.primary_key: selected_properties[self.primary_key]} if self.primary_key else {}
+
         summary_length = 0
-        local_properties = {}
+        local_properties = empty_props_with_pk_if_present()
         for property_name, value in selected_properties.items():
             current_property_length = len(urllib.parse.quote(f"{property_name},"))
             if current_property_length + summary_length >= self.max_properties_length:
                 yield local_properties
-                local_properties = {}
+                local_properties = empty_props_with_pk_if_present()
                 summary_length = 0
 
             local_properties[property_name] = value
@@ -150,36 +154,6 @@ class RestSalesforceStream(SalesforceStream):
 
         if local_properties:
             yield local_properties
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[StreamData]:
-        try:
-            yield from self._read_pages(
-                lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state),
-                stream_slice,
-                stream_state,
-            )
-        except exceptions.HTTPError as error:
-            """
-            There are several types of Salesforce sobjects that require additional processing:
-              1. Sobjects for which the user, after setting up the data using Airbyte, restricted access,
-                 and we will receive 403 HTTP errors.
-              2. There are streams that do not allow you to make a sample using Salesforce `query` or `queryAll`.
-                 And since we use a dynamic method of generating streams for Salesforce connector - at the stage of discover,
-                 we cannot filter out these streams, so we catch them at the stage of reading data.
-            """
-            error_data = error.response.json()[0]
-            if error.response.status_code in [codes.FORBIDDEN, codes.BAD_REQUEST]:
-                error_code = error_data.get("errorCode", "")
-                if error_code != "REQUEST_LIMIT_EXCEEDED" or error_code == "INVALID_TYPE_FOR_OPERATION":
-                    self.logger.error(f"Cannot receive data for stream '{self.name}', error message: '{error_data.get('message')}'")
-                    return
-            raise error
 
     def _read_pages(
         self,
@@ -448,6 +422,10 @@ class BulkSalesforceStream(SalesforceStream):
     def delete_job(self, url: str):
         self._send_http_request("DELETE", url=url)
 
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
+
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             return {"next_token": f"WHERE {self.primary_key} >= '{last_record[self.primary_key]}' "}  # type: ignore[index]
@@ -491,6 +469,10 @@ class BulkSalesforceStream(SalesforceStream):
                     # Thus we can try to switch to GET sync request because its response returns obvious error message
                     standard_instance = self.get_standard_instance()
                     self.logger.warning("switch to STANDARD(non-BULK) sync. Because the SalesForce BULK job has returned a failed status")
+                    stream_is_available, error = standard_instance.check_availability(self.logger, None)
+                    if not stream_is_available:
+                        self.logger.warning(f"Skipped syncing stream '{standard_instance.name}' because it was unavailable. Error: {error}")
+                        return
                     yield from standard_instance.read_records(
                         sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
                     )

@@ -354,6 +354,8 @@ subprojects { subproj ->
     }
 
     test {
+        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']
@@ -504,11 +506,6 @@ subprojects {
         }
     }
     task listAllDependencies(type: DependencyReportTask) {}
-}
-
-task('generate-docker') {
-    dependsOn(':airbyte-db:db-lib:assemble')
-    dependsOn(':airbyte-config:init:assemble')
 }
 
 // produce reproducible archives
