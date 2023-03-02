@@ -5,8 +5,8 @@ name: Connector Integration Tests
 on:
   workflow_dispatch:
   schedule:
-    # 4AM UTC is 6AM EET, 5AM CET, 9PM PST.
-    - cron: "0 4 * * *"
+    # 3AM UTC is 5AM EET, 4AM CET, 8PM PST.
+    - cron: "0 3 * * *"
 
 jobs:
   launch_integration_tests:
