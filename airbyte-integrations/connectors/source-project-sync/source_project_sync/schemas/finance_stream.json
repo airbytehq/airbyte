@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Prosjekt #": {
+      "type": "string"
+    },
+    "Prosjektnavn": {
+      "type": "string"
+    },
+    "Hovedprosjekt": {
+      "type": "string"
+    },
+    "Prosjekt-ID": {
+      "type": "integer"
+    },
+    "Firma/Person": {
+      "type": "string"
+    },
+    "Prosjektgruppe": {
+      "type": "string"
+    },
+    "Prosjektleder": {
+      "type": "string"
+    },
+    "Fra": {
+      "type": "string"
+    },
+    "Til": {
+      "type": "string"
+    },
+    "Kontraktsbeløp": {
+      "type": "number"
+    },
+    "Kostnad totalt": {
+      "type": "number"
+    },
+    "Tot. est. timer": {
+      "type": "number"
+    },
+    "Estimert dekningsgrad": {
+      "type": "number"
+    },
+    "Koststed": {
+      "type": "string"
+    }
+  }
+}
