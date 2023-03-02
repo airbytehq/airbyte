@@ -204,10 +204,14 @@ class TiktokStream(HttpStream, ABC):
         Once the rate limit is met, the server returns "code": 40100
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
         Retry 50002 as well - it's a server error.
+        Retry when 504 error: response doesn't consist json, so we need to handle response status code to retry.
         """
         try:
             data = response.json()
         except Exception:
+            if response.status_code == 504:
+                self.logger.error("Gateway Timeout: The proxy server did not receive a timely response from the upstream server.")
+                return super().should_retry(response)
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
         if data["code"] in (40100, 50002):
@@ -427,7 +431,7 @@ class Advertisers(FullRefreshTiktokStream):
         ids = self.get_advertiser_ids()
         start, end, step = 0, len(ids), 100
         for i in range(start, end, step):
-            yield {"advertiser_ids": ids[i: min(end, i + step)]}
+            yield {"advertiser_ids": ids[i : min(end, i + step)]}
 
 
 class Campaigns(IncrementalTiktokStream):

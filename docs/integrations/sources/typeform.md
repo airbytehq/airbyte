@@ -70,6 +70,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.11  | 2023-02-20 | [23248](https://github.com/airbytehq/airbyte/pull/23248) | Store cursor value as a string                                          |
 | 0.1.10  | 2023-01-07 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Certification to Beta                                                   |
 | 0.1.9   | 2022-08-30 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Improve `metadata.referer` url parsing                                  |
 | 0.1.8   | 2022-08-09 | [15435](https://github.com/airbytehq/airbyte/pull/15435) | Update Forms   stream schema                                            |
