@@ -104,7 +104,9 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     final List<Exception> exceptionsThrown = new ArrayList<>();
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT) {
       try {
-        return loadDataIntoBucket(stagingPath, recordsData);
+        final String fileName = loadDataIntoBucket(stagingPath, recordsData);
+        LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", stagingPath, exceptionsThrown.size());
+        return fileName;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into storage {}", stagingPath, e);
         exceptionsThrown.add(e);
@@ -113,6 +115,17 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
     throw new RuntimeException(String.format("Exceptions thrown while uploading records into storage: %s", Strings.join(exceptionsThrown, "\n")));
   }
 
+  /**
+   * Upload the file from {@code recordsData} to S3 and simplify the filename as <partId>.<extension>.
+   *
+   * <p>
+   * Method mirrors similarly named method within {@link io.airbyte.integrations.destination.s3.S3StorageOperations}
+   * </p>
+   *
+   * @param objectPath filepath to the object
+   * @param recordsData serialized {@link io.airbyte.protocol.models.AirbyteRecordMessage}s
+   * @return the uploaded filename, which is different from the serialized buffer filename
+   */
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
 
     final String fullObjectKey = objectPath + recordsData.getFilename();
