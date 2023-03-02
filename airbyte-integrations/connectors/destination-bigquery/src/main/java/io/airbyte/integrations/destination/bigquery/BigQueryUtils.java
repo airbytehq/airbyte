@@ -37,7 +37,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -458,7 +457,7 @@ public class BigQueryUtils {
   }
 
   private static String getConnectorNameOrDefault() {
-    return Optional.ofNullable(System.getenv(WorkerEnvConstants.WORKER_CONNECTOR_IMAGE))
+    return Optional.ofNullable(System.getenv("WORKER_CONNECTOR_IMAGE"))
         .map(name -> name.replace("airbyte/", Strings.EMPTY).replace(":", "/"))
         .orElse("destination-bigquery");
   }
