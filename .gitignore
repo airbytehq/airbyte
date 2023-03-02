@@ -63,9 +63,6 @@ crash.log
 resources/examples/airflow/logs/*
 !resources/examples/airflow/logs/.gitkeep
 
-# Cloud Demo
-!airbyte-webapp/src/packages/cloud/data
-
 # Summary.md keeps getting added and we just don't like it
 docs/SUMMARY.md
 
@@ -83,3 +80,10 @@ charts/**/charts
 
 # Datadog
 dd-java-agent.jar
+
+# Files needed to run airbyte-platform that are downloaded on-the-fly via run-ab-platform.sh
+docker-compose.yaml
+docker-compose.debug.yaml
+.env
+.env.dev
+flags.yml
