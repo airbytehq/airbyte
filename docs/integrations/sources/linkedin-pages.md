@@ -4,7 +4,7 @@
 
 The LinkedIn Pages source only supports Full Refresh for now. Incremental Sync will be coming soon.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python). Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
+Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Pages.
 
 ### Output schema
 
