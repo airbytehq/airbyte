@@ -33,6 +33,14 @@ acceptance_tests:
               bypass_reason: "fast changing data"
             - name: updated_at
               bypass_reason: "fast changing data"
+            - name: plan
+              bypass_reason: "fast changing data"
+            - name: public_repos
+              bypass_reason: "fast changing data"
+            - name: total_private_repos
+              bypass_reason: "fast changing data"
+            - name: owned_private_repos
+              bypass_reason: "fast changing data"
           repositories:
             - name: updated_at
               bypass_reason: "fast changing data"
