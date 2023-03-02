@@ -1701,11 +1701,15 @@
 - name: Senseforce
   sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
   dockerRepository: airbyte/source-senseforce
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
   icon: senseforce.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - galaxyapi.senseforce.io
+      - senseforce.io
 - name: Sendinblue
   sourceDefinitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
   dockerRepository: airbyte/source-sendinblue
