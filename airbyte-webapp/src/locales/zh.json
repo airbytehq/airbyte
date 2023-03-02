@@ -486,6 +486,7 @@
   "settings.accountSetting.language": "语言",
   "settings.language.dropdownLabel": "选择您的首选语言",
   "settings.language.btnText": "更改",
+  "settings.accountSetting.notifications": "通知",
   "settings.accountSetting.password": "密码",
   "payment.tabTitle": "付款",
   "plan.type.heading": "方案类型",

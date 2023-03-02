@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
+import useRouter from "hooks/useRouter";
+
 import TabItem from "./components/TabItem";
 
 export interface SideMenuItem {
@@ -49,7 +51,9 @@ const TabName = styled.div`
   text-transform: uppercase;
 `;
 
-export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect, size }) => {
+export const TabMenu: React.FC<IProps> = ({ data, onSelect, size }) => {
+  const { pathname } = useRouter();
+
   return (
     <Content>
       {data.map((tabItem, index) => (
@@ -62,7 +66,7 @@ export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect, size }) 
                   id={route.id}
                   key={route.path}
                   name={route.name}
-                  isActive={activeItem?.endsWith(route.path)}
+                  isActive={pathname.split("/")[2] === route.path ? true : false}
                   onClick={() => onSelect(route.path)}
                   size={size}
                 />

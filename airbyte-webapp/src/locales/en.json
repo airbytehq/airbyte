@@ -486,6 +486,7 @@
   "settings.accountSetting.language": "Language",
   "settings.language.dropdownLabel": "Select your preferred language",
   "settings.language.btnText": "Change",
+  "settings.accountSetting.notifications": "Notifications",
   "settings.accountSetting.password": "Password",
   "payment.tabTitle": "Payment",
   "plan.type.heading": "Plan type",
