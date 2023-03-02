@@ -17,7 +17,7 @@ connectionSpecification:
     query:
       type: string
       title: Twitter Search Query
-      description: Twitter Search query
+      description: Query for matching Tweets. You can learn how to build this query by reading <a href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query"> build a query guide </a>.
       order: 1
     start_date:
       type: string
