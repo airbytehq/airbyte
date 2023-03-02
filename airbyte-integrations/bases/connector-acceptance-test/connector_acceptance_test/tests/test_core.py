@@ -499,9 +499,7 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-        self,
-        inputs: DiscoveryTestConfig,
-        previous_connector_docker_runner: ConnectorRunner
+        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
     ) -> bool:
         # Get the real connector version in case 'latest' is used in the config:
         previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
@@ -510,13 +508,14 @@ class TestDiscovery(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
 
         def test_catalog_compatibility(
-                discovered_catalog: MutableMapping[str, AirbyteStream],
-                previous_discovered_catalog: MutableMapping[str, AirbyteStream]):
+            discovered_catalog: MutableMapping[str, AirbyteStream], previous_discovered_catalog: MutableMapping[str, AirbyteStream]
+        ):
             if discovered_catalog == previous_discovered_catalog:
                 pytest.skip("The previous and actual discovered catalogs are identical.")
 
             if previous_connector_docker_runner is None:
                 pytest.skip("The previous connector image could not be retrieved.")
+
         return False
 
     def test_discover(self, connector_config, docker_runner: ConnectorRunner):
