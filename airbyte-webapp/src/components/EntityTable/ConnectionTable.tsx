@@ -34,7 +34,7 @@ interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
   onClickRow?: (data: ITableDataItem) => void;
-  onChangeStatus: (id: string, status: string) => void;
+  onChangeStatus: (id: string, status: string | undefined) => void;
   onSync: (id: string) => void;
   rowId?: string;
   statusLoading?: boolean;
@@ -96,13 +96,16 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
           return (
             <SwitchContent
               onClick={(e) => {
-                onChangeStatus(cell.row.original.connectionId, cell.row.values.status);
+                // console.log(cell.row.original)
+                // console.log(cell.row.original.status === "Active")
+
+                onChangeStatus(cell.row.original.connectionId, cell.row.original.status);
                 e.preventDefault();
               }}
             >
               <LabeledSwitch
                 id={`${cell.row.original.connectionId}`}
-                checked={cell.row.values.status === "Active" ? true : false}
+                checked={cell.row.original.status === "Active" ? true : false}
                 // onClick={() => {
                 //   onChangeStatus(cell.row.original.connectionId);
                 // }}

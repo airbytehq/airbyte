@@ -34,6 +34,7 @@ export const FirstNameField: React.FC = () => {
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
+          grey
           label={<FormattedMessage id="signup.firstName" />}
           placeholder={formatMessage({
             id: "signup.firstName.placeholder",
@@ -55,6 +56,7 @@ export const LastNameField: React.FC = () => {
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
+          grey
           label={<FormattedMessage id="signup.lastName" />}
           placeholder={formatMessage({
             id: "signup.lastName.placeholder",
@@ -76,6 +78,7 @@ export const CompanyNameField: React.FC = () => {
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
+          grey
           label={<FormattedMessage id="signup.companyName" />}
           placeholder={formatMessage({
             id: "signup.companyName.placeholder",
@@ -97,6 +100,7 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
+          grey
           label={label || <FormattedMessage id="signup.Email" />}
           placeholder={formatMessage({
             id: "signup.Email.placeholder",
@@ -118,6 +122,7 @@ export const PasswordField: React.FC<{ label?: React.ReactNode }> = ({ label }) 
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
+          grey
           label={label || <FormattedMessage id="signup.password" />}
           placeholder={formatMessage({
             id: "signup.password.placeholder",
@@ -139,6 +144,7 @@ export const ConfirmPasswordField: React.FC<{ label?: React.ReactNode }> = ({ la
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
           {...field}
+          grey
           label={label || <FormattedMessage id="signup.confirmPassword" />}
           placeholder={formatMessage({
             id: "signup.confirmPassword.placeholder",

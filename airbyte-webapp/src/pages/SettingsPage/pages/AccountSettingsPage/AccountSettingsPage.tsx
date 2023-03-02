@@ -13,6 +13,7 @@ import { Sidebar } from "./components";
 // import PasswordPage from "./pages/PasswordPage";
 
 import LanguagePage from "./pages/LanguagePage";
+// import NotificationPage from "./pages/NotificationPage";
 
 const Container = styled.div`
   width: 100%;
@@ -32,6 +33,7 @@ const ContentContainer = styled.div`
 export const AccountSettingsRoute = {
   Account: "account",
   Language: "language",
+  Notifications: "notifications",
   Password: "password",
 } as const;
 
@@ -44,6 +46,11 @@ const AccountSettingsPage: React.FC = () => {
       name: <FormattedMessage id="settings.accountSetting.language" />,
       component: <LanguagePage />,
     },
+    // {
+    //   path: `${AccountSettingsRoute.Notifications}`,
+    //   name: <FormattedMessage id="settings.accountSetting.notifications" />,
+    //   component: <NotificationPage />,
+    // },
     // {
     //   path: `${AccountSettingsRoute.Account}`,
     //   name: <FormattedMessage id="settings.accountSetting.account" />,

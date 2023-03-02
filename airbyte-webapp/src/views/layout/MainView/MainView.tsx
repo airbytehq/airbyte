@@ -4,7 +4,6 @@ import { theme } from "theme";
 
 import { LoadingPage } from "components";
 import { CreateStepTypes } from "components/ConnectionStep";
-import { Separator } from "components/Separator";
 
 import useRouter from "hooks/useRouter";
 import { UpgradePlanBar } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpgradePlanBar";
@@ -82,6 +81,8 @@ const MainView: React.FC = (props) => {
       } else {
         setBackgroundColor(theme.white);
       }
+    } else if (lastPathName === RoutePaths.Payment) {
+      setBackgroundColor(theme.backgroundColor);
     } else if (isSidebarBol) {
       // In the page with sidebar, the background color of these three pages is #F8F8FE, and the others are the theme background color.
       if (
@@ -90,7 +91,16 @@ const MainView: React.FC = (props) => {
         lastPathName === RoutePaths.SelectConnection
       ) {
         setBackgroundColor("#F8F8FE");
-      } else {
+      }
+      // else if(
+      //   lastPathName === RoutePaths.AccountSettings ||
+      //   lastPathName === RoutePaths.Language ||
+      //   lastPathName === RoutePaths.Notifications  ||
+      //   lastPathName === RoutePaths.PlanAndBilling
+      // ) {
+      //   setBackgroundColor(theme.white);
+      // }
+      else {
         setBackgroundColor(theme.backgroundColor);
       }
     } else {
@@ -107,7 +117,6 @@ const MainView: React.FC = (props) => {
         <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
           <React.Suspense fallback={<LoadingPage />}>
             <UpgradePlanBar />
-            <Separator height="40px" />
             {props.children}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>

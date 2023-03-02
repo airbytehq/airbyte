@@ -23,7 +23,6 @@ const ButtonContent = styled.div`
 `;
 
 const ButtonWithMargin = styled(Button)`
-  margin-right: 12px;
   width: 160px;
   height: 46px;
   border-radius: 6px;
@@ -33,6 +32,13 @@ const ButtonWithMargin = styled(Button)`
   color: #fff;
 `;
 
+const ButtonLoadingContainer = styled(LoadingButton)`
+  border-radius: 6px;
+  font-size: 16px;
+  margin-right: 12px;
+  min-width: 160px;
+`;
+
 const Text = styled.div<{
   center?: boolean;
 }>`
@@ -40,7 +46,7 @@ const Text = styled.div<{
   font-size: 18px;
   line-height: 30px;
   text-align: ${({ center }) => (center ? "center" : "left")};
-  padding: ${({ center }) => (center ? "20px 30px" : "0")};
+  padding: ${({ center }) => (center ? "20px 30px" : "0 0 20px 0")};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -77,12 +83,17 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <FormattedMessage id={text} />
         </Text>
         <ButtonContent>
-          <ButtonWithMargin onClick={onClose} type="button" secondary disabled={isLoading}>
+          <ButtonWithMargin onClick={onClose} type="button" disabled={isLoading}>
             <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
           </ButtonWithMargin>
-          <LoadingButton danger onClick={onSubmitBtnClick} data-id={submitButtonDataId} isLoading={isLoading}>
+          <ButtonLoadingContainer
+            onClick={onSubmitBtnClick}
+            secondary
+            data-id={submitButtonDataId}
+            isLoading={isLoading}
+          >
             <FormattedMessage id={submitButtonText} />
-          </LoadingButton>
+          </ButtonLoadingContainer>
         </ButtonContent>
       </Content>
     </Modal>

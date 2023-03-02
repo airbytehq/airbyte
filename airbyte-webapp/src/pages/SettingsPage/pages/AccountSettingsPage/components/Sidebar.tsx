@@ -4,6 +4,7 @@ import { theme } from "theme";
 
 import { GlobIcon } from "components/icons/GlobIcon";
 import { LockIcon } from "components/icons/LockIcon";
+import { NotificationIcon } from "components/icons/NotificationIcon";
 import { UserIcon } from "components/icons/UserIcon";
 import { SideMenuItem } from "components/TabMenu";
 
@@ -52,6 +53,9 @@ const SidebarItemIcon = (path: string, color: string) => {
 
     case AccountSettingsRoute.Language:
       return <GlobIcon color={color} />;
+
+    case AccountSettingsRoute.Notifications:
+      return <NotificationIcon color={color} />;
 
     case AccountSettingsRoute.Password:
       return <LockIcon color={color} />;

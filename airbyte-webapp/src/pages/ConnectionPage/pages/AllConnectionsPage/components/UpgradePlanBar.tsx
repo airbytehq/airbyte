@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
+import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
@@ -22,7 +23,7 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   position: fixed;
-  z-index: 10000;
+  z-index: 1000;
 `;
 
 const Text = styled.div`
@@ -89,6 +90,7 @@ export const UpgradePlanBar: React.FC = () => {
           </Button>
         </Container>
         {isAuthorized && <UnauthorizedModal onClose={() => setIsAuthorized(false)} />}
+        <Separator height="40px" />
       </>
     );
   }

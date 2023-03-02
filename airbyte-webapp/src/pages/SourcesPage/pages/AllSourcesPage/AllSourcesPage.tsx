@@ -46,6 +46,7 @@ const AllSourcesPage: React.FC = () => {
       headTitle={<HeadTitle titles={[{ id: "admin.sources" }]} />}
       pageTitle={
         <PageTitle
+          withPadding
           title=""
           endComponent={
             <Button onClick={onCreateSource} data-id="new-source">

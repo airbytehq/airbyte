@@ -48,6 +48,7 @@ const AllDestinationsPage: React.FC = () => {
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
         <PageTitle
+          withPadding
           title=""
           endComponent={
             <Button onClick={onCreateDestination} data-id="new-destination">

@@ -247,7 +247,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <ConnectorDocumentationWrapper>
         <DefinitioDetails name={sourceDefinition.name} icon={sourceDefinition.icon} />
         <TabContainer>
-          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
+          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" />
         </TabContainer>
         <ApiErrorBoundary>
           <Suspense fallback={<LoadingPage />}>

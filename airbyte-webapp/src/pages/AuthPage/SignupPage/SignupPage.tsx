@@ -93,6 +93,7 @@ const ListItem = styled.div`
 const FormContent = styled.div`
   width: 60%;
   // height: 100%;
+  // background-color: #ffffff;
   background-color: #eff0f5;
 `;
 

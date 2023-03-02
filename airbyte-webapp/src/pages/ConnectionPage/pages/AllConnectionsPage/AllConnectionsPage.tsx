@@ -6,7 +6,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle, DropDown, DropDownRow } from "components";
-import Messagebox from "components/base/MessageBox";
+import MessageBox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 import { Pagination } from "components/Pagination";
@@ -124,14 +124,16 @@ const AllConnectionsPage: React.FC = () => {
   return (
     <Suspense fallback={<LoadingPage position="relative" />}>
       {hasConnections() ? (
-        <MainPageWithScroll
-          // withPadding
-          headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
-          pageTitle={
-            <PageTitle
-              title=""
-              endComponent={
-                <>
+        <>
+          <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
+          <MainPageWithScroll
+            // withPadding
+            headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+            pageTitle={
+              <PageTitle
+                withPadding
+                title=""
+                endComponent={
                   <Button onClick={onCreateClick} disabled={!allowCreateConnection} size="m">
                     <BtnInnerContainer>
                       <BtnIcon icon={faPlus} />
@@ -140,53 +142,53 @@ const AllConnectionsPage: React.FC = () => {
                       </BtnText>
                     </BtnInnerContainer>
                   </Button>
-                  <Messagebox message={messageId} onClose={() => setMessageId("")} />
-                </>
-              }
-            />
-          }
-        >
-          {/* <Separator /> */}
-          <DDsContainer>
-            <DDContainer margin="0 24px 0 0">
-              <DropDown
-                $withBorder
-                $background="white"
-                value={filters.status}
-                options={statusOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value)}
+                }
               />
-            </DDContainer>
-            <DDContainer margin="0 24px 0 0">
-              <DropDown
-                $withBorder
-                $background="white"
-                value={filters.sourceDefinitionId}
-                options={sourceOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
+            }
+          >
+            {/* <Separator /> */}
+            <DDsContainer>
+              <DDContainer margin="0 24px 0 0">
+                <DropDown
+                  $withBorder
+                  $background="white"
+                  value={filters.status}
+                  options={statusOptions}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("status", option.value)}
+                />
+              </DDContainer>
+              <DDContainer margin="0 24px 0 0">
+                <DropDown
+                  $withBorder
+                  $background="white"
+                  value={filters.sourceDefinitionId}
+                  options={sourceOptions}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("sourceDefinitionId", option.value)}
+                />
+              </DDContainer>
+              <DDContainer>
+                <DropDown
+                  $withBorder
+                  $background="white"
+                  value={filters.destinationDefinitionId}
+                  options={destinationOptions}
+                  onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationDefinitionId", option.value)}
+                />
+              </DDContainer>
+            </DDsContainer>
+            <Separator height="24px" />
+            <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
+            <Separator height="24px" />
+            <Footer>
+              <Pagination
+                pages={total / pageSize}
+                value={filters.pageCurrent}
+                onChange={(value: number) => onSelectFilter("pageCurrent", value)}
               />
-            </DDContainer>
-            <DDContainer>
-              <DropDown
-                $withBorder
-                $background="white"
-                value={filters.destinationDefinitionId}
-                options={destinationOptions}
-                onChange={(option: DropDownRow.IDataItem) => onSelectFilter("destinationDefinitionId", option.value)}
-              />
-            </DDContainer>
-          </DDsContainer>
-          <Separator height="24px" />
-          <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
-          <Separator height="54px" />
-          <Footer>
-            <Pagination
-              pages={total / pageSize}
-              value={filters.pageCurrent}
-              onChange={(value: number) => onSelectFilter("pageCurrent", value)}
-            />
-          </Footer>
-        </MainPageWithScroll>
+            </Footer>
+            <Separator height="24px" />
+          </MainPageWithScroll>
+        </>
       ) : (
         <EmptyResourceListView
           resourceType="connections"

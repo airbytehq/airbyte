@@ -40,6 +40,10 @@
 }
 
 .card {
+  padding: 30px 25px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  background-color: colors.$white;
   margin-left: variables.$width-size-menu;
   max-width: calc(100vw - variables.$width-size-menu - variables.$spacing-lg * 2);
 
@@ -58,4 +62,13 @@
   &.xl {
     width: variables.$width-modal-xl;
   }
+}
+
+.cardTitle {
+  color: colors.$black300;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 30px;
+  text-align: center;
+  padding: 26px 0 35px;
 }
