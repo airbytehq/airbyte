@@ -67,11 +67,15 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   protected final HttpClient httpClient;
   protected final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
-
   protected Boolean headerAuth = false;
+
+  protected Boolean multiParameterAuth = false;
 
   public void setHeaderAuth(Boolean headerAuth) {
     this.headerAuth = headerAuth;
+  }
+  public void setMultiParameterAuth(Boolean multiParameterAuth) {
+    this.multiParameterAuth = multiParameterAuth;
   }
 
   public BaseOAuth2Flow(final ConfigRepository configRepository, final HttpClient httpClient) {
@@ -101,6 +105,9 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
       throws IOException, ConfigNotFoundException, JsonValidationException {
     validateInputOAuthConfiguration(oAuthConfigSpecification, inputOAuthConfiguration);
     final JsonNode oAuthParamConfig = getSourceOAuthParamConfig(workspaceId, sourceDefinitionId);
+    if(multiParameterAuth){
+      return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), getConfigValueUnsafe(oAuthParamConfig,"redirect_url"), inputOAuthConfiguration);
+    }
     return formatConsentUrl(sourceDefinitionId, getClientIdUnsafe(oAuthParamConfig), redirectUrl, inputOAuthConfiguration);
   }
 
@@ -268,7 +275,6 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
                                   final String clientSecret) throws UnsupportedEncodingException {
     return "Auth";
   }
-
 
   /**
    * Query parameters to provide the access token url with.
