@@ -72,7 +72,7 @@ class TenkftStream(HttpStream):
 class UsersTenkftStream(TenkftStream):
     @property
     def url_base(self) -> str:
-        return f"{super().url_base}/api/v1/users?per_page=1000"
+        return f"{super().url_base}/api/v1/"
 
     @property
     def http_method(self) -> str:
