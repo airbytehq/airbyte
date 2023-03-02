@@ -40,15 +40,15 @@ public class CloudTestingSources extends SpecModifyingSource implements Source {
 
   private static ConnectorSpecification createSpecWithModesReplacedWith(final ConnectorSpecification originalSpec, final JsonNode... newModes) {
     final ConnectorSpecification clone = Jsons.clone(originalSpec);
-    ((ObjectNode)clone.getConnectionSpecification()).put("title", CLOUD_TESTING_SOURCES_TITLE);
-    ((ObjectNode)clone.getConnectionSpecification()).set("oneOf", createArrayNodeWithNewModes(newModes));
+    ((ObjectNode) clone.getConnectionSpecification()).put("title", CLOUD_TESTING_SOURCES_TITLE);
+    ((ObjectNode) clone.getConnectionSpecification()).set("oneOf", createArrayNodeWithNewModes(newModes));
     return clone;
   }
 
   private static ArrayNode createArrayNodeWithNewModes(final JsonNode... newModes) {
     final ArrayNode newOneOfArray = Jsons.arrayNode();
 
-    for(final JsonNode newMode : newModes) {
+    for (final JsonNode newMode : newModes) {
       newOneOfArray.add(newMode);
     }
 
@@ -57,13 +57,12 @@ public class CloudTestingSources extends SpecModifyingSource implements Source {
 
   private static JsonNode getContinuousFeedMode(final ConnectorSpecification originalSpec) {
     final ArrayNode oneOf = ((ArrayNode) originalSpec.getConnectionSpecification().get("oneOf"));
-    for(final JsonNode mode : oneOf) {
-      if(mode.get("properties").get("type").get("const").asText().equals("CONTINUOUS_FEED")) {
+    for (final JsonNode mode : oneOf) {
+      if (mode.get("properties").get("type").get("const").asText().equals("CONTINUOUS_FEED")) {
         return mode;
       }
     }
     return null;
   }
-
 
 }

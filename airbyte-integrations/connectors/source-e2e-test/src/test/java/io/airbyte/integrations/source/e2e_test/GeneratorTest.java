@@ -13,7 +13,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import java.time.Instant;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
@@ -77,14 +76,13 @@ public class GeneratorTest {
     }
     generatorStopwatch.stop();
 
-
     final String fieldName = "field1";
     final String valueBase = "value";
     final JsonNode jsonNode = Jsons.emptyObject();
 
     final Stopwatch simpleStopwatch = Stopwatch.createStarted();
     for (int i = 0; i < 10000; ++i) {
-      ((ObjectNode)jsonNode).put(fieldName, valueBase + i);
+      ((ObjectNode) jsonNode).put(fieldName, valueBase + i);
       System.out.println("generate = " + jsonNode);
     }
     simpleStopwatch.stop();
@@ -93,16 +91,16 @@ public class GeneratorTest {
     System.out.println("simpleStopwatch.elapsed() = " + simpleStopwatch.elapsed().toMillis());
 
   }
-  private static final String SIMPLE_SCHEMA2 = """
-          {
-                "type": "object",
-                "properties": {
-                  "field1": {
-                    "type": "string"
-                  }
-                }
-              }
-      """;
 
+  private static final String SIMPLE_SCHEMA2 = """
+                                                   {
+                                                         "type": "object",
+                                                         "properties": {
+                                                           "field1": {
+                                                             "type": "string"
+                                                           }
+                                                         }
+                                                       }
+                                               """;
 
 }

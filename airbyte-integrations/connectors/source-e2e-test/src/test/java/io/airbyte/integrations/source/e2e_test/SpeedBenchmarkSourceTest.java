@@ -1,8 +1,11 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.e2e_test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -10,8 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.integrations.source.e2e_test.BenchmarkConfig.SchemaType;
-import io.airbyte.integrations.source.e2e_test.BenchmarkConfig.TerminationCondition;
+import io.airbyte.integrations.source.e2e_test.SpeedBenchmarkConfig.SchemaType;
+import io.airbyte.integrations.source.e2e_test.SpeedBenchmarkConfig.TerminationCondition;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -28,90 +31,86 @@ import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class BenchmarkSourceTest {
+class SpeedBenchmarkSourceTest {
 
   public static final String CONFIG_JSON = """
-      {
-        "type": "BENCHMARK",
-        "schema": "FIVE_STRING_COLUMNS",
-        "terminationCondition": {
-          "type": "MAX_RECORDS",
-          "max": "100"
-        }
-      }
-      """;
-  public static final BenchmarkConfig CONFIG = new BenchmarkConfig(
+                                           {
+                                             "type": "BENCHMARK",
+                                             "schema": "FIVE_STRING_COLUMNS",
+                                             "terminationCondition": {
+                                               "type": "MAX_RECORDS",
+                                               "max": "100"
+                                             }
+                                           }
+                                           """;
+  public static final SpeedBenchmarkConfig CONFIG = new SpeedBenchmarkConfig(
       SchemaType.FIVE_STRING_COLUMNS,
       TerminationCondition.MAX_RECORDS,
       0,
-      100
-  );
+      100);
   public static final String SCHEMA = """
-          {
-                "type": "object",
-                "properties": {
-                  "field1": {
-                    "type": "string"
-                  },
-                  "field2": {
-                    "type": "string"
-                  },
-                  "field3": {
-                    "type": "string"
-                  },
-                  "field4": {
-                    "type": "string"
-                  },
-                  "field5": {
-                    "type": "string"
-                  }
-                }
-              }
-      """;
+                                          {
+                                                "type": "object",
+                                                "properties": {
+                                                  "field1": {
+                                                    "type": "string"
+                                                  },
+                                                  "field2": {
+                                                    "type": "string"
+                                                  },
+                                                  "field3": {
+                                                    "type": "string"
+                                                  },
+                                                  "field4": {
+                                                    "type": "string"
+                                                  },
+                                                  "field5": {
+                                                    "type": "string"
+                                                  }
+                                                }
+                                              }
+                                      """;
   public static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
-      new AirbyteStream().withName("stream1").withJsonSchema(Jsons.deserialize(SCHEMA)).withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))
-  ));
+      new AirbyteStream().withName("stream1").withJsonSchema(Jsons.deserialize(SCHEMA)).withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH))));
 
   @Test
   void testSpec() throws Exception {
-    final BenchmarkSource benchmarkSource = new BenchmarkSource();
+    final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
-    assertEquals(Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class), benchmarkSource.spec());
+    assertEquals(Jsons.deserialize(MoreResources.readResource("spec.json"), ConnectorSpecification.class), speedBenchmarkSource.spec());
   }
-
 
   @Test
   void testCheck() throws Exception {
-    final BenchmarkSource benchmarkSource = new BenchmarkSource();
+    final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
     final AirbyteConnectionStatus expectedOutput = new AirbyteConnectionStatus()
         .withStatus(Status.SUCCEEDED)
         .withMessage("Source config: " + CONFIG);
 
-    assertEquals(expectedOutput, benchmarkSource.check(Jsons.deserialize(CONFIG_JSON)));
+    assertEquals(expectedOutput, speedBenchmarkSource.check(Jsons.deserialize(CONFIG_JSON)));
   }
 
   @Test
   void testDiscover() throws Exception {
-    final BenchmarkSource benchmarkSource = new BenchmarkSource();
+    final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
-    assertEquals(CATALOG, benchmarkSource.discover(Jsons.deserialize(CONFIG_JSON)));
+    assertEquals(CATALOG, speedBenchmarkSource.discover(Jsons.deserialize(CONFIG_JSON)));
   }
 
   @Test
   void testSource() throws Exception {
-    final BenchmarkSource benchmarkSource = new BenchmarkSource();
+    final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(new ConfiguredAirbyteStream()
         .withStream(CATALOG.getStreams().get(0))
         .withSyncMode(SyncMode.FULL_REFRESH)
-        .withDestinationSyncMode(DestinationSyncMode.APPEND)
-    ));
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final JsonNode config = Jsons.deserialize(CONFIG_JSON);
     ((ObjectNode) config.get("terminationCondition")).put("max", 3);
 
-    try (final AutoCloseableIterator<AirbyteMessage> records = benchmarkSource
+    try (final AutoCloseableIterator<AirbyteMessage> records = speedBenchmarkSource
         .read(config, configuredCatalog, Jsons.emptyObject())) {
 
       assertEquals(getExpectRecordMessage(1), records.next());
@@ -123,18 +122,17 @@ class BenchmarkSourceTest {
 
   @Test
   void testSource2() throws Exception {
-    final BenchmarkSource benchmarkSource = new BenchmarkSource();
+    final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(new ConfiguredAirbyteStream()
         .withStream(CATALOG.getStreams().get(0))
         .withSyncMode(SyncMode.FULL_REFRESH)
-        .withDestinationSyncMode(DestinationSyncMode.APPEND)
-    ));
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final JsonNode config = Jsons.deserialize(CONFIG_JSON);
     ((ObjectNode) config.get("terminationCondition")).put("max", 3);
 
-    try (final AutoCloseableIterator<AirbyteMessage> records = benchmarkSource
+    try (final AutoCloseableIterator<AirbyteMessage> records = speedBenchmarkSource
         .read(config, configuredCatalog, Jsons.emptyObject())) {
 
       final AirbyteMessage record1 = records.next();
@@ -153,11 +151,11 @@ class BenchmarkSourceTest {
         .withStream("stream1")
         .withEmittedAt(Instant.EPOCH.toEpochMilli())
         .withData(Jsons.jsonNode(ImmutableMap.of(
-        "field1", "valuevaluevaluevaluevalue1",
-        "field2", "valuevaluevaluevaluevalue1",
-        "field3", "valuevaluevaluevaluevalue1",
-        "field4", "valuevaluevaluevaluevalue1",
-        "field5", "valuevaluevaluevaluevalue1"
-    ))));
+            "field1", "valuevaluevaluevaluevalue1",
+            "field2", "valuevaluevaluevaluevalue1",
+            "field3", "valuevaluevaluevaluevalue1",
+            "field4", "valuevaluevaluevaluevalue1",
+            "field5", "valuevaluevaluevaluevalue1"))));
   }
+
 }

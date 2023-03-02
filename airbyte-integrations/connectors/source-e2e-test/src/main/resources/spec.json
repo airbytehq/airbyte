@@ -214,21 +214,6 @@
                     "type": "number"
                   }
                 }
-              },
-              {
-                "title" : "max bytes",
-                "type" : "object",
-                "required": ["type","max"],
-                "properties" : {
-                  "type" : {
-                    "type" : "string",
-                    "const" : "MAX_BYTES",
-                    "default" : "MAX_BYTES"
-                  },
-                  "max" : {
-                    "type" : "number"
-                  }
-                }
               }
             ]
           }

@@ -33,7 +33,7 @@ public class TestingSources extends BaseConnector implements Source {
         .put(TestingSourceType.CONTINUOUS_FEED, new ContinuousFeedSource())
         .put(TestingSourceType.EXCEPTION_AFTER_N, new LegacyExceptionAfterNSource())
         .put(TestingSourceType.INFINITE_FEED, new LegacyInfiniteFeedSource())
-        .put(TestingSourceType.BENCHMARK, new BenchmarkSource())
+        .put(TestingSourceType.BENCHMARK, new SpeedBenchmarkSource())
         .build());
   }
 
