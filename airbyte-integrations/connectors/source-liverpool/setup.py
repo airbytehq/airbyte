@@ -7,18 +7,17 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.2",
-    "xmltodict"
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "pytest~=6.2",
     "pytest-mock~=3.6.1",
     "source-acceptance-test",
 ]
 
 setup(
-    name="source_bling",
-    description="Source implementation for Bling.",
+    name="source_liverpool",
+    description="Source implementation for Liverpool.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
