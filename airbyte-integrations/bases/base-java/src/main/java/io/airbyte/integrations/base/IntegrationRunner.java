@@ -16,6 +16,7 @@ import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.integrations.util.ApmTraceUtils;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
@@ -157,6 +158,7 @@ public class IntegrationRunner {
       // to
       // find the root exception that corresponds to a configuration error. If that does not exist, we
       // just return the original exception.
+      ApmTraceUtils.addExceptionToTrace(e);
       final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
       final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should

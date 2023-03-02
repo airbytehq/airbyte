@@ -12,8 +12,6 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-# Add the Datadog Java APM agent
-ADD https://dtdg.co/latest-java-tracer dd-java-agent.jar
 
 ENV APPLICATION source-postgres
 
