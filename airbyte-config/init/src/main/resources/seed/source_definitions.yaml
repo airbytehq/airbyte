@@ -1701,7 +1701,7 @@
 - name: Senseforce
   sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
   dockerRepository: airbyte/source-senseforce
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
   icon: senseforce.svg
   sourceType: api
