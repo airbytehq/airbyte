@@ -8,7 +8,7 @@ The Twitter API source supports full refresh syncs
 
 Below output stream is available from this source:
 
-*[recent_search_tweets](https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-recent).
+[recent_search_tweets](https://developer.twitter.com/en/docs/twitter-api/tweets/search/api-reference/get-tweets-search-recent).
 
 
 ### Features
@@ -37,4 +37,5 @@ Rate limiting is mentioned in the API [docuemntation](https://developer.twitter.
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.1   | 2023-03-02 | [23661](https://github.com/airbytehq/airbyte/pull/23661) | Add more fields for the "tweets" stream         |
 | 0.1.0   | 2022-11-01 | [18883](https://github.com/airbytehq/airbyte/pull/18858) | 🎉 New Source: Twitter                          |
