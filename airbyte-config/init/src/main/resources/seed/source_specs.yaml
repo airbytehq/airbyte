@@ -10066,7 +10066,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-nytimes:0.1.0"
+- dockerImage: "airbyte/source-nytimes:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/nytimes"
     connectionSpecification:
@@ -10093,6 +10093,7 @@
           examples:
           - "2022-08"
           - "1851-01"
+          format: "date"
           order: 1
         end_date:
           type: "string"
@@ -10102,6 +10103,7 @@
           examples:
           - "2022-08"
           - "1851-01"
+          format: "date"
           order: 2
         period:
           type: "integer"
