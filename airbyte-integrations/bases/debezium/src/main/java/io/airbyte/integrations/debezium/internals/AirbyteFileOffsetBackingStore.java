@@ -19,6 +19,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.kafka.connect.errors.ConnectException;
@@ -37,11 +39,14 @@ import org.slf4j.LoggerFactory;
 public class AirbyteFileOffsetBackingStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteFileOffsetBackingStore.class);
-
+  private static final BiFunction<String, String, String> SQL_SERVER_STATE_MUTATION = (key, databaseName) -> key.substring(0, key.length() - 2)
+      + ",\"database\":\"" + databaseName + "\"" + key.substring(key.length() - 2);
   private final Path offsetFilePath;
+  private final Optional<String> dbName;
 
-  public AirbyteFileOffsetBackingStore(final Path offsetFilePath) {
+  public AirbyteFileOffsetBackingStore(final Path offsetFilePath, final Optional<String> dbName) {
     this.offsetFilePath = offsetFilePath;
+    this.dbName = dbName;
   }
 
   public Path getOffsetFilePath() {
@@ -84,7 +89,7 @@ public class AirbyteFileOffsetBackingStore {
       }
 
       LOGGER.info("Mutating sate to make it Debezium 2.1 compatible");
-      final String newKey = key.substring(i, i1 + 1);
+      final String newKey = dbName.isPresent() ? SQL_SERVER_STATE_MUTATION.apply(key.substring(i, i1 + 1), dbName.get()) : key.substring(i, i1 + 1);
       final String value = mapAsString.get(key);
       updatedMap.put(newKey, value);
     }
@@ -151,7 +156,7 @@ public class AirbyteFileOffsetBackingStore {
     }
   }
 
-  public static AirbyteFileOffsetBackingStore initializeState(final JsonNode cdcState) {
+  public static AirbyteFileOffsetBackingStore initializeState(final JsonNode cdcState, final Optional<String> dbName) {
     final Path cdcWorkingDir;
     try {
       cdcWorkingDir = Files.createTempDirectory(Path.of("/tmp"), "cdc-state-offset");
@@ -160,7 +165,7 @@ public class AirbyteFileOffsetBackingStore {
     }
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
 
-    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath);
+    final AirbyteFileOffsetBackingStore offsetManager = new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, dbName);
     offsetManager.persist(cdcState);
     return offsetManager;
   }
@@ -174,7 +179,7 @@ public class AirbyteFileOffsetBackingStore {
     }
     final Path cdcOffsetFilePath = cdcWorkingDir.resolve("offset.dat");
 
-    return new AirbyteFileOffsetBackingStore(cdcOffsetFilePath);
+    return new AirbyteFileOffsetBackingStore(cdcOffsetFilePath, Optional.empty());
   }
 
 }

@@ -75,7 +75,7 @@ public class PostgresDebeziumStateUtil {
                                   final JsonNode cdcState,
                                   final JsonNode config) {
     final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
-        AirbyteFileOffsetBackingStore.initializeState(cdcState),
+        AirbyteFileOffsetBackingStore.initializeState(cdcState, Optional.empty()),
         Optional.empty());
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
     return parseSavedOffset(debeziumProperties);

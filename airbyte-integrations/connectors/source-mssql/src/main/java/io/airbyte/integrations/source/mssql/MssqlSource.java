@@ -390,7 +390,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           new MssqlCdcStateHandler(stateManager),
           new MssqlCdcConnectorMetadataInjector(),
           MssqlCdcHelper.getDebeziumProperties(database, catalog),
-          emittedAt);
+          emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {

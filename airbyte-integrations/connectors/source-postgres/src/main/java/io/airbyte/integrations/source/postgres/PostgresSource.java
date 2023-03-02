@@ -396,7 +396,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          emittedAt);
+          emittedAt,
+          false);
       if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
