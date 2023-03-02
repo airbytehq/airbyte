@@ -7384,7 +7384,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-klaviyo:0.1.12"
+- dockerImage: "airbyte/source-klaviyo:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
@@ -7407,6 +7407,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           type: "string"
+          format: "date-time"
       required:
       - "api_key"
       - "start_date"
