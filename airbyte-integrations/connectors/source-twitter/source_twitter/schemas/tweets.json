@@ -3,25 +3,12 @@
   "type": "object",
   "properties": {
     "edit_history_tweet_ids": {
-      "type": ["null", "array"],
-      "items": {
-        "type": "string"
-      }
+      "type": ["null", "array"]
     },
     "id": {
       "type": ["null", "string"]
     },
     "text": {
-      "type": ["null", "string"]
-    },
-    "created_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "lang": {
-      "type": ["null", "string"]
-    },
-    "author_id": {
       "type": ["null", "string"]
     }
   }
