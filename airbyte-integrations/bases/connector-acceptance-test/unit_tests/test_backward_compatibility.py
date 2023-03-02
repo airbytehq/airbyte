@@ -1334,4 +1334,4 @@ def test_catalog_backward_compatibility(previous_discovered_catalog, discovered_
     t = _TestDiscovery()
     expectation = pytest.raises(NonBackwardCompatibleError) if should_fail else does_not_raise()
     with expectation:
-        t.test_backward_compatibility(False, discovered_catalog, previous_discovered_catalog)
+        t.test_backward_compatibility(False, False, discovered_catalog, previous_discovered_catalog)
