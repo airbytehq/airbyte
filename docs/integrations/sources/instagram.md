@@ -90,13 +90,14 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 1.0.1   | 2023-01-19 | [21602](https://github.com/airbytehq/airbyte/pull/21602) | Handle abnormally large state values                                                                            |
-| 1.0.0   | 2022-09-23 | [17110](https://github.com/airbytehq/airbyte/pull/17110) | Remove custom read function and migrate to per-stream state                                                     |
-| 0.1.11  | 2022-09-08 | [16428](https://github.com/airbytehq/airbyte/pull/16428) | Fix requests metrics for Reels media product type                                                               |
-| 0.1.10  | 2022-09-05 | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                   |
-| 0.1.9   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                       |
-| 0.1.8   | 2021-08-11 | [5354](https://github.com/airbytehq/airbyte/pull/5354)   | added check for empty state and fixed tests.                                                                    |
-| 0.1.7   | 2021-07-19 | [4805](https://github.com/airbytehq/airbyte/pull/4805)   | Add support for previous format of STATE.                                                                       |
-| 0.1.6   | 2021-07-07 | [4210](https://github.com/airbytehq/airbyte/pull/4210)   | Refactor connector to use CDK: - improve error handling. - fix sync fail with HTTP status 400. - integrate SAT. |
+| Version | Date        | Pull Request                                             | Subject                                                                                                         |
+|:--------|:------------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 1.0.2   | 2023-03--02 | []() | Add info about permissions to spec                                                                              |
+| 1.0.1   | 2023-01-19  | [21602](https://github.com/airbytehq/airbyte/pull/21602) | Handle abnormally large state values                                                                            |
+| 1.0.0   | 2022-09-23  | [17110](https://github.com/airbytehq/airbyte/pull/17110) | Remove custom read function and migrate to per-stream state                                                     |
+| 0.1.11  | 2022-09-08  | [16428](https://github.com/airbytehq/airbyte/pull/16428) | Fix requests metrics for Reels media product type                                                               |
+| 0.1.10  | 2022-09-05  | [16340](https://github.com/airbytehq/airbyte/pull/16340) | Update to latest version of the CDK (v0.1.81)                                                                   |
+| 0.1.9   | 2021-09-30  | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification                                       |
+| 0.1.8   | 2021-08-11  | [5354](https://github.com/airbytehq/airbyte/pull/5354)   | added check for empty state and fixed tests.                                                                    |
+| 0.1.7   | 2021-07-19  | [4805](https://github.com/airbytehq/airbyte/pull/4805)   | Add support for previous format of STATE.                                                                       |
+| 0.1.6   | 2021-07-07  | [4210](https://github.com/airbytehq/airbyte/pull/4210)   | Refactor connector to use CDK: - improve error handling. - fix sync fail with HTTP status 400. - integrate SAT. |

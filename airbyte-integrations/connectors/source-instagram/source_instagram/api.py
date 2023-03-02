@@ -88,7 +88,13 @@ class InstagramAPI:
                         }
                     )
         except FacebookRequestError as exc:
-            raise InstagramAPIException(f"Error: {exc.api_error_code()}, {exc.api_error_message()}") from exc
+            raise InstagramAPIException(
+                f"Error: {exc.api_error_code()}, {exc.api_error_message()} "
+                f"Ensure that your Access Token has the following permissions: "
+                f"instagram_basic, instagram_manage_insights, pages_show_list, pages_read_engagement, and Instagram Public Content Access"
+                f"See error handling https://developers.facebook.com/docs/graph-api/guides/error-handling/ "
+                f"and permissions https://developers.facebook.com/docs/permissions/reference for more information."
+            ) from exc
 
         if not instagram_business_accounts:
             raise InstagramAPIException("Couldn't find an Instagram business account for current Access Token")
