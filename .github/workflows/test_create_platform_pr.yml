@@ -16,6 +16,7 @@ jobs:
       - name: Update CDK version
         run: echo "This is a test" > airbyte-connector-builder-server/CDK_VERSION
       - name: Create Pull Request
+        id: create-pull-request
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
@@ -25,3 +26,11 @@ jobs:
           branch: automatic-cdk-release
           base: main
           delete-branch: true
+      - name: Enable Pull Request Automerge
+        if: steps.create-pull-request.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v2
+        with:
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          pull-request-number: ${{ steps.create-pull-request.outputs.pull-request-number }}
+          merge-method: squash
+# steps.create-pull-request.output.pull-request-url
