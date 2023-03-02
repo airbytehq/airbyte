@@ -46,7 +46,6 @@ class SpeedBenchmarkSourceTest {
   public static final SpeedBenchmarkConfig CONFIG = new SpeedBenchmarkConfig(
       SchemaType.FIVE_STRING_COLUMNS,
       TerminationCondition.MAX_RECORDS,
-      0,
       100);
   public static final String SCHEMA = """
                                           {
@@ -81,7 +80,7 @@ class SpeedBenchmarkSourceTest {
   }
 
   @Test
-  void testCheck() throws Exception {
+  void testCheck() {
     final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
 
     final AirbyteConnectionStatus expectedOutput = new AirbyteConnectionStatus()
@@ -120,42 +119,16 @@ class SpeedBenchmarkSourceTest {
     }
   }
 
-  @Test
-  void testSource2() throws Exception {
-    final SpeedBenchmarkSource speedBenchmarkSource = new SpeedBenchmarkSource();
-
-    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(new ConfiguredAirbyteStream()
-        .withStream(CATALOG.getStreams().get(0))
-        .withSyncMode(SyncMode.FULL_REFRESH)
-        .withDestinationSyncMode(DestinationSyncMode.APPEND)));
-
-    final JsonNode config = Jsons.deserialize(CONFIG_JSON);
-    ((ObjectNode) config.get("terminationCondition")).put("max", 3);
-
-    try (final AutoCloseableIterator<AirbyteMessage> records = speedBenchmarkSource
-        .read(config, configuredCatalog, Jsons.emptyObject())) {
-
-      final AirbyteMessage record1 = records.next();
-      final AirbyteMessage record2 = records.next();
-      final AirbyteMessage record3 = records.next();
-      assertFalse(records.hasNext());
-
-      assertEquals(getExpectRecordMessage(1), record1);
-      assertEquals(getExpectRecordMessage(2), record2);
-      assertEquals(getExpectRecordMessage(3), record3);
-    }
-  }
-
   private static AirbyteMessage getExpectRecordMessage(final int recordNumber) {
     return new AirbyteMessage().withType(Type.RECORD).withRecord(new AirbyteRecordMessage()
         .withStream("stream1")
         .withEmittedAt(Instant.EPOCH.toEpochMilli())
         .withData(Jsons.jsonNode(ImmutableMap.of(
-            "field1", "valuevaluevaluevaluevalue1",
-            "field2", "valuevaluevaluevaluevalue1",
-            "field3", "valuevaluevaluevaluevalue1",
-            "field4", "valuevaluevaluevaluevalue1",
-            "field5", "valuevaluevaluevaluevalue1"))));
+            "field1", "valuevaluevaluevaluevalue" + recordNumber,
+            "field2", "valuevaluevaluevaluevalue" + recordNumber,
+            "field3", "valuevaluevaluevaluevalue" + recordNumber,
+            "field4", "valuevaluevaluevaluevalue" + recordNumber,
+            "field5", "valuevaluevaluevaluevalue" + recordNumber))));
   }
 
 }

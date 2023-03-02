@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Generate speed benchmark data and dump it into a file. This uses the same generator as the
@@ -37,7 +38,7 @@ public class SpeedBenchmarkFileGenerator {
 
     final FileWriter fileWriter;
     try {
-      fileWriter = new FileWriter("/tmp/benchmark_data_text.txt");
+      fileWriter = new FileWriter("/tmp/benchmark_data_text.txt", StandardCharsets.UTF_8);
       final PrintWriter bufferedWriter = new PrintWriter(fileWriter);
       while (speedBenchmarkGeneratorIterator.hasNext()) {
         bufferedWriter.println(speedBenchmarkGeneratorIterator.next().getRecord().getData());
@@ -60,7 +61,7 @@ public class SpeedBenchmarkFileGenerator {
 
     final FileWriter fileWriter;
     try {
-      fileWriter = new FileWriter("/tmp/benchmark_data_csv.txt");
+      fileWriter = new FileWriter("/tmp/benchmark_data_csv.txt", StandardCharsets.UTF_8);
       final PrintWriter bufferedWriter = new PrintWriter(fileWriter);
       while (speedBenchmarkGeneratorIterator.hasNext()) {
         final JsonNode data = speedBenchmarkGeneratorIterator.next().getRecord().getData();
