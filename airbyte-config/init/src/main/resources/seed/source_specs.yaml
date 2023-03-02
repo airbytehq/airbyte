@@ -9979,7 +9979,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.2"
+- dockerImage: "airbyte/source-notion:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -9997,6 +9997,7 @@
           examples:
           - "2020-11-16T00:00:00.000Z"
           type: "string"
+          format: "date-time"
         credentials:
           title: "Authenticate using"
           description: "Pick an authentication method."
