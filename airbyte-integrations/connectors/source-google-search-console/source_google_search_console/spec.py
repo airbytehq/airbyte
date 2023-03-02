@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from datetime import date
 from enum import Enum
 from typing import List, Optional, Union
@@ -12,7 +11,6 @@ from airbyte_cdk.sources.config import BaseConfig
 from pydantic import BaseModel, Field
 from source_google_search_console.streams import SearchAnalyticsByCustomDimensions
 
-logger = logging.getLogger("airbyte")
 
 VALID_DIMENSIONS = Enum("ValidEnums", {k: k for k in SearchAnalyticsByCustomDimensions.dimension_to_property_schema_map})
 DATE_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
