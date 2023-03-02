@@ -2118,11 +2118,14 @@
 - name: WooCommerce
   sourceDefinitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
   dockerRepository: airbyte/source-woocommerce
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
   icon: woocommerce.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "${domain}"
 - name: Workable
   sourceDefinitionId: ef3c99c6-9e90-43c8-9517-926cfd978517
   dockerRepository: airbyte/source-workable
