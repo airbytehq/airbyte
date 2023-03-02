@@ -514,9 +514,7 @@ class TestDiscovery(BaseTest):
 
     @pytest.fixture(name="skip_backward_catalog_tests")
     def skip_backward_catalog_fixture(
-            self,
-            discovered_catalog: MutableMapping[str, AirbyteStream],
-            previous_discovered_catalog: MutableMapping[str, AirbyteStream]
+        self, discovered_catalog: MutableMapping[str, AirbyteStream], previous_discovered_catalog: MutableMapping[str, AirbyteStream]
     ) -> bool:
         if discovered_catalog == previous_discovered_catalog:
             pytest.skip("The previous and actual discovered catalogs are identical.")
