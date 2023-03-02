@@ -13933,7 +13933,7 @@
           type: "object"
           additionalProperties: false
           properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.14"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -13973,6 +13973,7 @@
           default: "2022-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 3
+          format: "date"
         end_date:
           type: "string"
           title: "End Date"
@@ -13982,6 +13983,7 @@
           examples:
           - "2022-01-30"
           order: 4
+          format: "date"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
