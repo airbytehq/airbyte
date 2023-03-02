@@ -347,8 +347,8 @@ class PerformanceReportsMixin(ReportsMixin):
 
     def _get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
-            start_date = self.client.reports_start_date - pendulum.duration(days=self.config["lookback_window"])
+            start_date = self.client.reports_start_date.subtract(days=self.config["lookback_window"])
         else:
             # gets starting point for a stream and account
-            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field]) - pendulum.duration(days=self.config["lookback_window"])
+            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field]).subtract(days=self.config["lookback_window"])
         return start_date
