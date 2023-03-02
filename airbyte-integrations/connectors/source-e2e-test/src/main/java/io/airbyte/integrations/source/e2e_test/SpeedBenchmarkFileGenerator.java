@@ -9,10 +9,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+/**
+ * Generate speed benchmark data and dump it into a file. This uses the same generator as the
+ * source-e2e-test. The idea is that we want to be able to use the exact same data in
+ * source-e2e-test and in other data sources (e.g. postgres, s3) so that we can do performance
+ * comparisons.
+ */
 public class SpeedBenchmarkFileGenerator {
 
   public static void main(final String[] args) {
-    if(args[0] != null && args[0].contains("csv")) {
+    if (args[0] != null && args[0].contains("csv")) {
       generateCsvFile();
     } else {
       generateTextFile();
