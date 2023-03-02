@@ -203,11 +203,7 @@ class ReportsMixin(ABC):
     def request_params(
         self, stream_state: Mapping[str, Any] = None, account_id: str = None, **kwargs: Mapping[str, Any]
     ) -> Mapping[str, Any]:
-        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
-            start_date = self.client.reports_start_date
-        else:
-            # gets starting point for a stream and account
-            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+        start_date = self._get_start_date(stream_state, account_id)
 
         reporting_service = self.client.get_service("ReportingService")
         request_time_zone = reporting_service.factory.create("ReportTimeZone")
@@ -227,6 +223,14 @@ class ReportsMixin(ABC):
             "overwrite_result_file": True,
             "timeout_in_milliseconds": self.timeout,
         }
+
+    def _get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
+            start_date = self.client.reports_start_date
+        else:
+            # gets starting point for a stream and account
+            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field])
+        return start_date
 
     def get_updated_state(
         self,
@@ -337,3 +341,14 @@ class ReportsMixin(ABC):
             yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
+
+
+class PerformanceReportsMixin(ReportsMixin):
+
+    def _get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+        if not stream_state or not account_id or not stream_state.get(account_id, {}).get(self.cursor_field):
+            start_date = self.client.reports_start_date - pendulum.duration(days=self.config["lookback_window"])
+        else:
+            # gets starting point for a stream and account
+            start_date = pendulum.from_timestamp(stream_state[account_id][self.cursor_field]) - pendulum.duration(days=self.config["lookback_window"])
+        return start_date
