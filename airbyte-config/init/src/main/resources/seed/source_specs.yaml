@@ -7638,7 +7638,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.14"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -7701,6 +7701,7 @@
             \ will not be replicated."
           examples:
           - "2021-05-17"
+          format: "date"
         account_ids:
           title: "Account IDs"
           type: "array"
