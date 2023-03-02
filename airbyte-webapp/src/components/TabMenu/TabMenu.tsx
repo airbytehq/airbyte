@@ -24,6 +24,7 @@ interface IProps {
   activeItem?: string;
   onSelect: (id: string) => void;
   size?: string;
+  lastOne?: boolean;
 }
 
 const Content = styled.div`
@@ -51,7 +52,7 @@ const TabName = styled.div`
   text-transform: uppercase;
 `;
 
-export const TabMenu: React.FC<IProps> = ({ data, onSelect, size }) => {
+export const TabMenu: React.FC<IProps> = ({ data, onSelect, size, lastOne }) => {
   const { pathname } = useRouter();
 
   return (
@@ -66,7 +67,7 @@ export const TabMenu: React.FC<IProps> = ({ data, onSelect, size }) => {
                   id={route.id}
                   key={route.path}
                   name={route.name}
-                  isActive={pathname.split("/")[2] === route.path ? true : false}
+                  isActive={lastOne ? pathname.endsWith(route.path) : pathname.split("/")[2] === route.path} // ? true : false
                   onClick={() => onSelect(route.path)}
                   size={size}
                 />
