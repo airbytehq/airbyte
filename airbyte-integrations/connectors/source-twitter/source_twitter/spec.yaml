@@ -9,19 +9,23 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
+      type: string
       title: API Key Token
       description: API Key
-      type: string
       airbyte_secret: true
+      order: 0
     query:
+      type: string
       title: Twitter Search Query
       description: Twitter Search query
-      type: string
+      order: 1
     start_date:
+      type: string
       title: Start Date
       description: From what date you want to start retrieving dta
-      type: string
+      order: 2
     end_date:
+      type: string
       title: End Date
       description: End data to retrieve data
-      type: string
+      order: 3
