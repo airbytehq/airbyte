@@ -47,6 +47,7 @@ public class BufferedStreamConsumerTest {
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = STREAM_NAME + 2;
+  private static final int PERIODIC_BUFFER_FREQUENCY = 5;
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
@@ -303,13 +304,13 @@ public class BufferedStreamConsumerTest {
     final List<AirbyteMessage> expectedRecordsStream1 = generateRecords(500L);
     final List<AirbyteMessage> expectedRecordsStream1Batch2 = generateRecords(200L);
 
-    // Overrides flush frequency for testing purposes to one min
+    // Overrides flush frequency for testing purposes to 5 seconds
     final BufferedStreamConsumer flushConsumer = getConsumerWithFlushFrequency();
     flushConsumer.start();
     consumeRecords(flushConsumer, expectedRecordsStream1);
     flushConsumer.accept(STATE_MESSAGE1);
-    // NOTE: Sleeps process for 1 minute, if tests are slow this can be updated to reduce slowdowns
-    TimeUnit.SECONDS.sleep(5);
+    // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
+    TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY);
     consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
     flushConsumer.close();
 
@@ -334,7 +335,7 @@ public class BufferedStreamConsumerTest {
     consumeRecords(flushConsumer, expectedRecordsStream1);
     flushConsumer.accept(STATE_MESSAGE1);
     // NOTE: Sleeps process for 5 seconds, if tests are slow this can be updated to reduce slowdowns
-    TimeUnit.SECONDS.sleep(5);
+    TimeUnit.SECONDS.sleep(PERIODIC_BUFFER_FREQUENCY);
     consumeRecords(flushConsumer, expectedRecordsStream1Batch2);
     consumeRecords(flushConsumer, expectedRecordsStream1Batch3);
     flushConsumer.accept(STATE_MESSAGE2);
@@ -359,7 +360,7 @@ public class BufferedStreamConsumerTest {
         onClose,
         CATALOG,
         isValidRecord,
-        Duration.ofSeconds(5));
+        Duration.ofSeconds(PERIODIC_BUFFER_FREQUENCY));
     return flushFrequencyConsumer;
   }
 

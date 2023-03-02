@@ -3,7 +3,6 @@
 #
 
 import os
-import time
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -102,7 +101,6 @@ class Users(Stream, IncrementalMixin):
 
         with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
             while records_in_sync < self.count and records_in_sync < self.records_per_sync:
-                time.sleep(60)
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - total_records))
                 if records_remaining_this_loop <= 0:
                     break

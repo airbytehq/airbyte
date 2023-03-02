@@ -80,7 +80,6 @@ import org.slf4j.LoggerFactory;
 public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BufferedStreamConsumer.class);
-  private static final Configs configs = new EnvConfigs();
 
   private final VoidCallable onStart;
   private final CheckedConsumer<Boolean, Exception> onClose;
@@ -96,7 +95,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
   private boolean hasClosed;
 
   private Instant nextFlushDeadline;
-  private Duration BUFFER_FLUSH_FREQUENCY = Duration.ofMinutes(1);
+  private Duration BUFFER_FLUSH_FREQUENCY = Duration.ofMinutes(15);
 
   public BufferedStreamConsumer(final Consumer<AirbyteMessage> outputRecordCollector,
                                 final VoidCallable onStart,
