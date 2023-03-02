@@ -1,6 +1,14 @@
 #!/bin/bash
-git checkout master
-git pull origin master
+
+set -e
+
+if [[ `git status --porcelain` ]]; then
+  # everything is not up to date!
+  echo ""
+  echo "ERROR: There are changes left to commit!"
+  echo ""
+  exit 1
+fi
 
 OUTPUT_FILE="num_lowcode_connectors.csv"
 echo "date,num_lowcode_connectors,num_python_connectors" > $OUTPUT_FILE
@@ -59,6 +67,8 @@ EOM
 # print with date
 echo $d,$num_lowcode >> $OUTPUT_FILE
 done
+
+
 
 git checkout master
 #uncomment to upload to GCS 
