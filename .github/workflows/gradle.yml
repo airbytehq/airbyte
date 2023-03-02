@@ -50,6 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build: ${{ steps.filter.outputs.build }}
+      cdk: ${{ steps.filter.outputs.cdk }}
       cli: ${{ steps.filter.outputs.cli }}
       connectors: ${{ steps.filter.outputs.connectors }}
       db: ${{ steps.filter.outputs.db }}
@@ -69,11 +70,12 @@ jobs:
               - '*.gradle'
               - 'deps.toml'
               - 'airbyte-config/**'
+            cdk:
+              - 'airbyte-cdk/**'
             cli:
               - 'airbyte-api/**'
               - 'octavia-cli/**'
             connectors:
-              - 'airbyte-cdk/**'
               - 'airbyte-integrations/**'
               - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
             db:
@@ -155,6 +157,67 @@ jobs:
           command: ./tools/bin/integration_tests_octavia.sh
           attempt_limit: 3
           attempt_delay: 5000 # in ms
+
+  cdk-build:
+    needs: changes
+    runs-on: ubuntu-latest
+    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
+    if: needs.changes.outputs.cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
+    name: "Airbyte CDK: Build"
+    timeout-minutes: 90
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Set up CI Gradle Properties
+        run: |
+          mkdir -p ~/.gradle/
+          cat > ~/.gradle/gradle.properties <<EOF
+          org.gradle.jvmargs=-Xmx8g -Xss4m \
+            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+          org.gradle.workers.max=8
+          org.gradle.vfs.watch=false
+          EOF
+
+      - name: Format
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CDK ./gradlew format --scan --info --stacktrace
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
+      - name: Commit Formatting Changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Automated Commit - Formatting Changes
+          commit_user_name: Octavia Squidington III
+          commit_user_email: octavia-squidington-iii@users.noreply.github.com
+
+      - name: Build
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=CDK ./gradlew build --scan
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+
 
   # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
