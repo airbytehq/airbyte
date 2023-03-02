@@ -12,7 +12,7 @@ fi
 
 BRANCH_NAME="$(git symbolic-ref HEAD 2>/dev/null)" ||
 BRANCH_NAME="(unnamed branch)"     # detached HEAD
-BRANCH_NAME=${branch_name##refs/heads/}
+BRANCH_NAME=${BRANCH_NAME##refs/heads/}
 
 OUTPUT_FILE="num_lowcode_connectors.csv"
 echo "date,num_lowcode_connectors,num_python_connectors" > $OUTPUT_FILE
