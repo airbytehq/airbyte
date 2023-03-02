@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1
+Fix Test Discovery `backward_compatibility` fixture. [#23681](https://github.com/airbytehq/airbyte/pull/23681)
+
 ## 0.7.0
 Basic read test: add `ignored_fields`, change configuration format by adding optional `bypass_reason` [#22996](https://github.com/airbytehq/airbyte/pull/22996)
 
