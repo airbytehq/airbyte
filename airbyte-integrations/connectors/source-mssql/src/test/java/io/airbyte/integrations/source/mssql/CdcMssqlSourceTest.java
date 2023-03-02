@@ -40,7 +40,6 @@ import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,10 +56,6 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
 
   private static final String CDC_ROLE_NAME = "cdc_selector";
   private static final String TEST_USER_PASSWORD = "testerjester[1]";
-  public static final Map<String,String> CONNECTION_PROPERTIES = new HashMap<>();
-  static {
-    CONNECTION_PROPERTIES.put("encrypt", "false");
-  }
   public static MSSQLServerContainer<?> container;
 
   private String testUserName;
@@ -119,7 +114,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.USERNAME_KEY, testUserName)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
-        .put("is_test", true)
+        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -129,7 +124,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
             container.getFirstMappedPort()),
-        CONNECTION_PROPERTIES);
+        Map.of("encrypt", "false"));
 
     testDataSource = DataSourceFactory.create(
         testUserName,
@@ -138,7 +133,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         String.format("jdbc:sqlserver://%s:%d",
             container.getHost(),
             container.getFirstMappedPort()),
-        CONNECTION_PROPERTIES);
+        Map.of("encrypt", "false"));
 
     dslContext = DSLContextFactory.create(dataSource, null);
 
@@ -397,7 +392,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 dbName),
-            CONNECTION_PROPERTIES),
+            Map.of("encrypt", "false")),
         new MssqlSourceOperations(),
         AdaptiveStreamingQueryConfig::new);
     return MssqlCdcTargetPosition.getTargetPosition(jdbcDatabase, dbName);

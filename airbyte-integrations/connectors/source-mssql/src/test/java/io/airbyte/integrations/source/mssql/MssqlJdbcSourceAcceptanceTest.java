@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.CdcMssqlSourceTest.CONNECTION_PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -52,7 +51,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected DataSource getDataSource(final JsonNode jdbcConfig) {
     final Map<String, String> connectionProperties = JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY,
         getJdbcParameterDelimiter());
-    connectionProperties.putAll(CONNECTION_PROPERTIES);
+    connectionProperties.put("encrypt", "false");
     return DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
@@ -78,7 +77,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
-        CONNECTION_PROPERTIES);
+        Map.of("encrypt", "false"));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -89,7 +88,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
       config = Jsons.clone(configWithoutDbName);
       ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-      ((ObjectNode) config).put("is_test", true);
+      ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
 
       super.setup();
     } finally {

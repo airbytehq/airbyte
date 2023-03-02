@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.CdcMssqlSourceDatatypeTest.CONNECTION_PROPERTIES;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -127,7 +125,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.USERNAME_KEY, testUserName)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
-        .put("is_test", true)
+        .put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")))
         .build());
 
     dslContext = DSLContextFactory.create(DataSourceFactory.create(
@@ -137,7 +135,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        CONNECTION_PROPERTIES), null);
+        Map.of("encrypt", "false")), null);
     database = new Database(dslContext);
 
     executeQuery("CREATE DATABASE " + dbName + ";");

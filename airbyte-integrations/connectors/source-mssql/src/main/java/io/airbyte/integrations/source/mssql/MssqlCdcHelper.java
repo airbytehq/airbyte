@@ -183,10 +183,6 @@ public class MssqlCdcHelper {
       }
     }
 
-    if (config.has("is_test") && config.get("is_test").asBoolean()) {
-      props.setProperty("database.encrypt", "false");
-    }
-
     return props;
   }
 

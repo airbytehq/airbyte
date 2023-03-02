@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.CdcMssqlSourceTest.CONNECTION_PROPERTIES;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -19,6 +17,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
+import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
@@ -55,7 +54,7 @@ public class MssqlStressTest extends JdbcStressTest {
         String.format("jdbc:sqlserver://%s:%d;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
-        CONNECTION_PROPERTIES);
+        Map.of("encrypt", "false"));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

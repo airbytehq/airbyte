@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.CdcMssqlSourceTest.CONNECTION_PROPERTIES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +24,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -78,7 +78,7 @@ class MssqlSourceTest {
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-    ((ObjectNode) config).put("is_test", true);
+    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
   }
 
   @AfterAll
@@ -123,7 +123,7 @@ class MssqlSourceTest {
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        CONNECTION_PROPERTIES), null);
+        Map.of("encrypt", "false")), null);
   }
 
   public static Database getDatabase(final DSLContext dslContext) {

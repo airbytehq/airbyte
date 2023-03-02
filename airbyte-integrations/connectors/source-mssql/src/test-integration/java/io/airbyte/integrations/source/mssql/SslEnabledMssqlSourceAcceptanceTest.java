@@ -14,6 +14,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.sql.SQLException;
+import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
@@ -65,7 +66,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
-    ((ObjectNode) config).put("jdbc_url_params", "encrypt=true&trustServerCertificate=true");
+    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "encrypted_trust_server_certificate")));
   }
 
   private static DSLContext getDslContext(final JsonNode baseConfig) {

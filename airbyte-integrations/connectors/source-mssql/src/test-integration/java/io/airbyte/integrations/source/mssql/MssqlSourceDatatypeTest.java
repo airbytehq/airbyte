@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.source.mssql.CdcMssqlSourceDatatypeTest.CONNECTION_PROPERTIES;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -16,6 +14,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import java.util.Map;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
@@ -44,7 +43,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
     config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DB_NAME);
-    ((ObjectNode) config).put("is_test", true);
+    ((ObjectNode) config).put("ssl_method", Jsons.jsonNode(Map.of("ssl_method", "unencrypted")));
 
     return database;
   }
@@ -57,7 +56,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt()),
-        CONNECTION_PROPERTIES), null);
+        Map.of("encrypt", "false")), null);
   }
 
   private static Database getDatabase(final DSLContext dslContext) {

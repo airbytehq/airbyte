@@ -371,15 +371,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> connectionProperties = super.getConnectionProperties(config);
-    if (config.has("is_test") && config.get("is_test").asBoolean()) {
-      connectionProperties.put("encrypt", "false");
-    }
-    return connectionProperties;
-  }
-
-  @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
                                                                              final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
