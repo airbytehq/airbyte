@@ -55,6 +55,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
   protected String currentFile;
 
   public DatabricksAzureBlobStorageStreamCopier(final String stagingFolder,
+                                                final String catalog,
                                                 final String schema,
                                                 final ConfiguredAirbyteStream configuredStream,
                                                 final JdbcDatabase database,
@@ -63,7 +64,7 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
                                                 final SqlOperations sqlOperations,
                                                 final SpecializedBlobClientBuilder specializedBlobClientBuilder,
                                                 final AzureBlobStorageConfig azureConfig) {
-    super(stagingFolder, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
+    super(stagingFolder, catalog, schema, configuredStream, database, databricksConfig, nameTransformer, sqlOperations);
 
     this.specializedBlobClientBuilder = specializedBlobClientBuilder;
     this.azureConfig = azureConfig;
@@ -147,6 +148,13 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
 
     LOGGER.info("[Stream {}] tmp table schema: {}", stream.getName(), schemaString);
 
+    if (!useMetastore) {
+      return String.format("CREATE TABLE %s.%s.%s (%s) USING csv LOCATION '%s' " +
+        "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
+        catalogName, schemaName, tmpTableName, schemaString,
+        getTmpTableLocation().replace(AZURE_BLOB_ENDPOINT_DOMAIN_NAME, AZURE_DFS_ENDPOINT_DOMAIN_NAME));
+    }
+
     return String.format("CREATE TABLE %s.%s (%s) USING csv LOCATION '%s' " +
         "options (\"header\" = \"true\", \"multiLine\" = \"true\") ;",
         schemaName, tmpTableName, schemaString,
@@ -172,10 +180,18 @@ public class DatabricksAzureBlobStorageStreamCopier extends DatabricksStreamCopi
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
     final var queries = new StringBuilder();
     if (destinationSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
-      queries.append(sqlOperations.truncateTableQuery(database, schemaName, destTableName));
+      if (!useMetastore) {
+        queries.append(sqlOperations.truncateTableQuery(database, String.format("%s.%s", catalogName, schemaName), destTableName));
+      } else {
+        queries.append(sqlOperations.truncateTableQuery(database, schemaName, destTableName));
+      }
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.insertTableQuery(database, schemaName, tmpTableName, destTableName));
+    if (!useMetastore) {
+        queries.append(sqlOperations.copyTableQuery(database, String.format("%s.%s", catalogName, schemaName), tmpTableName, destTableName));
+    } else {
+      queries.append(sqlOperations.copyTableQuery(database, schemaName, tmpTableName, destTableName));
+    }
 
     return queries.toString();
   }

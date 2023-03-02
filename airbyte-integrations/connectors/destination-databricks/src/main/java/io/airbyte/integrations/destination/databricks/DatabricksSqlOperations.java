@@ -38,6 +38,10 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
   }
 
+  public void createCatalogIfNotExists(final JdbcDatabase database, final String catalogName) throws Exception {
+    database.execute(String.format("create catalog if not exists %s;", catalogName));
+  }
+
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     database.execute(String.format("create database if not exists %s;", schemaName));
