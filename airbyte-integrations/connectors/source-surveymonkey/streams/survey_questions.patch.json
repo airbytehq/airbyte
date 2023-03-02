@@ -1,0 +1,16 @@
+{
+    "properties": {
+        "validation": {
+            "properties": {
+                "max": {
+                    "type": ["integer", "string", "null"],
+                    "format": "integer"
+                }, 
+                "min": {
+                    "type": ["integer", "string", "null"],
+                    "format": "integer"                                
+                }
+            }
+        }
+    }
+}

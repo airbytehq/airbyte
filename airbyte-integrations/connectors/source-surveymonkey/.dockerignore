@@ -2,6 +2,7 @@
 !oauth2.patch.json
 !spec.patch.json
 !spec.map.json
+!streams
 !documentation_url.patch.json
 !Dockerfile
 !main.py
