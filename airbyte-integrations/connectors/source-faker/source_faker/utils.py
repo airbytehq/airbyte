@@ -3,14 +3,8 @@
 #
 
 import datetime
-import json
 
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
-
-
-def read_json(filepath):
-    with open(filepath, "r") as f:
-        return json.loads(f.read())
 
 
 def format_airbyte_time(d: datetime):

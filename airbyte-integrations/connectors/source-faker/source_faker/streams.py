@@ -9,10 +9,9 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 from airbyte_cdk.connector import load_optional_package_file
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
-
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
-from .utils import generate_estimate, read_json
+from .utils import generate_estimate
 
 
 class Products(Stream, IncrementalMixin):
@@ -41,8 +40,7 @@ class Products(Stream, IncrementalMixin):
         self._state = value
 
     def load_products(self) -> List[Dict]:
-        return json.loads(load_optional_package_file(self.__class__.__module__,
-                                                     "record_data/products.json"))
+        return json.loads(load_optional_package_file(self.__class__.__module__, "record_data/products.json"))
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
