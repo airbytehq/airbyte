@@ -60,7 +60,54 @@ jobs:
           github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
 
+  build-cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Build CDK Package
+        run: SUB_BUILD=CDK ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
+      - name: Post failure to Slack channel dev-connectors-extensibility
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C04J1M66D8B
+          payload: |
+            {
+                "text": "Error during `build-cdk` while publishing Airbyte CDK!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Error while publishing Airbyte CDK!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
   bump-version:
+    needs: build-cdk
     if: github.event.inputs.release-type != 'none'
     runs-on: ubuntu-latest
     steps:
@@ -96,53 +143,6 @@ jobs:
           payload: |
             {
                 "text": "Error during `bump-version` while publishing Airbyte CDK!",
-                "blocks": [
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
-                        }
-                    },
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
-                        }
-                    }
-                ]
-            }
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-  build-cdk:
-    needs: bump-version
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-      - name: Build CDK Package
-        run: SUB_BUILD=CDK ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
-      - name: Post failure to Slack channel dev-connectors-extensibility
-        if: ${{ failure() }}
-        uses: slackapi/slack-github-action@v1.23.0
-        continue-on-error: true
-        with:
-          channel-id: C04J1M66D8B
-          payload: |
-            {
-                "text": "Error during `build-cdk` while publishing Airbyte CDK!",
                 "blocks": [
                     {
                         "type": "section",
@@ -294,7 +294,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `publish-cdk` while publishing Airbyte CDK!",
+                "text": "Error during `publish-docker-image` while publishing Airbyte CDK!",
                 "blocks": [
                     {
                         "type": "section",
