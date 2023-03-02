@@ -12,11 +12,11 @@ import java.io.PrintWriter;
 public class SpeedBenchmarkFileGenerator {
 
   public static void main(final String[] args) {
-    // if(args[0] != null && args[0].contains("csv")) {
-    generateCsvFile();
-    // } else {
-    // generateTextFile();
-    // }
+    if(args[0] != null && args[0].contains("csv")) {
+      generateCsvFile();
+    } else {
+      generateTextFile();
+    }
   }
 
   private static SpeedBenchmarkGeneratorIterator getGenerator() {
