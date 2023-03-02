@@ -1,0 +1,24 @@
+name: "DO NOT MERGE: Test create PR in airbyte-platform following CDK release"
+on:
+  push:
+    branches:
+      - issue-22485_**
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte Platform
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte-platform
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          commit-message: Updating CDK version following release
+          title: Updating CDK version following release
+          body: This is an automatically generated PR triggered by a CDK release
+          branch: automatic-cdk-release
+          base: main
