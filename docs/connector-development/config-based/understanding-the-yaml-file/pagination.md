@@ -65,7 +65,7 @@ Schema:
   PaginationStrategy:
     type: object
     anyOf:
-      - "$ref": "#/definitions/CursorPagination"
+      - "$ref": "#/definitions/CursorPaginator"
       - "$ref": "#/definitions/OffsetIncrement"
       - "$ref": "#/definitions/PageIncrement"
 ```

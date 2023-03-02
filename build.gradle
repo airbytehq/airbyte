@@ -354,8 +354,6 @@ subprojects { subproj ->
     }
 
     test {
-        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
-
         jacoco {
             enabled = true
             excludes = ['**/*Test*', '**/generated*']

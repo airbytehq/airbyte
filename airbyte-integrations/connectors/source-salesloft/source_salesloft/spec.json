@@ -5,7 +5,7 @@
     "title": "Source Salesloft Spec",
     "type": "object",
     "required": ["client_id", "client_secret", "refresh_token", "start_date"],
-    "additionalProperties": true,
+    "additionalProperties": false,
     "properties": {
       "client_id": {
         "type": "string",

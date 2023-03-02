@@ -81,7 +81,7 @@
       "type": ["null", "integer"]
     },
     "lead_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "active_flag": {
       "type": ["null", "boolean"]
@@ -218,9 +218,6 @@
     },
     "assigned_to_user_id": {
       "type": ["null", "integer"]
-    },
-    "type_name": {
-      "type": ["null", "string"]
     },
     "file": {
       "type": ["null", "object"],

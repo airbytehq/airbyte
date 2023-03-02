@@ -22,9 +22,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
         }
 
         project.task('integrationTestJava', type: Test) {
-            mustRunAfter project.test
-
-            testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
+            testClassesDirs += project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
             useJUnitPlatform {
@@ -46,7 +44,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             }
 
             maxHeapSize = '3g'
-            maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+
+            mustRunAfter project.test
 
             // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
             jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]

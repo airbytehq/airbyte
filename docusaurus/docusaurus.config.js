@@ -65,14 +65,6 @@ const config = {
                             from: '/connector-development/config-based/understanding-the-yaml-file/stream-slicers/',
                             to: '/connector-development/config-based/understanding-the-yaml-file/partition-router',
                         },
-                        {
-                            from: '/cloud/managing-airbyte-cloud',
-                            to: '/category/managing-airbyte-cloud',
-                        },
-                        {
-                            from: '/cloud/dbt-cloud-integration',
-                            to: '/cloud/managing-airbyte-cloud/dbt-cloud-integration',
-                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',

@@ -65,12 +65,6 @@ SUB_BUILD=PLATFORM ./gradlew <gradle command>
 SUB_BUILD=CONNECTORS_BASE ./gradlew <gradle command>
 ```
 
-#### Build CDK
-
-```text
-SUB_BUILD=CDK ./gradlew <gradle command>
-```
-
 ### Build
 
 In order to "build" the project. This task includes producing all artifacts and running unit tests \(anything called in the `:test` task\). It does _not_ include integration tests \(anything called in the `:integrationTest` task\).

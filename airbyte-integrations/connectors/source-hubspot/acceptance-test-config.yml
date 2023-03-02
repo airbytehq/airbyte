@@ -20,58 +20,47 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
+        empty_streams:
+        - name: property_history
+          bypass_reason: has randomly calculated records
+        - name: form_submissions
+          bypass_reason: unable to populate
+        - name: ticket_pipelines
+          bypass_reason: unable to populate
+        - name: engagements_meetings
+          bypass_reason: unable to populate
+        - name: engagements_emails
+          bypass_reason: unable to populate
+        - name: engagements_calls
+          bypass_reason: unable to populate
+        - name: quotes
+          bypass_reason: unable to populate
+        timeout_seconds: 3600
         expect_records:
           path: integration_tests/expected_records.jsonl
-        timeout_seconds: 3600
-        empty_streams:
-          - name: form_submissions
-            bypass_reason: Unable to populate
-          - name: ticket_pipelines
-            bypass_reason: Unable to populate
-          - name: engagements_meetings
-            bypass_reason: Unable to populate
-          - name: engagements_emails
-            bypass_reason: Unable to populate
-          - name: engagements_calls
-            bypass_reason: Unable to populate
-          - name: quotes
-            bypass_reason: Unable to populate
-        ignored_fields:
-          contact_lists:
-          - name: ilsFilterBranch
-            bypass_reason: Floating fields order
-          companies:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
-          contacts:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
-          deals:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
-          tickets:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+          exact_order: yes
+          extra_fields: yes
+          extra_records: no
   full_refresh:
     tests:
       - config_path: secrets/config_oauth.json
         configured_catalog_path: sample_files/full_refresh_oauth_catalog.json
         ignored_fields:
-          contact_lists:
-          - name: ilsFilterBranch
-            bypass_reason: Floating fields order
           companies:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+          - properties
+          - hs_time_in_subscriber
+          contact_lists:
+          - properties
+          - ilsFilterBranch
           contacts:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+          - properties
+          - hs_time_in_subscriber
           deals:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+          - properties
+          - hs_time_in_qualifiedtobuy
           tickets:
-          - name: properties/hs_time_*
-            bypass_reason: Hubspot time depend on current time
+          - properties
+          - hs_time_in_4
   incremental:
     tests:
       - config_path: secrets/config_oauth.json

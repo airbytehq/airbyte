@@ -6,12 +6,12 @@ import time
 from collections import defaultdict
 from functools import partial
 from logging import Logger
-from typing import List, Mapping, Optional
+from typing import List, Mapping
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import IgnoredFieldsConfiguration
+from connector_acceptance_test.config import ConnectionTestConfig
 from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
 from connector_acceptance_test.utils.json_schema_helper import CatalogField
 
@@ -67,7 +67,7 @@ class TestFullRefresh(BaseTest):
             if pks_by_stream.get(stream):
                 serializer = partial(primary_keys_only, pks=pks_by_stream.get(stream))
             else:
-                serializer = partial(make_hashable, exclude_fields=[field.name for field in ignored_fields.get(stream, [])])
+                serializer = partial(make_hashable, exclude_fields=ignored_fields.get(stream))
             stream_records_1 = records_by_stream_1.get(stream)
             stream_records_2 = records_by_stream_2.get(stream)
             if not set(map(serializer, stream_records_1)).issubset(set(map(serializer, stream_records_2))):
@@ -84,12 +84,13 @@ class TestFullRefresh(BaseTest):
 
     def test_sequential_reads(
         self,
+        inputs: ConnectionTestConfig,
         connector_config: SecretDict,
         configured_catalog: ConfiguredAirbyteCatalog,
-        ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         docker_runner: ConnectorRunner,
         detailed_logger: Logger,
     ):
+        ignored_fields = getattr(inputs, "ignored_fields") or {}
         configured_catalog = full_refresh_only_catalog(configured_catalog)
         output_1 = docker_runner.call_read(connector_config, configured_catalog)
         records_1 = [message.record for message in output_1 if message.type == Type.RECORD]

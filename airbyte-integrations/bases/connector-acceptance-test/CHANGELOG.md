@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.7.0
-Basic read test: add `ignored_fields`, change configuration format by adding optional `bypass_reason` [#22996](https://github.com/airbytehq/airbyte/pull/22996)
-
 ## 0.6.1
 Fix docker API - "Error" is optional. [#22987](https://github.com/airbytehq/airbyte/pull/22987)
 

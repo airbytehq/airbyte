@@ -233,6 +233,7 @@
             "type": ["integer", "null"],
             "minimum": 0
           },
+
           "entity_id": {
             "type": ["string", "null"],
             "maxLength": 100

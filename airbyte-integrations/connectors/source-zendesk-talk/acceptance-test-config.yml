@@ -28,19 +28,16 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        ignored_fields:
-          greetings:
-          - name: audio_url
-            bypass_reason: In url present auto generated hash
-          account_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
-          agents_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
-          current_queue_activity:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+        empty_streams:
+          - name: "account_overview"
+            bypass_reason: "The objects can mutate quite often."
+          - name: "agents_overview"
+            bypass_reason: "The objects can mutate quite often."
+          - name: "current_queue_activity"
+            bypass_reason: "The objects can mutate quite often."
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -51,12 +48,6 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          account_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
-          agents_overview:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
-          current_queue_activity:
-          - name: current_timestamp
-            bypass_reason: Depend on current time
+          account_overview: ["current_timestamp"]
+          agents_overview: ["current_timestamp"]
+          current_queue_activity: ["current_timestamp"]

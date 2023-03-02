@@ -23,9 +23,6 @@ on:
         description: "Set a specific connector acceptance test version to use. Enter 'dev' to test, build and use a local version of Connector Acceptance Test."
         required: false
         default: "latest"
-      local_cdk:
-        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
-        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
@@ -122,7 +119,7 @@ jobs:
           S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
         uses: Wandalen/wretry.action@master
         with:
-          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }} ${{ github.event.inputs.local_cdk }}
+          command: ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
           attempt_limit: 3
           attempt_delay: 10000 # in ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}

@@ -89,16 +89,6 @@ def setup_database(source: SourceFauna):
             }
         ),
     )
-    # This index just *existing* used to crash the connector, because it has no
-    # terms or values.
-    source.client.query(
-        q.create_index(
-            {
-                "name": "breaks_things",
-                "source": q.collection("foo"),
-            }
-        ),
-    )
     print("Database is setup!")
 
     # Store all the refs and ts of the documents we created, so that we can validate them
@@ -168,28 +158,6 @@ def setup_container():
     except Exception:
         stop_container(container)
         raise
-
-
-def run_discover_test(source: SourceFauna, logger):
-    # See `test_util.py` for these values
-    catalog = source.discover(logger, {
-        "secret": "secret",
-        "domain": "localhost",
-        "port": 9000,
-        "scheme": "http",
-        "collection": {
-            "page_size": 64,
-            "deletions": {
-                "deletion_mode": "ignore",
-            }
-        }
-    })
-    assert len(catalog.streams) == 1
-    stream = catalog.streams[0]
-    assert stream.name == "foo"
-    assert stream.supported_sync_modes == [SyncMode.full_refresh, SyncMode.incremental]
-    assert stream.source_defined_cursor is True
-    assert stream.default_cursor_field == ["ts"]
 
 
 def run_add_removes_test(source: SourceFauna, logger, stream: ConfiguredAirbyteStream):
@@ -509,7 +477,6 @@ def run_updates_test(db_data, source: SourceFauna, logger, catalog: ConfiguredAi
 
 def run_test(db_data, source: SourceFauna):
     logger = mock_logger()
-    run_discover_test(source, logger)
     stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="foo", json_schema={}, supported_sync_modes=[SyncMode.incremental, SyncMode.full_refresh]),
         sync_mode=SyncMode.incremental,
@@ -522,7 +489,7 @@ def run_test(db_data, source: SourceFauna):
     run_general_remove_test(source, logger)
 
 
-def test_database():
+def test_incremental_reads():
     container, db_data, source = setup_container()
 
     try:

@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import functools
 import json
 import logging
 import re
@@ -34,10 +33,9 @@ from connector_acceptance_test.config import (
     DiscoveryTestConfig,
     EmptyStreamConfiguration,
     ExpectedRecordsConfig,
-    IgnoredFieldsConfiguration,
     SpecTestConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
@@ -722,7 +720,6 @@ class TestBasicRead(BaseTest):
         records: List[AirbyteRecordMessage],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         flags,
-        ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         detailed_logger: Logger,
     ):
         """
@@ -736,10 +733,6 @@ class TestBasicRead(BaseTest):
             detailed_logger.info(f"Expected records for stream {stream_name}:")
             detailed_logger.log_json_list(expected)
 
-            ignored_field_names = [field.name for field in ignored_fields.get(stream_name, [])]
-            detailed_logger.info(f"Ignored fields for stream {stream_name}:")
-            detailed_logger.log_json_list(ignored_field_names)
-
             self.compare_records(
                 stream_name=stream_name,
                 actual=actual,
@@ -747,7 +740,6 @@ class TestBasicRead(BaseTest):
                 extra_fields=flags.extra_fields,
                 exact_order=flags.exact_order,
                 extra_records=flags.extra_records,
-                ignored_fields=ignored_field_names,
                 detailed_logger=detailed_logger,
             )
 
@@ -803,7 +795,6 @@ class TestBasicRead(BaseTest):
         should_validate_schema: Boolean,
         should_validate_data_points: Boolean,
         empty_streams: Set[EmptyStreamConfiguration],
-        ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]],
         expected_records_by_stream: MutableMapping[str, List[MutableMapping]],
         docker_runner: ConnectorRunner,
         detailed_logger,
@@ -832,7 +823,6 @@ class TestBasicRead(BaseTest):
                 records=records,
                 expected_records_by_stream=expected_records_by_stream,
                 flags=expect_records_config,
-                ignored_fields=ignored_fields,
                 detailed_logger=detailed_logger,
             )
 
@@ -885,7 +875,6 @@ class TestBasicRead(BaseTest):
         extra_fields: bool,
         exact_order: bool,
         extra_records: bool,
-        ignored_fields: List[str],
         detailed_logger: Logger,
     ):
         """Compare records using combination of restrictions"""
@@ -896,14 +885,10 @@ class TestBasicRead(BaseTest):
                     break
                 if extra_fields:
                     r2 = TestBasicRead.remove_extra_fields(r2, r1)
-                if ignored_fields:
-                    delete_fields(r1, ignored_fields)
-                    delete_fields(r2, ignored_fields)
                 assert r1 == r2, f"Stream {stream_name}: Mismatch of record order or values"
         else:
-            _make_hashable = functools.partial(make_hashable, exclude_fields=ignored_fields) if ignored_fields else make_hashable
-            expected = set(map(_make_hashable, expected))
-            actual = set(map(_make_hashable, actual))
+            expected = set(map(make_hashable, expected))
+            actual = set(map(make_hashable, actual))
             missing_expected = set(expected) - set(actual)
 
             if missing_expected:

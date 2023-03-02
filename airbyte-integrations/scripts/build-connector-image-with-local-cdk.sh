@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -e
 
@@ -7,8 +7,6 @@ source "$ROOT_DIR/airbyte-integrations/scripts/utils.sh"
 
 [ -n "$CONNECTOR_TAG" ] || die "Missing CONNECTOR_TAG"
 [ -n "$CONNECTOR_NAME" ] || die "Missing CONNECTOR_NAME"
-
-echo "Building docker image for $CONNECTOR_NAME with local CDK"
 
 CDK_DIR="$ROOT_DIR/airbyte-cdk/python"
 CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
