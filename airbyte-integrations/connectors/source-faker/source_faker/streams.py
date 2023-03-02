@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
+import json
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
+from airbyte_cdk.connector import load_optional_package_file
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
@@ -39,8 +41,8 @@ class Products(Stream, IncrementalMixin):
         self._state = value
 
     def load_products(self) -> List[Dict]:
-        dirname = os.path.dirname(os.path.realpath(__file__))
-        return read_json(os.path.join(dirname, "record_data", "products.json"))
+        return json.loads(load_optional_package_file("source_faker",
+                                                     "record_data/products.json"))
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
