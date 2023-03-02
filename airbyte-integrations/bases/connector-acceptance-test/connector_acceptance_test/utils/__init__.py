@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from .asserts import verify_records_schema
 from .common import (
@@ -12,7 +12,7 @@ from .common import (
     load_config,
     load_yaml_or_json_path,
 )
-from .compare import diff_dicts, make_hashable
+from .compare import delete_fields, diff_dicts, make_hashable
 from .connector_runner import ConnectorRunner
 from .json_schema_helper import JsonSchemaHelper
 
@@ -30,4 +30,5 @@ __all__ = [
     "verify_records_schema",
     "build_configured_catalog_from_custom_catalog",
     "build_configured_catalog_from_discovered_catalog_and_empty_streams",
+    "delete_fields",
 ]

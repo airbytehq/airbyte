@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
@@ -15,7 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
-import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.TestHarnessUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -131,7 +131,7 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
     LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
     LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
+    TestHarnessUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
     final int exitCode = process.exitValue();
     if (exitCode != 0) {
