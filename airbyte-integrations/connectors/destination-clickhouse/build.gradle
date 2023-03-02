@@ -12,7 +12,7 @@ application {
 dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-protocol:protocol-models')
+    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
@@ -25,7 +25,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-clickhouse')
-    integrationTestJavaImplementation project(':airbyte-commons-worker')
+    integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestJavaImplementation libs.connectors.destination.testcontainers.clickhouse
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
