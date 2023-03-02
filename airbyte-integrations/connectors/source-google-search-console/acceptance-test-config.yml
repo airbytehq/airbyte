@@ -18,7 +18,7 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config_old.json"
+      - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
           disable_for_version: "0.1.20" # custom_reports format changed to list
   basic_read:
