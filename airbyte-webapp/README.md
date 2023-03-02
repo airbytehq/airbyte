@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.02
+1. Error UI
 #### 2023.03.01
 1. Supplementary modal styles and adjust some background colors.
 #### 2023.02.28
