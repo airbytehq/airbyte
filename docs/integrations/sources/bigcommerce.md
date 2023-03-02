@@ -6,7 +6,7 @@ The BigCommerce source supports both Full Refresh and Incremental syncs. You can
 
 This source can sync data for the [BigCommerce API](https://developer.bigcommerce.com/api-docs/getting-started/making-requests).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 ### Output schema
 

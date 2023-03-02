@@ -8,7 +8,7 @@ To set up the Sentry source connector, you'll need the Sentry [project name](htt
 
 ## Set up the Sentry connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Sentry** from the Source type dropdown.
 4. Enter the name for the Sentry connector.

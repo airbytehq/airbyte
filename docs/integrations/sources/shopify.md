@@ -18,7 +18,7 @@ The Shopify source supports both Full Refresh and Incremental syncs. You can cho
 
 This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQl API](https://shopify.dev/api/admin-graphql).
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 ## Troubleshooting
 

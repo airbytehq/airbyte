@@ -4,7 +4,7 @@
 
 The Qualaroo source supports Full Refresh syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
+This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.com/connector-development/cdk-python).
 
 ### Output schema
 

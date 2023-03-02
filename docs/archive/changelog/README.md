@@ -438,7 +438,7 @@ New Destination: Keen
 * 🐛 Shopify source: Fixed the `products` schema to be in accordance with the API.
 * 🐛 S3 source: Fixed bug where syncs could hang indefinitely.
 
-And as always... we'd love to shout out the awesome contributors that have helped push Airbyte forward. As a reminder, you can now see your contributions publicly reflected on our [contributors page](https://airbyte.io/contributors).
+And as always... we'd love to shout out the awesome contributors that have helped push Airbyte forward. As a reminder, you can now see your contributions publicly reflected on our [contributors page](/contributors).
 
 Thank you to Rodrigo Parra, Brian Krausz, Max Krog, Apostol Tegko, Matej Hamas, Vladimir Remar, Marco Fontana, Nicholas Bull, @mildbyte, @subhaklp, and Maciej Nędza!
 
