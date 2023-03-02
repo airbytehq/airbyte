@@ -4,7 +4,7 @@
 
 import datetime
 from multiprocessing import current_process
-from typing import Dict
+from typing import Dict, List
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 from mimesis import Datetime, Numeric
@@ -53,7 +53,7 @@ class PurchaseGenerator:
         tldr; Every 10 user_ids produce 10 purchases.  User ID x5 has no purchases, User ID mod x7 has 2, and everyone else has 1
         """
 
-        purchases: list[Dict] = []
+        purchases: List[Dict] = []
         last_user_id_digit = int(repr(user_id)[-1])
         purchase_count = 1
         id_offset = 0
