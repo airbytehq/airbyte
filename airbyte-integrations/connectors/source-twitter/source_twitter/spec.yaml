@@ -9,23 +9,19 @@ connectionSpecification:
   additionalProperties: true
   properties:
     api_key:
-      type: string
       title: API Key Token
       description: API Key
+      type: string
       airbyte_secret: true
-      order: 0
     query:
-      type: string
       title: Twitter Search Query
-      description: Query for matching Tweets. You can learn how to build this query by reading <a href="https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query"> build a query guide </a>.
-      order: 1
-    start_date:
+      description: Twitter Search query
       type: string
+    start_date:
       title: Start Date
       description: From what date you want to start retrieving dta
-      order: 2
-    end_date:
       type: string
+    end_date:
       title: End Date
       description: End data to retrieve data
-      order: 3
+      type: string
