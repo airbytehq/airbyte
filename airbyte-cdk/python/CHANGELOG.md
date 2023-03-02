@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.29.3
+small fix to support python 3.8
+
+## 0.29.2
+minor fixes to support python3.8
+
+## 0.29.1
+Publishing Docker image for source-declarative-manifest
+
 ## 0.29.0
 **Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
 

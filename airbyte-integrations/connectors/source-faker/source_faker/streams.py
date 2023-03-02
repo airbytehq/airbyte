@@ -4,7 +4,7 @@
 
 import os
 from multiprocessing import Pool
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
@@ -38,7 +38,7 @@ class Products(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def load_products(self) -> List[Dict]:
+    def load_products(self) -> list[Dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
