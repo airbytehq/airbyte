@@ -1013,11 +1013,14 @@
 - name: LinkedIn Ads
   sourceDefinitionId: 137ece28-5434-455c-8f34-69dc3782f451
   dockerRepository: airbyte/source-linkedin-ads
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   icon: linkedin.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.linkedin.com
 - name: LinkedIn Pages
   sourceDefinitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
   dockerRepository: airbyte/source-linkedin-pages
