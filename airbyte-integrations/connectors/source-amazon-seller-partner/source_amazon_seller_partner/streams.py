@@ -580,7 +580,7 @@ class AnalyticsStream(ReportsAmazonSPStream):
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
-        if options.get("reportPeriod") is not None:
+        if options and options.get("reportPeriod") is not None:
             data.update(self._augmented_data(self, options))
         return data
 
