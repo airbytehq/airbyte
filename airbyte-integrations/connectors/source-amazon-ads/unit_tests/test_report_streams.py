@@ -693,12 +693,12 @@ def test_display_report_stream_with_custom_record_types(config_gen, custom_recor
         ),
         (
                 ["asins_keywords"],
-                ["asins"],
+                ["asins_keywords"],
                 True
         ),
         (
                 ["asins_targets"],
-                ["asins"],
+                ["asins_targets"],
                 True
         ),
         (
