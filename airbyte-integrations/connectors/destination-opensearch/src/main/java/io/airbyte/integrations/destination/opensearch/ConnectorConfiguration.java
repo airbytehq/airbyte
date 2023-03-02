@@ -74,11 +74,6 @@ public class ConnectorConfiguration {
       this.apiKeySecret = apiKeySecret;
     }
 
-<<<<<<< HEAD
->>>>>>> 7edf6edbf6 (capitalize class name)
-=======
-
->>>>>>> c01deb78a5 (fix error)
     public boolean isValid() {
       return switch (this.method) {
         case none -> true;
