@@ -54,6 +54,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
 |:---------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| `0.1.13` | 2023-02-13 | [22942](https://github.com/airbytehq/airbyte/pull/22942)   | Specified date formatting in specification                                                                |
 | `0.1.12` | 2023-01-30 | [22071](https://github.com/airbytehq/airbyte/pull/22071)   | Fix `Events` stream schema                                                                |
 | `0.1.11` | 2023-01-27 | [22012](https://github.com/airbytehq/airbyte/pull/22012)   | Set `AvailabilityStrategy` for streams explicitly to `None`                               |
 | `0.1.10` | 2022-09-29 | [17422](https://github.com/airbytehq/airbyte/issues/17422) | Update CDK dependency                                                                     |

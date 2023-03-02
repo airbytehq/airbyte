@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.29.2
+support python3.8
+
 ## 0.29.1
 Publishing Docker image for source-declarative-manifest
 
