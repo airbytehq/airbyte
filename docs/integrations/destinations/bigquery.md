@@ -25,7 +25,7 @@ While setting up the connector, you can configure it in the following modes:
 
 ### Step 1: Set up a data loading method
 
-Although you can load data using BigQuery's [`INSERTS`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax), we highly recommend using a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction).
+Although you can load data using BigQuery's [`INSERTS`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax), we highly recommend using a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction) not only for performance and cost but reliability since larger datasets are prone to more failures when using standard inserts.
 
 #### (Recommended) Using a Google Cloud Storage bucket
 

@@ -144,8 +144,9 @@ class TestIncrementalStreams:
         now = pendulum.now()
         stream = stream_cls(now.isoformat(), data_region="Standard Server")
         # update expected with valid start,end dates
-        expected.update(**{"start": now.strftime(stream.date_template), "end": stream._get_end_date(now).strftime(stream.date_template)})
-        assert stream.request_params({}) == expected
+        slice = stream.stream_slices(stream_state={"date": now.to_date_string()})[0]
+        expected.update(**slice)
+        assert stream.request_params(stream_state=None, stream_slice=slice) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, expected",
