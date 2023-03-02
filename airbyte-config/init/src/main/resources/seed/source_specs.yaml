@@ -3404,7 +3404,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-dynamodb:0.1.1"
+- dockerImage: "airbyte/source-dynamodb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
     connectionSpecification:
@@ -3470,6 +3470,13 @@
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+        reserved_attribute_names:
+          title: "Reserved attribute names"
+          type: "string"
+          description: "Comma separated reserved attribute names present in your tables"
+          airbyte_secret: true
+          examples:
+          - "name, field_name, field-name"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7638,7 +7645,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.14"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -7701,6 +7708,7 @@
             \ will not be replicated."
           examples:
           - "2021-05-17"
+          format: "date"
         account_ids:
           title: "Account IDs"
           type: "array"
@@ -8120,7 +8128,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailgun:0.1.0"
+- dockerImage: "airbyte/source-mailgun:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailgun"
     connectionSpecification:
@@ -8150,6 +8158,7 @@
           examples:
           - "2020-10-01 00:00:00"
           type: "string"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -10065,7 +10074,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-nytimes:0.1.0"
+- dockerImage: "airbyte/source-nytimes:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/nytimes"
     connectionSpecification:
@@ -10092,6 +10101,7 @@
           examples:
           - "2022-08"
           - "1851-01"
+          format: "date"
           order: 1
         end_date:
           type: "string"
@@ -10101,6 +10111,7 @@
           examples:
           - "2022-08"
           - "1851-01"
+          format: "date"
           order: 2
         period:
           type: "integer"
@@ -12050,7 +12061,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.3.0"
+- dockerImage: "airbyte/source-prestashop:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/prestashop"
     connectionSpecification:
@@ -12081,6 +12092,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-01-01"
+          format: "date"
           order: 2
     supportsNormalization: false
     supportsDBT: false
@@ -15506,7 +15518,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.1.15"
+- dockerImage: "airbyte/source-twilio:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
@@ -15540,6 +15552,7 @@
           - "2020-10-01T00:00:00Z"
           type: "string"
           order: 3
+          format: "date-time"
         lookback_window:
           title: "Lookback window"
           description: "How far into the past to look for records. (in minutes)"
@@ -16251,7 +16264,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.12"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -16270,6 +16283,7 @@
           examples:
           - "2021-02-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         subdomain:
           type: "string"
           title: "Subdomain"
@@ -16829,7 +16843,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.11"
+- dockerImage: "airbyte/source-sentry:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sentry"
     connectionSpecification:
