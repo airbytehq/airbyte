@@ -243,7 +243,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <ConnectorDocumentationWrapper>
         <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} />
         <TabContainer>
-          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" />
+          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" lastOne />
         </TabContainer>
         <ApiErrorBoundary>
           <Suspense fallback={<LoadingPage />}>
