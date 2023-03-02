@@ -1,0 +1,91 @@
+{
+  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "type" : "object",
+  "properties" : {
+    "hash" : {
+      "type" : "string"
+    },
+    "miner" : {
+      "type" : "string"
+    },
+    "number" : {
+      "type" : "integer"
+    },
+    "gasUsed" : {
+      "type" : "object",
+      "properties" : {
+        "hex" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "hex",
+        "type"
+      ]
+    },
+    "gasLimit" : {
+      "type" : "object",
+      "properties" : {
+        "hex" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "hex",
+        "type"
+      ]
+    },
+    "extraData" : {
+      "type" : "string"
+    },
+    "timestamp" : {
+      "type" : "integer"
+    },
+    "difficulty" : {
+      "type" : "integer"
+    },
+    "parentHash" : {
+      "type" : "string"
+    },
+    "_difficulty" : {
+      "type" : "object",
+      "properties" : {
+        "hex" : {
+          "type" : "string"
+        },
+        "type" : {
+          "type" : "string"
+        }
+      },
+      "required" : [
+        "hex",
+        "type"
+      ]
+    },
+    "transactions" : {
+      "type" : "array",
+      "items" : {
+        "$ref" : "evm/transaction.json"
+      }
+    }
+  },
+  "required" : [
+    "hash",
+    "miner",
+    "number",
+    "gasUsed",
+    "gasLimit",
+    "extraData",
+    "timestamp",
+    "difficulty",
+    "parentHash",
+    "_difficulty",
+    "transactions"
+  ]
+}
