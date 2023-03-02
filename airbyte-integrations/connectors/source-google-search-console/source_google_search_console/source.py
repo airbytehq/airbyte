@@ -175,7 +175,6 @@ class SourceGoogleSearchConsole(AbstractSource):
         return ConnectorSpecification(
             documentationUrl="https://docs.airbyte.com/integrations/sources/google-search-console",
             changelogUrl="https://docs.airbyte.com/integrations/sources/google-search-console",
-            supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
             advanced_auth=advanced_auth,
         )

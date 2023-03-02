@@ -95,12 +95,14 @@ At the end of this process, you should have JSON credentials to this Google Serv
 The google search console source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature           | Supported?\(Yes/No\) | Notes                     |
-| :---------------- | :------------------- | :------------------------ |
+|:------------------|:---------------------|:--------------------------|
 | Full Refresh Sync | Yes                  |                           |
 | Incremental Sync  | Yes                  | except Sites and Sitemaps |
 | SSL connection    | Yes                  |                           |
 | Namespaces        | No                   |                           |
-
+:::note
+   Incremental Sync in Append mode may result in duplicating data.
+:::
 
 ## Supported Streams
 
@@ -134,7 +136,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                     |
 |:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------|
-| `0.2.0`  | 2023-03-01 | [23617](https://github.com/airbytehq/airbyte/pull/23617)                                                      | Refactor spec                                               |
+| `1.0.0`  | 2023-03-01 | [23617](https://github.com/airbytehq/airbyte/pull/23617)                                                      | Refactor spec                                               |
 | `0.1.20` | 2023-02-02 | [22334](https://github.com/airbytehq/airbyte/pull/22334)                                                      | Turn on default HttpAvailabilityStrategy                    |
 | `0.1.19` | 2023-01-27 | [22007](https://github.com/airbytehq/airbyte/pull/22007)                                                      | Set `AvailabilityStrategy` for streams explicitly to `None` |
 | `0.1.18` | 2022-10-27 | [18568](https://github.com/airbytehq/airbyte/pull/18568)                                                      | Improved config validation: custom_reports.dimension        |
