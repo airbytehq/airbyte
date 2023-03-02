@@ -1,0 +1,100 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "finance_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "Prosjekt #": {
+              "type": "string"
+            },
+            "Prosjektnavn": {
+              "type": "string"
+            },
+            "Hovedprosjekt": {
+              "type": "string"
+            },
+            "Prosjekt-ID": {
+              "type": "integer"
+            },
+            "Firma/Person": {
+              "type": "string"
+            },
+            "Prosjektgruppe": {
+              "type": "string"
+            },
+            "Prosjektleder": {
+              "type": "string"
+            },
+            "Fra": {
+              "type": "string"
+            },
+            "Til": {
+              "type": "string"
+            },
+            "Kontraktsbeløp": {
+              "type": "number"
+            },
+            "Kostnad totalt": {
+              "type": "number"
+            },
+            "Tot. est. timer": {
+              "type": "number"
+            },
+            "Estimert dekningsgrad": {
+              "type": "number"
+            },
+            "Koststed": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "stream": {
+        "name": "staff_track_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "Prosjekt": {
+              "type": "string"
+            },
+            "Oppdrag": {
+              "type": "string"
+            },
+            "Oppgave": {
+              "type": "string"
+            },
+            "Periode": {
+              "type": "string"
+            },
+            "Ansatt": {
+              "type": "string"
+            },
+            "Stilling": {
+              "type": "string"
+            },
+            "Plan": {
+              "type": "boolean"
+            },
+            "Timer": {
+              "type": "number"
+            },
+            "Allokert": {
+              "type": "number"
+            },
+            "Planlagt": {
+              "type": "number"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
