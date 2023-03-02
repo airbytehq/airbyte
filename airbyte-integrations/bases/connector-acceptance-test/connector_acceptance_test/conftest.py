@@ -4,6 +4,7 @@
 
 
 import copy
+import itertools
 import json
 import logging
 import os
@@ -16,7 +17,7 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Set
 import pytest
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     ConnectorRunner,
@@ -197,6 +198,18 @@ def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfi
         if not all_empty_streams_have_bypass_reasons:
             pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")
     return empty_streams
+
+
+@pytest.fixture(name="ignored_fields")
+def ignored_fields_fixture(inputs, test_strictness_level) -> Optional[Mapping[str, List[IgnoredFieldsConfiguration]]]:
+    ignored_fields = getattr(inputs, "ignored_fields", {}) or {}
+    if test_strictness_level is Config.TestStrictnessLevel.high and ignored_fields:
+        all_ignored_fields_have_bypass_reasons = all(
+            [bool(ignored_field.bypass_reason) for ignored_field in itertools.chain.from_iterable(inputs.ignored_fields.values())]
+        )
+        if not all_ignored_fields_have_bypass_reasons:
+            pytest.fail("A bypass_reason must be filled in for all ignored fields when test_strictness_level is set to high.")
+    return ignored_fields
 
 
 @pytest.fixture(name="expect_records_config")
