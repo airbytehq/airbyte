@@ -46,6 +46,7 @@ Optional parameters:
 * **Purge Staging Data**
     * Whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after the `COPY` command completes; if you want to keep them for other purposes, set `purge_staging_data` to `false`.
 
+NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel supports the SQL connection only. S3 is secured through public HTTPS access only.
 
 ## Step 1: Set up Redshift
 
