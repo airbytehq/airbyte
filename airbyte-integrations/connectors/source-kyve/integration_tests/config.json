@@ -1,0 +1,7 @@
+{
+  "pool_ids": "0",
+  "start_ids": "0",
+  "url_base":  "https://api.korellia.kyve.network",
+  "page_size": 1,
+  "max_pages": 2
+}
