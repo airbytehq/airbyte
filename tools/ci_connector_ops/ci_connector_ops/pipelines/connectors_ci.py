@@ -38,6 +38,7 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     pipeline_logger = logging.getLogger(main_pipeline_name)
     connector_ci_client: Client = dagger_client.pipeline(main_pipeline_name)
     connector_client = connector_ci_client.pipeline(f"{connector.technical_name} - Install connector python package")
+
     connector_under_test: Container = await environments.with_airbyte_connector(connector_client, connector)
 
     format_check_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Format Check")
@@ -52,6 +53,7 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
     build_dev_image_client = connector_ci_client.pipeline(f"{connector.technical_name} - Build dev image")
     _, connector_image_short_id = await builds.build_dev_image(build_dev_image_client, connector, exclude=[".venv"])
 
+    # TODO: slim it down
     if not connector.acceptance_test_config:
         acceptance_tests_status = StepStatus.SKIPPED
     else:
@@ -78,11 +80,13 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
             upload_credentials_client = connector_ci_client.pipeline(f"{connector.technical_name} - Upload credentials")
             await secrets.upload(upload_credentials_client, connector, updated_secrets_dir)
 
-    # TODO run QA checks: this should probably be done inside a dagger container to benefit from caching?
+    qa_checks_client = connector_ci_client.pipeline(f"{connector.technical_name} - QA checks")
+    qa_check_status = await tests.run_qa_checks(qa_checks_client, connector)
     pipeline_logger.info(f"Format -> {format_check_status}")
     pipeline_logger.info(f"Unit tests -> {unit_tests_status}")
     pipeline_logger.info(f"Integration tests -> {integration_tests_status}")
     pipeline_logger.info(f"Acceptance tests -> {acceptance_tests_status}")
+    pipeline_logger.info(f"QA Checks -> {qa_check_status}")
 
 
 async def run_connectors_test_pipelines(connectors: List[Connector], gsm_credentials: str):

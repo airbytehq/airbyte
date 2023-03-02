@@ -11,15 +11,12 @@ MAIN_REQUIREMENTS = [
     "requests",
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
-    "pandas~=1.5.3",
-    "pandas-gbq~=0.19.0",
     "pydantic~=1.10.4",
-    "fsspec~=2023.1.0",
-    "gcsfs~=2023.1.0",
     "dagger-io==0.3.3",
-    "pytablewriter~=0.64.2",
     "docker~=6.0.0",
 ]
+
+# git+https://github.com/sipsma/dagger.git@priv#subdirectory=sdk/python
 
 
 def local_pkg(name: str) -> str:
@@ -37,6 +34,15 @@ TEST_REQUIREMENTS = [
 ]
 
 DEV_REQUIREMENTS = ["pyinstrument"]
+# It is hard to containerize Pandas, it's only used in the QA engine, so I declared it as an extra requires
+# TODO update the GHA that install the QA engine to install this extra
+QA_ENGINE_REQUIREMENTS = [
+    "pandas~=1.5.3",
+    "pandas-gbq~=0.19.0",
+    "fsspec~=2023.1.0",
+    "gcsfs~=2023.1.0",
+    "pytablewriter~=0.64.2",
+]
 
 setup(
     version="0.1.14",
@@ -46,7 +52,11 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS + LOCAL_REQUIREMENTS,
-    extras_require={"tests": TEST_REQUIREMENTS, "dev": TEST_REQUIREMENTS + DEV_REQUIREMENTS},
+    extras_require={
+        "tests": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS,
+        "dev": QA_ENGINE_REQUIREMENTS + TEST_REQUIREMENTS + DEV_REQUIREMENTS,
+        "qa_engine": QA_ENGINE_REQUIREMENTS,
+    },
     python_requires=">=3.10",
     package_data={"ci_connector_ops.qa_engine": ["connector_adoption.sql"]},
     entry_points={

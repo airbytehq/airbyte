@@ -25,6 +25,7 @@ INSTALL_LOCAL_REQUIREMENTS_CMD = ["python", "-m", "pip", "install", "-r", "requi
 INSTALL_CONNECTOR_PACKAGE_CMD = ["python", "-m", "pip", "install", "."]
 DEFAULT_PYTHON_EXCLUDE = [".venv"]
 CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
+CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
 
 async def with_python_base(dagger_client: Client, python_image_name: str = "python:3.9-slim") -> Container:
@@ -50,6 +51,7 @@ async def with_python_base(dagger_client: Client, python_image_name: str = "pyth
         .with_mounted_directory(
             "/tools", dagger_client.host().directory("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"])
         )
+        .with_exec(["pip", "install", "--upgrade", "pip"])
     )
 
 
@@ -121,6 +123,8 @@ async def with_airbyte_connector(dagger_client: Client, connector: Connector) ->
     Args:
         dagger_client (Client): The dagger client.
         connector (Connector): The airbyte connector to install in the testing environment.
+    Returns:
+        Container: A python environment container with the connector installed.
     """
     connector_source_path = str(connector.code_directory)
     testing_environment: Container = await with_testing_dependencies(dagger_client)
@@ -132,3 +136,17 @@ async def with_ci_credentials(dagger_client: Client, gsm_secret: Secret) -> Cont
     ci_credentials = await with_python_package(dagger_client, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
 
     return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
+
+
+async def with_ci_connector_ops(dagger_client: Client) -> Container:
+    """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
+
+    Args:
+        dagger_client (Client): The dagger client.
+
+    Returns:
+        Container: A python environment container with ci_connector_ops installed.
+    """
+    python_base_environment: Container = await with_python_base(dagger_client, "python:3-alpine")
+    python_with_git = python_base_environment.with_exec(["apk", "add", "git"])
+    return await with_python_package(dagger_client, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)

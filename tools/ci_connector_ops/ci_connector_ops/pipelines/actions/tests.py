@@ -4,13 +4,14 @@
 
 from typing import Tuple
 
-from ci_connector_ops.pipelines.actions.environments import PYPROJECT_TOML_FILE_PATH
+from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import StepStatus, check_path_in_workdir, with_exit_code
+from ci_connector_ops.utils import Connector
 from dagger import Client, Container, Directory
 
-RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "."]
+RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
+RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
+RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
 
 async def _run_tests_in_directory(connector_container: Container, test_directory: str) -> StepStatus:
@@ -23,7 +24,9 @@ async def _run_tests_in_directory(connector_container: Container, test_directory
     Returns:
         StepStatus: Failure or success status of the tests.
     """
-    test_config = "pytest.ini" if await check_path_in_workdir(connector_container, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
+    test_config = (
+        "pytest.ini" if await check_path_in_workdir(connector_container, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
+    )
     if await check_path_in_workdir(connector_container, test_directory):
         tester = connector_container.with_exec(
             [
@@ -136,15 +139,35 @@ async def run_acceptance_tests(
     return cat_container_step_status, updated_secrets_dir
 
 
-async def run_check(
+async def run_qa_checks(
     dagger_client: Client,
-    secret_dir: Directory,
-) -> Tuple[StepStatus, Container]:
+    connector: Connector,
+) -> StepStatus:
+    """Runs our QA checks on a connector.
 
-    return await (
-        dagger_client.container()
-        .from_("airbyte/source-gitlab:latest")
-        .with_directory("/secrets", secret_dir)
-        .with_exec(["check", "--config", "/secrets/config_oauth.json"])
-        .stdout()
+    Args:
+        dagger_client (Client): The dagger client.
+        connector (Connector): The connector under test.
+
+    Returns:
+        StepStatus: Failure, skip or success status of the QA check run.
+    """
+    ci_connector_ops = await environments.with_ci_connector_ops(dagger_client)
+    filtered_repo = dagger_client.host().directory(
+        ".",
+        include=[
+            str(connector.code_directory),
+            str(connector.documentation_file_path),
+            str(connector.icon_path),
+            ".git",  # This is a big directory...
+            "airbyte-config/init/src/main/resources/seed/source_definitions.yaml",
+            "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml",
+        ],
     )
+    qa_check = (
+        ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo)
+        .with_workdir("/airbyte")
+        .with_exec(["run-qa-checks", f"connectors/{connector.technical_name}"])
+    )
+
+    return StepStatus.from_exit_code(await with_exit_code(qa_check))
