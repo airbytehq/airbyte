@@ -41,7 +41,7 @@ class Products(Stream, IncrementalMixin):
         self._state = value
 
     def load_products(self) -> List[Dict]:
-        return json.loads(load_optional_package_file("source_faker",
+        return json.loads(load_optional_package_file(self.__class__.__module__,
                                                      "record_data/products.json"))
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
