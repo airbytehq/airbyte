@@ -91,7 +91,7 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.1.22
+  dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
@@ -294,6 +294,9 @@
   icon: close.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.close.com
 - name: CoinGecko Coins
   sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
   dockerRepository: airbyte/source-coingecko-coins
@@ -432,11 +435,14 @@
 - name: Delighted
   sourceDefinitionId: cc88c43f-6f53-4e8a-8c4d-b284baaf9635
   dockerRepository: airbyte/source-delighted
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   icon: delighted.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.delighted.com
 - name: Dixa
   sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerRepository: airbyte/source-dixa
@@ -667,6 +673,9 @@
   icon: gitlab.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "*"
 - name: Glassfrog
   sourceDefinitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
   dockerRepository: airbyte/source-glassfrog
@@ -786,6 +795,9 @@
   icon: greenhouse.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - harvest.greenhouse.io
 - name: Gutendex
   sourceDefinitionId: bff9a277-e01d-420d-81ee-80f28a307318
   dockerRepository: airbyte/source-gutendex
@@ -904,7 +916,7 @@
 - name: Iterable
   sourceDefinitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
   dockerRepository: airbyte/source-iterable
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.com/integrations/sources/iterable
   icon: iterable.svg
   sourceType: api
@@ -958,11 +970,15 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - a.klaviyo.com
+      - klaviyo.com
 - name: Kyriba
   sourceDefinitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
   dockerRepository: airbyte/source-kyriba
@@ -1176,11 +1192,14 @@
 - name: NASA
   sourceDefinitionId: 1a8667d7-7978-43cd-ba4d-d32cbd478971
   dockerRepository: airbyte/source-nasa
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/nasa
   icon: nasa.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.nasa.gov
 - name: Netsuite
   sourceDefinitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
   dockerRepository: airbyte/source-netsuite
@@ -1358,7 +1377,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.2.2
+  dockerImageTag: 0.2.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1535,7 +1554,7 @@
 - name: Recharge
   sourceDefinitionId: 45d2e135-2ede-49e1-939f-3e3ec357a65e
   dockerRepository: airbyte/source-recharge
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.7
   documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
   icon: recharge.svg
   sourceType: api
@@ -1689,11 +1708,15 @@
 - name: Senseforce
   sourceDefinitionId: 39de93cb-1511-473e-a673-5cbedb9436af
   dockerRepository: airbyte/source-senseforce
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
   icon: senseforce.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - galaxyapi.senseforce.io
+      - senseforce.io
 - name: Sendinblue
   sourceDefinitionId: 2e88fa20-a2f6-43cc-bba6-98a0a3f244fb
   dockerRepository: airbyte/source-sendinblue
@@ -1760,7 +1783,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.1.15
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
@@ -1957,6 +1980,10 @@
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - api.twilio.com
+      - monitor.twilio.com
 - name: Twilio Taskrouter
   sourceDefinitionId: 2446953b-b794-429b-a9b3-c821ba992a48
   dockerRepository: airbyte/source-twilio-taskrouter
