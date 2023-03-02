@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.49"
+- dockerImage: "airbyte/source-alloydb:1.0.51"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11635,7 +11635,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.50"
+- dockerImage: "airbyte/source-postgres:1.0.51"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12050,7 +12050,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.3.0"
+- dockerImage: "airbyte/source-prestashop:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/prestashop"
     connectionSpecification:
@@ -12081,6 +12081,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-01-01"
+          format: "date"
           order: 2
     supportsNormalization: false
     supportsDBT: false
@@ -16105,7 +16106,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-woocommerce:0.2.0"
+- dockerImage: "airbyte/source-woocommerce:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/woocommerce"
     connectionSpecification:
@@ -16144,6 +16145,7 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           order: 3
         conversion_window_days:
           type: "integer"
