@@ -4,6 +4,7 @@
 
 
 import copy
+import itertools
 import json
 import logging
 import os
@@ -11,12 +12,12 @@ from glob import glob
 from logging import Logger
 from pathlib import Path
 from subprocess import STDOUT, check_output, run
-from typing import Any, List, MutableMapping, Optional, Set
+from typing import Any, List, Mapping, MutableMapping, Optional, Set
 
 import pytest
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConnectorSpecification, Type
 from connector_acceptance_test.base import BaseTest
-from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig
+from connector_acceptance_test.config import Config, EmptyStreamConfiguration, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import TestBasicRead
 from connector_acceptance_test.utils import (
     ConnectorRunner,
@@ -53,6 +54,11 @@ def test_strictness_level_fixture(acceptance_test_config: Config) -> Config.Test
 @pytest.fixture(name="cache_discovered_catalog", scope="session")
 def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
     return acceptance_test_config.cache_discovered_catalog
+
+
+@pytest.fixture(name="custom_environment_variables", scope="session")
+def custom_environment_variables_fixture(acceptance_test_config: Config) -> Mapping:
+    return acceptance_test_config.custom_environment_variables
 
 
 @pytest.fixture(name="connector_config_path")
@@ -140,8 +146,13 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
 
 
 @pytest.fixture(name="docker_runner")
-def docker_runner_fixture(image_tag, tmp_path, connector_config_path) -> ConnectorRunner:
-    return ConnectorRunner(image_tag, volume=tmp_path, connector_configuration_path=connector_config_path)
+def docker_runner_fixture(image_tag, tmp_path, connector_config_path, custom_environment_variables) -> ConnectorRunner:
+    return ConnectorRunner(
+        image_tag,
+        volume=tmp_path,
+        connector_configuration_path=connector_config_path,
+        custom_environment_variables=custom_environment_variables,
+    )
 
 
 @pytest.fixture(name="previous_connector_image_name")
@@ -187,6 +198,18 @@ def empty_streams_fixture(inputs, test_strictness_level) -> Set[EmptyStreamConfi
         if not all_empty_streams_have_bypass_reasons:
             pytest.fail("A bypass_reason must be filled in for all empty streams when test_strictness_level is set to high.")
     return empty_streams
+
+
+@pytest.fixture(name="ignored_fields")
+def ignored_fields_fixture(inputs, test_strictness_level) -> Optional[Mapping[str, List[IgnoredFieldsConfiguration]]]:
+    ignored_fields = getattr(inputs, "ignored_fields", {}) or {}
+    if test_strictness_level is Config.TestStrictnessLevel.high and ignored_fields:
+        all_ignored_fields_have_bypass_reasons = all(
+            [bool(ignored_field.bypass_reason) for ignored_field in itertools.chain.from_iterable(inputs.ignored_fields.values())]
+        )
+        if not all_ignored_fields_have_bypass_reasons:
+            pytest.fail("A bypass_reason must be filled in for all ignored fields when test_strictness_level is set to high.")
+    return ignored_fields
 
 
 @pytest.fixture(name="expect_records_config")
@@ -308,7 +331,7 @@ def detailed_logger() -> Logger:
     logger.setLevel(logging.DEBUG)
     fh = logging.FileHandler(filename, mode="w")
     fh.setFormatter(formatter)
-    logger.log_json_list = lambda l: logger.info(json.dumps(list(l), indent=1))
+    logger.log_json_list = lambda line: logger.info(json.dumps(list(line), indent=1))
     logger.handlers = [fh]
     return logger
 
