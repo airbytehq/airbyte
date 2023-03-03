@@ -5,7 +5,28 @@ on:
       - issue-22485_**
 
 jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_cdk_version: ${{ steps.bumpversion.outputs.NEW_VERSION }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          ref: master
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+      - name: "Publish Airbyte CDK: bump version"
+        id: bumpversion
+        run: |
+          pip install bumpversion
+          cd airbyte-cdk/python
+          bumpversion major
+          new_version="$(grep -i 'current_version = ' .bumpversion.cfg | sed -e 's/.* = //')"
+          awk -v NEW_VERSION="$new_version" -v CHANGELOG_MESSAGE="${{ github.event.inputs.changelog-message }}" 'NR==3{print "## " NEW_VERSION "\n" CHANGELOG_MESSAGE "\n"}1' CHANGELOG.md > tmp && mv tmp CHANGELOG.md
+          echo NEW_VERSION=$new_version >> $GITHUB_OUTPUT
   create-pr:
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte Platform
@@ -14,24 +35,9 @@ jobs:
           repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
-        run: echo "This is a test" > oss/airbyte-connector-builder-server/CDK_VERSION
-      - name: Create Pull Request
-        id: create-pull-request
-        uses: peter-evans/create-pull-request@v4
-        with:
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          commit-message: Updating CDK version following release
-          title: Updating CDK version following release
-          body: This is an automatically generated PR triggered by a CDK release
-          branch: automatic-cdk-release
-          base: master
-          delete-branch: true
-      - name: Enable Pull Request Automerge
-        if: steps.create-pull-request.outputs.pull-request-operation == 'created'
-        uses: peter-evans/enable-pull-request-automerge@v2
-        with:
-          repository: airbytehq/airbyte-platform-internal
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          pull-request-number: ${{ steps.create-pull-request.outputs.pull-request-number }}
-          merge-method: squash
+        env:
+          NEW_CDK_VERSION: ${{needs.bump-version.outputs.new_cdk_version}}
+        run: |
+          echo "$NEW_CDK_VERSION" > oss/airbyte-connector-builder-server/CDK_VERSION
+          cat oss/airbyte-connector-builder-server/CDK_VERSION
 # steps.create-pull-request.output.pull-request-url
