@@ -125,16 +125,22 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    */
   @Test
   public void testDataContent() throws Exception {
+    // Class used to make easier the error reporting
     class MissedRecords {
+
+      // Stream that is missing any value
       public String streamName;
+      // Type associated to the test
       public String dataType;
+      // Which are the values that has not being gathered from the source
       public List<String> missedValues;
 
-      public MissedRecords(String streamName, String dataType, List<String> missedValues){
+      public MissedRecords(String streamName, String dataType, List<String> missedValues) {
         this.streamName = streamName;
         this.dataType = dataType;
         this.missedValues = missedValues;
       }
+
     }
 
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
@@ -144,7 +150,6 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     final Map<String, List<String>> expectedValues = new HashMap<>();
     final Map<String, String> testTypes = new HashMap<>();
     final ArrayList<MissedRecords> missedValues = new ArrayList<>();
-
 
     // If there is no expected value in the test set we don't include it in the list to be asserted
     // (even if the table contains records)
@@ -171,14 +176,15 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
     // Gather all the missing values, so we don't stop the test in the first missed one
     expectedValues.forEach((streamName, values) -> {
-      if (!values.isEmpty()){
+      if (!values.isEmpty()) {
         missedValues.add(new MissedRecords(streamName, testTypes.get(streamName), values));
-      }});
+      }
+    });
 
     assertTrue(missedValues.isEmpty(),
-        missedValues.stream().map((entry) -> //stream each entry, map it to string value
-                "The stream '" + entry.streamName + "' checking type '" + entry.dataType + "' is missing values: " + entry.missedValues)
-            .collect(Collectors.joining("\n"))); //and join them
+        missedValues.stream().map((entry) -> // stream each entry, map it to string value
+        "The stream '" + entry.streamName + "' checking type '" + entry.dataType + "' is missing values: " + entry.missedValues)
+            .collect(Collectors.joining("\n"))); // and join them
   }
 
   protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
