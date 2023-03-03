@@ -22,7 +22,7 @@
     },
     "backdated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "call_to_action": {
       "type": ["string", "null"]
@@ -47,7 +47,7 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "description": {
       "type": ["string", "null"]
@@ -198,7 +198,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "via": {
       "type": ["string", "null"]
