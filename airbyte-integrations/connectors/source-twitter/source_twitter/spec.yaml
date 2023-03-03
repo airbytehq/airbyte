@@ -1,4 +1,4 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Twitter Spec
@@ -22,10 +22,10 @@ connectionSpecification:
     start_date:
       type: string
       title: Start Date
-      description: From what date you want to start retrieving dta
+      description: "The start date for retrieving tweets cannot be more than 7 days in the past."
       order: 2
     end_date:
       type: string
       title: End Date
-      description: End data to retrieve data
+      description: "The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time."
       order: 3
