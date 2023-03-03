@@ -49,4 +49,6 @@ jobs:
           branch: automatic-cdk-release-${{needs.bump-version.outputs.new_cdk_version}}
           base: master
           delete-branch: true
-# steps.create-pull-request.output.pull-request-url
+      - name: Print create-pull-request output
+        run: |
+          echo ${{steps.create-pull-request.outputs.pull-request-url}}
