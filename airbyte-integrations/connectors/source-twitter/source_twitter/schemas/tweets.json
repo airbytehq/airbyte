@@ -23,6 +23,12 @@
     },
     "author_id": {
       "type": ["null", "string"]
+    },
+    "conversation_id": {
+      "type": ["null", "string"]
+    },
+    "in_reply_to_user_id": {
+      "type": ["null", "string"]
     }
   }
 }

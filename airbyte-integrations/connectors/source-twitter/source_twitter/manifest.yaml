@@ -13,8 +13,7 @@ definitions:
       api_token: "{{ config['api_key'] }}"
     request_parameters:
       query: "{{ config['query'] }}"
-      tweet.fields: "created_at,lang"
-      expansions: "author_id"
+      tweet.fields: "author_id,conversation_id,created_at,in_reply_to_user_id,lang"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
