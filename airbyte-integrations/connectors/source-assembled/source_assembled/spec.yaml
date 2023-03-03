@@ -25,6 +25,11 @@ connectionSpecification:
       description: The number of days of data to fetch from the reports API endpoint every day. This assures that you have the most up to date metrics for each report interval.
       title: Report Days
       default: 30
+    future_days:
+      type: integer
+      description: The number of days of future data to fetch from the API every day (applies to activities and forecasts)
+      title: Future Days
+      default: 60
     report_channels:
       type: array
       description: The channels to fetch report data for.

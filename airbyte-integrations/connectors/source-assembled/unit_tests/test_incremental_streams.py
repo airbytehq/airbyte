@@ -13,6 +13,7 @@ default_start_date = pendulum.now().subtract(days=7).replace(hour=0, minute=0, s
 kwargs = {
     "default_start_date": default_start_date,
     "history_days": 30,
+    "future_days": 30,
 }
 
 

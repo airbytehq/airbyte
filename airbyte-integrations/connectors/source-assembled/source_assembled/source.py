@@ -129,13 +129,15 @@ def chunk_date_range(start_date: DateTime, interval=pendulum.duration(days=1), e
 ###
 class IncrementalAssembledStream(AssembledStream, ABC):
     paginate = False
+    fetch_future_data = False
 
     cursor_field = "start_time"
     _cursor_value = None
 
-    def __init__(self, default_start_date: DateTime, history_days: int, channels: List[str] = None, **kwargs):
+    def __init__(self, default_start_date: DateTime, history_days: int, future_days: int, channels: List[str] = None, **kwargs):
         self._channels = channels or []
         self._history_days = history_days
+        self._future_days = future_days
         self._start_ts = default_start_date
         super().__init__(**kwargs)
 
@@ -177,15 +179,19 @@ class IncrementalAssembledStream(AssembledStream, ABC):
         current_time = pendulum.now("UTC")
         current_date = current_time.start_of("day")
 
-        start_ts = self._start_ts
+        end_ts = current_date
+        if self.fetch_future_data:
+            end_ts += pendulum.duration(days=self._future_days)
+            logger.info(f"Syncing {self._future_days} days of future data for stream {self.name}")
 
+        start_ts = self._start_ts
         if state_ts and sync_mode == SyncMode.incremental:
             days_diff = current_date.diff(state_ts).in_days()
             days = self._history_days if days_diff >= 1 else 1
             logger.info(f"Syncing {days} for stream {self.name}")
             start_ts = current_date - pendulum.duration(days=days)
 
-        for period in chunk_date_range(start_date=start_ts, end_date=current_time):
+        for period in chunk_date_range(start_date=start_ts, end_date=end_ts):
             period_unix = {"start_time": period.start.int_timestamp, "end_time": period.end.int_timestamp}
             if self._channels:
                 for channel in self._channels:
@@ -374,6 +380,7 @@ class AgentTicketStatsReport(ReportStream):
 
 class Activities(IncrementalAssembledStream):
     data_field = "activities"
+    fetch_future_data = True
 
     def path(self, **kwargs) -> str:
         return "activities"
@@ -416,6 +423,7 @@ class Forecasts(IncrementalAssembledStream):
 
     data_field = "forecasts"
     result_is_dict = False
+    fetch_future_data = True
 
     def path(self, **kwargs) -> str:
         return "forecasts"
@@ -437,6 +445,7 @@ class SourceAssembled(AbstractSource):
 
         default_start_date = pendulum.parse(config.get("start_date"))
 
+        future_days = config.get("future_days", 60)
         history_days = config.get("history_days", 30)
         report_channels = config.get("report_channels", ["phone", "email"])
         forecast_channels = config.get("forecast_channels", ["phone", "email"])
@@ -445,6 +454,7 @@ class SourceAssembled(AbstractSource):
             "authenticator": auth,
             "default_start_date": default_start_date,
             "history_days": history_days,
+            "future_days": future_days,
         }
 
         forecasts_kwargs = {
