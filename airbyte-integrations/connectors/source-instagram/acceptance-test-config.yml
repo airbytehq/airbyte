@@ -21,6 +21,8 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         empty_streams:
+          - name: media_insights
+            bypass_reason: Media statistic changed frecvently
           - name: stories
             bypass_reason: Stories available only 24 hours
           - name: story_insights
