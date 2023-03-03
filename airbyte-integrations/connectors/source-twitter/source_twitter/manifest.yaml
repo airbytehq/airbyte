@@ -61,6 +61,7 @@ definitions:
       name: "tweets"
       path: "/search/recent"
       cursor_field: "created_at"
+      primary_key: "id"
 
 streams:
   - "#/definitions/tweets_stream"
