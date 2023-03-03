@@ -33,12 +33,13 @@
         "type": "string",
         "title": "Reader Options",
         "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-        "examples": ["{}", "{\"sep\": \" \"}"]
+        "examples": ["{}", "{\"sep\": \" \"}", { "sep" : "\t", "header" : 0, "names": "column1, column2"}]
       },
       "url": {
         "type": "string",
         "title": "URL",
-        "description": "The URL path to access the file which should be replicated."
+        "description": "The URL path to access the file which should be replicated. The format for that is https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID] where [DRIVE_FILE_ID] is the string found in the Share URL here https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing",
+        "examples": ["https://drive.google.com/uc?export=download&id=1111111111"]
       },
       "provider": {
         "type": "object",

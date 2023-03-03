@@ -1,57 +1,15 @@
 # Files (CSV, JSON, Excel, Feather, Parquet)
 
-## Features
+This page contains the setup guide and reference information for the Files source connector.
 
-| Feature                                  | Supported? |
-| ---------------------------------------- | ---------- |
-| Full Refresh Sync                        | Yes        |
-| Incremental Sync                         | No         |
-| Replicate Incremental Deletes            | No         |
-| Replicate Folders (multiple Files)       | No         |
-| Replicate Glob Patterns (multiple Files) | No         |
+## Prerequisites
+* URL to access the file
+* Format
+* Reader options
+* Storage Providers
 
-This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
 
-### Storage Providers
-
-| Storage Providers      | Supported?                                      |
-| ---------------------- | ----------------------------------------------- |
-| HTTPS                  | Yes                                             |
-| Google Cloud Storage   | Yes                                             |
-| Amazon Web Services S3 | Yes                                             |
-| SFTP                   | Yes                                             |
-| SSH / SCP              | Yes                                             |
-| local filesystem       | Local use only (inaccessible for Airbyte Cloud) |
-
-### File / Stream Compression
-
-| Compression | Supported? |
-| ----------- | ---------- |
-| Gzip        | Yes        |
-| Zip         | No         |
-| Bzip2       | No         |
-| Lzma        | No         |
-| Xz          | No         |
-| Snappy      | No         |
-
-### File Formats
-
-| Format                | Supported? |
-| --------------------- | ---------- |
-| CSV                   | Yes        |
-| JSON                  | Yes        |
-| HTML                  | No         |
-| XML                   | No         |
-| Excel                 | Yes        |
-| Excel Binary Workbook | Yes        |
-| Feather               | Yes        |
-| Parquet               | Yes        |
-| Pickle                | No         |
-| YAML                  | Yes        |
-
-**This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
-
-## Getting Started
+## Setup guide
 
 <!-- env:cloud -->
 
@@ -99,7 +57,62 @@ For example, you can use the `{"orient" : "records"}` to change how orientation 
 
 If you need to read Excel Binary Workbook, please specify `excel_binary` format in `File Format` select.
 
-#### Changing data types of source columns
+    :::warning
+    This connector does not support syncing unstructured data files such as raw text, audio, or videos.
+    :::
+
+## Supported sync modes
+
+| Feature                                  | Supported? |
+| ---------------------------------------- | ---------- |
+| Full Refresh Sync                        | Yes        |
+| Incremental Sync                         | No         |
+| Replicate Incremental Deletes            | No         |
+| Replicate Folders (multiple Files)       | No         |
+| Replicate Glob Patterns (multiple Files) | No         |
+
+    :::info
+    This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
+    :::
+
+## File / Stream Compression
+
+| Compression | Supported? |
+| ----------- | ---------- |
+| Gzip        | Yes        |
+| Zip         | No         |
+| Bzip2       | No         |
+| Lzma        | No         |
+| Xz          | No         |
+| Snappy      | No         |
+
+## Storage Providers
+
+| Storage Providers      | Supported?                                      |
+| ---------------------- | ----------------------------------------------- |
+| HTTPS                  | Yes                                             |
+| Google Cloud Storage   | Yes                                             |
+| Amazon Web Services S3 | Yes                                             |
+| SFTP                   | Yes                                             |
+| SSH / SCP              | Yes                                             |
+| local filesystem       | Local use only (inaccessible for Airbyte Cloud) |
+
+### File Formats
+
+| Format                | Supported? |
+| --------------------- | ---------- |
+| CSV                   | Yes        |
+| JSON                  | Yes        |
+| HTML                  | No         |
+| XML                   | No         |
+| Excel                 | Yes        |
+| Excel Binary Workbook | Yes        |
+| Feather               | Yes        |
+| Parquet               | Yes        |
+| Pickle                | No         |
+| YAML                  | Yes        |
+
+### Changing data types of source columns
 
 Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`.
 
