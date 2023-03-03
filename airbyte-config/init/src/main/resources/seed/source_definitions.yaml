@@ -580,6 +580,9 @@
   icon: file.svg
   sourceType: file
   releaseStage: generally_available
+  allowedHosts:
+    hosts:
+      - "*"
 - name: Freshcaller
   sourceDefinitionId: 8a5d48f6-03bb-4038-a942-a8d3f175cca3
   dockerRepository: airbyte/source-freshcaller
