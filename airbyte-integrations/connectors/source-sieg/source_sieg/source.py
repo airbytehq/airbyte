@@ -148,10 +148,7 @@ class BaseClass(HttpStream):
             print("Empity XMLNS")
             print(f"--- Response: {response.text}")
             pass
-
-        # with open(f'./teste_sieg_{self.skip}.json', 'w+') as f:
-        #     json.dump(items, f)
-        #     f.truncate()
+        
         return items
 
 
