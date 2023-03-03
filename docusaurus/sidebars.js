@@ -70,8 +70,25 @@ module.exports = {
           id: "cloud/getting-started-with-airbyte-cloud",
         },
         'cloud/core-concepts',
-        'cloud/managing-airbyte-cloud',
-        'cloud/dbt-cloud-integration',
+        {
+          type: 'category',
+          label: 'Managing Airbyte Cloud',
+          link: {
+            type: 'generated-index',
+          },
+          items: [
+            'cloud/managing-airbyte-cloud/edit-stream-configuration',
+            'cloud/managing-airbyte-cloud/manage-schema-changes',
+            'cloud/managing-airbyte-cloud/manage-data-residency',
+            'cloud/managing-airbyte-cloud/manage-credits',
+            'cloud/managing-airbyte-cloud/review-sync-summary',
+            'cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications',
+            'cloud/managing-airbyte-cloud/dbt-cloud-integration',
+            'cloud/managing-airbyte-cloud/manage-airbyte-cloud-workspace',
+            'cloud/managing-airbyte-cloud/understand-airbyte-cloud-limits',
+            'cloud/managing-airbyte-cloud/review-connection-state',
+          ],        
+        },
       ],
     },
     {
@@ -438,6 +455,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/february_2023',
         'release_notes/january_2023',
         'release_notes/december_2022',
         'release_notes/november_2022',
