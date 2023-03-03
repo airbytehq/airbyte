@@ -13,7 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .streams import SurveyPages, SurveyQuestions, SurveyResponses, Surveys
+from .streams import SurveyPages, SurveyQuestions, SurveyResponses, SurveyCollectors, Surveys
 
 
 class SourceSurveymonkey(AbstractSource):
@@ -80,7 +80,7 @@ class SourceSurveymonkey(AbstractSource):
         start_date = pendulum.parse(config["start_date"])
         survey_ids = config.get("survey_ids", [])
         args = {"authenticator": authenticator, "start_date": start_date, "survey_ids": survey_ids}
-        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args)]
+        return [Surveys(**args), SurveyPages(**args), SurveyQuestions(**args), SurveyResponses(**args), SurveyCollectors(**args)]
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
