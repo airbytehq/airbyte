@@ -8,6 +8,7 @@ from pytest import fixture
 @fixture(name="config")
 def config_fixture():
     return {
+        "site": "api.datadoghq.com",
         "api_key": "test_api_key",
         "application_key": "test_application_key",
         "query": "",

@@ -43,6 +43,7 @@ def test_task_stream(requests_mock, stream, config, mock_responses):
 @patch.multiple(DatadogStream, __abstractmethods__=set())
 def test_next_page_token(config):
     stream = DatadogStream(
+        site=config["site"],
         query=config["query"],
         max_records_per_request=config["max_records_per_request"],
         start_date=config["start_date"],
