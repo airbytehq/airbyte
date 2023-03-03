@@ -5,7 +5,6 @@
 package io.airbyte.integrations.debezium.internals;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -51,7 +50,7 @@ public class DebeziumRecordIteratorTest {
     });
 
     assertEquals(lsn, 358824993496L);
-    assertNull(debeziumRecordIterator.getHeartbeatPosition(null));
+    assertEquals(-1, debeziumRecordIterator.getHeartbeatPosition(null));
   }
 
 }
