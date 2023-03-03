@@ -10,8 +10,13 @@
       "authorization": {
         "type": "object",
         "title": "API Key Authentication",
-        "required": ["api_token"],
+        "required": ["auth_type", "api_token"],
         "properties": {
+          "auth_type": {
+            "type": "string",
+            "const": "Token",
+            "order": 0
+          },
           "api_token": {
             "title": "API Token",
             "type": "string",
