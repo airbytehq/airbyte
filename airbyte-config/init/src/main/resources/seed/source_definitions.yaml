@@ -265,7 +265,7 @@
 - name: Chartmogul
   sourceDefinitionId: b6604cbd-1b12-4c08-8767-e140d0fb0877
   dockerRepository: airbyte/source-chartmogul
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   icon: chartmogul.svg
   sourceType: api
