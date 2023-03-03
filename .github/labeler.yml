@@ -13,12 +13,6 @@ area/platform:
   - charts/*
   - charts/**/*
 
-area/frontend:
-  - airbyte-webapp/*
-  - airbyte-webapp/**/*
-  - airbyte-webapp-e2e-tests/*
-  - airbyte-webapp-e2e-tests/**/*
-
 area/api:
   - airbyte-api/*
   - airbyte-api/**/*
