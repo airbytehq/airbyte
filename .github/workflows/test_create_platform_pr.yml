@@ -35,9 +35,18 @@ jobs:
           repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
-        env:
-          NEW_CDK_VERSION: ${{needs.bump-version.outputs.new_cdk_version}}
         run: |
-          echo "$NEW_CDK_VERSION" > oss/airbyte-connector-builder-server/CDK_VERSION
+          echo ${{needs.bump-version.outputs.new_cdk_version}} > oss/airbyte-connector-builder-server/CDK_VERSION
           cat oss/airbyte-connector-builder-server/CDK_VERSION
+      - name: Create Pull Request
+        id: create-pull-request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          commit-message: Updating CDK version following release
+          title: Updating CDK version following release
+          body: This is an automatically generated PR triggered by a CDK release
+          branch: automatic-cdk-release-${{needs.bump-version.outputs.new_cdk_version}}
+          base: master
+          delete-branch: true
 # steps.create-pull-request.output.pull-request-url
