@@ -11225,7 +11225,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-pipedrive:0.1.14"
+- dockerImage: "airbyte/source-pipedrive:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pipedrive"
     connectionSpecification:
@@ -11238,51 +11238,20 @@
       properties:
         authorization:
           type: "object"
-          title: "Authentication Type"
-          description: "Choose one of the possible authorization method"
-          oneOf:
-          - title: "Sign in via Pipedrive (OAuth)"
-            type: "object"
-            required:
-            - "auth_type"
-            - "client_id"
-            - "client_secret"
-            - "refresh_token"
-            properties:
-              auth_type:
-                type: "string"
-                const: "Client"
-                order: 0
-              client_id:
-                title: "Client ID"
-                type: "string"
-                description: "The Client ID of your Pipedrive developer application."
-                airbyte_secret: true
-              client_secret:
-                title: "Client Secret"
-                type: "string"
-                description: "The Client Secret of your Pipedrive developer application"
-                airbyte_secret: true
-              refresh_token:
-                title: "Refresh Token"
-                type: "string"
-                description: "The token for obtaining the new access token."
-                airbyte_secret: true
-          - type: "object"
-            title: "API Key Authentication"
-            required:
-            - "auth_type"
-            - "api_token"
-            properties:
-              auth_type:
-                type: "string"
-                const: "Token"
-                order: 0
-              api_token:
-                title: "API Token"
-                type: "string"
-                description: "The Pipedrive API Token."
-                airbyte_secret: true
+          title: "API Key Authentication"
+          required:
+          - "auth_type"
+          - "api_token"
+          properties:
+            auth_type:
+              type: "string"
+              const: "Token"
+              order: 0
+            api_token:
+              title: "API Token"
+              type: "string"
+              description: "The Pipedrive API Token."
+              airbyte_secret: true
         replication_start_date:
           title: "Start Date"
           description: "UTC date and time in the format 2017-01-25T00:00:00Z. Any\
@@ -11297,17 +11266,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject:
-        - "authorization"
-        - "0"
-        oauthFlowInitParameters:
-        - - "client_id"
-        - - "client_secret"
-        oauthFlowOutputParameters:
-        - - "refresh_token"
 - dockerImage: "airbyte/source-pivotal-tracker:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
