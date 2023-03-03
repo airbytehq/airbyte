@@ -1,8 +1,5 @@
 # Changelog
 
-## 0.30.0
-Low-Code CDK: duration macro added
-
 ## 0.29.2
 support python3.8
 
