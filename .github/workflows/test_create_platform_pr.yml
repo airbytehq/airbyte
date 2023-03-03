@@ -11,10 +11,10 @@ jobs:
       - name: Checkout Airbyte Platform
         uses: actions/checkout@v3
         with:
-          repository: airbytehq/airbyte-platform
+          repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
       - name: Update CDK version
-        run: echo "This is a test" > airbyte-connector-builder-server/CDK_VERSION
+        run: echo "This is a test" > oss/airbyte-connector-builder-server/CDK_VERSION
       - name: Create Pull Request
         id: create-pull-request
         uses: peter-evans/create-pull-request@v4
@@ -24,7 +24,7 @@ jobs:
           title: Updating CDK version following release
           body: This is an automatically generated PR triggered by a CDK release
           branch: automatic-cdk-release
-          base: main
+          base: master
           delete-branch: true
       - name: Enable Pull Request Automerge
         if: steps.create-pull-request.outputs.pull-request-operation == 'created'
