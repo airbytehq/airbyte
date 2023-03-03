@@ -4,7 +4,7 @@
 
 import logging
 import sys
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Set
 import yaml
 
 from ci_connector_ops import utils
@@ -40,25 +40,35 @@ def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
                 connectors_with_bad_strictness_level.append(connector)
     return connectors_with_bad_strictness_level
 
-def find_changed_ga_connectors() -> List[utils.Connector]:
+def find_changed_ga_connectors() -> Set[str]:
     """Find GA connectors modified on the current branch.
 
     Returns:
-        List[utils.Connector]: The list of GA connectors that were modified on the current branch.
+        Set[str]: Set of connector names e.g {"source-github"}: The set of GA connectors that were modified on the current branch.
     """
     changed_connectors = utils.get_changed_connectors()
-    return [connector for connector in changed_connectors if connector.release_stage == "generally_available"]
+    return {connector.technical_name for connector in changed_connectors if connector.release_stage == "generally_available"}
+
+def get_ga_bypass_reason_changes() -> Set[str]:
+    """Find GA connectors that have modified bypass_reasons.
+
+    Returns:
+        Set[str]: Set of connector names e.g {"source-github"}: The set of GA connectors that have changed bypass_reasons.
+    """
+    bypass_reason_changes = utils.get_changed_acceptance_test_config(diff_regex="bypass_reason")
+    return bypass_reason_changes.intersection(find_changed_ga_connectors())
 
 def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
     ga_connector_changes = find_changed_ga_connectors()
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
-    bypass_reason_changes = utils.get_changed_acceptance_test_config(diff_regex="bypass_reason")
+    ga_bypass_reason_changes = get_ga_bypass_reason_changes()
+
     if backward_compatibility_changes:
         return [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
     if test_strictness_level_changes:
         return [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
-    if bypass_reason_changes:
+    if ga_bypass_reason_changes:
         return [{"any-of": list(GA_BYPASS_REASON_REVIEWERS)}]
     if ga_connector_changes:
         return list(GA_CONNECTOR_REVIEWERS)
