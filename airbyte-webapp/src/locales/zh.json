@@ -236,6 +236,7 @@
   "onboarding.firstSync": "开始第一次同步",
   "onboarding.syncFailed": "同步失败，请重试",
   "onboarding.startAgain": "同步已取消，您可以重新开始",
+  "onboarding.tryAgainText": "抱歉，系统发生错误。",
 
   "sources.description": "<b>数据源</b>您可以从中<b>复制数据</b>的地方。",
   "sources.searchIncremental": "搜索游标值增量复制",
@@ -573,7 +574,7 @@
   "docs.notFoundError": "我们无法接收文档。请点击上面的链接打开我们网站上的文档",
   "errorView.notFound": "找不到资源。",
   "errorView.notAuthorized": "您没有访问此页面的权限。",
-  "errorView.title": "糟糕！出了点问题...",
+  "errorView.title": "糟糕!",
   "errorView.retry": "重试",
   "errorView.unknown": "未知",
   "errorView.unknownError": "发生未知错误",

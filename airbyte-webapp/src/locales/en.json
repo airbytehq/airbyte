@@ -236,6 +236,7 @@
   "onboarding.firstSync": "Start your first sync",
   "onboarding.syncFailed": "Your sync is failed. Please try again",
   "onboarding.startAgain": "Your sync was cancelled. You can start it again",
+  "onboarding.tryAgainText": "Sorry, something went wrong.",
 
   "sources.description": "<b>Sources</b> are where you want to <b>pull data</b> from.",
   "sources.searchIncremental": "Search cursor value for incremental",
@@ -573,7 +574,7 @@
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.notFound": "Resource not found.",
   "errorView.notAuthorized": "You don’t have permission to access this page.",
-  "errorView.title": "Oops! Something went wrong…",
+  "errorView.title": "Oops!",
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",

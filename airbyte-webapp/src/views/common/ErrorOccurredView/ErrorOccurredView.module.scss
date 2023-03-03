@@ -11,8 +11,10 @@
   text-align: center;
 
   .octavia {
-    width: 100px;
-    height: 128px;
+    // width: 100px;
+    // height: 128px;
+    width: 258px;
+    height: 216px;
     margin-bottom: 24px;
   }
 
@@ -25,6 +27,22 @@
   }
 
   .message {
-    margin-bottom: 30px;
+    // margin-bottom: 10px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .h2 {
+    font-weight: 700;
+    font-size: 60px;
+    line-height: 70px;
+    margin-bottom: 40px;
+  }
+
+  .tips {
+    margin-bottom: 40px;
+    font-weight: 500;
+    font-size: 14px;
+    color: #6b6b6f;
   }
 }
