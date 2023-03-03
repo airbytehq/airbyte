@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import asyncio
 import logging
 import os
 import sys
@@ -10,16 +11,54 @@ from typing import List
 import anyio
 import click
 import dagger
-from ci_connector_ops.pipelines.actions import builds, environments, secrets, tests
-from ci_connector_ops.pipelines.utils import StepStatus
+from ci_connector_ops.pipelines.actions import builds, environments, remote_storage, secrets, tests
+from ci_connector_ops.pipelines.models import ConnectorTestContext, ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
-from dagger import Client, Container
+
+REQUIRED_ENV_VARS_FOR_CI = ["GCP_GSM_CREDENTIALS", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "TEST_REPORTS_BUCKET_NAME"]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-async def run_connector_test_pipelines(dagger_client: Client, connector: Connector, use_gsm_secrets: bool):
+async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
+    main_pipeline_name = f"CI test for {test_context.connector.technical_name}"
+    test_context.logger = logging.getLogger(main_pipeline_name)
+    test_context.secrets_dir = await secrets.get_connector_secret_dir(
+        test_context.dagger_client.pipeline(f"Setup {test_context.connector.technical_name}"), test_context
+    )
+    test_context.updated_secrets_dir = None
+    return test_context
+
+
+async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTestReport) -> ConnectorTestContext:
+    teardown_pipeline = test_context.dagger_client.pipeline(f"Teardown {test_context.connector.technical_name}")
+    if test_context.should_save_updated_secrets:
+        await secrets.upload(
+            teardown_pipeline,
+            test_context.connector,
+            test_context.updated_secrets_dir,
+        )
+
+    test_context.logger.info(str(test_report))
+    local_test_reports_path_root = "tools/ci_connector_ops/test_reports/"
+
+    connector_name = test_report.connector_test_context.connector.technical_name
+    connector_version = test_report.connector_test_context.connector.version
+    git_revision = test_report.connector_test_context.git_revision
+    git_branch = test_report.connector_test_context.git_branch.replace("/", "_")
+    suffix = f"{connector_name}/{git_branch}/{connector_version}/{git_revision}.json"
+    local_report_path = Path(local_test_reports_path_root + suffix)
+    local_report_path.parents[0].mkdir(parents=True, exist_ok=True)
+    local_report_path.write_text(test_report.to_json())
+    if test_report.should_be_saved:
+        s3_reports_path_root = "python-poc/tests/history/"
+        s3_key = s3_reports_path_root + suffix
+        await remote_storage.upload_to_s3(teardown_pipeline, str(local_report_path), s3_key, os.environ["TEST_REPORTS_BUCKET_NAME"])
+    return test_context
+
+
+async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
     1. Create a build context
     2. Check code format
@@ -34,62 +73,57 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
         connector (Connector): The connector under test.
         gsm_credentials (str): The GSM credentials to read/write connector's secrets.
     """
-    main_pipeline_name = f"CI test for {connector.technical_name}"
-    pipeline_logger = logging.getLogger(main_pipeline_name)
-    connector_ci_client: Client = dagger_client.pipeline(main_pipeline_name)
-    connector_client = connector_ci_client.pipeline(f"{connector.technical_name} - Install connector python package")
+    test_context = await setup(test_context)
+    connector = test_context.connector
+    connector_source_code = await environments.with_airbyte_connector(test_context.dagger_client, connector, install=False)
+    connector_under_test = await environments.with_airbyte_connector(test_context.dagger_client, connector)
 
-    connector_under_test: Container = await environments.with_airbyte_connector(connector_client, connector)
+    format_check_results, unit_tests_results, connector_under_test_exit_code, qa_checks_results = await asyncio.gather(
+        tests.check_format(connector_source_code),
+        tests.run_unit_tests(connector_under_test),
+        connector_under_test.exit_code(),
+        tests.run_qa_checks(test_context.dagger_client, connector),
+    )
 
-    format_check_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Format Check")
-    format_check_status: StepStatus = await tests.check_format(format_check_container)
+    package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
 
-    unit_test_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Unit tests")
-    unit_tests_status: StepStatus = await tests.run_unit_tests(unit_test_container)
+    if unit_tests_results.status is StepStatus.SUCCESS:
+        integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
+        docker_build_future = asyncio.create_task(builds.build_dev_image(test_context.dagger_client, connector, exclude=[".venv"]))
 
-    integration_test_container: Container = connector_under_test.pipeline(f"{connector.technical_name} - Integration tests")
-    integration_tests_status: StepStatus = await tests.run_integration_tests(integration_test_container)
+        _, connector_image_short_id = await docker_build_future
 
-    build_dev_image_client = connector_ci_client.pipeline(f"{connector.technical_name} - Build dev image")
-    _, connector_image_short_id = await builds.build_dev_image(build_dev_image_client, connector, exclude=[".venv"])
-
-    # TODO: slim it down
-    if not connector.acceptance_test_config:
-        acceptance_tests_status = StepStatus.SKIPPED
-    else:
-        if use_gsm_secrets:
-            download_credentials_client = connector_ci_client.pipeline(f"{connector.technical_name} - Download credentials")
-            secrets_dir = await secrets.download(download_credentials_client, connector)
-            await secrets_dir.export(str(connector.code_directory) + "/secrets")  # TODO remove
-        else:
-            secrets_dir = connector_ci_client.host().directory(str(connector.code_directory) + "/secrets")
-
-        acceptance_tests_container: Container = build_dev_image_client.pipeline(f"{connector.technical_name} - Acceptance tests")
-        # The connector_image_short_id  is used as a cache buster. If it changed the acceptance tests will run.
-        connector_source_host_dir = dagger_client.host().directory(str(connector.code_directory), exclude=[".venv", "secrets"])
-
-        acceptance_tests_status, updated_secrets_dir = await tests.run_acceptance_tests(
-            acceptance_tests_container,
-            connector_source_host_dir,
-            secrets_dir,
+        docker_build_result = StepResult(Step.DOCKER_BUILD, StepStatus.SUCCESS)
+        acceptance_tests_results, test_context.updated_secrets_dir = await tests.run_acceptance_tests(
+            test_context,
             connector_image_short_id,
-            "airbyte/connector-acceptance-test:dev",
         )
 
-        if use_gsm_secrets and updated_secrets_dir:
-            upload_credentials_client = connector_ci_client.pipeline(f"{connector.technical_name} - Upload credentials")
-            await secrets.upload(upload_credentials_client, connector, updated_secrets_dir)
+        integration_tests_result = await integration_test_future
 
-    qa_checks_client = connector_ci_client.pipeline(f"{connector.technical_name} - QA checks")
-    qa_check_status = await tests.run_qa_checks(qa_checks_client, connector)
-    pipeline_logger.info(f"Format -> {format_check_status}")
-    pipeline_logger.info(f"Unit tests -> {unit_tests_status}")
-    pipeline_logger.info(f"Integration tests -> {integration_tests_status}")
-    pipeline_logger.info(f"Acceptance tests -> {acceptance_tests_status}")
-    pipeline_logger.info(f"QA Checks -> {qa_check_status}")
+    else:
+        integration_tests_result = StepResult(Step.INTEGRATION_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+        docker_build_result = StepResult(Step.DOCKER_BUILD, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+        acceptance_tests_results = StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED, stdout="Skipped because unit tests failed")
+
+    test_report = ConnectorTestReport(
+        test_context,
+        steps_results=[
+            package_install_result,
+            format_check_results,
+            unit_tests_results,
+            integration_tests_result,
+            docker_build_result,
+            acceptance_tests_results,
+            qa_checks_results,
+        ],
+    )
+
+    await teardown(test_context, test_report)
+    return test_report
 
 
-async def run_connectors_test_pipelines(connectors: List[Connector], gsm_credentials: str):
+async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext]):
     """Runs a CI pipeline for all the connectors passed.
 
     Args:
@@ -100,38 +134,37 @@ async def run_connectors_test_pipelines(connectors: List[Connector], gsm_credent
 
     async with dagger.Connection(config) as dagger_client:
         async with anyio.create_task_group() as tg:
-            for connector in connectors:
+            for test_context in test_contexts:
                 # We scoped this POC only for python and low-code connectors
-                if connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
-                    tg.start_soon(run_connector_test_pipelines, dagger_client, connector, gsm_credentials)
+                if test_context.connector.language in [ConnectorLanguage.PYTHON, ConnectorLanguage.LOW_CODE]:
+                    test_context.dagger_client = dagger_client.pipeline(f"{test_context.connector.technical_name} - Test Pipeline")
+                    tg.start_soon(run, test_context)
                 else:
-                    logger.warning(f"Not running test pipeline for {connector.technical_name} as it's not a Python or Low code connector")
+                    logger.warning(
+                        f"Not running test pipeline for {test_context.connector.technical_name} as it's not a Python or Low code connector"
+                    )
 
 
+# TODO update docstring
 @click.group()
-@click.option("--diffed-branch", default="master")
-@click.option("--use-gsm-secrets", default=True)
+@click.option("--use-remote-secrets", default=True)
+@click.option("--is-local", default=True)
 @click.pass_context
-def connectors_ci(ctx: click.Context, diffed_branch: str, use_gsm_secrets: str):
-    """A command group to gather all the connectors-ci command
-
-    Args:
-        ctx (click.Context): The click context.
-        diffed_branch (str): The branch used to compare code changes with current branch.
-        gsm_credentials (str): The GSM credentials to read/write connectors' secrets.
-
-    Raises:
-        click.ClickException: _description_
-    """
+def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool):
+    """A command group to gather all the connectors-ci command"""
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
         raise click.ClickException("You need to run this command from the airbyte repository root.")
-    os.environ["DIFFED_BRANCH"] = diffed_branch
     ctx.ensure_object(dict)
-    if use_gsm_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
+    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
         raise click.UsageError(
             "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-gsm-secrets option to false otherwise."
         )
-    ctx.obj["use_gsm_secrets"] = use_gsm_secrets
+    if not is_local:
+        for required_env_var in REQUIRED_ENV_VARS_FOR_CI:
+            if os.getenv(required_env_var) is None:
+                raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
+    ctx.obj["use_remote_secrets"] = use_remote_secrets
+    ctx.obj["is_local"] = is_local
 
 
 @connectors_ci.command()
@@ -144,9 +177,11 @@ def test_connectors(ctx: click.Context, connector_name: str):
         ctx (click.Context): The click context.
         connector_name (str): The connector technical name. E.G. source-pokeapi
     """
-    connectors = [Connector(cn) for cn in connector_name]
+    connectors_tests_contexts = [
+        ConnectorTestContext(Connector(cn), ctx.obj["is_local"], ctx.obj["use_remote_secrets"]) for cn in connector_name
+    ]
     try:
-        anyio.run(run_connectors_test_pipelines, connectors, ctx.obj["use_gsm_secrets"])
+        anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
     except dagger.DaggerError as e:
         logger.error(str(e))
         sys.exit(1)
@@ -154,16 +189,22 @@ def test_connectors(ctx: click.Context, connector_name: str):
 
 @connectors_ci.command()
 @click.pass_context
-def test_all_modified_connectors(ctx: click.Context):
+@click.option("--diffed-branch", default="master")
+def test_all_modified_connectors(ctx: click.Context, diffed_branch: str):
     """Launches a CI pipeline for all the connectors that got modified compared to the DIFFED_BRANCH environment variable.
 
     Args:
         ctx (click.Context): The click context.
     """
+    os.environ["DIFFED_BRANCH"] = diffed_branch
+
     changed_connectors = get_changed_connectors()
+    connectors_tests_contexts = [
+        ConnectorTestContext(connector, ctx.obj["is_local"], ctx.obj["use_remote_secrets"]) for connector in changed_connectors
+    ]
     if changed_connectors:
         try:
-            anyio.run(run_connectors_test_pipelines, changed_connectors, ctx.obj["use_gsm_secrets"])
+            anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
         except dagger.DaggerError as e:
             logger.error(str(e))
             sys.exit(1)

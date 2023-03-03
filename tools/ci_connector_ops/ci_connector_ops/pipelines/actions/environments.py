@@ -77,6 +77,7 @@ async def with_python_package(
     package_source_code_path: str,
     additional_dependency_groups: Optional[List] = None,
     exclude: Optional[List] = None,
+    install: bool = True,
 ) -> Container:
     """Installs a python package in a python environment container.
 
@@ -98,26 +99,27 @@ async def with_python_package(
         "/" + package_source_code_path
     )
 
-    if requirements_txt := await get_file_contents(container, "requirements.txt"):
-        for line in requirements_txt.split("\n"):
-            if line.startswith("-e ."):
-                local_dependency_path = package_source_code_path + "/" + line[3:]
-                container = container.with_mounted_directory(
-                    "/" + local_dependency_path, dagger_client.host().directory(local_dependency_path, exclude=DEFAULT_PYTHON_EXCLUDE)
-                )
-        container = container.with_exec(INSTALL_LOCAL_REQUIREMENTS_CMD)
+    if install:
+        if requirements_txt := await get_file_contents(container, "requirements.txt"):
+            for line in requirements_txt.split("\n"):
+                if line.startswith("-e ."):
+                    local_dependency_path = package_source_code_path + "/" + line[3:]
+                    container = container.with_mounted_directory(
+                        "/" + local_dependency_path, dagger_client.host().directory(local_dependency_path, exclude=DEFAULT_PYTHON_EXCLUDE)
+                    )
+            container = container.with_exec(INSTALL_LOCAL_REQUIREMENTS_CMD)
 
-    container = container.with_exec(INSTALL_CONNECTOR_PACKAGE_CMD)
+        container = container.with_exec(INSTALL_CONNECTOR_PACKAGE_CMD)
 
-    if additional_dependency_groups:
-        container = container.with_exec(
-            INSTALL_CONNECTOR_PACKAGE_CMD[:-1] + [INSTALL_CONNECTOR_PACKAGE_CMD[-1] + f"[{','.join(additional_dependency_groups)}]"]
-        )
+        if additional_dependency_groups:
+            container = container.with_exec(
+                INSTALL_CONNECTOR_PACKAGE_CMD[:-1] + [INSTALL_CONNECTOR_PACKAGE_CMD[-1] + f"[{','.join(additional_dependency_groups)}]"]
+            )
 
     return container
 
 
-async def with_airbyte_connector(dagger_client: Client, connector: Connector) -> Container:
+async def with_airbyte_connector(dagger_client: Client, connector: Connector, install=True) -> Container:
     """Installs an airbyte connector python package in a testing environment.
 
     Args:
@@ -128,7 +130,14 @@ async def with_airbyte_connector(dagger_client: Client, connector: Connector) ->
     """
     connector_source_path = str(connector.code_directory)
     testing_environment: Container = await with_testing_dependencies(dagger_client)
-    return await with_python_package(dagger_client, testing_environment, connector_source_path, ["dev", "tests", "main"], ["secrets"])
+    return await with_python_package(
+        dagger_client,
+        testing_environment,
+        connector_source_path,
+        additional_dependency_groups=["dev", "tests", "main"],
+        exclude=["secrets"],
+        install=install,
+    )
 
 
 async def with_ci_credentials(dagger_client: Client, gsm_secret: Secret) -> Container:
@@ -148,5 +157,5 @@ async def with_ci_connector_ops(dagger_client: Client) -> Container:
         Container: A python environment container with ci_connector_ops installed.
     """
     python_base_environment: Container = await with_python_base(dagger_client, "python:3-alpine")
-    python_with_git = python_base_environment.with_exec(["apk", "add", "git"])
+    python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
     return await with_python_package(dagger_client, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)

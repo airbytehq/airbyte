@@ -15,6 +15,8 @@ import yaml
 from ci_credentials import SecretsManager
 
 AIRBYTE_REPO = git.Repo(search_parent_directories=True)
+
+
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://storage.googleapis.com/prod-airbyte-cloud-connector-metadata-service/oss_catalog.json"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"

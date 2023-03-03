@@ -2,31 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import re
-from enum import Enum
 from pathlib import Path
 from typing import Optional
 
-from ci_connector_ops.utils import Connector
+from ci_connector_ops.utils import AIRBYTE_REPO, Connector
 from dagger import Container, QueryError
-
-
-class StepStatus(Enum):
-    SUCCESS = "🟢 — Successful"
-    FAILURE = "🔴 - Failed"
-    SKIPPED = "🟡 - Skipped"
-
-    def from_exit_code(exit_code: int):
-        if exit_code == 0:
-            return StepStatus.SUCCESS
-        if exit_code == 1:
-            return StepStatus.FAILURE
-        if exit_code == 5:
-            return StepStatus.SKIPPED
-        else:
-            raise ValueError(f"No step status is mapped to exit code {exit_code}")
-
-    def __str__(self) -> str:
-        return self.value
 
 
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
@@ -110,3 +90,25 @@ async def with_exit_code(container: Container) -> int:
                 return 1
         raise
     return 0
+
+
+async def with_stderr(container: Container) -> str:
+    try:
+        return await container.stderr()
+    except Exception as e:
+        return str(e)
+
+
+async def with_stdout(container: Container) -> str:
+    try:
+        return await container.stdout()
+    except Exception as e:
+        return str(e)
+
+
+def get_current_git_branch() -> str:
+    return AIRBYTE_REPO.active_branch.name
+
+
+def get_current_git_revision() -> str:
+    return AIRBYTE_REPO.head.object.hexsha

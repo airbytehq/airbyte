@@ -4,6 +4,7 @@
 import datetime
 
 from ci_connector_ops.pipelines.actions import environments
+from ci_connector_ops.pipelines.models import ConnectorTestContext
 from ci_connector_ops.utils import Connector
 from dagger import Client, Directory
 
@@ -36,3 +37,25 @@ async def upload(
         .with_exec(["ci_credentials", connector.technical_name, "update-secrets"])
         .exit_code()
     )
+
+
+async def get_connector_secret_dir(dagger_client: Client, test_context: ConnectorTestContext) -> Directory:
+    if test_context.use_remote_secrets:
+        secrets_dir = await download(dagger_client, test_context.connector)
+    else:
+        secrets_dir = dagger_client.host().directory(str(test_context.connector.code_directory) + "/secrets")
+    return secrets_dir
+
+
+async def upload_update_secrets(test_context: ConnectorTestContext) -> int:
+    if test_context.use_remote_secrets and test_context.updated_secrets_dir is not None:
+        return (
+            await upload(
+                test_context.dagger_client.pipeline(f"Teardown {test_context.connector.technical_name}"),
+                test_context.connector,
+                test_context.updated_secrets_dir,
+            )
+            == 0
+        )
+    else:
+        return 1
