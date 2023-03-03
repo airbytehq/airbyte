@@ -46,7 +46,7 @@ def not_ga_test_strictness_level_change_expected_team(tmp_path, pokeapi_acceptan
 
 @pytest.fixture
 def not_ga_bypass_reason_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path):
-    expected_teams = []
+    expected_teams = [{"any-of": list(acceptance_test_config_checks.GA_BYPASS_REASON_REVIEWERS)}]
     backup_path = tmp_path / "non_ga_acceptance_test_config.backup"
     shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
     with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
@@ -86,7 +86,7 @@ def ga_connector_backward_compatibility_file_change(tmp_path, ga_connector_file)
 
 @pytest.fixture
 def ga_connector_bypass_reason_file_change(tmp_path, ga_connector_file):
-    expected_teams = list(acceptance_test_config_checks.GA_CONNECTOR_REVIEWERS)
+    expected_teams = [{"any-of": list(acceptance_test_config_checks.GA_BYPASS_REASON_REVIEWERS)}]
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -119,11 +119,8 @@ def test_find_mandatory_reviewers_backward_compatibility(mock_diffed_branched, c
 def test_find_mandatory_reviewers_test_strictness_level(mock_diffed_branched, capsys, not_ga_test_strictness_level_change_expected_team):
     check_review_requirements_file_contains_expected_teams(capsys, not_ga_test_strictness_level_change_expected_team)
 
-def test_find_mandatory_reviewers_bypass_reason(mock_diffed_branched, capsys, not_ga_bypass_reason_change_expected_team):
-    # check_review_requirements_file_contains_expected_teams(capsys, not_ga_bypass_reason_change_expected_team)
-    acceptance_test_config_checks.write_review_requirements_file()
-    captured = capsys.readouterr()
-    assert captured.out.split("\n")[0].split("=")[-1] == "false"
+def test_find_mandatory_reviewers_ga_bypass_reason(mock_diffed_branched, capsys, not_ga_bypass_reason_change_expected_team):
+    check_review_requirements_file_contains_expected_teams(capsys, not_ga_bypass_reason_change_expected_team)
 
 def test_find_mandatory_reviewers_ga(mock_diffed_branched, capsys, ga_connector_file_change_expected_team):
     check_review_requirements_file_contains_expected_teams(capsys, ga_connector_file_change_expected_team)

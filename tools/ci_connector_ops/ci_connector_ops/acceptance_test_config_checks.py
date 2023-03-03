@@ -53,10 +53,13 @@ def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
     ga_connector_changes = find_changed_ga_connectors()
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
+    bypass_reason_changes = utils.get_changed_acceptance_test_config(diff_regex="bypass_reason")
     if backward_compatibility_changes:
         return [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
     if test_strictness_level_changes:
         return [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    if bypass_reason_changes:
+        return [{"any-of": list(GA_BYPASS_REASON_REVIEWERS)}]
     if ga_connector_changes:
         return list(GA_CONNECTOR_REVIEWERS)
     return []
