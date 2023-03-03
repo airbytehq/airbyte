@@ -80,4 +80,5 @@ Senseforce utilizes an undocumented rate limit which - under normal use - should
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| 0.1.1   | 2023-02-13 | [22892](https://github.com/airbytehq/airbyte/pull/22892) | Specified date formatting in specification |
 | 0.1.0   | 2022-10-26 | [#18775](https://github.com/airbytehq/airbyte/pull/18775) | 🎉 New Source: Mailjet SMS API [low-code CDK] |
