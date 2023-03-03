@@ -4861,7 +4861,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.2"
+- dockerImage: "airbyte/source-gitlab:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -4943,6 +4943,7 @@
           - "2021-03-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 2
+          format: "date-time"
         groups:
           type: "string"
           examples:
