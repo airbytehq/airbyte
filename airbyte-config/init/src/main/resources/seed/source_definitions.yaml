@@ -497,7 +497,7 @@
 - name: E2E Testing
   sourceDefinitionId: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a
   dockerRepository: airbyte/source-e2e-test
-  dockerImageTag: 2.1.3
+  dockerImageTag: 2.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/e2e-test
   icon: airbyte.svg
   sourceType: api
