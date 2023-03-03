@@ -12,7 +12,6 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
-
 from source_stripe.availability_strategy import StripeSubStreamAvailabilityStrategy
 
 STRIPE_ERROR_CODES: List = [
