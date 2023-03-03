@@ -7,26 +7,61 @@
     "required": ["replication_start_date"],
     "additionalProperties": true,
     "properties": {
-      "authorization" : {
-        "type" : "object",
-        "title" : "API Key Authentication",
+      "authorization": {
+        "type": "object",
+        "title": "Authentication Type",
         "order": 1,
-        "required" : [
-          "auth_type",
-          "api_token"
-        ],
-        "properties" : {
-          "auth_type" : {
-            "type" : "string",
-            "const" : "Token",
-            "order" : 0
+        "oneOf": [
+          {
+            "title": "Sign in via Pipedrive (OAuth)",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "order": 0
+              },
+              "client_id": {
+                "title": "Client ID",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "title": "Client Secret",
+                "type": "string",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "title": "Refresh Token",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
           },
-          "api_token" : {
-            "title" : "API Token",
-            "type" : "string",
-            "airbyte_secret" : true
+          {
+            "type": "object",
+            "title": "API Key Authentication",
+            "required": ["auth_type", "api_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Token",
+                "order": 0
+              },
+              "api_token": {
+                "title": "API Token",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            }
           }
-        }
+        ]
       },
       "replication_start_date" : {
         "order": 0,
@@ -39,5 +74,13 @@
       }
     }
   },
-  "supportsIncremental": true
+  "supportsIncremental": true,
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": ["authorization", 0],
+      "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
+      "oauthFlowOutputParameters": [["refresh_token"]]
+    }
+  }
 }
