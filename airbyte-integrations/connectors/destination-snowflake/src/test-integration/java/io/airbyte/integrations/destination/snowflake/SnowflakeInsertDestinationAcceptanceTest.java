@@ -49,6 +49,9 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected static final String NO_USER_PRIVILEGES_ERR_MSG =
       "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges";
 
+  protected static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake."
+      + " Contact your local security administrator or please create a case with Snowflake Support or reach us on our support line";
+
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
   private JsonNode config;
@@ -197,6 +200,18 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
     assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
+  }
+
+  @Test
+  public void testCheckIpNotInWhiteListConnection() throws Exception {
+    // Config to user(creds) that has no warehouse assigned
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/insert_ip_not_in_whitelist_config.json")));
+
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(IP_NOT_IN_WHITE_LIST_ERR_MSG);
   }
 
   @Test
