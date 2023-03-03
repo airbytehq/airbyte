@@ -28,8 +28,13 @@ public class IntegrationConfig {
   }
 
   public static IntegrationConfig check(final Path config) {
+    return check(config, null);
+  }
+
+  public static IntegrationConfig check(final Path config, final Path catalog) {
     Preconditions.checkNotNull(config);
-    return new IntegrationConfig(Command.CHECK, config, null, null);
+    // Not checking catalog for null here because this is in dark launch
+    return new IntegrationConfig(Command.CHECK, config, catalog, null);
   }
 
   public static IntegrationConfig discover(final Path config) {
