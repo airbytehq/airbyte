@@ -30,7 +30,7 @@ class DatadogStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.site}/api"
+        return f"https://api.{self.site}/api"
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {
