@@ -26,7 +26,7 @@ connectionSpecification:
       examples:
         - "2017-01-25T00:00:00Z"
     cursor_field_possibilities:
-      title: Start date
+      title: Cursor field possibilities
       type: array
       description: >-
         Possible values for cursor fields. The connector will then try to guess the correct value for each collection by fetching a document from the collection. 
