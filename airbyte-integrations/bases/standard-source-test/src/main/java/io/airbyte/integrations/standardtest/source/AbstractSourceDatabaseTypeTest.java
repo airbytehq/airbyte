@@ -24,12 +24,7 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -130,27 +125,43 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    */
   @Test
   public void testDataContent() throws Exception {
+    class MissedRecords {
+      public String streamName;
+      public String dataType;
+      public List<String> missedValues;
+
+      public MissedRecords(String streamName, String dataType, List<String> missedValues){
+        this.streamName = streamName;
+        this.dataType = dataType;
+        this.missedValues = missedValues;
+      }
+    }
+
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     final List<AirbyteMessage> allMessages = runRead(catalog);
 
     final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).toList();
     final Map<String, List<String>> expectedValues = new HashMap<>();
+    final Map<String, String> testTypes = new HashMap<>();
+    final ArrayList<MissedRecords> missedValues = new ArrayList<>();
+
 
     // If there is no expected value in the test set we don't include it in the list to be asserted
     // (even if the table contains records)
     testDataHolders.forEach(testDataHolder -> {
       if (!testDataHolder.getExpectedValues().isEmpty()) {
         expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
+        testTypes.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getSourceType());
       } else {
         LOGGER.warn("Missing expected values for type: " + testDataHolder.getSourceType());
       }
     });
 
-    for (final AirbyteMessage msg : recordMessages) {
-      final String streamName = msg.getRecord().getStream();
+    for (final AirbyteMessage message : recordMessages) {
+      final String streamName = message.getRecord().getStream();
       final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
-        final String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
+        final String value = getValueFromJsonNode(message.getRecord().getData().get(getTestColumnName()));
         assertTrue(expectedValuesForStream.contains(value),
             String.format("Returned value '%s' from stream %s is not in the expected list: %s",
                 value, streamName, expectedValuesForStream));
@@ -158,8 +169,16 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
       }
     }
 
-    expectedValues.forEach((streamName, values) -> assertTrue(values.isEmpty(),
-        "The streamer " + streamName + " should return all expected values. Missing values: " + values));
+    // Gather all the missing values, so we don't stop the test in the first missed one
+    expectedValues.forEach((streamName, values) -> {
+      if (!values.isEmpty()){
+        missedValues.add(new MissedRecords(streamName, testTypes.get(streamName), values));
+      }});
+
+    assertTrue(missedValues.isEmpty(),
+        missedValues.stream().map((entry) -> //stream each entry, map it to string value
+                "The stream '" + entry.streamName + "' checking type '" + entry.dataType + "' is missing values: " + entry.missedValues)
+            .collect(Collectors.joining("\n"))); //and join them
   }
 
   protected String getValueFromJsonNode(final JsonNode jsonNode) throws IOException {
