@@ -91,6 +91,23 @@ class SalesforceStream(HttpStream, ABC):
         return super().get_error_display_message(exception)
 
 
+class PropertyChunk:
+    """
+    Object that is used to keep track of the current state of a chunk of properties for the stream of records being synced.
+    """
+
+    properties: Mapping[str, Any]
+    first_time: bool
+    record_counter: int
+    next_page: Optional[Mapping[str, Any]]
+
+    def __init__(self, properties: Mapping[str, Any]):
+        self.properties = properties
+        self.first_time = True
+        self.record_counter = 0
+        self.next_page = None
+
+
 class RestSalesforceStream(SalesforceStream):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -156,16 +173,16 @@ class RestSalesforceStream(SalesforceStream):
             yield local_properties
 
     @staticmethod
-    def _next_chunk_id(records_by_chunk_counter: Mapping[int, int], next_pages: Mapping[int, Optional[Mapping[str, Any]]]) -> Optional[int]:
+    def _next_chunk_id(property_chunks: Mapping[int, PropertyChunk]) -> Optional[int]:
         """
         Figure out which chunk is going to be read next.
         It should be the one with the least number of records read by the moment.
         """
         non_exhausted_chunks = {
-            # If records > 0 and no next_page: pagination is complete, skip this chunk
-            chunk_id: records_number
-            for chunk_id, records_number in records_by_chunk_counter.items()
-            if not records_number or next_pages.get(chunk_id)
+            # We skip chunks that have already attempted a sync before and do not have a next page
+            chunk_id: property_chunk.record_counter
+            for chunk_id, property_chunk in property_chunks.items()
+            if property_chunk.first_time or property_chunk.next_page
         }
         if not non_exhausted_chunks:
             return None
@@ -180,33 +197,38 @@ class RestSalesforceStream(SalesforceStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
-        next_pages_by_chunk_id = {}
         records_by_primary_key = {}
-        property_chunks = {index: chunk for index, chunk in enumerate(self.chunk_properties())}
-        records_by_chunk_counter = {index: 0 for index in property_chunks}
+        property_chunks: Mapping[int, PropertyChunk] = {
+            index: PropertyChunk(properties=properties) for index, properties in enumerate(self.chunk_properties())
+        }
         while True:
-            chunk_id = self._next_chunk_id(records_by_chunk_counter, next_pages_by_chunk_id)
+            chunk_id = self._next_chunk_id(property_chunks)
             if chunk_id is None:
                 # pagination complete
                 break
+
             property_chunk = property_chunks[chunk_id]
             request, response = self._fetch_next_page_for_chunk(
-                stream_slice, stream_state, next_pages_by_chunk_id.get(chunk_id), property_chunk
+                stream_slice, stream_state, property_chunk.next_page, property_chunk.properties
             )
-            next_pages_by_chunk_id[chunk_id] = self.next_page_token(response)
+
+            # When this is the first time we're getting a chunk's records, we set this to False to be used when deciding the next chunk
+            if property_chunk.first_time:
+                property_chunk.first_time = False
+            property_chunk.next_page = self.next_page_token(response)
             chunk_page_records = records_generator_fn(request, response, stream_state, stream_slice)
             if not self.too_many_properties:
                 # this is the case when a stream has no primary key
                 # (it is allowed when properties length does not exceed the maximum value)
                 # so there would be a single chunk, therefore we may and should yield records immediately
                 for record in chunk_page_records:
-                    records_by_chunk_counter[chunk_id] += 1
+                    property_chunk.record_counter += 1
                     yield record
                 continue
 
             # stick together different parts of records by their primary key and emit if a record is complete
             for record in chunk_page_records:
-                records_by_chunk_counter[chunk_id] += 1
+                property_chunk.record_counter += 1
                 record_id = record[self.primary_key]
                 if record_id not in records_by_primary_key:
                     records_by_primary_key[record_id] = (record, 1)

@@ -46,14 +46,11 @@ def test_bulk_stream_fallback_to_rest(mocker, requests_mock, stream_config, stre
         "POST",
         "https://fase-account.salesforce.com/services/data/v52.0/jobs/query",
         status_code=400,
-        json=[{
-            "errorCode": "INVALIDENTITY",
-            "message": "CustomEntity is not supported by the Bulk API"
-        }]
+        json=[{"errorCode": "INVALIDENTITY", "message": "CustomEntity is not supported by the Bulk API"}],
     )
     rest_stream_records = [
         {"id": 1, "name": "custom entity", "created": "2010-11-11"},
-        {"id": 11, "name": "custom entity", "created": "2020-01-02"}
+        {"id": 11, "name": "custom entity", "created": "2020-01-02"},
     ]
     # mock REST API
     mocker.patch("source_salesforce.source.RestSalesforceStream.read_records", lambda *args, **kwargs: iter(rest_stream_records))
@@ -640,32 +637,47 @@ def test_too_many_properties(stream_config, stream_api_v2_pk_too_many_properties
         [
             {
                 "json": {
-                    "records": [{"Id": 1, "propertyA": "A"}, {"Id": 2, "propertyA": "A"}, {"Id": 3, "propertyA": "A"}, {"Id": 4, "propertyA": "A"}]
+                    "records": [
+                        {"Id": 1, "propertyA": "A"},
+                        {"Id": 2, "propertyA": "A"},
+                        {"Id": 3, "propertyA": "A"},
+                        {"Id": 4, "propertyA": "A"},
+                    ]
                 }
             },
-            {
-                "json": {
-                    "nextRecordsUrl": next_page_url,
-                    "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]
-                }
-            },
+            {"json": {"nextRecordsUrl": next_page_url, "records": [{"Id": 1, "propertyB": "B"}, {"Id": 2, "propertyB": "B"}]}},
             # 2 for 2 chunks above
             *[{"json": {"records": [{"Id": 1}, {"Id": 2}], "nextRecordsUrl": next_page_url}} for _ in range(chunks_len - 2)],
-            {
-                "json": {
-                    "records": [{"Id": 3, "propertyB": "B"}, {"Id": 4, "propertyB": "B"}]
-                }
-            },
+            {"json": {"records": [{"Id": 3, "propertyB": "B"}, {"Id": 4, "propertyB": "B"}]}},
             # 2 for 1 chunk above and 1 chunk had no next page
-            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 2)]
-        ]
+            *[{"json": {"records": [{"Id": 3}, {"Id": 4}]}} for _ in range(chunks_len - 2)],
+        ],
     )
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
     assert records == [
         {"Id": 1, "propertyA": "A", "propertyB": "B"},
         {"Id": 2, "propertyA": "A", "propertyB": "B"},
         {"Id": 3, "propertyA": "A", "propertyB": "B"},
-        {"Id": 4, "propertyA": "A", "propertyB": "B"}
+        {"Id": 4, "propertyA": "A", "propertyB": "B"},
     ]
     for call in requests_mock.request_history:
         assert len(call.url) < Salesforce.REQUEST_SIZE_LIMITS
+
+
+def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_many_properties, requests_mock):
+    stream = generate_stream("Account", stream_config, stream_api_v2_pk_too_many_properties)
+    chunks = list(stream.chunk_properties())
+    for chunk in chunks:
+        assert stream.primary_key in chunk
+    assert stream.too_many_properties
+    assert stream.primary_key
+    assert type(stream) == RestSalesforceStream
+    url = "https://fase-account.salesforce.com/services/data/v52.0/queryAll"
+    requests_mock.get(
+        url,
+        [
+            {"json": {"records": []}},
+        ],
+    )
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    assert records == []
