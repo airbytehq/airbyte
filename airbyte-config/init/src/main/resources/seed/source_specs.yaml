@@ -15026,7 +15026,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:2.0.3"
+- dockerImage: "airbyte/source-tiktok-marketing:2.0.4"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -15063,6 +15063,11 @@
                 title: "Access Token"
                 description: "Long-term Authorized Access Token."
                 airbyte_secret: true
+                type: "string"
+              advertiser_id:
+                title: "Advertiser ID"
+                description: "The Advertiser ID to filter reports and streams. Let\
+                  \ this empty to retrieve all."
                 type: "string"
             required:
             - "app_id"
