@@ -6,7 +6,6 @@ package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemas;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ class SpecFormatTest {
     Assertions.assertThat(allSpecs)
         .flatMap(spec -> {
           try {
-            if (!JsonSecretsProcessor.isValidJsonSchema(spec)) {
+            if (!isValidJsonSchema(spec)) {
               throw new RuntimeException("Fail JsonSecretsProcessor validation");
             }
             JsonSchemas.traverseJsonSchema(spec, (node, path) -> {});
@@ -52,6 +51,11 @@ class SpecFormatTest {
           }
         })
         .isEmpty();
+  }
+
+  private static boolean isValidJsonSchema(final JsonNode schema) {
+    return schema.isObject() && ((schema.has("properties") && schema.get("properties").isObject())
+        || (schema.has("oneOf") && schema.get("oneOf").isArray()));
   }
 
 }

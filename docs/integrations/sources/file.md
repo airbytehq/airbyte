@@ -1,4 +1,4 @@
-# Files
+# Files (CSV, JSON, Excel, Feather, Parquet)
 
 ## Features
 
