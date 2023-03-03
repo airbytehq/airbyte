@@ -19,8 +19,9 @@ class DatadogStream(HttpStream, ABC):
     primary_key: Optional[str] = None
     parse_response_root: Optional[str] = None
 
-    def __init__(self, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
+    def __init__(self, site: str, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
         super().__init__(**kwargs)
+        self.site = site
         self.query = query
         self.max_records_per_request = max_records_per_request
         self.start_date = start_date
@@ -29,7 +30,7 @@ class DatadogStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
-        return "https://api.datadoghq.com/api"
+        return f"https://{self.site}/api"
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {
@@ -111,8 +112,8 @@ class IncrementalSearchableStream(V2ApiDatadogStream, IncrementalMixin, ABC):
     primary_key: Optional[str] = "id"
     parse_response_root: Optional[str] = "data"
 
-    def __init__(self, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
-        super().__init__(query, max_records_per_request, start_date, end_date, **kwargs)
+    def __init__(self, site: str, query: str, max_records_per_request: int, start_date: str, end_date: str, **kwargs):
+        super().__init__(site, query, max_records_per_request, start_date, end_date, **kwargs)
         self._cursor_value = ""
 
     @property

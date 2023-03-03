@@ -45,6 +45,7 @@ class SourceDatadog(AbstractSource):
 
     def connector_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
+            "site": config.get("site", "datadoghq.com"),
             "authenticator": self._get_authenticator(config),
             "query": config.get("query", ""),
             "max_records_per_request": config.get("max_records_per_request", 5000),
