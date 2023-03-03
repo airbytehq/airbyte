@@ -164,7 +164,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   publish-cdk:
-    needs: build-cdk
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
