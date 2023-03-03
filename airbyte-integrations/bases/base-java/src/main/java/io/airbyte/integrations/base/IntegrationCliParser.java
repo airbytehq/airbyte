@@ -69,8 +69,32 @@ public class IntegrationCliParser {
     return Command.valueOf(parsed.getOptions()[0].getLongOpt().toUpperCase());
   }
 
-  private static IntegrationConfig parseOptions(final String[] args, final Command command) {
+  private static void addConfigOption(final Options options) {
+    options.addOption(Option.builder()
+        .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
+        .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
+        .hasArg(true)
+        .required(true)
+        .build());
+  }
 
+  private static void addCatalogOption(final Options options) {
+    options.addOption(Option.builder()
+        .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
+        .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
+        .hasArg(true)
+        .build());
+  }
+
+  private static void addStateOption(final Options options) {
+    options.addOption(Option.builder()
+        .longOpt(JavaBaseConstants.ARGS_STATE_KEY)
+        .desc(JavaBaseConstants.ARGS_PATH_DESC)
+        .hasArg(true)
+        .build());
+  }
+
+  private static Options buildOptions(final Command command) {
     final Options options = new Options();
     options.addOptionGroup(COMMAND_GROUP); // so that the parser does not throw an exception when encounter command args.
 
@@ -78,45 +102,23 @@ public class IntegrationCliParser {
       case SPEC -> {
         // no args.
       }
-      case CHECK, DISCOVER -> options.addOption(Option.builder()
-          .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
-          .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
-          .hasArg(true)
-          .required(true)
-          .build());
+      case DISCOVER -> addConfigOption(options);
       case READ -> {
-        options.addOption(Option.builder()
-            .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
-            .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
-            .hasArg(true)
-            .required(true)
-            .build());
-        options.addOption(Option.builder()
-            .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
-            .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
-            .hasArg(true)
-            .build());
-        options.addOption(Option.builder()
-            .longOpt(JavaBaseConstants.ARGS_STATE_KEY)
-            .desc(JavaBaseConstants.ARGS_PATH_DESC)
-            .hasArg(true)
-            .build());
+        addConfigOption(options);
+        addCatalogOption(options);
+        addStateOption(options);
       }
-      case WRITE -> {
-        options.addOption(Option.builder()
-            .longOpt(JavaBaseConstants.ARGS_CONFIG_KEY)
-            .desc(JavaBaseConstants.ARGS_CONFIG_DESC)
-            .hasArg(true)
-            .required(true).build());
-        options.addOption(Option.builder()
-            .longOpt(JavaBaseConstants.ARGS_CATALOG_KEY)
-            .desc(JavaBaseConstants.ARGS_CATALOG_DESC)
-            .hasArg(true)
-            .build());
+      case CHECK, WRITE -> {
+        addConfigOption(options);
+        addCatalogOption(options);
       }
       default -> throw new IllegalStateException("Unexpected value: " + command);
     }
+    return options;
+  }
 
+  private static Map<String, String> buildArgsMap(final String[] args, final Command command) {
+    Options options = buildOptions(command);
     final CommandLine parsed = Clis.parse(args, options, command.toString().toLowerCase());
     Preconditions.checkNotNull(parsed);
     final Map<String, String> argsMap = new HashMap<>();
@@ -124,13 +126,21 @@ public class IntegrationCliParser {
       argsMap.put(option.getLongOpt(), option.getValue());
     }
     LOGGER.info("integration args: {}", argsMap);
+    return argsMap;
+  }
+
+  private static IntegrationConfig parseOptions(final String[] args, final Command command) {
+    Map<String, String> argsMap = buildArgsMap(args, command);
 
     switch (command) {
       case SPEC -> {
         return IntegrationConfig.spec();
       }
       case CHECK -> {
-        return IntegrationConfig.check(Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)));
+        return IntegrationConfig.check(
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
+            Path.of(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY))
+        );
       }
       case DISCOVER -> {
         return IntegrationConfig.discover(Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)));

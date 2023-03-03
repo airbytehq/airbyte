@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.base;
 
+import static io.airbyte.integrations.base.Command.CHECK;
+import static io.airbyte.integrations.base.Command.DISCOVER;
+import static io.airbyte.integrations.base.Command.READ;
+import static io.airbyte.integrations.base.Command.WRITE;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -101,6 +106,8 @@ public class IntegrationRunner {
     }
   }
 
+
+
   private void runInternal(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Running integration: {}", integration.getClass().getName());
     LOGGER.info("Command: {}", parsed.getCommand());
@@ -111,75 +118,101 @@ public class IntegrationRunner {
         // common
         case SPEC -> outputRecordCollector.accept(new AirbyteMessage().withType(Type.SPEC).withSpec(integration.spec()));
         case CHECK -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          try {
-            validateConfig(integration.spec().getConnectionSpecification(), config, "CHECK");
-          } catch (final Exception e) {
-            // if validation fails don't throw an exception, return a failed connection check message
-            outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-                new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage(e.getMessage())));
-          }
-
-          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config)));
+          AirbyteMessage message = isCheckWithCatalog(parsed) ? runCheckWithCatalog(parsed) : runCheck(parsed);
+          outputRecordCollector.accept(message);
         }
         // source only
-        case DISCOVER -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          validateConfig(integration.spec().getConnectionSpecification(), config, "DISCOVER");
-          outputRecordCollector.accept(new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config)));
-        }
+        case DISCOVER -> outputRecordCollector.accept(runDiscover(parsed));
         // todo (cgardens) - it is incongruous that that read and write return airbyte message (the
         // envelope) while the other commands return what goes inside it.
-        case READ -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          validateConfig(integration.spec().getConnectionSpecification(), config, "READ");
-          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-          final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
-          try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-            produceMessages(messageIterator);
-          }
-        }
+        case READ -> runRead(parsed);
         // destination only
-        case WRITE -> {
-          final JsonNode config = parseConfig(parsed.getConfigPath());
-          validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
-          final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
-          try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-            runConsumer(consumer);
-          }
-        }
+        case WRITE -> runWrite(parsed);
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
-      // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
-      // to
-      // find the root exception that corresponds to a configuration error. If that does not exist, we
-      // just return the original exception.
-      final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
-      final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
-      // If the source connector throws a config error, a trace message with the relevant message should
-      // be surfaced.
-      if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
-        AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
-      }
-      if (parsed.getCommand().equals(Command.CHECK)) {
-        // Currently, special handling is required for the CHECK case since the user display information in
-        // the trace message is
-        // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
-        outputRecordCollector
-            .accept(
-                new AirbyteMessage()
-                    .withType(Type.CONNECTION_STATUS)
-                    .withConnectionStatus(
-                        new AirbyteConnectionStatus()
-                            .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                            .withMessage(displayMessage)));
-        return;
-      }
-      throw e;
+      handleRunInternalException(parsed, e);
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
+  }
+
+  private AirbyteMessage runCheck(final IntegrationConfig parsed) {
+    try {
+      final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
+      return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config));
+    } catch (final Exception e) {
+      // if validation fails don't throw an exception, return a failed connection check message
+      return failedConnectionStatusMessage(e.getMessage());
+    }
+  }
+
+  private static boolean isCheckWithCatalog(IntegrationConfig parsed) {
+    return CHECK.equals(parsed.getCommand()) && parsed.getCatalogPath() != null;
+  }
+
+  private AirbyteMessage runCheckWithCatalog(final IntegrationConfig parsed) {
+    LOGGER.info("Using Check With Catalog Method");
+    // TODO: Actually implement something different
+    return runCheck(parsed);
+  }
+
+  private AirbyteMessage runDiscover(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = getValidatedConfig(parsed, DISCOVER.toString());
+    return new AirbyteMessage().withType(Type.CATALOG).withCatalog(source.discover(config));
+  }
+
+  private void runRead(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = getValidatedConfig(parsed, READ.toString());
+    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+    final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
+    try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
+      produceMessages(messageIterator);
+    }
+  }
+
+  private void runWrite(final IntegrationConfig parsed) throws Exception {
+    final JsonNode config = getValidatedConfig(parsed, WRITE.toString());
+    final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
+    try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
+      runConsumer(consumer);
+    }
+  }
+
+  private JsonNode getValidatedConfig(final IntegrationConfig parsed, final String operationType) throws Exception {
+    final JsonNode config = parseConfig(parsed.getConfigPath());
+    validateConfig(integration.spec().getConnectionSpecification(), config, operationType);
+    return config;
+  }
+
+  private void handleRunInternalException(final IntegrationConfig parsed, final Exception e) throws Exception {
+    // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made
+    // to
+    // find the root exception that corresponds to a configuration error. If that does not exist, we
+    // just return the original exception.
+    final Throwable rootThrowable = ConnectorExceptionUtil.getRootConfigError(e);
+    final String displayMessage = ConnectorExceptionUtil.getDisplayMessage(rootThrowable);
+    // If the source connector throws a config error, a trace message with the relevant message should
+    // be surfaced.
+    if (ConnectorExceptionUtil.isConfigError(rootThrowable)) {
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
+    }
+    if (CHECK.equals(parsed.getCommand())) {
+      // Currently, special handling is required for the CHECK case since the user display information in
+      // the trace message is
+      // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
+      outputRecordCollector.accept(failedConnectionStatusMessage(displayMessage));
+      return;
+    }
+    throw e;
+  }
+
+  private static AirbyteMessage failedConnectionStatusMessage(final String displayMessage) {
+    return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
+            new AirbyteConnectionStatus()
+                .withStatus(AirbyteConnectionStatus.Status.FAILED)
+                .withMessage(displayMessage)
+    );
   }
 
   private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
