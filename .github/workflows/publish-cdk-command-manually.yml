@@ -164,7 +164,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   publish-cdk:
-    needs: build-cdk
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -172,18 +172,6 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Publish Python Package to test.pypi.org
-        if: github.event.inputs.skip-publish-test != 'true'
-        uses: mariamrf/py-package-publish-action@v1.1.0
-        with:
-          # specify the same version as in ~/.python-version
-          python_version: "3.9.11"
-          pip_version: "21.1"
-          subdir: "airbyte-cdk/python/"
-        env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
       - name: Publish Python Package
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:

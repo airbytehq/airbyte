@@ -1668,7 +1668,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 2.0.4
+  dockerImageTag: 2.0.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
