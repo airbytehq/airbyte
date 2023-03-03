@@ -2001,11 +2001,14 @@
 - name: Twitter
   sourceDefinitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
   dockerRepository: airbyte/source-twitter
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
   icon: twitter.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - api.twitter.com
 - name: Tyntec SMS
   sourceDefinitionId: 3c0c3cd1-b3e0-464a-9090-d3ceb5f92346
   dockerRepository: airbyte/source-tyntec-sms
