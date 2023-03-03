@@ -32,11 +32,8 @@ fi
 
 # ------------- Start Main
 set +o xtrace
-echo -e "$blue_text""This script pushes changes (somewhat pointlessly) to ""$default_text"
+echo -e "$blue_text""This script pushes changes to ""$default_text"
 echo -e "$blue_text""airbyte's gh_pages branch\n""$default_text"
-echo -e "$blue_text""It also actually deploys by copying those assets to""$default_text"
-echo -e "$blue_text""the repo airbytehq/airbytehq.github.io\n\n""$default_text"
-
 
 echo -e "$blue_text""Current path:""$default_text"
 pwd
