@@ -42,9 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate
- * methods on the integration. Keeps itself DRY for methods that are common between source and
- * destination.
+ * Accepts EITHER a destination or a source. Routes commands from the commandline to the appropriate methods on the integration. Keeps itself DRY for
+ * methods that are common between source and destination.
  */
 public class IntegrationRunner {
 
@@ -72,9 +71,9 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
-                    final Destination destination,
-                    final Source source) {
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final Destination destination,
+      final Source source) {
     Preconditions.checkState(destination != null ^ source != null, "can only pass in a destination or a source");
     this.cliParser = cliParser;
     this.outputRecordCollector = outputRecordCollector;
@@ -89,10 +88,10 @@ public class IntegrationRunner {
 
   @VisibleForTesting
   IntegrationRunner(final IntegrationCliParser cliParser,
-                    final Consumer<AirbyteMessage> outputRecordCollector,
-                    final Destination destination,
-                    final Source source,
-                    final JsonSchemaValidator jsonSchemaValidator) {
+      final Consumer<AirbyteMessage> outputRecordCollector,
+      final Destination destination,
+      final Source source,
+      final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
     validator = jsonSchemaValidator;
   }
@@ -105,7 +104,6 @@ public class IntegrationRunner {
       throw e;
     }
   }
-
 
 
   private void runInternal(final IntegrationConfig parsed) throws Exception {
@@ -209,9 +207,9 @@ public class IntegrationRunner {
 
   private static AirbyteMessage failedConnectionStatusMessage(final String displayMessage) {
     return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(
-            new AirbyteConnectionStatus()
-                .withStatus(AirbyteConnectionStatus.Status.FAILED)
-                .withMessage(displayMessage)
+        new AirbyteConnectionStatus()
+            .withStatus(AirbyteConnectionStatus.Status.FAILED)
+            .withMessage(displayMessage)
     );
   }
 
@@ -247,23 +245,20 @@ public class IntegrationRunner {
   }
 
   /**
-   * This method calls a runMethod and make sure that it won't produce orphan non-daemon active
-   * threads once it is done. Active non-daemon threads blocks JVM from exiting when the main thread
-   * is done, whereas daemon ones don't.
-   *
-   * If any active non-daemon threads would be left as orphans, this method will schedule some
-   * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
-   * preferred to have a proper closing sequence from children threads instead of interrupting or
-   * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
-   * for maintainers to fix the code behavior instead.
+   * This method calls a runMethod and make sure that it won't produce orphan non-daemon active threads once it is done. Active non-daemon threads
+   * blocks JVM from exiting when the main thread is done, whereas daemon ones don't.
+   * <p>
+   * If any active non-daemon threads would be left as orphans, this method will schedule some interrupt/exit hooks after giving it some time delay to
+   * close up properly. It is generally preferred to have a proper closing sequence from children threads instead of interrupting or force exiting the
+   * process, so this mechanism serve as a fallback while surfacing warnings in logs for maintainers to fix the code behavior instead.
    */
   @VisibleForTesting
   static void watchForOrphanThreads(final Procedure runMethod,
-                                    final Runnable exitHook,
-                                    final int interruptTimeDelay,
-                                    final TimeUnit interruptTimeUnit,
-                                    final int exitTimeDelay,
-                                    final TimeUnit exitTimeUnit)
+      final Runnable exitHook,
+      final int interruptTimeDelay,
+      final TimeUnit interruptTimeUnit,
+      final int exitTimeDelay,
+      final TimeUnit exitTimeUnit)
       throws Exception {
     final Thread currentThread = Thread.currentThread();
     try {
@@ -276,10 +271,10 @@ public class IntegrationRunner {
           .collect(Collectors.toList());
       if (!runningThreads.isEmpty()) {
         LOGGER.warn("""
-                    The main thread is exiting while children non-daemon threads from a connector are still active.
-                    Ideally, this situation should not happen...
-                    Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
-                    The main thread is: {}""", dumpThread(currentThread));
+            The main thread is exiting while children non-daemon threads from a connector are still active.
+            Ideally, this situation should not happen...
+            Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
+            The main thread is: {}""", dumpThread(currentThread));
         final ScheduledExecutorService scheduledExecutorService = Executors
             .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
                 // this thread executor will create daemon threads, so it does not block exiting if all other active
@@ -306,14 +301,13 @@ public class IntegrationRunner {
 
   /**
    * Consumes an {@link AirbyteMessage} for processing.
+   * <p>
+   * If the provided JSON string is invalid AND represents a {@link AirbyteMessage.Type#STATE} message, processing is halted. Otherwise, the invalid
+   * message is logged and execution continues.
    *
-   * If the provided JSON string is invalid AND represents a {@link AirbyteMessage.Type#STATE}
-   * message, processing is halted. Otherwise, the invalid message is logged and execution continues.
-   *
-   * @param consumer An {@link AirbyteMessageConsumer} that can handle the provided message.
+   * @param consumer    An {@link AirbyteMessageConsumer} that can handle the provided message.
    * @param inputString JSON representation of an {@link AirbyteMessage}.
-   * @throws Exception if an invalid state message is provided or the consumer is unable to accept the
-   *         provided message.
+   * @throws Exception if an invalid state message is provided or the consumer is unable to accept the provided message.
    */
   @VisibleForTesting
   static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
@@ -381,8 +375,7 @@ public class IntegrationRunner {
   }
 
   /**
-   * Custom class that can be used to parse a JSON message to determine the type of the represented
-   * {@link AirbyteMessage}.
+   * Custom class that can be used to parse a JSON message to determine the type of the represented {@link AirbyteMessage}.
    */
   private static class AirbyteTypeMessage {
 
