@@ -36,6 +36,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -50,6 +51,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.debezium.engine.ChangeEvent;
+
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -87,6 +89,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   private PostgresSource source;
   private JsonNode config;
   private String fullReplicationSlot;
+  private final String cleanUserName = "airbyte_test";
+  private final String cleanUserPassword = "password";
 
   protected abstract String getPluginName();
 
@@ -111,7 +115,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
 
-    config = getConfig(dbName);
+    config = getConfig(dbName, container.getUsername(), container.getPassword());
     fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
     dslContext = getDslContext(config);
     database = getDatabase(dslContext);
@@ -125,15 +129,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   }
 
-  private JsonNode getConfig(final String dbName) {
+  private JsonNode getConfig(final String dbName, final String userName, final String userPassword) {
     final JsonNode replicationMethod = getReplicationMethod(dbName);
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, userName)
+        .put(JdbcUtils.PASSWORD_KEY, userPassword)
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
@@ -167,17 +171,46 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         SQLDialect.POSTGRES);
   }
 
-  private void revokeReplicationPermission() {
-    executeQuery("ALTER USER " + container.getUsername() + " NOREPLICATION;");
+  /**
+   * Creates a new user without privileges for the access tests
+   */
+  private void createCleanUser() {
+    executeQuery("CREATE USER " + cleanUserName + " PASSWORD '" + cleanUserPassword + "';");
+  }
+
+  /**
+   * Grants privilege to a user (SUPERUSER, REPLICATION, ...)
+   */
+  private void grantUserPrivilege(final String userName, final String postgresPrivilege) {
+    executeQuery("ALTER USER " + userName + " " + postgresPrivilege + ";");
+  }
+
+  @Test
+  void testCheckReplicationAccessSuperUserPrivilege() throws Exception {
+    createCleanUser();
+    final JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    grantUserPrivilege(cleanUserName, "SUPERUSER");
+    final AirbyteConnectionStatus status = source.check(test_config);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
+  }
+
+  @Test
+  void testCheckReplicationAccessReplicationPrivilege() throws Exception {
+    createCleanUser();
+    final JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    grantUserPrivilege(cleanUserName, "REPLICATION");
+    final AirbyteConnectionStatus status = source.check(test_config);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, status.getStatus());
   }
 
   @Test
   void testCheckWithoutReplicationPermission() throws Exception {
-    revokeReplicationPermission();
-    final AirbyteConnectionStatus status = source.check(config);
+    createCleanUser();
+    JsonNode test_config = getConfig(dbName, cleanUserName, cleanUserPassword);
+    final AirbyteConnectionStatus status = source.check(test_config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertEquals(String.format(ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE,
-            String.format(PostgresSource.REPLICATION_PRIVILEGE_ERROR_MESSAGE, config.get("username").asText())),
+            String.format(PostgresReplicationConnection.REPLICATION_PRIVILEGE_ERROR_MESSAGE, test_config.get("username").asText())),
         status.getMessage());
   }
 
