@@ -56,12 +56,11 @@ def not_ga_bypass_reason_change_expected_team(tmp_path, pokeapi_acceptance_test_
 
 @pytest.fixture
 def not_ga_not_tracked_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path):
-    expected_teams = []
     backup_path = tmp_path / "non_ga_acceptance_test_config.backup"
     shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
     with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
         acceptance_test_config_file.write("not_tracked")
-    yield expected_teams
+    yield
     shutil.copyfile(backup_path, pokeapi_acceptance_test_config_path)
 
 @pytest.fixture
