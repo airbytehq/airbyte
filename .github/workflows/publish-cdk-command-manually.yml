@@ -355,6 +355,13 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
+                            "text": ":warning: Could not automatically create a PR for Connector Builder>\n"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
                             "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
                         }
                     }
