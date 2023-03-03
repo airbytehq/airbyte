@@ -14,7 +14,7 @@ connectionSpecification:
       description: The site where Datadog data resides in.
       type: string
       enum: ["datadoghq.com", "us3.datadoghq.com", "us5.datadoghq.com", "datadoghq.eu", "ddog-gov.com"]
-      default: ["datadoghq.com"]
+      default: "datadoghq.com"
       order: 1
     api_key:
       title: API Key
