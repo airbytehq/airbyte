@@ -12,7 +12,10 @@ MAIN_REQUIREMENTS = [
     "PyYAML~=6.0",
     "GitPython~=3.1.29",
     "pydantic~=1.10.4",
-    "dagger-io==0.3.3",
+    "pip~=23.0.1",
+    # "dagger-io==0.3.3",
+    # Use Erik's branch for testing the new experimental_insecure_scary_privileged_execution flag
+    "dagger-io @ git+https://github.com/sipsma/dagger.git@priv#subdirectory=sdk/python",
     "docker~=6.0.0",
 ]
 

@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import uuid
 from typing import Tuple
 
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.utils import StepStatus, check_path_in_workdir, with_exit_code
 from ci_connector_ops.utils import Connector
-from dagger import Client, Container, Directory
+from dagger import CacheSharingMode, Client, Container, Directory
 
 RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
 RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
@@ -110,7 +111,17 @@ async def run_acceptance_tests(
     Returns:
         Tuple[StepStatus, Directory]: The success/failure of the tests and a directory containing the updated secrets if any.
     """
-    docker_host_socket = dagger_client.host().unix_socket("/var/run/docker.sock")
+
+    dockerd = (
+        dagger_client.container()
+        .from_("docker:23.0.1-dind")
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume("docker-lib"), sharing=CacheSharingMode.PRIVATE)
+        .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
+        .with_exposed_port(2375)
+        .with_exec(["dockerd", "--host=tcp://0.0.0.0:2375", "--tls=false"], experimental_insecure_scary_privileged_execution=True)
+    )
+
+    docker_host = await dockerd.endpoint(scheme="tcp")
 
     if connector_acceptance_test_image.endswith(":dev"):
         cat_container = dagger_client.host().directory("airbyte-integrations/bases/connector-acceptance-test").docker_build()
@@ -118,7 +129,10 @@ async def run_acceptance_tests(
         cat_container = dagger_client.container().from_(connector_acceptance_test_image)
 
     cat_container = (
-        cat_container.with_unix_socket("/var/run/docker.sock", docker_host_socket)
+        cat_container.with_env_variable("_NO_CACHE", str(uuid.uuid4()))  # to ensure we don't cache the tests
+        .with_env_variable("DOCKER_HOST", docker_host)
+        .with_service_binding("docker", dockerd)
+        .with_mounted_cache("/tmp", dagger_client.cache_volume("share-tmp"))
         .with_workdir("/test_input")
         .with_env_variable("CACHEBUSTER", connector_under_test_image_id)
         .with_mounted_directory("/test_input", connector_under_test_source_directory)

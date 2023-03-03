@@ -73,7 +73,6 @@ async def run_connector_test_pipelines(dagger_client: Client, connector: Connect
             connector_source_host_dir,
             secrets_dir,
             connector_image_short_id,
-            "airbyte/connector-acceptance-test:dev",
         )
 
         if use_gsm_secrets and updated_secrets_dir:
