@@ -370,7 +370,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.49"
+- dockerImage: "airbyte/source-alloydb:1.0.51"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1273,7 +1273,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.22"
+- dockerImage: "airbyte/source-amplitude:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -1314,6 +1314,7 @@
             \ data before this date will not be replicated."
           examples:
           - "2021-01-25T00:00:00Z"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2261,7 +2262,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chartmogul:0.2.0"
+- dockerImage: "airbyte/source-chartmogul:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/chartmogul"
     connectionSpecification:
@@ -2289,6 +2290,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           order: 1
+          format: "date-time"
         interval:
           type: "string"
           title: "Interval"
@@ -2509,7 +2511,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-close-com:0.2.0"
+- dockerImage: "airbyte/source-close-com:0.2.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
@@ -2533,6 +2535,7 @@
           - "2021-01-01"
           default: "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3403,7 +3406,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-dynamodb:0.1.1"
+- dockerImage: "airbyte/source-dynamodb:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/dynamodb"
     connectionSpecification:
@@ -3469,6 +3472,13 @@
           airbyte_secret: true
           examples:
           - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
+        reserved_attribute_names:
+          title: "Reserved attribute names"
+          type: "string"
+          description: "Comma separated reserved attribute names present in your tables"
+          airbyte_secret: true
+          examples:
+          - "name, field_name, field-name"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -4941,7 +4951,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:1.0.2"
+- dockerImage: "airbyte/source-gitlab:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -5023,6 +5033,7 @@
           - "2021-03-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 2
+          format: "date-time"
         groups:
           type: "string"
           examples:
@@ -6978,7 +6989,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-iterable:0.1.23"
+- dockerImage: "airbyte/source-iterable:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -7007,6 +7018,7 @@
           - "2021-04-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           order: 1
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -7472,7 +7484,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-klaviyo:0.1.12"
+- dockerImage: "airbyte/source-klaviyo:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/klaviyo"
@@ -7495,6 +7507,7 @@
           examples:
           - "2017-01-25T00:00:00Z"
           type: "string"
+          format: "date-time"
       required:
       - "api_key"
       - "start_date"
@@ -7723,7 +7736,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.14"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -7786,6 +7799,7 @@
             \ will not be replicated."
           examples:
           - "2021-05-17"
+          format: "date"
         account_ids:
           title: "Account IDs"
           type: "array"
@@ -8205,7 +8219,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mailgun:0.1.0"
+- dockerImage: "airbyte/source-mailgun:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mailgun"
     connectionSpecification:
@@ -8235,6 +8249,7 @@
           examples:
           - "2020-10-01 00:00:00"
           type: "string"
+          format: "date-time"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -9547,7 +9562,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-nasa:0.1.0"
+- dockerImage: "airbyte/source-nasa:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/nasa-apod"
     connectionSpecification:
@@ -9585,6 +9600,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-10-20"
+          format: "date"
         end_date:
           type: "string"
           description: "Indicates that end of a date range. If `start_date` is specified\
@@ -9592,6 +9608,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-10-20"
+          format: "date"
         thumbs:
           type: "boolean"
           default: false
@@ -10067,7 +10084,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:1.0.2"
+- dockerImage: "airbyte/source-notion:1.0.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/notion"
     connectionSpecification:
@@ -10085,6 +10102,7 @@
           examples:
           - "2020-11-16T00:00:00.000Z"
           type: "string"
+          format: "date-time"
         credentials:
           title: "Authenticate using"
           description: "Pick an authentication method."
@@ -10147,7 +10165,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-nytimes:0.1.0"
+- dockerImage: "airbyte/source-nytimes:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/nytimes"
     connectionSpecification:
@@ -10174,6 +10192,7 @@
           examples:
           - "2022-08"
           - "1851-01"
+          format: "date"
           order: 1
         end_date:
           type: "string"
@@ -10183,6 +10202,7 @@
           examples:
           - "2022-08"
           - "1851-01"
+          format: "date"
           order: 2
         period:
           type: "integer"
@@ -11175,7 +11195,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.2.2"
+- dockerImage: "airbyte/source-pinterest:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -11717,7 +11737,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.50"
+- dockerImage: "airbyte/source-postgres:1.0.51"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12132,7 +12152,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-prestashop:0.3.0"
+- dockerImage: "airbyte/source-prestashop:0.3.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/prestashop"
     connectionSpecification:
@@ -12163,6 +12183,7 @@
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
           - "2022-01-01"
+          format: "date"
           order: 2
     supportsNormalization: false
     supportsDBT: false
@@ -12470,7 +12491,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.2.6"
+- dockerImage: "airbyte/source-recharge:0.2.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -12491,6 +12512,7 @@
           examples:
           - "2021-05-14T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         access_token:
           type: "string"
           title: "Access Token"
@@ -12907,7 +12929,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:1.0.1"
+- dockerImage: "airbyte/source-s3:1.0.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -13013,7 +13035,6 @@
                   \ <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.csv.ConvertOptions.html#pyarrow.csv.ConvertOptions\"\
                   \ target=\"_blank\">detailed here</a>. 'column_types' is used internally\
                   \ to handle schema so overriding that would likely cause problems."
-                default: "{}"
                 examples:
                 - "{\"timestamp_parsers\": [\"%m/%d/%Y %H:%M\", \"%Y/%m/%d %H:%M\"\
                   ], \"strings_can_be_null\": true, \"null_values\": [\"NA\", \"NULL\"\
@@ -13028,7 +13049,6 @@
                   \ here if your CSV doesn't have header, or if you want to use custom\
                   \ column names. 'block_size' and 'encoding' are already used above,\
                   \ specify them again here will override the values above."
-                default: "{}"
                 examples:
                 - "{\"column_names\": [\"column1\", \"column2\"]}"
                 order: 8
@@ -13238,7 +13258,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:2.0.4"
+- dockerImage: "airbyte/source-salesforce:2.0.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -13511,7 +13531,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-senseforce:0.1.0"
+- dockerImage: "airbyte/source-senseforce:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/senseforce"
     connectionSpecification:
@@ -13561,6 +13581,7 @@
             \ to 2020-10-10 or later"
           examples:
           - "2017-01-25"
+          format: "date"
         slice_range:
           type: "integer"
           title: "Data request time increment in days"
@@ -13952,7 +13973,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-smartsheets:0.1.14"
+- dockerImage: "airbyte/source-smartsheets:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
@@ -13960,21 +13981,65 @@
       title: "Smartsheets Source Spec"
       type: "object"
       required:
-      - "access_token"
+      - "credentials"
       - "spreadsheet_id"
       additionalProperties: true
       properties:
-        access_token:
-          title: "Access Token"
-          description: "The access token to use for accessing your data from Smartsheets.\
-            \ This access token must be generated by a user with at least read access\
-            \ to the data you'd like to replicate. Generate an access token in the\
-            \ Smartsheets main menu by clicking Account > Apps & Integrations > API\
-            \ Access. See the <a href=\"https://docs.airbyte.com/integrations/sources/amplitude#setup-guide\"\
-            >setup guide</a> for information on how to obtain this token."
-          type: "string"
+        credentials:
+          title: "Authorization Method"
+          type: "object"
           order: 0
-          airbyte_secret: true
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            - "access_token"
+            - "token_expiry_date"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                description: "The API ID of the SmartSheets developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                description: "The API Secret the SmartSheets developer application."
+                airbyte_secret: true
+              access_token:
+                type: "string"
+                description: "Access Token for making authenticated requests."
+                airbyte_secret: true
+              token_expiry_date:
+                type: "string"
+                description: "The date-time when the access token should be refreshed."
+                format: "date-time"
+              refresh_token:
+                type: "string"
+                description: "The key to refresh the expired access_token."
+                airbyte_secret: true
+          - title: "API Access Token"
+            type: "object"
+            required:
+            - "access_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "access_token"
+              access_token:
+                type: "string"
+                title: "Access Token"
+                description: "The access token to use for accessing your data from\
+                  \ Smartsheets. This access token must be generated by a user with\
+                  \ at least read access to the data you'd like to replicate. Generate\
+                  \ an access token in the Smartsheets main menu by clicking Account\
+                  \ > Apps & Integrations > API Access. See the <a href=\"https://docs.airbyte.com/integrations/sources/smartsheets/#setup-guide\"\
+                  >setup guide</a> for information on how to obtain this token."
+                airbyte_secret: true
         spreadsheet_id:
           title: "Sheet ID"
           description: "The spreadsheet ID. Find it by opening the spreadsheet then\
@@ -13998,17 +14063,30 @@
     supported_destination_sync_modes: []
     advanced_auth:
       auth_flow_type: "oauth2.0"
-      predicate_key: []
-      predicate_value: ""
+      predicate_key:
+      - "credentials"
+      - "auth_type"
+      predicate_value: "oauth2.0"
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             access_token:
               type: "string"
               path_in_connector_config:
+              - "credentials"
               - "access_token"
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "refresh_token"
+            token_expiry_date:
+              type: "string"
+              format: "date-time"
+              path_in_connector_config:
+              - "credentials"
+              - "token_expiry_date"
         complete_oauth_server_input_specification:
           type: "object"
           additionalProperties: false
@@ -14019,9 +14097,18 @@
               type: "string"
         complete_oauth_server_output_specification:
           type: "object"
-          additionalProperties: false
-          properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.14"
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -14061,6 +14148,7 @@
           default: "2022-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           order: 3
+          format: "date"
         end_date:
           type: "string"
           title: "End Date"
@@ -14070,6 +14158,7 @@
           examples:
           - "2022-01-30"
           order: 4
+          format: "date"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -15584,7 +15673,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.1.15"
+- dockerImage: "airbyte/source-twilio:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
@@ -15618,6 +15707,7 @@
           - "2020-10-01T00:00:00Z"
           type: "string"
           order: 3
+          format: "date-time"
         lookback_window:
           title: "Lookback window"
           description: "How far into the past to look for records. (in minutes)"
@@ -15658,9 +15748,9 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twitter:0.1.0"
+- dockerImage: "airbyte/source-twitter:0.1.1"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/twitter"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Twitter Spec"
@@ -15671,22 +15761,30 @@
       additionalProperties: true
       properties:
         api_key:
+          type: "string"
           title: "API Key Token"
           description: "API Key"
-          type: "string"
           airbyte_secret: true
+          order: 0
         query:
+          type: "string"
           title: "Twitter Search Query"
-          description: "Twitter Search query"
-          type: "string"
+          description: "Query for matching Tweets. You can learn how to build this\
+            \ query by reading <a href=\"https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query\"\
+            > build a query guide </a>."
+          order: 1
         start_date:
+          type: "string"
           title: "Start Date"
-          description: "From what date you want to start retrieving dta"
-          type: "string"
+          description: "The start date for retrieving tweets cannot be more than 7\
+            \ days in the past."
+          order: 2
         end_date:
-          title: "End Date"
-          description: "End data to retrieve data"
           type: "string"
+          title: "End Date"
+          description: "The end date for retrieving tweets must be a minimum of 10\
+            \ seconds prior to the request time."
+          order: 3
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -16183,7 +16281,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-woocommerce:0.2.0"
+- dockerImage: "airbyte/source-woocommerce:0.2.2"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/woocommerce"
     connectionSpecification:
@@ -16222,19 +16320,8 @@
           examples:
           - "2021-01-01"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          format: "date"
           order: 3
-        conversion_window_days:
-          type: "integer"
-          title: "Conversion Window"
-          description: "A conversion window is the period of time after an ad interaction\
-            \ (such as an ad click or video view) during which a conversion, such\
-            \ as a purchase, is recorded in Google Ads"
-          order: 4
-          minimum: 0
-          maximum: 1095
-          default: 0
-          examples:
-          - 14
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -16328,7 +16415,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.12"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -16347,6 +16434,7 @@
           examples:
           - "2021-02-01T00:00:00Z"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          format: "date-time"
         subdomain:
           type: "string"
           title: "Subdomain"
@@ -16906,7 +16994,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sentry:0.1.11"
+- dockerImage: "airbyte/source-sentry:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/sentry"
     connectionSpecification:
