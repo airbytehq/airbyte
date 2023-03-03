@@ -30,6 +30,7 @@ jobs:
         if: steps.create-pull-request.outputs.pull-request-operation == 'created'
         uses: peter-evans/enable-pull-request-automerge@v2
         with:
+          repository: airbytehq/airbyte-platform-internal
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           pull-request-number: ${{ steps.create-pull-request.outputs.pull-request-number }}
           merge-method: squash
