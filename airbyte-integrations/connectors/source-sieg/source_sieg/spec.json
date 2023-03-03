@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Sieg Spec",
     "type": "object",
-    "required": ["email","api_key"],
+    "required": ["email","api_key", "start_date", "end_date"],
     "additionalProperties": false,
     "properties": {
       "email": {

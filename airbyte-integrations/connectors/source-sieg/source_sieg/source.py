@@ -29,7 +29,7 @@ class BaseClass(HttpStream):
         self.email = config["email"]
         self.start_date = config["start_date"]
         self.end_date = config["end_date"]
-        self.take = 1
+        self.take = 50
         self.skip = 0
         self.downloadevent = False
 
@@ -74,10 +74,17 @@ class BaseClass(HttpStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if not response.json()['xmls']:
-            print(f'Finished processing {self.xmltype}')
-            return None
+
+            self.take -= 1
+            if self.take < 1:
+                print(f'Response: {response.json()}')
+                print(f'Finished processing {self.xmltype}')
+                return None
+            else:
+                return True
         else:
-            self.skip += 1
+            # self.skip += 1
+            self.skip += self.take
             print(f'Processing {self.xmltype} ---- skip - {self.skip}')
             return True
 
