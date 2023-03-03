@@ -9,63 +9,16 @@
     "properties": {
       "authorization": {
         "type": "object",
-        "title": "Authentication Type",
-        "description": "Choose one of the possible authorization method",
-        "oneOf": [
-          {
-            "type": "object",
-            "title": "API Key Authentication",
-            "required": ["auth_type", "api_token"],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Token",
-                "order": 0
-              },
-              "api_token": {
-                "title": "API Token",
-                "type": "string",
-                "description": "The Pipedrive API Token.",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "title": "Sign in via Pipedrive (OAuth)",
-            "type": "object",
-            "required": [
-              "auth_type",
-              "client_id",
-              "client_secret",
-              "refresh_token"
-            ],
-            "properties": {
-              "auth_type": {
-                "type": "string",
-                "const": "Client",
-                "order": 0
-              },
-              "client_id": {
-                "title": "Client ID",
-                "type": "string",
-                "description": "The Client ID of your Pipedrive developer application.",
-                "airbyte_secret": true
-              },
-              "client_secret": {
-                "title": "Client Secret",
-                "type": "string",
-                "description": "The Client Secret of your Pipedrive developer application",
-                "airbyte_secret": true
-              },
-              "refresh_token": {
-                "title": "Refresh Token",
-                "type": "string",
-                "description": "The token for obtaining the new access token.",
-                "airbyte_secret": true
-              }
-            }
+        "title": "API Key Authentication",
+        "required": ["api_token"],
+        "properties": {
+          "api_token": {
+            "title": "API Token",
+            "type": "string",
+            "description": "The Pipedrive API Token.",
+            "airbyte_secret": true
           }
-        ]
+        }
       },
       "replication_start_date": {
         "title": "Start Date",
