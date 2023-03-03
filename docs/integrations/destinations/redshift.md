@@ -56,6 +56,11 @@ NOTE: S3 staging does not use the SSH Tunnel option, if configured. SSH Tunnel s
 3. [Create](https://docs.aws.amazon.com/ses/latest/dg/event-publishing-redshift-cluster.html) and activate AWS Redshift cluster if you don't have one ready
 4. (Optional) [Allow](https://aws.amazon.com/premiumsupport/knowledge-center/cannot-connect-redshift-cluster/) connections from Airbyte to your Redshift cluster \(if they exist in separate VPCs\)
 5. (Optional) [Create](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html) a staging S3 bucket \(for the COPY strategy\).
+6. Create a user with at least create table permissions for the schema. If the schema does not exist you need to add permissions for that, too. Something like this:
+```
+GRANT CREATE ON DATABASE database_name TO airflow_user; -- add create schema permission
+GRANT usage, create on schema my_schema TO airflow_user; -- add create table permission
+```
 
 ### Optional Use of SSH Bastion Host
 This connector supports the use of a Bastion host as a gateway to a private Redshift cluster via SSH Tunneling.

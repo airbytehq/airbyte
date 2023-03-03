@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.30.0
+## 0.29.3
 Low-Code CDK: duration macro added
 
 ## 0.29.2
