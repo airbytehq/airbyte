@@ -19,9 +19,6 @@ on:
           - minor
           - patch
         required: true
-      skip-publish:
-        description: 'By default, PyPi. Use "true" skip the publishing entirely.'
-        required: false
       changelog-message:
         description: "Changelog message to be added to CHANGELOG.md"
         required: false
@@ -168,8 +165,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   publish-cdk:
-    needs: build-cdk
-    if: github.event.inputs.skip-publish != 'true'
+    needs: bump-version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
@@ -215,7 +211,6 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
 
   publish-docker-image:
     timeout-minutes: 240
