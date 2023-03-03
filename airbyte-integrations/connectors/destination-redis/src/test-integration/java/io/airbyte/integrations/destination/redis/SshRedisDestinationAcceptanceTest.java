@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
@@ -26,7 +26,7 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static final Network network = Network.newNetwork();
   private static RedisContainerInitializr.RedisContainer redisContainer;
-  private JsonNode configJson;
+  private JsonNode jsonConfig;
   private RedisCache redisCache;
   private RedisNameTransformer redisNameTransformer;
 
@@ -49,11 +49,10 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    configJson = RedisDataFactory.jsonConfig(
+    jsonConfig = RedisDataFactory.jsonConfig(
         redisContainer.getHost(),
         redisContainer.getFirstMappedPort());
-    var redisConfig = new RedisConfig(configJson);
-    redisCache = new RedisHCache(redisConfig);
+    redisCache = new RedisHCache(jsonConfig);
     redisNameTransformer = new RedisNameTransformer();
   }
 
@@ -72,9 +71,9 @@ public abstract class SshRedisDestinationAcceptanceTest extends DestinationAccep
     return bastion.getTunnelConfig(getTunnelMethod(), ImmutableMap.builder()
         .put("host", HostPortResolver.resolveIpAddress(redisContainer))
         .put("port", redisContainer.getExposedPorts().get(0))
-        .put("username", configJson.get("username"))
-        .put("password", configJson.get("password"))
-        .put("cache_type", configJson.get("cache_type")));
+        .put("username", jsonConfig.get("username"))
+        .put("password", jsonConfig.get("password"))
+        .put("cache_type", jsonConfig.get("cache_type")));
   }
 
   @Override

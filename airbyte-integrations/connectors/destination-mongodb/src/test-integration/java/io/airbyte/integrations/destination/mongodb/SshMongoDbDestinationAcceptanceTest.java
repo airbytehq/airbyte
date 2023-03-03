@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -64,9 +64,9 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema) {
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
     final MongoDatabase database = getMongoDatabase(HostPortResolver.resolveIpAddress(container),
         container.getExposedPorts().get(0), DATABASE_NAME);
     final var collection = database.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
@@ -78,7 +78,6 @@ public abstract class SshMongoDbDestinationAcceptanceTest extends MongodbDestina
     }
     return result;
   }
-
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {

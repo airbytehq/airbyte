@@ -13,7 +13,7 @@ get_epoch_time() {
 }
 
 check_success() {
-  docker-compose ps | grep "^$1" | grep -e 'Exit 0' -e 'exited (0)' >/dev/null || (echo "$1 didn't run successfully"; exit 1)
+  docker compose ps --all | grep "^$1" | grep -ie 'exit 0' -ie 'exited (0)' >/dev/null || (echo "$1 didn't run successfully"; exit 1)
 }
 
 ##
@@ -21,12 +21,14 @@ check_success() {
 echo "Starting app..."
 
 # Detach so we can run subsequent commands
-VERSION=dev TRACKING_STRATEGY=logging USE_STREAM_CAPABLE_STATE=true BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker-compose -f docker-compose.yaml -f docker-compose.acceptance-test.yaml up -d
+# NOTE: this passes APPLY_FIELD_SELECTION=true, which enables a feature -- field selection -- which is currently disabled by default.
+# We want to run our CI tests against the new feature while we prepare to release it.
+VERSION=dev TRACKING_STRATEGY=logging USE_STREAM_CAPABLE_STATE=true BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" APPLY_FIELD_SELECTION=true docker compose -f docker-compose.yaml -f docker-compose.acceptance-test.yaml up -d
 
 # Sometimes source/dest containers using airbyte volumes survive shutdown, which need to be killed in order to shut down properly.
-shutdown_cmd="docker-compose down -v || docker kill \$(docker ps -a -f volume=airbyte_workspace -f volume=airbyte_data -f volume=airbyte_db -q) && docker-compose down -v"
+shutdown_cmd="docker compose down -v || docker kill \$(docker ps -a -f volume=airbyte_workspace -f volume=airbyte_data -f volume=airbyte_db -q) && docker compose down -v"
 # Uncomment for debugging. Warning, this is verbose.
-# trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 1000 && $shutdown_cmd" EXIT
+# trap "echo 'docker compose logs:' && docker compose logs -t --tail 1000 && $shutdown_cmd" EXIT
 
 echo "Waiting for services to begin"
 starttime=`get_epoch_time`
@@ -36,7 +38,7 @@ do
   echo "Waiting for docker deployment.."
   currenttime=`get_epoch_time`
   if [[ $(( $currenttime - $starttime )) -gt $maxtime ]]; then
-    docker-compose ps
+    docker compose ps
     echo "Platform is taking more than ${maxtime}s to start. Aborting..."
     exit 1
   fi
@@ -44,7 +46,7 @@ do
 done
 
 # Getting a snapshot of the docker compose state
-docker-compose ps
+docker compose ps
 
 # Make sure init containers ran successfully
 check_success 'init'

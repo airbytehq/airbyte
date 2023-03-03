@@ -24,7 +24,8 @@ You must be the owner of a Notion workspace to create a new integration.
 
 ### Step 2: Set up the Notion connector in Airbyte
 
-#### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
@@ -34,10 +35,12 @@ You must be the owner of a Notion workspace to create a new integration.
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
           * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
-6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
+<!-- /env:cloud -->
 
-#### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Log in to your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
@@ -46,8 +49,9 @@ You must be the owner of a Notion workspace to create a new integration.
 5. Choose the method of authentication:
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
-6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -65,7 +69,7 @@ The Notion source connector supports the following streams. For more information
 * [databases](https://developers.notion.com/reference/retrieve-a-database)
 * [pages](https://developers.notion.com/reference/retrieve-a-page)
 * [users](https://developers.notion.com/reference/get-user)
-      
+
 :::note
 
 The users stream does not support Incremental - Append sync mode.
@@ -74,12 +78,16 @@ The users stream does not support Incremental - Append sync mode.
 
 ## Performance considerations
 
-The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------|
+| 1.0.3   | 2023-03-02 | [22931](https://github.com/airbytehq/airbyte/pull/22931) | Specified date formatting in specification                                                       |
+| 1.0.2   | 2023-02-24 | [23437](https://github.com/airbytehq/airbyte/pull/23437) | Add retry for 400 error (validation_error)                      |
+| 1.0.1   | 2023-01-27 | [22018](https://github.com/airbytehq/airbyte/pull/22018) | Set `AvailabilityStrategy` for streams explicitly to `None`     |
+| 1.0.0   | 2022-12-19 | [20639](https://github.com/airbytehq/airbyte/pull/20639) | Fix `Pages` stream schema                                       |
 | 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff                            |
 | 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                     |
 | 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example    |

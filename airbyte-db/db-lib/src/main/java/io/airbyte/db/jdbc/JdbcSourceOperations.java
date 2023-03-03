@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -37,7 +37,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);
@@ -55,6 +55,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+      case TIMESTAMP_WITH_TIMEZONE -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
@@ -62,10 +63,10 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final JDBCType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final JDBCType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
@@ -89,7 +90,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JDBCType getFieldType(final JsonNode field) {
+  public JDBCType getDatabaseFieldType(final JsonNode field) {
     try {
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
@@ -103,12 +104,12 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public boolean isCursorType(JDBCType type) {
+  public boolean isCursorType(final JDBCType type) {
     return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;

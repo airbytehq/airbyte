@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -9,6 +9,7 @@ import static io.airbyte.db.PostgresUtils.getCertificate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
@@ -17,27 +18,34 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String STREAM_NAME = "public.id_and_name";
-  private static final String STREAM_NAME2 = "public.starships";
-  private static final String STREAM_NAME_MATERIALIZED_VIEW = "public.testview";
-
+  private static final String STREAM_NAME = "id_and_name";
+  private static final String STREAM_NAME2 = "starships";
+  private static final String STREAM_NAME_MATERIALIZED_VIEW = "testview";
+  private static final String SCHEMA_NAME = "public";
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
   private PostgreSQLContainer<?> container;
   private JsonNode config;
   protected static final String PASSWORD = "Passw0rd";
@@ -45,6 +53,8 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
     container.start();
@@ -116,28 +126,31 @@ public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
+                STREAM_NAME, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
+                STREAM_NAME2, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME_MATERIALIZED_VIEW,
+                STREAM_NAME_MATERIALIZED_VIEW, SCHEMA_NAME,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
 
   @Override

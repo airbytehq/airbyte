@@ -1,17 +1,17 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.2",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(
@@ -21,7 +21,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

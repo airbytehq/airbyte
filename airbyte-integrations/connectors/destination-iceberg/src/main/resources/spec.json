@@ -1,0 +1,269 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/iceberg",
+  "supportsNormalization": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Iceberg Destination Spec",
+    "type": "object",
+    "required": ["catalog_config", "storage_config", "format_config"],
+    "properties": {
+      "catalog_config": {
+        "title": "Iceberg catalog config",
+        "type": "object",
+        "description": "Catalog config of Iceberg.",
+        "oneOf": [
+          {
+            "title": "HiveCatalog: Use Apache Hive MetaStore",
+            "required": ["catalog_type", "hive_thrift_uri"],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "Hive",
+                "enum": ["Hive"],
+                "order": 0
+              },
+              "hive_thrift_uri": {
+                "title": "Hive Metastore thrift uri",
+                "type": "string",
+                "description": "Hive MetaStore thrift server uri of iceberg catalog.",
+                "examples": ["host:port"],
+                "order": 1
+              },
+              "database": {
+                "title": "Default database",
+                "description": "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
+                "type": "string",
+                "default": "default",
+                "examples": ["default"],
+                "order": 2
+              }
+            }
+          },
+          {
+            "title": "HadoopCatalog: Use hierarchical file systems as same as storage config",
+            "description": "A Hadoop catalog doesn’t need to connect to a Hive MetaStore, but can only be used with HDFS or similar file systems that support atomic rename.",
+            "required": ["catalog_type"],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "Hadoop",
+                "enum": ["Hadoop"],
+                "order": 0
+              },
+              "database": {
+                "title": "Default database",
+                "description": "The default database tables are written to if the source does not specify a namespace. The usual value for this field is \"default\".",
+                "type": "string",
+                "default": "default",
+                "examples": ["default"],
+                "order": 1
+              }
+            }
+          },
+          {
+            "title": "JdbcCatalog: Use relational database",
+            "description": "Using a table in a relational database to manage Iceberg tables through JDBC. Read more <a href=\"https://iceberg.apache.org/docs/latest/jdbc/\">here</a>. Supporting: PostgreSQL",
+            "required": ["catalog_type"],
+            "properties": {
+              "catalog_type": {
+                "title": "Catalog Type",
+                "type": "string",
+                "default": "Jdbc",
+                "enum": ["Jdbc"],
+                "order": 0
+              },
+              "database": {
+                "title": "Default schema",
+                "description": "The default schema tables are written to if the source does not specify a namespace. The usual value for this field is \"public\".",
+                "type": "string",
+                "default": "public",
+                "examples": ["public"],
+                "order": 1
+              },
+              "jdbc_url": {
+                "title": "Jdbc url",
+                "type": "string",
+                "examples": ["jdbc:postgresql://{host}:{port}/{database}"],
+                "order": 2
+              },
+              "username": {
+                "title": "User",
+                "description": "Username to use to access the database.",
+                "type": "string",
+                "order": 3
+              },
+              "password": {
+                "title": "Password",
+                "description": "Password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 4
+              },
+              "ssl": {
+                "title": "SSL Connection",
+                "description": "Encrypt data using SSL. When activating SSL, please select one of the connection modes.",
+                "type": "boolean",
+                "default": false,
+                "order": 5
+              },
+              "catalog_schema": {
+                "title": "schema for Iceberg catalog",
+                "description": "Iceberg catalog metadata tables are written to catalog schema. The usual value for this field is \"public\".",
+                "type": "string",
+                "default": "public",
+                "examples": ["public"],
+                "order": 6
+              }
+            }
+          }
+        ],
+        "order": 0
+      },
+      "storage_config": {
+        "title": "Storage config",
+        "type": "object",
+        "description": "Storage config of Iceberg.",
+        "oneOf": [
+          {
+            "title": "S3",
+            "type": "object",
+            "description": "S3 object storage",
+            "required": [
+              "storage_type",
+              "access_key_id",
+              "secret_access_key",
+              "s3_warehouse_uri"
+            ],
+            "properties": {
+              "storage_type": {
+                "title": "Storage Type",
+                "type": "string",
+                "default": "S3",
+                "enum": ["S3"],
+                "order": 0
+              },
+              "access_key_id": {
+                "type": "string",
+                "description": "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
+                "title": "S3 Key ID",
+                "airbyte_secret": true,
+                "examples": ["A012345678910EXAMPLE"],
+                "order": 0
+              },
+              "secret_access_key": {
+                "type": "string",
+                "description": "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
+                "title": "S3 Access Key",
+                "airbyte_secret": true,
+                "examples": ["a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"],
+                "order": 1
+              },
+              "s3_warehouse_uri": {
+                "title": "S3 Warehouse Uri for Iceberg",
+                "type": "string",
+                "description": "The Warehouse Uri for Iceberg",
+                "examples": [
+                  "s3a://my-bucket/path/to/warehouse",
+                  "s3://my-bucket/path/to/warehouse"
+                ],
+                "order": 2
+              },
+              "s3_bucket_region": {
+                "title": "S3 Bucket Region",
+                "type": "string",
+                "default": "",
+                "description": "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
+                "enum": [
+                  "",
+                  "us-east-1",
+                  "us-east-2",
+                  "us-west-1",
+                  "us-west-2",
+                  "af-south-1",
+                  "ap-east-1",
+                  "ap-south-1",
+                  "ap-northeast-1",
+                  "ap-northeast-2",
+                  "ap-northeast-3",
+                  "ap-southeast-1",
+                  "ap-southeast-2",
+                  "ca-central-1",
+                  "cn-north-1",
+                  "cn-northwest-1",
+                  "eu-central-1",
+                  "eu-north-1",
+                  "eu-south-1",
+                  "eu-west-1",
+                  "eu-west-2",
+                  "eu-west-3",
+                  "sa-east-1",
+                  "me-south-1",
+                  "us-gov-east-1",
+                  "us-gov-west-1"
+                ],
+                "order": 3
+              },
+              "s3_endpoint": {
+                "title": "Endpoint",
+                "type": "string",
+                "default": "",
+                "description": "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
+                "examples": ["http://localhost:9000", "localhost:9000"],
+                "order": 4
+              },
+              "s3_path_style_access": {
+                "type": "boolean",
+                "description": "Use path style access",
+                "examples": [true, false],
+                "default": true,
+                "order": 5
+              }
+            }
+          }
+        ],
+        "order": 1
+      },
+      "format_config": {
+        "title": "File format",
+        "type": "object",
+        "required": ["format"],
+        "description": "File format of Iceberg storage.",
+        "properties": {
+          "format": {
+            "title": "File storage format",
+            "type": "string",
+            "default": "Parquet",
+            "description": "",
+            "enum": ["Parquet", "Avro"],
+            "order": 0
+          },
+          "flush_batch_size": {
+            "title": "Data file flushing batch size",
+            "description": "Iceberg data file flush batch size. Incoming rows write to cache firstly; When cache size reaches this 'batch size', flush into real Iceberg data file.",
+            "type": "integer",
+            "default": 10000,
+            "order": 1
+          },
+          "auto_compact": {
+            "title": "Auto compact data files",
+            "description": "Auto compact data files when stream close",
+            "type": "boolean",
+            "default": false,
+            "order": 2
+          },
+          "compact_target_file_size_in_mb": {
+            "title": "Target size of compacted data file",
+            "description": "Specify the target size of Iceberg data file when performing a compaction action. ",
+            "type": "integer",
+            "default": 100,
+            "order": 3
+          }
+        },
+        "order": 2
+      }
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -27,23 +27,25 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteGlobalState;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamState;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -124,7 +126,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       checkOperations.addAll(CdcConfigurationHelper.getCheckOperations());
 
       checkOperations.add(database -> {
-        CdcConfigurationHelper.checkFirstRecordWaitTime(config);
+        FirstRecordWaitTimeUtil.checkFirstRecordWaitTime(config);
         CdcConfigurationHelper.checkServerTimeZoneConfig(config);
       });
     }
@@ -151,10 +153,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
+    final String encodedDatabaseName = HostPortResolver.encodeValue(config.get(JdbcUtils.DATABASE_KEY).asText());
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
         config.get(JdbcUtils.PORT_KEY).asText(),
-        config.get(JdbcUtils.DATABASE_KEY).asText()));
+        encodedDatabaseName));
 
     // To fetch the result in batches, the "useCursorFetch=true" must be set.
     // https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-implementation-notes.html.
@@ -235,7 +238,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      final Duration firstRecordWaitTime = CdcConfigurationHelper.getFirstRecordWaitTime(sourceConfig);
+      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
       final AirbyteDebeziumHandler handler =
           new AirbyteDebeziumHandler(sourceConfig, MySqlCdcTargetPosition.targetPosition(database), true, firstRecordWaitTime);

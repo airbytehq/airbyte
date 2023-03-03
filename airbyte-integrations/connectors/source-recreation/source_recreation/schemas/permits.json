@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PermitEntranceID": {
+      "type": "string"
+    },
+    "FacilityID": {
+      "type": "string"
+    },
+    "PermitEntranceName": {
+      "type": "string"
+    },
+    "PermitEntranceDescription": {
+      "type": "string"
+    },
+    "District": {
+      "type": "string"
+    },
+    "Town": {
+      "type": "string"
+    },
+    "PermitEntranceAccessible": {
+      "type": "boolean"
+    },
+    "Longitude": {
+      "type": "integer"
+    },
+    "Latitude": {
+      "type": "integer"
+    },
+    "GEOSJON": {
+      "type": "object",
+      "properties": {
+        "TYPE": {
+          "type": "string"
+        },
+        "COORDINATES": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "CreatedDate": {
+      "type": "string"
+    },
+    "LastUpdatedDate": {
+      "type": "string"
+    },
+    "ATTRIBUTES": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "AttributeID": {
+            "type": "integer"
+          },
+          "AttributeName": {
+            "type": "string"
+          },
+          "AttributeValue": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ENTITYMEDIA": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "EntityMediaID": {
+            "type": "string"
+          },
+          "MediaType": {
+            "type": "string"
+          },
+          "EntityID": {
+            "type": "string"
+          },
+          "EntityType": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Subtitle": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "EmbedCode": {
+            "type": "string"
+          },
+          "Height": {
+            "type": "integer"
+          },
+          "Width": {
+            "type": "integer"
+          },
+          "IsPrimary": {
+            "type": "boolean"
+          },
+          "IsPreview": {
+            "type": "boolean"
+          },
+          "IsGallery": {
+            "type": "boolean"
+          },
+          "URL": {
+            "type": "string"
+          },
+          "Credits": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ZONES": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "PermitEntranceZoneID": {
+            "type": "string"
+          },
+          "Zone": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

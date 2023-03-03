@@ -1,21 +1,27 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DebeziumPropertiesManager {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPropertiesManager.class);
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
@@ -83,20 +89,65 @@ public class DebeziumPropertiesManager {
     props.setProperty("decimal.handling.mode", "string");
 
     // table selection
-    final String tableWhitelist = getTableWhitelist(catalog);
-    props.setProperty("table.include.list", tableWhitelist);
-
+    props.setProperty("table.include.list", getTableIncludelist(catalog));
+    // column selection
+    props.setProperty("column.include.list", getColumnIncludeList(catalog));
     return props;
   }
 
-  public static String getTableWhitelist(final ConfiguredAirbyteCatalog catalog) {
+  public static String getTableIncludelist(final ConfiguredAirbyteCatalog catalog) {
+    // Turn "stream": {
+    // "namespace": "schema1"
+    // "name": "table1
+    // },
+    // "stream": {
+    // "namespace": "schema2"
+    // "name": "table2
+    // } -------> info "schema1.table1, schema2.table2"
+
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
         .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .map(x -> StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,"))
         .collect(Collectors.joining(","));
+  }
+
+  public static String getColumnIncludeList(final ConfiguredAirbyteCatalog catalog) {
+    // Turn "stream": {
+    // "namespace": "schema1"
+    // "name": "table1"
+    // "jsonSchema": {
+    // "properties": {
+    // "column1": {
+    // },
+    // "column2": {
+    // }
+    // }
+    // }
+    // } -------> info "schema1.table1.(column1 | column2)"
+
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(s -> {
+          final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
+          // schema.table.(col1|col2)
+          return Pattern.quote(s.getNamespace() + "." + s.getName()) + (StringUtils.isNotBlank(fields) ? "\\." + fields : "");
+        })
+        .map(x -> StringUtils.escape(x, ",".toCharArray(), "\\,"))
+        .collect(Collectors.joining(","));
+  }
+
+  private static String parseFields(final Iterator<String> fieldNames) {
+    if (fieldNames == null || !fieldNames.hasNext()) {
+      return "";
+    }
+    final Iterable<String> iter = () -> fieldNames;
+    return StreamSupport.stream(iter.spliterator(), false)
+        .map(f -> Pattern.quote(f))
+        .collect(Collectors.joining("|", "(", ")"));
   }
 
 }

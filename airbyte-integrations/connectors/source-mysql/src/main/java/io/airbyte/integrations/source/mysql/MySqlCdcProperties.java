@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -50,7 +50,7 @@ public class MySqlCdcProperties {
      * {@link MySQLConverter}
      */
     props.setProperty("converters", "boolean, datetime");
-    props.setProperty("boolean.type", "io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter");
+    props.setProperty("boolean.type", "io.airbyte.integrations.debezium.internals.CustomMySQLTinyIntOneToBooleanConverter");
     props.setProperty("datetime.type", "io.airbyte.integrations.debezium.internals.MySQLDateTimeConverter");
 
     // For CDC mode, the user cannot provide timezone arguments as JDBC parameters - they are
@@ -67,7 +67,7 @@ public class MySqlCdcProperties {
     // https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-property-database-ssl-mode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
-        props.setProperty("database.sslmode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
+        props.setProperty("database.ssl.mode", MySqlSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
         props.setProperty("database.history.producer.security.protocol", "SSL");
         props.setProperty("database.history.consumer.security.protocol", "SSL");
 

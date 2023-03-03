@@ -1,0 +1,164 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "href": {
+      "type": "string"
+    },
+    "browserLink": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "subtitle": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        }
+      }
+    },
+    "parent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        },
+        "browserLink": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "children": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          },
+          "browserLink": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "authors": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "@context": {
+              "type": "string"
+            },
+            "@type": {
+              "type": "string"
+            },
+            "additionalType": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedBy": {
+          "type": "object",
+          "properties": {
+            "@context": {
+              "type": "string"
+            },
+            "@type": {
+              "type": "string"
+            },
+            "additionalType": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        },
+        "createdBy": {
+          "type": "object",
+          "properties": {
+            "@context": {
+              "type": "string"
+            },
+            "@type": {
+              "type": "string"
+            },
+            "additionalType": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

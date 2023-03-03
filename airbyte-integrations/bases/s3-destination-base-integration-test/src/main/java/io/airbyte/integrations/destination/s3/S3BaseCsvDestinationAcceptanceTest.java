@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig.Flattening;
+import io.airbyte.integrations.destination.s3.util.Flattening;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -49,7 +49,9 @@ public abstract class S3BaseCsvDestinationAcceptanceTest extends S3DestinationAc
     final Iterator<Entry<String, JsonNode>> iterator = fieldDefinitions.fields();
     while (iterator.hasNext()) {
       final Entry<String, JsonNode> entry = iterator.next();
-      fieldTypes.put(entry.getKey(), entry.getValue().get("type").asText());
+      JsonNode fieldValue = entry.getValue();
+      JsonNode typeValue = fieldValue.get("type") == null ? fieldValue.get("$ref") : fieldValue.get("type");
+      fieldTypes.put(entry.getKey(), typeValue.asText());
     }
     return fieldTypes;
   }
@@ -73,6 +75,9 @@ public abstract class S3BaseCsvDestinationAcceptanceTest extends S3DestinationAc
       }
       final String type = fieldTypes.get(key);
       switch (type) {
+        case "WellKnownTypes.json#/definitions/Boolean" -> json.put(key, Boolean.valueOf(value));
+        case "WellKnownTypes.json#/definitions/Integer" -> json.put(key, Integer.valueOf(value));
+        case "WellKnownTypes.json#/definitions/Number" -> json.put(key, Double.valueOf(value));
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
         case "number" -> json.put(key, Double.valueOf(value));

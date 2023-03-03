@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_LSN;
+import static io.airbyte.integrations.source.mssql.MssqlSource.CDC_EVENT_SERIAL_NO;
 import static io.airbyte.integrations.source.mssql.MssqlSource.DRIVER_CLASS;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_CDC_OFFSET;
 import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
@@ -34,9 +35,9 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
 import java.util.List;
@@ -88,6 +89,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
         "method", "CDC",
         "data_to_sync", "Existing and New",
+        "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
@@ -97,6 +99,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication_method", replicationConfig)
+        .put("is_test", true)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -157,6 +160,17 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Override
   public String createSchemaQuery(final String schemaName) {
     return "CREATE SCHEMA " + schemaName;
+  }
+
+  // TODO : Delete this Override when MSSQL supports individual table snapshot
+  @Override
+  public void newTableSnapshotTest() throws Exception {
+    // Do nothing
+  }
+
+  @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
   }
 
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
@@ -343,6 +357,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     data.remove(CDC_LSN);
     data.remove(CDC_UPDATED_AT);
     data.remove(CDC_DELETED_AT);
+    data.remove(CDC_EVENT_SERIAL_NO);
   }
 
   @Override
@@ -376,11 +391,13 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertNull(data.get(CDC_LSN));
     assertNull(data.get(CDC_UPDATED_AT));
     assertNull(data.get(CDC_DELETED_AT));
+    assertNull(data.get(CDC_EVENT_SERIAL_NO));
   }
 
   @Override
   protected void assertCdcMetaData(final JsonNode data, final boolean deletedAtNull) {
     assertNotNull(data.get(CDC_LSN));
+    assertNotNull(data.get(CDC_EVENT_SERIAL_NO));
     assertNotNull(data.get(CDC_UPDATED_AT));
     if (deletedAtNull) {
       assertTrue(data.get(CDC_DELETED_AT).isNull());
@@ -398,6 +415,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
+    properties.set(CDC_EVENT_SERIAL_NO, stringType);
 
   }
 

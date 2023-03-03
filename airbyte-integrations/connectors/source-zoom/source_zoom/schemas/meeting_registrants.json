@@ -1,5 +1,5 @@
 {
-  "$schema":"http://json-schema.org/draft-07/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "meeting_id": {
       "type": "number"
@@ -31,8 +31,7 @@
             "type": "string"
           }
         },
-        "required": [
-        ]
+        "required": []
       }
     },
     "email": {
@@ -81,6 +80,5 @@
       "type": "string"
     }
   },
-  "required": [
-  ]
+  "required": []
 }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -12,6 +12,7 @@ from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional,
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -19,6 +20,7 @@ from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
+from source_iterable.utils import dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -46,6 +48,10 @@ class IterableStream(HttpStream, ABC):
         """
         :return: Default field name to get data from response
         """
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def check_unauthorized_key(self, response: requests.Response) -> bool:
         if response.status_code == codes.UNAUTHORIZED:
@@ -137,7 +143,7 @@ class IterableExportStream(IterableStream, ABC):
         if isinstance(value, int):
             value = pendulum.from_timestamp(value / 1000.0)
         elif isinstance(value, str):
-            value = pendulum.parse(value, strict=False)
+            value = dateutil_parse(value)
         else:
             raise ValueError(f"Unsupported type of datetime field {type(value)}")
         return value

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.db.jdbc;
@@ -47,12 +47,20 @@ public class JdbcUtils {
   // NOTE: this is the plural version of SCHEMA_KEY
   public static final String SCHEMAS_KEY = "schemas";
   public static final String SSL_KEY = "ssl";
+  public static final List<String> SSL_MODE_DISABLE = List.of("disable", "disabled");
   public static final String SSL_MODE_KEY = "ssl_mode";
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
   public static final String MODE_KEY = "mode";
   public static final String AMPERSAND = "&";
   public static final String EQUALS = "=";
+
+  // An estimate for how much additional data in sent over the wire due to conversion of source data
+  // into {@link AirbyteMessage}. This is due to
+  // the fact that records are in JSON format and all database fields are converted to Strings.
+  // Currently, this is used in the logic for emitting
+  // estimate trace messages.
+  public static final int PLATFORM_DATA_INCREASE_FACTOR = 2;
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
       BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
@@ -111,10 +119,17 @@ public class JdbcUtils {
    * (e.g. non-zero integers, string true, etc)
    *
    * @param config A configuration used to check Jdbc connection
-   * @return true: if ssl has not been set or it has been set with true, false: in all other cases
+   * @return true: if ssl has not been set and ssl mode not equals disabled or it has been set with
+   *         true, false: in all other cases
    */
   public static boolean useSsl(final JsonNode config) {
-    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
+    if (!config.has(SSL_KEY)) {
+      if (config.has(SSL_MODE_KEY) && config.get(SSL_MODE_KEY).has(MODE_KEY)) {
+        return !SSL_MODE_DISABLE.contains(config.get(SSL_MODE_KEY).get(MODE_KEY).asText());
+      } else
+        return true;
+    } else
+      return config.get(SSL_KEY).asBoolean();
   }
 
 }

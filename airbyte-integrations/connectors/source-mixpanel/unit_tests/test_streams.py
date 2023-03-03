@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import timedelta
 from unittest.mock import MagicMock
 
@@ -456,3 +457,14 @@ def test_export_terminated_early(requests_mock, config):
     stream = Export(authenticator=MagicMock(), **config)
     requests_mock.register_uri("GET", get_url_to_mock(stream), text="terminated early\n")
     assert list(read_full_refresh(stream)) == []
+
+
+def test_export_iter_dicts(config):
+    stream = Export(authenticator=MagicMock(), **config)
+    record = {"key1": "value1", "key2": "value2"}
+    record_string = json.dumps(record)
+    assert list(stream.iter_dicts([record_string, record_string])) == [record, record]
+    # combine record from 2 standing nearby parts
+    assert list(stream.iter_dicts([record_string, record_string[:2], record_string[2:], record_string])) == [record, record, record]
+    # drop record parts because they are not standing nearby
+    assert list(stream.iter_dicts([record_string, record_string[:2], record_string, record_string[2:]])) == [record, record]

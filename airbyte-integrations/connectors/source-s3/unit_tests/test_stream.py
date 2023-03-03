@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import datetime
@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+from source_s3.exceptions import S3Exception
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.storagefile import StorageFile
 from source_s3.source_files_abstract.stream import IncrementalFileStream
@@ -642,7 +643,7 @@ class TestIncrementalFileStream:
                     dataset="dummy", provider={}, format={"filetype": "csv"}, schema=user_schema, path_pattern="**/prefix*.csv"
                 )
                 if error_expected:
-                    with pytest.raises(RuntimeError):
+                    with pytest.raises(S3Exception):
                         stream_instance._get_master_schema(min_datetime=min_datetime)
                 else:
                     assert stream_instance._get_master_schema(min_datetime=min_datetime) == expected_schema

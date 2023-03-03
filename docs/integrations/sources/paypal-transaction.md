@@ -19,7 +19,9 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 
 ## Step 2: Set up the Paypal Transaction connector in Airbyte
 
-### For Airbyte Cloud:
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Paypal Transaction connector and select **Paypal Transaction** from the Source type dropdown.
@@ -28,8 +30,11 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 6. Choose if your account is sandbox
 7. Enter the date you want your sync to start from
 8. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source:
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
 1. Navigate to the Airbyte Open Source dashboard
 2. Set the name for your source
 3. Enter your client id
@@ -37,6 +42,7 @@ Our Paypal Transactions Source Connector does not support OAuth at this time due
 5. Choose if your account is sandbox
 6. Enter the date you want your sync to start from
 7. Click **Set up source**
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -81,6 +87,8 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 0.1.12  | 2023-02-18 | [23211](https://github.com/airbytehq/airbyte/pull/23211) | Fix error handler                                                                                                            |
+| 0.1.11  | 2023-01-27 | [22019](https://github.com/airbytehq/airbyte/pull/22019) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                  |
 | 0.1.10  | 2022-09-04 | [17554](https://github.com/airbytehq/airbyte/pull/17554) | Made the spec and source config to be consistent                                                                             |
 | 0.1.9   | 2022-08-18 | [15741](https://github.com/airbytehq/airbyte/pull/15741) | Removed `OAuth2.0` option                                                                                                    |
 | 0.1.8   | 2022-07-25 | [15000](https://github.com/airbytehq/airbyte/pull/15000) | Added support of `OAuth2.0` authentication, fixed bug when normalization couldn't handle nested cursor field and primary key |

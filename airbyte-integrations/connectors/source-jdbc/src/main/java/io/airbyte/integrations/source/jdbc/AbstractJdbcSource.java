@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -20,6 +20,10 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -37,17 +41,17 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.AbstractRelationalDbSource;
+import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.sql.Connection;
@@ -81,7 +85,7 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
-public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
 
   public static final String SSL_MODE = "sslMode";
 
@@ -136,12 +140,23 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     this.sourceOperations = sourceOperations;
   }
 
+  @Override
+  protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName) {
+    LOGGER.info("Queueing query for table: {}", tableName);
+    return queryTable(database, String.format("SELECT %s FROM %s",
+        enquoteIdentifierList(columnNames, getQuoteString()),
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
+  }
+
   /**
    * Configures a list of operations that can be used to check the connection to the source.
    *
    * @return list of consumers that run queries for the check command.
    */
-  public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
+  protected List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config) throws Exception {
     return ImmutableList.of(database -> {
       LOGGER.info("Attempting to get metadata from the database to see if we can connect.");
       database.bufferedResultSetQuery(connection -> connection.getMetaData().getCatalogs(), sourceOperations::rowToJson);
@@ -191,8 +206,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
             .fields(fields.stream()
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
-                  final Datatype datatype = getFieldType(f);
-                  final JsonSchemaType jsonType = getType(datatype);
+                  final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
+                  final JsonSchemaType jsonType = getAirbyteType(datatype);
                   LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
@@ -210,7 +225,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   private List<String> extractCursorFields(final List<JsonNode> fields) {
     return fields.stream()
-        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> isCursorType(sourceOperations.getDatabaseFieldType(field)))
         .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
@@ -254,14 +269,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .build());
   }
 
-  /**
-   * @param field Essential column information returned from
-   *        {@link AbstractJdbcSource#getColumnMetadata}.
-   */
-  public Datatype getFieldType(final JsonNode field) {
-    return sourceOperations.getFieldType(field);
-  }
-
   @Override
   public List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database)
       throws Exception {
@@ -269,8 +276,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
-  public JsonSchemaType getType(final Datatype columnType) {
-    return sourceOperations.getJsonType(columnType);
+  public JsonSchemaType getAirbyteType(final Datatype columnType) {
+    return sourceOperations.getAirbyteType(columnType);
   }
 
   @Override
@@ -285,7 +292,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = sourceOperations.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
@@ -298,11 +305,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> sourceOperations
-                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = sourceOperations
-                  .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
+              final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
                     connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
@@ -338,8 +343,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String fullTableName = sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName);
-              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField());
+              final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+              final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
               final String operator;
               if (cursorInfo.getCursorRecordCount() <= 0L) {
@@ -369,7 +374,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
               LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+              sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               return preparedStatement;
             },
             sourceOperations::rowToJson);
@@ -389,18 +394,18 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                          final String schemaName,
                                          final String tableName)
       throws SQLException {
-    return sourceOperations.enquoteIdentifierList(connection, columnNames);
+    return enquoteIdentifierList(columnNames, getQuoteString());
   }
 
   protected String getCountColumnName() {
     return "record_count";
   }
 
-  private long getActualCursorRecordCount(final Connection connection,
-                                          final String fullTableName,
-                                          final String quotedCursorField,
-                                          final Datatype cursorFieldType,
-                                          final String cursor)
+  protected long getActualCursorRecordCount(final Connection connection,
+                                            final String fullTableName,
+                                            final String quotedCursorField,
+                                            final Datatype cursorFieldType,
+                                            final String cursor)
       throws SQLException {
     final String columnName = getCountColumnName();
     final PreparedStatement cursorRecordStatement;
@@ -416,7 +421,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
           fullTableName,
           quotedCursorField);
       cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
-      sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
+      sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor);
     }
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
     if (resultSet.next()) {
@@ -515,7 +520,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param config configuration
    * @return map containing relevant parsed values including location of keystore or an empty map
    */
-  public Map<String, String> parseSSLConfig(final JsonNode config) {
+  protected Map<String, String> parseSSLConfig(final JsonNode config) {
     LOGGER.debug("source config: {}", config);
 
     final Map<String, String> additionalParameters = new HashMap<>();
@@ -572,7 +577,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param sslParams
    * @return SSL portion of JDBC question params or and empty string
    */
-  public String toJDBCQueryParams(final Map<String, String> sslParams) {
+  protected String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
             .stream()
@@ -603,7 +608,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
 
     return catalog.getStreams().stream()
-        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream())))
+        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }

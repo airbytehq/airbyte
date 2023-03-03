@@ -1,34 +1,33 @@
 name: Cleanup old GH workflow runs
 
-on: 
+on:
   schedule:
-    - cron: '0 12 * * *' # runs at 12:00 UTC everyday
+    - cron: "0 12 * * *" # runs at 12:00 UTC everyday
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-
       - name: checkout repo content
-        uses: actions/checkout@v2 # checkout the repository content to github runner
+        uses: actions/checkout@v3 # checkout the repository content to github runner
 
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.9.13' # install the python version needed
-          
+          python-version: "3.9.13" # install the python version needed
+
       - name: install python packages
         run: |
           python -m pip install --upgrade pip
           pip install PyGithub slack_sdk
-          
-      - name: execute cleanup workflow py script 
-        env: 
+
+      - name: execute cleanup workflow py script
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python tools/bin/cleanup-workflow-runs.py --delete
-      
-      - name: execute dormant workflow py script 
-        env: 
+
+      - name: execute dormant workflow py script
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 

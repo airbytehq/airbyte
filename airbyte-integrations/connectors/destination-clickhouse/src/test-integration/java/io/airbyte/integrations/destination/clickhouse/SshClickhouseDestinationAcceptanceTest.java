@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -16,8 +16,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,16 +46,6 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Override
   protected String getImageName() {
     return "airbyte/destination-clickhouse:dev";
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return false;
   }
 
   @Override

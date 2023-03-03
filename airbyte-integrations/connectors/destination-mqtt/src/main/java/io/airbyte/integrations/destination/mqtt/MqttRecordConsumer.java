@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mqtt;
@@ -9,11 +9,11 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -99,7 +99,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> config.getTopicPattern()
             .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
             .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")),

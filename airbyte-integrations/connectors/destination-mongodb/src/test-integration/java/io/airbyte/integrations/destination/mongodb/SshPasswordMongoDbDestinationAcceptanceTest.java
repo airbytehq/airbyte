@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -12,4 +12,5 @@ public class SshPasswordMongoDbDestinationAcceptanceTest extends SshMongoDbDesti
   public SshTunnel.TunnelMethod getTunnelMethod() {
     return SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH;
   }
+
 }

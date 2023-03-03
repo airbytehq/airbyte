@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -7,10 +7,12 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
+from facebook_business.exceptions import FacebookBadObjectError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
@@ -35,7 +37,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "28d_view",
     ]
 
-    ALL_ACTION_BREAKDOWNS = [
+    breakdowns = []
+    action_breakdowns = [
         "action_type",
         "action_target_id",
         "action_destination",
@@ -47,12 +50,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
-    action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
-
-    breakdowns = []
 
     def __init__(
         self,
@@ -60,6 +60,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         fields: List[str] = None,
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
+        action_breakdowns_allow_empty: bool = False,
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
         **kwargs,
@@ -68,8 +69,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
-        self.action_breakdowns = action_breakdowns or self.action_breakdowns
-        self.breakdowns = breakdowns or self.breakdowns
+        if action_breakdowns_allow_empty:
+            if action_breakdowns is not None:
+                self.action_breakdowns = action_breakdowns
+        else:
+            if action_breakdowns:
+                self.action_breakdowns = action_breakdowns
+        if breakdowns is not None:
+            self.breakdowns = breakdowns
         self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
@@ -112,8 +119,15 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        for obj in job.get_result():
-            yield obj.export_all_data()
+        try:
+            for obj in job.get_result():
+                yield obj.export_all_data()
+        except FacebookBadObjectError as e:
+            raise AirbyteTracedException(
+                message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
+                f"Please try again later",
+                failure_type=FailureType.system_error,
+            ) from e
 
         self._completed_slices.add(job.interval.start)
         if job.interval.start == self._next_cursor_value:
@@ -182,12 +196,25 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
 
+        self._next_cursor_value = self._get_start_date()
         for ts_start in self._date_intervals():
             if ts_start in self._completed_slices:
                 continue
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+
+    def check_breakdowns(self):
+        """
+        Making call to check "action_breakdowns" and "breakdowns" combinations
+        https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+        """
+        params = {
+            "action_breakdowns": self.action_breakdowns,
+            "breakdowns": self.breakdowns,
+            "fields": ["account_id"],
+        }
+        self._api.account.get_insights(params=params, is_async=False)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

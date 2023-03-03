@@ -202,6 +202,38 @@
     "device_id": {
       "type": ["null", "string"]
     },
+    "discount_applications": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "title": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "value_type": {
+            "type": ["null", "string"]
+          },
+          "allocation_method": {
+            "type": ["null", "string"]
+          },
+          "target_selection": {
+            "type": ["null", "string"]
+          },
+          "target_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "discount_codes": {
       "type": ["null", "array"],
       "items": {

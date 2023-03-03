@@ -9,7 +9,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
 * [Packaging your connector](https://docs.airbyte.io/connector-development#1.-implement-and-package-the-connector)
-* [Testing your connector](../testing-connectors/source-acceptance-tests-reference.md)
+* [Testing your connector](../testing-connectors/connector-acceptance-tests-reference.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
@@ -32,6 +32,11 @@ Python 3.9.11
 ```
 
 On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
+
+You need also to install `requests` python library:
+````bash
+pip install requests 
+````
 
 ## Our connector: a stock ticker API
 
@@ -156,6 +161,7 @@ README.md
 acceptance-test-config.yml
 acceptance-test-docker.sh
 build.gradle
+source.py
 spec.json
 ```
 
@@ -207,7 +213,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec]")
+        log_error("Invalid command. Allowable commands: [spec]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -227,6 +233,8 @@ Some notes on the above code:
 
 1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
+3. All Airbyte commands can output error messages that take the form `{"type":"TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}}`, so we create a helper method `log_error(message)` to allow error messages
+
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
@@ -261,6 +269,9 @@ Then we'll add the `check_method`:
 
 ```python
 import requests
+from datetime import date
+from datetime import datetime
+from datetime import timedelta
 
 def _call_api(ticker, token):
     today = date.today()
@@ -314,6 +325,12 @@ elif command == "check":
     check(config)
 ```
 
+Then we need to update our list of available commands:
+
+```python
+        log("Invalid command. Allowable commands: [spec, check]")
+```
+
 This results in the following `run` method.
 
 ```python
@@ -342,14 +359,16 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check]")
+        log_error("Invalid command. Allowable commands: [spec, check]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
     sys.exit(0)
 ```
 
-and that should be it. Let's test our new method:
+and that should be it.
+
+Let's test our new method:
 
 ```bash
 $ python source.py check --config secrets/valid_config.json
@@ -416,6 +435,12 @@ elif command == "discover":
     discover()
 ```
 
+We need to update our list of available commands:
+
+```python
+        log("Invalid command. Allowable commands: [spec, check, discover]")
+```
+
 You may be wondering why `config` is a required input to `discover` if it's not used. This is done for consistency: the Airbyte Specification requires `--config` as an input to `discover` because many sources require it \(e.g: to discover the tables available in a Postgres database, you must supply a password\). So instead of guessing whether the flag is required depending on the connector, we always assume it is required, and the connector can choose whether to use it.
 
 The full run method is now below:
@@ -453,7 +478,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -526,14 +551,16 @@ First, let's create a configured catalog `fullrefresh_configured_catalog.json` t
 Then we'll define the `read` method in `source.py`:
 
 ```python
-import datetime
-from datetime import date
-from datetime import timedelta
+def log_error(error_message):
+    current_time_in_ms = int(datetime.now().timestamp()) * 1000
+    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
+    print(json.dumps(log_json))
 
+   
 def read(config, catalog):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
 
     # Find the stock_prices stream if it is present in the input catalog
@@ -543,19 +570,19 @@ def read(config, catalog):
             stock_prices_stream = configured_stream
 
     if stock_prices_stream is None:
-        log("No streams selected")
+        log_error("No stream selected.")
         return
 
     # We only support full_refresh at the moment, so verify the user didn't ask for another sync mode
     if stock_prices_stream["sync_mode"] != "full_refresh":
-        log("This connector only supports full refresh syncs! (for now)")
+        log_error("This connector only supports full refresh syncs! (for now)")
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
     response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling Polygon.io API")
+        log_error("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
         # Stock prices are returned sorted by date in ascending order
@@ -563,10 +590,12 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 ```
+
+Note we've added a `log_error()` function to simplify formatting error messages from within connector functions as [`AirbyteTraceMessage`](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol#airbytetracemessage)s, specifically `AirbyteErrorTraceMessage`s.
 
 After doing some input validation, the code above calls the API to obtain daily prices for the input stock ticker, then outputs the prices. As always, our output is formatted according to the Airbyte Specification. Let's update our args parser with the following blocks:
 
@@ -588,6 +617,12 @@ elif command == "read":
     config = read_json(get_input_file_path(parsed_args.config))
     configured_catalog = read_json(get_input_file_path(parsed_args.catalog))
     read(config, configured_catalog)
+```
+
+and: 
+
+```python
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
 ```
 
 this yields the following `run` method:
@@ -638,7 +673,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -689,14 +724,14 @@ import json
 import sys
 import os
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def read(config, catalog):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
 
     # Find the stock_prices stream if it is present in the input catalog
@@ -706,19 +741,19 @@ def read(config, catalog):
             stock_prices_stream = configured_stream
 
     if stock_prices_stream is None:
-        log("No streams selected")
+        log_error("No streams selected")
         return
 
     # We only support full_refresh at the moment, so verify the user didn't ask for another sync mode
     if stock_prices_stream["sync_mode"] != "full_refresh":
-        log("This connector only supports full refresh syncs! (for now)")
+        log_error("This connector only supports full refresh syncs! (for now)")
         sys.exit(1)
 
     # If we've made it this far, all the configuration is good and we can pull the last 7 days of market data
     response = _call_api(ticker=config["stock_ticker"], token = config["api_key"])
     if response.status_code != 200:
         # In a real scenario we'd handle this error better :)
-        log("Failure occurred when calling Polygon.io API")
+        log_error("Failure occurred when calling Polygon.io API")
         sys.exit(1)
     else:
         # Stock prices are returned sorted by date in ascending order
@@ -726,7 +761,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 
@@ -746,7 +781,7 @@ def _call_api(ticker, token):
 def check(config):
     # Assert required configuration was provided
     if "api_key" not in config or "stock_ticker" not in config:
-        log("Input config must contain the properties 'api_key' and 'stock_ticker'")
+        log_error("Input config must contain the properties 'api_key' and 'stock_ticker'")
         sys.exit(1)
     else:
         # Validate input configuration by attempting to get the daily closing prices of the input stock ticker
@@ -768,6 +803,12 @@ def check(config):
 def log(message):
     log_json = {"type": "LOG", "log": message}
     print(json.dumps(log_json))
+
+
+def log_error(error_message):
+   current_time_in_ms = int(datetime.now().timestamp()) * 1000
+   log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
+   print(json.dumps(log_json))
 
 
 def discover():
@@ -858,7 +899,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -915,7 +956,7 @@ Then we can run the image using:
 docker run airbyte/source-stock-ticker-api:dev
 ```
 
-to run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. For example, we'd run `check` or `read` as follows:
+To run any of our commands, we'll need to mount all the inputs into the Docker container first, then refer to their _mounted_ paths when invoking the connector. This allows the connector to access your secrets without having to build them into the container. For example, we'd run `check` or `read` as follows:
 
 ```bash
 $ docker run airbyte/source-stock-ticker-api:dev spec
@@ -935,38 +976,44 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Source Acceptance Test suite](../testing-connectors/source-acceptance-tests-reference.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Connector Acceptance Test suite](../testing-connectors/connector-acceptance-tests-reference.md).
 
 ### 4. Test the connector
 
-The minimum requirement for testing your connector is to pass the [Source Acceptance Test (SAT)](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) suite. SAT is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's SATs suite.
+The minimum requirement for testing your connector is to pass the [Connector Acceptance Test](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) suite. The connector acceptence test is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's acceptance test suite.
 
 The code generator should have already generated a YAML file which configures the test suite. In order to run it, modify the `acceptance-test-config.yaml` file to look like this: 
 
 
 ```yaml
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
-tests:
-  spec:
-    - spec_path: "spec.json"
-      config_path: "secrets/valid_config.json"
-  connection:
-    - config_path: "secrets/valid_config.json"
-      status: "succeed"
-    - config_path: "secrets/invalid_config.json"
-      status: "failed"
-  discovery:
-    - config_path: "secrets/valid_config.json"
+acceptance_tests:
   basic_read:
-    - config_path: "secrets/valid_config.json"
-      configured_catalog_path: "fullrefresh_configured_catalog.json"
+    tests:
+    - config_path: secrets/valid_config.json
+      configured_catalog_path: fullrefresh_configured_catalog.json
       empty_streams: []
+  connection:
+    tests:
+    - config_path: secrets/valid_config.json
+      status: succeed
+    - config_path: secrets/invalid_config.json
+      status: failed
+  discovery:
+    tests:
+    - config_path: secrets/valid_config.json
   full_refresh:
-    - config_path: "secrets/valid_config.json"
-      configured_catalog_path: "fullrefresh_configured_catalog.json"
+    tests:
+    - config_path: secrets/valid_config.json
+      configured_catalog_path: fullrefresh_configured_catalog.json
+  spec:
+    tests:
+    - config_path: secrets/valid_config.json
+      spec_path: spec.json
 #  incremental: # TODO uncomment this once you implement incremental sync in part 2 of the tutorial
+#    tests:
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/configured_catalog.json"
 #      future_state_path: "integration_tests/abnormal_state.json"
@@ -986,7 +1033,7 @@ collecting ...
  test_full_refresh.py ✓                                                                                                                                                                                                                                                                                                                                    100% ██████████
 
 ================== short test summary info ================== 
-SKIPPED [1] source_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
+SKIPPED [1] connector_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
 
 Results (8.91s):
       20 passed
@@ -1038,7 +1085,7 @@ $  docker images | head
 If the Airbyte server isn't already running, start it by running **from the Airbyte repository root**:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 When Airbyte server is done starting up, it prints the following banner in the log output \(it can take 10-20 seconds for the server to start\):
@@ -1058,7 +1105,7 @@ airbyte-server      | Version: dev
 airbyte-server      | 
 ```
 
-After you see the above banner printed out in the terminal window where you are running `docker-compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser. 
+After you see the above banner printed out in the terminal window where you are running `docker compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in with the default credentials: username `airbyte` and password `password`.
 
 If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. To skip it, click the "Skip Onboarding" button.
 

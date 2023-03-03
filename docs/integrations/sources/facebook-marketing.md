@@ -1,21 +1,18 @@
 # Facebook Marketing
 
-:::warning
-We are currently experiencing an issue for anyone setting up a Facebook Marketing Source Connector who's Facebook Graph API has been updated to v15.0. Our team is blocked until the v15.0 SDK is made available, but once we have access to it we will begin working on a fix. 
-
-Thank you for your patience and understanding! 
-:::
-
 This page guides you through the process of setting up the Facebook Marketing source connector.
 
 ## Prerequisites
 
 * A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+<!-- env:oss -->
 * (For Open Source) A [Facebook App](https://developers.facebook.com/apps/) with the Marketing API enabled
+<!-- /env:oss -->
 
-## Set up Facebook Marketing as a source in Airbyte 
+## Setup guide
 
-### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 To set up Facebook Marketing as a source in Airbyte Cloud:
 
@@ -24,34 +21,38 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 3. On the Set up the source page, select **Facebook Marketing** from the **Source type** dropdown.
 4. For Name, enter a name for the Facebook Marketing connector.
 5. Click **Authenticate your account** to authorize your [Meta for Developers](https://developers.facebook.com/) account. Airbyte will authenticate the account you are already logged in to. Make sure you are logged into the right account.
-6. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data. 
-    
+6. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+
     :::warning
     Insight tables are only able to pull data from 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
     :::
 
-7. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
-8. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762). 
+7. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+8. For Account ID, enter your [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762).
 9. (Optional) Toggle the **Include Deleted** button to include data from deleted Campaigns, Ads, and AdSets.
-        
+
     :::info
     The Facebook Marketing API does not have a concept of deleting records in the same way that a database does. While you can archive or delete an ad campaign, the API maintains a record of the campaign. Toggling the **Include Deleted** button lets you replicate records for campaigns or ads even if they were archived or deleted from the Facebook platform.
     :::
 
 10. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
-11. (Optional) In the Custom Insights section, click **Add**. 
-    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. 
+11. (Optional) In the Custom Insights section, click **Add**.
+    To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
 
-    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. 
+    :::warning
+    Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
+    :::
+
+    We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
 
     To configure Custom Insights:
 
-    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name 
+    1. For **Name**, enter a name for the insight. This will be used as the Airbyte stream name
     2. For **Fields**, enter a list of the fields you want to pull from the Facebook Marketing API.
-    3. For **End Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
+    3. For **End Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and before this date will be replicated. If this field is blank, Airbyte will replicate the latest data.
     4. For **Breakdowns**, enter a list of the breakdowns you want to configure.
-    5. For **Start Date**, enter the date in the YYYY-MM-DDTHR:MIN:S format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
-    6. For **Time Increment**, enter the number of days over which you want to aggregate statistics. 
+    5. For **Start Date**, enter the date in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+    6. For **Time Increment**, enter the number of days over which you want to aggregate statistics.
 
             For example, if you set this value to 7, Airbyte will report statistics as 7-day aggregates starting from the Start Date. Suppose the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).  
     7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
@@ -60,12 +61,14 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
 13. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
 14. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 To set up Facebook Marketing as a source in Airbyte Open Source:
 
-1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and [create an app](https://developers.facebook.com/docs/development/create-an-app/) with the app type Business. 
+1. Navigate to [Meta for Developers](https://developers.facebook.com/apps/) and [create an app](https://developers.facebook.com/docs/development/create-an-app/) with the app type Business.
 2. From your App’s dashboard, [setup the Marketing API](https://developers.facebook.com/docs/marketing-apis/get-started).
 3. Generate a Marketing API access token: From your App’s Dashboard, click **Marketing API** --> **Tools**. Select all the available token permissions (`ads_management`, `ads_read`, `read_insights`, `business_management`) and click **Get token**. Copy the generated token for later use.
 4. Request a rate increase limit: Facebook [heavily throttles](https://developers.facebook.com/docs/marketing-api/overview/authorization#limits) API tokens generated from Facebook Apps with the "Standard Access" tier (the default tier for new apps), making it infeasible to use the token for syncs with Airbyte. You'll need to request an upgrade to Advanced Access for your app on the following permissions:
@@ -76,6 +79,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source:
 
     See the Facebook [documentation on Authorization](https://developers.facebook.com/docs/marketing-api/overview/authorization/#access-levels) to request Advanced Access to the relevant permissions.
 5. Navigate to the Airbyte Open Source Dashboard. Add the access token when prompted to do so and follow the same instructions as for [setting up the Facebook Connector on Airbyte Cloud](#for-airbyte-cloud).
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -110,6 +114,8 @@ You can segment the AdInsights table into parts based on the following informati
 * Region
 
 For more information, see the [Facebook Insights API documentation.](https://developers.facebook.com/docs/marketing-api/reference/adgroup/insights/)
+Pay attention, that not all fields (e.g. conversions, conversion_values) will be returned for AdInsights, see [docs](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/).
+To get all fields You should use custom insights with **breakdowns**.
 
 ## Facebook Marketing Attribution Reporting
 Please be informed that the connector uses the `lookback_window` parameter to perform the repetitive read of the last `<lookback_window>` days in the Incremental sync mode. This means some data will be synced twice (or possibly more often) despite the cursor value being up-to-date. You can change this date window by modifying the `lookback_window` parameter when setting up the source. The smaller the value - the fewer duplicates you will have. The greater the value - the more precise results you will get. More details on what the attribution window is and what purpose it serves can be found in this [Facebook Article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
@@ -127,7 +133,22 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0 |
+| 0.2.85  | 2023-02-14 | [23003](https://github.com/airbytehq/airbyte/pull/23003) | Bump facebook_business to 16.0.0                                                                                                                                                                                                                                                                  ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |
+| 0.2.84  | 2023-01-27 | [22003](https://github.com/airbytehq/airbyte/pull/22003) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                                                                                                                                       ||         |            |                                                          |                                                                                                                                                                                                                                                                                                   |
+| 0.2.83  | 2023-01-13 | [21149](https://github.com/airbytehq/airbyte/pull/21149) | Videos stream remove filtering                                                                                                                                                                                                                                                                    |
+| 0.2.82  | 2023-01-09 | [21149](https://github.com/airbytehq/airbyte/pull/21149) | Fix AdAccount schema                                                                                                                                                                                                                                                                              |
+| 0.2.81  | 2023-01-05 | [21057](https://github.com/airbytehq/airbyte/pull/21057) | Remove unsupported fields from request                                                                                                                                                                                                                                                            |
+| 0.2.80  | 2022-12-21 | [20736](https://github.com/airbytehq/airbyte/pull/20736) | Fix update next cursor                                                                                                                                                                                                                                                                            |
+| 0.2.79  | 2022-12-07 | [20402](https://github.com/airbytehq/airbyte/pull/20402) | Exclude Not supported fields from request                                                                                                                                                                                                                                                         |
+| 0.2.78  | 2022-12-07 | [20165](https://github.com/airbytehq/airbyte/pull/20165) | fix fields permission error                                                                                                                                                                                                                                                                       |
+| 0.2.77  | 2022-12-06 | [20131](https://github.com/airbytehq/airbyte/pull/20131) | update next cursor value at read start                                                                                                                                                                                                                                                            |
+| 0.2.76  | 2022-12-03 | [20043](https://github.com/airbytehq/airbyte/pull/20043) | Allows `action_breakdowns` to be an empty list - bugfix for #20016                                                                                                                                                                                                                                |
+| 0.2.75  | 2022-12-03 | [20016](https://github.com/airbytehq/airbyte/pull/20016) | Allows `action_breakdowns` to be an empty list                                                                                                                                                                                                                                                    |
+| 0.2.74  | 2022-11-25 | [19803](https://github.com/airbytehq/airbyte/pull/19803) | New default for `action_breakdowns`, improve "check" command speed                                                                                                                                                                                                                                |
+| 0.2.73  | 2022-11-21 | [19645](https://github.com/airbytehq/airbyte/pull/19645) | Check "breakdowns" combinations                                                                                                                                                                                                                                                                   |
+| 0.2.72  | 2022-11-04 | [18971](https://github.com/airbytehq/airbyte/pull/18971) | handle FacebookBadObjectError for empty results on async jobs                                                                                                                                                                                                                                     |
+| 0.2.71  | 2022-10-31 | [18734](https://github.com/airbytehq/airbyte/pull/18734) | Reduce request record limit on retry                                                                                                                                                                                                                                                              |
+| 0.2.70  | 2022-10-26 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Upgrade FB SDK to v15.0                                                                                                                                                                                                                                                                           |
 | 0.2.69  | 2022-10-17 | [18045](https://github.com/airbytehq/airbyte/pull/18045) | Remove "pixel" field from the Custom Conversions stream schema                                                                                                                                                                                                                                    |
 | 0.2.68  | 2022-10-12 | [17869](https://github.com/airbytehq/airbyte/pull/17869) | Remove "format" from optional datetime `end_date` field                                                                                                                                                                                                                                           |
 | 0.2.67  | 2022-10-04 | [17551](https://github.com/airbytehq/airbyte/pull/17551) | Add `cursor_field` for custom_insights stream schema                                                                                                                                                                                                                                              |

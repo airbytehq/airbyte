@@ -1,18 +1,14 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import copy
-import json
 import logging
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 from urllib.parse import unquote
 
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.models import SyncMode, Type
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
     DATA_IS_NOT_GOLDEN_MSG,
@@ -23,128 +19,10 @@ from source_google_analytics_v4.source import (
     SourceGoogleAnalyticsV4,
 )
 
-
-def read_file(file_name):
-    parent_location = Path(__file__).absolute().parent
-    file = open(parent_location / file_name).read()
-    return file
-
-
 expected_metrics_dimensions_type_map = (
     {"ga:users": "INTEGER", "ga:newUsers": "INTEGER"},
     {"ga:date": "STRING", "ga:country": "STRING"},
 )
-
-
-@pytest.fixture
-def mock_metrics_dimensions_type_list_link(requests_mock):
-    requests_mock.get(
-        "https://www.googleapis.com/analytics/v3/metadata/ga/columns",
-        json=json.loads(read_file("metrics_dimensions_type_list.json")),
-    )
-
-
-@pytest.fixture
-def mock_auth_call(requests_mock):
-    yield requests_mock.post(
-        "https://oauth2.googleapis.com/token",
-        json={"access_token": "", "expires_in": 0},
-    )
-
-
-@pytest.fixture
-def mock_auth_check_connection(requests_mock):
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json={"data": {"test": "value"}},
-    )
-
-
-@pytest.fixture
-def mock_unknown_metrics_or_dimensions_error(requests_mock):
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        status_code=400,
-        json={"error": {"message": "Unknown metrics or dimensions"}},
-    )
-
-
-@pytest.fixture
-def mock_daily_request_limit_error(requests_mock):
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        status_code=429,
-        json={"error": {"code": 429, "message": "Quota Error: profileId 207066566 has exceeded the daily request limit."}},
-    )
-
-
-@pytest.fixture
-def mock_api_returns_no_records(requests_mock):
-    """API returns empty data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("empty_response.json")),
-    )
-
-
-@pytest.fixture
-def mock_api_returns_valid_records(requests_mock):
-    """API returns valid data for given date based slice"""
-    response = json.loads(read_file("response_golden_data.json"))
-    for report in response["reports"]:
-        assert report["data"]["isDataGolden"] is True
-    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=response)
-
-
-@pytest.fixture
-def mock_api_returns_sampled_results(requests_mock):
-    """API returns valid data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_with_sampling.json")),
-    )
-
-
-@pytest.fixture
-def mock_api_returns_is_data_golden_false(requests_mock):
-    """API returns valid data for given date based slice"""
-    response = json.loads(read_file("response_non_golden_data.json"))
-    for report in response["reports"]:
-        assert "isDataGolden" not in report["data"]
-    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=response)
-
-
-@pytest.fixture
-def configured_catalog():
-    return ConfiguredAirbyteCatalog.parse_obj(json.loads(read_file("./configured_catalog.json")))
-
-
-@pytest.fixture()
-def test_config():
-    test_conf = {
-        "view_id": "1234567",
-        "window_in_days": 1,
-        "authenticator": NoAuth(),
-        "metrics": [],
-        "start_date": pendulum.now().subtract(days=2).date().strftime("%Y-%m-%d"),
-        "dimensions": [],
-        "credentials": {
-            "auth_type": "Client",
-            "client_id": "client_id_val",
-            "client_secret": "client_secret_val",
-            "refresh_token": "refresh_token_val",
-        },
-    }
-    return copy.deepcopy(test_conf)
-
-
-@pytest.fixture()
-def test_config_auth_service(test_config):
-    test_config["credentials"] = {
-        "auth_type": "Service",
-        "credentials_json": '{"client_email": "", "private_key": "", "private_key_id": ""}',
-    }
-    return copy.deepcopy(test_config)
 
 
 def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
@@ -216,25 +94,29 @@ def test_no_regressions_for_result_is_sampled_and_data_is_golden_warnings(
 def test_check_connection_fails_jwt(
     jwt_encode_mock,
     test_config_auth_service,
-    mocker,
+    requests_mock,
     mock_metrics_dimensions_type_list_link,
-    mock_auth_call,
-    mock_api_returns_no_records,
+    mock_auth_call
 ):
     """
     check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
     """
     source = SourceGoogleAnalyticsV4()
+    requests_mock.register_uri("POST", "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+                               [{"status_code": 403,
+                                 "json": {"results": [],
+                                          "error": "User does not have sufficient permissions for this profile."}}])
+
     is_success, msg = source.check_connection(MagicMock(), test_config_auth_service)
     assert is_success is False
     assert (
         msg
-        == f"Please check the permissions for the requested view_id: {test_config_auth_service['view_id']}. Cannot retrieve data from that view ID."
+        == f"Please check the permissions for the requested view_id: {test_config_auth_service['view_id']}. "
+           f"User does not have sufficient permissions for this profile."
     )
     jwt_encode_mock.encode.assert_called()
     assert mock_auth_call.called
-    assert mock_api_returns_no_records.called
 
 
 @patch("source_google_analytics_v4.source.jwt")
@@ -263,20 +145,24 @@ def test_check_connection_success_jwt(
 def test_check_connection_fails_oauth(
     jwt_encode_mock,
     test_config,
-    mocker,
     mock_metrics_dimensions_type_list_link,
     mock_auth_call,
-    mock_api_returns_no_records,
+    requests_mock
 ):
     """
     check_connection fails because of the API returns no records,
     then we assume than user doesn't have permission to read requested `view`
     """
     source = SourceGoogleAnalyticsV4()
+    requests_mock.register_uri("POST", "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+                               [{"status_code": 403,
+                                 "json": {"results": [],
+                                          "error": "User does not have sufficient permissions for this profile."}}])
     is_success, msg = source.check_connection(MagicMock(), test_config)
     assert is_success is False
     assert (
-        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}. Cannot retrieve data from that view ID."
+        msg == f"Please check the permissions for the requested view_id: {test_config['view_id']}."
+               f" User does not have sufficient permissions for this profile."
     )
     jwt_encode_mock.encode.assert_not_called()
     assert "https://www.googleapis.com/auth/analytics.readonly" in unquote(mock_auth_call.last_request.body)
@@ -284,7 +170,6 @@ def test_check_connection_fails_oauth(
     assert "client_secret_val" in unquote(mock_auth_call.last_request.body)
     assert "refresh_token_val" in unquote(mock_auth_call.last_request.body)
     assert mock_auth_call.called
-    assert mock_api_returns_no_records.called
 
 
 @patch("source_google_analytics_v4.source.jwt")
@@ -363,7 +248,7 @@ def test_state_saved_after_each_record(test_config, mock_metrics_dimensions_type
 
 def test_connection_fail_invalid_reports_json(test_config):
     source = SourceGoogleAnalyticsV4()
-    test_config["custom_reports"] = "[{'data': {'ga:foo': 'ga:bar'}}]"
+    test_config["custom_reports"] = '[{{"name": "test", "dimensions": [], "metrics": []}}]'
     ok, error = source.check_connection(logging.getLogger(), test_config)
     assert not ok
     assert "Invalid custom reports json structure." in error

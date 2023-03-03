@@ -4,9 +4,7 @@
       "stream": {
         "name": "users",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -15,9 +13,7 @@
       "stream": {
         "name": "meetings",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -26,9 +22,7 @@
       "stream": {
         "name": "meeting_registrants",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -37,9 +31,7 @@
       "stream": {
         "name": "meeting_polls",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -48,9 +40,7 @@
       "stream": {
         "name": "meeting_poll_results",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -59,9 +49,7 @@
       "stream": {
         "name": "meeting_registration_questions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -70,9 +58,7 @@
       "stream": {
         "name": "webinars",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -81,9 +67,7 @@
       "stream": {
         "name": "webinar_panelists",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -92,9 +76,7 @@
       "stream": {
         "name": "webinar_registrants",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -103,9 +85,7 @@
       "stream": {
         "name": "webinar_absentees",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -114,9 +94,7 @@
       "stream": {
         "name": "webinar_polls",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -125,9 +103,7 @@
       "stream": {
         "name": "webinar_poll_results",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -136,9 +112,7 @@
       "stream": {
         "name": "webinar_registration_questions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -147,9 +121,7 @@
       "stream": {
         "name": "webinar_tracking_sources",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -158,9 +130,7 @@
       "stream": {
         "name": "webinar_qna_results",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -169,9 +139,7 @@
       "stream": {
         "name": "report_meetings",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -180,9 +148,7 @@
       "stream": {
         "name": "report_meeting_participants",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -191,9 +157,7 @@
       "stream": {
         "name": "report_webinars",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -202,9 +166,7 @@
       "stream": {
         "name": "report_webinar_participants",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
+        "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

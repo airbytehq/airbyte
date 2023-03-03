@@ -1,8 +1,20 @@
-{
-  "calls": {
-    "updated_at": "2121-01-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-01-01T00:00:00Z"
+      },
+      "stream_descriptor": { "name": "calls" }
+    }
   },
-  "call_legs": {
-    "updated_at": "2121-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_at": "2121-01-01T00:00:00Z"
+      },
+      "stream_descriptor": { "name": "call_legs" }
+    }
   }
-}
+]

@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.writer;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.IOException;
 import java.util.UUID;
 

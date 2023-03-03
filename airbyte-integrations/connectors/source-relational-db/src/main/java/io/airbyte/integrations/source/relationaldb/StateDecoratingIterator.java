@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
 
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,8 +29,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private final JsonSchemaPrimitive cursorType;
 
   private final String initialCursor;
-  private String maxCursor;
-  private long maxCursorRecordCount = 0L;
+  private String currentMaxCursor;
+  private long currentMaxCursorRecordCount = 0L;
   private boolean hasEmittedFinalState;
 
   /**
@@ -82,13 +82,20 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     this.cursorField = cursorField;
     this.cursorType = cursorType;
     this.initialCursor = initialCursor;
-    this.maxCursor = initialCursor;
+    this.currentMaxCursor = initialCursor;
     this.stateEmissionFrequency = stateEmissionFrequency;
   }
 
   private String getCursorCandidate(final AirbyteMessage message) {
     final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
-    return (cursorCandidate != null ? cursorCandidate.replaceAll("\u0000", "") : null);
+    return (cursorCandidate != null ? replaceNull(cursorCandidate) : null);
+  }
+
+  private String replaceNull(final String cursorCandidate) {
+    if (cursorCandidate.contains("\u0000")) {
+      return cursorCandidate.replaceAll("\u0000", "");
+    }
+    return cursorCandidate;
   }
 
   /**
@@ -126,17 +133,18 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         final AirbyteMessage message = messageIterator.next();
         if (message.getRecord().getData().hasNonNull(cursorField)) {
           final String cursorCandidate = getCursorCandidate(message);
-          final int cursorComparison = IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType);
+          final int cursorComparison = IncrementalUtils.compareCursors(currentMaxCursor, cursorCandidate, cursorType);
           if (cursorComparison < 0) {
-            if (stateEmissionFrequency > 0 && !Objects.equals(maxCursor, initialCursor) && messageIterator.hasNext()) {
+            // Update the current max cursor only when current max cursor < cursor candidate from the message
+            if (stateEmissionFrequency > 0 && !Objects.equals(currentMaxCursor, initialCursor) && messageIterator.hasNext()) {
               // Only emit an intermediate state when it is not the first or last record message,
               // because the last state message will be taken care of in a different branch.
-              intermediateStateMessage = createStateMessage(false);
+              intermediateStateMessage = createStateMessage(false, totalRecordCount);
             }
-            maxCursor = cursorCandidate;
-            maxCursorRecordCount = 1L;
+            currentMaxCursor = cursorCandidate;
+            currentMaxCursorRecordCount = 1L;
           } else if (cursorComparison == 0) {
-            maxCursorRecordCount++;
+            currentMaxCursorRecordCount++;
           }
         }
 
@@ -148,12 +156,12 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       } catch (final Exception e) {
         emitIntermediateState = true;
         hasCaughtException = true;
-        LOGGER.error("Message iterator failed to read next record. {}", e.getMessage());
+        LOGGER.error("Message iterator failed to read next record.", e);
         optionalIntermediateMessage = getIntermediateMessage();
         return optionalIntermediateMessage.orElse(endOfData());
       }
     } else if (!hasEmittedFinalState) {
-      return createStateMessage(true);
+      return createStateMessage(true, totalRecordCount);
     } else {
       return endOfData();
     }
@@ -185,20 +193,23 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
    * read up so far
    *
    * @param isFinalState marker for if the final state of the iterator has been reached
+   * @param totalRecordCount count of read messages
    * @return AirbyteMessage which includes information on state of records read so far
    */
-  public AirbyteMessage createStateMessage(final boolean isFinalState) {
-    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor, maxCursorRecordCount);
+  public AirbyteMessage createStateMessage(final boolean isFinalState, int totalRecordCount) {
+    final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, currentMaxCursor, currentMaxCursorRecordCount);
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(pair);
-    LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
-        pair,
-        cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
-        cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
-        cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
-        cursorInfo.map(CursorInfo::getCursorField).orElse(null),
-        cursorInfo.map(CursorInfo::getCursor).orElse(null),
-        cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
-
+    // logging once every 100 messages to reduce log verbosity
+    if (totalRecordCount % 100 == 0) {
+      LOGGER.info("State report for stream {} - original: {} = {} (count {}) -> latest: {} = {} (count {})",
+          pair,
+          cursorInfo.map(CursorInfo::getOriginalCursorField).orElse(null),
+          cursorInfo.map(CursorInfo::getOriginalCursor).orElse(null),
+          cursorInfo.map(CursorInfo::getOriginalCursorRecordCount).orElse(null),
+          cursorInfo.map(CursorInfo::getCursorField).orElse(null),
+          cursorInfo.map(CursorInfo::getCursor).orElse(null),
+          cursorInfo.map(CursorInfo::getCursorRecordCount).orElse(null));
+    }
     if (isFinalState) {
       hasEmittedFinalState = true;
       if (stateManager.getCursor(pair).isEmpty()) {

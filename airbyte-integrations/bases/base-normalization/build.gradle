@@ -1,5 +1,3 @@
-import java.nio.file.Paths
-
 plugins {
     id 'airbyte-docker'
     id 'airbyte-python'
@@ -10,12 +8,12 @@ airbytePython {
 }
 
 dependencies {
-    implementation project(':airbyte-commons-worker')
+    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
-task copySshScript(type: Copy, dependsOn: [project(':airbyte-commons-worker').processResources]) {
-    from "${project(':airbyte-commons-worker').buildDir}/resources/main"
+task copySshScript(type: Copy, dependsOn: [project(':airbyte-connector-test-harnesses:acceptance-test-harness').processResources]) {
+    from "${project(':airbyte-connector-test-harnesses:acceptance-test-harness').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
@@ -83,6 +81,10 @@ task airbyteDockerTiDB(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('tidb')
     dependsOn assemble
 }
+task airbyteDockerDuckDB(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('duckdb')
+    dependsOn assemble
+}
 
 airbyteDocker.dependsOn(airbyteDockerMSSql)
 airbyteDocker.dependsOn(airbyteDockerMySql)
@@ -91,6 +93,7 @@ airbyteDocker.dependsOn(airbyteDockerClickhouse)
 airbyteDocker.dependsOn(airbyteDockerSnowflake)
 airbyteDocker.dependsOn(airbyteDockerRedshift)
 airbyteDocker.dependsOn(airbyteDockerTiDB)
+airbyteDocker.dependsOn(airbyteDockerDuckDB)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
     module = "pytest"
@@ -106,6 +109,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
 }
 
 // not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
@@ -120,6 +124,7 @@ project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-
 project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
 project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
 project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-tidb:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-duckdb:airbyteDocker'
 
 // DATs have some additional tests that exercise normalization code paths,
 // so we want to run these in addition to the base-normalization integration tests.

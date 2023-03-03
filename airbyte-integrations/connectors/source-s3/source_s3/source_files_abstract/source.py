@@ -1,7 +1,6 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 
 from abc import ABC, abstractmethod
 from traceback import format_exc
@@ -59,7 +58,9 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            for file_info in self.stream_class(**config).filepath_iterator():
+            stream = self.stream_class(**config)
+            stream.fileformatparser_class(stream._format)._validate_config(config)
+            for file_info in stream.filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)

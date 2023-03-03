@@ -1,0 +1,38 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/coinmarketcap
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Coinmarketcap Spec
+  type: object
+  required:
+    - api_key
+    - data_type
+  additionalProperties: true
+  properties:
+    api_key:
+      title: API Key
+      type: string
+      description: >-
+        Your API Key. See <a
+        href="https://coinmarketcap.com/api/documentation/v1/#section/Authentication">here</a>. The token is
+        case sensitive.
+      airbyte_secret: true
+    data_type:
+      title: Data type
+      type: string
+      enum:
+        - latest
+        - historical
+      description: >-
+        /latest: Latest market ticker quotes and averages for cryptocurrencies and exchanges.
+        /historical: Intervals of historic market data like OHLCV data or data for use in charting libraries. See <a
+        href="https://coinmarketcap.com/api/documentation/v1/#section/Endpoint-Overview">here</a>.
+    symbols:
+      title: Symbol
+      type: array
+      items:
+        type: string
+      description: Cryptocurrency symbols. (only used for quotes stream)
+      minItems: 1
+      examples:
+        - AVAX
+        - BTC

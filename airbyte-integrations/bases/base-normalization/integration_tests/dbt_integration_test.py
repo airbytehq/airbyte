@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -28,6 +28,7 @@ NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
 NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
+NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH = "NORMALIZATION_TEST_DUCKDB_DESTINATION_PATH"
 
 
 class DbtIntegrationTest(object):
@@ -475,7 +476,7 @@ class DbtIntegrationTest(object):
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
         """
-        if normalization_image.startswith("airbyte/normalization-oracle"):
+        if normalization_image.startswith("airbyte/normalization-oracle") or normalization_image.startswith("airbyte/normalization-clickhouse"):
             dbtAdditionalArgs = []
         else:
             dbtAdditionalArgs = ["--event-buffer-size=10000"]
@@ -690,7 +691,7 @@ class DbtIntegrationTest(object):
             schemas_to_remove[destination.value] = []
 
             # based on test_type select path to source files
-            if test_type == "ephemeral":
+            if test_type == "ephemeral" or test_type == "test_reset_scd_overwrite":
                 if not tmp_folders:
                     raise TypeError("`tmp_folders` arg is not provided.")
                 for folder in tmp_folders:

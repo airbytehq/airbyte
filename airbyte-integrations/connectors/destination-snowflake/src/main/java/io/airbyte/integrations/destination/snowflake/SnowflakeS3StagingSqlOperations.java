@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -82,20 +82,22 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) {
-    s3StorageOperations.createBucketObjectIfNotExists(stageName);
+    s3StorageOperations.createBucketIfNotExists();
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
-                                        final String stageName,
-                                        final String stagingPath,
-                                        final List<String> stagedFiles,
-                                        final String dstTableName,
-                                        final String schemaName) {
-    LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
+  public void copyIntoTableFromStage(final JdbcDatabase database,
+                                     final String stageName,
+                                     final String stagingPath,
+                                     final List<String> stagedFiles,
+                                     final String tableName,
+                                     final String schemaName) {
+    LOGGER.info("Starting copy to target table from stage: {} in destination from stage: {}, schema: {}, .",
+        tableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
-    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName)));
-    LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
+    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles,
+        tableName, schemaName)));
+    LOGGER.info("Copy to target table {}.{} in destination complete.", schemaName, tableName);
   }
 
   protected String getCopyQuery(final String stagingPath,
