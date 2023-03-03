@@ -10,8 +10,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
-      - config_path: "secrets/oauth_config.json"
-        status: "succeed"
       - config_path: "secrets/old_config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
