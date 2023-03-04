@@ -189,7 +189,7 @@ class BaseClass(HttpStream):
 
         logger.info("Parsing Response")
 
-        skips_list = [i for i in range(4750,self.max_skip)]
+        skips_list = [i for i in range(0,self.max_skip)]
         item_list = ThreadSafeList()
         threads_quantity = self.threads_quantity
 
