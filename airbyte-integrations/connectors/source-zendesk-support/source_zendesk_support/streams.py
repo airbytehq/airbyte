@@ -12,8 +12,6 @@ from collections import deque
 from concurrent.futures import Future, ProcessPoolExecutor
 from datetime import datetime, timedelta
 from functools import partial
-
-from airbyte_cdk.sources.streams.core import StreamData
 from math import ceil
 from pickle import PickleError, dumps
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -26,12 +24,13 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.streams.http.rate_limiting import TRANSIENT_EXCEPTIONS
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from requests import HTTPError
 from requests.auth import AuthBase
 from requests_futures.sessions import PICKLE_ERROR, FuturesSession
+from source_zendesk_support.ZendeskSupportAvailabilityStrategy import ZendeskSupportAvailabilityStrategy
 
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
@@ -113,6 +112,8 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
 
 
 class BaseSourceZendeskSupportStream(HttpStream, ABC):
+    raise_on_http_errors = True
+
     def __init__(self, subdomain: str, start_date: str, ignore_pagination: bool = False, **kwargs):
         super().__init__(**kwargs)
 
@@ -121,8 +122,8 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         self._ignore_pagination = ignore_pagination
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return HttpAvailabilityStrategy()
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
         """
@@ -189,6 +190,13 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
                 if not cursor_date or updated > cursor_date:
                     yield record
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403:
+            self.logger.error(f"Skipping stream {self.name}: Check permissions, error message: {response.json().get('error')}.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
+
 
 class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     """Basic Zendesk class"""
@@ -213,6 +221,10 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
     @property
     def url_base(self) -> str:
         return f"https://{self._subdomain}.zendesk.com/api/v2/"
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return ZendeskSupportAvailabilityStrategy()
 
     def path(self, **kwargs):
         return self.name
@@ -538,19 +550,13 @@ class Tickets(SourceZendeskIncrementalExportStream):
     response_list_name: str = "tickets"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[StreamData]:
-        try:
-            yield from super(Tickets, self).read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        except HTTPError as e:
-            if e.response.status_code == 400 and e.response.json().get('error', '') == 'StartTimeTooRecent':
-                return []
-            raise e
+    @staticmethod
+    def check_start_time_param(requested_start_time: int, value: int = 1):
+        """
+        The stream returns 400 Bad Request StartTimeTooRecent when requesting tasks 1 second before now.
+        Figured out during experiments that the most recent time needed for request to be successful is 3 seconds before now.
+        """
+        return SourceZendeskIncrementalExportStream.check_start_time_param(requested_start_time, value=3)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
