@@ -9,12 +9,16 @@ import xmltodict
 from lxml import etree
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from source_sieg.config import cnpj_map
+from threading import Thread, Event
+from threading import Lock
+from source_sieg.thread_safe_list import ThreadSafeList
 
 
 class BaseClass(HttpStream):
@@ -29,7 +33,7 @@ class BaseClass(HttpStream):
         self.email = config["email"]
         self.start_date = config["start_date"]
         self.end_date = config["end_date"]
-        self.take = 50
+        self.take = 1
         self.skip = 0
         self.downloadevent = False
 
@@ -72,21 +76,30 @@ class BaseClass(HttpStream):
 
         return payload
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if not response.json()['xmls']:
+    def get_payload_skip(self, skip):
+        payload = {
+            "apikey": self.api_key,
+            "email": self.email,
+            "xmltype": self.xmltype,
+            "take": self.take,
+            "skip": skip,
+            "dataInicio": self.start_date,
+            "dataFim": self.end_date,
+            "downloadevent": self.downloadevent
+        }
+        return payload
 
-            self.take -= 1
-            if self.take < 1:
-                print(f'Response: {response.json()}')
-                print(f'Finished processing {self.xmltype}')
-                return None
-            else:
-                return True
-        else:
-            # self.skip += 1
-            self.skip += self.take
-            print(f'Processing {self.xmltype} ---- skip - {self.skip}')
-            return True
+    def get_headers(self):
+        headers = {
+            "Content-Type": "application/json"
+        }
+        return headers
+    
+    def get_url(self):
+        return "https://api.sieg.com/aws/api-xml-search.ashx"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -123,6 +136,46 @@ class BaseClass(HttpStream):
         }
 
         return invoice
+
+    def format_response(self, response):
+
+        xml = response['xmls'][0]
+        xml = base64.b64decode(xml)
+
+        try:
+            xml_to_dict = xmltodict.parse(xml)
+        except:
+            parser = etree.XMLParser(recover=True)
+            root = etree.fromstring(xml, parser)
+            xml = etree.tostring(root)
+            xml_to_dict = xmltodict.parse(xml)
+
+        xml = xml_to_dict
+
+        invoice = self.format_xml(xml)
+        return invoice
+
+
+    def chunker_list(self, list, size):
+        return (list[i::size] for i in range(size))
+
+    def read_invoice(self, item_list, skips_list):
+        for skip in skips_list:
+            logger.info(f'--- Running {self.xmltype} --- Skip: {skip}')
+
+            payload = json.dumps(self.get_payload_skip(skip))
+            headers = self.get_headers()
+            url = self.get_url()
+
+            response = requests.request("POST", url=url, data=payload, headers=headers)
+
+            if response.json()['xmls']:
+                invoice = self.format_response(response.json())
+            else:
+                logger.info('--- Breaking Thread')
+                break
+
+            item_list.append(invoice)
     
     def parse_response(
         self,
@@ -131,32 +184,25 @@ class BaseClass(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ):
-        response = response.json()
-        items = []
 
-        try:
-            for xml in response['xmls']:
+        skips_list = [i for i in range(0,1000000)]
+        item_list = ThreadSafeList()
+        threads_quantity = 128
 
-                xml = base64.b64decode(xml)
+        threads = []
+        events = Event()
+        for chunk in self.chunker_list(skips_list, threads_quantity):
+            threads.append(Thread(target=self.read_invoice, args=(item_list, chunk)))
 
-                try:
-                    xml_to_dict = xmltodict.parse(xml)
-                except:
-                    parser = etree.XMLParser(recover=True)
-                    root = etree.fromstring(xml, parser)
-                    xml = etree.tostring(root)
-                    xml_to_dict = xmltodict.parse(xml)
-
-                xml = xml_to_dict
-
-                invoice = self.format_xml(xml)
-                items.append(invoice)
-        except:
-            print("Empity XMLNS")
-            print(f"--- Response: {response.text}")
-            pass
+        # start threads
+        for thread in threads:
+            thread.start()
         
-        return items
+        # wait for all threads
+        for thread in threads:
+            thread.join()
+        
+        return item_list.get_list()
 
 
 class Nfe(BaseClass):
@@ -253,7 +299,28 @@ class CteEvents(Cte):
 
 class SourceSieg(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        return True, None
+
+        payload = json.dumps({
+            "apikey": config["api_key"],
+            "email": config["email"],
+            "xmltype": "nfe",
+            "take": 1,
+            "skip": 0,
+            "dataInicio": config["start_date"],
+            "dataFim": config["end_date"],
+            "downloadevent": False
+        })
+        headers = {
+            "Content-Type": "application/json"
+        }
+        url = "https://api.sieg.com/aws/api-xml-search.ashx"
+
+        response = requests.request("POST", url=url, data=payload, headers=headers)
+
+        if response.json()['xmls']:
+            return True, None
+        else:
+            return None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # NoAuth just means there is no authentication required for this API. It's only included for completeness
