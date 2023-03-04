@@ -189,7 +189,7 @@ class BaseClass(HttpStream):
 
         skips_list = [i for i in range(0,1000000)]
         item_list = ThreadSafeList()
-        threads_quantity = 128
+        threads_quantity = 256
 
         threads = []
         events = Event()
