@@ -36,6 +36,8 @@ class BaseClass(HttpStream):
         self.take = 1
         self.skip = 0
         self.downloadevent = False
+        self.threads_quantity = 256
+        self.max_skip = 1000000
 
     @abstractmethod
     def xmltype(self) -> str:
@@ -187,9 +189,9 @@ class BaseClass(HttpStream):
 
         logger.info("Parsing Response")
 
-        skips_list = [i for i in range(0,1000000)]
+        skips_list = [i for i in range(4750,self.max_skip)]
         item_list = ThreadSafeList()
-        threads_quantity = 256
+        threads_quantity = self.threads_quantity
 
         threads = []
         events = Event()
