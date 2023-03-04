@@ -2204,7 +2204,7 @@
 - name: Zendesk Talk
   sourceDefinitionId: c8630570-086d-4a40-99ae-ea5b18673071
   dockerRepository: airbyte/source-zendesk-talk
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
   icon: zendesk-talk.svg
   sourceType: api
