@@ -138,18 +138,26 @@ class IncrementalAmplitudeStream(AmplitudeStream, ABC):
         if next_page_token:
             params.update(next_page_token)
         else:
-            start_datetime = self._start_date
-            if stream_state.get(self.cursor_field):
-                start_datetime = pendulum.parse(stream_state[self.cursor_field])
+            params.update({"start": stream_slice.get("start"), "end": stream_slice.get("end")})
+        return params
 
-            params.update(
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        slices = []
+        start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
+        end = pendulum.now()
+        if start > end:
+            self.logger.info("The data cannot be requested in the future. Skipping stream.")
+            return []
+
+        while start <= end:
+            slices.append(
                 {
-                    "start": start_datetime.strftime(self.date_template),
-                    "end": self._get_end_date(start_datetime).strftime(self.date_template),
+                    "start": start.strftime(self.date_template),
+                    "end": self._get_end_date(start).strftime(self.date_template),
                 }
             )
-
-        return params
+            start = start.add(**self.time_interval)
+        return slices
 
 
 class Events(IncrementalAmplitudeStream):
@@ -187,6 +195,10 @@ class Events(IncrementalAmplitudeStream):
         slices = []
         start = pendulum.parse(stream_state.get(self.cursor_field)) if stream_state else self._start_date
         end = pendulum.now()
+        if start > end:
+            self.logger.info("The data cannot be requested in the future. Skipping stream.")
+            return []
+
         while start <= end:
             slices.append(
                 {
