@@ -9,6 +9,7 @@ import io.airbyte.commons.cli.Clis;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
@@ -137,9 +138,12 @@ public class IntegrationCliParser {
         return IntegrationConfig.spec();
       }
       case CHECK -> {
+        Path catalogPath = Optional.ofNullable(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY))
+            .map(Path::of)
+            .orElse(null);
         return IntegrationConfig.check(
             Path.of(argsMap.get(JavaBaseConstants.ARGS_CONFIG_KEY)),
-            Path.of(argsMap.get(JavaBaseConstants.ARGS_CATALOG_KEY))
+            catalogPath
         );
       }
       case DISCOVER -> {
