@@ -433,7 +433,7 @@
 - name: Teradata Vantage
   destinationDefinitionId: 58e6f9da-904e-11ed-a1eb-0242ac120002
   dockerRepository: airbyte/destination-teradata
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   icon: teradata.svg
   documentationUrl: https://docs.airbyte.io/integrations/destinations/teradata
   releaseStage: alpha
