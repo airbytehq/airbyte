@@ -251,6 +251,7 @@ class IntegrationRunnerTest {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
     final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Invalid configuration");
     final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
+//    final RuntimeException runtimeException = new RuntimeException(new RuntimeException(configErrorException));
     final RuntimeException runtimeException = new RuntimeException(new RuntimeException(configErrorException));
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
