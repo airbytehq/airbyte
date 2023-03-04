@@ -64,7 +64,6 @@ public class IntegrationConfig {
   }
 
   public Path getCatalogPath() {
-    Preconditions.checkState(command == Command.READ || command == Command.WRITE);
     return catalogPath;
   }
 
