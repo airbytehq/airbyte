@@ -1,1 +1,0 @@
-export { LabeledSwitch } from "./LabeledSwitch";

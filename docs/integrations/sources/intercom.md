@@ -49,9 +49,10 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------| :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
-| 0.1.31  | 2023-02-14 | [22980](https://github.com/airbytehq/airbyte/pull/22980) | Specified date formatting in specification                                                     |
-| 0.1.30  | 2023-01-27 | [22010](https://github.com/airbytehq/airbyte/pull/22010) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
-| 0.1.29  | 2022-10-31 | [18681](https://github.com/airbytehq/airbyte/pull/18681) | Define correct version for airbyte-cdk~=0.2                                                    |
+| 0.1.32  | 2023-03-04 | [22980](https://github.com/airbytehq/airbyte/pull/22980) | Specified date formatting in specification                                                     |
+| 0.1.31  | 2023-02-17 | [23152](https://github.com/airbytehq/airbyte/pull/23152) | Add `TypeTransformer` to stream `companies`                                                   |
+| 0.1.30  | 2023-01-27 | [22010](https://github.com/airbytehq/airbyte/pull/22010) | Set `AvailabilityStrategy` for streams explicitly to `None`                                   |
+| 0.1.29  | 2022-10-31 | [18681](https://github.com/airbytehq/airbyte/pull/18681) | Define correct version for airbyte-cdk~=0.2                                                   |
 | 0.1.28  | 2022-10-20 | [18216](https://github.com/airbytehq/airbyte/pull/18216) | Use airbyte-cdk~=0.2.0 with SQLite caching                                                    |
 | 0.1.27  | 2022-08-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                 |
 | 0.1.26  | 2022-08-18 | [16540](https://github.com/airbytehq/airbyte/pull/16540) | Fix JSON schema                                                                               |

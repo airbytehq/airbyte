@@ -31,7 +31,83 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # We are using these runners because they are the same as the one for `publish-command.yml`
+  # One problem we had using `ubuntu-latest` for example is that the user is not root and some commands would fail in
+  # `manage.sh` (specifically `apt-get`)
+  start-publish-docker-image-runner-0:
+    name: Start Build EC2 Runner 0
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: airbytehq/airbyte
+          ref: master
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+
+  build-cdk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Build CDK Package
+        run: SUB_BUILD=CDK ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
+      - name: Post failure to Slack channel dev-connectors-extensibility
+        if: ${{ failure() }}
+        uses: slackapi/slack-github-action@v1.23.0
+        continue-on-error: true
+        with:
+          channel-id: C04J1M66D8B
+          payload: |
+            {
+                "text": "Error during `build-cdk` while publishing Airbyte CDK!",
+                "blocks": [
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "Error while publishing Airbyte CDK!"
+                        }
+                    },
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                        }
+                    }
+                ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
   bump-version:
+    needs: build-cdk
     if: github.event.inputs.release-type != 'none'
     runs-on: ubuntu-latest
     steps:
@@ -54,7 +130,7 @@ jobs:
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md
+          file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md airbyte-cdk/python/Dockerfile
           commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Airbyte CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
@@ -87,24 +163,25 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
-  build-cdk:
+  publish-cdk:
     needs: bump-version
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
-      - name: Build CDK Package
-        run: SUB_BUILD=CONNECTORS_BASE ./gradlew --no-daemon --no-build-cache :airbyte-cdk:python:build
+      - name: Publish Python Package
+        uses: mariamrf/py-package-publish-action@v1.1.0
+        with:
+          # specify the same version as in ~/.python-version
+          python_version: "3.9.11"
+          pip_version: "21.1"
+          subdir: "airbyte-cdk/python/"
+        env:
+          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
+          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
       - name: Post failure to Slack channel dev-connectors-extensibility
         if: ${{ failure() }}
         uses: slackapi/slack-github-action@v1.23.0
@@ -113,7 +190,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `build-cdk` while publishing Airbyte CDK!",
+                "text": "Error during `publish-cdk` while publishing Airbyte CDK!",
                 "blocks": [
                     {
                         "type": "section",
@@ -134,37 +211,42 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
-  publish-cdk:
-    needs: build-cdk
-    runs-on: ubuntu-latest
+
+  publish-docker-image:
+    timeout-minutes: 240
+    needs:
+      - start-publish-docker-image-runner-0
+      - publish-cdk
+    runs-on: runner-pool-${{ github.run_id }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
-      - name: Publish Python Package to test.pypi.org
-        if: github.event.inputs.skip-publish-test != 'true'
-        uses: mariamrf/py-package-publish-action@v1.1.0
+          repository: airbytehq/airbyte
+          ref: master
+      - name: Install Java
+        uses: actions/setup-java@v3
         with:
-          # specify the same version as in ~/.python-version
-          python_version: "3.9.11"
-          pip_version: "21.1"
-          subdir: "airbyte-cdk/python/"
-        env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
-          TWINE_REPOSITORY_URL: "https://test.pypi.org/legacy/"
-      - name: Publish Python Package
-        uses: mariamrf/py-package-publish-action@v1.1.0
+          distribution: "zulu"
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v4
         with:
-          # specify the same version as in ~/.python-version
-          python_version: "3.9.11"
-          pip_version: "21.1"
-          subdir: "airbyte-cdk/python/"
+          python-version: "3.9"
+      - name: Publish source-declarative-manifest
+        id: publish
         env:
-          TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
-          TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
+          TZ: UTC
+        uses: Wandalen/wretry.action@master
+        with:
+          command: |
+            docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+            ./tools/integrations/manage.sh publish airbyte-cdk/python false
+          attempt_limit: 3
+          attempt_delay: 5000 in # ms
       - name: Post success to Slack channel dev-connectors-extensibility
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
@@ -200,7 +282,7 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `publish-cdk` while publishing Airbyte CDK!",
+                "text": "Error during `publish-docker-image` while publishing Airbyte CDK!",
                 "blocks": [
                     {
                         "type": "section",
@@ -220,3 +302,33 @@ jobs:
             }
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-publish-docker-image-runner-0:
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    name: Stop Build EC2 Runner
+    needs:
+      - start-publish-docker-image-runner-0 # required to get output from the start-runner job
+      - publish-docker-image # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: airbytehq/ec2-github-runner@base64v1.1.0
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-publish-docker-image-runner-0.outputs.label }}
+          ec2-instance-id: ${{ needs.start-publish-docker-image-runner-0.outputs.ec2-instance-id }}
