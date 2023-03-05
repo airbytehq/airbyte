@@ -139,9 +139,10 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final DataSource dataSource = createDataSource(sourceConfig);
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
-    return new CockroachJdbcDatabase(database, sourceOperations);
+    final CockroachJdbcDatabase cockroachJdbcDatabase = new CockroachJdbcDatabase(database, sourceOperations);
+    cockroachJdbcDatabase.setSourceConfig(sourceConfig);
+    cockroachJdbcDatabase.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return cockroachJdbcDatabase;
   }
 
   @Override
