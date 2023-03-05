@@ -4,14 +4,14 @@ connectionSpecification:
   title: Twitter Spec
   type: object
   required:
-    - api_key
+    - api_token
     - query
   additionalProperties: true
   properties:
-    api_key:
+    api_token:
       type: string
-      title: API Key Token
-      description: API Key
+      title: Access Token
+      description: App only Bearer Token. See the <a href="https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens">docs</a> for more information on how to obtain this token.
       airbyte_secret: true
       order: 0
     query:
