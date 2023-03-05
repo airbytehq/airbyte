@@ -14,8 +14,8 @@ To set up the Twitter source connector, you'll need the [App only Bearer Token](
 4. Enter the name for the Twitter connector.
 5. For **Access Token**, enter the [App only Bearer Token](https://developer.twitter.com/en/docs/authentication/oauth-2-0/bearer-tokens).
 6. For **Search Query**, enter the query for matching Tweets. You can learn how to build this query by reading [build a query guide](https://developer.twitter.com/en/docs/twitter-api/tweets/search/integrate/build-a-query).
-7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The start date for retrieving tweets cannot be more than 7 days in the past.
-8. For **End Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time.
+7. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The start date for retrieving tweets cannot be more than 7 days in the past.
+8. For **End Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time.
 9. Click **Set up source**.
 
 ## Supported sync modes
