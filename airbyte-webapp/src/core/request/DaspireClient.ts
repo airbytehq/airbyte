@@ -28,6 +28,55 @@ export interface WebBackendFilteredConnectionReadList {
   pageCurrent: number;
 }
 
+export const NotificationType = {
+  USAGE: "USAGE",
+  SYNC_FAIL: "SYNC_FAIL",
+  SYNC_SUCCESS: "SYNC_SUCCESS",
+} as const;
+
+export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
+
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  value: number;
+  emailFlag: boolean;
+  appsFlag: boolean;
+}
+
+export interface NotificationSetting {
+  usageList: NotificationItem[];
+  syncFail: NotificationItem;
+  syncSuccess: NotificationItem;
+}
+
+export interface NotificationSettingRead {
+  data: NotificationSetting;
+}
+
+export interface SaveNotificationUsageBody {
+  value: number;
+  emailFlag: boolean;
+  appsFlag: boolean;
+}
+export interface SaveNotificationUsageRead {
+  data: NotificationItem;
+}
+
+export interface EditNotificationBody {
+  id: string;
+  emailFlag: boolean;
+  appsFlag: boolean;
+}
+
+export interface EditNotificationRead {
+  data: boolean;
+}
+
+export interface DeleteNotificationRead {
+  data: boolean;
+}
+
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
 
 /**
@@ -226,7 +275,6 @@ export const webBackendListFilteredConnectionsForWorkspace = (
 /**
  * @summary Returns all filters for connections
  */
-
 export interface FilterItem {
   key: string;
   value: string;
@@ -241,6 +289,64 @@ export const getConnectionFilterParams = (options?: SecondParameter<typeof apiOv
   return apiOverride<ReadConnectionFilters>(
     {
       url: `/etl/web_backend/connections/filter/param`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+/**
+ * @summary Returns notification settings
+ */
+export const getNotificationSetting = (options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<NotificationSettingRead>(
+    {
+      url: `/notification/get`,
+      method: "get",
+      headers: { "Content-Type": "application/json" },
+    },
+    options
+  );
+};
+
+export const saveNotificationUsageSetting = (
+  saveNotificationUsageBody: SaveNotificationUsageBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SaveNotificationUsageRead>(
+    {
+      url: `/notification/save`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: saveNotificationUsageBody,
+    },
+    options
+  );
+};
+
+export const editNotificationSetting = (
+  editNotificationBody: EditNotificationBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<EditNotificationRead>(
+    {
+      url: `/notification/edit`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: editNotificationBody,
+    },
+    options
+  );
+};
+
+export const deleteNotificationSetting = (
+  notificationSettingId: string,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DeleteNotificationRead>(
+    {
+      url: `/notification/del/${notificationSettingId}`,
       method: "post",
       headers: { "Content-Type": "application/json" },
     },
