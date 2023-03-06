@@ -209,24 +209,12 @@ az postgres server configuration set --resource-group group --server-name server
 az postgres server restart --resource-group group --name server
 ```
 
-#### Step 2: Select a replication plugin​
-
-We currently support two plugins :
-1. [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres).
-2. [wal2json](https://github.com/eulerto/wal2json) plugin. Please note that the wal2json plugin has been deprecated and we will remove support for it in the near future. We strongly advice against using this plugin.
-
 #### Step 3: Create replication slot​
 
-To create a replication slot called `airbyte_slot` using pgoutput, run:
+Airbyte currently supports pgoutput plugin only. To create a replication slot called `airbyte_slot` using pgoutput, run:
 
 ```
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
-```
-
-To create a replication slot called `airbyte_slot` using wal2json, run:
-
-```
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 ```
 
 #### Step 4: Create publications and replication identities for tables​
