@@ -598,6 +598,7 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/gcs
   icon: gcs.svg
+  sourceType: file
 - name: Genesys
   sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
   dockerRepository: airbyte/source-genesys
