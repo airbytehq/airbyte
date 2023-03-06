@@ -49,6 +49,12 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
+  integration-test:
+    timeout-minutes: 240
+    needs: start-test-runner
+    runs-on: ${{ needs.start-test-runner.outputs.label }}
+    steps:
+      - run: echo "🎯 Test goes here."
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner
