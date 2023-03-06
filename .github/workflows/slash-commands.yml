@@ -15,13 +15,13 @@ jobs:
           echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
-      - name: Slash Command Dispatch testtest
+      - name: Slash Command Dispatch
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           commands: |
-#            test
+            test
             test-performance
             build-connector
             publish-connector
