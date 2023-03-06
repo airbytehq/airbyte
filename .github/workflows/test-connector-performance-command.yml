@@ -22,6 +22,8 @@ on:
       local_cdk:
         description: "Run Connector Acceptance Tests against the CDK version on the current branch."
         required: false
+  issue_comment:
+    types: [ created ]
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
