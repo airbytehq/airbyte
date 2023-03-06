@@ -30,6 +30,12 @@ const SwitchContent = styled.div`
   align-items: center;
 `;
 
+const HeaderColumns = styled.div`
+  display: flex;
+  flex-wrap: nowrap;
+  min-width: 100px;
+`;
+
 interface IProps {
   data: ITableDataItem[];
   entity: "source" | "destination" | "connection";
@@ -96,9 +102,6 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
           return (
             <SwitchContent
               onClick={(e) => {
-                // console.log(cell.row.original)
-                // console.log(cell.row.original.status === "Active")
-
                 onChangeStatus(cell.row.original.connectionId, cell.row.original.status);
                 e.preventDefault();
               }}
@@ -142,14 +145,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
       },
       {
         Header: (
-          <>
+          <HeaderColumns>
             <FormattedMessage id="tables.lastSyncAt" />
             {/* <SortButton*/}
             {/*    wasActive={sortBy === "lastSync"}*/}
             {/*    lowToLarge={sortOrder === SortOrderEnum.ASC}*/}
             {/*    onClick={() => onSortClick("lastSync")}*/}
             {/*/ >*/}
-          </>
+          </HeaderColumns>
         ),
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (

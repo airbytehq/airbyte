@@ -37,8 +37,8 @@ export const CircleNumber = styled.div<{
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border: 2px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
   border-radius: 20px;
   margin-right: 16px;
@@ -53,8 +53,8 @@ export const StepLine = styled.div<{
 `;
 
 const Image = styled.img`
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   display: inline-block;
   margin-right: 16px;
 `;

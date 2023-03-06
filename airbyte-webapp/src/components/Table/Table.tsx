@@ -60,7 +60,7 @@ const Td = styled.td<{
   customWidth?: number;
   customPadding?: PaddingProps;
 }>`
-  padding: ${({ customPadding }) => `16px ${customPadding?.right ?? 13}px 16px ${customPadding?.left ?? 13}px`};
+  padding: ${({ customPadding }) => `14px ${customPadding?.right ?? 13}px 14px ${customPadding?.left ?? 13}px`};
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
@@ -97,7 +97,7 @@ const Th = styled.th<IThProps>`
   // text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
 
   &:first-child {
-    padding-left: ${({ light }) => (light ? 13 : 45)}px;
+    padding-left: ${({ light }) => (light ? 13 : 32)}px;
     border-radius: 10px 0 0;
   }
 

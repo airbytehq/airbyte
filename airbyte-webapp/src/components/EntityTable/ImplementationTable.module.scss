@@ -4,4 +4,10 @@
   > table > tbody > tr > td:first-of-type {
     padding-left: 32px !important;
   }
+
+  .headerColumns {
+    display: flex;
+    flex-wrap: nowrap;
+    min-width: 100px;
+  }
 }
