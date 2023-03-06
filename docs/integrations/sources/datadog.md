@@ -4,7 +4,7 @@ This is a setup guide for the Datadog source connector which collects data from 
 
 ## Prerequisites
 
-a site, API key and application key are required. See the [Datadog API and Application Keys section](https://docs.datadoghq.com/account_management/api-app-keys/) and [Getting Started with Datadog Sites](https://docs.datadoghq.com/getting_started/site/) for more information.
+A site, API key and application key are required. See the [Datadog API and Application Keys section](https://docs.datadoghq.com/account_management/api-app-keys/) and [Getting Started with Datadog Sites](https://docs.datadoghq.com/getting_started/site/) for more information.
 
 ## Setup guide
 
