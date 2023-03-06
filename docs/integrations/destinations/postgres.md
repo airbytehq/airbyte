@@ -84,7 +84,7 @@ characters.
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **new destination**.
 3. On the Set up the destination page, enter the name for the Postgres connector
    and select **Postgres** from the Destination type dropdown.
