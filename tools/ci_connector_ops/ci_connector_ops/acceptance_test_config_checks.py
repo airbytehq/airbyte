@@ -40,16 +40,16 @@ def find_connectors_with_bad_strictness_level() -> List[utils.Connector]:
                 connectors_with_bad_strictness_level.append(connector)
     return connectors_with_bad_strictness_level
 
-def find_changed_ga_connectors() -> Set[str]:
+def find_changed_ga_connectors() -> Set[utils.Connector]:
     """Find GA connectors modified on the current branch.
 
     Returns:
-        Set[str]: Set of connector names e.g {"source-github"}: The set of GA connectors that were modified on the current branch.
+        Set[utils.Connector]: The set of GA connectors that were modified on the current branch.
     """
     changed_connectors = utils.get_changed_connectors()
-    return {connector.technical_name for connector in changed_connectors if connector.release_stage == "generally_available"}
+    return {connector for connector in changed_connectors if connector.release_stage == "generally_available"}
 
-def get_ga_bypass_reason_changes() -> Set[str]:
+def get_ga_bypass_reason_changes() -> Set[utils.Connector]:
     """Find GA connectors that have modified bypass_reasons.
 
     Returns:
