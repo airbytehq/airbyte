@@ -245,7 +245,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <Container>
       <Breadcrumbs data={breadcrumbsData} currentStep={0} />
       <ConnectorDocumentationWrapper>
-        <DefinitioDetails name={sourceDefinition.name} icon={sourceDefinition.icon} />
+        <DefinitioDetails name={sourceDefinition.name} icon={sourceDefinition.icon} type="source" />
         <TabContainer>
           <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" lastOne />
         </TabContainer>
