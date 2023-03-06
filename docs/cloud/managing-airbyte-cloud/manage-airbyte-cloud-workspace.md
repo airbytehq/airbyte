@@ -10,7 +10,7 @@ Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and ca
 
 To add a user to your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Access Management**.
 
@@ -28,7 +28,7 @@ To add a user to your workspace:
 
 To remove a user from your workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Access Management**.
 
@@ -40,7 +40,7 @@ To remove a user from your workspace:
 
 To rename a workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **General Settings**.
 
@@ -52,7 +52,7 @@ To rename a workspace:
 
 To delete a workspace:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **General Settings**.
 
@@ -78,7 +78,7 @@ You can use one or multiple workspaces with Airbyte Cloud, which gives you flexi
 
 To switch between workspaces:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click the current workspace name under the Airbyte logo in the navigation bar.
 
 2. Click **View all workspaces**.
 
