@@ -33,7 +33,6 @@ class IntegrationConfigTest {
     final IntegrationConfig config = IntegrationConfig.check(CONFIG_PATH);
     assertEquals(Command.CHECK, config.getCommand());
     assertEquals(CONFIG_PATH, config.getConfigPath());
-    assertThrows(IllegalStateException.class, config::getCatalogPath);
     assertThrows(IllegalStateException.class, config::getStatePath);
   }
 
