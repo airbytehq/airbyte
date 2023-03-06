@@ -1,0 +1,7 @@
+name: Test Connector Performance
+on: workflow_dispatch
+jobs:
+  Stub:
+    runs-on: ubuntu-latest
+    step:
+      - run: echo "Test Connector Performance stub"
