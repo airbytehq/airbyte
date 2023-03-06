@@ -16,9 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -482,15 +480,29 @@ public class JsonToAvroSchemaConverter {
    * @return new Schema
    */
   private Schema createUnionAndCheckLongTypesDuplications(List<Schema> unionTypes) {
-    Predicate<Schema> isALong = type -> type.getType() == Schema.Type.LONG;
-    Predicate<Schema> isPlainLong = isALong.and(type -> Objects.isNull(type.getLogicalType()));
-    Predicate<Schema> isTimestampMicrosLong =
-        isALong.and(type -> Objects.nonNull(type.getLogicalType()) && "timestamp-micros".equals(type.getLogicalType().getName()));
+    boolean hasPlainLong = false;
+    boolean hasTimestampMicrosLong = false;
+    List<Schema> newUnionTypes = new ArrayList<>();
 
-    boolean hasPlainLong = unionTypes.stream().anyMatch(isPlainLong);
-    boolean hasTimestampMicrosLong = unionTypes.stream().anyMatch(isTimestampMicrosLong);
-    Predicate<Schema> removeTimestampType = type -> !(hasPlainLong && hasTimestampMicrosLong && isTimestampMicrosLong.test(type));
-    return Schema.createUnion(unionTypes.stream().filter(removeTimestampType).collect(Collectors.toList()));
+    for (Schema type : unionTypes) {
+      if (type.getType() == Schema.Type.LONG) {
+        if (type.getLogicalType() == null) {
+          hasPlainLong = true;
+        } else if (type.getLogicalType().getName().equals("timestamp-micros")) {
+          hasTimestampMicrosLong = true;
+        }
+      }
+      newUnionTypes.add(type);
+    }
+
+    if (hasPlainLong && hasTimestampMicrosLong) {
+      newUnionTypes.removeIf(type -> type.getType() == Schema.Type.LONG
+          && type.getLogicalType() != null
+          && type.getLogicalType().getName().equals("timestamp-micros"));
+      return Schema.createUnion(newUnionTypes);
+    } else {
+      return Schema.createUnion(unionTypes);
+    }
   }
 
 }
