@@ -1132,6 +1132,9 @@
   icon: monday.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "api.monday.com"
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
@@ -1789,6 +1792,10 @@
   icon: square.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - "connect.squareupsandbox.com"
+      - "connect.squareup.com"
 - sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
   name: Strava
   dockerRepository: airbyte/source-strava
