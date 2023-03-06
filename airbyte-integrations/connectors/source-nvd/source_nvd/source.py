@@ -184,7 +184,7 @@ class SourceNvd(AbstractSource):
                 auth = None
             stream = Cves(config=config, authenticator=auth)
             records = stream.read_records(
-                sync_mode=SyncMode.full_refresh, stream_slice={"start_date": datetime(2023, 1, 1), "end_date": datetime(2023, 1, 2)}
+                sync_mode=SyncMode.full_refresh, stream_slice={"start_date": datetime(2023, 1, 3), "end_date": datetime(2023, 1, 6)}
             )
             next(records)
             return True, None
