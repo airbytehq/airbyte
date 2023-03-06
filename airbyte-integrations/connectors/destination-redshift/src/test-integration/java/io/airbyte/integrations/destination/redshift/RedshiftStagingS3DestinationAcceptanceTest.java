@@ -204,7 +204,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
-    final String createUser = String.format("create user %s with password '%s';",
+    final String createUser = String.format("create user %s with password '%s' SESSION TIMEOUT 60;",
         USER_WITHOUT_CREDS, baseConfig.get("password").asText());
     getDatabase().query(ctx -> ctx.execute(createUser));
     final JsonNode configForSchema = Jsons.clone(baseConfig);

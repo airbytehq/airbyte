@@ -173,7 +173,7 @@ public abstract class SshRedshiftDestinationBaseAcceptanceTest extends JdbcDesti
         JdbcUtils.HOST_LIST_KEY,
         JdbcUtils.PORT_LIST_KEY,
         config -> {
-          getDatabaseFromConfig(config).query(ctx -> ctx.fetch(String.format("CREATE USER %s WITH PASSWORD '%s';",
+          getDatabaseFromConfig(config).query(ctx -> ctx.fetch(String.format("CREATE USER %s WITH PASSWORD '%s' SESSION TIMEOUT 60;",
               USER_WITHOUT_CREDS, baseConfig.get("password").asText())));
         });
   }
