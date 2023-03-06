@@ -23,9 +23,11 @@ connectionSpecification:
       type: string
       title: Start Date
       description: "The start date for retrieving tweets cannot be more than 7 days in the past."
+      format: date-time
       order: 2
     end_date:
       type: string
       title: End Date
       description: "The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time."
+      format: date-time
       order: 3
