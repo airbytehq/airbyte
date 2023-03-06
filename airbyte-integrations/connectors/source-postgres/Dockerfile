@@ -12,14 +12,9 @@ FROM airbyte/integration-base-java:dev
 
 WORKDIR /airbyte
 
-
 ENV APPLICATION source-postgres
-
-ENV DD_SERVICE: "source-postgres"
-ENV DD_VERSION: 1.0.36-dd
-ENV DD_CONNECTOR_ENABLE_ENV_VAR: true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.0.36-dd
+LABEL io.airbyte.version=1.0.51
 LABEL io.airbyte.name=airbyte/source-postgres
