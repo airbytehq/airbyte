@@ -515,7 +515,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   @Trace(operationName = CHECK_TRACE_OPERATION_NAME)
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    ApmTraceUtils.addTagsToTrace(Map.of("cdc_mode", PostgresUtils.isCdc(config)));
     if (PostgresUtils.isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
         final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
