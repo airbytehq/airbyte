@@ -1,29 +1,29 @@
 name: Test Connector Performance
 on:
-  workflow_dispatch:
-    inputs:
-      connector:
-        description: "Airbyte Connector"
-        required: true
-      repo:
-        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
-        required: false
-        default: "airbytehq/airbyte"
-      gitref:
-        description: "The git ref to check out from the specified repository."
-        required: false
-        default: master
-      comment-id:
-        description: "The comment-id of the slash command. Used to update the comment with the status."
-        required: false
-      uuid:
-        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
-        required: false
-      local_cdk:
-        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
-        required: false
   issue_comment:
     types: [ created ]
+#  workflow_dispatch:
+#    inputs:
+#      connector:
+#        description: "Airbyte Connector"
+#        required: true
+#      repo:
+#        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+#        required: false
+#        default: "airbytehq/airbyte"
+#      gitref:
+#        description: "The git ref to check out from the specified repository."
+#        required: false
+#        default: master
+#      comment-id:
+#        description: "The comment-id of the slash command. Used to update the comment with the status."
+#        required: false
+#      uuid:
+#        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
+#        required: false
+#      local_cdk:
+#        description: "Run Connector Acceptance Tests against the CDK version on the current branch."
+#        required: false
 jobs:
   uuid:
     name: "Custom UUID of workflow run"
