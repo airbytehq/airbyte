@@ -21,7 +21,7 @@ jobs:
         with:
           token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           commands: |
-            test
+#            test
             test-performance
             build-connector
             publish-connector
