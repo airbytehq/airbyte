@@ -177,6 +177,6 @@ class API:
         except FacebookRequestError as exc:
             raise FacebookAPIException(
                 f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "
-                f"Please, also verify your Account ID: "
+                f"Please also verify your Account ID: "
                 f"See the https://www.facebook.com/business/help/1492627900875762 for more information."
             ) from exc

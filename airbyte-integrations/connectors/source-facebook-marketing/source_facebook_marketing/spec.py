@@ -100,8 +100,8 @@ class ConnectorConfig(BaseConfig):
         title="Account ID",
         order=0,
         description=(
-            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
-            "Open your Meta Ads Manager. Ad account ID number in the account dropdown menu or in your browser's address bar. "
+            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API."
+            " Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. "
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
         examples=["111111111111111"],
@@ -122,8 +122,8 @@ class ConnectorConfig(BaseConfig):
         title="End Date",
         order=2,
         description=(
-            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
-            "All data generated between start_date and this end date will be replicated. "
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z."
+            " All data generated between the start date and this end date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
@@ -135,10 +135,10 @@ class ConnectorConfig(BaseConfig):
         title="Access Token",
         order=3,
         description=(
-            "The value of the access token generated. "
-            "From your App’s Dashboard, click Marketing API --> Tools. "
-            "Use permissions <b>ads_management, ads_read, read_insights, business_management</b>. And click Get token. "
-            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
+            'The value of the generated access token. '
+            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+            'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
         ),
         airbyte_secret=True,
     )
@@ -162,8 +162,7 @@ class ConnectorConfig(BaseConfig):
         order=6,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
-            "breakdowns or action_breakdowns. "
-            "Click add to fill this field."
+            'breakdowns or action_breakdowns. Click on "add" to fill this field.'
         ),
     )
 
@@ -181,10 +180,10 @@ class ConnectorConfig(BaseConfig):
         title="Insights Lookback Window",
         order=8,
         description=(
-            "The attribution window. "
-            "Facebook freezes insight data 28 days after it was generated, which means that all data "
-            "from the past 28 days may have changed since we last emitted it, so we retrieve it again. "
-            "If you set your custom value of lookback window in Facebook account, please provide it here too."
+            "The attribution window. Facebook freezes insight data 28 days after it was generated, "
+            "which means that all data from the past 28 days may have changed since we last emitted it, "
+            "so you can retrieve refreshed insights from the past by setting this parameter. "
+            "If you set a custom lookback window value in Facebook account, please provide the same value here."
         ),
         maximum=28,
         mininum=1,
