@@ -53,8 +53,7 @@ const LanguagePage: React.FC = () => {
         setIsLoading(false);
         updateUserLang?.(language);
       })
-      .catch((err: any) => {
-        console.log(err);
+      .catch(() => {
         setIsUpdated(false);
         setIsLoading(false);
       });
