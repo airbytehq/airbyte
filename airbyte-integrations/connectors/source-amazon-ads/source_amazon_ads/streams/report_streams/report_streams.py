@@ -36,6 +36,7 @@ class Status(str, Enum):
     IN_PROGRESS = "IN_PROGRESS"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
+    COMPLETED = "COMPLETED"
 
 
 class ReportInitResponse(BaseModel):
@@ -46,6 +47,7 @@ class ReportInitResponse(BaseModel):
 class ReportStatus(BaseModel):
     status: str
     location: Optional[str]
+    url: Optional[str]
 
 
 @dataclass
@@ -81,7 +83,6 @@ class TooManyRequests(Exception):
     """
     Custom exception occured when response with 429 status code received
     """
-
 
 class ReportStream(BasicAmazonAdsStream, ABC):
     """
@@ -181,11 +182,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         for report_info in incomplete_report_infos:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
-
             if report_status == Status.FAILURE:
                 message = f"Report for {report_info.profile_id} with {report_info.record_type} type generation failed"
                 raise ReportGenerationFailure(message)
-            elif report_status == Status.SUCCESS:
+            elif (report_status == Status.SUCCESS) | (report_status == Status.COMPLETED):
                 try:
                     report_info.metric_objects = self._download_report(report_info, download_url)
                 except requests.HTTPError as error:
@@ -197,7 +197,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             raise ReportGenerationInProgress(message)
 
     def _incomplete_report_infos(self, report_infos):
-        return [r for r in report_infos if r.status != Status.SUCCESS]
+        return [r for r in report_infos if ((r.status != Status.SUCCESS) & (r.status != Status.COMPLETED))]
 
     def _generate_model(self):
         """
@@ -229,7 +229,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @abstractmethod
     def metrics_map(self) -> Dict[str, List]:
         """
-        :return: Map record type to list of available metrics
+        :param
+        """
+
+    @property
+    def reportType_id_map(self) -> Dict[str, str]:
+        """
+        :param
         """
 
     def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
@@ -358,7 +364,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 profile.profileId,
                 report_init_body,
             )
-            if response.status_code != HTTPStatus.ACCEPTED:
+            if response.status_code != HTTPStatus.ACCEPTED & response.status_code != HTTPStatus.OK :
                 error_msg = f"Unexpected HTTP status code {response.status_code} when registering {record_type}, {type(self).__name__} for {profile.profileId} profile: {response.text}"
                 if self._check_report_date_error(response) or self._check_report_tactic_error(response):
                     self.logger.warning(error_msg)
@@ -429,3 +435,41 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 return False
             return response_json.get("details", "") == "Tactic T00020 is not supported for report API in marketplace A1C3SOZRARQ6R3."
         return False
+
+
+
+class ReportStreamV3(ReportStream):
+
+    def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        super().__init__(config, profiles, authenticator)
+
+    def _get_auth_headers(self, profile_id: int):
+        return {
+            "Amazon-Advertising-API-ClientId": self._client_id,
+            "Amazon-Advertising-API-Scope": str(profile_id),
+            **self._authenticator.get_auth_header(),
+            "Content-Type": "application/vnd.createasyncreportrequest.v3+json",
+        }
+
+    def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
+        check_endpoint = f"/reporting/reports/{report_info.report_id}"
+        resp = self._send_http_request(urljoin(self._url, check_endpoint), report_info.profile_id)
+        try:
+            resp = ReportStatus.parse_raw(resp.text)
+        except ValueError as error:
+            raise ReportStatusFailure(error)
+
+        return resp.status, resp.url
+
+    @backoff.on_exception(
+        backoff.expo,
+        requests.HTTPError,
+        max_tries=5,
+    )
+    def _download_report(self, report_info: ReportInfo, url: str) -> List[dict]:
+        """
+        Download and parse report result
+        """
+        response = requests.get(url)
+        raw_string = decompress(response.content).decode("utf")
+        return json.loads(raw_string)
