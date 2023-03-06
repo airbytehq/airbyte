@@ -106,14 +106,14 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
     () => [
       {
         Header: (
-          <>
+          <div className={styles.headerColumns}>
             <FormattedMessage id="tables.name" />
             <SortButton
               wasActive={sortBy === "entity"}
               lowToLarge={sortOrder === SortOrderEnum.ASC}
               onClick={() => onSortClick("entity")}
             />
-          </>
+          </div>
         ),
         headerHighlighted: true,
         accessor: "entityName",
@@ -124,14 +124,14 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
       },
       {
         Header: (
-          <>
+          <div className={styles.headerColumns}>
             <FormattedMessage id="tables.connector" />
             <SortButton
               wasActive={sortBy === "connector"}
               lowToLarge={sortOrder === SortOrderEnum.ASC}
               onClick={() => onSortClick("connector")}
             />
-          </>
+          </div>
         ),
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
@@ -147,15 +147,16 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
       },
       {
         Header: (
-          <>
+          <div className={styles.headerColumns}>
             <FormattedMessage id="tables.lastSync" />
             <SortButton
               wasActive={sortBy === "lastSync"}
               lowToLarge={sortOrder === SortOrderEnum.ASC}
               onClick={() => onSortClick("lastSync")}
             />
-          </>
+          </div>
         ),
+        // customWidth:20,
         accessor: "lastSync",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
           <LastSyncCell timeInSecond={cell.value} enabled={row.original.enabled} />

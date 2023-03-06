@@ -33,6 +33,10 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.03.06
+1. New UI content update
+2. Bugfix:Table&page scroll style
+
 #### 2023.03.02
 1. Error UI
 2. Fix the problem that the Tab component on the Source/Destination page is not selected.

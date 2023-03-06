@@ -7,6 +7,7 @@ import { ConnectorIcon } from "components/ConnectorIcon";
 interface IProps {
   icon?: string;
   name?: string;
+  type: "source" | "destination";
 }
 
 const FormHeader = styled.div`
@@ -62,7 +63,7 @@ const FormHeaderBox: React.FC<IProps> = (props) => {
       <Content>
         <Title>{props?.name}</Title>
         <Text>
-          <FormattedMessage id="form.header.subTitle" />
+          <FormattedMessage id={`form.header.${props.type}.subTitle`} values={{ name: props.name }} />
         </Text>
       </Content>
     </FormHeader>

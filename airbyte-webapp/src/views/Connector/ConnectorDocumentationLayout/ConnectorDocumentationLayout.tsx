@@ -62,26 +62,28 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
   const screenWidth = useWindowSize().width;
 
   return (
-    <ReflexContainer orientation="vertical">
-      <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
-        <LeftPanelContainer>{children}</LeftPanelContainer>
-      </ReflexElement>
-      {documentationPanelOpen && (
-        <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
-          <div className={styles.panelGrabber}>
-            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
-          </div>
-        </ReflexSplitter>
-      )}
-      {screenWidth > 500 && documentationPanelOpen && (
-        <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
-          <RightPanelContainer>
-            <Suspense fallback={<LoadingPage />}>
-              <LazyDocumentationPanel />
-            </Suspense>
-          </RightPanelContainer>
+    <div className={styles.pageContainer}>
+      <ReflexContainer orientation="vertical">
+        <ReflexElement className={styles.leftPanelStyle} propagateDimensions minSize={150}>
+          <LeftPanelContainer>{children}</LeftPanelContainer>
         </ReflexElement>
-      )}
-    </ReflexContainer>
+        {documentationPanelOpen && (
+          <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
+            <div className={styles.panelGrabber}>
+              <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+            </div>
+          </ReflexSplitter>
+        )}
+        {screenWidth > 500 && documentationPanelOpen && (
+          <ReflexElement className={styles.rightPanelStyle} size={1000} propagateDimensions minSize={60}>
+            <RightPanelContainer>
+              <Suspense fallback={<LoadingPage />}>
+                <LazyDocumentationPanel />
+              </Suspense>
+            </RightPanelContainer>
+          </ReflexElement>
+        )}
+      </ReflexContainer>
+    </div>
   );
 };
