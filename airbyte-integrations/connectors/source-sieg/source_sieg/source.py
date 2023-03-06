@@ -36,7 +36,7 @@ class BaseClass(HttpStream):
         self.take = 1
         self.skip = 0
         self.downloadevent = False
-        self.threads_quantity = 256
+        self.threads_quantity = 32
         self.max_skip = 1000000
 
     @abstractmethod
