@@ -44,7 +44,7 @@ def construct_file_schema(df):
     schema = {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {col: {"type": column_types[col]} for col in column_types},
+        "properties": {col: {"type": "string"} for col in df.columns},
     }
     return schema
 
