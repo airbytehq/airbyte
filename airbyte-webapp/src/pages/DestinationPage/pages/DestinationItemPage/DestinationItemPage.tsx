@@ -241,7 +241,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     <Container>
       <Breadcrumbs data={breadcrumbsData} currentStep={0} />
       <ConnectorDocumentationWrapper>
-        <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} />
+        <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" />
         <TabContainer>
           <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" lastOne />
         </TabContainer>

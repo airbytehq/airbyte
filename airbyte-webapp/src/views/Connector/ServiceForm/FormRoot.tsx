@@ -58,7 +58,7 @@ const FormRoot: React.FC<FormRootProps> = ({
 
   return (
     <FormContainer>
-      {!isEditMode && <DefinitioDetails name={selectedService?.name} icon={selectedService?.icon} />}
+      {!isEditMode && <DefinitioDetails name={selectedService?.name} icon={selectedService?.icon} type={formType} />}
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <LoaderContainer>
