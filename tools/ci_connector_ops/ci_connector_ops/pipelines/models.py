@@ -8,7 +8,6 @@ from enum import Enum
 from logging import Logger
 from typing import List, Optional, Union
 
-from ci_connector_ops.pipelines.utils import get_current_git_branch, get_current_git_revision
 from ci_connector_ops.utils import Connector
 from dagger import Client, Container, Directory
 
@@ -17,9 +16,9 @@ from dagger import Client, Container, Directory
 class ConnectorTestContext:
     connector: Connector
     is_local: bool
+    git_branch: str
+    git_revision: str
     use_remote_secrets: bool = True
-    git_branch: str = field(default_factory=get_current_git_branch)
-    git_revision: str = field(default_factory=get_current_git_revision)
     # Set default connector_acceptance_test_image to dev as its currently patched in this branch to support Dagger
     connector_acceptance_test_image: str = "airbyte/connector-acceptance-test:dev"
     created_at: datetime = field(default_factory=datetime.utcnow)
@@ -27,6 +26,23 @@ class ConnectorTestContext:
     @property
     def is_ci(self):
         return self.is_local is False
+
+    @property
+    def repo(self):
+        return self.dagger_client.git("https://github.com/airbytehq/airbyte.git", keep_git_dir=True)
+
+    def get_repo_dir(self, subdir=".", exclude=None, include=None) -> Directory:
+        if self.is_local:
+            return self.dagger_client.host().directory(subdir, exclude=exclude, include=include)
+        else:
+            return self.repo.branch(self.git_branch).tree().directory(subdir)
+
+    def get_connector_dir(self, exclude=None, include=None) -> Directory:
+        return self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
+
+    @property
+    def connector_acceptance_test_source_dir(self) -> Directory:
+        return self.get_repo_dir("airbyte-integrations/bases/connector-acceptance-test")
 
     @property
     def secrets_dir(self) -> Directory:
@@ -145,7 +161,6 @@ class ConnectorTestReport:
         )
 
     def __str__(self) -> str:
-
         nice_output = f"\n{self.connector_test_context.connector.technical_name.upper()} - TEST RESULTS\n"
         nice_output += "\n".join([str(sr) for sr in self.steps_results]) + "\n"
         nice_output += f"Total duration: {round(self.run_duration)} seconds"

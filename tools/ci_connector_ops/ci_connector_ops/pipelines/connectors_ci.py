@@ -13,7 +13,8 @@ import click
 import dagger
 from ci_connector_ops.pipelines.actions import builds, environments, remote_storage, secrets, tests
 from ci_connector_ops.pipelines.models import ConnectorTestContext, ConnectorTestReport, Step, StepResult, StepStatus
-from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors
+from ci_connector_ops.pipelines.utils import get_current_git_branch, get_current_git_revision
+from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors_between_branches
 
 REQUIRED_ENV_VARS_FOR_CI = ["GCP_GSM_CREDENTIALS", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "TEST_REPORTS_BUCKET_NAME"]
 
@@ -24,9 +25,7 @@ logger = logging.getLogger(__name__)
 async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
     main_pipeline_name = f"CI test for {test_context.connector.technical_name}"
     test_context.logger = logging.getLogger(main_pipeline_name)
-    test_context.secrets_dir = await secrets.get_connector_secret_dir(
-        test_context.dagger_client.pipeline(f"Setup {test_context.connector.technical_name}"), test_context
-    )
+    test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
     test_context.updated_secrets_dir = None
     return test_context
 
@@ -73,23 +72,23 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
         connector (Connector): The connector under test.
         gsm_credentials (str): The GSM credentials to read/write connector's secrets.
     """
+
     test_context = await setup(test_context)
-    connector = test_context.connector
-    connector_source_code = await environments.with_airbyte_connector(test_context.dagger_client, connector, install=False)
-    connector_under_test = await environments.with_airbyte_connector(test_context.dagger_client, connector)
+    connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
+    connector_under_test = await environments.with_airbyte_connector(test_context)
 
     format_check_results, unit_tests_results, connector_under_test_exit_code, qa_checks_results = await asyncio.gather(
         tests.check_format(connector_source_code),
         tests.run_unit_tests(connector_under_test),
         connector_under_test.exit_code(),
-        tests.run_qa_checks(test_context.dagger_client, connector),
+        tests.run_qa_checks(test_context),
     )
 
     package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
 
     if unit_tests_results.status is StepStatus.SUCCESS:
         integration_test_future = asyncio.create_task(tests.run_integration_tests(connector_under_test))
-        docker_build_future = asyncio.create_task(builds.build_dev_image(test_context.dagger_client, connector, exclude=[".venv"]))
+        docker_build_future = asyncio.create_task(builds.build_dev_image(test_context, exclude=[".venv"]))
 
         _, connector_image_short_id = await docker_build_future
 
@@ -149,8 +148,10 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
 @click.group()
 @click.option("--use-remote-secrets", default=True)
 @click.option("--is-local", default=True)
+@click.option("--git-branch", default=lambda: get_current_git_branch(), envvar="CI_GIT_BRANCH")
+@click.option("--git-revision", default=lambda: get_current_git_revision(), envvar="CI_GIT_REVISION")
 @click.pass_context
-def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool):
+def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool, git_branch: str, git_revision: str):
     """A command group to gather all the connectors-ci command"""
     if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
         raise click.ClickException("You need to run this command from the airbyte repository root.")
@@ -165,6 +166,8 @@ def connectors_ci(ctx: click.Context, use_remote_secrets: str, is_local: bool):
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     ctx.obj["use_remote_secrets"] = use_remote_secrets
     ctx.obj["is_local"] = is_local
+    ctx.obj["git_branch"] = git_branch
+    ctx.obj["git_revision"] = git_revision
 
 
 @connectors_ci.command()
@@ -177,9 +180,7 @@ def test_connectors(ctx: click.Context, connector_name: str):
         ctx (click.Context): The click context.
         connector_name (str): The connector technical name. E.G. source-pokeapi
     """
-    connectors_tests_contexts = [
-        ConnectorTestContext(Connector(cn), ctx.obj["is_local"], ctx.obj["use_remote_secrets"]) for cn in connector_name
-    ]
+    connectors_tests_contexts = [ConnectorTestContext(Connector(cn), **ctx.obj) for cn in connector_name]
     try:
         anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
     except dagger.DaggerError as e:
@@ -189,19 +190,16 @@ def test_connectors(ctx: click.Context, connector_name: str):
 
 @connectors_ci.command()
 @click.pass_context
-@click.option("--diffed-branch", default="master")
+@click.option("--diffed-branch", default="origin/master")
 def test_all_modified_connectors(ctx: click.Context, diffed_branch: str):
     """Launches a CI pipeline for all the connectors that got modified compared to the DIFFED_BRANCH environment variable.
 
     Args:
         ctx (click.Context): The click context.
     """
-    os.environ["DIFFED_BRANCH"] = diffed_branch
 
-    changed_connectors = get_changed_connectors()
-    connectors_tests_contexts = [
-        ConnectorTestContext(connector, ctx.obj["is_local"], ctx.obj["use_remote_secrets"]) for connector in changed_connectors
-    ]
+    changed_connectors = get_changed_connectors_between_branches(ctx.obj["git_branch"], diffed_branch)
+    connectors_tests_contexts = [ConnectorTestContext(connector, **ctx.obj) for connector in changed_connectors]
     if changed_connectors:
         try:
             anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)

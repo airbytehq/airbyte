@@ -7,8 +7,7 @@ from typing import Tuple
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.models import ConnectorTestContext, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
-from ci_connector_ops.utils import Connector
-from dagger import Client, Container, Directory
+from dagger import Container, Directory
 
 RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
 RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
@@ -120,7 +119,7 @@ async def run_integration_tests(connector_container: Container, step=Step.INTEGR
 
 # TODO update docstring
 async def run_acceptance_tests(
-    test_context: ConnectorTestContext,
+    context: ConnectorTestContext,
     connector_under_test_image_id: str,
     step=Step.ACCEPTANCE_TESTS,
 ) -> Tuple[StepResult, Directory]:
@@ -135,25 +134,24 @@ async def run_acceptance_tests(
     Returns:
         Tuple[StepStatus, Directory]: The success/failure of the tests and a directory containing the updated secrets if any.
     """
-    if not test_context.connector.acceptance_test_config:
+    if not context.connector.acceptance_test_config:
         return StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED), None
 
-    dagger_client = step.get_dagger_pipeline(test_context._dagger_client)
-    connector_source_host_dir = dagger_client.host().directory(str(test_context.connector.code_directory), exclude=[".venv", "secrets"])
+    dagger_client = step.get_dagger_pipeline(context.dagger_client)
 
     docker_host_socket = dagger_client.host().unix_socket("/var/run/docker.sock")
 
-    if test_context.connector_acceptance_test_image.endswith(":dev"):
-        cat_container = dagger_client.host().directory("airbyte-integrations/bases/connector-acceptance-test").docker_build()
+    if context.connector_acceptance_test_image.endswith(":dev"):
+        cat_container = context.connector_acceptance_test_source_dir.docker_build()
     else:
-        cat_container = dagger_client.container().from_(test_context.connector_acceptance_test_image)
+        cat_container = dagger_client.container().from_(context.connector_acceptance_test_image)
 
     cat_container = (
         cat_container.with_unix_socket("/var/run/docker.sock", docker_host_socket)
         .with_workdir("/test_input")
         .with_env_variable("CACHEBUSTER", connector_under_test_image_id)
-        .with_mounted_directory("/test_input", connector_source_host_dir)
-        .with_directory("/test_input/secrets", test_context.secrets_dir)
+        .with_mounted_directory("/test_input", context.get_connector_dir(exclude=["secrets", ".venv"]))
+        .with_directory("/test_input/secrets", context.secrets_dir)
         .with_entrypoint(["python", "-m", "pytest", "-p", "connector_acceptance_test.plugin", "-r", "fEsx"])
         .with_exec(["--acceptance-test-config", "/test_input"])
     )
@@ -178,7 +176,7 @@ async def run_acceptance_tests(
 
 
 # TODO update docstring
-async def run_qa_checks(dagger_client: Client, connector: Connector, step=Step.QA_CHECKS) -> StepResult:
+async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> StepResult:
     """Runs our QA checks on a connector.
 
     Args:
@@ -188,14 +186,13 @@ async def run_qa_checks(dagger_client: Client, connector: Connector, step=Step.Q
     Returns:
         StepStatus: Failure, skip or success status of the QA check run.
     """
-    dagger_client = step.get_dagger_pipeline(dagger_client)
-    ci_connector_ops = await environments.with_ci_connector_ops(dagger_client)
-    filtered_repo = dagger_client.host().directory(
-        ".",
+    ci_connector_ops = await environments.with_ci_connector_ops(context)
+    ci_connector_ops = step.get_dagger_pipeline(ci_connector_ops)
+    filtered_repo = context.get_repo_dir(
         include=[
-            str(connector.code_directory),
-            str(connector.documentation_file_path),
-            str(connector.icon_path),
+            str(context.connector.code_directory),
+            str(context.connector.documentation_file_path),
+            str(context.connector.icon_path),
             ".git",  # This is a big directory but ci_connectors_ops needs it...
             "airbyte-config/init/src/main/resources/seed/source_definitions.yaml",
             "airbyte-config/init/src/main/resources/seed/destination_definitions.yaml",
@@ -204,7 +201,7 @@ async def run_qa_checks(dagger_client: Client, connector: Connector, step=Step.Q
     qa_checks = (
         ci_connector_ops.with_mounted_directory("/airbyte", filtered_repo)
         .with_workdir("/airbyte")
-        .with_exec(["run-qa-checks", f"connectors/{connector.technical_name}"])
+        .with_exec(["run-qa-checks", f"connectors/{context.connector.technical_name}"])
     )
 
     return StepResult(

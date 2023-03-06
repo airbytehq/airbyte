@@ -6,11 +6,10 @@ import tempfile
 from typing import List, Optional, Tuple
 
 import docker
-from ci_connector_ops.utils import Connector
-from dagger import Client
+from ci_connector_ops.pipelines.models import ConnectorTestContext
 
 
-async def build_dev_image(dagger_client: Client, connector: Connector, exclude=Optional[List]) -> Tuple[str, str]:
+async def build_dev_image(context: ConnectorTestContext, exclude=Optional[List]) -> Tuple[str, str]:
     """Build the connector docker image and tag it with dev.
 
     Args:
@@ -27,13 +26,8 @@ async def build_dev_image(dagger_client: Client, connector: Connector, exclude=O
     """
     local_image_tarball_path = tempfile.NamedTemporaryFile()
     local_docker_client = docker.from_env()
-    dev_tag = connector.definition["dockerRepository"].split(":")[0] + ":dev"
-    exported = (
-        await dagger_client.host()
-        .directory(str(connector.code_directory), exclude=exclude)
-        .docker_build()
-        .export(local_image_tarball_path.name)
-    )
+    dev_tag = context.connector.definition["dockerRepository"].split(":")[0] + ":dev"
+    exported = await (context.get_connector_dir(exclude=exclude).docker_build().export(local_image_tarball_path.name))
 
     if exported:
         with open(local_image_tarball_path.name, "rb") as image_archive:

@@ -200,3 +200,16 @@ def get_changed_connectors() -> Set[Connector]:
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
+
+
+# TODO ref get_changed_connectors instead of repeating
+def get_changed_connectors_between_branches(branch_a: str, branch_b: str) -> Set[Connector]:
+    original_branch = AIRBYTE_REPO.active_branch.name
+    AIRBYTE_REPO.git.checkout(branch_a)
+    changed_source_connector_files = {
+        file_path
+        for file_path in AIRBYTE_REPO.git.diff("--name-only", branch_b).split("\n")
+        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
+    }
+    AIRBYTE_REPO.git.checkout(original_branch)
+    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}

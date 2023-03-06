@@ -4,9 +4,9 @@
 
 from typing import List, Optional
 
+from ci_connector_ops.pipelines.models import ConnectorTestContext
 from ci_connector_ops.pipelines.utils import get_file_contents
-from ci_connector_ops.utils import Connector
-from dagger import CacheSharingMode, CacheVolume, Client, Container, Directory, Secret
+from dagger import CacheSharingMode, CacheVolume, Container, Directory, Secret
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
 
@@ -28,7 +28,7 @@ CI_CREDENTIALS_SOURCE_PATH = "tools/ci_credentials"
 CI_CONNECTOR_OPS_SOURCE_PATH = "tools/ci_connector_ops"
 
 
-async def with_python_base(dagger_client: Client, python_image_name: str = "python:3.9-slim") -> Container:
+async def with_python_base(context: ConnectorTestContext, python_image_name: str = "python:3.9-slim") -> Container:
     """Builds a Python container with a cache volume for pip cache.
 
     Args:
@@ -43,19 +43,17 @@ async def with_python_base(dagger_client: Client, python_image_name: str = "pyth
     """
     if not python_image_name.startswith("python:3"):
         raise ValueError("You have to use a python image to build the python base environment")
-    pip_cache: CacheVolume = dagger_client.cache_volume("pip_cache")
+    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
     return (
-        dagger_client.container()
+        context.dagger_client.container()
         .from_(python_image_name)
         .with_mounted_cache("/root/.cache/pip", pip_cache, sharing=CacheSharingMode.SHARED)
-        .with_mounted_directory(
-            "/tools", dagger_client.host().directory("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"])
-        )
+        .with_mounted_directory("/tools", context.get_repo_dir("tools", include=["ci_credentials", "ci_common_utils"], exclude=[".venv"]))
         .with_exec(["pip", "install", "--upgrade", "pip"])
     )
 
 
-async def with_testing_dependencies(dagger_client: Client) -> Container:
+async def with_testing_dependencies(context: ConnectorTestContext) -> Container:
     """Builds a testing environment by installing testing dependencies on top of a python base environment.
 
     Args:
@@ -64,15 +62,15 @@ async def with_testing_dependencies(dagger_client: Client) -> Container:
     Returns:
         Container: The testing environment container.
     """
-    python_environment: Container = await with_python_base(dagger_client)
-    pyproject_toml_file = dagger_client.host().directory(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
+    python_environment: Container = await with_python_base(context)
+    pyproject_toml_file = context.get_repo_dir(".", include=[PYPROJECT_TOML_FILE_PATH]).file(PYPROJECT_TOML_FILE_PATH)
     return python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS).with_file(
         f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file
     )
 
 
 async def with_python_package(
-    dagger_client: Client,
+    context: ConnectorTestContext,
     python_environment: Container,
     package_source_code_path: str,
     additional_dependency_groups: Optional[List] = None,
@@ -94,7 +92,7 @@ async def with_python_package(
         exclude = DEFAULT_PYTHON_EXCLUDE + exclude
     else:
         exclude = DEFAULT_PYTHON_EXCLUDE
-    package_source_code_directory: Directory = dagger_client.host().directory(package_source_code_path, exclude=exclude)
+    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
     container = python_environment.with_mounted_directory("/" + package_source_code_path, package_source_code_directory).with_workdir(
         "/" + package_source_code_path
     )
@@ -105,7 +103,7 @@ async def with_python_package(
                 if line.startswith("-e ."):
                     local_dependency_path = package_source_code_path + "/" + line[3:]
                     container = container.with_mounted_directory(
-                        "/" + local_dependency_path, dagger_client.host().directory(local_dependency_path, exclude=DEFAULT_PYTHON_EXCLUDE)
+                        "/" + local_dependency_path, context.get_repo_dir(local_dependency_path, exclude=DEFAULT_PYTHON_EXCLUDE)
                     )
             container = container.with_exec(INSTALL_LOCAL_REQUIREMENTS_CMD)
 
@@ -119,7 +117,7 @@ async def with_python_package(
     return container
 
 
-async def with_airbyte_connector(dagger_client: Client, connector: Connector, install=True) -> Container:
+async def with_airbyte_connector(context: ConnectorTestContext, install=True) -> Container:
     """Installs an airbyte connector python package in a testing environment.
 
     Args:
@@ -128,10 +126,10 @@ async def with_airbyte_connector(dagger_client: Client, connector: Connector, in
     Returns:
         Container: A python environment container with the connector installed.
     """
-    connector_source_path = str(connector.code_directory)
-    testing_environment: Container = await with_testing_dependencies(dagger_client)
+    connector_source_path = str(context.connector.code_directory)
+    testing_environment: Container = await with_testing_dependencies(context)
     return await with_python_package(
-        dagger_client,
+        context,
         testing_environment,
         connector_source_path,
         additional_dependency_groups=["dev", "tests", "main"],
@@ -140,14 +138,14 @@ async def with_airbyte_connector(dagger_client: Client, connector: Connector, in
     )
 
 
-async def with_ci_credentials(dagger_client: Client, gsm_secret: Secret) -> Container:
-    python_base_environment: Container = await with_python_base(dagger_client)
-    ci_credentials = await with_python_package(dagger_client, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
+async def with_ci_credentials(context: ConnectorTestContext, gsm_secret: Secret) -> Container:
+    python_base_environment: Container = await with_python_base(context)
+    ci_credentials = await with_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
 
     return ci_credentials.with_env_variable("VERSION", "dev").with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
 
-async def with_ci_connector_ops(dagger_client: Client) -> Container:
+async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
 
     Args:
@@ -156,6 +154,6 @@ async def with_ci_connector_ops(dagger_client: Client) -> Container:
     Returns:
         Container: A python environment container with ci_connector_ops installed.
     """
-    python_base_environment: Container = await with_python_base(dagger_client, "python:3-alpine")
+    python_base_environment: Container = await with_python_base(context, "python:3-alpine")
     python_with_git = python_base_environment.with_exec(["apk", "add", "gcc", "libffi-dev", "musl-dev", "git"])
-    return await with_python_package(dagger_client, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)
+    return await with_python_package(context, python_with_git, CI_CONNECTOR_OPS_SOURCE_PATH)
