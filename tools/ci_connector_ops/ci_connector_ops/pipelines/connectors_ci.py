@@ -75,14 +75,13 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
     """
 
     test_context = await setup(test_context)
+    qa_checks_results_future = asyncio.create_task(tests.run_qa_checks(test_context))
     connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
     connector_under_test = await environments.with_airbyte_connector(test_context)
 
-    format_check_results, unit_tests_results, connector_under_test_exit_code, qa_checks_results = await asyncio.gather(
-        tests.check_format(connector_source_code),
-        tests.run_unit_tests(connector_under_test),
-        connector_under_test.exit_code(),
-        tests.run_qa_checks(test_context),
+    code_format_checks_results_future = asyncio.create_task(tests.code_format_checks(connector_source_code))
+    unit_tests_results, connector_under_test_exit_code = await asyncio.gather(
+        tests.run_unit_tests(connector_under_test), connector_under_test.exit_code()
     )
 
     package_install_result = StepResult(Step.PACKAGE_INSTALL, StepStatus.from_exit_code(connector_under_test_exit_code))
@@ -110,12 +109,12 @@ async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
         test_context,
         steps_results=[
             package_install_result,
-            format_check_results,
+            await code_format_checks_results_future,
             unit_tests_results,
             integration_tests_result,
             docker_build_result,
             acceptance_tests_results,
-            qa_checks_results,
+            await qa_checks_results_future,
         ],
     )
 

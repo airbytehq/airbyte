@@ -48,7 +48,7 @@ async def _run_tests_in_directory(connector_container: Container, test_directory
 
 
 # TODO update docstring
-async def check_format(connector_container: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
+async def code_format_checks(connector_container: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
     """Run a code format check on the container source code.
     We call black, isort and flake commands:
     - Black formats the code: fails if the code is not formatted.
