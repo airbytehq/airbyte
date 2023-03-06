@@ -1,0 +1,205 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_path: [ "data" ]
+  requester:
+    url_base: "https://app.napta.io/api/v1/"
+    http_method: "GET"
+    authenticator:
+      type: "OAuthAuthenticator"
+      client_id: '{{ config[''client_id''] }}'
+      client_secret: '{{ config[''client_secret''] }}'
+      refresh_token: '{{ config[''client_secret''] }}'
+      refresh_request_body:
+        audience: backend
+      token_refresh_endpoint: https://auth.napta.io/oauth/token
+      access_token_name: access_token
+      grant_type: client_credentials
+    request_options_provider:
+      request_parameters: {}
+  retriever:
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestPath
+      page_size_option:
+        inject_into: request_parameter
+        type: RequestOption
+        field_name: page[size]
+      pagination_strategy:
+        type: CursorPagination
+        cursor_value: '{{ response[''links''][''next''] }}'
+        page_size: 1000
+    requester:
+      $ref: "#/definitions/requester"
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+  user_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user"
+      primary_key: "id"
+      path: "user"
+  business_unit_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "business_unit"
+      primary_key: "id"
+      path: "business_unit"
+  client_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "client"
+      primary_key: "id"
+      path: "client"
+  location_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "location"
+      primary_key: "id"
+      path: "location"
+  project_contributor_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "project_contributor"
+      primary_key: "id"
+      path: "project_contributor"
+  project_project_tag_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "project_project_tag"
+      primary_key: "id"
+      path: "project_project_tag"
+  project_tag_type_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "project_tag_type"
+      primary_key: "id"
+      path: "project_tag_type"
+  project_tag_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "project_tag"
+      primary_key: "id"
+      path: "project_tag"
+  project_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "project"
+      primary_key: "id"
+      path: "project"
+  projectcategory_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "projectcategory"
+      primary_key: "id"
+      path: "projectcategory"
+  projectstatus_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "projectstatus"
+      primary_key: "id"
+      path: "projectstatus"
+  timesheet_period_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "timesheet_period"
+      primary_key: "id"
+      path: "timesheet_period"
+  timesheet_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "timesheet"
+      primary_key: "id"
+      path: "timesheet"
+  user_group_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_group"
+      primary_key: "id"
+      path: "user_group"
+  user_holiday_category_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_holiday_category"
+      primary_key: "id"
+      path: "user_holiday_category"
+  user_holiday_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_holiday"
+      primary_key: "id"
+      path: "user_holiday"
+  user_position_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_position"
+      primary_key: "id"
+      path: "user_position"
+  user_project_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_project"
+      primary_key: "id"
+      path: "user_project"
+  userproject_status_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "userproject_status"
+      primary_key: "id"
+      path: "userproject_status"
+  userprojectperiod_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "userprojectperiod"
+      primary_key: "id"
+      path: "userprojectperiod"
+
+streams:
+  - "#/definitions/business_unit_stream"
+  - "#/definitions/client_stream"
+  - "#/definitions/location_stream"
+  - "#/definitions/project_contributor_stream"
+  - "#/definitions/project_project_tag_stream"
+  - "#/definitions/project_tag_type_stream"
+  - "#/definitions/project_tag_stream"
+  - "#/definitions/project_stream"
+  - "#/definitions/projectcategory_stream"
+  - "#/definitions/projectstatus_stream"
+  - "#/definitions/timesheet_period_stream"
+  - "#/definitions/timesheet_stream"
+  - "#/definitions/user_group_stream"
+  - "#/definitions/user_holiday_category_stream"
+  - "#/definitions/user_holiday_stream"
+  - "#/definitions/user_position_stream"
+  - "#/definitions/user_project_stream"
+  - "#/definitions/user_stream"
+  - "#/definitions/userproject_status_stream"
+  - "#/definitions/userprojectperiod_stream"
+check:
+  stream_names:
+    - "user"
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+    additionalProperties: true
+  documentation_url: 'https://artefact.fr'
+  type: Spec

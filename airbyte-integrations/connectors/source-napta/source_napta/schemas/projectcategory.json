@@ -1,0 +1,52 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "null"
+          },
+          "created_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "isHoliday": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updated_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

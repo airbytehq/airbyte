@@ -1,0 +1,261 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_hasGlobalTimesheetReporting": {
+            "type": "boolean"
+          },
+          "_hasKpi": {
+            "type": "boolean"
+          },
+          "_hasSnapshot": {
+            "type": "boolean"
+          },
+          "_mayAccessProjectConsolidatedFinancialPage": {
+            "type": "boolean"
+          },
+          "_mayAccessProjectFinancialPage": {
+            "type": "boolean"
+          },
+          "_mayClone": {
+            "type": "boolean"
+          },
+          "_mayCreateProjectContributor": {
+            "type": "boolean"
+          },
+          "_mayCreateProjectProjectTag": {
+            "type": "object"
+          },
+          "_mayCreateSnapshot": {
+            "type": "boolean"
+          },
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayLinkChildProject": {
+            "type": "boolean"
+          },
+          "_mayLinkTags": {
+            "type": "object"
+          },
+          "_mayRequestStaffing": {
+            "properties": {
+              "default": {
+                "type": "boolean"
+              },
+              "user_project_metadata": {
+                "properties": {
+                  "notes": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "user_project_tags": {
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "_mayShowAvailability": {
+            "type": "boolean"
+          },
+          "_mayStaff": {
+            "properties": {
+              "default": {
+                "type": "boolean"
+              },
+              "my_self": {
+                "type": "boolean"
+              },
+              "user_project_metadata": {
+                "properties": {
+                  "notes": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "user_project_metadata_myself": {
+                "properties": {
+                  "notes": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "user_project_tags": {
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "_mayUpdate": {
+            "properties": {
+              "client_id": {
+                "type": "boolean"
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "description": {
+                "type": "boolean"
+              },
+              "estimated_end_date": {
+                "type": "boolean"
+              },
+              "estimated_start_date": {
+                "type": "boolean"
+              },
+              "external_id": {
+                "type": "boolean"
+              },
+              "is_archived": {
+                "type": "boolean"
+              },
+              "is_locked": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "boolean"
+              },
+              "parent_project_id": {
+                "type": "boolean"
+              },
+              "project_metadata": {
+                "properties": {
+                  "creator_name": {
+                    "type": "boolean"
+                  },
+                  "unique_mission_id": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "projectcategory_id": {
+                "type": "boolean"
+              },
+              "projectstatus_id": {
+                "type": "boolean"
+              },
+              "tags": {
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "billing_method": {
+            "type": "null"
+          },
+          "client_id": {
+            "type": "string"
+          },
+          "created_by_id": {
+            "type": "null"
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "end_date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estimated_end_date": {
+            "type": "null"
+          },
+          "estimated_start_date": {
+            "type": "null"
+          },
+          "expense": {
+            "type": "null"
+          },
+          "external_id": {
+            "type": "null"
+          },
+          "isTeamReady": {
+            "type": "boolean"
+          },
+          "is_archived": {
+            "type": "boolean"
+          },
+          "is_locked": {
+            "type": "boolean"
+          },
+          "is_parent_project": {
+            "type": "boolean"
+          },
+          "is_snapshot": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_project_id": {
+            "type": "null"
+          },
+          "project_metadata": {
+            "type": "object"
+          },
+          "projectcategory_id": {
+            "type": "null"
+          },
+          "projectstatus_id": {
+            "type": "string"
+          },
+          "sold_budget": {
+            "type": "null"
+          },
+          "start_date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "target_margin_rate": {
+            "type": "null"
+          },
+          "total_projected_staffed_days": {
+            "type": "null"
+          },
+          "total_projected_staffed_hours": {
+            "type": "null"
+          },
+          "updated_on": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

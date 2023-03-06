@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "properties": {
+              "client_metadata": {
+                "type": "object"
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "external_id": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "client_metadata": {
+            "type": "object"
+          },
+          "created_on": {
+            "type": "null"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updated_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

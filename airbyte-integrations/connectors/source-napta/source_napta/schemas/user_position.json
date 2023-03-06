@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "type": "boolean"
+          },
+          "created_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hours_per_day": {
+            "type": "number"
+          },
+          "ignore_for_computation": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "priority": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "updated_on": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

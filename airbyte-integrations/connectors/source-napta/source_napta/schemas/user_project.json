@@ -1,0 +1,152 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_hasPendingEvaluations": {
+            "type": "boolean"
+          },
+          "_mayClone": {
+            "type": "boolean"
+          },
+          "_mayCreateUnpublishedUserProjectEvaluation": {
+            "type": "boolean"
+          },
+          "_mayCreateUserProjectEvaluation": {
+            "type": "boolean"
+          },
+          "_mayCreateUserProjectPeriod": {
+            "type": "boolean"
+          },
+          "_mayCreateUserProjectUserSkill": {
+            "type": "boolean"
+          },
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "properties": {
+              "default": {
+                "type": "boolean"
+              },
+              "is_assessment_activated": {
+                "type": "boolean"
+              },
+              "project_id": {
+                "type": "boolean"
+              },
+              "simulated": {
+                "type": "boolean"
+              },
+              "tags": {
+                "type": "object"
+              },
+              "user_id": {
+                "type": "boolean"
+              },
+              "user_project_metadata": {
+                "properties": {
+                  "notes": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "userprojectperiods": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "business_days": {
+            "type": "number"
+          },
+          "business_hours": {
+            "type": "number"
+          },
+          "completed_periods_count": {
+            "type": "integer"
+          },
+          "created_by_id": {
+            "type": "null"
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "daily_fee": {
+            "type": "null"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "has_hiring_or_leaving_date_conflict": {
+            "type": "boolean"
+          },
+          "is_assessment_activated": {
+            "type": "boolean"
+          },
+          "latest_comment": {
+            "type": "null"
+          },
+          "markup_rate": {
+            "type": "null"
+          },
+          "periods_count": {
+            "type": "integer"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "simulated": {
+            "type": "boolean"
+          },
+          "staffed_days": {
+            "type": "number"
+          },
+          "staffed_hours": {
+            "type": "number"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "time_status_priority": {
+            "type": "integer"
+          },
+          "updated_on": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "user_project_metadata": {
+            "type": "object"
+          },
+          "userproject_status_id": {
+            "type": "null"
+          },
+          "workload": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

@@ -1,0 +1,301 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "type": "boolean"
+          },
+          "allow_projects": {
+            "type": "boolean"
+          },
+          "allow_user_projects": {
+            "type": "boolean"
+          },
+          "allow_userprojectperiods": {
+            "type": "boolean"
+          },
+          "created_by_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "license_type": {
+            "type": "string"
+          },
+          "may_access_admin": {
+            "type": "boolean"
+          },
+          "may_access_financial_reporting": {
+            "type": "boolean"
+          },
+          "may_access_global_staffing_reporting": {
+            "type": "boolean"
+          },
+          "may_access_individual_staffing_reporting": {
+            "type": "boolean"
+          },
+          "may_access_planning_capacity_reporting": {
+            "type": "boolean"
+          },
+          "may_access_project_financial_page_all_projects": {
+            "type": "boolean"
+          },
+          "may_access_project_financial_page_my_projects": {
+            "type": "boolean"
+          },
+          "may_access_search": {
+            "type": "boolean"
+          },
+          "may_access_skill_reporting": {
+            "type": "boolean"
+          },
+          "may_access_timesheet_reporting": {
+            "type": "boolean"
+          },
+          "may_archive_all_projects": {
+            "type": "boolean"
+          },
+          "may_archive_my_projects": {
+            "type": "boolean"
+          },
+          "may_compare_users_career_path": {
+            "type": "boolean"
+          },
+          "may_connect": {
+            "type": "boolean"
+          },
+          "may_deactivate_assessment_all_projects": {
+            "type": "boolean"
+          },
+          "may_deactivate_assessment_my_projects": {
+            "type": "boolean"
+          },
+          "may_deactivate_assessment_myself": {
+            "type": "boolean"
+          },
+          "may_delete_projects": {
+            "type": "boolean"
+          },
+          "may_delete_users": {
+            "type": "boolean"
+          },
+          "may_edit_all_staffing_real": {
+            "type": "boolean"
+          },
+          "may_edit_all_staffing_simulated": {
+            "type": "boolean"
+          },
+          "may_edit_my_staffing_real": {
+            "type": "boolean"
+          },
+          "may_edit_my_staffing_simulated": {
+            "type": "boolean"
+          },
+          "may_edit_staffing_real_on_my_projects": {
+            "type": "boolean"
+          },
+          "may_edit_staffing_request": {
+            "type": "string"
+          },
+          "may_edit_staffing_simulated_on_my_projects": {
+            "type": "boolean"
+          },
+          "may_export_all_users_skills": {
+            "type": "boolean"
+          },
+          "may_export_cv_himself": {
+            "type": "boolean"
+          },
+          "may_export_cv_others": {
+            "type": "boolean"
+          },
+          "may_export_data": {
+            "type": "boolean"
+          },
+          "may_export_rex": {
+            "type": "boolean"
+          },
+          "may_get_user_skill_grade_himself": {
+            "type": "boolean"
+          },
+          "may_import_from_linkedin": {
+            "type": "boolean"
+          },
+          "may_like_projects": {
+            "type": "boolean"
+          },
+          "may_lock_all_projects": {
+            "type": "boolean"
+          },
+          "may_lock_my_projects": {
+            "type": "boolean"
+          },
+          "may_manage_all_timesheets": {
+            "type": "boolean"
+          },
+          "may_manage_card_labels": {
+            "type": "boolean"
+          },
+          "may_manage_clients": {
+            "type": "boolean"
+          },
+          "may_manage_config": {
+            "type": "boolean"
+          },
+          "may_manage_ea": {
+            "type": "boolean"
+          },
+          "may_manage_efm": {
+            "type": "boolean"
+          },
+          "may_manage_job_sheet_himself": {
+            "type": "boolean"
+          },
+          "may_manage_job_sheet_others": {
+            "type": "boolean"
+          },
+          "may_manage_project_cards": {
+            "type": "boolean"
+          },
+          "may_manage_project_snapshots": {
+            "type": "boolean"
+          },
+          "may_manage_projects": {
+            "type": "string"
+          },
+          "may_manage_skills": {
+            "type": "string"
+          },
+          "may_manage_user_holiday_category": {
+            "type": "boolean"
+          },
+          "may_manage_user_project_comments": {
+            "type": "boolean"
+          },
+          "may_manage_user_skill_himself": {
+            "type": "boolean"
+          },
+          "may_manage_user_skill_others": {
+            "type": "boolean"
+          },
+          "may_manage_userprojectperiod_status": {
+            "type": "boolean"
+          },
+          "may_manage_userprojectstatus": {
+            "type": "boolean"
+          },
+          "may_manage_users": {
+            "type": "string"
+          },
+          "may_manage_userskill_usergrade_himself": {
+            "type": "boolean"
+          },
+          "may_manage_userskill_usergrade_others": {
+            "type": "boolean"
+          },
+          "may_only_see_managees": {
+            "type": "boolean"
+          },
+          "may_see_leaving_date": {
+            "type": "boolean"
+          },
+          "may_see_other_users_in_his_bu": {
+            "type": "boolean"
+          },
+          "may_see_other_users_out_of_his_bu": {
+            "type": "boolean"
+          },
+          "may_see_project_staffing_card_out_of_his_business_unit": {
+            "type": "boolean"
+          },
+          "may_see_simulated_staffing": {
+            "type": "string"
+          },
+          "may_see_who_liked_projects": {
+            "type": "boolean"
+          },
+          "may_see_workload": {
+            "type": "boolean"
+          },
+          "may_simulate_staffing": {
+            "type": "boolean"
+          },
+          "may_staff_myself": {
+            "type": "boolean"
+          },
+          "may_staff_myself_on_my_projects": {
+            "type": "boolean"
+          },
+          "may_staff_simulated_only": {
+            "type": "boolean"
+          },
+          "may_staff_user": {
+            "type": "boolean"
+          },
+          "may_update_task_status_on_all_projects": {
+            "type": "boolean"
+          },
+          "may_update_task_status_on_my_projects": {
+            "type": "boolean"
+          },
+          "may_update_task_status_on_my_staffing": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "no_welcome_page_redirect_url": {
+            "type": "null"
+          },
+          "protected": {
+            "type": "boolean"
+          },
+          "timesheet_interval_unit": {
+            "type": "string"
+          },
+          "timesheet_time_unit": {
+            "type": "string"
+          },
+          "updatable_by_integration_script": {
+            "type": "boolean"
+          },
+          "updated_on": {
+            "type": "string"
+          },
+          "welcome_page_access": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "working_on_projects": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

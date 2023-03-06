@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "properties": {
+              "default": {
+                "type": "boolean"
+              },
+              "external_id": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "business_days": {
+            "type": "null"
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "end_date_until_afternoon": {
+            "type": "boolean"
+          },
+          "external_id": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "start_date_from_morning": {
+            "type": "boolean"
+          },
+          "updated_on": {
+            "type": "string"
+          },
+          "user_holiday_category_id": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

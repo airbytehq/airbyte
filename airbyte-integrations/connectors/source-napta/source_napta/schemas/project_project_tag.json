@@ -1,0 +1,108 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayGetDailyFee": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "properties": {
+              "completed": {
+                "type": "boolean"
+              },
+              "daily_fee": {
+                "type": "boolean"
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "tags": {
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "business_days": {
+            "type": "number"
+          },
+          "business_hours": {
+            "type": "number"
+          },
+          "completed": {
+            "type": "boolean"
+          },
+          "created_by_id": {
+            "type": "null"
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "daily_fee": {
+            "type": "null"
+          },
+          "end_date": {
+            "type": "string"
+          },
+          "end_date_until_afternoon": {
+            "type": "boolean"
+          },
+          "has_hiring_date_conflict": {
+            "type": "null"
+          },
+          "has_leaving_date_conflict": {
+            "type": "null"
+          },
+          "is_in_conflict": {
+            "type": "null"
+          },
+          "name": {
+            "type": "null"
+          },
+          "staffed_days": {
+            "type": "number"
+          },
+          "staffed_hours": {
+            "type": "number"
+          },
+          "start_date": {
+            "type": "string"
+          },
+          "start_date_from_morning": {
+            "type": "boolean"
+          },
+          "updated_on": {
+            "type": "string"
+          },
+          "user_project_id": {
+            "type": "string"
+          },
+          "userprojectperiod_status_id": {
+            "type": "string"
+          },
+          "workload": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }

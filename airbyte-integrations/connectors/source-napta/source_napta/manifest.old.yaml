@@ -1,0 +1,2457 @@
+version: 0.1.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - user
+streams:
+  - type: DeclarativeStream
+    name: user
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayCreateUserHistory:
+                type: boolean
+              _mayCreateUserHoliday:
+                type: boolean
+              _mayCreateUserJobSheet:
+                type: boolean
+              _mayCreateUserManager:
+                type: boolean
+              _mayCreateUserSkillInterest:
+                type: boolean
+              _mayCreateUserSkillUserGrade:
+                type: boolean
+              _mayCreateUserUserTag:
+                properties:
+                  '1':
+                    type: boolean
+                  '2':
+                    type: boolean
+                type: object
+              _mayDelete:
+                type: boolean
+              _mayExportCv:
+                type: boolean
+              _maySeeCalendarOnProfile:
+                type: boolean
+              _maySeeDailyCost:
+                type: boolean
+              _maySeeLeavingDate:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  active:
+                    type: boolean
+                  business_unit_id:
+                    type: boolean
+                  daily_cost:
+                    type: boolean
+                  default:
+                    type: boolean
+                  email:
+                    type: boolean
+                  external_id:
+                    type: boolean
+                  first_name:
+                    type: boolean
+                  hiring_date:
+                    type: boolean
+                  last_name:
+                    type: boolean
+                  leaving_date:
+                    type: boolean
+                  location_id:
+                    type: boolean
+                  personal_description:
+                    type: boolean
+                  phone_number:
+                    type: boolean
+                  picture:
+                    type: boolean
+                  tags:
+                    properties:
+                      '1':
+                        type: boolean
+                      '2':
+                        type: boolean
+                    type: object
+                  user_group_id:
+                    type: boolean
+                  user_metadata:
+                    properties:
+                      role:
+                        type: boolean
+                    type: object
+                  user_position_id:
+                    type: boolean
+                  userinfo_metadata:
+                    properties:
+                      cv_link:
+                        type: boolean
+                    type: object
+                type: object
+              active:
+                type: boolean
+              business_unit_id:
+                type:
+                  - 'null'
+                  - string
+              created_by_id:
+                type:
+                  - 'null'
+                  - string
+              created_on:
+                type: string
+              daily_cost:
+                type: 'null'
+              email:
+                type: string
+              external_id:
+                type:
+                  - 'null'
+                  - string
+              first_availability_date:
+                type: 'null'
+              first_login_on:
+                type:
+                  - 'null'
+                  - string
+              first_name:
+                type: string
+              has_hiring_or_leaving_date_conflict:
+                type: boolean
+              has_picture:
+                type: boolean
+              hiring_date:
+                type:
+                  - 'null'
+                  - string
+              is_vip:
+                type: boolean
+              last_name:
+                type: string
+              leaving_date:
+                type:
+                  - 'null'
+                  - string
+              location_id:
+                type:
+                  - 'null'
+                  - string
+              personal_description:
+                type:
+                  - 'null'
+                  - string
+              phone_number:
+                type:
+                  - 'null'
+                  - string
+              picture:
+                type: string
+              score:
+                type: 'null'
+              staffing:
+                type: 'null'
+              updated_on:
+                type: string
+              user_group_id:
+                type: string
+              user_metadata:
+                properties:
+                  role:
+                    type: string
+                type: object
+              user_position_id:
+                type: string
+              userinfo_metadata:
+                properties:
+                  cv_link:
+                    type: string
+                type: object
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: user
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: user
+        url_base: https://app.napta.io/api/v1/
+        path: user
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: user_holiday
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  default:
+                    type: boolean
+                  external_id:
+                    type: boolean
+                type: object
+              business_days:
+                type: 'null'
+              created_on:
+                type: string
+              end_date:
+                type: string
+              end_date_until_afternoon:
+                type: boolean
+              external_id:
+                type: string
+              start_date:
+                type: string
+              start_date_from_morning:
+                type: boolean
+              updated_on:
+                type: string
+              user_holiday_category_id:
+                type: string
+              user_id:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: user_holiday
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: user_holiday
+        url_base: https://app.napta.io/api/v1/
+        path: user_holiday
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: user_holiday_category
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayCreate:
+                type: boolean
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              created_on:
+                type: string
+              name:
+                type: string
+              updated_on:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: user_holiday_category
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: user_holiday_category
+        url_base: https://app.napta.io/api/v1/
+        path: user_holiday_category
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: user_position
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              created_on:
+                type:
+                  - 'null'
+                  - string
+              hours_per_day:
+                type: number
+              ignore_for_computation:
+                type: boolean
+              name:
+                type: string
+              priority:
+                type:
+                  - integer
+                  - 'null'
+              updated_on:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: user_position
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: user_position
+        url_base: https://app.napta.io/api/v1/
+        path: user_position
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: user_group
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              allow_projects:
+                type: boolean
+              allow_user_projects:
+                type: boolean
+              allow_userprojectperiods:
+                type: boolean
+              created_by_id:
+                type:
+                  - 'null'
+                  - string
+              created_on:
+                type: string
+              license_type:
+                type: string
+              may_access_admin:
+                type: boolean
+              may_access_financial_reporting:
+                type: boolean
+              may_access_global_staffing_reporting:
+                type: boolean
+              may_access_individual_staffing_reporting:
+                type: boolean
+              may_access_planning_capacity_reporting:
+                type: boolean
+              may_access_project_financial_page_all_projects:
+                type: boolean
+              may_access_project_financial_page_my_projects:
+                type: boolean
+              may_access_search:
+                type: boolean
+              may_access_skill_reporting:
+                type: boolean
+              may_access_timesheet_reporting:
+                type: boolean
+              may_archive_all_projects:
+                type: boolean
+              may_archive_my_projects:
+                type: boolean
+              may_compare_users_career_path:
+                type: boolean
+              may_connect:
+                type: boolean
+              may_deactivate_assessment_all_projects:
+                type: boolean
+              may_deactivate_assessment_my_projects:
+                type: boolean
+              may_deactivate_assessment_myself:
+                type: boolean
+              may_delete_projects:
+                type: boolean
+              may_delete_users:
+                type: boolean
+              may_edit_all_staffing_real:
+                type: boolean
+              may_edit_all_staffing_simulated:
+                type: boolean
+              may_edit_my_staffing_real:
+                type: boolean
+              may_edit_my_staffing_simulated:
+                type: boolean
+              may_edit_staffing_real_on_my_projects:
+                type: boolean
+              may_edit_staffing_request:
+                type: string
+              may_edit_staffing_simulated_on_my_projects:
+                type: boolean
+              may_export_all_users_skills:
+                type: boolean
+              may_export_cv_himself:
+                type: boolean
+              may_export_cv_others:
+                type: boolean
+              may_export_data:
+                type: boolean
+              may_export_rex:
+                type: boolean
+              may_get_user_skill_grade_himself:
+                type: boolean
+              may_import_from_linkedin:
+                type: boolean
+              may_like_projects:
+                type: boolean
+              may_lock_all_projects:
+                type: boolean
+              may_lock_my_projects:
+                type: boolean
+              may_manage_all_timesheets:
+                type: boolean
+              may_manage_card_labels:
+                type: boolean
+              may_manage_clients:
+                type: boolean
+              may_manage_config:
+                type: boolean
+              may_manage_ea:
+                type: boolean
+              may_manage_efm:
+                type: boolean
+              may_manage_job_sheet_himself:
+                type: boolean
+              may_manage_job_sheet_others:
+                type: boolean
+              may_manage_project_cards:
+                type: boolean
+              may_manage_project_snapshots:
+                type: boolean
+              may_manage_projects:
+                type: string
+              may_manage_skills:
+                type: string
+              may_manage_user_holiday_category:
+                type: boolean
+              may_manage_user_project_comments:
+                type: boolean
+              may_manage_user_skill_himself:
+                type: boolean
+              may_manage_user_skill_others:
+                type: boolean
+              may_manage_userprojectperiod_status:
+                type: boolean
+              may_manage_userprojectstatus:
+                type: boolean
+              may_manage_users:
+                type: string
+              may_manage_userskill_usergrade_himself:
+                type: boolean
+              may_manage_userskill_usergrade_others:
+                type: boolean
+              may_only_see_managees:
+                type: boolean
+              may_see_leaving_date:
+                type: boolean
+              may_see_other_users_in_his_bu:
+                type: boolean
+              may_see_other_users_out_of_his_bu:
+                type: boolean
+              may_see_project_staffing_card_out_of_his_business_unit:
+                type: boolean
+              may_see_simulated_staffing:
+                type: string
+              may_see_who_liked_projects:
+                type: boolean
+              may_see_workload:
+                type: boolean
+              may_simulate_staffing:
+                type: boolean
+              may_staff_myself:
+                type: boolean
+              may_staff_myself_on_my_projects:
+                type: boolean
+              may_staff_simulated_only:
+                type: boolean
+              may_staff_user:
+                type: boolean
+              may_update_task_status_on_all_projects:
+                type: boolean
+              may_update_task_status_on_my_projects:
+                type: boolean
+              may_update_task_status_on_my_staffing:
+                type: boolean
+              name:
+                type: string
+              no_welcome_page_redirect_url:
+                type: 'null'
+              protected:
+                type: boolean
+              timesheet_interval_unit:
+                type: string
+              timesheet_time_unit:
+                type: string
+              updatable_by_integration_script:
+                type: boolean
+              updated_on:
+                type: string
+              welcome_page_access:
+                items:
+                  type: string
+                type: array
+              working_on_projects:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: user_group
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: user_group
+        url_base: https://app.napta.io/api/v1/
+        path: user_group
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: location
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              created_on:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type: string
+              updated_on:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: location
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: location
+        url_base: https://app.napta.io/api/v1/
+        path: location
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: business_unit
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              created_on:
+                type:
+                  - 'null'
+                  - string
+              name:
+                type: string
+              updated_on:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: business_unit
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: business_unit
+        url_base: https://app.napta.io/api/v1/
+        path: business_unit
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: project
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _hasGlobalTimesheetReporting:
+                type: boolean
+              _hasKpi:
+                type: boolean
+              _hasSnapshot:
+                type: boolean
+              _mayAccessProjectConsolidatedFinancialPage:
+                type: boolean
+              _mayAccessProjectFinancialPage:
+                type: boolean
+              _mayClone:
+                type: boolean
+              _mayCreateProjectContributor:
+                type: boolean
+              _mayCreateProjectProjectTag:
+                type: object
+              _mayCreateSnapshot:
+                type: boolean
+              _mayDelete:
+                type: boolean
+              _mayLinkChildProject:
+                type: boolean
+              _mayLinkTags:
+                type: object
+              _mayRequestStaffing:
+                properties:
+                  default:
+                    type: boolean
+                  user_project_metadata:
+                    properties:
+                      notes:
+                        type: boolean
+                    type: object
+                  user_project_tags:
+                    type: object
+                type: object
+              _mayShowAvailability:
+                type: boolean
+              _mayStaff:
+                properties:
+                  default:
+                    type: boolean
+                  my_self:
+                    type: boolean
+                  user_project_metadata:
+                    properties:
+                      notes:
+                        type: boolean
+                    type: object
+                  user_project_metadata_myself:
+                    properties:
+                      notes:
+                        type: boolean
+                    type: object
+                  user_project_tags:
+                    type: object
+                type: object
+              _mayUpdate:
+                properties:
+                  client_id:
+                    type: boolean
+                  default:
+                    type: boolean
+                  description:
+                    type: boolean
+                  estimated_end_date:
+                    type: boolean
+                  estimated_start_date:
+                    type: boolean
+                  external_id:
+                    type: boolean
+                  is_archived:
+                    type: boolean
+                  is_locked:
+                    type: boolean
+                  name:
+                    type: boolean
+                  parent_project_id:
+                    type: boolean
+                  project_metadata:
+                    properties:
+                      creator_name:
+                        type: boolean
+                      unique_mission_id:
+                        type: boolean
+                    type: object
+                  projectcategory_id:
+                    type: boolean
+                  projectstatus_id:
+                    type: boolean
+                  tags:
+                    type: object
+                type: object
+              billing_method:
+                type: 'null'
+              client_id:
+                type: string
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              description:
+                type:
+                  - 'null'
+                  - string
+              end_date:
+                type:
+                  - 'null'
+                  - string
+              estimated_end_date:
+                type: 'null'
+              estimated_start_date:
+                type: 'null'
+              expense:
+                type: 'null'
+              external_id:
+                type: 'null'
+              isTeamReady:
+                type: boolean
+              is_archived:
+                type: boolean
+              is_locked:
+                type: boolean
+              is_parent_project:
+                type: boolean
+              is_snapshot:
+                type: boolean
+              name:
+                type: string
+              parent_project_id:
+                type: 'null'
+              project_metadata:
+                type: object
+              projectcategory_id:
+                type: 'null'
+              projectstatus_id:
+                type: string
+              sold_budget:
+                type: 'null'
+              start_date:
+                type:
+                  - 'null'
+                  - string
+              status:
+                type:
+                  - 'null'
+                  - string
+              target_margin_rate:
+                type: 'null'
+              total_projected_staffed_days:
+                type: 'null'
+              total_projected_staffed_hours:
+                type: 'null'
+              updated_on:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: project
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: project
+        url_base: https://app.napta.io/api/v1/
+        path: project
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: projectstatus
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              created_on:
+                type: string
+              mayAssess:
+                type: boolean
+              name:
+                type: string
+              staffing_request_simulated_by_default:
+                type: boolean
+              staffing_simulated_by_default:
+                type: boolean
+              timesheeting_activated:
+                type: boolean
+              updated_on:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: projectstatus
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: projectstatus
+        url_base: https://app.napta.io/api/v1/
+        path: projectstatus
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: projectcategory
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              color:
+                type: 'null'
+              created_on:
+                type:
+                  - 'null'
+                  - string
+              isHoliday:
+                type: boolean
+              name:
+                type: string
+              updated_on:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: projectcategory
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: projectcategory
+        url_base: https://app.napta.io/api/v1/
+        path: projectcategory
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: project_contributor
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                type: boolean
+              contributor_id:
+                type: string
+              created_by_id:
+                type: string
+              created_on:
+                type: string
+              project_id:
+                type: string
+              updated_on:
+                type: string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: project_contributor
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: project_contributor
+        url_base: https://app.napta.io/api/v1/
+        path: project_contributor
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: user_project
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _hasPendingEvaluations:
+                type: boolean
+              _mayClone:
+                type: boolean
+              _mayCreateUnpublishedUserProjectEvaluation:
+                type: boolean
+              _mayCreateUserProjectEvaluation:
+                type: boolean
+              _mayCreateUserProjectPeriod:
+                type: boolean
+              _mayCreateUserProjectUserSkill:
+                type: boolean
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  default:
+                    type: boolean
+                  is_assessment_activated:
+                    type: boolean
+                  project_id:
+                    type: boolean
+                  simulated:
+                    type: boolean
+                  tags:
+                    type: object
+                  user_id:
+                    type: boolean
+                  user_project_metadata:
+                    properties:
+                      notes:
+                        type: boolean
+                    type: object
+                  userprojectperiods:
+                    type: boolean
+                type: object
+              business_days:
+                type: number
+              business_hours:
+                type: number
+              completed_periods_count:
+                type: integer
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              daily_fee:
+                type: 'null'
+              end_date:
+                type: string
+              has_hiring_or_leaving_date_conflict:
+                type: boolean
+              is_assessment_activated:
+                type: boolean
+              latest_comment:
+                type: 'null'
+              markup_rate:
+                type: 'null'
+              periods_count:
+                type: integer
+              project_id:
+                type: string
+              simulated:
+                type: boolean
+              staffed_days:
+                type: number
+              staffed_hours:
+                type: number
+              start_date:
+                type: string
+              status:
+                type: string
+              time_status_priority:
+                type: integer
+              updated_on:
+                type: string
+              user_id:
+                type: string
+              user_project_metadata:
+                type: object
+              userproject_status_id:
+                type: 'null'
+              workload:
+                type: number
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: user_project
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: user_project
+        url_base: https://app.napta.io/api/v1/
+        path: user_project
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: client
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  client_metadata:
+                    type: object
+                  default:
+                    type: boolean
+                  external_id:
+                    type: boolean
+                  name:
+                    type: boolean
+                type: object
+              client_metadata:
+                type: object
+              created_on:
+                type: 'null'
+              external_id:
+                type: string
+              name:
+                type: string
+              updated_on:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: client
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: client
+        url_base: https://app.napta.io/api/v1/
+        path: client
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: timesheet
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  client_metadata:
+                    type: object
+                  default:
+                    type: boolean
+                  external_id:
+                    type: boolean
+                  name:
+                    type: boolean
+                type: object
+              client_metadata:
+                type: object
+              created_on:
+                type: 'null'
+              external_id:
+                type: string
+              name:
+                type: string
+              updated_on:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: timesheet
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: timesheet
+        url_base: https://app.napta.io/api/v1/
+        path: timesheet
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: timesheet_period
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  client_metadata:
+                    type: object
+                  default:
+                    type: boolean
+                  external_id:
+                    type: boolean
+                  name:
+                    type: boolean
+                type: object
+              client_metadata:
+                type: object
+              created_on:
+                type: 'null'
+              external_id:
+                type: string
+              name:
+                type: string
+              updated_on:
+                type:
+                  - 'null'
+                  - string
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: timesheet_period
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: timesheet_period
+        url_base: https://app.napta.io/api/v1/
+        path: timesheet_period
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: userprojectperiod
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayGetDailyFee:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  completed:
+                    type: boolean
+                  daily_fee:
+                    type: boolean
+                  default:
+                    type: boolean
+                  tags:
+                    type: object
+                type: object
+              business_days:
+                type: number
+              business_hours:
+                type: number
+              completed:
+                type: boolean
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              daily_fee:
+                type: 'null'
+              end_date:
+                type: string
+              end_date_until_afternoon:
+                type: boolean
+              has_hiring_date_conflict:
+                type: 'null'
+              has_leaving_date_conflict:
+                type: 'null'
+              is_in_conflict:
+                type: 'null'
+              name:
+                type: 'null'
+              staffed_days:
+                type: number
+              staffed_hours:
+                type: number
+              start_date:
+                type: string
+              start_date_from_morning:
+                type: boolean
+              updated_on:
+                type: string
+              user_project_id:
+                type: string
+              userprojectperiod_status_id:
+                type: string
+              workload:
+                type: number
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: userprojectperiod
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: userprojectperiod
+        url_base: https://app.napta.io/api/v1/
+        path: userprojectperiod
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: project_tag_type
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayGetDailyFee:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  completed:
+                    type: boolean
+                  daily_fee:
+                    type: boolean
+                  default:
+                    type: boolean
+                  tags:
+                    type: object
+                type: object
+              business_days:
+                type: number
+              business_hours:
+                type: number
+              completed:
+                type: boolean
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              daily_fee:
+                type: 'null'
+              end_date:
+                type: string
+              end_date_until_afternoon:
+                type: boolean
+              has_hiring_date_conflict:
+                type: 'null'
+              has_leaving_date_conflict:
+                type: 'null'
+              is_in_conflict:
+                type: 'null'
+              name:
+                type: 'null'
+              staffed_days:
+                type: number
+              staffed_hours:
+                type: number
+              start_date:
+                type: string
+              start_date_from_morning:
+                type: boolean
+              updated_on:
+                type: string
+              user_project_id:
+                type: string
+              userprojectperiod_status_id:
+                type: string
+              workload:
+                type: number
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: project_tag_type
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: project_tag_type
+        url_base: https://app.napta.io/api/v1/
+        path: project_tag_type
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: project_tag
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayGetDailyFee:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  completed:
+                    type: boolean
+                  daily_fee:
+                    type: boolean
+                  default:
+                    type: boolean
+                  tags:
+                    type: object
+                type: object
+              business_days:
+                type: number
+              business_hours:
+                type: number
+              completed:
+                type: boolean
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              daily_fee:
+                type: 'null'
+              end_date:
+                type: string
+              end_date_until_afternoon:
+                type: boolean
+              has_hiring_date_conflict:
+                type: 'null'
+              has_leaving_date_conflict:
+                type: 'null'
+              is_in_conflict:
+                type: 'null'
+              name:
+                type: 'null'
+              staffed_days:
+                type: number
+              staffed_hours:
+                type: number
+              start_date:
+                type: string
+              start_date_from_morning:
+                type: boolean
+              updated_on:
+                type: string
+              user_project_id:
+                type: string
+              userprojectperiod_status_id:
+                type: string
+              workload:
+                type: number
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: project_tag
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: project_tag
+        url_base: https://app.napta.io/api/v1/
+        path: project_tag
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: project_project_tag
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayGetDailyFee:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  completed:
+                    type: boolean
+                  daily_fee:
+                    type: boolean
+                  default:
+                    type: boolean
+                  tags:
+                    type: object
+                type: object
+              business_days:
+                type: number
+              business_hours:
+                type: number
+              completed:
+                type: boolean
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              daily_fee:
+                type: 'null'
+              end_date:
+                type: string
+              end_date_until_afternoon:
+                type: boolean
+              has_hiring_date_conflict:
+                type: 'null'
+              has_leaving_date_conflict:
+                type: 'null'
+              is_in_conflict:
+                type: 'null'
+              name:
+                type: 'null'
+              staffed_days:
+                type: number
+              staffed_hours:
+                type: number
+              start_date:
+                type: string
+              start_date_from_morning:
+                type: boolean
+              updated_on:
+                type: string
+              user_project_id:
+                type: string
+              userprojectperiod_status_id:
+                type: string
+              workload:
+                type: number
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: project_project_tag
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: project_project_tag
+        url_base: https://app.napta.io/api/v1/
+        path: project_project_tag
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+  - type: DeclarativeStream
+    name: userproject_status
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          attributes:
+            properties:
+              _mayDelete:
+                type: boolean
+              _mayGetDailyFee:
+                type: boolean
+              _mayUpdate:
+                properties:
+                  completed:
+                    type: boolean
+                  daily_fee:
+                    type: boolean
+                  default:
+                    type: boolean
+                  tags:
+                    type: object
+                type: object
+              business_days:
+                type: number
+              business_hours:
+                type: number
+              completed:
+                type: boolean
+              created_by_id:
+                type: 'null'
+              created_on:
+                type: string
+              daily_fee:
+                type: 'null'
+              end_date:
+                type: string
+              end_date_until_afternoon:
+                type: boolean
+              has_hiring_date_conflict:
+                type: 'null'
+              has_leaving_date_conflict:
+                type: 'null'
+              is_in_conflict:
+                type: 'null'
+              name:
+                type: 'null'
+              staffed_days:
+                type: number
+              staffed_hours:
+                type: number
+              start_date:
+                type: string
+              start_date_from_morning:
+                type: boolean
+              updated_on:
+                type: string
+              user_project_id:
+                type: string
+              userprojectperiod_status_id:
+                type: string
+              workload:
+                type: number
+            type: object
+          id:
+            type: string
+          links:
+            properties:
+              self:
+                type: string
+            type: object
+          type:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      name: userproject_status
+      primary_key:
+        - id
+      requester:
+        type: HttpRequester
+        name: userproject_status
+        url_base: https://app.napta.io/api/v1/
+        path: userproject_status
+        http_method: GET
+        request_options_provider:
+          type: InterpolatedRequestOptionsProvider
+          request_parameters: {}
+          request_headers: {}
+          request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config[''client_id''] }}'
+          client_secret: '{{ config[''client_secret''] }}'
+          refresh_token: '{{ config[''client_secret''] }}'
+          refresh_request_body:
+            audience: backend
+          token_refresh_endpoint: https://auth.napta.io/oauth/token
+          access_token_name: access_token
+          grant_type: client_credentials
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_pointer:
+            - data
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          inject_into: path
+          type: RequestOption
+        page_size_option:
+          inject_into: request_parameter
+          type: RequestOption
+          field_name: page[size]
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: '{{ response[''links''][''next''] }}'
+          page_size: 30
+        url_base: https://app.napta.io/api/v1/
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        airbyte_secret: true
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+    additionalProperties: true
+  documentation_url: ''
+  type: Spec

@@ -1,0 +1,267 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+      "attributes": {
+        "properties": {
+          "_mayCreateUserHistory": {
+            "type": "boolean"
+          },
+          "_mayCreateUserHoliday": {
+            "type": "boolean"
+          },
+          "_mayCreateUserJobSheet": {
+            "type": "boolean"
+          },
+          "_mayCreateUserManager": {
+            "type": "boolean"
+          },
+          "_mayCreateUserSkillInterest": {
+            "type": "boolean"
+          },
+          "_mayCreateUserSkillUserGrade": {
+            "type": "boolean"
+          },
+          "_mayCreateUserUserTag": {
+            "properties": {
+              "1": {
+                "type": "boolean"
+              },
+              "2": {
+                "type": "boolean"
+              }
+            },
+            "type": "object"
+          },
+          "_mayDelete": {
+            "type": "boolean"
+          },
+          "_mayExportCv": {
+            "type": "boolean"
+          },
+          "_maySeeCalendarOnProfile": {
+            "type": "boolean"
+          },
+          "_maySeeDailyCost": {
+            "type": "boolean"
+          },
+          "_maySeeLeavingDate": {
+            "type": "boolean"
+          },
+          "_mayUpdate": {
+            "properties": {
+              "active": {
+                "type": "boolean"
+              },
+              "business_unit_id": {
+                "type": "boolean"
+              },
+              "daily_cost": {
+                "type": "boolean"
+              },
+              "default": {
+                "type": "boolean"
+              },
+              "email": {
+                "type": "boolean"
+              },
+              "external_id": {
+                "type": "boolean"
+              },
+              "first_name": {
+                "type": "boolean"
+              },
+              "hiring_date": {
+                "type": "boolean"
+              },
+              "last_name": {
+                "type": "boolean"
+              },
+              "leaving_date": {
+                "type": "boolean"
+              },
+              "location_id": {
+                "type": "boolean"
+              },
+              "personal_description": {
+                "type": "boolean"
+              },
+              "phone_number": {
+                "type": "boolean"
+              },
+              "picture": {
+                "type": "boolean"
+              },
+              "tags": {
+                "properties": {
+                  "1": {
+                    "type": "boolean"
+                  },
+                  "2": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "user_group_id": {
+                "type": "boolean"
+              },
+              "user_metadata": {
+                "properties": {
+                  "role": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "user_position_id": {
+                "type": "boolean"
+              },
+              "userinfo_metadata": {
+                "properties": {
+                  "cv_link": {
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "business_unit_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_by_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "created_on": {
+            "type": "string"
+          },
+          "daily_cost": {
+            "type": "null"
+          },
+          "email": {
+            "type": "string"
+          },
+          "external_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "first_availability_date": {
+            "type": "null"
+          },
+          "first_login_on": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "has_hiring_or_leaving_date_conflict": {
+            "type": "boolean"
+          },
+          "has_picture": {
+            "type": "boolean"
+          },
+          "hiring_date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "is_vip": {
+            "type": "boolean"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "leaving_date": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "location_id": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "personal_description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phone_number": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "picture": {
+            "type": "string"
+          },
+          "score": {
+            "type": "null"
+          },
+          "staffing": {
+            "type": "null"
+          },
+          "updated_on": {
+            "type": "string"
+          },
+          "user_group_id": {
+            "type": "string"
+          },
+          "user_metadata": {
+            "properties": {
+              "role": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "user_position_id": {
+            "type": "string"
+          },
+          "userinfo_metadata": {
+            "properties": {
+              "cv_link": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "id": {
+        "type": "string"
+      },
+      "links": {
+        "properties": {
+          "self": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  }
