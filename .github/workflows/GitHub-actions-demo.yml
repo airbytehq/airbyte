@@ -69,6 +69,28 @@ jobs:
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
           search_string: "source-postgres" # ${{ github.event.inputs.connector }}
+      - name: Validate input workflow format
+        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        run: echo "The connector provided has an invalid format!" && exit 1
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install CI scripts
+        # all CI python packages have the prefix "ci_"
+        run: |
+          pip install --quiet -e ./tools/ci_*
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner
