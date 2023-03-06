@@ -1,17 +1,13 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
-$navHeight: 80px;
-
 .leftPanelStyle {
   min-width: 200px;
   position: relative;
 }
 
 .pageContainer {
-  height: calc(100% - 80px);
-
-  // height: 100%;
+  height: 100%;
 }
 
 /*
@@ -21,8 +17,6 @@ $navHeight: 80px;
 .leftPanelStyle.leftPanelStyle,
 .rightPanelStyle.rightPanelStyle {
   overflow: hidden;
-
-  // flex: 1 !important;
 }
 
 .darkOverlay {
@@ -71,8 +65,7 @@ $navHeight: 80px;
 }
 
 .panelGrabber {
-  // height: 100vh;
-  height: calc(100vh - 80px);
+  height: 100vh;
   padding: 6px;
   display: flex;
 }
