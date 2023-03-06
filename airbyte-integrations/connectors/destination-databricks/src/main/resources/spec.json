@@ -53,13 +53,21 @@
         "airbyte_secret": true,
         "order": 5
       },
+      "databricks_catalog": {
+        "title": "Databricks Catalog",
+        "type": "string",
+        "description": "The default catalog tables are written to.",
+        "default": "airbyte",
+        "examples": ["airbyte"],
+        "order": 6
+      },
       "database_schema": {
         "title": "Database Schema",
         "type": "string",
         "description": "The default schema tables are written to if the source does not specify a namespace. Unless specifically configured, the usual value for this field is \"public\".",
         "default": "public",
         "examples": ["public"],
-        "order": 6
+        "order": 7
       },
       "data_source": {
         "title": "Data Source",
@@ -213,14 +221,21 @@
             }
           }
         ],
-        "order": 7
+        "order": 8
       },
       "purge_staging_data": {
         "title": "Purge Staging Files and Tables",
         "type": "boolean",
         "description": "Default to 'true'. Switch it to 'false' for debugging purpose.",
         "default": true,
-        "order": 8
+        "order": 9
+      },
+      "use_metastore": {
+        "title": "Use Metastore as Catalog",
+        "type": "boolean",
+        "description": "Default to 'true'. Switch it to 'false' using three level namespace and create new catalog (this needs Unity Catalog to be activated).",
+        "default": true,
+        "order": 10
       }
     }
   }

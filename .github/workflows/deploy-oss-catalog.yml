@@ -29,7 +29,7 @@ jobs:
           distribution: "zulu"
           java-version: "17"
       - name: Generate catalog
-        run: SUB_BUILD=PLATFORM ./gradlew :airbyte-config:init:processResources
+        run: SUB_BUILD=ALL_CONNECTORS ./gradlew :airbyte-config:specs:generateOssConnectorCatalog
       - name: Upload catalog to GCS
         shell: bash
         run: |

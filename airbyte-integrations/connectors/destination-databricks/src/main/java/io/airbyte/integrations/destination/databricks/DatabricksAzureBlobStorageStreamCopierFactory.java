@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -27,13 +27,14 @@ public class DatabricksAzureBlobStorageStreamCopierFactory implements Databricks
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final String catalog = databricksConfig.getDatabricksCatalog();
 
       final AzureBlobStorageConfig azureConfig = databricksConfig.getStorageConfig().getAzureBlobStorageConfigOrThrow();
       final SpecializedBlobClientBuilder specializedBlobClientBuilder = new SpecializedBlobClientBuilder()
           .endpoint(azureConfig.getEndpointUrl())
           .sasToken(azureConfig.getSasToken())
           .containerName(azureConfig.getContainerName());
-      return new DatabricksAzureBlobStorageStreamCopier(stagingFolder, schema, configuredStream, database,
+      return new DatabricksAzureBlobStorageStreamCopier(stagingFolder, catalog, schema, configuredStream, database,
           databricksConfig, nameTransformer, sqlOperations, specializedBlobClientBuilder, azureConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);

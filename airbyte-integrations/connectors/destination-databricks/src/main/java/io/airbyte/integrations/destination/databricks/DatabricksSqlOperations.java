@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -36,6 +36,10 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
         JavaBaseConstants.COLUMN_NAME_AB_ID,
         JavaBaseConstants.COLUMN_NAME_DATA,
         JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+  }
+
+  public void createCatalogIfNotExists(final JdbcDatabase database, final String catalogName) throws Exception {
+    database.execute(String.format("create catalog if not exists %s;", catalogName));
   }
 
   @Override
