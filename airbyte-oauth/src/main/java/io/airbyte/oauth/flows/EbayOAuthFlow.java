@@ -27,11 +27,13 @@ public class EbayOAuthFlow extends BaseOAuth2Flow {
   public EbayOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
     super.setHeaderAuth(true);
+    super.setMultiParameterAuth(true);
   }
 
   public EbayOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
     super.setHeaderAuth(true);
+    super.setMultiParameterAuth(true);
   }
 
   /**
