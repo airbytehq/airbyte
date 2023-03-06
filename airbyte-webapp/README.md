@@ -38,8 +38,9 @@ Note: needs to be run from the root directory of the Airbyte project.
 2. Bugfix:Table&page scroll style
 
 #### 2023.03.02
-1. Fix the problem that the Tab component on the Source/Destination page is not selected.
-2. Cancel left and right sliding fixed style
+1. Error UI
+2. Fix the problem that the Tab component on the Source/Destination page is not selected.
+3. Cancel left and right sliding fixed style
 #### 2023.03.01
 1. Supplementary modal styles and adjust some background colors.
 #### 2023.02.28
