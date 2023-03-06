@@ -68,9 +68,9 @@ jobs:
         with:
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
-          search_string: connectors/source-postgres # ${{ github.event.inputs.connector }}
+          search_string: 'connectors/source-postgres' # ${{ github.event.inputs.connector }}
       - name: Validate input workflow format
-        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        if: steps.regex.outputs.first_match != 'connectors/source-postgres' # github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
