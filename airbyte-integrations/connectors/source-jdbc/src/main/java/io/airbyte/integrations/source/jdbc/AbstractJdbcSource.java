@@ -389,30 +389,28 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     }
   }
 
-  protected DataSource createDataSource(final JsonNode sourceConfig) {
-    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
+  protected DataSource createDataSource(final JsonNode config) {
+    final JsonNode jdbcConfig = toDatabaseConfig(config);
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(sourceConfig));
+        getConnectionProperties(config));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
-    final DataSource dataSource = createDataSource(sourceConfig);
+  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
+    final DataSource dataSource = createDataSource(config);
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
         sourceOperations,
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    database.setSourceConfig(sourceConfig);
-    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
   }
 
