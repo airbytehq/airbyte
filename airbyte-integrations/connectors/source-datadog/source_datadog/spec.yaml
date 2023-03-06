@@ -4,7 +4,6 @@ connectionSpecification:
   title: Datadog Source Spec
   type: object
   required:
-    - site
     - api_key
     - application_key
   additionalProperties: true
