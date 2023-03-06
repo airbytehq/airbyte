@@ -1600,13 +1600,6 @@ class Tickets(CRMSearchStream):
     last_modified_field = "hs_lastmodifieddate"
 
 
-class Quotes(CRMObjectIncrementalStream):
-    entity = "quote"
-    associations = ["deals"]
-    primary_key = "id"
-    scopes = {"e-commerce"}
-
-
 class CustomObject(CRMSearchStream, ABC):
     last_modified_field = "hs_lastmodifieddate"
     associations = []
