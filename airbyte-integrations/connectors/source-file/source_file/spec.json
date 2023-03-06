@@ -38,8 +38,8 @@
       "url": {
         "type": "string",
         "title": "URL",
-        "description": "The URL path to access the file which should be replicated. The format for that is https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID] where [DRIVE_FILE_ID] is the string found in the Share URL here https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing",
-        "examples": ["https://drive.google.com/uc?export=download&id=1111111111"]
+        "description": "The URL path to access the file which should be replicated.",
+        "examples": ["https://storage.googleapis.com/covid19-open-data/v2/latest/epidemiology.csv", "gs://airbyte-vault/financial.csv", "s3://gdelt-open-data/events/20190914.export.csv"]
       },
       "provider": {
         "type": "object",

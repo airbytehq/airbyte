@@ -118,7 +118,7 @@ class SourceFile(Source):
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
-            reason = f"Failed to load {source_url}. Maybe you provided invalid url, please verify it: {repr(err)}."
+            reason = f"Failed to load {source_url}. You could have provided an invalid URL, please verify it: {repr(err)}."
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 
