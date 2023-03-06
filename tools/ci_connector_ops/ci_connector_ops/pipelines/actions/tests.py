@@ -5,7 +5,8 @@
 from typing import Tuple
 
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.models import ConnectorTestContext, Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.models import Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import check_path_in_workdir, with_exit_code, with_stderr, with_stdout
 from dagger import Container, Directory
 

@@ -6,7 +6,7 @@ import tempfile
 from typing import List, Optional, Tuple
 
 import docker
-from ci_connector_ops.pipelines.models import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 
 
 async def build_dev_image(context: ConnectorTestContext, exclude=Optional[List]) -> Tuple[str, str]:

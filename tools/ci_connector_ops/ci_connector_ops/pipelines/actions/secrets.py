@@ -4,7 +4,7 @@
 import datetime
 
 from ci_connector_ops.pipelines.actions import environments
-from ci_connector_ops.pipelines.models import ConnectorTestContext
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 from ci_connector_ops.utils import Connector
 from dagger import Directory
 

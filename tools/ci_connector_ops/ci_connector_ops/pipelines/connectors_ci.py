@@ -12,7 +12,8 @@ import anyio
 import click
 import dagger
 from ci_connector_ops.pipelines.actions import builds, environments, remote_storage, secrets, tests
-from ci_connector_ops.pipelines.models import ConnectorTestContext, ConnectorTestReport, Step, StepResult, StepStatus
+from ci_connector_ops.pipelines.contexts import ConnectorTestContext
+from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepResult, StepStatus
 from ci_connector_ops.pipelines.utils import get_current_git_branch, get_current_git_revision
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors_between_branches
 
