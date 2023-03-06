@@ -7,7 +7,7 @@ description: >-
 
 ## Overview
 
-The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.io/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
+The Airbyte Chargify destination allows you to stream data from any [Airbyte Source](https://airbyte.com/connectors?connector-type=Sources) into [Chargify](http://chargify.com) for [custom analysis](http://chargify.com/business-intelligence) and [multi-attribute, usage-based billing](http://chargify.com/events-based-billing). Chargify is the leading billing and subscription management software built for the evolving needs of fast-growth companies.
 
 ### Sync overview
 
