@@ -279,8 +279,11 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
+      - name: Install & Setup Pyenv
+        run: |
+          python3 -m pip install virtualenv==16.7.9 --user
+          cd airbyte-cdk/python
+          python3 -m venv .venv
 
       - name: Install automake
         run: apt-get install -y automake build-essential libtool libtool-bin autoconf
