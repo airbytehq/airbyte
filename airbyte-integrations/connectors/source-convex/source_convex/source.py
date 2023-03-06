@@ -51,14 +51,15 @@ class SourceConvex(AbstractSource):
         if resp.status_code == 200:
             return True, None
         else:
-            return False, resp.text
+            return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp) 
 
     def streams(self, config: ConvexConfig) -> List[Stream]:
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         resp = self._json_schemas(config)
-        assert resp.status_code == 200
+        if resp.status_code != 200:
+            raise Exception(format_http_error("Failed request to json_schemas", resp) )
         json_schemas = resp.json()
         table_names = list(json_schemas.keys())
         return [
@@ -144,6 +145,8 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[ConvexState] = None,
     ) -> Iterable[Any]:
+        if response.status_code != 200:
+            raise Exception(format_http_error("Failed request", response))
         resp_json = response.json()
         if self._snapshot_has_more:
             self._snapshot_cursor_value = resp_json["cursor"]
@@ -192,3 +195,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
             # DebeziumEventUtils.CDC_DELETED_AT
             record["_ab_cdc_deleted_at"] = ts if record["_deleted"] else None
             yield record
+
+def format_http_error(context: str, resp: requests.Response) -> str:
+    try:
+        err = resp.json()
+        return f"{context}: {resp.status_code}: {err['code']}: {err['message']}"
+    except:
+        return f"{context}: {resp.text}"

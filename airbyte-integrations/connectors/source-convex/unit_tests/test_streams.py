@@ -35,6 +35,7 @@ def test_next_page_token(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     resp = MagicMock()
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 123}], "cursor": 1234, "snapshot": 5000, "hasMore": True}
+    resp.status_code = 200
     stream.parse_response(resp, {})
     assert stream.next_page_token(resp) == {
         "snapshot_cursor": 1234,
@@ -65,6 +66,7 @@ def test_parse_response(patch_base_class):
     stream = ConvexStream("murky-swan-635", "accesskey", "messages", None)
     resp = MagicMock()
     resp.json = lambda: {"values": [{"_id": "my_id", "field": "f", "_ts": 1234}], "cursor": 1234, "snapshot": 2000, "hasMore": True}
+    resp.status_code = 200
     inputs = {"response": resp, "stream_state": {}}
     expected_parsed_objects = [{"_id": "my_id", "field": "f", "_ts": 1234}]
     assert stream.parse_response(**inputs) == expected_parsed_objects
