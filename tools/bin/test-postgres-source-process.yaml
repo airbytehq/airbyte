@@ -17,13 +17,13 @@ spec:
     #     chmod +x ./kubectl;
     #     mv ./kubectl /bin/;
     #     nohup sleep 1000
-    ports:
-      - containerPort: 80
-  tolerations:
-  - key: "kubernetes.io/arch"
-    operator: "Equal"
-    value: "arm64"
-    effect: "NoSchedule"
+#    ports:
+#      - containerPort: 80
+#  tolerations:
+#  - key: "kubernetes.io/arch"
+#    operator: "Equal"
+#    value: "arm64"
+#    effect: "NoSchedule"
   imagePullSecrets:
   - name: regcred
   restartPolicy: Never
