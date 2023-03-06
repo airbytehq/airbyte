@@ -43,6 +43,8 @@ from source_hubspot.streams import (
     TicketPipelines,
     Tickets,
     Workflows,
+    retry_connection_handler,
+    retry_after_handler,
 )
 
 
@@ -63,12 +65,17 @@ class SourceHubspot(AbstractSource):
         return alive, error_msg
 
     def get_granted_scopes(self, authenticator):
+        @retry_connection_handler(max_tries=5, factor=1)
+        @retry_after_handler(max_tries=3)
+        def _request_scopes(url):
+            response = requests.get(url=url)
+            response.raise_for_status()
+            return response.json()
+    
         try:
             access_token = authenticator.get_access_token()
             url = f"https://api.hubapi.com/oauth/v1/access-tokens/{access_token}"
-            response = requests.get(url=url)
-            response.raise_for_status()
-            response_json = response.json()
+            response_json = _request_scopes(url)
             granted_scopes = response_json["scopes"]
             return granted_scopes
         except Exception as e:
