@@ -16,3 +16,10 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+  uuid:
+    name: "Custom UUID of workflow run"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: UUID ${{ github.event.inputs.uuid }}
+        run: true
