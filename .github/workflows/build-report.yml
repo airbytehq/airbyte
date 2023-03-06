@@ -6,8 +6,8 @@ name: Generate Build Report
 on:
   workflow_dispatch:
   schedule:
-    # 1pm UTC is 6am PDT.
-    - cron: "0 13 * * *"
+    # 6AM UTC is 8AM EET, 7AM CET, 11PM PST.
+    - cron: "0 6 * * *"
 
 jobs:
   build-report:
@@ -15,7 +15,6 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-    environment: more-secrets
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3

@@ -51,6 +51,7 @@ connectionSpecification:
       examples:
         - "2021-07-25"
         - "2021-07-25T00:00:00Z"
+      format: date
       order: 5
     streams_criteria:
       type: array
