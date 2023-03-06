@@ -1300,7 +1300,7 @@ class FlatFileSettlementV2ReportsV2(ReportsAmazonSPStream,IncrementalMixin):
             
             time.sleep(self.sleep_seconds)
         
-        if is_done:
+        if status == ProcessingStatus.DONE:
             # retrieve and decrypt the report document
             document_id = report_payload["reportDocumentId"]
             request_headers = self.request_headers()
