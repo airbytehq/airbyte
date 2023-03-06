@@ -117,7 +117,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
         ),
         headerHighlighted: true,
         accessor: "entityName",
-        customWidth: 40,
+        customWidth: 22,
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
           <NameCell value={cell.value} enabled={row.original.enabled} />
         ),
@@ -133,6 +133,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
             />
           </div>
         ),
+        customWidth: 22,
         accessor: "connectorName",
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
           <ConnectorCell value={cell.value} enabled={row.original.enabled} img={row.original.connectorIcon} />
@@ -141,6 +142,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
       {
         Header: <FormattedMessage id={`tables.${entity}ConnectWith`} />,
         accessor: "connectEntities",
+        customWidth: 20,
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
           <ConnectEntitiesCell values={cell.value} entity={entity} enabled={row.original.enabled} />
         ),
@@ -165,12 +167,14 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
       {
         Header: <FormattedMessage id="sources.status" />,
         id: "status",
+        customWidth: 10,
         accessor: "connectEntities",
         Cell: ({ cell }: CellProps<EntityTableDataItem>) => <AllConnectionsStatusCell connectEntities={cell.value} />,
       },
       {
         Header: <FormattedMessage id="sources.editText" />,
         id: "edit",
+        // customWidth: 8,
         accessor: "entityId",
         Cell: ({ cell }: CellProps<EntityTableDataItem>) => (
           <ConnectionSettingsCell id={cell.value} onClick={() => clickEditRow(cell.value)} />
@@ -179,6 +183,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
       {
         Header: <FormattedMessage id="sources.copyText" />,
         id: "copy",
+        // customWidth: 8,
         accessor: "entityId",
         Cell: ({ cell }: CellProps<EntityTableDataItem>) => (
           <ConnectionCopyCell

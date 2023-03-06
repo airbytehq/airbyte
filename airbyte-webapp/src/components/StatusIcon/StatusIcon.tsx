@@ -52,6 +52,10 @@ const Badge = styled(Container)<{ status: Exclude<StatusIconStatus, "loading"> }
   color: ${({ theme }) => theme.whiteColor};
   padding-top: ${({ status }) => (status === "warning" || status === "inactive" ? 3 : 4)}px;
 
+  &:hover {
+    cursor: pointer;
+  }
+
   > svg {
     height: 1em;
     vertical-align: -0.125em;

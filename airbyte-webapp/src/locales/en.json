@@ -374,7 +374,7 @@
   "connection.filter.allDestinations": "All Destinations",
 
   "tables.name": "Name",
-  "tables.connector": "Connector",
+  "tables.connector": "Integration",
   "tables.connections": "Connections",
   "tables.sourceConnectWith": "Destination",
   "tables.destinationConnectWith": "Source",
