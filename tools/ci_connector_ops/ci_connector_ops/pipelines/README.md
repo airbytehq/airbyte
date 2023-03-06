@@ -11,8 +11,9 @@ From `airbyte` repo root:
 ### Install
 ```bash
 cd tools/ci_connector_ops
-python -m venv .venv (please use Python 3.10)
+python -m venv .venv (please use at least Python 3.10)
 source .venv/bin/activate
+pip install --upgrade pip
 pip install -e .
 cd ../..
 ```
@@ -37,13 +38,13 @@ export GCP_GSM_CREDENTIALS=`cat <path to service account json file>`
 ### **Run the pipelines for a specific connectors**
 (source-pokeapi does not require GSM access)
 ```bash
-connectors-ci test-connector source-pokeapi
+connectors-ci test-connectors source-pokeapi
 ```
 
 ### **Run the pipeline for multiple connectors**
 
 ```bash
-connectors-ci test-connector source-pokeapi source-openweather
+connectors-ci test-connectors source-pokeapi source-openweather
 ```
 
 ### **Run the pipeline for the connectors you changed on the branch**
@@ -53,17 +54,34 @@ touch airbyte-integrations/connectors/source-pokeapi/random_file_addition.txt
 connectors-ci test-all-modified-connectors #the source-pokeapi pipeline should run
 ```
 
+
+
 ## What does a connector pipeline run
 
-1. Run format checks
-2. Connector package installation
-3. Run unit tests
-4. Run integration tests
-5. Connector dev image build
-6. Download remote connector secrets from GSM (only if GCP_GSM_CREDENTIALS)
-7. Run acceptance tests
-8. TODO: Upload modified connector secrets to GSM
-9. TODO: Run QA checks
+```mermaid
+flowchart LR;
+    AB_GIT_REPO[Airbyte Git Repo] --> MOUNT_AB[Mount Airbyte repo to container];
+    AB_GIT_REPO[Airbyte Git Repo] --> MOUNT_CONN[Mount connector source code to container];
+    DOWN_SECRETS[Download secrets from GSM]-->CAT
+    MOUNT_AB-->QA[Run QA checks];
+    MOUNT_CONN-->FORMAT[Code format checks];
+    MOUNT_CONN-->INSTALL_CONN[Install connector package in container];
+    INSTALL_CONN-->UNIT_TESTS[Run unit tests];
+    UNIT_TESTS-->INTEGRATION_TESTS[Run integration tests];
+    UNIT_TESTS-->DOCKER_BUILD[Docker build connector dev image];
+    DOCKER_BUILD-->CAT[Run acceptance tests];
+    CAT-->UPLOAD_SECRETS[Upload updated secrets to GSM];
+    CAT-->REPORT[Build test report];
+    UNIT_TESTS-->REPORT;
+    INTEGRATION_TESTS-->REPORT;
+    QA-->REPORT;
+    FORMAT-->REPORT;
+    REPORT--if in CI-->UPLOAD[Upload to S3];
+```
+
+This is the DAG we expect for every connector for which the pipeline is triggered.
+The Airbyte git repo will be the local one if you use `--is-local=True` command line option.
+The connector secrets won't be downloaded nor uploaded if you use the `--use-remote-secrets=False` command line option.
 
 ## Questions for the Dagger team (in priority order)
 
