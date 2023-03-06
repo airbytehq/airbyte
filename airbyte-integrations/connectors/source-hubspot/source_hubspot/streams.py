@@ -201,7 +201,7 @@ class API:
             "createdAt": {"type": ["null", "string"], "format": "date-time"},
             "updatedAt": {"type": ["null", "string"], "format": "date-time"},
             "archived": {"type": ["null", "boolean"]},
-            "properties": {}
+            "properties": {"type": ["null", "object"]}
         }
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": properties}
         for field in raw_schema["properties"]:
@@ -220,6 +220,8 @@ class API:
             property_schema = {"type": ["null", "date"]}
         elif type == "number":
             property_schema = {"type": ["null", "number"]}
+        elif type == "boolean" or type == "bool":
+            property_schema = {"type": ["null", "boolean"]}
         return property_schema
 
 
