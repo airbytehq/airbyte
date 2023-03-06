@@ -10,7 +10,7 @@ definitions:
     authenticator:
       type: "BearerAuthenticator"
       header: "apikey"
-      api_token: "{{ config.api_token }}"
+      api_token: "{{ config.api_key }}"
     request_parameters:
       query: "{{ config['query'] }}"
       tweet.fields: "author_id,conversation_id,created_at,in_reply_to_user_id,lang"
