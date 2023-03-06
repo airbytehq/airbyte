@@ -87,3 +87,6 @@ docker-compose.debug.yaml
 .env
 .env.dev
 flags.yml
+
+# Java
+**/bin/**
