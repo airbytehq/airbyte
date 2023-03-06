@@ -34,9 +34,10 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   if (values.length === 1) {
     return (
       <Content enabled={enabled}>
-        <Image small />
+        <Image num={values.length} />
         <div>
-          {values[0].name}
+          {/* {values[0].name} */}
+          <FormattedMessage id={`tables.${entity}ConnectWithNum`} values={{ num: values.length }} />
           <Connector>{values[0].connector}</Connector>
         </div>
       </Content>
@@ -52,7 +53,9 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
       <Image num={values.length} />
       <div>
         <FormattedMessage id={`tables.${entity}ConnectWithNum`} values={{ num: values.length }} />
-        <Connector>{`${values[0].connector}, ${values[1].connector}${values.length > 2 ? ",..." : ""}`}</Connector>
+        <Connector>{`${values[0].connector}, ${values[1].connector},${values[2].connector}${
+          values.length > 3 ? ",..." : ""
+        }`}</Connector>
       </div>
     </Content>
   );

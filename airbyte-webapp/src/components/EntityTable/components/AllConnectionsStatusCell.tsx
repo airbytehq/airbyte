@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
+import { Tooltip } from "components/base/Tooltip";
 import StatusIcon from "components/StatusIcon";
 import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
@@ -45,7 +46,13 @@ const AllConnectionsStatusCell: React.FC<AllConnectionsStatusCellProps> = ({ con
   }, [connectEntities]);
 
   return statusIconProps ? (
-    <StatusIcon {...statusIconProps} title={formatMessage({ id: statusIconProps.title })} />
+    <Tooltip
+      control={<StatusIcon {...statusIconProps} title={formatMessage({ id: statusIconProps.title })} />}
+      placement="top"
+    >
+      {/* {description} */}
+      <FormattedMessage id={statusIconProps.title} />
+    </Tooltip>
   ) : null;
 };
 
