@@ -7,7 +7,7 @@ spec:
   - name: main
     image: airbyte/source-postgres:latest
 #   image: airbyte/perfharness:dev
-    # imagePullPolicy: Never
+    imagePullPolicy: IfNotPresent
     #image: airbyte/source-postgres-private-test:final-1
     # command: ["/bin/sh", "-c"]
     # args:
