@@ -38,7 +38,6 @@ def read_csv_file(blob: Blob, limit_bytes=0):
 
 def construct_file_schema(df):
     # Fix all columns to string for maximum compability
-    column_types = {col: "string" for col in df.columns}
 
     # Create a JSON schema object from the column data types
     schema = {
