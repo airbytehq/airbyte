@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
  * test credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
-public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3DestinationAcceptanceTest.class);
 
