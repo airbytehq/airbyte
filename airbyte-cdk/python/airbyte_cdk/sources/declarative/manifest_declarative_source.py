@@ -145,20 +145,31 @@ class ManifestDeclarativeSource(DeclarativeSource):
             raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
         cdk_version = metadata.version("airbyte_cdk")
+        cdk_major, cdk_minor, cdk_patch = (int(part) for part in cdk_version.split("."))
         manifest_version = self._source_config.get("version")
-        if not re.match(r"\d+\.\d+\.\d+", manifest_version):
-            raise ValidationError(f"The manifest version {manifest_version} specified is not a valid version format (ex. 1.2.3)")
-        elif cdk_version < manifest_version:
+        manifest_major, manifest_minor, manifest_patch = self._get_version_parts(manifest_version)
+
+        if cdk_major < manifest_major or (cdk_major == manifest_major and cdk_minor < manifest_minor):
             raise ValidationError(
                 f"The manifest version {manifest_version} is greater than the airbyte-cdk package version ({cdk_version}). Your "
                 f"manifest may contain features that are not in the current CDK version."
             )
-        elif manifest_version < "0.29.0" <= cdk_version:
+        elif manifest_major == 0 and manifest_minor < 29 and (0 < cdk_major or 29 <= cdk_minor):
             raise ValidationError(
                 f"The low-code framework was promoted to Beta in airbyte-cdk version 0.29.0 and contains many breaking changes to the "
-                f"language. The manifest version {manifest_version} is incompatible with the airbyte-cdk package version ("
-                f"{cdk_version}) which contains these breaking changes."
+                f"language. The manifest version {manifest_version} is incompatible with the airbyte-cdk package version "
+                f"{cdk_version} which contains these breaking changes."
             )
+
+    @staticmethod
+    def _get_version_parts(version: str) -> (int, int, int):
+        """
+        Takes a semantic version represented as a string and splits it into a tuple of its major, minor, and patch versions.
+        """
+        version_parts = re.split(r"\.", version)
+        if len(version_parts) != 3 or not all([part.isdigit() for part in version_parts]):
+            raise ValidationError(f"The manifest version {version} specified is not a valid version format (ex. 1.2.3)")
+        return (int(part) for part in version_parts)
 
     def _stream_configs(self, manifest: Mapping[str, Any]):
         # This has a warning flag for static, but after we finish part 4 we'll replace manifest with self._source_config

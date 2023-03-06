@@ -431,6 +431,7 @@ class TestManifestDeclarativeSource:
         "cdk_version, manifest_version, expected_error",
         [
             pytest.param("0.35.0", "0.30.0", None, id="manifest_version_less_than_cdk_package_should_run"),
+            pytest.param("1.5.0", "0.29.0", None, id="manifest_version_less_than_cdk_major_package_should_run"),
             pytest.param("0.29.0", "0.29.0", None, id="manifest_version_matching_cdk_package_should_run"),
             pytest.param(
                 "0.29.0",
@@ -438,10 +439,18 @@ class TestManifestDeclarativeSource:
                 ValidationError,
                 id="manifest_version_before_beta_that_uses_the_beta_0.29.0_cdk_package_should_throw_error",
             ),
+            pytest.param(
+                "1.5.0",
+                "0.25.0",
+                ValidationError,
+                id="manifest_version_before_beta_that_uses_package_later_major_version_than_beta_0.29.0_cdk_package_should_throw_error",
+            ),
             pytest.param("0.28.0", "0.25.0", None, id="manifest_version_before_beta_0.29.0_using_earlier_cdk_package_should_run"),
             pytest.param("0.34.0", "0.35.0", ValidationError, id="manifest_version_greater_than_cdk_package_should_throw_error"),
-            pytest.param("1.29.0", "-1.invalid.0", ValidationError, id="manifest_version_has_invalid_major_format"),
-            pytest.param("1.29.0", "0.invalid.0", ValidationError, id="manifest_version_has_invalid_minor_format"),
+            pytest.param("0.29.0", "-1.5.0", ValidationError, id="manifest_version_has_invalid_major_format"),
+            pytest.param("0.29.0", "0.invalid.0", ValidationError, id="manifest_version_has_invalid_minor_format"),
+            pytest.param("0.29.0", "0.29.0.1", ValidationError, id="manifest_version_has_extra_version_parts"),
+            pytest.param("0.29.0", "5.0", ValidationError, id="manifest_version_has_too_few_version_parts"),
         ],
     )
     @patch("importlib.metadata.version")
