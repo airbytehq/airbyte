@@ -78,7 +78,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...pro
   if (status === "loading") {
     return (
       <Container>
-        <CircleLoader title={title} />
+        <CircleLoader />
         {valueElement}
       </Container>
     );
@@ -87,11 +87,11 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...pro
   return (
     <Badge {...props} status={status}>
       {status === "inactive" ? (
-        <PauseIcon title={title} />
+        <PauseIcon />
       ) : status === "sleep" ? (
-        <MoonIcon title={title} />
+        <MoonIcon />
       ) : (
-        <FontAwesomeIcon icon={_iconByStatus[status]} title={title} />
+        <FontAwesomeIcon icon={_iconByStatus[status]} />
       )}
       {valueElement}
     </Badge>

@@ -9,7 +9,7 @@ $navHeight: 80px;
 }
 
 .pageContainer {
-  height: calc(100% - $navHeight);
+  height: calc(100% - #{$navHeight});
 
   // height: 100%;
 }
@@ -72,7 +72,7 @@ $navHeight: 80px;
 
 .panelGrabber {
   // height: 100vh;
-  height: calc(100vh - $navHeight);
+  height: calc(100vh - #{$navHeight});
   padding: 6px;
   display: flex;
 }
