@@ -1,6 +1,9 @@
 {
-  "client_id": "client_id fake",
-  "client_secret": " client_secret fake",
-  "refresh_token": "refresh_token fake",
-  "scope": "scope"
+  "source_name": "BAISELLER Amazon US",
+  "client_id": "amzn1.application-oa2-client.8e8bf9d390db40bf9a7149c351fc16ed",
+  "client_secret": "bddd6bb429b0656288a745a01d8ac3c863a1dda66ea242e8566ccb2aeeb74254",
+  "refresh_token": "Atzr|IwEBIM5EOP5CcIH9V6FamWOQFTRMDc95L-marOMoodMa-RsZ53NoogQqFYD5WYXYQsoaZ1BpK6xEiqxwy2X1eAqE911vMIhup1Ztxt_ChZBRYLNmCJ39VkVEmewJc4Ql72QsjeC-ZpMLRelVZSxxLJGsiDZsQwJiuYiUr6PqmEIhhvq7gpeGjsPZvq7dZ-EVD6e_IqxgPJe5nTFgMDPrwpwpvItpyJlu_F2FEMj7bqkWn26fOIURaHrGGxkUhRKwDS_E3ZWqcR_NSeWwLHsp5VU8rwy8IHIP34SYk_3Cl-XvPHMy-TE6ilJ3zlxcWYisl1NvQEZjd3n2DS2xrbw270VCWId9lM8n4j_PgbP00L0SPyQJAabUczXNZbVjUMApBrObXwbhTvORDVrUNMCkumIN4m4hhQEUwhVFCL79_QekDR7NgwYOBKJAtXkYxxZjUKAt835TGk4na0xagVik5XOI3qCE",
+  "region": "NA",
+  "report_wait_timeout": 60,
+  "report_generation_max_retries": 5
 }
