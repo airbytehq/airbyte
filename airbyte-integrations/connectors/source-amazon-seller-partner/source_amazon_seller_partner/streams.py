@@ -1322,7 +1322,7 @@ class FlatFileSettlementV2ReportsV2(ReportsAmazonSPStream,IncrementalMixin):
 
         elif is_fatal:
             raise Exception(f"The report for stream '{self.name}' was aborted due to a fatal error")
-        elif is_cancelled:
+        elif status == ProcessingStatus.CANCELLED:
             logger.warn(f"The report for stream '{self.name}' was cancelled or there is no data to return")
         else:
             raise Exception(f"Unknown response for stream `{self.name}`. Response body {report_payload}")
