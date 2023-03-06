@@ -1,9 +1,17 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
+$navHeight: 80px;
+
 .leftPanelStyle {
   min-width: 200px;
   position: relative;
+}
+
+.pageContainer {
+  height: calc(100% - $navHeight);
+
+  // height: 100%;
 }
 
 /*
@@ -63,7 +71,8 @@
 }
 
 .panelGrabber {
-  height: 100vh;
+  // height: 100vh;
+  height: calc(100vh - $navHeight);
   padding: 6px;
   display: flex;
 }
