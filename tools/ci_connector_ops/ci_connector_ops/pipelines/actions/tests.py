@@ -2,7 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Tuple
+"""This modules groups functions made to run tests for a specific connector given a test context."""
+
+
+from typing import Optional, Tuple
 
 from ci_connector_ops.pipelines.actions import environments
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
@@ -15,22 +18,21 @@ RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPRO
 RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
 
 
-# TODO update doctring
-async def _run_tests_in_directory(connector_container: Container, test_directory: str) -> Tuple[StepStatus, str, str]:
+async def _run_tests_in_directory(connector_under_test: Container, test_directory: str) -> Tuple[StepStatus, Optional[str], Optional[str]]:
     """Runs the pytest tests in the test_directory that was passed.
     A StepStatus.SKIPPED is returned if no tests were discovered.
     Args:
-        connector_container (Container): A connector containers with test dependencies installed.
-        test_directory (str): The directory in which the tests are declared.
+        connector_under_test (Container): The connector under test container.
+        test_directory (str): The directory in which the python test modules are declared
 
     Returns:
-        StepStatus: Failure or success status of the tests.
+        Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
     """
     test_config = (
-        "pytest.ini" if await check_path_in_workdir(connector_container, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
+        "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + environments.PYPROJECT_TOML_FILE_PATH
     )
-    if await check_path_in_workdir(connector_container, test_directory):
-        tester = connector_container.with_exec(
+    if await check_path_in_workdir(connector_under_test, test_directory):
+        tester = connector_under_test.with_exec(
             [
                 "python",
                 "-m",
@@ -47,23 +49,22 @@ async def _run_tests_in_directory(connector_container: Container, test_directory
         return StepStatus.SKIPPED, None, None
 
 
-# TODO update docstring
-async def code_format_checks(connector_container: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
+async def code_format_checks(connector_under_test: Container, step=Step.CODE_FORMAT_CHECKS) -> StepResult:
     """Run a code format check on the container source code.
     We call black, isort and flake commands:
     - Black formats the code: fails if the code is not formatted.
     - Isort checks the import orders: fails if the import are not properly ordered.
     - Flake enforces style-guides: fails if the style-guide is not followed.
     Args:
-        connector_container (Container): _description_
-
+        connector_under_test (Container): The connector under test container.
+        step (Step): The step in which the code format checks are run. Defaults to Step.CODE_FORMAT_CHECKS
     Returns:
-        StepResult: Failure or success status of the check.
+        StepResult: Failure or success of the code format checks with stdout and stdout.
     """
-    connector_container = step.get_dagger_pipeline(connector_container)
+    connector_under_test = step.get_dagger_pipeline(connector_under_test)
 
     formatter = (
-        connector_container.with_exec(["echo", "Running black"])
+        connector_under_test.with_exec(["echo", "Running black"])
         .with_exec(RUN_BLACK_CMD)
         .with_exec(["echo", "Running Isort"])
         .with_exec(RUN_ISORT_CMD)
@@ -78,18 +79,18 @@ async def code_format_checks(connector_container: Container, step=Step.CODE_FORM
     )
 
 
-# TODO update docstring
-async def run_unit_tests(connector_container: Container, step=Step.UNIT_TESTS) -> StepStatus:
+async def run_unit_tests(connector_under_test: Container, step=Step.UNIT_TESTS) -> StepStatus:
     """Run all pytest tests declared in the unit_tests directory of the connector code.
 
     Args:
-        connector_container (Container): A connector containers with test dependencies installed.
+        connector_under_test (Container): The connector under test container.
+        step (Step): The step in which the unit tests are run. Defaults to Step.UNIT_TESTS
 
     Returns:
-        StepStatus: Failure, skip or success status of the unit tests run.
+        StepResult: Failure or success of the unit tests with stdout and stdout.
     """
-    connector_container = step.get_dagger_pipeline(connector_container)
-    step_status, stderr, stdout = await _run_tests_in_directory(connector_container, "unit_tests")
+    connector_under_test = step.get_dagger_pipeline(connector_under_test)
+    step_status, stderr, stdout = await _run_tests_in_directory(connector_under_test, "unit_tests")
     return StepResult(
         step,
         step_status,
@@ -98,18 +99,18 @@ async def run_unit_tests(connector_container: Container, step=Step.UNIT_TESTS) -
     )
 
 
-# TODO update docstring
-async def run_integration_tests(connector_container: Container, step=Step.INTEGRATION_TESTS) -> StepStatus:
-    """Run all pytest tests declared in the integration_tests directory of the connector code.
+async def run_integration_tests(connector_under_test: Container, step=Step.INTEGRATION_TESTS) -> StepStatus:
+    """Run all pytest tests declared in the unit_tests directory of the connector code.
 
     Args:
-        connector_container (Container): A connector containers with test dependencies installed.
+        connector_under_test (Container): The connector under test container.
+        step (Step): The step in which the integration tests are run. Defaults to Step.UNIT_TESTS
 
     Returns:
-        StepStatus: Failure, skip or success status of the integration tests run.
+        StepResult: Failure or success of the integration tests with stdout and stdout.
     """
-    connector_container = step.get_dagger_pipeline(connector_container)
-    step_status, stderr, stdout = await _run_tests_in_directory(connector_container, "integration_tests")
+    connector_under_test = step.get_dagger_pipeline(connector_under_test)
+    step_status, stderr, stdout = await _run_tests_in_directory(connector_under_test, "integration_tests")
     return StepResult(
         step,
         step_status,
@@ -118,22 +119,22 @@ async def run_integration_tests(connector_container: Container, step=Step.INTEGR
     )
 
 
-# TODO update docstring
 async def run_acceptance_tests(
     context: ConnectorTestContext,
     connector_under_test_image_id: str,
     step=Step.ACCEPTANCE_TESTS,
 ) -> Tuple[StepResult, Directory]:
-    """Runs the acceptance test suite on a connector under test. It's rebuilding the connector acceptance test image if the tag is :dev.
+    """Runs the acceptance test suite on a connector dev image.
+    It's rebuilding the connector acceptance test image if the tag is :dev.
 
     Args:
-        dagger_client (Client): The dagger client.
-        connector_under_test_source_directory (Directory): The connector source code, required to access acceptance_test_config.yml and other versioned artifacts.
-        connector_under_test_secret_directory (Directory): A directory in which the connector's secrets are stored, to be copied to /test_input/secrets.
+        context (ConnectorTestContext): The current test context, providing a connector object, a dagger client, a repository directory and the secrets directory.
         connector_under_test_image_id (str): Connector under test image id, used as a cachebuster.
+        step (Step): The step in which the acceptance tests are run. Defaults to Step.ACCEPTANCE_TESTS
 
     Returns:
-        Tuple[StepStatus, Directory]: The success/failure of the tests and a directory containing the updated secrets if any.
+        Tuple[StepResult, Directory]: Failure or success of the acceptances tests with stdout and stdout AND an updated secrets directory.
+
     """
     if not context.connector.acceptance_test_config:
         return StepResult(Step.ACCEPTANCE_TESTS, StepStatus.SKIPPED), None
@@ -176,16 +177,14 @@ async def run_acceptance_tests(
     )
 
 
-# TODO update docstring
 async def run_qa_checks(context: ConnectorTestContext, step=Step.QA_CHECKS) -> StepResult:
     """Runs our QA checks on a connector.
 
     Args:
-        dagger_client (Client): The dagger client.
-        connector (Connector): The connector under test.
+        context (ConnectorTestContext): The current test context, providing a connector object, a dagger client and a repository directory.
 
     Returns:
-        StepStatus: Failure, skip or success status of the QA check run.
+        StepResult: Failure or success of the QA checks with stdout and stdout.
     """
     ci_connector_ops = await environments.with_ci_connector_ops(context)
     ci_connector_ops = step.get_dagger_pipeline(ci_connector_ops)

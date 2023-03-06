@@ -24,6 +24,14 @@ logger = logging.getLogger(__name__)
 
 
 async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
+    """Initializes the test context with a logger and secrets dir.
+
+    Args:
+        test_context (ConnectorTestContext): The context for a connector specific test pipeline.
+
+    Returns:
+        ConnectorTestContext: The initialized test context.
+    """
     main_pipeline_name = f"CI test for {test_context.connector.technical_name}"
     test_context.logger = logging.getLogger(main_pipeline_name)
     test_context.secrets_dir = await secrets.get_connector_secret_dir(test_context)
@@ -32,6 +40,15 @@ async def setup(test_context: ConnectorTestContext) -> ConnectorTestContext:
 
 
 async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTestReport) -> ConnectorTestContext:
+    """Finish pipeline execution by saving updated secrets to GSM and upload test reports to S3.
+
+    Args:
+        test_context (ConnectorTestContext): The context for a connector specific test pipeline.
+        test_report (ConnectorTestReport): The test report to upload to S3.
+
+    Returns:
+        ConnectorTestContext: The connector test context.
+    """
     teardown_pipeline = test_context.dagger_client.pipeline(f"Teardown {test_context.connector.technical_name}")
     if test_context.should_save_updated_secrets:
         await secrets.upload(
@@ -60,20 +77,14 @@ async def teardown(test_context: ConnectorTestContext, test_report: ConnectorTes
 
 async def run(test_context: ConnectorTestContext) -> ConnectorTestReport:
     """Runs a CI pipeline for a single connector.
-    1. Create a build context
-    2. Check code format
-    3. Install connector
-    4. Run unit tests
-    5. Run integration tests
-    6. Download and write connector secret to local storage.
-    7. Run acceptance tests
+    A visual DAG can be found on the README.md file of the pipelines modules.
 
     Args:
-        dagger_client (Client): The dagger client to use.
-        connector (Connector): The connector under test.
-        gsm_credentials (str): The GSM credentials to read/write connector's secrets.
-    """
+        test_context (ConnectorTestContext): The initialized test context.
 
+    Returns:
+        ConnectorTestReport: The test reports holding tests results.
+    """
     test_context = await setup(test_context)
     qa_checks_results_future = asyncio.create_task(tests.run_qa_checks(test_context))
     connector_source_code = await environments.with_airbyte_connector(test_context, install=False)
@@ -126,8 +137,7 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
     """Runs a CI pipeline for all the connectors passed.
 
     Args:
-        connectors (List[Connector]): List of connectors for which a CI pipeline needs to be run.
-        gsm_credentials (str): The GSM credentials to read/write connectors' secrets.
+        test_contexts (List[ConnectorTestContext]): List of connector test contexts for which a CI pipeline needs to be run.
     """
     config = dagger.Config(log_output=sys.stderr)
 
@@ -144,7 +154,6 @@ async def run_connectors_test_pipelines(test_contexts: List[ConnectorTestContext
                     )
 
 
-# TODO update docstring
 @click.group()
 @click.option("--use-remote-secrets", default=True)
 @click.option("--is-local", default=True)

@@ -11,6 +11,10 @@ from dagger import Client, Directory
 
 @dataclass()
 class ConnectorTestContext:
+    """The connector test context is used to store configuration for a specific connector pipeline run.
+    It should only be mutated on setup of the pipeline, not during its run.
+    """
+
     connector: Connector
     is_local: bool
     git_branch: str

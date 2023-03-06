@@ -9,13 +9,12 @@ import docker
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
 
 
-async def build_dev_image(context: ConnectorTestContext, exclude=Optional[List]) -> Tuple[str, str]:
+async def build_dev_image(context: ConnectorTestContext, exclude: Optional[List] = None) -> Tuple[str, str]:
     """Build the connector docker image and tag it with dev.
 
     Args:
-        dagger_client (Client): The dagger client.
-        connector (Connector): The connector for which you want to build a dev image.
-        exclude (List, optional): The list of directory or file that should not be considered in the image build. Defaults to Optional[List].
+        context (ConnectorTestContext): The current test context, providing a dagger client, a connector object and a repository directory.
+        exclude (List, optional): The list of directory or file that should not be considered in the image build. Defaults to None.
 
     Raises:
         Exception: Raised if an error happened during image build.

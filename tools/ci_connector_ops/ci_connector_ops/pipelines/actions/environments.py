@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+"""This modules groups functions made to create reusable environments packaged in dagger containers."""
+
 from typing import List, Optional
 
 from ci_connector_ops.pipelines.contexts import ConnectorTestContext
@@ -32,7 +34,7 @@ async def with_python_base(context: ConnectorTestContext, python_image_name: str
     """Builds a Python container with a cache volume for pip cache.
 
     Args:
-        dagger_client (Client): The dagger client to use.
+        context (ConnectorTestContext): The current test context, providing a dagger client and a repository directory.
         python_image_name (str, optional): The python image to use to build the python base environment. Defaults to "python:3.9-slim".
 
     Raises:
@@ -57,7 +59,7 @@ async def with_testing_dependencies(context: ConnectorTestContext) -> Container:
     """Builds a testing environment by installing testing dependencies on top of a python base environment.
 
     Args:
-        dagger_client (Client): The dagger client.
+        context (ConnectorTestContext): The current test context, providing a dagger client and a repository directory.
 
     Returns:
         Container: The testing environment container.
@@ -80,10 +82,12 @@ async def with_python_package(
     """Installs a python package in a python environment container.
 
     Args:
-        dagger_client (Client): The dagger client.
-        python_environment (Container): The existing python environment in which the package will be installed.
+        context (ConnectorTestContext): The current test context, providing the repository directory from which the python sources will be pulled.
+        python_environment (Container): An existing python environment in which the package will be installed.
         package_source_code_path (str): The local path to the package source code.
-        additional_dependency_groups (Optional[List], optional): extra_requires dependency of setup.py to install. Defaults to None.
+        additional_dependency_groups (Optional[List]): extra_requires dependency of setup.py to install. Defaults to None.
+        exclude (Optional[List]): A list of file or directory to exclude from the python package source code.
+        install (bool): Whether to install the python package or not. Defaults to True.
 
     Returns:
         Container: A python environment container with the python package installed.
@@ -117,14 +121,14 @@ async def with_python_package(
     return container
 
 
-async def with_airbyte_connector(context: ConnectorTestContext, install=True) -> Container:
+async def with_airbyte_connector(context: ConnectorTestContext, install: bool = True) -> Container:
     """Installs an airbyte connector python package in a testing environment.
 
     Args:
-        dagger_client (Client): The dagger client.
-        connector (Connector): The airbyte connector to install in the testing environment.
+        context (ConnectorTestContext): The current test context, providing the repository directory from which the connector sources will be pulled.
+        install (bool): Whether to install the connector package or not. Defaults to True.
     Returns:
-        Container: A python environment container with the connector installed.
+        Container: A python environment container (with the connector installed if install == True).
     """
     connector_source_path = str(context.connector.code_directory)
     testing_environment: Container = await with_testing_dependencies(context)
@@ -139,6 +143,15 @@ async def with_airbyte_connector(context: ConnectorTestContext, install=True) ->
 
 
 async def with_ci_credentials(context: ConnectorTestContext, gsm_secret: Secret) -> Container:
+    """Installs the ci_credentials package in a python environment.
+
+    Args:
+        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_credentials sources will be pulled.
+        gsm_secret (Secret): The secret holding GCP_GSM_CREDENTIALS env variable value.
+
+    Returns:
+        Container: A python environment with the ci_credentials package installed.
+    """
     python_base_environment: Container = await with_python_base(context)
     ci_credentials = await with_python_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
 
@@ -149,7 +162,7 @@ async def with_ci_connector_ops(context: ConnectorTestContext) -> Container:
     """Installs the ci_connector_ops package in a Container running Python > 3.10 with git..
 
     Args:
-        dagger_client (Client): The dagger client.
+        context (ConnectorTestContext): The current test context, providing the repository directory from which the ci_connector_sources sources will be pulled.
 
     Returns:
         Container: A python environment container with ci_connector_ops installed.
