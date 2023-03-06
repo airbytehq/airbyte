@@ -100,7 +100,7 @@ jobs:
       - name: Create harness pod
         shell: bash
         run: |
-           echo "pull image..."
+           echo "pulling image..."
            docker pull airbyte/source-postgres:latest
           echo "Loading images into KIND..."
           kind load docker-image airbyte/source-postgres:latest --name chart-testing
