@@ -19,6 +19,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.base.IntegrationConfig.ConfigValidationException;
 import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -137,11 +138,11 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private AirbyteMessage runCheck(final IntegrationConfig parsed) {
+  private AirbyteMessage runCheck(final IntegrationConfig parsed) throws Exception {
     try {
       final JsonNode config = getValidatedConfig(parsed, CHECK.toString());
       return new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(integration.check(config));
-    } catch (final Exception e) {
+    } catch (final ConfigValidationException e) {
       // if validation fails don't throw an exception, return a failed connection check message
       return failedConnectionStatusMessage(e.getMessage());
     }
@@ -151,7 +152,7 @@ public class IntegrationRunner {
     return CHECK.equals(parsed.getCommand()) && parsed.getCatalogPath() != null;
   }
 
-  private AirbyteMessage runCheckWithCatalog(final IntegrationConfig parsed) {
+  private AirbyteMessage runCheckWithCatalog(final IntegrationConfig parsed) throws Exception {
     LOGGER.info("Using Check With Catalog Method");
     // TODO: Actually implement something different
     return runCheck(parsed);
@@ -335,10 +336,11 @@ public class IntegrationRunner {
         Strings.join(List.of(thread.getStackTrace()), "\n        at "));
   }
 
-  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws Exception {
+
+  private static void validateConfig(final JsonNode schemaJson, final JsonNode objectJson, final String operationType) throws ConfigValidationException {
     final Set<String> validationResult = validator.validate(schemaJson, objectJson);
     if (!validationResult.isEmpty()) {
-      throw new Exception(String.format("Verification error(s) occurred for %s. Errors: %s ",
+      throw new ConfigValidationException(String.format("Verification error(s) occurred for %s. Errors: %s ",
           operationType, validationResult));
     }
   }

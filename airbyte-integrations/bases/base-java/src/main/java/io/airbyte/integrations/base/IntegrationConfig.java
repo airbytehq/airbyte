@@ -6,8 +6,10 @@ package io.airbyte.integrations.base;
 
 import com.google.common.base.Preconditions;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class IntegrationConfig {
 
@@ -58,18 +60,29 @@ public class IntegrationConfig {
     return command;
   }
 
+  // TODO: (jbfbell) we're using preconditions confusingly and probably incorrectly below
+  // it is unexpected that calling a `get` method would result in an illegal state exception.
+
   public Path getConfigPath() {
     Preconditions.checkState(command != Command.SPEC);
     return configPath;
   }
 
   public Path getCatalogPath() {
+    Preconditions.checkState(Set.of(Command.READ, Command.CHECK, Command.WRITE).contains(command));
     return catalogPath;
   }
 
   public Optional<Path> getStatePath() {
     Preconditions.checkState(command == Command.READ);
     return Optional.ofNullable(statePath);
+  }
+
+  static class ConfigValidationException extends Exception {
+
+    public ConfigValidationException(String format) {
+      super(format);
+    }
   }
 
   @Override
