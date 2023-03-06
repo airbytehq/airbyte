@@ -11,7 +11,7 @@ import jsonschema
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import ConnectorSpecification, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import ConnectorSpecification, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
