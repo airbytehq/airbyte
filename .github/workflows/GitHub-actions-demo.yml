@@ -103,7 +103,7 @@ jobs:
           echo "pulling image..."
           docker pull airbyte/source-postgres:latest
           echo "Loading images into KIND..."
-          kind load docker-image airbyte/source-postgres:latest
+          kind load docker-image airbyte/source-postgres:latest --name chart-testing
           echo "loading pod..."
           kubectl version --output=yaml
 #          kubectl create -f ./tools/bin/test-postgres-source-process.yaml
