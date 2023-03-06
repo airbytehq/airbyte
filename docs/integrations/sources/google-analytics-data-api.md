@@ -41,7 +41,7 @@ To determine a Google Analytics 4 [Property ID](https://developers.google.com/an
 
 **For Airbyte Cloud:**
 
-1. [Login to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Login to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Google Analytics 4 (GA4)** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account` by selecting Oauth or Service Account for Authentication.

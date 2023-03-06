@@ -22,7 +22,7 @@ While the data is processed in a data plane in the chosen residency, the cursor 
 
 To choose your default data residency:
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Settings**.
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Settings**.
 
 2. Click **Data Residency**.
 
@@ -41,7 +41,7 @@ You can choose the data residency for your connection in the connection settings
 
 To choose the data residency for your connection: 
 
-1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click **Connections** and then click the connection that you want to change. 
+1. On the [Airbyte Cloud](http://cloud.airbyte.com) dashboard, click **Connections** and then click the connection that you want to change. 
 
 2. Click the **Settings** tab. 
 
