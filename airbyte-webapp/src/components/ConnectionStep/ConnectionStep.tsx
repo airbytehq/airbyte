@@ -32,7 +32,7 @@ export enum EntityStepsTypes {
 
 export const StepBlock = styled.div`
   width: 100%;
-  height: 90px;
+  height: 80px;
   background: #eff0f5;
   font-weight: 500;
   font-size: 16px;
@@ -40,11 +40,12 @@ export const StepBlock = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  // margin-bottom: 10px;
 `;
 
 export const SingleText = styled.div`
   font-weight: 700;
-  font-size: 28px;
+  font-size: 24px;
   line-height: 30px;
 `;
 
