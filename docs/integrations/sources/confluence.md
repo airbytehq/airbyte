@@ -45,8 +45,8 @@ The Confluence connector should not run into Confluence API limitations under no
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                            |
-|:--------|:-----------|:-------------------------------------------------------|:-----------------------------------|
-| 0.1.2   | 2023-03-06  | []() | Set additionalProperties: true, update docs and spec |
-| 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831) | Fix: Spec was not pushed to cache  |
-| 0.1.0   | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241) | 🎉 New Source: Confluence          |
+| Version | Date       | Pull Request                                             | Subject                                              |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------|
+| 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec |
+| 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831)   | Fix: Spec was not pushed to cache                    |
+| 0.1.0   | 2021-11-05 | [7241](https://github.com/airbytehq/airbyte/pull/7241)   | 🎉 New Source: Confluence                            |
