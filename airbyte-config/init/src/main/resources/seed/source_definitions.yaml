@@ -364,6 +364,9 @@
   icon: confluence.svg
   sourceType: api
   releaseStage: alpha
+  allowedHosts:
+    hosts:
+      - "${subdomain}.atlassian.net"
 - name: ConvertKit
   sourceDefinitionId: be9ee02f-6efe-4970-979b-95f797a37188
   dockerRepository: airbyte/source-convertkit
