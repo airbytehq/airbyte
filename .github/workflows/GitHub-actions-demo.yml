@@ -98,15 +98,13 @@ jobs:
       - name: Create harness pod
         shell: bash
         run: |
-          echo "Get clusters..."
-          kind get clusters
-          echo "pulling image..."
-          docker pull airbyte/source-postgres:latest
+#          echo "pulling image..."
+#          docker pull airbyte/source-postgres:latest
           echo "Loading images into KIND..."
           kind load docker-image airbyte/source-postgres:latest --name chart-testing
           echo "loading pod..."
-          kubectl version --output=yaml
-#          kubectl create -f ./tools/bin/test-postgres-source-process.yaml
+#          kubectl version --output=yaml
+          kubectl create -f ./tools/bin/test-postgres-source-process.yaml
         env:
           USER: root
           HOME: /home/runner
