@@ -8,7 +8,7 @@ This page guides you through the process of setting up the Wrike source connecto
 
 ## Set up the Wrike source connector 
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte OSS account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Wrike** from the Source type dropdown.
 4. Enter a name for your source.
