@@ -102,7 +102,7 @@ jobs:
         run: |
           echo "loading pod"
           kubectl version --output=yaml
-          kubectl create -f ./tools/bin/test-postgres-source-process.yaml
+#          kubectl create -f ./tools/bin/test-postgres-source-process.yaml
         env:
           USER: root
           HOME: /home/runner
