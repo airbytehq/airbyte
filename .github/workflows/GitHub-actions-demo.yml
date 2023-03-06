@@ -97,6 +97,12 @@ jobs:
         env:
           USER: root
           HOME: /home/runner
+      - name: Create harness pod
+        shell: bash
+        run: kubectl create -f ./tools/bin/test-postgres-source-process.yaml
+        env:
+          USER: root
+          HOME: /home/runner
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
