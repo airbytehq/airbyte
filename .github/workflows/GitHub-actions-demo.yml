@@ -100,6 +100,8 @@ jobs:
       - name: Create harness pod
         shell: bash
         run: |
+          echo "Loading images into KIND..."
+          kind load docker-image airbyte/source-postgres:latest --name chart-testing
           echo "loading pod"
           kubectl version --output=yaml
 #          kubectl create -f ./tools/bin/test-postgres-source-process.yaml
