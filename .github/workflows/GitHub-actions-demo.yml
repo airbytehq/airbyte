@@ -104,6 +104,8 @@ jobs:
           kind load docker-image airbyte/source-postgres:latest --name chart-testing
           echo "loading pod..."
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
+          echo "get pods..."
+          kubectl get po
         env:
           USER: root
           HOME: /home/runner
