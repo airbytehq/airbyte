@@ -123,6 +123,10 @@ class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
 
 
+class Currencies(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies"""
+
+
 class Organizations(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations,

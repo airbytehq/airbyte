@@ -62,6 +62,8 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
 
+* [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)
+
 * [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
 
 * [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
