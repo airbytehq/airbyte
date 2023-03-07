@@ -144,7 +144,7 @@ jobs:
           reactions: '+1'
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > Result: ```\nsteps.prepare-images.outputs.RUN_RESULT\n```
+            > Result: ```\n${{ steps.prepare-images.outputs.RUN_RESULT }}\n```
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
