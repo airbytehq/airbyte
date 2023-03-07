@@ -30,7 +30,7 @@ Authenticating this Alpha connector is currently blocked. This is a known issue 
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account. 
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
 3. On the source setup page, select **Amazon Seller Partner** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your account`.
@@ -129,6 +129,8 @@ So, for any value that exceeds the limit, the `period_in_days` will be automatic
 
 | Version  | Date       | Pull Request                                               | Subject                                                                |
 |:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
+| `0.2.33` | 2023-03-01 | [\#23606](https://github.com/airbytehq/airbyte/pull/23606) | Implement reportOptions for all missing reports and refactor           |
+| `0.2.32` | 2022-02-21 | [\#23300](https://github.com/airbytehq/airbyte/pull/23300) | Make AWS Access Key, AWS Secret Access and Role ARN optional           |
 | `0.2.31` | 2022-01-10 | [\#16430](https://github.com/airbytehq/airbyte/pull/16430) | Implement slicing for report streams                                   |
 | `0.2.30` | 2022-12-28 | [\#20896](https://github.com/airbytehq/airbyte/pull/20896) | Validate connections without orders data                               | 
 | `0.2.29` | 2022-11-18 | [\#19581](https://github.com/airbytehq/airbyte/pull/19581) | Use user provided end date for GET_SALES_AND_TRAFFIC_REPORT            |                           |

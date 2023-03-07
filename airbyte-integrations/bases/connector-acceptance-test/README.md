@@ -35,6 +35,15 @@ _Note: this way will also build docker image for the connector_
 ```
 _Note: this will use the latest docker image for connector-acceptance-test and will also build docker image for the connector_
 
+You can also use the following environment variables with the Gradle and Bash commands:
+- `LOCAL_CDK=1`: Run tests against the local python CDK, if relevant. If not set, tests against the latest package published to pypi, or the version specified in the connector's setup.py.
+- `FETCH_SECRETS=1`: Fetch secrets required by CATs. This requires you to have a Google Service Account, and the GCP_GSM_CREDENTIALS environment variable to be set, per the instructions [here](https://github.com/airbytehq/airbyte/tree/b03653a24ef16be641333380f3a4d178271df0ee/tools/ci_credentials).
+
+## Running the acceptance tests on multiple connectors:
+If you are contributing to the python CDK, you may want to validate your changes by running acceptance tests against multiple connectors.
+
+To do so, from the root of the `airbyte` repo, run `./airbyte-cdk/python/bin/run-cats-with-local-cdk.sh -c <connector1>,<connector2>,...`
+
 ## When does acceptance test run?
 * When running local acceptance tests on connector:
   * When running `connectorAcceptanceTest` `gradle` task
