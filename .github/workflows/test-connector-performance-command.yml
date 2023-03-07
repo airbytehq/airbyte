@@ -132,6 +132,15 @@ jobs:
           echo "pod name is $POD"
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
+          export RUN_RESULT=${kubectl logs --tail=5 $POD}
+          echo "run result is $RUN_RESULT"
+      - name: Link comment to workflow run
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          reactions: +1
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > Result: $RUN_RESULT
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
