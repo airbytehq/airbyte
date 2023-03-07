@@ -89,8 +89,14 @@ export const useUpdateRole = () => {
 
 export const useUpdateLang = () => {
   const service = useUserService();
+  const queryClient = useQueryClient();
 
-  return useMutation((lang: string) => service.updateLang(lang));
+  return useMutation({
+    mutationFn: (lang: string) => service.updateLang(lang),
+    onSuccess: () => {
+      queryClient.resetQueries();
+    },
+  });
 };
 
 export const useRegisterUser = () => {
