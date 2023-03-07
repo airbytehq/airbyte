@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.30.1
+Releasing using the new release flow. No change to the CDK per se
+
+## 0.30.0
+OAuth: retry refresh access token requests
+
+## 0.29.3
+Low-Code CDK: duration macro added
+
+## 0.29.2
+support python3.8
+
+## 0.29.1
+Publishing Docker image for source-declarative-manifest
+
 ## 0.29.0
 **Breaking changes: We have promoted the low-code CDK to Beta. This release contains a number of breaking changes intended to improve the overall usability of the language by reorganizing certain concepts, renaming, reducing some field duplication, and removal of fields that are seldom used.**
 
