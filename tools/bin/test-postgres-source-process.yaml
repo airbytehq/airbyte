@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  generateName: run-postgres-test-final
+spec:
+  containers:
+  - name: main
+    # image: airbyte/source-postgres:dev
+    image: rodireich/perftestrepo:latest
+    # imagePullPolicy: Never
+    #image: airbyte/source-postgres-private-test:final-1
+    # command: ["/bin/sh", "-c"]
+    # args:
+    # -   yum install -y socat;
+    #     nohup bash -c "socat tcp-listen:9000,reuseaddr,fork \"exec:printf \'HTTP/1.0 200 OK\r\n\r\n\'\" &";
+    #     curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.21.14/2022-10-31/bin/linux/arm64/kubectl;
+    #     chmod +x ./kubectl;
+    #     mv ./kubectl /bin/;
+    #     nohup sleep 1000
+#    ports:
+#      - containerPort: 80
+#  tolerations:
+#  - key: "kubernetes.io/arch"
+#    operator: "Equal"
+#    value: "arm64"
+#    effect: "NoSchedule"
+  imagePullSecrets:
+  - name: regcred
+  restartPolicy: Never
