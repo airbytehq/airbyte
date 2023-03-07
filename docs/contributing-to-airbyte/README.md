@@ -28,15 +28,15 @@ We gladly welcome all improvements existing on the codebase.
 
 #### 1. Open an issue, or find a similar one.
 Before jumping into the code please first:
-1. Verify if an existing [GitHub issue](https://github.com/airbytehq/airbyte/issues) matches your contribution project (please filter with the *area/connectors* or *area/platform* labels).
-2. If you don't find an existing issue, [please create a new one](https://github.com/airbytehq/airbyte/issues/new/choose) to explain what you want to achieve.
+1. Verify if an existing [connector](https://github.com/airbytehq/airbyte/issues) or [platform](https://github.com/airbytehq/airbyte-platform/issues) GitHub issue matches your contribution project.
+2. If you don't find an existing issue, create a new [connector](https://github.com/airbytehq/airbyte/issues/new/choose) or [platform](https://github.com/airbytehq/airbyte-platform/issues/new/choose) issue to explain what you want to achieve.
 3. Assign the issue to yourself and add a comment to tell that you want to work on this.
 
 This will enable our team to make sure your contribution does not overlap with existing works and will comply with the design orientation we are currently heading the product toward.
 If you do not receive an update on the issue from our team, please ping us on [Slack](https://slack.airbyte.io)!
 
 #### 2. Let's code
-1. Fork our [GitHub repository](https://github.com/airbytehq/airbyte).
+1. To contribute to a connector, fork the [Connector repository](https://github.com/airbytehq/airbyte). To contribute to the Airbyte platform, fork our [Platform repository](https://github.com/airbytehq/airbyte-platform).  
 2. Open a branch for your work.
 3. Code, and please write **tests**.
 4. Ensure all tests pass. For connectors, this includes acceptance tests as well. 
@@ -68,7 +68,7 @@ The CDK currently does not support creating destinations, but it will very soon.
 
 * See [Building new connectors](../connector-development/) to get started.
 * Since we frequently build connectors in Python, on top of Singer or in Java, we've created generator libraries to get you started quickly: [Build Python Source Connectors](../connector-development/tutorials/building-a-python-source.md) and [Build Java Destination Connectors](../connector-development/tutorials/building-a-java-destination.md)
-* Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](../connector-development/testing-connectors/source-acceptance-tests-reference.md)
+* Integration tests \(tests that run a connector's image against an external resource\) can be run one of three ways, as detailed [here](../connector-development/testing-connectors/connector-acceptance-tests-reference.md)
 
 **Please note that, at no point in time, we will ask you to maintain your connector.** The goal is that the Airbyte team and the community helps maintain the connector.
 
@@ -85,7 +85,7 @@ The contributing guide for docs can be found [here](updating-documentation.md).
 
 ### **Community content**
 
-We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.io/tutorials):
+We welcome contributions as new tutorials / showcases / articles, or to any of the existing guides on our [tutorials page](https://airbyte.com/tutorials):
 
 * Fix errors in existing tutorials
 * Add new tutorials \(please reach out to us if you have ideas to avoid duplicate work\)
@@ -112,7 +112,7 @@ If you would like to suggest a new feature, we ask that you please use our issue
 
 To see what has already been proposed by the community, you can look [here](https://github.com/airbytehq/airbyte/labels/community).
 
-Watch out for duplicates! If you are creating a new issue, please check [existing open](https://github.com/airbytehq/airbyte/issues), or [recently closed](https://github.com/airbytehq/airbyte/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). Having a single voted for issue is far easier for us to prioritize
+Watch out for duplicates! If you are creating a new platform issue, please check [open](https://github.com/airbytehq/airbyte-platform/issues), or [recently closed](https://github.com/airbytehq/airbyte-platform/issues?utf8=%E2%9C%93&q=is%3Aissue%20is%3Aclosed%20). 
 
 ### **Requesting new connectors**
 

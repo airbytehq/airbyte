@@ -6,9 +6,9 @@ This page contains the setup guide and reference information for the WooCommerce
 
 To set up the WooCommerce source connector with Airbyte, you must be using:
 
-* WooCommerce 3.5+
-* WordPress 4.4+
-* Pretty permalinks in `Settings > Permalinks` so that the custom endpoints are supported.
+- WooCommerce 3.5+
+- WordPress 4.4+
+- Pretty permalinks in `Settings > Permalinks` so that the custom endpoints are supported.
   e.g. `/%year%/%monthnum%/%day%/%postname%/`
 
 You will need to generate new API key with read permissions and use `Customer key` and `Customer Secret`.
@@ -24,7 +24,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
    type dropdown.
@@ -49,45 +49,45 @@ You will need to generate new API key with read permissions and use `Customer ke
 The WooCommerce source connector supports the
 following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
-* [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) \(Incremental\)
-* [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) \(Incremental\)
-* [orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) \(Incremental\)
-* [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes)
-* [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways)
-* [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms)
-* [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes)
-* [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories)
-* [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) \(Incremental\)
-* [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes)
-* [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags)
-* [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations)
-* [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) \(Incremental\)
-* [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds)
-* [Shipping methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-methods)
-* [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations)
-* [Shipping zone methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-methods)
-* [Shipping zones](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zones)
-* [System status tools](https://woocommerce.github.io/woocommerce-rest-api-docs/#system-status-tools)
-* [Tax classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-classes)
-* [Tax rates](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-rates)
+- [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) \(Incremental\)
+- [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) \(Incremental\)
+- [orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) \(Incremental\)
+- [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes)
+- [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways)
+- [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms)
+- [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes)
+- [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories)
+- [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) \(Incremental\)
+- [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes)
+- [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags)
+- [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations)
+- [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) \(Incremental\)
+- [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds)
+- [Shipping methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-methods)
+- [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations)
+- [Shipping zone methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-methods)
+- [Shipping zones](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zones)
+- [System status tools](https://woocommerce.github.io/woocommerce-rest-api-docs/#system-status-tools)
+- [Tax classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-classes)
+- [Tax rates](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-rates)
 
 ## Connector-specific features & highlights
 
 Useful links:
 
-* [WooCommerce Rest API Docs](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
+- [WooCommerce Rest API Docs](https://woocommerce.github.io/woocommerce-rest-api-docs/#introduction)
 
 ## Data type map
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `integer`        | `integer`    |       |
 | `number`         | `number`     |       |
@@ -98,7 +98,9 @@ Useful links:
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                    |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
+| 0.2.2   | 2023-03-03 | [23599](https://github.com/airbytehq/airbyte/pull/23599) | Fix pagination and removed lookback window |
+| 0.2.1   | 2023-02-10 | [22821](https://github.com/airbytehq/airbyte/pull/22821) | Specified date formatting in specification |
 | 0.2.0   | 2022-11-30 | [19903](https://github.com/airbytehq/airbyte/pull/19903) | Migrate to low-code; Certification to Beta |
 | 0.1.1   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies            |
 | 0.1.0   | 2021-09-09 | [5955](https://github.com/airbytehq/airbyte/pull/5955)   | Initial Release. Source WooCommerce        |

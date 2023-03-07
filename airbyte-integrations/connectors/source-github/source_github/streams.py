@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -10,11 +10,12 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
-from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
+from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
 
 DEFAULT_PAGE_SIZE = 100
@@ -40,7 +41,10 @@ class GithubStream(HttpStream, ABC):
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
-        self._session.mount("http://", adapter)
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/{self.name}"
@@ -171,6 +175,8 @@ class GithubStream(HttpStream, ABC):
                 )
             elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
                 error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
+            elif e.response.status_code == requests.codes.BAD_GATEWAY:
+                error_msg = f"Stream {self.name} temporary failed. Try to re-run sync later"
             else:
                 # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
                 self.logger.error(f"Undefined error while reading records: {e.response.text}")
@@ -1000,14 +1006,83 @@ class IssueCommentReactions(ReactionStream):
     parent_entity = Comments
 
 
-class IssueReactions(ReactionStream):
+class IssueReactions(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue
+    https://docs.github.com/en/graphql/reference/objects#issue
+    https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
-    parent_entity = Issues
-    parent_key = "number"
-    copy_parent_key = "issue_number"
+    http_method = "POST"
+    cursor_field = "created_at"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_cursor = {}
+        self.reactions_cursors = {}
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "graphql"
+
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
+    def _get_reactions_from_issue(self, issue, repository_name):
+        for reaction in issue["reactions"]["nodes"]:
+            reaction["repository"] = repository_name
+            reaction["issue_number"] = issue["number"]
+            reaction["user"]["type"] = "User"
+            yield reaction
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_name(repository)
+            if "issues" in repository:
+                for issue in repository["issues"]["nodes"]:
+                    yield from self._get_reactions_from_issue(issue, repository_name)
+            elif "issue" in repository:
+                yield from self._get_reactions_from_issue(repository["issue"], repository_name)
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            repository_name = self._get_name(repository)
+            reactions_cursors = self.reactions_cursors.setdefault(repository_name, {})
+            if "issues" in repository:
+                if repository["issues"]["pageInfo"]["hasNextPage"]:
+                    self.issues_cursor[repository_name] = repository["issues"]["pageInfo"]["endCursor"]
+                for issue in repository["issues"]["nodes"]:
+                    if issue["reactions"]["pageInfo"]["hasNextPage"]:
+                        issue_number = issue["number"]
+                        reactions_cursors[issue_number] = issue["reactions"]["pageInfo"]["endCursor"]
+            elif "issue" in repository:
+                if repository["issue"]["reactions"]["pageInfo"]["hasNextPage"]:
+                    issue_number = repository["issue"]["number"]
+                    reactions_cursors[issue_number] = repository["issue"]["reactions"]["pageInfo"]["endCursor"]
+            if reactions_cursors:
+                number, after = reactions_cursors.popitem()
+                return {"after": after, "number": number}
+            if repository_name in self.issues_cursor:
+                return {"after": self.issues_cursor.pop(repository_name)}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if not next_page_token:
+            next_page_token = {"after": None}
+        query = get_query_issue_reactions(owner=organization, name=name, first=self.page_size, **next_page_token)
+        return {"query": query}
 
 
 class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):

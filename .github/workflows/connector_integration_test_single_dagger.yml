@@ -1,0 +1,74 @@
+name: POC Connectors CI - test pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  start-connectors-integration-test-runner:
+    name: "Connectors Integration Test: Start Build EC2 Runner"
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          ec2-instance-type: "c5.2xlarge" # https://aws.amazon.com/ec2/instance-types/
+  launch_integration_tests:
+    timeout-minutes: 120
+    runs-on: ${{ needs.start-connectors-integration-test-runner.outputs.label }} # run the job on the newly created runner
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Install Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+      - name: Install ci-connector-ops package
+        run: pip install --quiet -e ./tools/ci_connector_ops
+  stop-connectors-integration-test-runner:
+    name: "Connectors Integration Test: Stop Build EC2 Runner"
+    timeout-minutes: 10
+    needs:
+      - start-connectors-integration-test-runner # required to get output from the start-runner job
+      - launch_integration_tests # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
+    # Thus, we check for skipped here.
+    if: ${{ always() && needs.start-connectors-integration-test-runner.result != 'skipped'}}
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
+      - name: Stop EC2 runner
+        uses: supertopher/ec2-github-runner@base64v1.0.10
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-connectors-integration-test-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-connectors-integration-test-runner.outputs.ec2-instance-id }}

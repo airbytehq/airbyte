@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import abc
@@ -14,8 +14,10 @@ import click
 import yaml
 from airbyte_api_client.api import (
     destination_api,
+    destination_definition_api,
     destination_definition_specification_api,
     source_api,
+    source_definition_api,
     source_definition_specification_api,
     web_backend_api,
 )
@@ -30,7 +32,9 @@ from airbyte_api_client.model.connection_schedule_data_cron import ConnectionSch
 from airbyte_api_client.model.connection_schedule_type import ConnectionScheduleType
 from airbyte_api_client.model.connection_status import ConnectionStatus
 from airbyte_api_client.model.destination_create import DestinationCreate
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
 from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
+from airbyte_api_client.model.destination_definition_read import DestinationDefinitionRead
 from airbyte_api_client.model.destination_definition_specification_read import DestinationDefinitionSpecificationRead
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
@@ -44,7 +48,9 @@ from airbyte_api_client.model.operator_normalization import OperatorNormalizatio
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
 from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
 from airbyte_api_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
 from airbyte_api_client.model.source_discover_schema_request_body import SourceDiscoverSchemaRequestBody
 from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
@@ -439,6 +445,13 @@ class SourceAndDestination(BaseResource):
         pass
 
     @property
+    @abc.abstractmethod
+    def definition_specification(
+        self,
+    ):  # pragma: no cover
+        pass
+
+    @property
     def definition_id(self):
         return self.raw_configuration["definition_id"]
 
@@ -508,7 +521,13 @@ class Source(SourceAndDestination):
         raise Exception("Could not discover schema for source", self.source_discover_schema_request_body, schema.job_info.logs)
 
     @property
-    def definition(self) -> SourceDefinitionSpecificationRead:
+    def definition(self) -> SourceDefinitionRead:
+        api_instance = source_definition_api.SourceDefinitionApi(self.api_client)
+        payload = SourceDefinitionIdRequestBody(source_definition_id=self.definition_id)
+        return api_instance.get_source_definition(payload)
+
+    @property
+    def definition_specification(self) -> SourceDefinitionSpecificationRead:
         api_instance = source_definition_specification_api.SourceDefinitionSpecificationApi(self.api_client)
         payload = SourceDefinitionIdWithWorkspaceId(source_definition_id=self.definition_id, workspace_id=self.workspace_id)
         return api_instance.get_source_definition_specification(payload)
@@ -552,7 +571,13 @@ class Destination(SourceAndDestination):
         )
 
     @property
-    def definition(self) -> DestinationDefinitionSpecificationRead:
+    def definition(self) -> DestinationDefinitionRead:
+        api_instance = destination_definition_api.DestinationDefinitionApi(self.api_client)
+        payload = DestinationDefinitionIdRequestBody(destination_definition_id=self.definition_id)
+        return api_instance.get_destination_definition(payload)
+
+    @property
+    def definition_specification(self) -> DestinationDefinitionSpecificationRead:
         api_instance = destination_definition_specification_api.DestinationDefinitionSpecificationApi(self.api_client)
         payload = DestinationDefinitionIdWithWorkspaceId(destination_definition_id=self.definition_id, workspace_id=self.workspace_id)
         return api_instance.get_destination_definition_specification(payload)

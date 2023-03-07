@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -20,6 +20,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -183,8 +184,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           connection.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
-            .enquoteIdentifier(connection, tableName) : tableName;
+        final String tableNameProcessed = tableName.contains(" ") ? RelationalDbQueryUtils
+            .enquoteIdentifier(tableName, connection.getMetaData().getIdentifierQuoteString()) : tableName;
         connection.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }

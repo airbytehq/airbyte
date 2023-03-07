@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
@@ -45,12 +45,14 @@ class AvroParser(AbstractFileParser):
         schema_dict = {}
         for i in avro_schema["fields"]:
             data_type = i["type"]
-            # If field is nullable there will be a list of types and we need to make sure to map the whole list according to data_type_mapping
+            # If field is nullable there will be a list of types and we need to make sure
+            # to map the whole list according to data_type_mapping
             if isinstance(data_type, list):
                 schema_dict[i["name"]] = [data_type_mapping[dtype] for dtype in data_type]
-            # TODO: Figure out a better way to handle nested records. Currently a nested record is returned as a string
+            # TODO: Figure out a better way to handle complex types.
+            # See https://github.com/airbytehq/airbyte/issues/23327
             elif isinstance(data_type, dict):
-                schema_dict[i["name"]] = "string"
+                schema_dict[i["name"]] = data_type_mapping[data_type["type"]]
             elif data_type in data_type_mapping:
                 schema_dict[i["name"]] = data_type_mapping[data_type]
             else:

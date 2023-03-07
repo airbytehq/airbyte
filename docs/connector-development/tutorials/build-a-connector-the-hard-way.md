@@ -8,8 +8,8 @@ This tutorial walks you through building a simple Airbyte source without using a
 
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
-* [Packaging your connector](https://docs.airbyte.io/connector-development#1.-implement-and-package-the-connector)
-* [Testing your connector](../testing-connectors/source-acceptance-tests-reference.md)
+* [Packaging your connector](https://docs.airbyte.com/connector-development#1.-implement-and-package-the-connector)
+* [Testing your connector](../testing-connectors/connector-acceptance-tests-reference.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
@@ -32,6 +32,11 @@ Python 3.9.11
 ```
 
 On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3` . Otherwise, make sure to install Python 3 before beginning.
+
+You need also to install `requests` python library:
+````bash
+pip install requests 
+````
 
 ## Our connector: a stock ticker API
 
@@ -142,7 +147,7 @@ Let's create a [JSONSchema](http://json-schema.org/) file `spec.json` encoding t
 }
 ```
 
-* `documentationUrl` is the URL that will appear in the UI for the user to gain more info about this connector. Typically this points to `docs.airbyte.io/integrations/sources/source-<connector_name>` but to keep things simple we won't show adding documentation
+* `documentationUrl` is the URL that will appear in the UI for the user to gain more info about this connector. Typically this points to `docs.airbyte.com/integrations/sources/source-<connector_name>` but to keep things simple we won't show adding documentation
 * `title` is the "human readable" title displayed in the UI. Without this field, The Stock Ticker field will have the title `stock_ticker` in the UI
 * `description` will be shown in the Airbyte UI under each field to help the user understand it
 * `airbyte_secret` used by Airbyte to determine if the field should be displayed as a password \(e.g: `********`\) in the UI and not readable from the API
@@ -208,7 +213,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec]")
+        log_error("Invalid command. Allowable commands: [spec]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -228,6 +233,8 @@ Some notes on the above code:
 
 1. As described in the [specification](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#key-takeaways), Airbyte connectors are CLIs which communicate via stdout, so the output of the command is simply a JSON string formatted according to the Airbyte Specification. So to "return" a value we use `print` to output the return value to stdout
 2. All Airbyte commands can output log messages that take the form `{"type":"LOG", "log":"message"}`, so we create a helper method `log(message)` to allow logging
+3. All Airbyte commands can output error messages that take the form `{"type":"TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}}`, so we create a helper method `log_error(message)` to allow error messages
+
 
 Now if we run `python source.py spec` we should see the specification printed out:
 
@@ -262,8 +269,8 @@ Then we'll add the `check_method`:
 
 ```python
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def _call_api(ticker, token):
@@ -352,7 +359,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check]")
+        log_error("Invalid command. Allowable commands: [spec, check]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -471,7 +478,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -545,7 +552,7 @@ Then we'll define the `read` method in `source.py`:
 
 ```python
 def log_error(error_message):
-    current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+    current_time_in_ms = int(datetime.now().timestamp()) * 1000
     log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
     print(json.dumps(log_json))
 
@@ -583,7 +590,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 ```
@@ -615,7 +622,7 @@ elif command == "read":
 and: 
 
 ```python
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
 ```
 
 this yields the following `run` method:
@@ -666,7 +673,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -717,8 +724,8 @@ import json
 import sys
 import os
 import requests
-import datetime
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 
 def read(config, catalog):
@@ -754,7 +761,7 @@ def read(config, catalog):
         results = response.json()["results"]
         for result in results:
             data = {"date": date.fromtimestamp(result["t"]/1000).isoformat(), "stock_ticker": config["stock_ticker"], "price": result["c"]}
-            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.datetime.now().timestamp()) * 1000}
+            record = {"stream": "stock_prices", "data": data, "emitted_at": int(datetime.now().timestamp()) * 1000}
             output_message = {"type": "RECORD", "record": record}
             print(json.dumps(output_message))
 
@@ -799,7 +806,7 @@ def log(message):
 
 
 def log_error(error_message):
-   current_time_in_ms = int(datetime.datetime.now().timestamp()) * 1000
+   current_time_in_ms = int(datetime.now().timestamp()) * 1000
    log_json = {"type": "TRACE", "trace": {"type": "ERROR", "emitted_at": current_time_in_ms, "error": {"message": error_message}}}
    print(json.dumps(log_json))
 
@@ -892,7 +899,7 @@ def run(args):
     else:
         # If we don't recognize the command log the problem and exit with an error code greater than 0 to indicate the process
         # had a failure
-        log("Invalid command. Allowable commands: [spec, check, discover, read]")
+        log_error("Invalid command. Allowable commands: [spec, check, discover, read]")
         sys.exit(1)
 
     # A zero exit code means the process successfully completed
@@ -969,17 +976,17 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Source Acceptance Test suite](../testing-connectors/source-acceptance-tests-reference.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Connector Acceptance Test suite](../testing-connectors/connector-acceptance-tests-reference.md).
 
 ### 4. Test the connector
 
-The minimum requirement for testing your connector is to pass the [Source Acceptance Test (SAT)](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) suite. SAT is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's SATs suite.
+The minimum requirement for testing your connector is to pass the [Connector Acceptance Test](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) suite. The connector acceptence test is a blackbox test suite containing a number of tests that validate your connector behaves as intended by the Airbyte Specification. You're encouraged to add custom test cases for your connector where it makes sense to do so e.g: to test edge cases that are not covered by the standard suite. But at the very least, you must pass Airbyte's acceptance test suite.
 
 The code generator should have already generated a YAML file which configures the test suite. In order to run it, modify the `acceptance-test-config.yaml` file to look like this: 
 
 
 ```yaml
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-stock-ticker-api:dev
 acceptance_tests:
@@ -1026,7 +1033,7 @@ collecting ...
  test_full_refresh.py ✓                                                                                                                                                                                                                                                                                                                                    100% ██████████
 
 ================== short test summary info ================== 
-SKIPPED [1] source_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
+SKIPPED [1] connector_acceptance_test/plugin.py:56: Skipping TestIncremental.test_two_sequential_reads because not found in the config
 
 Results (8.91s):
       20 passed
@@ -1078,7 +1085,7 @@ $  docker images | head
 If the Airbyte server isn't already running, start it by running **from the Airbyte repository root**:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 When Airbyte server is done starting up, it prints the following banner in the log output \(it can take 10-20 seconds for the server to start\):
@@ -1098,7 +1105,7 @@ airbyte-server      | Version: dev
 airbyte-server      | 
 ```
 
-After you see the above banner printed out in the terminal window where you are running `docker-compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in with the default credentials: username `airbyte` and password `password`. 
+After you see the above banner printed out in the terminal window where you are running `docker compose up`, visit [http://localhost:8000](http://localhost:8000) in your browser and log in with the default credentials: username `airbyte` and password `password`.
 
 If this is the first time using the Airbyte UI, then you will be prompted to go through a first-time wizard. To skip it, click the "Skip Onboarding" button.
 

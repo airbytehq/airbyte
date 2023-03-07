@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -177,7 +177,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+  public static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
     if (!BigQueryUtils.isUsingJsonCredentials(config)) {
       LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
       LOGGER.info("Using the default service account credential from environment.");
@@ -192,6 +192,17 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 
+  /**
+   * Returns a {@link AirbyteMessageConsumer} based on whether the uploading mode is STANDARD INSERTS
+   * or using STAGING
+   *
+   * @param config - integration-specific configuration object as json. e.g. { "username": "airbyte",
+   *        "password": "super secure" }
+   * @param catalog - schema of the incoming messages.
+   * @param outputRecordCollector
+   * @return
+   * @throws IOException
+   */
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,

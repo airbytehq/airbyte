@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-scaffold-source-python:dev
 acceptance_tests:
@@ -21,7 +21,7 @@ acceptance_tests:
         empty_streams: []
 # TODO uncomment this block to specify that the tests should assert the connector outputs the records provided in the input file a file
 #        expect_records:
-#          path: "integration_tests/expected_records.txt"
+#          path: "integration_tests/expected_records.jsonl"
 #          extra_fields: no
 #          exact_order: no
 #          extra_records: yes
@@ -31,7 +31,8 @@ acceptance_tests:
 #    tests:
 #      - config_path: "secrets/config.json"
 #        configured_catalog_path: "integration_tests/configured_catalog.json"
-#        future_state_path: "integration_tests/abnormal_state.json"
+#        future_state:
+#          future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

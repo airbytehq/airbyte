@@ -65,59 +65,37 @@ dependencyResolutionManagement {
     }
 }
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
+// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, CDK, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {
     println("Building all of Airbyte.")
 } else {
     def subBuild = System.getenv().get("SUB_BUILD")
     println("Building Airbyte Sub Build: " + subBuild)
-    if (subBuild != "PLATFORM" && subBuild != "CONNECTORS_BASE" && subBuild != "ALL_CONNECTORS" && subBuild != "OCTAVIA_CLI") {
-        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or PLATFORM or CONNECTORS_BASE, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
+    if (subBuild != "CONNECTORS_BASE" && subBuild != "ALL_CONNECTORS" && subBuild != "OCTAVIA_CLI" && subBuild != "CDK") {
+        throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or CONNECTORS_BASE, CDK, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
     }
 }
 
-// shared
-include ':airbyte-commons'
+if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CDK" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
+    include ':airbyte-commons' // this wouldn't be necessary if it wasn't from https://github.com/airbytehq/airbyte/blob/645558b74aab0b91fda1b4628b37b7095d92b4cc/build.gradle
+    include ':tools:code-generator:airbyteDocker'
+    include ':airbyte-cdk:python'
+}
 
-// shared by CONNECTORS_BASE and PLATFORM sub builds
-include ':airbyte-api'
-include ':airbyte-commons-cli'
-include ':airbyte-commons-docker'
-include ':airbyte-commons-protocol'
-include ':airbyte-config:init'
-include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
-include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
-include ':airbyte-json-validation'
-include ':airbyte-metrics:metrics-lib'
-include ':airbyte-oauth'
-include ':airbyte-protocol:protocol-models'
-include ':airbyte-test-utils'
-
-// airbyte-workers has a lot of dependencies.
-include ':airbyte-analytics' // transitively used by airbyte-workers.
-include ':airbyte-commons-temporal'
-include ':airbyte-commons-worker'
-include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
-include ':airbyte-persistence:job-persistence' // transitively used by airbyte-workers.
-include ':airbyte-db:jooq' // transitively used by airbyte-workers.
-include ':airbyte-notification' // transitively used by airbyte-workers.
-include ':airbyte-worker-models'
-
-// platform
-if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
-    include ':airbyte-bootloader'
+if (!System.getenv().containsKey("SUB_BUILD") || (System.getenv().containsKey("SUB_BUILD") && System.getenv().get("SUB_BUILD") != "CDK")) {
+    // shared
+    include ':airbyte-commons'
+    include ':airbyte-api'
+    include ':airbyte-commons-cli'
+    include ':airbyte-commons-protocol'
     include ':airbyte-config:specs'
-    include ':airbyte-connector-builder-server'
-    include ':airbyte-container-orchestrator'
-    include ':airbyte-cron'
-    include ':airbyte-metrics:reporter'
-    include ':airbyte-proxy'
-    include ':airbyte-server'
-    include ':airbyte-temporal'
-    include ':airbyte-tests'
-    include ':airbyte-webapp'
-    include ':airbyte-webapp-e2e-tests'
-    include ':airbyte-workers'
+    include ':airbyte-config:init'
+    include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
+    include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
+    include ':airbyte-json-validation'
+    include ':airbyte-test-utils'
+
+    include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 }
 
 // connectors base
@@ -128,12 +106,12 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:bases:base-java-s3'
     include ':airbyte-integrations:bases:base-normalization'
     include ':airbyte-integrations:bases:base-standard-source-test-file'
-    include ':airbyte-integrations:bases:source-acceptance-test'
+    include ':airbyte-integrations:bases:connector-acceptance-test'
     include ':airbyte-integrations:bases:standard-destination-test'
     include ':airbyte-integrations:bases:s3-destination-base-integration-test'
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
-    include ':airbyte-integrations:bases:debezium-v1-9-6'
+    include ':airbyte-integrations:bases:debezium'
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'
@@ -146,6 +124,7 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-integrations:connectors:destination-mssql'
     include ':airbyte-integrations:connectors:destination-clickhouse'
     include ':airbyte-integrations:connectors:destination-tidb'
+    include ':airbyte-integrations:connectors:destination-duckdb'
 
     //Needed by destination-bigquery
     include ':airbyte-integrations:connectors:destination-s3'

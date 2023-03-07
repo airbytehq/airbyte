@@ -3,35 +3,36 @@
 ## Overview
 
 The Pivotal Tracker source supports Full Refresh syncs. It supports pulling from :
-* Activity
-* Epics
-* Labels
-* Project Membership
-* Projects
-* Releases
-* Stories
+
+- Activity
+- Epics
+- Labels
+- Project Membership
+- Projects
+- Releases
+- Stories
 
 ### Output schema
 
 Output streams:
 
-* [Activity](https://www.pivotaltracker.com/help/api/rest/v5#Activity)
-* [Epics](https://www.pivotaltracker.com/help/api/rest/v5#Epics)
-* [Labels](https://www.pivotaltracker.com/help/api/rest/v5#Labels)
-* [Project Membership](https://www.pivotaltracker.com/help/api/rest/v5#Project_Memberships)
-* [Projects](https://www.pivotaltracker.com/help/api/rest/v5#Projects)
-* [Releases](https://www.pivotaltracker.com/help/api/rest/v5#Releases)
-* [Stories](https://www.pivotaltracker.com/help/api/rest/v5#Stories)
+- [Activity](https://www.pivotaltracker.com/help/api/rest/v5#Activity)
+- [Epics](https://www.pivotaltracker.com/help/api/rest/v5#Epics)
+- [Labels](https://www.pivotaltracker.com/help/api/rest/v5#Labels)
+- [Project Membership](https://www.pivotaltracker.com/help/api/rest/v5#Project_Memberships)
+- [Projects](https://www.pivotaltracker.com/help/api/rest/v5#Projects)
+- [Releases](https://www.pivotaltracker.com/help/api/rest/v5#Releases)
+- [Stories](https://www.pivotaltracker.com/help/api/rest/v5#Stories)
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Coming soon |
+| Feature                       | Supported?  |
+| :---------------------------- | :---------- |
+| Full Refresh Sync             | Yes         |
+| Incremental - Append Sync     | Coming soon |
 | Replicate Incremental Deletes | Coming soon |
-| SSL connection | Yes |
-| Namespaces | No |
+| SSL connection                | Yes         |
+| Namespaces                    | No          |
 
 ### Performance considerations
 
@@ -41,13 +42,15 @@ The Pivotal Trakcer connector should not run into Stripe API limitations under n
 
 ### Requirements
 
-* Pivotal Trakcer API Token
+- Pivotal Trakcer API Token
 
 ### Setup guide to create the API Token
 
 Access your profile [here](https://www.pivotaltracker.com/profile) go down and click in **Create New Token**.
 Use this to pull data from Pivotal Tracker.
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-04-04 | [11060](https://github.com/airbytehq/airbyte/pull/11060) | Initial Release |
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------- |
+| 0.1.0   | 2022-04-04 | [11060](https://github.com/airbytehq/airbyte/pull/11060) | Initial Release |

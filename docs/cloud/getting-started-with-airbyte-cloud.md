@@ -6,7 +6,7 @@ This page guides you through setting up your Airbyte Cloud account, setting up a
 
 To use Airbyte Cloud:
 
-1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
+1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.com/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide) using your email address, Google login, or GitHub login.
 
    Airbyte Cloud offers a 14-day free trial. For more information, see [Pricing](https://airbyte.com/pricing).
 
@@ -181,7 +181,7 @@ Verify the sync by checking the logs:
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
 ## Allowlist IP addresses
-Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
+Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
 #### GCP region: us-west3

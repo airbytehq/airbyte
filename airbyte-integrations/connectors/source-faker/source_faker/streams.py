@@ -1,24 +1,23 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import datetime
 import os
-from typing import Any, Dict, Iterable, Mapping, Optional
+from multiprocessing import Pool
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
-from mimesis import Datetime, Numeric, Person
-from mimesis.locales import Locale
 
-from .utils import format_airbyte_time, read_json
+from .purchase_generator import PurchaseGenerator
+from .user_generator import UserGenerator
+from .utils import generate_estimate, read_json
 
 
 class Products(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.seed = seed
         self.records_per_sync = records_per_sync
@@ -39,7 +38,7 @@ class Products(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def load_products(self) -> list[Dict]:
+    def load_products(self) -> List[Dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
@@ -64,14 +63,14 @@ class Users(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
-        self.person = Person(locale=Locale.EN, seed=self.seed)
-        self.dt = Datetime(seed=self.seed)
+        self.parallelism = parallelism
+        self.generator = UserGenerator(self.name, self.seed)
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -88,74 +87,49 @@ class Users(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def generate_user(self, user_id: int):
-        time_a = self.dt.datetime()
-        time_b = self.dt.datetime()
-
-        profile = {
-            "id": user_id + 1,
-            "created_at": format_airbyte_time(time_a if time_a <= time_b else time_b),
-            "updated_at": format_airbyte_time(time_a if time_a > time_b else time_b),
-            "name": self.person.name(),
-            "title": self.person.title(),
-            "age": self.person.age(),
-            "email": self.person.email(),
-            "telephone": self.person.telephone(),
-            "gender": self.person.gender(),
-            "language": self.person.language(),
-            "academic_degree": self.person.academic_degree(),
-            "nationality": self.person.nationality(),
-            "occupation": self.person.occupation(),
-            "height": self.person.height(),
-            "blood_type": self.person.blood_type(),
-            "weight": self.person.weight(),
-        }
-
-        while not profile["created_at"]:
-            profile["created_at"] = format_airbyte_time(self.dt.datetime())
-
-        if not profile["updated_at"]:
-            profile["updated_at"] = profile["created_at"] + 1
-
-        return profile
-
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
+        """
+
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         records_in_sync = 0
-        records_in_slice = 0
 
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - total_records, median_record_byte_size)
 
-        for i in range(total_records, self.count):
-            user = self.generate_user(i)
-            yield user
-            total_records += 1
-            records_in_sync += 1
-            records_in_slice += 1
+        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+            while records_in_sync < self.count and records_in_sync < self.records_per_sync:
+                records_remaining_this_loop = min(self.records_per_slice, (self.count - total_records))
+                if records_remaining_this_loop <= 0:
+                    break
+                users = pool.map(self.generator.generate, range(total_records, total_records + records_remaining_this_loop))
+                for user in users:
+                    total_records += 1
+                    records_in_sync += 1
+                    yield user
 
-            if records_in_slice >= self.records_per_slice:
+                    if records_in_sync >= self.records_per_sync:
+                        break
+
                 self.state = {self.cursor_field: total_records, "seed": self.seed}
-                records_in_slice = 0
-
-            if records_in_sync == self.records_per_sync:
-                break
 
         self.state = {self.cursor_field: total_records, "seed": self.seed}
-        set_total_user_records(total_records)
 
 
 class Purchases(Stream, IncrementalMixin):
     primary_key = None
-    cursor_field = "user_id"
+    cursor_field = "id"
 
-    def __init__(self, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
+        self.count = count
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
-        self.dt = Datetime(seed=self.seed)
-        self.numeric = Numeric(seed=self.seed)
+        self.parallelism = parallelism
+        self.generator = PurchaseGenerator(self.name, self.seed)
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -172,86 +146,37 @@ class Purchases(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
-    def random_date_in_range(
-        self, start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now()
-    ) -> datetime.datetime:
-        time_between_dates = end_date - start_date
-        days_between_dates = time_between_dates.days
-        if days_between_dates < 2:
-            days_between_dates = 2
-        random_number_of_days = self.numeric.integer_number(0, days_between_dates)
-        random_date = start_date + datetime.timedelta(days=random_number_of_days)
-        return random_date
-
-    def generate_purchases(self, user_id: int, purchases_count: int) -> list[Dict]:
-        purchases: list[Dict] = []
-        purchase_percent_remaining = 70  # ~30% of people will have no purchases
-        total_products = 100
-        purchase_percent_remaining = purchase_percent_remaining - self.numeric.integer_number(1, 100)
-        i = 0
-
-        time_a = self.dt.datetime()
-        time_b = self.dt.datetime()
-        created_at = time_a if time_a <= time_b else time_b
-
-        while purchase_percent_remaining > 0:
-            id = purchases_count + i + 1
-            product_id = self.numeric.integer_number(1, total_products)
-            added_to_cart_at = self.random_date_in_range(created_at)
-            purchased_at = (
-                self.random_date_in_range(added_to_cart_at)
-                if added_to_cart_at is not None and self.numeric.integer_number(1, 100) <= 70
-                else None
-            )  # 70% likely to purchase the item in the cart
-            returned_at = (
-                self.random_date_in_range(purchased_at) if purchased_at is not None and self.numeric.integer_number(1, 100) <= 15 else None
-            )  # 15% likely to return the item
-
-            purchase = {
-                "id": id,
-                "product_id": product_id,
-                "user_id": user_id,
-                "added_to_cart_at": format_airbyte_time(added_to_cart_at) if added_to_cart_at is not None else None,
-                "purchased_at": format_airbyte_time(purchased_at) if purchased_at is not None else None,
-                "returned_at": format_airbyte_time(returned_at) if returned_at is not None else None,
-            }
-            purchases.append(purchase)
-
-            purchase_percent_remaining = purchase_percent_remaining - self.numeric.integer_number(1, 100)
-            i += 1
-        return purchases
-
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        purchases_count = self.state[self.cursor_field] if self.cursor_field in self.state else 0
+        """
+        This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
+        """
 
-        if total_user_records <= 0:
-            return  # if there are no new users, there should be no new purchases
+        total_purchase_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
+        total_user_records = self.state["user_id"] if "user_id" in self.state else 0
+        user_records_in_sync = 0
 
+        # a fuzzy guess, some users have purchases, some don't
         median_record_byte_size = 230
-        yield generate_estimate(
-            self.name, total_user_records - purchases_count * 1.3, median_record_byte_size
-        )  # a fuzzy guess, some users have purchases, some don't
+        yield generate_estimate(self.name, (self.count - total_user_records) * 1.3, median_record_byte_size)
 
-        for i in range(purchases_count, total_user_records):
-            purchases = self.generate_purchases(i + 1, purchases_count)
-            for purchase in purchases:
-                yield purchase
-                purchases_count += 1
+        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+            while total_user_records < self.count and user_records_in_sync < self.records_per_sync:
+                records_remaining_this_loop = min(self.records_per_slice, (self.count - user_records_in_sync))
+                if records_remaining_this_loop <= 0:
+                    break
+                carts = pool.map(self.generator.generate, range(total_user_records, total_user_records + records_remaining_this_loop))
+                for purchases in carts:
+                    for purchase in purchases:
+                        total_purchase_records += 1
+                        yield purchase
 
-        self.state = {self.cursor_field: total_user_records, "seed": self.seed}
+                    total_user_records += 1
+                    user_records_in_sync += 1
 
+                    if user_records_in_sync >= self.records_per_sync:
+                        break
 
-def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
-    emitted_at = int(datetime.datetime.now().timestamp() * 1000)
-    estimate_message = AirbyteEstimateTraceMessage(
-        type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
-    )
-    return AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate_message)
+                self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
 
-
-# a globals hack to share data between streams:
-total_user_records = 0
-
-
-def set_total_user_records(total: int):
-    globals()["total_user_records"] = total
+        self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}

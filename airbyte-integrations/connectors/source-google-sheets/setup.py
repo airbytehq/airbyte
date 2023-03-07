@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,15 +13,16 @@ MAIN_REQUIREMENTS = [
     "google-api-python-client",
     "PyYAML==5.4",
     "pydantic~=1.9.2",
+    "Unidecode",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
+    "connector-acceptance-test",
 ]
 
 setup(
-    name="google_sheets_source",
+    name="source_google_sheets",
     description="Source implementation for Google Sheets.",
     author="Airbyte",
     author_email="contact@airbyte.io",

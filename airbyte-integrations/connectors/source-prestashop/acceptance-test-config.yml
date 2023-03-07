@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-prestashop:dev
 acceptance_tests:
@@ -23,7 +23,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
           extra_fields: no
           exact_order: no
           extra_records: yes

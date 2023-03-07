@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
 
+import pendulum as pdm
 import pytest
 from source_sentry.streams import Events, Issues, ProjectDetail, Projects, SentryStreamPagination
 
@@ -108,3 +109,45 @@ def test_project_detail_request_params():
     stream = ProjectDetail(**INIT_ARGS)
     expected = {}
     assert stream.request_params(stream_state=None, next_page_token=None) == expected
+
+
+@pytest.mark.parametrize(
+    "state, expected",
+    [
+        ({}, "1900-01-01T00:00:00.0Z"),
+        ({"dateCreated": ""}, "1900-01-01T00:00:00.0Z"),
+        ({"dateCreated": "None"}, "1900-01-01T00:00:00.0Z"),
+        ({"dateCreated": "2023-01-01T00:00:00.0Z"}, "2023-01-01T00:00:00.0Z"),
+    ],
+    ids=[
+        "No State",
+        "State is Empty String",
+        "State is 'None'",
+        "State is present",
+    ],
+)
+def test_validate_state_value(state, expected):
+    stream = Events(**INIT_ARGS)
+    state_value = state.get(stream.cursor_field)
+    assert stream.validate_state_value(state_value) == expected
+
+
+@pytest.mark.parametrize(
+    "state, expected",
+    [
+        ({}, "1900-01-01T00:00:00.0Z"),
+        ({"dateCreated": ""}, "1900-01-01T00:00:00.0Z"),
+        ({"dateCreated": "None"}, "1900-01-01T00:00:00.0Z"),
+        ({"dateCreated": "2023-01-01T00:00:00.0Z"}, "2023-01-01T00:00:00.0Z"),
+    ],
+    ids=[
+        "No State",
+        "State is Empty String",
+        "State is 'None'",
+        "State is present",
+    ],
+)
+def test_get_state_value(state, expected):
+    stream = Events(**INIT_ARGS)
+    # we expect the datetime object out of get_state_value method.
+    assert stream.get_state_value(state) == pdm.parse(expected)
