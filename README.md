@@ -52,7 +52,9 @@ cd airbyte
 docker compose up
 ```
 
-#### How to restart the Service:
+## Disaster Recovery:
+
+### How to restart the Service:
 
 If the Airbyte service is down and we need to start it up again. Follow the next steps
 
