@@ -14,57 +14,57 @@ Check out our [connector roadmap](https://github.com/airbytehq/airbyte/projects/
 
 New sources:
 
-- [**Chartmogul**](https://docs.airbyte.io/integrations/sources/chartmogul)
-- [**Hellobaton**](https://docs.airbyte.io/integrations/sources/hellobaton)
-- [**Flexport**](https://docs.airbyte.io/integrations/sources/flexport)
-- [**PersistIq**](https://docs.airbyte.io/integrations/sources/persistiq)
+- [**Chartmogul**](https://docs.airbyte.com/integrations/sources/chartmogul)
+- [**Hellobaton**](https://docs.airbyte.com/integrations/sources/hellobaton)
+- [**Flexport**](https://docs.airbyte.com/integrations/sources/flexport)
+- [**PersistIq**](https://docs.airbyte.com/integrations/sources/persistiq)
 
 ## 1/6/2022
 
 New sources:
 
-- [**3PL Central**](https://docs.airbyte.io/integrations/sources/tplcentral)
-- [**My Hours**](https://docs.airbyte.io/integrations/sources/my-hours)
-- [**Qualaroo**](https://docs.airbyte.io/integrations/sources/qualaroo)
-- [**SearchMetrics**](https://docs.airbyte.io/integrations/sources/search-metrics)
+- [**3PL Central**](https://docs.airbyte.com/integrations/sources/tplcentral)
+- [**My Hours**](https://docs.airbyte.com/integrations/sources/my-hours)
+- [**Qualaroo**](https://docs.airbyte.com/integrations/sources/qualaroo)
+- [**SearchMetrics**](https://docs.airbyte.com/integrations/sources/search-metrics)
 
 ## 12/16/2021
 
 New source:
 
-- [**OpenWeather**](https://docs.airbyte.io/integrations/sources/openweather)
+- [**OpenWeather**](https://docs.airbyte.com/integrations/sources/openweather)
 
 New destinations:
 
-- [**ClickHouse**](https://docs.airbyte.io/integrations/destinations/clickhouse)
-- [**RabbitMQ**](https://docs.airbyte.io/integrations/destinations/rabbitmq)
-- [**Amazon SQS**](https://docs.airbyte.io/integrations/destinations/amazon-sqs)
-- [**Rockset**](https://docs.airbyte.io/integrations/destinations/rockset)
+- [**ClickHouse**](https://docs.airbyte.com/integrations/destinations/clickhouse)
+- [**RabbitMQ**](https://docs.airbyte.com/integrations/destinations/rabbitmq)
+- [**Amazon SQS**](https://docs.airbyte.com/integrations/destinations/amazon-sqs)
+- [**Rockset**](https://docs.airbyte.com/integrations/destinations/rockset)
 
 ## 12/9/2021
 
 New source:
 
-- [**Mailgun**](https://docs.airbyte.io/integrations/sources/mailgun)
+- [**Mailgun**](https://docs.airbyte.com/integrations/sources/mailgun)
 
 ## 12/2/2021
 
 New destinations:
 
-- [**Redis**](https://docs.airbyte.io/integrations/destinations/redis)
-- [**MQTT**](https://docs.airbyte.io/integrations/destinations/mqtt)
-- [**Google Firestore**](https://docs.airbyte.io/integrations/destinations/google-firestore)
-- [**Kinesis**](https://docs.airbyte.io/integrations/destinations/kinesis)
+- [**Redis**](https://docs.airbyte.com/integrations/destinations/redis)
+- [**MQTT**](https://docs.airbyte.com/integrations/destinations/mqtt)
+- [**Google Firestore**](https://docs.airbyte.com/integrations/destinations/google-firestore)
+- [**Kinesis**](https://docs.airbyte.com/integrations/destinations/kinesis)
 
 ## 11/25/2021
 
 New sources:
 
-- [**Airtable**](https://docs.airbyte.io/integrations/sources/airtable)
-- [**Notion**](https://docs.airbyte.io/integrations/sources/notion)
-- [**Pardot**](https://docs.airbyte.io/integrations/sources/pardot)
-- [**Notion**](https://docs.airbyte.io/integrations/sources/linnworks)
-- [**YouTube Analytics**](https://docs.airbyte.io/integrations/sources/youtube-analytics)
+- [**Airtable**](https://docs.airbyte.com/integrations/sources/airtable)
+- [**Notion**](https://docs.airbyte.com/integrations/sources/notion)
+- [**Pardot**](https://docs.airbyte.com/integrations/sources/pardot)
+- [**Notion**](https://docs.airbyte.com/integrations/sources/linnworks)
+- [**YouTube Analytics**](https://docs.airbyte.com/integrations/sources/youtube-analytics)
 
 New features:
 
@@ -81,12 +81,12 @@ New features:
 
 New destination:
 
-- [**ScyllaDB**](https://docs.airbyte.io/integrations/destinations/scylla)
+- [**ScyllaDB**](https://docs.airbyte.com/integrations/destinations/scylla)
 
 New sources:
 
-- [**Azure Table Storage**](https://docs.airbyte.io/integrations/sources/azure-table)
-- [**Linnworks**](https://docs.airbyte.io/integrations/sources/linnworks)
+- [**Azure Table Storage**](https://docs.airbyte.com/integrations/sources/azure-table)
+- [**Linnworks**](https://docs.airbyte.com/integrations/sources/linnworks)
 
 New features:
 
@@ -97,15 +97,15 @@ New features:
 
 New destinations:
 
-- [**Cassandra**](https://docs.airbyte.io/integrations/destinations/cassandra)
-- [**Pulsar**](https://docs.airbyte.io/integrations/destinations/pulsar)
+- [**Cassandra**](https://docs.airbyte.com/integrations/destinations/cassandra)
+- [**Pulsar**](https://docs.airbyte.com/integrations/destinations/pulsar)
 
 New sources:
 
-- [**Confluence**](https://docs.airbyte.io/integrations/sources/confluence)
-- [**Monday**](https://docs.airbyte.io/integrations/sources/monday)
+- [**Confluence**](https://docs.airbyte.com/integrations/sources/confluence)
+- [**Monday**](https://docs.airbyte.com/integrations/sources/monday)
 - [**Commerce Tools**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-commercetools)
-- [**Pinterest**](https://docs.airbyte.io/integrations/sources/pinterest)
+- [**Pinterest**](https://docs.airbyte.com/integrations/sources/pinterest)
 
 New features:
 
@@ -119,20 +119,20 @@ New features:
 
 New destination:
 
-- [**Elasticsearch**](https://docs.airbyte.io/integrations/destinations/elasticsearch)
+- [**Elasticsearch**](https://docs.airbyte.com/integrations/destinations/elasticsearch)
 
 New sources:
 
-- [**Salesloft**](https://docs.airbyte.io/integrations/sources/salesloft)
-- [**OneSignal**](https://docs.airbyte.io/integrations/sources/onesignal)
-- [**Strava**](https://docs.airbyte.io/integrations/sources/strava)
-- [**Lemlist**](https://docs.airbyte.io/integrations/sources/lemlist)
-- [**Amazon SQS**](https://docs.airbyte.io/integrations/sources/amazon-sqs)
-- [**Freshservices**](https://docs.airbyte.io/integrations/source/freshservices)
-- [**Freshsales**](https://docs.airbyte.io/integrations/sources/freshsales)
+- [**Salesloft**](https://docs.airbyte.com/integrations/sources/salesloft)
+- [**OneSignal**](https://docs.airbyte.com/integrations/sources/onesignal)
+- [**Strava**](https://docs.airbyte.com/integrations/sources/strava)
+- [**Lemlist**](https://docs.airbyte.com/integrations/sources/lemlist)
+- [**Amazon SQS**](https://docs.airbyte.com/integrations/sources/amazon-sqs)
+- [**Freshservices**](https://docs.airbyte.com/integrations/source/freshservices)
+- [**Freshsales**](https://docs.airbyte.com/integrations/sources/freshsales)
 - [**Appsflyer**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-appsflyer)
-- [**Paystack**](https://docs.airbyte.io/integrations/sources/paystack)
-- [**Sentry**](https://docs.airbyte.io/integrations/sources/sentry)
+- [**Paystack**](https://docs.airbyte.com/integrations/sources/paystack)
+- [**Sentry**](https://docs.airbyte.com/integrations/sources/sentry)
 - [**Retently**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-retently)
 - [**Delighted!**](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-delighted)
 
@@ -147,7 +147,7 @@ New features:
 
 New source:
 
-- [**WooCommerce**](https://docs.airbyte.io/integrations/sources/woocommerce)
+- [**WooCommerce**](https://docs.airbyte.com/integrations/sources/woocommerce)
 
 New feature:
 
@@ -157,9 +157,9 @@ New feature:
 
 New sources:
 
-- [**LinkedIn Ads**](https://docs.airbyte.io/integrations/sources/linkedin-ads)
-- [**Kafka**](https://docs.airbyte.io/integrations/sources/kafka)
-- [**Lever Hiring**](https://docs.airbyte.io/integrations/sources/lever-hiring)
+- [**LinkedIn Ads**](https://docs.airbyte.com/integrations/sources/linkedin-ads)
+- [**Kafka**](https://docs.airbyte.com/integrations/sources/kafka)
+- [**Lever Hiring**](https://docs.airbyte.com/integrations/sources/lever-hiring)
 
 New features:
 
@@ -178,12 +178,12 @@ New features:
 
 New destinations:
 
-- [**Databricks**](https://docs.airbyte.io/integrations/destinations/databricks)
+- [**Databricks**](https://docs.airbyte.com/integrations/destinations/databricks)
 
 New sources:
 
-- [**Close.com**](https://docs.airbyte.io/integrations/sources/close-com)
-- [**Google Search Console**](https://docs.airbyte.io/integrations/sources/google-search-console)
+- [**Close.com**](https://docs.airbyte.com/integrations/sources/close-com)
+- [**Google Search Console**](https://docs.airbyte.com/integrations/sources/google-search-console)
 
 New features:
 
@@ -201,12 +201,12 @@ New features:
 
 New source:
 
-- [**Facebook Pages**](https://docs.airbyte.io/integrations/sources/facebook-pages)
+- [**Facebook Pages**](https://docs.airbyte.com/integrations/sources/facebook-pages)
 
 New destinations:
 
-- [**MongoDB**](https://docs.airbyte.io/integrations/destinations/mongodb)
-- [**DynamoDB**](https://docs.airbyte.io/integrations/destinations/dynamodb)
+- [**MongoDB**](https://docs.airbyte.com/integrations/destinations/mongodb)
+- [**DynamoDB**](https://docs.airbyte.com/integrations/destinations/dynamodb)
 
 New features:
 
@@ -236,11 +236,11 @@ Bug fixes:
 
 New sources:
 
-- [**Bamboo HR**](https://docs.airbyte.io/integrations/sources/bamboo-hr)
-- [**BigCommerce**](https://docs.airbyte.io/integrations/sources/bigcommerce)
-- [**Trello**](https://docs.airbyte.io/integrations/sources/trello)
-- [**Google Analytics V4**](https://docs.airbyte.io/integrations/sources/google-analytics-v4)
-- [**Amazon Ads**](https://docs.airbyte.io/integrations/sources/google-analytics-v4)
+- [**Bamboo HR**](https://docs.airbyte.com/integrations/sources/bamboo-hr)
+- [**BigCommerce**](https://docs.airbyte.com/integrations/sources/bigcommerce)
+- [**Trello**](https://docs.airbyte.com/integrations/sources/trello)
+- [**Google Analytics V4**](https://docs.airbyte.com/integrations/sources/google-analytics-v4)
+- [**Amazon Ads**](https://docs.airbyte.com/integrations/sources/google-analytics-v4)
 
 Bug fixes:
 
@@ -250,7 +250,7 @@ Bug fixes:
 
 New source:
 
-- [**Short.io**](https://docs.airbyte.io/integrations/sources/shortio)
+- [**Short.io**](https://docs.airbyte.com/integrations/sources/shortio)
 
 New features:
 
@@ -267,11 +267,11 @@ Bug fixes:
 
 New source:
 
-- [**Bing Ads**](https://docs.airbyte.io/integrations/sources/bing-ads)
+- [**Bing Ads**](https://docs.airbyte.com/integrations/sources/bing-ads)
 
 New destination:
 
-- [**Keen**](https://docs.airbyte.io/integrations/destinations/keen)
+- [**Keen**](https://docs.airbyte.com/integrations/destinations/keen)
 
 New features:
 
@@ -289,11 +289,11 @@ Bug fixes:
 
 New sources:
 
-- [**S3/Abstract Files**](https://docs.airbyte.io/integrations/sources/s3)
-- [**Zuora**](https://docs.airbyte.io/integrations/sources/zuora)
-- [**Kustomer**](https://docs.airbyte.io/integrations/sources/kustomer)
-- [**Apify**](https://docs.airbyte.io/integrations/sources/apify-dataset)
-- [**Chargebee**](https://docs.airbyte.io/integrations/sources/chargebee)
+- [**S3/Abstract Files**](https://docs.airbyte.com/integrations/sources/s3)
+- [**Zuora**](https://docs.airbyte.com/integrations/sources/zuora)
+- [**Kustomer**](https://docs.airbyte.com/integrations/sources/kustomer)
+- [**Apify**](https://docs.airbyte.com/integrations/sources/apify-dataset)
+- [**Chargebee**](https://docs.airbyte.com/integrations/sources/chargebee)
 
 New features:
 
@@ -322,22 +322,22 @@ New CDK features:
 
 New sources:
 
-- [**PrestaShop**](https://docs.airbyte.io/integrations/sources/prestashop)
-- [**Snapchat Marketing**](https://docs.airbyte.io/integrations/sources/snapchat-marketing)
-- [**Drupal**](https://docs.airbyte.io/integrations/sources/drupal)
-- [**Magento**](https://docs.airbyte.io/integrations/sources/magento)
-- [**Microsoft Dynamics AX**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-ax)
-- [**Microsoft Dynamics Customer Engagement**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-customer-engagement)
-- [**Microsoft Dynamics GP**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-gp)
-- [**Microsoft Dynamics NAV**](https://docs.airbyte.io/integrations/sources/microsoft-dynamics-nav)
-- [**Oracle PeopleSoft**](https://docs.airbyte.io/integrations/sources/oracle-peoplesoft)
-- [**Oracle Siebel CRM**](https://docs.airbyte.io/integrations/sources/oracle-siebel-crm)
-- [**SAP Business One**](https://docs.airbyte.io/integrations/sources/sap-business-one)
-- [**Spree Commerce**](https://docs.airbyte.io/integrations/sources/spree-commerce)
-- [**Sugar CRM**](https://docs.airbyte.io/integrations/sources/sugar-crm)
-- [**WooCommerce**](https://docs.airbyte.io/integrations/sources/woocommerce)
-- [**Wordpress**](https://docs.airbyte.io/integrations/sources/wordpress)
-- [**Zencart**](https://docs.airbyte.io/integrations/sources/zencart)
+- [**PrestaShop**](https://docs.airbyte.com/integrations/sources/prestashop)
+- [**Snapchat Marketing**](https://docs.airbyte.com/integrations/sources/snapchat-marketing)
+- [**Drupal**](https://docs.airbyte.com/integrations/sources/drupal)
+- [**Magento**](https://docs.airbyte.com/integrations/sources/magento)
+- [**Microsoft Dynamics AX**](https://docs.airbyte.com/integrations/sources/microsoft-dynamics-ax)
+- [**Microsoft Dynamics Customer Engagement**](https://docs.airbyte.com/integrations/sources/microsoft-dynamics-customer-engagement)
+- [**Microsoft Dynamics GP**](https://docs.airbyte.com/integrations/sources/microsoft-dynamics-gp)
+- [**Microsoft Dynamics NAV**](https://docs.airbyte.com/integrations/sources/microsoft-dynamics-nav)
+- [**Oracle PeopleSoft**](https://docs.airbyte.com/integrations/sources/oracle-peoplesoft)
+- [**Oracle Siebel CRM**](https://docs.airbyte.com/integrations/sources/oracle-siebel-crm)
+- [**SAP Business One**](https://docs.airbyte.com/integrations/sources/sap-business-one)
+- [**Spree Commerce**](https://docs.airbyte.com/integrations/sources/spree-commerce)
+- [**Sugar CRM**](https://docs.airbyte.com/integrations/sources/sugar-crm)
+- [**WooCommerce**](https://docs.airbyte.com/integrations/sources/woocommerce)
+- [**Wordpress**](https://docs.airbyte.com/integrations/sources/wordpress)
+- [**Zencart**](https://docs.airbyte.com/integrations/sources/zencart)
 
 Bug fixes:
 
@@ -349,14 +349,14 @@ Bug fixes:
 
 New sources:
 
-- [**Pipedrive**](https://docs.airbyte.io/integrations/sources/pipedrive)
-- [**US Census**](https://docs.airbyte.io/integrations/sources/us-census)
-- [**BigQuery**](https://docs.airbyte.io/integrations/sources/bigquery)
+- [**Pipedrive**](https://docs.airbyte.com/integrations/sources/pipedrive)
+- [**US Census**](https://docs.airbyte.com/integrations/sources/us-census)
+- [**BigQuery**](https://docs.airbyte.com/integrations/sources/bigquery)
 
 New destinations:
 
-- [**Google Cloud Storage**](https://docs.airbyte.io/integrations/destinations/gcs)
-- [**Kafka**](https://docs.airbyte.io/integrations/destinations/kafka)
+- [**Google Cloud Storage**](https://docs.airbyte.com/integrations/destinations/gcs)
+- [**Kafka**](https://docs.airbyte.com/integrations/destinations/kafka)
 
 New Features:
 
@@ -379,9 +379,9 @@ Bug Fixes:
 
 3 new sources:
 
-- [**Zendesk Sunshine**](https://docs.airbyte.io/integrations/sources/zendesk-sunshine)
-- [**Dixa**](https://docs.airbyte.io/integrations/sources/dixa)
-- [**Typeform**](https://docs.airbyte.io/integrations/sources/typeform)
+- [**Zendesk Sunshine**](https://docs.airbyte.com/integrations/sources/zendesk-sunshine)
+- [**Dixa**](https://docs.airbyte.com/integrations/sources/dixa)
+- [**Typeform**](https://docs.airbyte.com/integrations/sources/typeform)
 
 New Features:
 
@@ -399,13 +399,13 @@ Bug Fixes:
 
 7 new sources:
 
-- [**PayPal Transaction**](https://docs.airbyte.io/integrations/sources/paypal-transaction)
-- [**Square**](https://docs.airbyte.io/integrations/sources/square)
-- [**SurveyMonkey**](https://docs.airbyte.io/integrations/sources/surveymonkey)
-- [**CockroachDB**](https://docs.airbyte.io/integrations/sources/cockroachdb)
-- [**Airbyte-native GitLab**](https://docs.airbyte.io/integrations/sources/gitlab)
-- [**Airbyte-native GitHub**](https://docs.airbyte.io/integrations/sources/github)
-- [**Airbyte-native Twilio**](https://docs.airbyte.io/integrations/sources/twilio)
+- [**PayPal Transaction**](https://docs.airbyte.com/integrations/sources/paypal-transaction)
+- [**Square**](https://docs.airbyte.com/integrations/sources/square)
+- [**SurveyMonkey**](https://docs.airbyte.com/integrations/sources/surveymonkey)
+- [**CockroachDB**](https://docs.airbyte.com/integrations/sources/cockroachdb)
+- [**Airbyte-native GitLab**](https://docs.airbyte.com/integrations/sources/gitlab)
+- [**Airbyte-native GitHub**](https://docs.airbyte.com/integrations/sources/github)
+- [**Airbyte-native Twilio**](https://docs.airbyte.com/integrations/sources/twilio)
 
 New Features:
 
@@ -441,7 +441,7 @@ Bugfixes:
 
 1 new source:
 
-- [**Db2**](https://docs.airbyte.io/integrations/sources/db2)
+- [**Db2**](https://docs.airbyte.com/integrations/sources/db2)
 
 New features:
 
@@ -454,7 +454,7 @@ New features:
 
 1 new source:
 
-- [**Snowflake**](https://docs.airbyte.io/integrations/sources/snowflake)
+- [**Snowflake**](https://docs.airbyte.com/integrations/sources/snowflake)
 
 New features:
 
@@ -468,13 +468,13 @@ New features:
 
 1 new destination:
 
-- [**S3**](https://docs.airbyte.io/integrations/destinations/s3)
+- [**S3**](https://docs.airbyte.com/integrations/destinations/s3)
 
 3 new sources:
 
-- [**Harvest**](https://docs.airbyte.io/integrations/sources/harvest)
-- [**Amplitude**](https://docs.airbyte.io/integrations/sources/amplitude)
-- [**Posthog**](https://docs.airbyte.io/integrations/sources/posthog)
+- [**Harvest**](https://docs.airbyte.com/integrations/sources/harvest)
+- [**Amplitude**](https://docs.airbyte.com/integrations/sources/amplitude)
+- [**Posthog**](https://docs.airbyte.com/integrations/sources/posthog)
 
 New features:
 
@@ -498,8 +498,8 @@ Connector development updates:
 
 2 new sources:
 
-- [**Okta**](https://docs.airbyte.io/integrations/sources/okta)
-- [**Amazon Seller Partner**](https://docs.airbyte.io/integrations/sources/amazon-seller-partner)
+- [**Okta**](https://docs.airbyte.com/integrations/sources/okta)
+- [**Amazon Seller Partner**](https://docs.airbyte.com/integrations/sources/amazon-seller-partner)
 
 New features:
 
@@ -518,10 +518,10 @@ Bugfixes:
 
 4 new sources:
 
-- [**Asana**](https://docs.airbyte.io/integrations/sources/asana)
-- [**Klaviyo**](https://docs.airbyte.io/integrations/sources/klaviyo)
-- [**Recharge**](https://docs.airbyte.io/integrations/sources/recharge)
-- [**Tempo**](https://docs.airbyte.io/integrations/sources/tempo)
+- [**Asana**](https://docs.airbyte.com/integrations/sources/asana)
+- [**Klaviyo**](https://docs.airbyte.com/integrations/sources/klaviyo)
+- [**Recharge**](https://docs.airbyte.com/integrations/sources/recharge)
+- [**Tempo**](https://docs.airbyte.com/integrations/sources/tempo)
 
 Progress on connectors:
 
@@ -534,9 +534,9 @@ Progress on connectors:
 
 ## 05/18/2021
 
-1 new destination: [**MSSQL**](https://docs.airbyte.io/integrations/destinations/mssql)
+1 new destination: [**MSSQL**](https://docs.airbyte.com/integrations/destinations/mssql)
 
-1 new source: [**ClickHouse**](https://docs.airbyte.io/integrations/sources/clickhouse)
+1 new source: [**ClickHouse**](https://docs.airbyte.com/integrations/sources/clickhouse)
 
 Progress on connectors:
 
@@ -546,12 +546,12 @@ Progress on connectors:
 
 ## 05/11/2021
 
-1 new destination: [**MySQL**](https://docs.airbyte.io/integrations/destinations/mysql)
+1 new destination: [**MySQL**](https://docs.airbyte.com/integrations/destinations/mysql)
 
 2 new sources:
 
-- [**Google Search Console**](https://docs.airbyte.io/integrations/sources/google-search-console)
-- [**PokeAPI**](https://docs.airbyte.io/integrations/sources/pokeapi) \(talking about long tail and having fun ;\)\)
+- [**Google Search Console**](https://docs.airbyte.com/integrations/sources/google-search-console)
+- [**PokeAPI**](https://docs.airbyte.com/integrations/sources/pokeapi) \(talking about long tail and having fun ;\)\)
 
 Progress on connectors:
 
@@ -563,8 +563,8 @@ Progress on connectors:
 
 2 new sources:
 
-- [**Smartsheets**](https://docs.airbyte.io/integrations/sources/smartsheets), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
-- [**Zendesk Chat**](https://docs.airbyte.io/integrations/sources/zendesk-chat)
+- [**Smartsheets**](https://docs.airbyte.com/integrations/sources/smartsheets), thanks to [Nathan Nowack](https://github.com/zzstoatzz)
+- [**Zendesk Chat**](https://docs.airbyte.com/integrations/sources/zendesk-chat)
 
 Progress on connectors:
 
@@ -587,9 +587,9 @@ Progress on connectors:
 
 3 new source connectors!
 
-- [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
-- [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable)
-- [**QuickBooks**](https://docs.airbyte.io/integrations/sources/quickbooks-singer)
+- [**Zendesk Talk**](https://docs.airbyte.com/integrations/sources/zendesk-talk)
+- [**Iterable**](https://docs.airbyte.com/integrations/sources/iterable)
+- [**QuickBooks**](https://docs.airbyte.com/integrations/sources/quickbooks-singer)
 
 Other progress on connectors:
 
@@ -603,11 +603,11 @@ Other progress on connectors:
 
 ## 04/13/2021
 
-- New connector: [**Oracle DB**](https://docs.airbyte.io/integrations/sources/oracle), thanks to [Marcos Marx](https://github.com/marcosmarxm)
+- New connector: [**Oracle DB**](https://docs.airbyte.com/integrations/sources/oracle), thanks to [Marcos Marx](https://github.com/marcosmarxm)
 
 ## 04/07/2021
 
-- New connector: [**Google Workspace Admin Reports**](https://docs.airbyte.io/integrations/sources/google-workspace-admin-reports) \(audit logs\)
+- New connector: [**Google Workspace Admin Reports**](https://docs.airbyte.com/integrations/sources/google-workspace-admin-reports) \(audit logs\)
 - Bugfix in the base python connector library that caused errors to be silently skipped rather than failing the sync
 - **Exchangeratesapi.io** bugfix: to point to the updated API URL
 - **Redshift destination** bugfix: quote keywords “DATETIME” and “TIME” when used as identifiers
@@ -624,12 +624,12 @@ Other progress on connectors:
 
 ## 03/22/2021
 
-- 2 new source connectors: [**Gitlab**](https://docs.airbyte.io/integrations/sources/gitlab) and [**Airbyte-native HubSpot**](https://docs.airbyte.io/integrations/sources/hubspot)
-- Developing connectors now requires almost no interaction with Gradle, Airbyte’s monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.io/connector-development).
+- 2 new source connectors: [**Gitlab**](https://docs.airbyte.com/integrations/sources/gitlab) and [**Airbyte-native HubSpot**](https://docs.airbyte.com/integrations/sources/hubspot)
+- Developing connectors now requires almost no interaction with Gradle, Airbyte’s monorepo build tool. If you’re building a Python connector, you never have to worry about developing outside your typical flow. See [the updated documentation](https://docs.airbyte.com/connector-development).
 
 ## 03/15/2021
 
-- 2 new source connectors: [**Instagram**](https://docs.airbyte.io/integrations/sources/instagram) and [**Google Directory**](https://docs.airbyte.io/integrations/sources/google-directory)
+- 2 new source connectors: [**Instagram**](https://docs.airbyte.com/integrations/sources/instagram) and [**Google Directory**](https://docs.airbyte.com/integrations/sources/google-directory)
 - **Facebook Marketing**: support of API v10
 - **Google Analytics**: support incremental sync
 - **Jira**: bug fix to consistently pull all tickets
@@ -657,8 +657,8 @@ Other progress on connectors:
 
 ## 02/15/2021
 
-- 1 new destination connector: [MeiliSearch](https://docs.airbyte.io/integrations/destinations/meilisearch)
-- 2 new sources that support incremental append: [Freshdesk](https://docs.airbyte.io/integrations/sources/freshdesk) and [Sendgrid](https://docs.airbyte.io/integrations/sources/sendgrid)
+- 1 new destination connector: [MeiliSearch](https://docs.airbyte.com/integrations/destinations/meilisearch)
+- 2 new sources that support incremental append: [Freshdesk](https://docs.airbyte.com/integrations/sources/freshdesk) and [Sendgrid](https://docs.airbyte.com/integrations/sources/sendgrid)
 - Other fixes:
   - Thanks to [@ns-admetrics](https://github.com/ns-admetrics) for contributing an upgrade to the **Shopify** source connector which now provides the landing_site field containing UTM parameters in the Orders table.
   - **Sendgrid** source connector supports most available endpoints available in the API
@@ -673,11 +673,11 @@ Other progress on connectors:
 ## 02/02/2021
 
 - Sources that we improved reliability for \(and that became “certified”\):
-  - [Certified sources](https://docs.airbyte.io/integrations): Files and Shopify
+  - [Certified sources](https://docs.airbyte.com/integrations): Files and Shopify
   - Enhanced continuous testing for Tempo and Looker sources
 - Other fixes / features:
   - Correctly handle boolean types in the File Source
-  - Add docs for [App Store](https://docs.airbyte.io/integrations/sources/appstore) source
+  - Add docs for [App Store](https://docs.airbyte.com/integrations/sources/appstore) source
   - Fix a bug in Snowflake destination where the connector didn’t check for all needed write permissions, causing some syncs to fail
 
 ## 01/26/2021
@@ -773,4 +773,4 @@ Other progress on connectors:
 
 ## 09/23/2020
 
-**New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md) **New destinations:** [BigQuery](../../integrations/destinations/bigquery.md), [Postgres](../../integrations/destinations/postgres.md), [local CSV](../../integrations/destinations/local-csv.md)
+**New sources:** [Stripe](../../integrations/sources/stripe.md), [Postgres](../../integrations/sources/postgres.md) **New destinations:** [BigQuery](../../integrations/destinations/bigquery.md), [Postgres](../../integrations/destinations/postgres.md), [local CSV](../../integrations/destinations/csv.md)

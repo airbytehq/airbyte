@@ -44,6 +44,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
@@ -92,9 +93,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
-  public static final String REPLICATION_PRIVILEGE_ERROR_MESSAGE =
-      "User '%s' does not have enough privileges for CDC replication. Please read the docs and add required privileges.";
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String PARAM_SSL = "ssl";
@@ -318,21 +316,16 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         PostgresUtils.checkFirstRecordWaitTime(config);
       });
 
-      // Verify that the db user has required privilege to perform replication.
+      // Verify that a CDC connection can be created
       checkOperations.add(database -> {
-        final String userName = config.get("username").asText();
-
-        final List<JsonNode> userPrivileges = database.queryJsons(connection -> {
-          final PreparedStatement ps = connection.prepareStatement("SELECT userepl FROM pg_user WHERE usename = ?");
-          ps.setString(1, userName);
-          LOGGER.info("Verifying required privileges for user: {}", userName);
-          return ps;
-        }, sourceOperations::rowToJson);
-
-        if (!userPrivileges.get(0).get("userepl").asBoolean()) {
-          throw new ConfigErrorException(String.format(REPLICATION_PRIVILEGE_ERROR_MESSAGE, userName));
-        }
-
+        /**
+         * TODO: Next line is required for SSL connections so the JDBC_URL is set with all required
+         * parameters. This needs to be handle by createConnection function instead. Created issue
+         * https://github.com/airbytehq/airbyte/issues/23380.
+         */
+        final JsonNode databaseConfig = database.getDatabaseConfig();
+        // Empty try statement as we only need to verify that the connection can be created.
+        try (final Connection connection = PostgresReplicationConnection.createConnection(databaseConfig)) {}
       });
     }
 
@@ -377,6 +370,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           state,
           sourceConfig);
 
+      // We should always be able to extract offset out of state if it's not null
+      if (state != null && savedOffset.isEmpty()) {
+        throw new RuntimeException(
+            "Unable extract the offset out of state, State mutation might not be working. " + state.asText());
+      }
+
       final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
           // We can assume that there will be only 1 replication slot cause before the sync starts for
           // Postgres CDC,
@@ -404,7 +403,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          emittedAt);
+          emittedAt,
+          false);
       if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
