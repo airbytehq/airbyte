@@ -137,7 +137,7 @@ jobs:
           kubectl logs --tail=5 $POD
           export RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
           echo "run result is $RUN_RESULT"
-          echo "RUN_RESULT=$RUN_RESULT" >> $GITHUB_OUTPUT
+          echo "RUN_RESULT=\"$RUN_RESULT\"" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v1
         with:
