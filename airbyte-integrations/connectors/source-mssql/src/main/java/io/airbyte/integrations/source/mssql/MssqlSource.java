@@ -51,6 +51,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -177,6 +178,14 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     if (mssqlConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
+
+    final Map<String, String> additionalParams = new HashMap<>();
+    additionalParameters.forEach(param -> {
+      int i = param.indexOf('=');
+      additionalParams.put(param.substring(0, i), param.substring(i + 1));
+    });
+
+    configBuilder.putAll(additionalParams);
 
     return Jsons.jsonNode(configBuilder.build());
   }
@@ -380,8 +389,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager),
           new MssqlCdcConnectorMetadataInjector(),
-          MssqlCdcHelper.getDebeziumProperties(sourceConfig, catalog),
-          emittedAt);
+          MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
