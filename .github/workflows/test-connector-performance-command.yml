@@ -109,6 +109,12 @@ jobs:
           ./gradlew :airbyte-integrations:connectors:source-postgres:build -x check
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
+      - name: Prepare images
+        shell: bash
+        run: |
+          echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
+          kind load docker-image airbyte/source-postgres:dev --name chart-testing
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
