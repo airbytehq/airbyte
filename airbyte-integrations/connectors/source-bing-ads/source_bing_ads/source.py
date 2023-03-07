@@ -519,6 +519,11 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "CampaignType",
+        "AdGroupName",
+        "AdGroupType",
         "Impressions",
         "Clicks",
         "Ctr",
