@@ -125,6 +125,7 @@ jobs:
           kubectl get po
           POD=$(kubectl get pod -l app=perfharness -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
+          kubectl wait --for=condition=Ready --timeout=20s $POD
           kubectl logs --follow $POD
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
