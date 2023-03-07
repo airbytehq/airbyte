@@ -85,11 +85,11 @@ class IterableStream(HttpStream, ABC):
             return False
         # retry on generic error 500 meaning
         if response.status_code == 500:
-            if response.json().get('code') == "GenericError" and "Please try again later" in response.json().get('msg'):
+            if response.json().get("code") == "GenericError" and "Please try again later" in response.json().get("msg"):
                 self.logger.warn(f"Generic Server Error occured for stream: `{self.name}`.")
                 setattr(self, "raise_on_http_errors", False)
                 return True
-        # all other cases                
+        # all other cases
         return super().should_retry(response)
 
     def read_records(

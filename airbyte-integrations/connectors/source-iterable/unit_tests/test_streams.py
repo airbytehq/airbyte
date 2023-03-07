@@ -159,6 +159,7 @@ def test_iterable_export_stream_backoff_time():
     stream = Users(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
     assert stream.backoff_time(response=None) is None
 
+
 @pytest.mark.parametrize(
     "status, json, expected",
     [
