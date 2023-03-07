@@ -6,7 +6,7 @@ from dataclasses import asdict
 
 import pytest
 from source_zoho_crm.exceptions import IncompleteMetaDataException, UnknownDataTypeException
-from source_zoho_crm.types import FieldMeta, ModuleMeta, ZohoBaseType, ZohoPickListItem
+from source_zoho_crm.types import FieldMeta, ModuleMeta, ZohoBaseType, ZohoPickListItem, AutoNumberDict
 
 from .parametrize import datatype_inputs
 
@@ -76,7 +76,7 @@ def test_field_schema_unknown_type():
 
 
 @datatype_inputs
-def test_field_schema(json_type, data_type, length, decimal_place, api_name, pick_list_values, expected_values):
+def test_field_schema(json_type, data_type, length, decimal_place, api_name, pick_list_values, autonumber, expected_values):
     if pick_list_values:
         pick_list_values = [ZohoPickListItem(actual_value=value, display_value=value) for value in pick_list_values]
     field = FieldMeta(
@@ -88,5 +88,6 @@ def test_field_schema(json_type, data_type, length, decimal_place, api_name, pic
         system_mandatory=True,
         display_label=api_name,
         pick_list_values=pick_list_values,
+        auto_number=(AutoNumberDict.from_dict(autonumber or { 'prefix': '', 'suffix': '' })),
     )
     assert field.schema == expected_values

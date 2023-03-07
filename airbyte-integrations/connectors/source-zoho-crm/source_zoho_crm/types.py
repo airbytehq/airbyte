@@ -94,6 +94,11 @@ class ZohoPickListItem(FromDictMixin):
     display_value: str
     actual_value: str
 
+@dataclasses.dataclass
+class AutoNumberDict(FromDictMixin):
+    prefix: str
+    suffix: str
+
 
 FieldType = Dict[Any, Any]
 
@@ -108,6 +113,7 @@ class FieldMeta(FromDictMixin):
     system_mandatory: bool
     display_label: str
     pick_list_values: Optional[List[ZohoPickListItem]]
+    auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
 
     def _default_type_kwargs(self) -> Dict[str, str]:
         return {"title": self.display_label}
@@ -145,8 +151,13 @@ class FieldMeta(FromDictMixin):
             typedef["format"] = "date"
         elif self.data_type == ZohoDataType.datetime:
             typedef["format"] = "date-time"
-        elif self.data_type in ZohoDataType.numeric_string_types():
+        elif self.data_type == ZohoDataType.bigint:
             typedef["airbyte_type"] = "big_integer"
+        elif self.data_type == ZohoDataType.autonumber:
+            if self.auto_number.prefix or self.auto_number.suffix:
+                typedef["format"] = "string"
+            else:
+                typedef["airbyte_type"] = "big_integer"
         elif self.data_type == ZohoDataType.picklist and self.pick_list_values:
             typedef["enum"] = self._picklist_items()
         return typedef
@@ -168,7 +179,12 @@ class FieldMeta(FromDictMixin):
             return typedef
         if self.data_type in (ZohoDataType.text, *ZohoDataType.numeric_string_types()):
             typedef["items"] = {"type": "string"}
-            if self.data_type in ZohoDataType.numeric_string_types():
+            if self.data_type in ZohoDataType.autonumber:
+                if self.auto_number.prefix or self.auto_number.suffix:
+                    typedef["items"]["format"] = "string"
+                else:
+                    typedef["items"]["airbyte_type"] = "big_integer"
+            else:
                 typedef["items"]["airbyte_type"] = "big_integer"
         if self.data_type == ZohoDataType.multiselectpicklist:
             typedef["minItems"] = 1
