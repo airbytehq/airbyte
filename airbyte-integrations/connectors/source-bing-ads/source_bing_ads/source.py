@@ -679,6 +679,8 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "AccountNumber",        
         "PhoneImpressions",
         "PhoneCalls",
         "Clicks",
