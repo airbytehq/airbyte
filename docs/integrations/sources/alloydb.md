@@ -80,7 +80,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
 ### Step 2: Set up the AlloyDB connector in Airbyte
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **AlloyDB** from the Source type dropdown.
 4. Enter a name for your source.
@@ -321,6 +321,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.51  | 2022-03-02 | [23642](https://github.com/airbytehq/airbyte/pull/23642) | Revert : Support JSONB datatype for Standard sync mode                                                                                    |                                                                                                                                                                   |
+| 1.0.49  | 2022-02-27 | [21695](https://github.com/airbytehq/airbyte/pull/21695) | Support JSONB datatype for Standard sync mode                                                                                             |                                                                                                                                                                   |
+| 1.0.48  | 2022-02-24 | [23383](https://github.com/airbytehq/airbyte/pull/23383) | Fixed bug with non readable double-quoted values within a database name or column name                                                    |                                                                                                                                                                   |
 | 1.0.47  | 2022-02-22 | [22221](https://github.com/airbytehq/airbyte/pull/23138) | Fix previous versions which doesn't verify privileges correctly, preventing CDC syncs to run.                                             |
 | 1.0.46  | 2022-02-21 | [23105](https://github.com/airbytehq/airbyte/pull/23105) | Include log levels and location information (class, method and line number) with source connector logs published to Airbyte Platform.     |
 | 1.0.45  | 2022-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371) | Ensures that user has required privileges for CDC syncs.                                                                                  |  
