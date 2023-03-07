@@ -1,0 +1,295 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "RecAreaID": {
+      "type": "string"
+    },
+    "OrgRecAreaID": {
+      "type": "string"
+    },
+    "ParentOrgID": {
+      "type": "string"
+    },
+    "RecAreaName": {
+      "type": "string"
+    },
+    "RecAreaDescription": {
+      "type": "string"
+    },
+    "RecAreaFeeDescription": {
+      "type": "string"
+    },
+    "RecAreaDirections": {
+      "type": "string"
+    },
+    "RecAreaPhone": {
+      "type": "string"
+    },
+    "RecAreaEmail": {
+      "type": "string"
+    },
+    "RecAreaReservationURL": {
+      "type": "string"
+    },
+    "RecAreaMapURL": {
+      "type": "string"
+    },
+    "GEOJSON": {
+      "type": "object",
+      "properties": {
+        "TYPE": {
+          "type": "string"
+        },
+        "COORDINATES": {
+          "type": ["array", "null"],
+          "items": {
+            "type": ["string", "number", "null"]
+          }
+        }
+      }
+    },
+    "RecAreaLongitude": {
+      "type": "number"
+    },
+    "RecAreaLatitude": {
+      "type": "number"
+    },
+    "StayLimit": {
+      "type": "string"
+    },
+    "Keywords": {
+      "type": "string"
+    },
+    "Reservable": {
+      "type": "boolean"
+    },
+    "Enabled": {
+      "type": "boolean"
+    },
+    "LastUpdatedDate": {
+      "type": "string"
+    },
+    "ORGANIZATION": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "OrgID": {
+            "type": "string"
+          },
+          "OrgName": {
+            "type": "string"
+          },
+          "OrgImageURL": {
+            "type": "string"
+          },
+          "OrgURLText": {
+            "type": "string"
+          },
+          "OrgURLAddress": {
+            "type": "string"
+          },
+          "OrgType": {
+            "type": "string"
+          },
+          "OrgAbbrevName": {
+            "type": "string"
+          },
+          "OrgJurisdictionType": {
+            "type": "string"
+          },
+          "OrgParentID": {
+            "type": "string"
+          },
+          "LastUpdatedDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "FACILITY": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "FacilityID": {
+            "type": "string"
+          },
+          "FacilityName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RECAREAADDRESS": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "RecAreaAddressID": {
+            "type": "string"
+          },
+          "RecAreaID": {
+            "type": "string"
+          },
+          "RecAreaAddressType": {
+            "type": "string"
+          },
+          "RecAreaStreetAddress1": {
+            "type": "string"
+          },
+          "RecAreaStreetAddress2": {
+            "type": "string"
+          },
+          "RecAreaStreetAddress3": {
+            "type": "string"
+          },
+          "City": {
+            "type": "string"
+          },
+          "PostalCode": {
+            "type": "string"
+          },
+          "AddressStateCode": {
+            "type": "string"
+          },
+          "AddressCountryCode": {
+            "type": "string"
+          },
+          "LastUpdatedDate": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ACTIVITY": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ActivityID": {
+            "type": "string"
+          },
+          "ActivityParentID": {
+            "type": "string"
+          },
+          "RecAreaID": {
+            "type": "string"
+          },
+          "ActivityName": {
+            "type": "string"
+          },
+          "RecAreaActivityDescription": {
+            "type": "string"
+          },
+          "RecAreaActivityFeeDescription": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "EVENT": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "EventID": {
+            "type": "string"
+          },
+          "EventName": {
+            "type": "string"
+          },
+          "ResourceLink": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "MEDIA": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "EntityMediaID": {
+            "type": "string"
+          },
+          "MediaType": {
+            "type": "string"
+          },
+          "EntityID": {
+            "type": "string"
+          },
+          "EntityType": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Subtitle": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "EmbedCode": {
+            "type": "string"
+          },
+          "Height": {
+            "type": "integer"
+          },
+          "Width": {
+            "type": "integer"
+          },
+          "IsPrimary": {
+            "type": "boolean"
+          },
+          "IsPreview": {
+            "type": "boolean"
+          },
+          "IsGallery": {
+            "type": "boolean"
+          },
+          "URL": {
+            "type": "string"
+          },
+          "Credits": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "LINK": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "EntityLinkID": {
+            "type": "string"
+          },
+          "LinkType": {
+            "type": "string"
+          },
+          "EntityID": {
+            "type": "string"
+          },
+          "EntityType": {
+            "type": "string"
+          },
+          "Title": {
+            "type": "string"
+          },
+          "Description": {
+            "type": "string"
+          },
+          "URL": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

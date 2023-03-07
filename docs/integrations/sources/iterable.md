@@ -4,42 +4,26 @@ This page contains the setup guide and reference information for the Iterable so
 
 ## Prerequisites
 
-* Iterable Account
-* Iterable `Server-side` API Key with `standard` permissions. See [API Keys docs](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-) for more details.
+To set up the Iterable source connector, you'll need the Iterable [`Server-side` API Key with `standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
 
-## Setup guide
-### Step 1: Set up Iterable
+## Set up the Iterable connector in Airbyte
 
-* Please read [How to find your API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-#creating-api-keys).
-* Make sure that selected API Key has sufficient **permissions** to read all selected [streams](https://api.iterable.com/api/docs#).
-
-## Step 2: Set up the Iterable connector in Airbyte
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Iterable connector and select **Iterable** from the Source type dropdown. 
-4. Enter your `api_key`
-5. Enter the `start_date` you want your sync to start from
-6. Click **Set up source**
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
-3. Enter your `api_key`
-4. Enter the `start_date` you want your sync to start from
-5. Click **Set up source**
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Iterable** from the Source type dropdown.
+4. Enter the name for the Iterable connector.
+5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
+7. Click **Set up source**.
 
 ## Supported sync modes
 
 The Iterable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
-| SSL connection    | Yes        |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -92,6 +76,9 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------|
+| 0.1.24  | 2023-02-14 | [22979](https://github.com/airbytehq/airbyte/pull/22979) | Specified date formatting in specification                                                    |
+| 0.1.23  | 2023-01-27 | [22011](https://github.com/airbytehq/airbyte/pull/22011) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 0.1.22  | 2022-11-30 | [19913](https://github.com/airbytehq/airbyte/pull/19913) | Replace pendulum.parse -> dateutil.parser.parse to avoid memory leak       |
 | 0.1.21  | 2022-10-27 | [18537](https://github.com/airbytehq/airbyte/pull/18537) | Improve streams discovery                                                  |
 | 0.1.20  | 2022-10-21 | [18292](https://github.com/airbytehq/airbyte/pull/18292) | Better processing of 401 and 429 errors                                    |
 | 0.1.19  | 2022-10-05 | [17602](https://github.com/airbytehq/airbyte/pull/17602) | Add check for stream permissions                                           |

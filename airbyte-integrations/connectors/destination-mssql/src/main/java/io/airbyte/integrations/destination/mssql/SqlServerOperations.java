@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mssql;
@@ -10,7 +10,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -87,7 +87,7 @@ public class SqlServerOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database,
+  public String insertTableQuery(final JdbcDatabase database,
                                final String schemaName,
                                final String sourceTableName,
                                final String destinationTableName) {

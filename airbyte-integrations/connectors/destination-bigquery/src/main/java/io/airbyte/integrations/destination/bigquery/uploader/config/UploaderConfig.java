@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.uploader.config;
@@ -10,7 +10,7 @@ import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;

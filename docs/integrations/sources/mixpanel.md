@@ -4,43 +4,33 @@ This page contains the setup guide and reference information for the Mixpanel so
 
 ## Prerequisites
 
-* Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts)
-* Mixpanel [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id)
-* Mixpanel [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel)
-* Project region `US` or `EU`
+To set up the Harvest source connector, you'll need a Mixpanel [Service Account](https://developer.mixpanel.com/reference/service-accounts) and it's [Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id), the [Project Timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel), and the Project region (`US` or `EU`).
 
-## Setup guide
+## Set up the Mixpanel connector in Airbyte
 
-### Step 1: Set up
-
-<!-- markdown-link-check-disable-next-line -->
-Please read [Find Service Account](https://developer.mixpanel.com/reference/service-accounts), and create your Service Account.
-
-<!-- markdown-link-check-disable-next-line -->
-Select the correct region \(EU or US\) for your Mixpanel project. See detail [here](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU)
-
-
-### Step 2: Set up the Mixpanel connector in Airbyte
-Choose start date, from which data will be synced
-
-*Note:* If `start_date` is not set, the connector will replicate data from up to one year ago by default.
-
-
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Mixpanel connector and select **Mixpanel** from the Source type dropdown.
-4. Select `start_date`, from which your data will need to be synced
-
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Mixpanel** from the Source type dropdown.
+4. Enter the name for the Mixpanel connector.
+5. For **Authentication**, select **Service Account** from the dropdown and enter the [Mixpanel Service Account secret](https://developer.mixpanel.com/reference/service-accounts).
+6. For **Project ID**, enter the [Mixpanel Project ID](https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id).
+7. For **Attribution Window**, enter the number of days for the length of the attribution window.
+8. For **Project Timezone**, enter the [timezone](https://help.mixpanel.com/hc/en-us/articles/115004547203-Manage-Timezones-for-Projects-in-Mixpanel) for your Mixpanel project.
+9. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. If left blank, the connector will replicate data from up to one year ago by default.
+10. For **End Date**, enter the date in YYYY-MM-DD format. 
+11. For **Region**, enter the [region](https://help.mixpanel.com/hc/en-us/articles/360039135652-Data-Residency-in-EU) for your Mixpanel project.
+12. For **Date slicing window**, enter the number of days to slice through data. If you encounter RAM usage issues due to a huge amount of data in each window, try using a lower value for this parameter.
+13. Click **Set up source**.
 
 ## Supported sync modes
-The Mixpanel source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Mixpanel source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh](https://docs.airbyte.com/integrations/sources/mongodb#full-refresh-sync)
-* [Incremental](https://docs.airbyte.com/integrations/sources/mongodb#incremental-sync)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
-Please note, that incremental sync could return duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
+Note: Incremental sync returns duplicated \(old records\) for the state date due to API filter limitation, which is granular to the whole day only.
 
 ### Supported Streams
 
@@ -52,18 +42,17 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 * [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
 * [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
-
 ## Performance considerations
 
-* Due to quite low API rate-limits \(**60 reqs per hour**\), syncing of huge date windows may be quite long
-* If you're struggling with high RAM usage, try to decrease `date_window_size` parameter in config
-
+Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
 
 ## CHANGELOG
 
 | Version | Date       | Pull Request                                             | Subject                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
-| 0.1.28  | 2022-10-06 | [17699](https://github.com/airbytehq/airbyte/pull/17699) | Fix discover step issue cursor field None                                  |
+|:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| 0.1.30  | 2023-01-27 | [22017](https://github.com/airbytehq/airbyte/pull/22017) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
+| 0.1.29  | 2022-11-02 | [18846](https://github.com/airbytehq/airbyte/pull/18846) | For "export" stream make line parsing more robust                                                    |
+| 0.1.28  | 2022-10-06 | [17699](https://github.com/airbytehq/airbyte/pull/17699) | Fix discover step issue cursor field None                                                            |
 | 0.1.27  | 2022-09-29 | [17415](https://github.com/airbytehq/airbyte/pull/17415) | Disable stream "cohort_members" on discover if not access                                            |
 | 0.1.26  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream states.                                                                        |
 | 0.1.25  | 2022-09-27 | [17145](https://github.com/airbytehq/airbyte/pull/17145) | Disable streams "export", "engage" on discover if not access                                         |

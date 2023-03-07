@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -18,8 +18,8 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -195,7 +195,7 @@ public abstract class GcsStreamCopier implements StreamCopier {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, will be truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 

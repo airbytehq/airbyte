@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -68,20 +68,24 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
     final String eventFileName = valueAsJson.get("source").get("file").asText();
-    final int eventPosition = valueAsJson.get("source").get("pos").asInt();
-
-    final boolean isSnapshot = SnapshotMetadata.TRUE == SnapshotMetadata.valueOf(
-        valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-
-    if (isSnapshot || fileName.compareTo(eventFileName) > 0
-        || (fileName.compareTo(eventFileName) == 0 && position >= eventPosition)) {
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
+    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
       return false;
+    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+      LOGGER.info("Signalling close because Snapshot is complete");
+      return true;
+    } else {
+      final int eventPosition = valueAsJson.get("source").get("pos").asInt();
+      final boolean isEventPositionAfter =
+          eventFileName.compareTo(fileName) > 0 || (eventFileName.compareTo(fileName) == 0 && eventPosition >= position);
+      if (isEventPositionAfter) {
+        LOGGER.info("Signalling close because record's binlog file : " + eventFileName + " , position : " + eventPosition
+            + " is after target file : "
+            + fileName + " , target position : " + position);
+      }
+      return isEventPositionAfter;
     }
 
-    LOGGER.info("Signalling close because record's binlog file : " + eventFileName + " , position : " + eventPosition
-        + " is after target file : "
-        + fileName + " , target position : " + position);
-    return true;
   }
 
 }

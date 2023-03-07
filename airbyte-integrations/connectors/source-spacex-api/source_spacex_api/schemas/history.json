@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "history": {
+      "title": "history",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "event_date_utc": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "event_date_unix": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "details": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "links": {
+          "title": "links",
+          "type": "object",
+          "properties": {
+            "article": {
+              "type": ["string", "null"],
+              "default": null
+            }
+          }
+        }
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    }
+  }
+}

@@ -8,17 +8,20 @@
 
 ## Setup guide
 
+### Step 1: Set up Zendesk
+
 Generate a API access token as described in [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token-)
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
 Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application) for details.
 
-## Step 2: Set up the Zendesk Talk connector in Airbyte
+<!-- env:cloud -->
+### Step 2: Set up the Zendesk Talk connector in Airbyte
 
-### For Airbyte Cloud:
+**For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Zendesk Talk connector and select **Zendesk Talk** from the Source type dropdown.
 4. Fill in the rest of the fields:
@@ -26,10 +29,11 @@ Another option is to use OAuth2.0 for authentication. See [Zendesk docs](https:/
    - *Authentication (API Token / OAuth2.0)*
    - *Start Date*
 5. Click **Set up source**
+<!-- /env:cloud -->
 
 ## Supported sync modes
 
-The **Zendesk Talk** source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The **Zendesk Talk** source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 * Full Refresh
 * Incremental Sync
 
@@ -72,6 +76,7 @@ The Zendesk connector should not run into Zendesk API limitations under normal u
 
 | Version | Date       | Pull Request | Subject                           |
 |:--------|:-----------| :-----       |:----------------------------------|
+| `0.1.6` | 2023-01-27 | [22028](https://github.com/airbytehq/airbyte/pull/22028) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | `0.1.5` | 2022-09-29 | [17362](https://github.com/airbytehq/airbyte/pull/17362) | always use the latest CDK version |
 | `0.1.4` | 2022-08-19 | [15764](https://github.com/airbytehq/airbyte/pull/15764) | Support OAuth2.0                  |
 | `0.1.3` | 2021-11-11 | [7173](https://github.com/airbytehq/airbyte/pull/7173)   | Fix pagination and migrate to CDK |

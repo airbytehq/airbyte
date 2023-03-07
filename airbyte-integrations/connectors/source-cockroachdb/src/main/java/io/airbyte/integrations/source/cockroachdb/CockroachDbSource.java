@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -22,9 +22,9 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -121,8 +121,8 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+  protected DataSource createDataSource(final JsonNode sourceConfig) {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
 
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -135,11 +135,14 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final DataSource dataSource = createDataSource(sourceConfig);
     final JdbcDatabase database = new DefaultJdbcDatabase(dataSource, sourceOperations);
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
-    return new CockroachJdbcDatabase(database, sourceOperations);
+    final CockroachJdbcDatabase cockroachJdbcDatabase = new CockroachJdbcDatabase(database, sourceOperations);
+    cockroachJdbcDatabase.setSourceConfig(sourceConfig);
+    cockroachJdbcDatabase.setDatabaseConfig(toDatabaseConfig(sourceConfig));
+    return cockroachJdbcDatabase;
   }
 
   @Override

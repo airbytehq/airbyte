@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift.copiers;
@@ -11,7 +11,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopierFactory;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 
 /**
  * Very similar to the {@link S3StreamCopierFactory}, but we need some additional

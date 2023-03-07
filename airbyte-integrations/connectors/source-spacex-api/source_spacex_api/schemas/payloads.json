@@ -1,0 +1,162 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "payload": {
+      "title": "payload",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "type": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "reused": {
+          "type": "boolean",
+          "default": false
+        },
+        "launch": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "customers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "norad_ids": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "nationalities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "manufacturers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mass_kg": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "mass_lbs": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "orbit": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "reference_system": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "regime": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "longitude": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "semi_major_axis_km": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "eccentricity": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "periapsis_km": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "apoapsis_km": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "inclination_deg": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "period_min": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "lifespan_years": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "epoch": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "mean_motion": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "raan": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "arg_of_pericenter": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "mean_anomaly": {
+          "type": ["number", "null"],
+          "default": null
+        },
+        "dragon": {
+          "title": "dragon",
+          "type": "object",
+          "properties": {
+            "capsule": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "mass_returned_kg": {
+              "type": ["number", "null"],
+              "default": null
+            },
+            "mass_returned_lbs": {
+              "type": ["number", "null"],
+              "default": null
+            },
+            "flight_time_sec": {
+              "type": ["number", "null"],
+              "default": null
+            },
+            "manifest": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "water_landing": {
+              "type": ["boolean", "null"],
+              "default": null
+            },
+            "land_landing": {
+              "type": ["boolean", "null"],
+              "default": null
+            }
+          }
+        }
+      }
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -9,7 +9,7 @@ from source_sentry.source import SourceSentry
 from source_sentry.streams import Projects
 
 
-def test_source_wrong_credentials():
+def test_source_wrong_credentials(requests_mock):
     source = SourceSentry()
     status, error = source.check_connection(logger=AirbyteLogger(), config={"auth_token": "test_auth_token"})
     assert not status

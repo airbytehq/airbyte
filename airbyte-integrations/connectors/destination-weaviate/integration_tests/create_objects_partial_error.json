@@ -1,0 +1,30 @@
+[
+  {
+    "class": "NonExistingClass",
+    "creationTimeUnix": 1614852753747,
+    "id": "154cbccd-89f4-4b29-9c1b-001a3339d89a",
+    "properties": {},
+    "deprecations": null,
+    "result": {
+      "errors": {
+        "error": [
+          {
+            "message": "class 'NonExistingClass' not present in schema, class NonExistingClass not present"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "class": "ExistingClass",
+    "creationTimeUnix": 1614852753746,
+    "id": "b7b1cfbe-20da-496c-b932-008d35805f26",
+    "properties": {},
+    "vector": [
+      -0.05244319,
+      0.076136276
+    ],
+    "deprecations": null,
+    "result": {}
+  }
+]

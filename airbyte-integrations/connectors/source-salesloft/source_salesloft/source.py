@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -28,6 +28,10 @@ class SalesloftStream(HttpStream, ABC):
         self.start_date = start_date
         super().__init__(authenticator=authenticator)
 
+    @property
+    def created_at_field(self):
+        return None
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         try:
             if "paging" in response.json()["metadata"].keys():
@@ -40,6 +44,8 @@ class SalesloftStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = {"per_page": 100, "page": 1}
+        if self.created_at_field:
+            params[f"{self.created_at_field}[gt]"] = self.start_date
         if next_page_token and "page" in next_page_token:
             params["page"] = next_page_token["page"]
         return params
@@ -70,8 +76,7 @@ class IncrementalSalesloftStream(SalesloftStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if self.cursor_field in stream_state:
-            params["updated_at[gte]"] = stream_state[self.cursor_field]
+        params[f"{self.cursor_field}[gt]"] = stream_state.get(self.cursor_field, self.start_date)
         return params
 
 
@@ -83,8 +88,8 @@ class Users(SalesloftStream):
 
 
 class People(IncrementalSalesloftStream):
+    created_at_field = "created_at"
     primary_key = "id"
-    cursor_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "people"
@@ -92,7 +97,7 @@ class People(IncrementalSalesloftStream):
 
 class Cadences(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "cadences"
@@ -100,7 +105,7 @@ class Cadences(IncrementalSalesloftStream):
 
 class CadenceMemberships(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "cadence_memberships"
@@ -108,7 +113,7 @@ class CadenceMemberships(IncrementalSalesloftStream):
 
 class Emails(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "sent_at"
 
     def path(self, **kwargs) -> str:
         return "activities/emails"
@@ -116,7 +121,7 @@ class Emails(IncrementalSalesloftStream):
 
 class Calls(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "created_at"
 
     def path(self, **kwargs) -> str:
         return "activities/calls"
@@ -124,7 +129,7 @@ class Calls(IncrementalSalesloftStream):
 
 class Accounts(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "created_at"
 
     def path(self, **kwargs) -> str:
         return "accounts"
@@ -132,6 +137,7 @@ class Accounts(IncrementalSalesloftStream):
 
 class AccountStages(SalesloftStream):
     primary_key = "id"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "account_stages"
@@ -146,7 +152,7 @@ class AccountTiers(SalesloftStream):
 
 class Actions(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "actions"
@@ -154,6 +160,7 @@ class Actions(IncrementalSalesloftStream):
 
 class EmailTemplates(SalesloftStream):
     primary_key = "id"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "email_templates"
@@ -168,7 +175,7 @@ class Import(SalesloftStream):
 
 class Notes(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "notes"
@@ -197,6 +204,7 @@ class Steps(SalesloftStream):
 
 class TeamTemplates(SalesloftStream):
     primary_key = "id"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "team_templates"
@@ -218,7 +226,7 @@ class EmailTemplateAttachments(SalesloftStream):
 
 class CrmActivities(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "crm_activities"
@@ -226,7 +234,7 @@ class CrmActivities(IncrementalSalesloftStream):
 
 class Successes(IncrementalSalesloftStream):
     primary_key = "id"
-    cursor_field = "updated_at"
+    created_at_field = "updated_at"
 
     def path(self, **kwargs) -> str:
         return "successes"

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="airbyte-cdk",
-    version="0.4.2",
+    version="0.30.1",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -33,7 +33,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="airbyte connector-development-kit cdk",
     project_urls={
@@ -42,25 +42,29 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
-    package_data={"airbyte_cdk": ["py.typed"]},
+    package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
+        "airbyte-protocol-models==1.0.0",
         "backoff",
-        # pinned to the last working version for us temporarily while we fix
-        "dataclasses-jsonschema==2.15.1",
         "dpath~=2.0.1",
+        "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
+        "genson==1.2.2",
         "pydantic~=1.9.2",
+        "python-dateutil",
         "PyYAML~=5.4",
         "requests",
         "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
+        "cachetools",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     extras_require={
         "dev": [
+            "freezegun",
             "MyPy~=0.812",
             "pytest",
             "pytest-cov",

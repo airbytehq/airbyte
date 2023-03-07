@@ -4,36 +4,25 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-Please follow the [Greenhouse documentation for generating an API key](https://developers.greenhouse.io/harvest.html#authentication).
+To set up the Greenhouse source connector, you'll need the [Harvest API key](https://developers.greenhouse.io/harvest.html#authentication) with permissions to the resources Airbyte should be able to access.
 
 ## Set up the Greenhouse connector in Airbyte
 
-### For Airbyte Cloud:
-
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Source**. In the top-right corner, click **+New source**.
-3. On the Set up the source page, enter the name for the Greenhouse connector and select **Greenhouse** from the Source type dropdown. 
-4. Enter your `api_key`
-5. Click **Set up source**
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
-3. Enter your `api_key`
-4. Click **Set up source**
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
+4. Enter the name for the Greenhouse connector.
+4. Enter your [**Harvest API Key**](https://developers.greenhouse.io/harvest.html#authentication) that you obtained from Greenhouse.
+5. Click **Set up source**.
 
 ## Supported sync modes
 
 The Greenhouse source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported?  |
-|:------------------------------|:------------|
-| Full Refresh Sync             | Yes         |
-| Incremental Sync              | Yes         |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -56,17 +45,9 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 * [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
 * [Users](https://developers.greenhouse.io/harvest.html#get-list-users)
 
-## Setting permissions for API Keys
-You can specify which API endpoints your API keys have access to from the Greenhouse Dev Center. This will allow you to permit or deny access to each endpoint individually. Any API keys created before January 18th, 2017 will have full permissions to all API endpoints that existed at that time, but any new API keys created after that point will need the required endpoint permissions to be explicitly granted.
-To add or remove endpoint permissions on an API key, go to the Dev Center in Greenhouse, click “API Credential Management”, then click “Manage Permissions” next to your Harvest API Key. From there, check or uncheck permissions for any endpoints.
-
-**Important Note**: Users with Harvest API keys may access all the data in the endpoint. Access to data in Harvest is binary: everything or nothing. Harvest API keys should be given to internal developers with this understanding and to third parties with caution. Each key should only be allowed to access the endpoints it absolutely needs.
-See more on this [here](https://developers.greenhouse.io/harvest.html#authentication).
-
 ## Performance considerations
 
-The Greenhouse connector should not run into Greenhouse API limitations under normal usage. 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 

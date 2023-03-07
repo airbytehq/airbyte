@@ -8,9 +8,13 @@ This page guides you through the process of setting up the Salesforce source con
 
 * [Salesforce Account](https://login.salesforce.com/) with Enterprise access or API quota purchased
 * Dedicated Salesforce [user](https://help.salesforce.com/s/articleView?id=adding_new_users.htm&type=5&language=en_US) (optional)
+<!-- env:oss -->
 * (For Airbyte Open Source) Salesforce [OAuth](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_tokens_scopes.htm&type=5) credentials
+<!-- /env:oss -->
 
-## Step 1: (Optional, Recommended) Create a read-only Salesforce user
+## Setup guide
+
+### Step 1: (Optional, Recommended) Create a read-only Salesforce user
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated read-only user for Airbyte. This allows you to granularly control the data Airbyte can read.
 
@@ -32,13 +36,14 @@ To create a dedicated read only Salesforce user:
 11. Copy the Username and keep it accessible.
 12. Log into the email you used above and verify your new Salesforce account user. You'll need to set a password as part of this process. Keep this password accessible.
 
-## Step 2: Set up Salesforce as a Source in Airbyte
+### Step 2: Set up Salesforce as a Source in Airbyte
 
-### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 To set up Salesforce as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Salesforce** from the **Source type** dropdown.
 4. For Name, enter a name for the Salesforce connector.
@@ -47,8 +52,10 @@ To set up Salesforce as a source in Airbyte Cloud:
 7. (Optional) In the Salesforce Object filtering criteria section, click **Add**. From the Search criteria dropdown, select the criteria relevant to you. For Search value, add the search terms relevant to you. If this field is blank, Airbyte will replicate all data.
 8. Click **Authenticate your account** to authorize your Salesforce account. Airbyte will authenticate the Salesforce account you are already logged in to. Make sure you are logged into the right account.
 9. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 To set up Salesforce as a source in Airbyte Open Source:
 
@@ -59,6 +66,7 @@ To set up Salesforce as a source in Airbyte Open Source:
     3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
 2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](#for-airbyte-cloud).
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -120,7 +128,21 @@ Now that you have set up the Salesforce source connector, check out the followin
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.6   | 2023-03-03 | [22891](https://github.com/airbytehq/airbyte/pull/22891) | Specified date formatting in specification                                                                  |
+| 2.0.5   | 2023-03-01 | [23610](https://github.com/airbytehq/airbyte/pull/23610) | Handle different Salesforce page size for different queries                                                                      |
+| 2.0.4   | 2023-02-24 | [22636](https://github.com/airbytehq/airbyte/pull/22636) | Turn on default HttpAvailabilityStrategy for all streams that are not of class BulkSalesforceStream                              |
+| 2.0.3   | 2023-02-17 | [23190](https://github.com/airbytehq/airbyte/pull/23190) | In case properties are chunked, fetch primary key in every chunk                                                                 |
+| 2.0.2   | 2023-02-13 | [22896](https://github.com/airbytehq/airbyte/pull/22896) | Count the URL length based on encoded params                                                                                     |
+| 2.0.1   | 2023-02-08 | [22597](https://github.com/airbytehq/airbyte/pull/22597) | Make multiple requests if a REST stream has too many properties                                                                  |
+| 2.0.0   | 2023-02-02 | [22322](https://github.com/airbytehq/airbyte/pull/22322) | Remove `ActivityMetricRollup` stream                                                                                             |
+| 1.0.30  | 2023-01-27 | [22016](https://github.com/airbytehq/airbyte/pull/22016) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                      |
+| 1.0.29  | 2023-01-05 | [20886](https://github.com/airbytehq/airbyte/pull/20886) | Remove `ActivityMetric` stream                                                                                                   |
+| 1.0.28  | 2022-12-29 | [20927](https://github.com/airbytehq/airbyte/pull/20927) | Fix tests; add expected records                                                                                                  |
+| 1.0.27  | 2022-11-29 | [19869](https://github.com/airbytehq/airbyte/pull/19869) | Remove `AccountHistory` from unsupported BULK streams                                                                            |
+| 1.0.26  | 2022-11-15 | [19286](https://github.com/airbytehq/airbyte/pull/19286) | Bugfix: fallback to REST API if entity is not supported by BULK API                                                              |
+| 1.0.25  | 2022-11-13 | [19294](https://github.com/airbytehq/airbyte/pull/19294) | Use the correct encoding for non UTF-8 objects and data                                                                          |
+| 1.0.24  | 2022-11-01 | [18799](https://github.com/airbytehq/airbyte/pull/18799) | Update list of unsupported Bulk API objects                                                                                      |
 | 1.0.23  | 2022-11-01 | [18753](https://github.com/airbytehq/airbyte/pull/18753) | Add error_display_message for ConnectionError                                                                                    |
 | 1.0.22  | 2022-10-12 | [17615](https://github.com/airbytehq/airbyte/pull/17615) | Make paging work, if `cursor_field` is not changed inside one page                                                               |
 | 1.0.21  | 2022-10-10 | [17778](https://github.com/airbytehq/airbyte/pull/17778) | Add `EventWhoRelation` to the list of unsupported Bulk API objects.                                                              |

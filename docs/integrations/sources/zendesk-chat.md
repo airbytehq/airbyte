@@ -4,47 +4,47 @@ This page contains the setup guide and reference information for the Zendesk Cha
 
 ## Prerequisites
 
-- Zendesk Account with permission to access data from accounts you want to sync
-- Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+- A Zendesk Account with permission to access data from accounts you want to sync.
+<!-- env:oss -->
+- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+<!-- /env:oss -->
 
 ## Setup guide
 
-## Step 1: Set up Zendesk Chat
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
-Generate an Access Token as described in [Zendesk Chat docs](https://developer.zendesk.com/rest_api/docs/chat/auth)
-
-
-## Step 2: Set up the Zendesk Chat connector in Airbyte
-
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Zendesk Chat connector and select **Zendesk Chat** from the Source type dropdown. 
-4. Select `Authenticate your account` and log in and Authorize to the Zendesk account.
-5. Enter your `subdomain`.
-6. Enter your `start_time`. 
-7. Enter your `access_token`. 
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
+4. Enter the name for the Zendesk Chat connector.
+5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
+7. Click **Authenticate your Zendesk Chat account**. Log in and authorize your Zendesk Chat account.
 8. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte OSS:
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
-3. Enter your `subdomain`.
-4. Enter your `start_time`. 
-5. Enter your `access_token`. 
-6. Click **Set up source**.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
+4. Enter the name for the Zendesk Chat connector.
+5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
+7. For Authorization Method, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/rest_api/docs/chat/auth).
+8. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
 The Zendesk Chat source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
-| SSL connection    | Yes        |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -63,7 +63,7 @@ The Zendesk Chat source connector supports the following [sync modes](https://do
 
 ## Performance considerations
 
-The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
+The connector is restricted by Zendesk's [requests limitation](https://developer.zendesk.com/rest_api/docs/voice-api/introduction#rate-limits).
 
 ## Data type map
 
@@ -77,7 +77,9 @@ The connector is restricted by normal Zendesk [requests limitation](https://deve
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                          |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| 0.1.13  | 2023-02-10 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Specified date formatting in specification                                                     |
+| 0.1.12  | 2023-01-27 | [22026](https://github.com/airbytehq/airbyte/pull/22026) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.11  | 2022-10-18 | [17745](https://github.com/airbytehq/airbyte/pull/17745) | Add Engagements Stream and fix infity looping                                                                            |
 | 0.1.10  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                    |
 | 0.1.9   | 2022-08-23 | [15879](https://github.com/airbytehq/airbyte/pull/15879) | Corrected specification and stream schemas to support backward capability                                        |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
@@ -14,9 +14,10 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,7 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       final JdbcDatabase database = getDatabase(dataSource);
       final var nameTransformer = getNameTransformer();
       final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
-      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
+      performCreateInsertTestOnDestination(outputSchema, database, nameTransformer);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
@@ -90,6 +91,13 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
         LOGGER.warn("Unable to close data source.", e);
       }
     }
+  }
+
+  protected void performCreateInsertTestOnDestination(final String outputSchema,
+                                                      final JdbcDatabase database,
+                                                      final NamingConventionTransformer nameTransformer)
+      throws Exception {
+    AbstractJdbcDestination.attemptTableOperations(outputSchema, database, nameTransformer, getSqlOperations(), true);
   }
 
 }

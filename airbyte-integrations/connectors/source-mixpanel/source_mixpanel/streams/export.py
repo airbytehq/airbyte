@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -85,6 +85,32 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "export"
 
+    def iter_dicts(self, lines):
+        """
+        The incoming stream has to be JSON lines format.
+        From time to time for some reason, the one record can be split into multiple lines.
+        We try to combine such split parts into one record only if parts go nearby.
+        """
+        parts = []
+        for record_line in lines:
+            if record_line == "terminated early":
+                self.logger.warning(f"Couldn't fetch data from Export API. Response: {record_line}")
+                return
+            try:
+                yield json.loads(record_line)
+            except ValueError:
+                parts.append(record_line)
+            else:
+                parts = []
+
+            if len(parts) > 1:
+                try:
+                    yield json.loads("".join(parts))
+                except ValueError:
+                    pass
+                else:
+                    parts = []
+
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Export API return response in JSONL format but each line is a valid JSON object
         Raw item example:
@@ -106,11 +132,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
         """
 
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
-        for record_line in response.iter_lines(decode_unicode=True):
-            if record_line == "terminated early":
-                self.logger.warning(f"Couldn't fetch data from Export API. Response: {record_line}")
-                break
-            record = json.loads(record_line)
+        for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
             # transform record into flat dict structure
             item = {"event": record["event"]}
             properties = record["properties"]

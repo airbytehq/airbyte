@@ -1,13 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import java.time.Duration;
+import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
@@ -33,20 +34,32 @@ public class CdcConfigurationHelper {
   private static final String BINLOG_FORMAT = "binlog_format";
   private static final String BINLOG_ROW_IMAGE = "binlog_row_image";
 
-  public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
-  public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
-  public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
-
   /**
    * Method will get required configurations for cdc sync
    *
    * @return list of List<CheckedConsumer<JdbcDatabase, Exception>>
    */
   public static List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations() {
-    return List.of(getCheckOperation(LOG_BIN, "ON"),
+    return List.of(getMasterStatusOperation(),
+        getCheckOperation(LOG_BIN, "ON"),
         getCheckOperation(BINLOG_FORMAT, "ROW"),
         getCheckOperation(BINLOG_ROW_IMAGE, "FULL"));
 
+  }
+
+  // Checks whether the user has REPLICATION CLIENT privilege needed to query status information about
+  // the binary log files, which are needed for CDC.
+  private static CheckedConsumer<JdbcDatabase, Exception> getMasterStatusOperation() {
+    return database -> {
+      try {
+        database.unsafeResultSetQuery(
+            connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+            resultSet -> resultSet);
+      } catch (final SQLException e) {
+        throw new ConfigErrorException("Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+            + " for CDC mode.");
+      }
+    };
   }
 
   private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(final String name, final String value) {
@@ -64,15 +77,6 @@ public class CdcConfigurationHelper {
         throw new RuntimeException(String.format("The variable \"%s\" should be set to \"%s\", but it is \"%s\"", name, value, resultValue));
       }
     };
-  }
-
-  public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
-    final JsonNode replicationMethod = config.get("replication_method");
-    if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
-      final int seconds = config.get("replication_method").get("initial_waiting_seconds").asInt();
-      return Optional.of(seconds);
-    }
-    return Optional.empty();
   }
 
   private static Optional<String> getCdcServerTimezone(final JsonNode config) {
@@ -93,47 +97,6 @@ public class CdcConfigurationHelper {
             + "See https://www.iana.org/time-zones for more details", serverTimeZone.get()));
       }
     }
-  }
-
-  public static void checkFirstRecordWaitTime(final JsonNode config) {
-    // we need to skip the check because in tests, we set initial_waiting_seconds
-    // to 5 seconds for performance reasons, which is shorter than the minimum
-    // value allowed in production
-    if (config.has("is_test") && config.get("is_test").asBoolean()) {
-      return;
-    }
-
-    final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
-    if (firstRecordWaitSeconds.isPresent()) {
-      final int seconds = firstRecordWaitSeconds.get();
-      if (seconds < MIN_FIRST_RECORD_WAIT_TIME.getSeconds() || seconds > MAX_FIRST_RECORD_WAIT_TIME.getSeconds()) {
-        throw new IllegalArgumentException(
-            String.format("initial_waiting_seconds must be between %d and %d seconds",
-                MIN_FIRST_RECORD_WAIT_TIME.getSeconds(), MAX_FIRST_RECORD_WAIT_TIME.getSeconds()));
-      }
-    }
-  }
-
-  public static Duration getFirstRecordWaitTime(final JsonNode config) {
-    final boolean isTest = config.has("is_test") && config.get("is_test").asBoolean();
-    Duration firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME;
-
-    final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
-    if (firstRecordWaitSeconds.isPresent()) {
-      firstRecordWaitTime = Duration.ofSeconds(firstRecordWaitSeconds.get());
-      if (!isTest && firstRecordWaitTime.compareTo(MIN_FIRST_RECORD_WAIT_TIME) < 0) {
-        LOGGER.warn("First record waiting time is overridden to {} minutes, which is the min time allowed for safety.",
-            MIN_FIRST_RECORD_WAIT_TIME.toMinutes());
-        firstRecordWaitTime = MIN_FIRST_RECORD_WAIT_TIME;
-      } else if (!isTest && firstRecordWaitTime.compareTo(MAX_FIRST_RECORD_WAIT_TIME) > 0) {
-        LOGGER.warn("First record waiting time is overridden to {} minutes, which is the max time allowed for safety.",
-            MAX_FIRST_RECORD_WAIT_TIME.toMinutes());
-        firstRecordWaitTime = MAX_FIRST_RECORD_WAIT_TIME;
-      }
-    }
-
-    LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
-    return firstRecordWaitTime;
   }
 
 }

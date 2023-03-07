@@ -1,7 +1,7 @@
 # Adds ports to the db and access to the temporal UI for debugging purposes.
 # Expected to be used like this:
-# VERSION=dev docker-compose -f docker-compose.yaml -f docker-compose.debug.yaml up
-version: "3.7"
+# VERSION=dev docker compose -f docker-compose.yaml -f docker-compose.debug.yaml up
+version: "3.8"
 x-logging: &default-logging
   options:
     max-size: "100m"
@@ -27,3 +27,13 @@ services:
     networks:
       - airbyte_internal
       - airbyte_public
+  worker:
+    environment:
+      - DEBUG_CONTAINER_IMAGE=${DEBUG_CONTAINER_IMAGE}
+      - DEBUG_CONTAINER_JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
+  server:
+    # You will need to create a remote JVM debugging Run Configuration
+    # If you're on a Mac you will need to obtain the IP address of the container
+    # The value of DEBUG_SERVER_JAVA_OPTIONS should be the same as DEBUG_CONTAINER_JAVA_OPTS above
+    environment:
+      - JAVA_TOOL_OPTIONS=${DEBUG_SERVER_JAVA_OPTIONS}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -18,10 +18,11 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * Integration test testing {@link RedshiftStagingS3Destination}. The default Redshift integration
  * test credentials contain S3 credentials - this automatically causes COPY to be selected.
  */
-public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3DestinationAcceptanceTest.class);
 
@@ -111,6 +112,34 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
   }
 
+  /*
+   * FileBuffer Default Tests
+   */
+  @Test
+  public void testGetFileBufferDefault() {
+    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
+    assertEquals(destination.getNumberOfFileBuffers(config),
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
+  @Test
+  public void testGetFileBufferMaxLimited() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
+  @Test
+  public void testGetMinimumFileBufferCount() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
+    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
+    // User cannot set number of file counts below the default file buffer count, which is existing
+    // behavior
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
   @Override
   protected TestDataComparator getTestDataComparator() {
     return new RedshiftTestDataComparator();
@@ -141,16 +170,6 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
         .stream()
         .map(j -> j.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
-  }
-
-  @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
   }
 
   @Override
@@ -185,7 +204,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
-    final String createUser = String.format("create user %s with password '%s';",
+    final String createUser = String.format("create user %s with password '%s' SESSION TIMEOUT 60;",
         USER_WITHOUT_CREDS, baseConfig.get("password").asText());
     getDatabase().query(ctx -> ctx.execute(createUser));
     final JsonNode configForSchema = Jsons.clone(baseConfig);
@@ -196,7 +215,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String dropSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText());
+    getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", config.get("schema").asText())));
     getDatabase().query(ctx -> ctx.execute(String.format("drop user if exists %s;", USER_WITHOUT_CREDS)));
   }
 

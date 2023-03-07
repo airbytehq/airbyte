@@ -64,6 +64,7 @@
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-25T00:00:00Z"],
+        "order": 8,
         "type": "string"
       },
       "replication_end_date": {
@@ -71,13 +72,16 @@
         "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data after this date will not be replicated.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$",
         "examples": ["2017-01-25T00:00:00Z"],
+        "order": 9,
         "type": "string"
       },
       "period_in_days": {
         "title": "Period In Days",
         "description": "Will be used for stream slicing for initial full_refresh sync when no updated state is present for reports that support sliced incremental sync.",
-        "default": 30,
-        "examples": ["30", "365"],
+        "default": 90,
+        "maximum": 90,
+        "examples": ["1", "10", "30", "60", "90"],
+        "order": 10,
         "type": "integer"
       },
       "report_options": {
@@ -87,6 +91,7 @@
           "{\"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT\": {\"reportPeriod\": \"WEEK\"}}",
           "{\"GET_SOME_REPORT\": {\"custom\": \"true\"}}"
         ],
+        "order": 11,
         "type": "string"
       },
       "max_wait_seconds": {
@@ -94,6 +99,7 @@
         "description": "Sometimes report can take up to 30 minutes to generate. This will set the limit for how long to wait for a successful report.",
         "default": 500,
         "examples": ["500", "1980"],
+        "order": 12,
         "type": "integer"
       },
       "aws_environment": {
@@ -135,9 +141,6 @@
       "lwa_app_id",
       "lwa_client_secret",
       "refresh_token",
-      "aws_access_key",
-      "aws_secret_key",
-      "role_arn",
       "replication_start_date",
       "aws_environment",
       "region"

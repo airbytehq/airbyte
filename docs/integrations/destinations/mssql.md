@@ -56,6 +56,7 @@ Make sure your SQL Server database can be accessed by Airbyte. If your database 
 #### **Permissions**
 
 You need a user configured in SQL Server that can create tables and write rows. We highly recommend creating an Airbyte-specific user for this purpose.
+In order to allow for normalization, please grant ALTER permissions for the user configured. 
 
 #### Target Database
 

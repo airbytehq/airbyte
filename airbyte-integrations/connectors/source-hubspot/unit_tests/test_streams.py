@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
@@ -24,7 +24,6 @@ from source_hubspot.streams import (
     MarketingEmails,
     Owners,
     Products,
-    Quotes,
     TicketPipelines,
     Tickets,
     Workflows,
@@ -83,7 +82,6 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (Contacts, "contact"),
         (Deals, "deal"),
         (DealPipelines, "deal"),
-        (Quotes, "quote"),
         (EmailEvents, ""),
         (EngagementsCalls, "calls"),
         (EngagementsEmails, "emails"),
@@ -96,7 +94,6 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         (MarketingEmails, ""),
         (Owners, ""),
         (Products, "product"),
-        (Quotes, "quote"),
         (TicketPipelines, ""),
         (Tickets, "ticket"),
         (Workflows, ""),

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,7 +8,7 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode  # type: ignore
 from jinja2 import Template
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro
@@ -548,7 +548,11 @@ where 1 = 1
                 sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
-            if self.destination_type.value == DestinationType.MYSQL.value or self.destination_type.value == DestinationType.TIDB.value:
+            if (
+                self.destination_type.value == DestinationType.MYSQL.value
+                or self.destination_type.value == DestinationType.TIDB.value
+                or self.destination_type.value == DestinationType.DUCKDB.value
+            ):
                 # MySQL does not support [cast] and [nullif] functions together
                 return self.generate_mysql_date_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
@@ -570,7 +574,11 @@ where 1 = 1
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 sql_type = f"'{sql_type}'"
                 return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
-            if self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB:
+            if (
+                self.destination_type == DestinationType.MYSQL
+                or self.destination_type == DestinationType.TIDB
+                or self.destination_type == DestinationType.DUCKDB
+            ):
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
@@ -1146,7 +1154,11 @@ where 1 = 1
 
         schema = self.get_schema(is_intermediate)
         # MySQL table names need to be manually truncated, because it does not do it automatically
-        truncate_name = self.destination_type == DestinationType.MYSQL or self.destination_type == DestinationType.TIDB
+        truncate_name = (
+            self.destination_type == DestinationType.MYSQL
+            or self.destination_type == DestinationType.TIDB
+            or self.destination_type == DestinationType.DUCKDB
+        )
         table_name = self.tables_registry.get_table_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file_name = self.tables_registry.get_file_name(schema, self.json_path, self.stream_name, suffix, truncate_name)
         file = f"{file_name}.sql"

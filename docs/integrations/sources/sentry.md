@@ -4,42 +4,28 @@ This page contains the setup guide and reference information for the Sentry sour
 
 ## Prerequisites
 
-You can find or create authentication tokens within [Sentry](https://sentry.io/settings/account/api/auth-tokens/).
+To set up the Sentry source connector, you'll need the Sentry [project name](https://docs.sentry.io/product/projects/), [authentication token](https://docs.sentry.io/api/auth/#auth-tokens), and [organization](https://docs.sentry.io/product/accounts/membership/).
 
-## Setup guide
-## Step 1: Set up the Sentry connector in Airbyte
+## Set up the Sentry connector in Airbyte
 
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Sentry connector and select **Sentry** from the Source type dropdown.
-4. Enter your `auth_token` - Sentry Authentication Token with the necessary permissions \(described below\).
-4. Enter your `organization` - Organization Slug. You can check it at https://sentry.io/settings/$YOUR_ORG_HERE/.
-4. Enter your `project` - The name of the Project you wanto sync. You can list it from https://sentry.io/settings/$YOUR_ORG_HERE/projects/.
-4. Enter your `hostname` - Host name of Sentry API server. For self-hosted, specify your host name here. Otherwise, leave it empty. \(default: sentry.io\).
-8. Click **Set up source**.
-
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
-3. Enter your `auth_token` - Sentry Authentication Token with the necessary permissions \(described below\).
-4. Enter your `organization` - Organization Slug. You can check it at https://sentry.io/settings/$YOUR_ORG_HERE/.
-5. Enter your `project` - The name of the Project you wanto sync. You can list it from https://sentry.io/settings/$YOUR_ORG_HERE/projects/.
-6. Enter your `hostname` - Host name of Sentry API server. For self-hosted, specify your host name here. Otherwise, leave it empty. \(default: sentry.io\).
-7. Click **Set up source**.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Sentry** from the Source type dropdown.
+4. Enter the name for the Sentry connector.
+5. For **Project**, enter the name of the [Sentry project](https://docs.sentry.io/product/projects/) you want to sync.
+6. For **Host Name**, enter the host name of your self-hosted Sentry API Server. If your server isn't self-hosted, leave the field blank.
+7. For **Authentication Tokens**, enter the [Sentry authentication token](https://docs.sentry.io/api/auth/#auth-tokens).
+8. For **Organization**, enter the [Sentry Organization](https://docs.sentry.io/product/accounts/membership/) the groups belong to.
+9. Click **Set up source**.
 
 ## Supported sync modes
 
 The Sentry source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | No         |
-| SSL connection    | Yes        |
-| Namespaces        | No         |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -57,13 +43,18 @@ The Sentry source connector supports the following [sync modes](https://docs.air
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                           |
-|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.7   | 2022-09-30 | [17466](https://github.com/airbytehq/airbyte/pull/17466) | Migrate to per-stream states                     |
-| 0.1.6   | 2022-08-29 | [16112](https://github.com/airbytehq/airbyte/pull/16112) | Revert back to the Python CDK                     |
-| 0.1.5   | 2022-08-24 | [15911](https://github.com/airbytehq/airbyte/pull/15911) | Bugfix to allowing reading schemas at runtime     |
-| 0.1.4   | 2022-08-19 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml at runtime    |
-| 0.1.3   | 2022-08-17 | [15734](https://github.com/airbytehq/airbyte/pull/15734) | Fix yaml based on the new schema validator        |
-| 0.1.2   | 2021-12-28 | [15345](https://github.com/airbytehq/airbyte/pull/15345) | Migrate to config-based framework                 |
-| 0.1.1   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications |
-| 0.1.0   | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975)   | New Source: Sentry                                |
+| Version | Date       | Pull Request                                             | Subject                                                     |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 0.1.12  | 2023-03-01 | [23619](https://github.com/airbytehq/airbyte/pull/23619) | Fix bug when `stream state` is `None` or any other bad value occurs                     |
+| 0.1.11  | 2023-02-02 | [22303](https://github.com/airbytehq/airbyte/pull/22303) | Turn ON default AvailabilityStrategy                        |
+| 0.1.10  | 2023-01-27 | [22041](https://github.com/airbytehq/airbyte/pull/22041) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.1.9   | 2022-12-20 | [21864](https://github.com/airbytehq/airbyte/pull/21864) | Add state persistence to incremental sync                   |
+| 0.1.8   | 2022-12-20 | [20709](https://github.com/airbytehq/airbyte/pull/20709) | Add incremental sync                                        |
+| 0.1.7   | 2022-09-30 | [17466](https://github.com/airbytehq/airbyte/pull/17466) | Migrate to per-stream states                                |
+| 0.1.6   | 2022-08-29 | [16112](https://github.com/airbytehq/airbyte/pull/16112) | Revert back to the Python CDK                               |
+| 0.1.5   | 2022-08-24 | [15911](https://github.com/airbytehq/airbyte/pull/15911) | Bugfix to allowing reading schemas at runtime               |
+| 0.1.4   | 2022-08-19 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml at runtime              |
+| 0.1.3   | 2022-08-17 | [15734](https://github.com/airbytehq/airbyte/pull/15734) | Fix yaml based on the new schema validator                  |
+| 0.1.2   | 2021-12-28 | [15345](https://github.com/airbytehq/airbyte/pull/15345) | Migrate to config-based framework                           |
+| 0.1.1   | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications           |
+| 0.1.0   | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975)   | New Source: Sentry                                          |
