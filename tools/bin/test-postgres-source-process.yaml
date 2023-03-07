@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   generateName: run-postgres-test-final
+  labels:
+    app: perfharness
 spec:
   containers:
   - name: main
