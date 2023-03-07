@@ -131,3 +131,7 @@ Don't be fooled by our simple example of only one Airflow task. Airbyte is a pow
 
 We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). We're still in alpha, so if you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
+## Related tutorials
+For additional information about using the Airflow Airbyte Operator, see the following:
+
+- [A step-by-step guide to setting up and configuring Airbyte and Airflow to work together](https://airbyte.com/tutorials/how-to-use-airflow-and-airbyte-together)
