@@ -156,6 +156,13 @@ class Pipelines(PipedriveStream):
     """
 
 
+class Products(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Products#getProducts,
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
 class Stages(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Stages#getStages,
