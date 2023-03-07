@@ -123,6 +123,15 @@ class ActivityFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields"""
 
 
+class ActivityTypes(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+    path_param = "activityType"
+
+
 class Currencies(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies"""
 

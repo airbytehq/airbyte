@@ -44,7 +44,7 @@ def test_check_connection_exception(requests_mock, config_token):
 def test_streams(config_token):
     streams = SourcePipedrive().streams(config_token)
 
-    assert len(streams) == 15
+    assert len(streams) == 16
 
 
 def setup_response(status, body):

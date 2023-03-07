@@ -15,6 +15,7 @@ from source_pipedrive.auth import QueryStringTokenAuthenticator
 from source_pipedrive.streams import (
     Activities,
     ActivityFields,
+    ActivityTypes,
     Currencies,
     DealFields,
     Deals,
@@ -56,6 +57,7 @@ class SourcePipedrive(AbstractSource):
         streams = [
             Activities(**incremental_kwargs),
             ActivityFields(**stream_kwargs),
+            ActivityTypes(**incremental_kwargs),
             Currencies(**stream_kwargs),
             Deals(**incremental_kwargs),
             DealFields(**stream_kwargs),

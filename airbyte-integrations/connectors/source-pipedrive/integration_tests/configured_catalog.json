@@ -32,6 +32,20 @@
     },
     {
       "stream": {
+        "name": "activity_types",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["update_time"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["update_time"],
+      "primary_key": [["id"]]
+    },
+    {
+      "stream": {
         "name": "activities",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
