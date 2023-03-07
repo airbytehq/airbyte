@@ -90,9 +90,6 @@ def get_dimensions_type(d: str) -> str:
     return "string"
 
 
-class GoogleAnalyticsApiQuotaNotImplemented(Exception):
-    """ Error not listed in GoogleAnalyticsApiQouta.quota_mapping """
-
 class GoogleAnalyticsApiQuota:
         
     # Airbyte Logger
@@ -110,41 +107,13 @@ class GoogleAnalyticsApiQuota:
     stop_iter: bool = False
     # mapping with scenarios for each quota kind
     quota_mapping: Mapping[str, Any] = {
-        # 'tokensPerDay': {
-        #     'error_pattern': "Unknown",
-        #     "backoff": None,
-        #     "should_retry": False,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": True,
-        # },
-        # 'tokensPerHour': {
-        #     'error_pattern': "unknown_tokens_per_hour",
-        #     "backoff": 1800,
-        #     "should_retry": True,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": False,
-        # },
         'concurrentRequests': {
             'error_pattern': "Exhausted concurrent requests quota.",
             "backoff": 30,
             "should_retry": True,
             "raise_on_http_errors": False,
             "stop_iter": False,
-        }, 
-        # 'serverErrorsPerProjectPerHour': {
-        #     'error_pattern': "API requests failing by server error is too high.",
-        #     "backoff": 3600,
-        #     "should_retry": True,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": False,
-        # },
-        # 'potentiallyThresholdedRequestsPerHour': {
-        #     'error_pattern': "BlaBla",
-        #     "backoff": 1800,
-        #     "should_retry": True,
-        #     "raise_on_http_errors": False,
-        #     "stop_iter": False,
-        # },
+        },
         'tokensPerProjectPerHour': {
             'error_pattern': "Exhausted property tokens for a project per hour.",
             "backoff": 1800,
@@ -152,6 +121,35 @@ class GoogleAnalyticsApiQuota:
             "raise_on_http_errors": False,
             "stop_iter": False,
         },
+        # 'tokensPerDay': {
+        #     'error_pattern': "___",
+        #     "backoff": None,
+        #     "should_retry": False,
+        #     "raise_on_http_errors": False,
+        #     "stop_iter": True,
+        # },
+        # 'tokensPerHour': {
+        #     'error_pattern': "___",
+        #     "backoff": 1800,
+        #     "should_retry": True,
+        #     "raise_on_http_errors": False,
+        #     "stop_iter": False,
+        # },
+        # 'serverErrorsPerProjectPerHour': {
+        #     'error_pattern': "___",
+        #     "backoff": 3600,
+        #     "should_retry": True,
+        #     "raise_on_http_errors": False,
+        #     "stop_iter": False,
+        # },
+        # 'potentiallyThresholdedRequestsPerHour': {
+        #     'error_pattern': "___",
+        #     "backoff": 1800,
+        #     "should_retry": True,
+        #     "raise_on_http_errors": False,
+        #     "stop_iter": False,
+        # },
+        
     }
     
     def _get_known_quota_list(self) -> Iterable[str]:
@@ -175,23 +173,12 @@ class GoogleAnalyticsApiQuota:
                 current_quota.update(**{quota: property_quota.get(quota)})
         return current_quota
     
-    def _set_should_retry(self, quota_name) -> None:
-        self.should_retry = self.quota_mapping.get(quota_name).get("should_retry")
-        
-    def _set_backoff(self, quota_name) -> None:
-        self.backoff_time = self.quota_mapping.get(quota_name).get("backoff")
-        
-    def _set_raise_on_http_errors(self, quota_name) -> None:
-        self.raise_on_http_errors = self.quota_mapping.get(quota_name).get("raise_on_http_errors")
-    
-    def _set_stop_iter(self, quota_name) -> None:
-        self.stop_iter = self.quota_mapping.get(quota_name).get("stop_iter")
-    
     def _set_attrs_values_for_quota(self, quota_name: str) -> None:
-        self._set_raise_on_http_errors(quota_name)
-        self._set_stop_iter(quota_name)
-        self._set_should_retry(quota_name)
-        self._set_backoff(quota_name)
+        quota = self.quota_mapping.get(quota_name)
+        self.should_retry = quota.get("should_retry")
+        self.raise_on_http_errors = quota.get("raise_on_http_errors")
+        self.stop_iter = quota.get("stop_iter")
+        self.backoff_time = quota.get("backoff")
     
     def _set_default_attrs(self) -> None:
         self.should_retry = True
@@ -217,18 +204,14 @@ class GoogleAnalyticsApiQuota:
     
     def _check_for_errors(self, response: requests.Response) -> None:
         try:
-            # revert to default values after successull retry
-            # or unless another 429 error is hit
+            # revert to default values after successul retry
             self._set_default_attrs()
             error = response.json().get('error')
             if error:
                 quota_name = self._get_quota_name_from_error_message(error.get("message"))
-                if quota_name:
-                    self._set_attrs_values_for_quota(quota_name)
-                    self.logger.warn(f"The `{quota_name}` quota is exceeded!")
-                    return None
-                else:
-                    raise GoogleAnalyticsApiQuotaNotImplemented(f"Unknown Quota Error")
+                self._set_attrs_values_for_quota(quota_name)
+                self.logger.warn(f"The `{quota_name}` quota is exceeded!")
+                return None
         except Exception as e:
             self.logger.fatal(f"Other `GoogleAnalyticsApiQuota` error: {e}")
             raise
@@ -263,23 +246,6 @@ class GoogleAnalyticsApiQuota:
                 }
             }  
         """
-
-        # get current quota
-        # property_quota: dict = response.json().get("propertyQuota")
-        # if property_quota:
-        #     # return default attrs values once successfully retried
-        #     # or untill another 429 error is hit
-        #     self._set_default_attrs()
-        #     # reduce quota list to known kinds only
-        #     current_quota = self._get_known_quota_from_current(property_quota)
-        #     if current_quota:
-        #         # save the initial quota
-        #         self._set_initial_quota(current_quota)
-        #         # check for remaining quota
-        #         return self._check_remaining(current_quota)
-        # else:
-        #     return self._check_for_errors(response)
-
 
         def decorator(func):
             @wraps(func)

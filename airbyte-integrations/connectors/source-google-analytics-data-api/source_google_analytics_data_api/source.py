@@ -8,7 +8,7 @@ import logging
 import pkgutil
 import uuid
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
 import jsonschema
 import requests
@@ -16,7 +16,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.utils import DATE_FORMAT
 from .utils import (
@@ -62,16 +61,6 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     def __init__(self, *, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
         self._config = config
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        """
-        Disabled, because:
-        1) Limited API Rate Limits (Quota)
-        2) Inability to handle the 429 error, if we have {429 - Resource Exhausted} with different scenarios, 
-        prior to the ability of handling the issue on the source-connector level.
-        """
-        return None
 
     @property
     def config(self):
@@ -190,20 +179,19 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
         metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}])}
 
-        # for row in r.get("rows", []):
-        #     yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
-        #         dimensions, row
-        #     ) | self.add_metrics(metrics, metrics_type_map, row)
-        yield {}
+        for row in r.get("rows", []):
+            yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
+                dimensions, row
+            ) | self.add_metrics(metrics, metrics_type_map, row)
 
-    # def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-    #     updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
-    #     stream_state_value = current_stream_state.get(self.cursor_field)
-    #     if stream_state_value:
-    #         stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
-    #         updated_state = max(updated_state, stream_state_value)
-    #     current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
-    #     return current_stream_state
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
+        return current_stream_state
 
     def request_body_json(
         self,
