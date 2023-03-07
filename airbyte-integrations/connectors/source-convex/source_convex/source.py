@@ -4,6 +4,7 @@
 
 
 from datetime import datetime
+from json import JSONDecodeError
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Tuple, TypedDict
 
 import requests
@@ -51,7 +52,7 @@ class SourceConvex(AbstractSource):
         if resp.status_code == 200:
             return True, None
         else:
-            return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp) 
+            return False, format_http_error("Connection to Convex via json_schemas endpoint failed", resp)
 
     def streams(self, config: ConvexConfig) -> List[Stream]:
         """
@@ -59,7 +60,7 @@ class SourceConvex(AbstractSource):
         """
         resp = self._json_schemas(config)
         if resp.status_code != 200:
-            raise Exception(format_http_error("Failed request to json_schemas", resp) )
+            raise Exception(format_http_error("Failed request to json_schemas", resp))
         json_schemas = resp.json()
         table_names = list(json_schemas.keys())
         return [
@@ -196,9 +197,10 @@ class ConvexStream(HttpStream, IncrementalMixin):
             record["_ab_cdc_deleted_at"] = ts if record["_deleted"] else None
             yield record
 
+
 def format_http_error(context: str, resp: requests.Response) -> str:
     try:
         err = resp.json()
         return f"{context}: {resp.status_code}: {err['code']}: {err['message']}"
-    except:
+    except JSONDecodeError or KeyError:
         return f"{context}: {resp.text}"

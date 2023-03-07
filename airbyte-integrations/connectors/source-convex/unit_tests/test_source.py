@@ -61,6 +61,7 @@ def test_check_connection(mocker):
         },
     ) == (True, None)
 
+
 @responses.activate
 def test_check_bad_connection(mocker):
     setup_responses()
@@ -73,6 +74,7 @@ def test_check_bad_connection(mocker):
             "access_key": "test_api_key",
         },
     ) == (False, "Connection to Convex via json_schemas endpoint failed: 400: Error code: Error message")
+
 
 @responses.activate
 def test_streams(mocker):
