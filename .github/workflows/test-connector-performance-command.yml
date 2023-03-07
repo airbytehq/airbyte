@@ -72,6 +72,16 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Search for valid connector name format
+        id: regex
+        uses: AsasInnab/regex-action@v1
+        with:
+          regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
+          regex_flags: "i" # required to be set for this plugin
+          search_string: ${{ github.event.inputs.connector }}
+      - name: Validate input workflow format
+        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        run: echo "The connector provided has an invalid format!" && exit 1
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner
