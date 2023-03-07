@@ -261,11 +261,14 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      # Random comment do retrigger the build
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
+      - name: Gradle and Python Caching
+        uses: actions/cache@v3
         with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.venv
+          key: ${{ secrets.CACHE_VERSION }}-Linux-da513e5f2c48cdcc4f1da1d02cf5c0dae8c682f3a92c8600dc7371190ec93341-0ecd6c3153bdf6e7e5693a8f341b2fe8c7f26544f4800c2780d273f236414309-ae5c4f5dec8447f64463ce2a3c94cf616d4dc91ab34212339d02715358a01fae-5974cced2ba720a1dff875ae305c5f96ca455a7f5352ff9091d6a12c0f4e188a
 
       - uses: actions/setup-java@v3
         with:
