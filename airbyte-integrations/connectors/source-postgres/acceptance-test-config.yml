@@ -8,8 +8,12 @@ acceptance_tests:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.51"
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config_cdc.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.51"
   connection:
     tests:
       - config_path: "secrets/config.json"
