@@ -138,7 +138,7 @@ pub struct ConnectionStatus {
 #[serde(rename_all = "snake_case")]
 pub struct Record {
     pub stream: String,
-    pub data: Box<RawValue>,
+    pub data: serde_json::Value,
     pub emitted_at: i64,
     pub namespace: Option<String>,
 }

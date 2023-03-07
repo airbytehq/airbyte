@@ -9,6 +9,7 @@ edition = "2021"
 doc = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 flow_cli_common = { git = "https://github.com/estuary/flow" }
 proto-flow = { git = "https://github.com/estuary/flow", version = "0.0.0" }
+json = { git = "https://github.com/estuary/flow", version = "0.0.0" }
 
 json-patch = "*"
 validator = { version = "*", features = ["derive"] }
@@ -33,6 +34,8 @@ thiserror = "*"
 tracing = "*"
 tokio = { version = "1", features = ["full"] }
 tokio-util = { version = "*", features = ["io"] }
+lazy_static = "1.4.0"
+regex = "1.7.1"
 
 [dev-dependencies]
 insta = "*"

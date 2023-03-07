@@ -35,6 +35,7 @@ use tempfile::{Builder, TempDir};
 use json_patch::merge;
 
 use super::fix_document_schema::fix_document_schema_keys;
+use super::normalize::normalize_doc;
 use super::remap::remap;
 
 const CONFIG_FILE_NAME: &str = "config.json";
@@ -50,9 +51,11 @@ const STREAM_PK_SUFFIX: &str = ".pk.json";
 const STREAM_PATCH_SUFFIX: &str = ".patch.json";
 const SELECTED_STREAMS_FILE_NAME: &str = "selected_streams.json";
 
+type IndexedBinding = (usize, Option<sj::Value>);
+
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<ValidateRequest>>>,
-    stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
+    stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
     tmp_dir: TempDir,
 }
 
@@ -331,7 +334,7 @@ impl AirbyteSourceInterceptor {
         config_file_path: String,
         catalog_file_path: String,
         state_file_path: String,
-        stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
+        stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         let runtime_messages_stream = Box::pin(stream_runtime_messages::<PullRequest>(in_stream));
@@ -364,7 +367,10 @@ impl AirbyteSourceInterceptor {
                         for (i, binding) in c.bindings.iter().enumerate() {
                             let resource: ResourceSpec =
                                 serde_json::from_str(&binding.resource_spec_json)?;
-                            stb.lock().await.insert(resource.stream.clone(), i);
+
+                            let schema = binding.collection.as_ref().
+                                and_then(|col| Some(serde_json::from_str(&col.schema_json).expect("deserializing collection schema")));
+                            stb.lock().await.insert(resource.stream.clone(), (i, schema));
 
                             let mut projections = HashMap::new();
                             if let Some(ref collection) = binding.collection {
@@ -420,7 +426,7 @@ impl AirbyteSourceInterceptor {
 
     fn adapt_pull_response_stream(
         &mut self,
-        stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
+        stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         // Respond first with Opened.
@@ -451,15 +457,18 @@ impl AirbyteSourceInterceptor {
                     });
 
                     Ok(Some((encode_message(&resp)?, (stb, stream))))
-                } else if let Some(record) = message.record {
+                } else if let Some(mut record) = message.record {
                     let stream_to_binding = stb.lock().await;
                     let binding = stream_to_binding
                         .get(&record.stream)
                         .ok_or(Error::DanglingConnectorRecord(record.stream))?;
-                    let arena = record.data.get().as_bytes().to_vec();
+
+                    normalize_doc(&mut record.data, &binding.1)?;
+
+                    let arena = sj::to_string(&record.data)?.as_bytes().to_vec();
                     let arena_len: u32 = arena.len() as u32;
                     resp.documents = Some(Documents {
-                        binding: *binding as u32,
+                        binding: binding.0 as u32,
                         arena,
                         docs_json: vec![Slice {
                             begin: 0,
