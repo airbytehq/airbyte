@@ -118,7 +118,7 @@ jobs:
           echo "pulling harness image..."
           docker pull rodireich/perftestrepo:6
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
-          kind load docker-image rodireich/perftestrepo:latest --name chart-testing
+          kind load docker-image rodireich/perftestrepo:6 --name chart-testing
           echo "loading pod..."
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
           echo "get pods..."
