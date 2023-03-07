@@ -1,0 +1,100 @@
+definition_type: connection
+resource_name: qogita_db_airbyte_slot_offer_offer <> snowflake_raw_test_offer_offer
+source_configuration_path: sources/qogita_db_airbyte_slot_offer_offer/configuration.yaml
+destination_configuration_path: destinations/snowflake_raw_test_offer_offer/configuration.yaml
+configuration:
+  sync_catalog:
+    streams:
+    - stream:
+        name: offer_offer
+        json_schema:
+          type: object
+          properties:
+            original_price:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            _ab_cdc_deleted_at:
+              type: string
+            _ab_cdc_lsn:
+              type: number
+            source:
+              type: string
+            title:
+              type: string
+            inventory:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            stockfile_received_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            ref:
+              type: string
+            unit:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              type: string
+            processed_timestamp:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            original_price_currency:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              type: string
+            price:
+              type: number
+            _ab_cdc_updated_at:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            sku:
+              type: string
+            price_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        source_defined_cursor: true
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: incremental
+        destination_sync_mode: append_dedup
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: offer_offer
+        selected: true
+        field_selection_enabled: false
+  status: active
+  schema_change: no_change
+  notify_schema_changes: true
+  namespace_definition: destination
+  namespace_format: ${SOURCE_NAMESPACE}
+  prefix: ''
+  schedule_type: cron
+  schedule_data:
+    cron:
+      cron_expression: '* */5 * * * ?'
+      cron_time_zone: UTC
+  operations:
+  - name: Normalization
+    operator_configuration:
+      operator_type: normalization
+      normalization:
+        option: basic
+

@@ -1,7 +1,7 @@
 definition_type: connection
-resource_name: revenue_db <> Snowflake
+resource_name: revenue_db <> snowflake_raw_revenue_db_public
 source_configuration_path: sources/revenue_db/configuration.yaml
-destination_configuration_path: destinations/snowflake_raw_test_cdc/configuration.yaml
+destination_configuration_path: destinations/snowflake_raw_revenue_db_public/configuration.yaml
 configuration:
   sync_catalog:
     streams:
@@ -87,6 +87,9 @@ configuration:
               format: date-time
               airbyte_type: timestamp_with_timezone
               type: string
+            is_valid_until_days:
+              airbyte_type: integer
+              type: number
             id:
               airbyte_type: integer
               type: number
@@ -333,6 +336,8 @@ configuration:
               type: string
             raw:
               type: string
+            is_phone_number_mobile:
+              type: boolean
             is_synced:
               type: boolean
             url:
@@ -965,6 +970,9 @@ configuration:
               format: date-time
               airbyte_type: timestamp_with_timezone
               type: string
+            is_valid_until_days:
+              airbyte_type: integer
+              type: number
             id:
               airbyte_type: integer
               type: number
@@ -1735,6 +1743,8 @@ configuration:
               type: string
             raw:
               type: string
+            is_phone_number_mobile:
+              type: boolean
             history_id:
               airbyte_type: integer
               type: number
@@ -2026,10 +2036,9 @@ configuration:
         - - id
         namespace: public
       config:
-        sync_mode: incremental
-        destination_sync_mode: append_dedup
-        cursor_field:
-        - id
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
         primary_key:
         - - id
         alias_name: exchange_rate
@@ -2380,7 +2389,7 @@ configuration:
   notify_schema_changes: true
   namespace_definition: destination
   namespace_format: ${SOURCE_NAMESPACE}
-  prefix: revenue_db_public_
+  prefix: ''
   schedule_type: manual
   operations:
   - name: Normalization

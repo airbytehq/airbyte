@@ -1,0 +1,20 @@
+resource_name: qogita_db_standard_full_refresh
+definition_type: source
+definition_id: decd338e-5647-4c0b-adf4-da0e75f5a750
+definition_image: airbyte/source-postgres
+definition_version: 1.0.44
+configuration:
+  ssl: false
+  host: prod-qogita-db.cluster-cuepgogvu0rp.eu-central-1.rds.amazonaws.com
+  port: 5432
+  schemas:
+  - public
+  database: qogitadb
+  password: ${QOGITA_DB_AIRBYTE}
+  ssl_mode:
+    mode: disable
+  username: airbyte
+  tunnel_method:
+    tunnel_method: NO_TUNNEL
+  replication_method:
+    method: Standard

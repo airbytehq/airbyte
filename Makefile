@@ -1,6 +1,6 @@
 .PHONY:
 
-SERVER = ec2-3-10-171-197.eu-west-2.compute.amazonaws.com
+SERVER =
 USER = ec2-user
 DIR := ${CURDIR}
 KEY = airbyte_test.pem
@@ -54,8 +54,8 @@ install_octavia_locally:
 	curl -s -o- https://raw.githubusercontent.com/airbytehq/airbyte/master/octavia-cli/install.sh | bash; \
 	echo "AIRBYTE_URL=http://host.docker.internal:8000" >> $(HOME)/.octavia;
 
-disaster_recovery: create_data_dir create_temp_dir mount_ebs install_docker copy_docker_compose_to_ec2 copy_env_file move_docker_compose_file_to_data_folder \
-move_env_file_to_data_folder start_docker run_docker_compose_up;
+disaster_recovery: create_data_dir create_temp_dir install_docker mount_ebs copy_docker_compose_to_ec2 copy_env_file move_docker_compose_file_to_data_folder \
+	move_env_file_to_data_folder start_docker run_docker_compose_up;
 
 generate_passwords:
 	sh ./secrets_generator.sh;

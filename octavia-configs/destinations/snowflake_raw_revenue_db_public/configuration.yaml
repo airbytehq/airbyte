@@ -1,14 +1,14 @@
-resource_name: snowflake_raw_test_cdc
+resource_name: snowflake_raw_revenue_db_public
 definition_type: destination
 definition_id: 424892c4-daac-4491-b35d-c6688ba547ba
 definition_image: airbyte/destination-snowflake
-definition_version: 0.4.41
+definition_version: 0.4.47
 configuration:
   host: il13848.eu-central-1.snowflakecomputing.com
   role: ACCOUNTADMIN
-  schema: CDC
-  database: RAW_TEST
-  username: airbyte
+  schema: AIRBYTE_REVENUE_DB_PUBLIC
+  database: RAW
+  username: AIRBYTE
   warehouse: LOADING
   credentials:
     password: ${SNOWFLAKE_AIRBYTE}

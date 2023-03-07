@@ -1,0 +1,4627 @@
+definition_type: connection
+resource_name: qogita_db_standard_full_refresh <> snowflake_raw_test_qogita_db_public
+source_configuration_path: sources/qogita_db_standard_full_refresh/configuration.yaml
+destination_configuration_path: destinations/snowflake_raw_qogita_db_public_replication/configuration.yaml
+configuration:
+  sync_catalog:
+    streams:
+    - stream:
+        name: core_filedownload
+        json_schema:
+          type: object
+          properties:
+            file:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_filedownload
+        selected: false
+    - stream:
+        name: sale_salesettings
+        json_schema:
+          type: object
+          properties:
+            automate_sales:
+              type: boolean
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            sale_reminder:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            price_slack:
+              type: number
+            deadline:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            invoice_reminder:
+              airbyte_type: integer
+              type: number
+            notify:
+              type: boolean
+            quantity_slack:
+              airbyte_type: integer
+              type: number
+            shipping_slack:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: sale_salesettings
+        selected: false
+    - stream:
+        name: fulfillment_warehouse
+        json_schema:
+          type: object
+          properties:
+            country:
+              type: string
+            calling_code:
+              type: string
+            is_phone_verified:
+              type: boolean
+            city:
+              type: string
+            customs_number:
+              type: string
+            address_line_two:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            address_line_one:
+              type: string
+            qid:
+              type: string
+            zip_code:
+              type: string
+            country_area:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            phone:
+              type: string
+            coc:
+              type: string
+            tax_number:
+              type: string
+            line_number:
+              type: string
+            contact:
+              type: string
+            name:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            email:
+              type: string
+            is_receiving_orders:
+              type: boolean
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_warehouse
+        selected: false
+    - stream:
+        name: sale_sellerinvoiceline
+        json_schema:
+          type: object
+          properties:
+            quantity:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            price:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            invoice_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            price_currency:
+              type: string
+            saleline_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: sale_sellerinvoiceline
+        selected: false
+    - stream:
+        name: authentication_refreshtoken
+        json_schema:
+          type: object
+          properties:
+            revoked_at:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            exp:
+              type: number
+            qid:
+              type: string
+            token:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: authentication_refreshtoken
+        selected: false
+    - stream:
+        name: order_deliveredline
+        json_schema:
+          type: object
+          properties:
+            price_ordered_currency:
+              type: string
+            price_delivered_currency:
+              type: string
+            delivered_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            price_ordered:
+              type: number
+            qid:
+              type: string
+            saleline_id:
+              airbyte_type: integer
+              type: number
+            invoiceline_id:
+              airbyte_type: integer
+              type: number
+            price_delivered:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            items_ordered:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            items_delivered:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: order_deliveredline
+        selected: false
+    - stream:
+        name: django_celery_beat_periodictasks
+        json_schema:
+          type: object
+          properties:
+            ident:
+              airbyte_type: integer
+              type: number
+            last_update:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - ident
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - ident
+        alias_name: django_celery_beat_periodictasks
+        selected: false
+    - stream:
+        name: claim_evidence
+        json_schema:
+          type: object
+          properties:
+            file:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            claim_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: claim_evidence
+        selected: false
+    - stream:
+        name: django_celery_beat_intervalschedule
+        json_schema:
+          type: object
+          properties:
+            period:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            every:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_celery_beat_intervalschedule
+        selected: false
+    - stream:
+        name: account_bankaccount
+        json_schema:
+          type: object
+          properties:
+            wise_id:
+              airbyte_type: integer
+              type: number
+            country:
+              type: string
+            account_number:
+              type: string
+            city:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            sort_code:
+              type: string
+            routing_number:
+              type: string
+            address_line_one:
+              type: string
+            qid:
+              type: string
+            zip_code:
+              type: string
+            country_area:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            iban:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            bic:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_bankaccount
+        selected: false
+    - stream:
+        name: address_resalecertificate
+        json_schema:
+          type: object
+          properties:
+            file:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            address_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            status:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: address_resalecertificate
+        selected: false
+    - stream:
+        name: sale_saleline
+        json_schema:
+          type: object
+          properties:
+            sale_id:
+              airbyte_type: integer
+              type: number
+            initial_raw_price_currency:
+              type: string
+            quantity:
+              airbyte_type: integer
+              type: number
+            requested_quantity:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            reference:
+              type: string
+            unit:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            price:
+              type: number
+            raw_price_currency:
+              type: string
+            initial_raw_price:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            sku:
+              type: string
+            price_currency:
+              type: string
+            raw_price:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: sale_saleline
+        selected: false
+    - stream:
+        name: sale_sale
+        json_schema:
+          type: object
+          properties:
+            committed_total:
+              type: number
+            seller_vat:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            expired_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            packing_slip:
+              type: string
+            qid:
+              type: string
+            is_fulfilled_on_portal:
+              type: boolean
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            proforma:
+              type: string
+            amount_currency:
+              type: string
+            committed_subtotal:
+              type: number
+            is_shipment_direct:
+              type: boolean
+            currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            shipping_address:
+              type: string
+            checked_invoice:
+              type: boolean
+            amount:
+              type: number
+            closed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            expected_subtotal:
+              type: number
+            checked_proforma:
+              type: boolean
+            committed_vat:
+              type: number
+            paid_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            invoicing_entity_id:
+              airbyte_type: integer
+              type: number
+            seller_shipping_fee:
+              type: number
+            decline_comment:
+              type: string
+            vat_amount_source:
+              type: string
+            transfer:
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            expected_vat:
+              type: number
+            invoice:
+              type: string
+            decline_reason:
+              type: string
+            order_id:
+              airbyte_type: integer
+              type: number
+            expected_total:
+              type: number
+            status:
+              type: string
+            warehouse_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: sale_sale
+        selected: false
+    - stream:
+        name: newsletter_subscriber
+        json_schema:
+          type: object
+          properties:
+            subscription_id:
+              airbyte_type: integer
+              type: number
+            unsubscribed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            subscribed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            is_organic:
+              type: boolean
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            email:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: newsletter_subscriber
+        selected: false
+    - stream:
+        name: fulfillment_parcelsizeoption
+        json_schema:
+          type: object
+          properties:
+            name:
+              type: string
+            width:
+              type: number
+            length:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            display_name:
+              type: string
+            height:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_parcelsizeoption
+        selected: false
+    - stream:
+        name: django_site
+        json_schema:
+          type: object
+          properties:
+            domain:
+              type: string
+            name:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_site
+        selected: false
+    - stream:
+        name: fulfillment_shipmentgroup
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            metadata:
+              type: string
+            sender_address:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            private_metadata:
+              type: string
+            shipping_address:
+              type: string
+            qid:
+              type: string
+            warehouse_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_shipmentgroup
+        selected: false
+    - stream:
+        name: fulfillment_outboundshipment_orders
+        json_schema:
+          type: object
+          properties:
+            outboundshipment_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_outboundshipment_orders
+        selected: false
+    - stream:
+        name: django_redirect
+        json_schema:
+          type: object
+          properties:
+            new_path:
+              type: string
+            site_id:
+              airbyte_type: integer
+              type: number
+            old_path:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_redirect
+        selected: false
+    - stream:
+        name: claim_claimline
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            orderline_id:
+              airbyte_type: integer
+              type: number
+            claim_id:
+              airbyte_type: integer
+              type: number
+            issue_type:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            saleline_id:
+              airbyte_type: integer
+              type: number
+            quantity_affected:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            quantity_invoiced:
+              airbyte_type: integer
+              type: number
+            price:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            price_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: claim_claimline
+        selected: false
+    - stream:
+        name: financial_financialsettings
+        json_schema:
+          type: object
+          properties:
+            defaulted_grace_period:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            late_fee_percentage:
+              type: number
+            late_email_frequency:
+              airbyte_type: integer
+              type: number
+            overdue_grace_period:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            in_arrears_grace_period:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: financial_financialsettings
+        selected: false
+    - stream:
+        name: account_zendeskattribute
+        json_schema:
+          type: object
+          properties:
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            internal_hash:
+              type: string
+            object_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_zendeskattribute
+        selected: false
+    - stream:
+        name: offer_offer
+        json_schema:
+          type: object
+          properties:
+            original_price:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            source:
+              type: string
+            title:
+              type: string
+            inventory:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            stockfile_received_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            ref:
+              type: string
+            unit:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              type: string
+            processed_timestamp:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            original_price_currency:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              type: string
+            price:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            sku:
+              type: string
+            price_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: offer_offer
+        selected: false
+    - stream:
+        name: fulfillment_shipment
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            sale_id:
+              airbyte_type: integer
+              type: number
+            metadata:
+              type: string
+            code:
+              type: string
+            is_pallet:
+              type: boolean
+            legacy_shipment_id:
+              airbyte_type: integer
+              type: number
+            length:
+              type: number
+            weight:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            delivery_date_estimate:
+              format: date
+              type: string
+            private_metadata:
+              type: string
+            qid:
+              type: string
+            url:
+              type: string
+            origin_type:
+              type: string
+            carrier_id:
+              airbyte_type: integer
+              type: number
+            destination_type:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            shipment_group_id:
+              airbyte_type: integer
+              type: number
+            width:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+            height:
+              type: number
+            warehouse_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_shipment
+        selected: false
+    - stream:
+        name: auth_permission
+        json_schema:
+          type: object
+          properties:
+            codename:
+              type: string
+            name:
+              type: string
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: auth_permission
+        selected: false
+    - stream:
+        name: newsletter_subscription
+        json_schema:
+          type: object
+          properties:
+            default_department:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: newsletter_subscription
+        selected: false
+    - stream:
+        name: core_note
+        json_schema:
+          type: object
+          properties:
+            note:
+              type: string
+            file:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            created_by_id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            object_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_note
+        selected: false
+    - stream:
+        name: core_featureswitch
+        json_schema:
+          type: object
+          properties:
+            additional_data:
+              type: string
+            is_active:
+              type: boolean
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_featureswitch
+        selected: false
+    - stream:
+        name: account_user_groups
+        json_schema:
+          type: object
+          properties:
+            user_id:
+              airbyte_type: integer
+              type: number
+            group_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_user_groups
+        selected: false
+    - stream:
+        name: product_category
+        json_schema:
+          type: object
+          properties:
+            hscode:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            description:
+              type: string
+            standardized:
+              type: array
+              items:
+                type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: product_category
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: wallet_walletline
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            summary:
+              type: string
+            reason:
+              type: string
+            amount:
+              type: number
+            exchange_rate:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            source:
+              type: string
+            qid:
+              type: string
+            wallet_id:
+              airbyte_type: integer
+              type: number
+            network_id:
+              airbyte_type: integer
+              type: number
+            balance:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            original_amount_currency:
+              type: string
+            amount_currency:
+              type: string
+            original_amount:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            created_by_id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: wallet_walletline
+        selected: false
+    - stream:
+        name: core_file
+        json_schema:
+          type: object
+          properties:
+            metadata:
+              type: string
+            file:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            private_metadata:
+              type: string
+            qid:
+              type: string
+            object_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_file
+        selected: false
+    - stream:
+        name: claim_claimsettings
+        json_schema:
+          type: object
+          properties:
+            max_claim_amount_vs_order_thresholds:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            wallet_type:
+              type: string
+            extended_deadline:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            deadline:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            max_claim_amount_thresholds:
+              type: string
+            max_automatic_approvals_in_a_row_thresholds:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: claim_claimsettings
+        selected: false
+    - stream:
+        name: order_order
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            insurance:
+              type: number
+            inextricable:
+              type: number
+            metadata:
+              type: string
+            discount:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            interest_ratio:
+              type: number
+            billing_address:
+              type: string
+            private_metadata:
+              type: string
+            extricable:
+              type: number
+            qid:
+              type: string
+            is_insured:
+              type: boolean
+            days_deferred:
+              airbyte_type: integer
+              type: number
+            total:
+              type: number
+            shipping:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            has_free_deferral:
+              type: boolean
+            checksum:
+              type: string
+            due_now:
+              type: number
+            currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            shipping_address:
+              type: string
+            invoicing_option_fee:
+              type: number
+            due_before:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            quantity:
+              airbyte_type: integer
+              type: number
+            exchange_rate:
+              type: number
+            vat:
+              type: number
+            paid_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            extend_claim_deadline:
+              type: boolean
+            user_id:
+              airbyte_type: integer
+              type: number
+            subtotal:
+              type: number
+            due_later:
+              type: number
+            buying_countries:
+              type: array
+              items:
+                type: string
+            status:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: order_order
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: fulfillment_inboundshipment
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            metadata:
+              type: string
+            code:
+              type: string
+            is_pallet:
+              type: boolean
+            length:
+              type: number
+            weight:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            delivery_date_estimate:
+              format: date
+              type: string
+            private_metadata:
+              type: string
+            qid:
+              type: string
+            url:
+              type: string
+            carrier_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            shipment_group_id:
+              airbyte_type: integer
+              type: number
+            width:
+              type: number
+            is_live:
+              type: boolean
+            id:
+              airbyte_type: integer
+              type: number
+            height:
+              type: number
+            warehouse_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_inboundshipment
+        selected: false
+    - stream:
+        name: fulfillment_inboundshipment_orders
+        json_schema:
+          type: object
+          properties:
+            id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+            inboundshipment_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_inboundshipment_orders
+        selected: false
+    - stream:
+        name: fulfillment_shippingdocumentfile
+        json_schema:
+          type: object
+          properties:
+            file:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            shipping_document_id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_shippingdocumentfile
+        selected: false
+    - stream:
+        name: product_variant_de_copy
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            origin:
+              type: string
+            rating:
+              airbyte_type: integer
+              type: number
+            is_hidden:
+              type: boolean
+            discount:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            inventory:
+              airbyte_type: integer
+              type: number
+            margin_value_multi:
+              type: string
+            discount_value_multi:
+              type: string
+            qid:
+              type: string
+            recommended_retail_price_multi:
+              type: string
+            price_multi:
+              type: string
+            indexed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            category_id:
+              airbyte_type: integer
+              type: number
+            refreshed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            popularity:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            slug:
+              type: string
+            gtin:
+              type: string
+            margin:
+              type: number
+            label:
+              type: string
+            price_median:
+              type: number
+            price_updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            brand_id:
+              airbyte_type: integer
+              type: number
+            rating_count:
+              airbyte_type: integer
+              type: number
+            unit:
+              airbyte_type: integer
+              type: number
+            delay:
+              airbyte_type: integer
+              type: number
+            availability_by_country:
+              type: string
+            retail_price_multi:
+              type: string
+            name:
+              type: string
+            availability_by_country_and_distribution_channel:
+              type: string
+            offer_count:
+              airbyte_type: integer
+              type: number
+            price_median_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key: []
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key: []
+        alias_name: product_variant_de_copy
+        selected: false
+    - stream:
+        name: account_emailaddress
+        json_schema:
+          type: object
+          properties:
+            is_primary:
+              type: boolean
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            department:
+              type: string
+            qid:
+              type: string
+            is_verified:
+              type: boolean
+            email:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_emailaddress
+        selected: false
+    - stream:
+        name: corporate_vatrates
+        json_schema:
+          type: object
+          properties:
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            rates:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: corporate_vatrates
+        selected: false
+    - stream:
+        name: core_statistics
+        json_schema:
+          type: object
+          properties:
+            variant_count:
+              airbyte_type: integer
+              type: number
+            countries_served:
+              airbyte_type: integer
+              type: number
+            regions_countries:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            allowed_shipping_countries:
+              type: array
+              items:
+                type: string
+            inventory_value:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            mov:
+              type: string
+            brand_count:
+              airbyte_type: integer
+              type: number
+            offer_countries:
+              type: string
+            category_count:
+              airbyte_type: integer
+              type: number
+            inventory_count:
+              airbyte_type: integer
+              type: number
+            inventory_value_currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            average_margin:
+              type: number
+            average_discount:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_statistics
+        selected: false
+    - stream:
+        name: fulfillment_shipmentgroup_orders
+        json_schema:
+          type: object
+          properties:
+            shipmentgroup_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_shipmentgroup_orders
+        selected: false
+    - stream:
+        name: order_orderline
+        json_schema:
+          type: object
+          properties:
+            quantity:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            price:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            order_id:
+              airbyte_type: integer
+              type: number
+            sellers:
+              type: string
+            price_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: order_orderline
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: core_event
+        json_schema:
+          type: object
+          properties:
+            data:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            type_id:
+              airbyte_type: integer
+              type: number
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            object_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_event
+        selected: false
+    - stream:
+        name: django_migrations
+        json_schema:
+          type: object
+          properties:
+            app:
+              type: string
+            applied:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_migrations
+        selected: false
+    - stream:
+        name: fulfillment_carrierbooking
+        json_schema:
+          type: object
+          properties:
+            metadata:
+              type: string
+            shipping_cost:
+              type: number
+            importer_address:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            private_metadata:
+              type: string
+            qid:
+              type: string
+            delivery_datetime:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            label_url:
+              type: string
+            carrier_id:
+              airbyte_type: integer
+              type: number
+            commercial_invoice_url:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            terms_of_trade:
+              type: string
+            shipment_group_id:
+              airbyte_type: integer
+              type: number
+            shipping_cost_currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            status:
+              type: string
+            ship_date:
+              format: date
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_carrierbooking
+        selected: false
+    - stream:
+        name: django_celery_beat_crontabschedule
+        json_schema:
+          type: object
+          properties:
+            hour:
+              type: string
+            timezone:
+              type: string
+            month_of_year:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            day_of_month:
+              type: string
+            minute:
+              type: string
+            day_of_week:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_celery_beat_crontabschedule
+        selected: false
+    - stream:
+        name: django_admin_log
+        json_schema:
+          type: object
+          properties:
+            action_time:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            change_message:
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            action_flag:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            object_repr:
+              type: string
+            object_id:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_admin_log
+        selected: false
+    - stream:
+        name: offer_emailparserconfig
+        json_schema:
+          type: object
+          properties:
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            attachment_type:
+              type: string
+            filename_keyword:
+              type: array
+              items:
+                type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            subject_keyword:
+              type: array
+              items:
+                type: string
+            qid:
+              type: string
+            senders:
+              type: array
+              items:
+                type: string
+            file_in_zipfile_keyword:
+              type: array
+              items:
+                type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: offer_emailparserconfig
+        selected: false
+    - stream:
+        name: account_user
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            country:
+              type: string
+            buyer_cluster:
+              type: string
+            metadata:
+              type: string
+            is_phone_verified:
+              type: boolean
+            mov_currency:
+              type: string
+            fee:
+              type: number
+            rating:
+              airbyte_type: integer
+              type: number
+            is_portal_user:
+              type: boolean
+            twilio_verification_timestamp:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            private_metadata:
+              type: string
+            password:
+              type: string
+            is_seller:
+              type: boolean
+            mov:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            stocklist_source_hash:
+              type: string
+            max_credit:
+              type: number
+            debt_limit_currency:
+              type: string
+            calling_code:
+              type: string
+            staff_slack_id:
+              type: string
+            last_login:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            sort_code:
+              type: string
+            routing_number:
+              type: string
+            country_of_registration:
+              type: string
+            max_credit_currency:
+              type: string
+            reminder_timestamp_offer:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            delay:
+              airbyte_type: integer
+              type: number
+            exposure:
+              type: number
+            is_portal_paid:
+              type: boolean
+            phone:
+              type: string
+            iban:
+              type: string
+            buying_countries:
+              type: array
+              items:
+                type: string
+            shipping_countries:
+              type: array
+              items:
+                type: string
+            account_number:
+              type: string
+            assigned_to_id:
+              airbyte_type: integer
+              type: number
+            buyer_distribution_channels:
+              type: array
+              items:
+                type: string
+            is_email_verified:
+              type: boolean
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            capacity:
+              type: number
+            receives_direct:
+              type: boolean
+            inventory_factor:
+              type: number
+            min_credit_currency:
+              type: string
+            buyer_lifetime_value:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            has_free_deferral:
+              type: boolean
+            exposure_currency:
+              type: string
+            line_number:
+              type: string
+            buyer_churn_probability:
+              type: number
+            company:
+              type: string
+            currency:
+              type: string
+            deadline:
+              airbyte_type: integer
+              type: number
+            email:
+              type: string
+            seller_status:
+              type: string
+            is_active:
+              type: boolean
+            is_superuser:
+              type: boolean
+            is_staff:
+              type: boolean
+            insurance_rate:
+              type: number
+            min_credit:
+              type: number
+            is_verified:
+              type: boolean
+            selling_countries:
+              type: array
+              items:
+                type: string
+            coc:
+              type: string
+            seller_distribution_channels:
+              type: array
+              items:
+                type: string
+            shipping_estimate_updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            capacity_currency:
+              type: string
+            debt_limit:
+              type: number
+            email_verification_timestamp:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            regional_shipping_cost_coefficients:
+              type: string
+            last_active:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            twilio_phone_lookup:
+              type: string
+            bic:
+              type: string
+            account:
+              type: string
+            warehouse_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_user
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: django_celery_beat_clockedschedule
+        json_schema:
+          type: object
+          properties:
+            clocked_time:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_celery_beat_clockedschedule
+        selected: false
+    - stream:
+        name: authtoken_token
+        json_schema:
+          type: object
+          properties:
+            user_id:
+              airbyte_type: integer
+              type: number
+            created:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            key:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - key
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - key
+        alias_name: authtoken_token
+        selected: false
+    - stream:
+        name: newsletter_newslettersettings
+        json_schema:
+          type: object
+          properties:
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            sellers:
+              type: boolean
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: newsletter_newslettersettings
+        selected: false
+    - stream:
+        name: product_brand
+        json_schema:
+          type: object
+          properties:
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            description:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: product_brand
+        selected: false
+    - stream:
+        name: fulfillment_outboundshipment
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            metadata:
+              type: string
+            code:
+              type: string
+            is_pallet:
+              type: boolean
+            notified:
+              type: boolean
+            length:
+              type: number
+            weight:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            delivery_date_estimate:
+              format: date
+              type: string
+            private_metadata:
+              type: string
+            qid:
+              type: string
+            url:
+              type: string
+            carrier_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            shipment_group_id:
+              airbyte_type: integer
+              type: number
+            width:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            height:
+              type: number
+            warehouse_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_outboundshipment
+        selected: false
+    - stream:
+        name: fulfillment_shippingcarrier
+        json_schema:
+          type: object
+          properties:
+            metadata:
+              type: string
+            base_tracking_url:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            carrier_url:
+              type: string
+            name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            private_metadata:
+              type: string
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_shippingcarrier
+        selected: false
+    - stream:
+        name: address_address
+        json_schema:
+          type: object
+          properties:
+            country:
+              type: string
+            metadata:
+              type: string
+            calling_code:
+              type: string
+            is_phone_verified:
+              type: boolean
+            city:
+              type: string
+            customs_number:
+              type: string
+            address_line_two:
+              type: string
+            last_name:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            private_metadata:
+              type: string
+            usage_types:
+              type: array
+              items:
+                type: string
+            address_line_one:
+              type: string
+            qid:
+              type: string
+            zip_code:
+              type: string
+            country_area:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            phone:
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            tax_number:
+              type: string
+            line_number:
+              type: string
+            company_name:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            first_name:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: address_address
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: sale_sellerinvoice
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            sale_id:
+              airbyte_type: integer
+              type: number
+            in_accounting:
+              type: boolean
+            address:
+              type: string
+            vat_currency:
+              type: string
+            vat:
+              type: number
+            is_balanced:
+              type: boolean
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            shipping_currency:
+              type: string
+            qid:
+              type: string
+            total_currency:
+              type: string
+            bank:
+              type: string
+            total:
+              type: number
+            shipping:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            subtotal:
+              type: number
+            tax_number:
+              type: string
+            subtotal_currency:
+              type: string
+            company:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            invoiced_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: sale_sellerinvoice
+        selected: false
+    - stream:
+        name: invoice_orderinvoice
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            insurance:
+              type: number
+            is_issued:
+              type: boolean
+            inextricable:
+              type: number
+            discount:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            extricable:
+              type: number
+            qid:
+              type: string
+            total:
+              type: number
+            refund_all:
+              type: boolean
+            is_ready:
+              type: boolean
+            shipping:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            invoicing_option_fee:
+              type: number
+            is_refund:
+              type: boolean
+            in_accounting:
+              type: boolean
+            is_master:
+              type: boolean
+            quantity:
+              airbyte_type: integer
+              type: number
+            notified:
+              type: boolean
+            vat:
+              type: number
+            excel:
+              type: string
+            pdf:
+              type: string
+            subtotal:
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+            invoiced_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: invoice_orderinvoice
+        selected: false
+    - stream:
+        name: fulfillment_fulfillmentsettings
+        json_schema:
+          type: object
+          properties:
+            ready_to_ship_cutoff_delta:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_fulfillmentsettings
+        selected: false
+    - stream:
+        name: claim_claimline_sellers
+        json_schema:
+          type: object
+          properties:
+            user_id:
+              airbyte_type: integer
+              type: number
+            claimline_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: claim_claimline_sellers
+        selected: false
+    - stream:
+        name: claim_claim
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            sale_id:
+              airbyte_type: integer
+              type: number
+            refund_claimed_currency:
+              type: string
+            email_sent:
+              type: boolean
+            notes:
+              type: string
+            qcf_form:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            refund_added:
+              type: boolean
+            qid:
+              type: string
+            refund_claimed:
+              type: number
+            form:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            refund_given_currency:
+              type: string
+            resolved_automatically:
+              type: boolean
+            id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+            status:
+              type: string
+            refund_given:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: claim_claim
+        selected: false
+    - stream:
+        name: auth_group
+        json_schema:
+          type: object
+          properties:
+            name:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: auth_group
+        selected: false
+    - stream:
+        name: order_delivered
+        json_schema:
+          type: object
+          properties:
+            shipping_delivered_currency:
+              type: string
+            subtotal_invoiced_currency:
+              type: string
+            shipping_invoiced:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            all_sellers:
+              type: boolean
+            shipping_invoiced_currency:
+              type: string
+            subtotal_delivered_currency:
+              type: string
+            qid:
+              type: string
+            is_final:
+              type: boolean
+            subtotal_invoiced:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            shipping_delivered:
+              type: number
+            subtotal_delivered:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            order_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: order_delivered
+        selected: false
+    - stream:
+        name: django_content_type
+        json_schema:
+          type: object
+          properties:
+            app_label:
+              type: string
+            model:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_content_type
+        selected: false
+    - stream:
+        name: account_user_user_permissions
+        json_schema:
+          type: object
+          properties:
+            user_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            permission_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_user_user_permissions
+        selected: false
+    - stream:
+        name: network_membership
+        json_schema:
+          type: object
+          properties:
+            network_id:
+              airbyte_type: integer
+              type: number
+            converted_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            registered_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            status:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: network_membership
+        selected: false
+    - stream:
+        name: health_check_db_testmodel
+        json_schema:
+          type: object
+          properties:
+            id:
+              airbyte_type: integer
+              type: number
+            title:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: health_check_db_testmodel
+        selected: false
+    - stream:
+        name: auth_group_permissions
+        json_schema:
+          type: object
+          properties:
+            group_id:
+              airbyte_type: integer
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            permission_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: auth_group_permissions
+        selected: false
+    - stream:
+        name: account_accountsettings
+        json_schema:
+          type: object
+          properties:
+            default_max_credit_currency:
+              type: string
+            avg_credit_multiplier:
+              type: number
+            max_emails:
+              airbyte_type: integer
+              type: number
+            base_insurance_rate:
+              type: number
+            default_seller_assigned_to_id:
+              airbyte_type: integer
+              type: number
+            default_min_credit_currency:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            default_max_credit:
+              type: number
+            qid:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            credit_notification_thresholds:
+              type: array
+              items:
+                type: number
+            default_min_credit:
+              type: number
+            total_credit_multiplier:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            is_segregated:
+              type: boolean
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: account_accountsettings
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: django_celery_beat_solarschedule
+        json_schema:
+          type: object
+          properties:
+            latitude:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            event:
+              type: string
+            longitude:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_celery_beat_solarschedule
+        selected: false
+    - stream:
+        name: network_networksettings
+        json_schema:
+          type: object
+          properties:
+            kickback:
+              type: number
+            limit_currency:
+              type: string
+            is_active:
+              type: boolean
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            signup:
+              airbyte_type: integer
+              type: number
+            kickback_currency:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            limit:
+              type: number
+            commission:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            value:
+              type: number
+            value_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: network_networksettings
+        selected: false
+    - stream:
+        name: fulfillment_shippingdocument
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            type:
+              type: string
+            qid:
+              type: string
+            object_id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: fulfillment_shippingdocument
+        selected: false
+    - stream:
+        name: authentication_authsettings
+        json_schema:
+          type: object
+          properties:
+            verification_expiry:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            reset_expiry:
+              airbyte_type: integer
+              type: number
+            refresh_token_expiry:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            login_attempts:
+              airbyte_type: integer
+              type: number
+            access_token_expiry:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            login_cooldown:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: authentication_authsettings
+        selected: false
+    - stream:
+        name: offer_offersettings
+        json_schema:
+          type: object
+          properties:
+            reminders:
+              type: array
+              items:
+                airbyte_type: integer
+                type: number
+            is_active:
+              type: boolean
+            last_indexed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            fee:
+              type: number
+            variant_batch_size:
+              airbyte_type: integer
+              type: number
+            reminder_types:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            catalog_index_last_indexed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            last_refreshed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            algolia_batch_size:
+              airbyte_type: integer
+              type: number
+            catalog_index_tasks_timeout_in_ms:
+              airbyte_type: integer
+              type: number
+            offer_batch_size:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            discrepancy:
+              type: number
+            max_excel_rows:
+              airbyte_type: integer
+              type: number
+            catalog_index_batch_size:
+              airbyte_type: integer
+              type: number
+            inventory_percentile:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            max_excel_batch_size:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: offer_offersettings
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: product_variantdimensions
+        json_schema:
+          type: object
+          properties:
+            net_mass:
+              airbyte_type: integer
+              type: number
+            depth:
+              type: number
+            variant_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            mass:
+              airbyte_type: integer
+              type: number
+            width:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            height:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: product_variantdimensions
+        selected: false
+    - stream:
+        name: invoice_orderinvoiceline
+        json_schema:
+          type: object
+          properties:
+            sale_id:
+              airbyte_type: integer
+              type: number
+            quantity:
+              airbyte_type: integer
+              type: number
+            variant_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            price:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            invoice_id:
+              airbyte_type: integer
+              type: number
+            vat_type:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            price_currency:
+              type: string
+            vat_rate:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: invoice_orderinvoiceline
+        selected: false
+    - stream:
+        name: wallet_wallet
+        json_schema:
+          type: object
+          properties:
+            inextricable:
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            percentage:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            extricable:
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: wallet_wallet
+        selected: false
+    - stream:
+        name: order_ordersettings
+        json_schema:
+          type: object
+          properties:
+            reminders:
+              type: array
+              items:
+                airbyte_type: integer
+                type: number
+            enable_delay_penalty:
+              type: boolean
+            shipping_cost_enable:
+              type: boolean
+            max_quantity_reduction_perc_per_variant:
+              type: number
+            restrict_sellers:
+              type: boolean
+            time_limit:
+              type: number
+            delay_penalty:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            rating_penalty:
+              type: string
+            qid:
+              type: string
+            is_schedule_live:
+              type: boolean
+            join_remainders:
+              type: boolean
+            restrict_sellers_count:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            enable_remainders:
+              type: boolean
+            max_quantity_reduction_perc:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            deadline:
+              airbyte_type: integer
+              type: number
+            acceptable_loss_percent:
+              type: number
+            shipping_cost_piecewise_parameters:
+              type: string
+            mip_gap:
+              type: number
+            overall_vendor_penalty:
+              airbyte_type: integer
+              type: number
+            mov_by_region:
+              type: string
+            acceptable_loss:
+              type: number
+            filter_on_distribution_channel:
+              type: boolean
+            gtin_vendor_penalty:
+              type: number
+            shipping_cost_policy:
+              type: string
+            overpurchasing_enable:
+              type: boolean
+            schedule_limit_currency:
+              type: string
+            schedule_limit:
+              type: number
+            cost_to_loss_weight:
+              type: number
+            schedule:
+              type: string
+            shipping_estimate_updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            financed_payment_reminders:
+              type: array
+              items:
+                airbyte_type: integer
+                type: number
+            regional_shipping_cost_coefficients:
+              type: string
+            enable_rating_penalty:
+              type: boolean
+            shipping_cost_offset:
+              type: number
+            shipping_cost_multiplier:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: overwrite
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: order_ordersettings
+        selected: true
+        field_selection_enabled: false
+    - stream:
+        name: network_network
+        json_schema:
+          type: object
+          properties:
+            kickback:
+              type: number
+            limit_currency:
+              type: string
+            code:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            qid:
+              type: string
+            kickback_currency:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              airbyte_type: integer
+              type: number
+            limit:
+              type: number
+            end:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            commission:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            value:
+              type: number
+            value_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: network_network
+        selected: false
+    - stream:
+        name: corporate_corporate
+        json_schema:
+          type: object
+          properties:
+            country:
+              type: string
+            metadata:
+              type: string
+            city:
+              type: string
+            customs_number:
+              type: string
+            address_line_two:
+              type: string
+            hq:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            address_line_one:
+              type: string
+            qid:
+              type: string
+            zip_code:
+              type: string
+            country_area:
+              type: string
+            bank:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            phone:
+              type: string
+            coc:
+              type: string
+            tax_number:
+              type: string
+            iban:
+              type: string
+            name:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            bic:
+              type: string
+            email:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: corporate_corporate
+        selected: false
+    - stream:
+        name: django_celery_beat_periodictask
+        json_schema:
+          type: object
+          properties:
+            headers:
+              type: string
+            expires:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            last_run_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            clocked_id:
+              airbyte_type: integer
+              type: number
+            description:
+              type: string
+            solar_id:
+              airbyte_type: integer
+              type: number
+            priority:
+              airbyte_type: integer
+              type: number
+            date_changed:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            enabled:
+              type: boolean
+            args:
+              type: string
+            start_time:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            one_off:
+              type: boolean
+            task:
+              type: string
+            crontab_id:
+              airbyte_type: integer
+              type: number
+            interval_id:
+              airbyte_type: integer
+              type: number
+            total_run_count:
+              airbyte_type: integer
+              type: number
+            name:
+              type: string
+            kwargs:
+              type: string
+            exchange:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            routing_key:
+              type: string
+            expire_seconds:
+              airbyte_type: integer
+              type: number
+            queue:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: django_celery_beat_periodictask
+        selected: false
+    - stream:
+        name: exchange_rate
+        json_schema:
+          type: object
+          properties:
+            backend_id:
+              type: string
+            currency:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            value:
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: exchange_rate
+        selected: false
+    - stream:
+        name: product_variant
+        json_schema:
+          type: object
+          properties:
+            fid:
+              type: string
+            origin:
+              type: string
+            rating:
+              airbyte_type: integer
+              type: number
+            is_hidden:
+              type: boolean
+            discount:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            inventory:
+              airbyte_type: integer
+              type: number
+            margin_value_multi:
+              type: string
+            discount_value_multi:
+              type: string
+            qid:
+              type: string
+            recommended_retail_price_multi:
+              type: string
+            price_multi:
+              type: string
+            indexed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            category_id:
+              airbyte_type: integer
+              type: number
+            refreshed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            popularity:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            slug:
+              type: string
+            gtin:
+              type: string
+            margin:
+              type: number
+            label:
+              type: string
+            price_median:
+              type: number
+            price_updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            brand_id:
+              airbyte_type: integer
+              type: number
+            rating_count:
+              airbyte_type: integer
+              type: number
+            lowest_price_multi_by_country:
+              type: string
+            unit:
+              airbyte_type: integer
+              type: number
+            delay:
+              airbyte_type: integer
+              type: number
+            availability_by_country:
+              type: string
+            retail_price_multi:
+              type: string
+            name:
+              type: string
+            availability_by_country_and_distribution_channel:
+              type: string
+            offer_count:
+              airbyte_type: integer
+              type: number
+            price_median_currency:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: product_variant
+        selected: false
+    - stream:
+        name: financial_invoicingoption
+        json_schema:
+          type: object
+          properties:
+            days_deferred:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            interest_ratio:
+              type: number
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: financial_invoicingoption
+        selected: false
+    - stream:
+        name: django_session
+        json_schema:
+          type: object
+          properties:
+            session_data:
+              type: string
+            expire_date:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            session_key:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - session_key
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - session_key
+        alias_name: django_session
+        selected: false
+    - stream:
+        name: wallet_walletsettings
+        json_schema:
+          type: object
+          properties:
+            bonus_currency:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            bonus:
+              type: number
+            percentage:
+              type: number
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            apply_bonus:
+              type: boolean
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: wallet_walletsettings
+        selected: false
+    - stream:
+        name: product_variantimage
+        json_schema:
+          type: object
+          properties:
+            image:
+              type: string
+            variant_id:
+              airbyte_type: integer
+              type: number
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            alt:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            qid:
+              type: string
+            url:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: product_variantimage
+        selected: false
+    - stream:
+        name: core_eventtype
+        json_schema:
+          type: object
+          properties:
+            content_type_id:
+              airbyte_type: integer
+              type: number
+            description:
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: core_eventtype
+        selected: false
+    - stream:
+        name: exchange_exchangebackend
+        json_schema:
+          type: object
+          properties:
+            base_currency:
+              type: string
+            last_update:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            name:
+              type: string
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - name
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - name
+        alias_name: exchange_exchangebackend
+        selected: false
+    - stream:
+        name: offer_stocklistsource
+        json_schema:
+          type: object
+          properties:
+            retry_period:
+              airbyte_type: integer
+              type: number
+            column_mappings:
+              type: string
+            created_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            auth_password:
+              type: string
+            source:
+              type: string
+            qid:
+              type: string
+            count_of_offers_in_stocklist_file:
+              airbyte_type: integer
+              type: number
+            auth_method:
+              type: string
+            updated_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            user_id:
+              type: string
+            auth_username:
+              type: string
+            processed_at:
+              format: date-time
+              airbyte_type: timestamp_with_timezone
+              type: string
+            id:
+              airbyte_type: integer
+              type: number
+            offers_count_on_pause:
+              airbyte_type: integer
+              type: number
+        supported_sync_modes:
+        - full_refresh
+        - incremental
+        default_cursor_field: []
+        source_defined_primary_key:
+        - - id
+        namespace: public
+      config:
+        sync_mode: full_refresh
+        destination_sync_mode: append
+        cursor_field: []
+        primary_key:
+        - - id
+        alias_name: offer_stocklistsource
+        selected: false
+  status: active
+  schema_change: no_change
+  notify_schema_changes: true
+  namespace_definition: destination
+  namespace_format: ${SOURCE_NAMESPACE}
+  prefix: ''
+  schedule_type: manual
+  operations:
+  - name: Normalization
+    operator_configuration:
+      operator_type: normalization
+      normalization:
+        option: basic
+

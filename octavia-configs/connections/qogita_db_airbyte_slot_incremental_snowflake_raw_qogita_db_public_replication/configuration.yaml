@@ -584,6 +584,8 @@ configuration:
               type: number
             height:
               type: number
+            is_notified:
+              type: boolean
             legacy_shipment_id:
               airbyte_type: integer
               type: number
@@ -608,6 +610,8 @@ configuration:
               type: number
             width:
               type: number
+            is_live:
+              type: boolean
             _ab_cdc_updated_at:
               type: string
             order_id:
@@ -2321,7 +2325,7 @@ configuration:
         selected: true
         field_selection_enabled: false
   status: active
-  schema_change: no_change
+  schema_change: non_breaking
   notify_schema_changes: true
   namespace_definition: destination
   namespace_format: ${SOURCE_NAMESPACE}
