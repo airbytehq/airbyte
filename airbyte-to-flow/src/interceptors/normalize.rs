@@ -11,7 +11,10 @@ pub fn normalize_doc(
     // TODO: We should more intelligently use the schema to do normalization. I'm not going to take
     // the time to figure that out right now, so for now we are just handling the specific case in
     // https://github.com/estuary/airbyte/issues/123 with the field hs_latest_source_timestamp.
-    normalize_datetime_to_date(doc, doc::Pointer::from_str("/hs_latest_source_timestamp"));
+    normalize_datetime_to_date(
+        doc,
+        doc::Pointer::from_str("/properties/hs_latest_source_timestamp"),
+    );
 
     Ok(())
 }
@@ -49,31 +52,43 @@ mod tests {
             (
                 serde_json::json!({
                     "some": "thing",
-                    "hs_latest_source_timestamp": "2023-03-05T15:41:54.565000+00:00"
+                    "properties": {
+                        "hs_latest_source_timestamp": "2023-03-05T15:41:54.565000+00:00",
+                    },
                 }),
                 serde_json::json!({
                     "some": "thing",
-                    "hs_latest_source_timestamp": "2023-03-05"
-                }),
-            ),
-            (
-                serde_json::json!({
-                    "some": "thing",
-                    "hs_latest_source_timestamp": "2023-03-05"
-                }),
-                serde_json::json!({
-                    "some": "thing",
-                    "hs_latest_source_timestamp": "2023-03-05" // Already a a date
+                    "properties": {
+                        "hs_latest_source_timestamp": "2023-03-05",
+                    },
                 }),
             ),
             (
                 serde_json::json!({
                     "some": "thing",
-                    "hs_latest_source_timestamp": "hello",
+                    "properties": {
+                        "hs_latest_source_timestamp": "2023-03-05",
+                    },
                 }),
                 serde_json::json!({
                     "some": "thing",
-                    "hs_latest_source_timestamp": "hello", // A string, but can't be normalized to a date
+                    "properties": {
+                        "hs_latest_source_timestamp": "2023-03-05", // Already a a date
+                    },
+                }),
+            ),
+            (
+                serde_json::json!({
+                    "some": "thing",
+                    "properties": {
+                        "hs_latest_source_timestamp": "hello",
+                    },
+                }),
+                serde_json::json!({
+                    "some": "thing",
+                    "properties": {
+                        "hs_latest_source_timestamp": "hello", // A string, but can't be normalized to a date
+                    },
                 }),
             ),
         ];
