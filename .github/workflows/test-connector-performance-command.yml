@@ -29,5 +29,5 @@ on:
 jobs:
   Stub:
     runs-on: ubuntu-latest
-    step:
+    steps:
       - run: echo "Test Connector Performance stub 🎯"
