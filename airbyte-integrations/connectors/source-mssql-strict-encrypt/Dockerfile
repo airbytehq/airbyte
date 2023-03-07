@@ -16,5 +16,6 @@ ENV APPLICATION source-mssql-strict-encrypt
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.4.30
+LABEL io.airbyte.version=1.0.0
+
 LABEL io.airbyte.name=airbyte/source-mssql-strict-encrypt
