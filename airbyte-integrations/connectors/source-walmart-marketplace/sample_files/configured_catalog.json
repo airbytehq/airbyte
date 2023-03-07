@@ -1,0 +1,56 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name" : "orders",
+        "json_schema" : {
+          "$schema" : "http://json-schema.org/draft-04/schema#",
+          "type" : "object",
+          "properties" : {
+            "api_keys" : {
+              "type" : "string"
+            },
+            "merchant" : {
+              "type" : "string"
+            },
+            "createdStartDate" : {
+              "type" : "string"
+            },
+            "WM_MARKET" : {
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+        "sync_mode" : "incremental",
+        "destination_sync_mode" : "append"
+    },
+    {
+      "stream": {
+        "name" : "items",
+        "json_schema" : {
+          "$schema" : "http://json-schema.org/draft-04/schema#",
+          "type" : "object",
+          "properties" : {
+            "api_keys" : {
+              "type" : "string"
+            },
+            "merchant" : {
+              "type" : "string"
+            },
+            "createdStartDate" : {
+              "type" : "string"
+            },
+            "WM_MARKET" : {
+              "type" : "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+        "sync_mode" : "full_refresh",
+        "destination_sync_mode" : "append"
+    }
+  ]
+}
