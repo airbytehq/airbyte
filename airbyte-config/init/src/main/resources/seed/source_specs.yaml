@@ -13168,7 +13168,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-salesloft:0.1.4"
+- dockerImage: "airbyte/source-salesloft:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesloft"
     connectionSpecification:
