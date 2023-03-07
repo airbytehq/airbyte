@@ -123,7 +123,7 @@ jobs:
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
           echo "get pods..."
           kubectl get po
-          POD=$(kubectl get pod -l app=my-app -o jsonpath="{.items[0].metadata.name}")
+          POD=$(kubectl get pod -l app=run-postgres-test-final -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
