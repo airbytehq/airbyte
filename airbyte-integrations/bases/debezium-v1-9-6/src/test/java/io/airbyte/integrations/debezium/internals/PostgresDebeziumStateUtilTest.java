@@ -59,13 +59,16 @@ public class PostgresDebeziumStateUtilTest {
 
   private final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
 
-  @Test
-  public void stateGeneratedAfterSnapshotCompletionAfterReplicationSlot() {
-    final JsonNode cdcState = Jsons.deserialize(
-        "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23897640,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}");
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23897640,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}",
+    "{\"[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23897640,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}",
+    "{\"[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]\":\"{\\\"transaction_id\\\":null,\\\"lsn\\\":23897640,\\\"txId\\\":505,\\\"ts_usec\\\":1677520006097984}\"}"})
+  public void stateGeneratedAfterSnapshotCompletionAfterReplicationSlot(final String cdcState) {
+    final JsonNode cdcStateAsJson = Jsons.deserialize(cdcState);
 
     final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+        new ConfiguredAirbyteCatalog(), cdcStateAsJson, CONFIG);
     Assertions.assertTrue(savedOffset.isPresent());
     Assertions.assertEquals(savedOffset.getAsLong(), 23897640L);
 
@@ -73,13 +76,16 @@ public class PostgresDebeziumStateUtilTest {
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
-  @Test
-  public void stateGeneratedAfterSnapshotCompletionBeforeReplicationSlot() {
-    final JsonNode cdcState = Jsons.deserialize(
-        "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23896935,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}");
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23896935,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}",
+    "{\"[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23896935,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}",
+    "{\"[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]\":\"{\\\"transaction_id\\\":null,\\\"lsn\\\":23896935,\\\"txId\\\":505,\\\"ts_usec\\\":1677520006097984}\"}"})
+  public void stateGeneratedAfterSnapshotCompletionBeforeReplicationSlot(final String cdcState) {
+    final JsonNode cdcStateAsJson = Jsons.deserialize(cdcState);
 
     final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+        new ConfiguredAirbyteCatalog(), cdcStateAsJson, CONFIG);
     Assertions.assertTrue(savedOffset.isPresent());
     Assertions.assertEquals(savedOffset.getAsLong(), 23896935L);
 
@@ -87,13 +93,16 @@ public class PostgresDebeziumStateUtilTest {
     Assertions.assertFalse(savedOffsetAfterReplicationSlotLSN);
   }
 
-  @Test
-  public void stateGeneratedFromWalStreamingAfterReplicationSlot() {
-    final JsonNode cdcState = Jsons.deserialize(
-        "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23901120,\\\"lsn_commit\\\":23901120,\\\"lsn\\\":23901120,\\\"txId\\\":525,\\\"ts_usec\\\":1659422649959099}\"}");
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23901120,\\\"lsn_commit\\\":23901120,\\\"lsn\\\":23901120,\\\"txId\\\":525,\\\"ts_usec\\\":1659422649959099}\"}",
+    "{\"[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23901120,\\\"lsn_commit\\\":23901120,\\\"lsn\\\":23901120,\\\"txId\\\":526,\\\"ts_usec\\\":1677531340598453}\"}"
+  })
+  public void stateGeneratedFromWalStreamingAfterReplicationSlot(final String cdcState) {
+    final JsonNode cdcStateAsJson = Jsons.deserialize(cdcState);
 
     final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+        new ConfiguredAirbyteCatalog(), cdcStateAsJson, CONFIG);
     Assertions.assertTrue(savedOffset.isPresent());
     Assertions.assertEquals(savedOffset.getAsLong(), 23901120L);
 
@@ -101,13 +110,16 @@ public class PostgresDebeziumStateUtilTest {
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
-  @Test
-  public void stateGeneratedFromWalStreamingBeforeReplicationSlot() {
-    final JsonNode cdcState = Jsons.deserialize(
-        "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23896935,\\\"lsn_commit\\\":23896935,\\\"lsn\\\":23896935,\\\"txId\\\":525,\\\"ts_usec\\\":1659422649959099}\"}");
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23896935,\\\"lsn_commit\\\":23896935,\\\"lsn\\\":23896935,\\\"txId\\\":525,\\\"ts_usec\\\":1659422649959099}\"}",
+    "{\"[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23896935,\\\"lsn_commit\\\":23896935,\\\"lsn\\\":23896935,\\\"txId\\\":526,\\\"ts_usec\\\":1677531340598453}\"}"
+  })
+  public void stateGeneratedFromWalStreamingBeforeReplicationSlot(final String cdcState) {
+    final JsonNode cdcStateAsJson = Jsons.deserialize(cdcState);
 
     final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+        new ConfiguredAirbyteCatalog(), cdcStateAsJson, CONFIG);
     Assertions.assertTrue(savedOffset.isPresent());
     Assertions.assertEquals(savedOffset.getAsLong(), 23896935L);
 

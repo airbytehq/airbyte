@@ -17,6 +17,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
@@ -59,12 +60,38 @@ public class AirbyteFileOffsetBackingStore {
   public void persist(final JsonNode cdcState) {
     final Map<String, String> mapAsString =
         cdcState != null ? Jsons.object(cdcState, Map.class) : Collections.emptyMap();
-    final Map<ByteBuffer, ByteBuffer> mappedAsStrings = mapAsString.entrySet().stream().collect(Collectors.toMap(
+    final Map<String, String> updatedMap = downgradeStateForDebezium1_9(mapAsString);
+
+    final Map<ByteBuffer, ByteBuffer> mappedAsStrings = updatedMap.entrySet().stream().collect(Collectors.toMap(
         e -> stringToByteBuffer(e.getKey()),
         e -> stringToByteBuffer(e.getValue())));
 
     FileUtils.deleteQuietly(offsetFilePath.toFile());
     save(mappedAsStrings);
+  }
+
+  // This is to allow us to release Debezium 2.1.2 safely so that in case of a roll back we are able
+  // to convert the new state from Debezium 2.1.2 back to the format of Debezium 1.9.6
+  private Map<String, String> downgradeStateForDebezium1_9(final Map<String, String> mapAsString) {
+    final Map<String, String> updatedMap = new LinkedHashMap<>();
+    if (mapAsString.size() > 0) {
+      String key = mapAsString.keySet().stream().toList().get(0);
+      final String value = mapAsString.get(key);
+      final int i = key.indexOf('{');
+      final int i1 = key.lastIndexOf('}');
+      if (i == 0 && i1 == key.length() - 1) {
+        // The state is Debezium 1.9 compatible. No need to change anything.
+        return mapAsString;
+      }
+      LOGGER.info("Mutating sate to make it Debezium 1.9.6 compatible");
+      key = "{\"schema\":null,\"payload\":" + key;
+      if (!key.endsWith("}")) {
+        key = key + "}";
+      }
+
+      updatedMap.put(key, value);
+    }
+    return updatedMap;
   }
 
   private static String byteBufferToString(final ByteBuffer byteBuffer) {
