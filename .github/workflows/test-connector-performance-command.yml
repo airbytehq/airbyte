@@ -100,6 +100,9 @@ jobs:
         # all CI python packages have the prefix "ci_"
         run: |
           pip install --quiet -e ./tools/ci_*
+      - name: KIND Kubernetes Cluster Setup
+        uses: helm/kind-action@v1.4.0
+      # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
     name: Stop Build EC2 Runner
