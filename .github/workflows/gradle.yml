@@ -261,6 +261,11 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - name: Cache Build Artifacts
+        uses: ./.github/actions/cache-build-artifacts
+        with:
+          cache-key: ${{ secrets.CACHE_VERSION }}
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -271,12 +276,10 @@ jobs:
           node-version: "lts/*"
 
       - uses: actions/setup-python@v4
-        env:
-          ACTIONS_STEP_DEBUG: true
         with:
           python-version: "3.9"
 
-      - name: Install & Setup Pyenv
+      - name: Install Pyenv
         run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
