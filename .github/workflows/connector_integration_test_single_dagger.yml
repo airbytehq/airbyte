@@ -30,10 +30,17 @@ jobs:
   launch_integration_tests:
     timeout-minutes: 120
     runs-on: ${{ needs.start-connectors-integration-test-runner.outputs.label }} # run the job on the newly created runner
-    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+      - name: Install Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+      - name: Install ci-connector-ops package
+        run: pip install --quiet -e ./tools/ci_connector_ops
   stop-connectors-integration-test-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
     timeout-minutes: 10
