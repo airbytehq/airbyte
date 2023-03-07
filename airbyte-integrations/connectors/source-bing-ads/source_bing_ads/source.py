@@ -611,6 +611,9 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
 
     report_columns = [
         *primary_key,
+        "AccountName",
+        "CampaignName",
+        "AdGroupName",        
         "Keyword",
         "KeywordStatus",
         "Impressions",
