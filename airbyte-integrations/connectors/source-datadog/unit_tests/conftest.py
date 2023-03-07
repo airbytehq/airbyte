@@ -17,6 +17,18 @@ def config_fixture():
         "end_date": "2022-10-10T00:10:00Z",
     }
 
+@fixture(name="config_eu")
+def config_fixture_eu():
+    return {
+        "site": "datadoghq.eu",
+        "api_key": "test_api_key",
+        "application_key": "test_application_key",
+        "query": "",
+        "max_records_per_request": 5000,
+        "start_date": "2022-10-10T00:00:00Z",
+        "end_date": "2022-10-10T00:10:00Z",
+    }
+
 
 @fixture(name="mock_responses")
 def mock_responses():
