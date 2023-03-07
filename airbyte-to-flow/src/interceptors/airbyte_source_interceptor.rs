@@ -1,5 +1,5 @@
-use crate::libs::json::{create_root_schema, tokenize_jsonpointer};
 use crate::apis::{FlowCaptureOperation, InterceptorStream};
+use crate::libs::json::{create_root_schema, tokenize_jsonpointer};
 
 use crate::errors::Error;
 use crate::libs::airbyte_catalog::{
@@ -8,7 +8,9 @@ use crate::libs::airbyte_catalog::{
 };
 use crate::libs::command::READY;
 use crate::libs::protobuf::encode_message;
-use crate::libs::stream::{get_airbyte_response, get_decoded_message, stream_airbyte_responses, stream_runtime_messages};
+use crate::libs::stream::{
+    get_airbyte_response, get_decoded_message, stream_airbyte_responses, stream_runtime_messages,
+};
 
 use bytes::Bytes;
 use proto_flow::capture::{
@@ -24,8 +26,8 @@ use tokio::sync::Mutex;
 use validator::Validate;
 
 use futures::{stream, StreamExt, TryStreamExt};
-use serde_json::value::RawValue;
 use serde_json as sj;
+use serde_json::value::RawValue;
 use std::fs::File;
 use std::io::Write;
 use tempfile::{Builder, TempDir};
@@ -78,11 +80,23 @@ impl AirbyteSourceInterceptor {
             let message = get_airbyte_response(in_stream, |m| m.spec.is_some(), "spec").await?;
             let spec = message.spec.unwrap();
             let mut endpoint_spec = sj::from_str::<sj::Value>(spec.connection_specification.get())?;
-            let mut auth_spec = spec.auth_specification.map(|aspec| sj::from_str::<sj::Value>(aspec.get())).transpose()?;
+            let mut auth_spec = spec
+                .auth_specification
+                .map(|aspec| sj::from_str::<sj::Value>(aspec.get()))
+                .transpose()?;
 
-            let spec_patch = std::fs::read_to_string(SPEC_PATCH_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-            let oauth2_patch = std::fs::read_to_string(OAUTH2_PATCH_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
-            let documentation_url_patch = std::fs::read_to_string(DOC_URL_PATCH_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+            let spec_patch = std::fs::read_to_string(SPEC_PATCH_FILE_NAME)
+                .ok()
+                .map(|p| sj::from_str::<sj::Value>(&p))
+                .transpose()?;
+            let oauth2_patch = std::fs::read_to_string(OAUTH2_PATCH_FILE_NAME)
+                .ok()
+                .map(|p| sj::from_str::<sj::Value>(&p))
+                .transpose()?;
+            let documentation_url_patch = std::fs::read_to_string(DOC_URL_PATCH_FILE_NAME)
+                .ok()
+                .map(|p| sj::from_str::<sj::Value>(&p))
+                .transpose()?;
 
             if let Some(p) = spec_patch {
                 merge(&mut endpoint_spec, &p);
@@ -93,8 +107,12 @@ impl AirbyteSourceInterceptor {
             }
 
             let documentation_url = match documentation_url_patch {
-                Some(p) => p.get("documentation_url").map(|v| v.as_str()).flatten().map(|s| s.to_string()),
-                None => spec.documentation_url
+                Some(p) => p
+                    .get("documentation_url")
+                    .map(|v| v.as_str())
+                    .flatten()
+                    .map(|s| s.to_string()),
+                None => spec.documentation_url,
             };
 
             encode_message(&SpecResponse {
@@ -102,16 +120,19 @@ impl AirbyteSourceInterceptor {
                 resource_spec_schema_json: serde_json::to_string_pretty(&create_root_schema::<
                     ResourceSpec,
                 >())?,
-                oauth2_spec: auth_spec.map(|spec| serde_json::from_value(spec)).transpose()?,
+                oauth2_spec: auth_spec
+                    .map(|spec| serde_json::from_value(spec))
+                    .transpose()?,
                 documentation_url: documentation_url.unwrap_or_default(),
             })
         }))
     }
 
-    fn adapt_endpoint_spec(
-        endpoint_spec_json: &str
-    ) -> Result<sj::Value, Error> {
-        let spec_map = std::fs::read_to_string(SPEC_MAP_FILE_NAME).ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+    fn adapt_endpoint_spec(endpoint_spec_json: &str) -> Result<sj::Value, Error> {
+        let spec_map = std::fs::read_to_string(SPEC_MAP_FILE_NAME)
+            .ok()
+            .map(|p| sj::from_str::<sj::Value>(&p))
+            .transpose()?;
         let mut spec = sj::from_str::<sj::Value>(endpoint_spec_json)?;
         if let Some(mapping) = spec_map.as_ref() {
             remap(&mut spec, &mapping)?;
@@ -127,7 +148,8 @@ impl AirbyteSourceInterceptor {
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
             let request = get_decoded_message::<DiscoverRequest>(in_stream).await?;
-            let endpoint_spec_json = AirbyteSourceInterceptor::adapt_endpoint_spec(&request.endpoint_spec_json)?;
+            let endpoint_spec_json =
+                AirbyteSourceInterceptor::adapt_endpoint_spec(&request.endpoint_spec_json)?;
 
             File::create(config_file_path)?.write_all(endpoint_spec_json.to_string().as_bytes())?;
 
@@ -140,10 +162,14 @@ impl AirbyteSourceInterceptor {
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async {
-            let message = get_airbyte_response(in_stream, |m| m.catalog.is_some(), "catalog").await?;
+            let message =
+                get_airbyte_response(in_stream, |m| m.catalog.is_some(), "catalog").await?;
             let catalog = message.catalog.unwrap();
 
-            let selected_streams_option = std::fs::read_to_string(SELECTED_STREAMS_FILE_NAME).ok().map(|p| sj::from_str::<Vec<String>>(&p)).transpose()?;
+            let selected_streams_option = std::fs::read_to_string(SELECTED_STREAMS_FILE_NAME)
+                .ok()
+                .map(|p| sj::from_str::<Vec<String>>(&p))
+                .transpose()?;
 
             let mut resp = DiscoverResponse::default();
             for stream in catalog.streams {
@@ -152,7 +178,6 @@ impl AirbyteSourceInterceptor {
                         continue;
                     }
                 }
-
 
                 let has_incremental = stream
                     .supported_sync_modes
@@ -170,39 +195,60 @@ impl AirbyteSourceInterceptor {
                     cursor_field: stream.default_cursor_field,
                 };
 
-                let mut source_defined_primary_key = stream.source_defined_primary_key.unwrap_or(Vec::new());
+                let mut source_defined_primary_key =
+                    stream.source_defined_primary_key.unwrap_or(Vec::new());
 
                 let recommended_name = stream_to_recommended_name(&stream.name);
 
-                let doc_pk = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX))
-                    .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+                let doc_pk = std::fs::read_to_string(format!(
+                    "{}/{}{}",
+                    STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PK_SUFFIX
+                ))
+                .ok()
+                .map(|p| sj::from_str::<sj::Value>(&p))
+                .transpose()?;
                 if let Some(p) = doc_pk {
-                    source_defined_primary_key = p.as_array()
+                    source_defined_primary_key = p
+                        .as_array()
                         .ok_or(Error::InvalidPKPatch("expected an array".to_string()))?
                         .into_iter()
-                        .map(|s| s.as_str().unwrap().split('/').map(|a| a.to_owned()).collect())
+                        .map(|s| {
+                            s.as_str()
+                                .unwrap()
+                                .split('/')
+                                .map(|a| a.to_owned())
+                                .collect()
+                        })
                         .collect();
                 }
 
-                let key_ptrs = source_defined_primary_key.iter()
-                        .map(|k| doc::Pointer::from_vec(k).to_string())
-                        .collect();
-
+                let key_ptrs = source_defined_primary_key
+                    .iter()
+                    .map(|k| doc::Pointer::from_vec(k).to_string())
+                    .collect();
 
                 let mut doc_schema = sj::from_str::<sj::Value>(stream.json_schema.get())?;
-                let doc_schema_patch = std::fs::read_to_string(format!("{}/{}{}", STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX))
-                    .ok().map(|p| sj::from_str::<sj::Value>(&p)).transpose()?;
+                let doc_schema_patch = std::fs::read_to_string(format!(
+                    "{}/{}{}",
+                    STREAM_PATCH_DIR_NAME, recommended_name, STREAM_PATCH_SUFFIX
+                ))
+                .ok()
+                .map(|p| sj::from_str::<sj::Value>(&p))
+                .transpose()?;
 
                 if let Some(p) = doc_schema_patch {
                     merge(&mut doc_schema, &p);
                 }
 
-
                 resp.bindings.push(discover_response::Binding {
                     recommended_name,
                     resource_spec_json: serde_json::to_string(&resource_spec)?,
                     key_ptrs,
-                    document_schema_json: fix_document_schema_keys(doc_schema, source_defined_primary_key)?.to_string(),
+                    document_schema_json: fix_document_schema_keys(
+                        doc_schema,
+                        source_defined_primary_key,
+                    )?
+                    .to_string(),
                 })
             }
 
@@ -220,7 +266,8 @@ impl AirbyteSourceInterceptor {
             let request = get_decoded_message::<ValidateRequest>(in_stream).await?;
             *validate_request.lock().await = Some(request.clone());
 
-            let endpoint_spec_json = AirbyteSourceInterceptor::adapt_endpoint_spec(&request.endpoint_spec_json)?;
+            let endpoint_spec_json =
+                AirbyteSourceInterceptor::adapt_endpoint_spec(&request.endpoint_spec_json)?;
 
             File::create(config_file_path)?.write_all(endpoint_spec_json.to_string().as_bytes())?;
 
@@ -234,20 +281,22 @@ impl AirbyteSourceInterceptor {
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         Box::pin(stream::once(async move {
-            let message =
-                get_airbyte_response(in_stream, |m| m.connection_status.is_some(), "connection status").await?;
+            let message = get_airbyte_response(
+                in_stream,
+                |m| m.connection_status.is_some(),
+                "connection status",
+            )
+            .await?;
 
             let connection_status = message.connection_status.unwrap();
 
             if connection_status.status != Status::Succeeded {
                 let msg = connection_status.message.unwrap_or("".to_string());
-                return Err(Error::ConnectionStatusUnsuccessful(msg))
+                return Err(Error::ConnectionStatusUnsuccessful(msg));
             }
 
             let req = validate_request.lock().await;
-            let req = req
-                .as_ref()
-                .ok_or(Error::MissingValidateRequest)?;
+            let req = req.as_ref().ok_or(Error::MissingValidateRequest)?;
             let mut resp = ValidateResponse::default();
             for binding in &req.bindings {
                 let resource: ResourceSpec = serde_json::from_str(&binding.resource_spec_json)?;
@@ -404,9 +453,9 @@ impl AirbyteSourceInterceptor {
                     Ok(Some((encode_message(&resp)?, (stb, stream))))
                 } else if let Some(record) = message.record {
                     let stream_to_binding = stb.lock().await;
-                    let binding = stream_to_binding.get(&record.stream).ok_or(
-                        Error::DanglingConnectorRecord(record.stream)
-                    )?;
+                    let binding = stream_to_binding
+                        .get(&record.stream)
+                        .ok_or(Error::DanglingConnectorRecord(record.stream))?;
                     let arena = record.data.get().as_bytes().to_vec();
                     let arena_len: u32 = arena.len() as u32;
                     resp.documents = Some(Documents {
@@ -439,10 +488,7 @@ impl AirbyteSourceInterceptor {
 }
 
 impl AirbyteSourceInterceptor {
-    pub fn adapt_command_args(
-        &mut self,
-        op: &FlowCaptureOperation,
-    ) -> Vec<String> {
+    pub fn adapt_command_args(&mut self, op: &FlowCaptureOperation) -> Vec<String> {
         let config_file_path = self.input_file_path(CONFIG_FILE_NAME);
         let catalog_file_path = self.input_file_path(CATALOG_FILE_NAME);
         let state_file_path = self.input_file_path(STATE_FILE_NAME);
