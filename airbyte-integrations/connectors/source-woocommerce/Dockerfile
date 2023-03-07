@@ -34,9 +34,5 @@ COPY source_woocommerce ./source_woocommerce
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-<<<<<<< HEAD
-LABEL io.airbyte.version=0.2.1
-=======
 LABEL io.airbyte.version=0.2.2
->>>>>>> master
 LABEL io.airbyte.name=airbyte/source-woocommerce
