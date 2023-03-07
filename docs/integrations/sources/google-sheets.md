@@ -13,7 +13,7 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 To set up Google Sheets as a source in Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, select **Google Sheets** from the **Source type** dropdown.
 4. Enter a name for the Google Sheets connector.
@@ -75,11 +75,17 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                       |
-| ------- | ---------- | -------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 0.2.31  | 2022-10-09 | [](https://github.com/airbytehq/airbyte/pull/)           | Revert 'Add row_id to rows and use as primary key'                            |
-| 0.2.30  | 2022-10-09 | [](https://github.com/airbytehq/airbyte/pull/)           | Add row_id to rows and use as primary key                                     |
+|---------| ---------- | -------------------------------------------------------- |-------------------------------------------------------------------------------|
+| 0.2.37  | 2023-02-21 | [23292](https://github.com/airbytehq/airbyte/pull/23292) | Skip non grid sheets.                                                         |
+| 0.2.36  | 2023-02-21 | [23272](https://github.com/airbytehq/airbyte/pull/23272) | Handle empty sheets gracefully.                                               |
+| 0.2.35  | 2023-02-23 | [23057](https://github.com/airbytehq/airbyte/pull/23057) | Slugify column names                                                          |
+| 0.2.34  | 2023-02-15 | [23071](https://github.com/airbytehq/airbyte/pull/23071) | Change min spreadsheet id size to 20 symbols                                  |
+| 0.2.33  | 2023-02-13 | [23278](https://github.com/airbytehq/airbyte/pull/23278) | Handle authentication errors                                                  |
+| 0.2.32  | 2023-02-13 | [22884](https://github.com/airbytehq/airbyte/pull/22884) | Do not consume http spreadsheets.                                             |
+| 0.2.31  | 2022-10-09 | [19574](https://github.com/airbytehq/airbyte/pull/19574) | Revert 'Add row_id to rows and use as primary key'                            |
+| 0.2.30  | 2022-10-09 | [19215](https://github.com/airbytehq/airbyte/pull/19215) | Add row_id to rows and use as primary key                                     |
 | 0.2.21  | 2022-10-04 | [15591](https://github.com/airbytehq/airbyte/pull/15591) | Clean instantiation of AirbyteStream                                          |
-| 0.2.20  | 2022-10-10 | [17766](https://github.com/airbytehq/airbyte/pull/17766) | Fix null pointer exception when parsing the spreadsheet id. |
+| 0.2.20  | 2022-10-10 | [17766](https://github.com/airbytehq/airbyte/pull/17766) | Fix null pointer exception when parsing the spreadsheet id.                   |
 | 0.2.19  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Use latest CDK.                                                               |
 | 0.2.18  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                 |
 | 0.2.17  | 2022-08-03 | [15107](https://github.com/airbytehq/airbyte/pull/15107) | Expose Row Batch Size in Connector Specification                              |

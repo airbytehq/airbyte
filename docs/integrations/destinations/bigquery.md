@@ -25,7 +25,7 @@ While setting up the connector, you can configure it in the following modes:
 
 ### Step 1: Set up a data loading method
 
-Although you can load data using BigQuery's [`INSERTS`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax), we highly recommend using a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction).
+Although you can load data using BigQuery's [`INSERTS`](https://cloud.google.com/bigquery/docs/reference/standard-sql/dml-syntax), we highly recommend using a [Google Cloud Storage bucket](https://cloud.google.com/storage/docs/introduction) not only for performance and cost but reliability since larger datasets are prone to more failures when using standard inserts.
 
 #### (Recommended) Using a Google Cloud Storage bucket
 
@@ -44,7 +44,7 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 
 ### Step 2: Set up the BigQuery connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Destinations** and then click **+ New destination**.
 3. On the Set up the destination page, select **BigQuery** or **BigQuery (denormalized typed struct)** from the **Destination type** dropdown depending on whether you want to set up the connector in [BigQuery](#connector-modes) or [BigQuery (Denormalized)](#connector-modes) mode.
 4. Enter the name for the BigQuery connector.

@@ -14,15 +14,17 @@ MAIN_REQUIREMENTS = [
     "pydantic~=1.10.4",
     "fsspec~=2023.1.0",
     "gcsfs~=2023.1.0",
+    "pytablewriter~=0.64.2",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.2.5",
     "pytest-mock~=3.10.0",
+    "freezegun",
 ]
 
 setup(
-    version="0.1.11",
+    version="0.1.16",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
