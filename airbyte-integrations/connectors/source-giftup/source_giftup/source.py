@@ -42,6 +42,14 @@ class GiftupStream(HttpStream, ABC):
 
         return {"createdOnOrAfter": self.start_date, "limit": self.batch_size, "offset": self.offset}
 
+    def request_kwargs(
+            self,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        return {"verify": False}
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         data = response.json()
         if type(data) == list:
