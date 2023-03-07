@@ -150,9 +150,7 @@ class TiktokStream(HttpStream, ABC):
         super().__init__(authenticator=kwargs.get("authenticator"))
 
         self._advertiser_id = kwargs.get("advertiser_id")
-
-        # only sandbox has non-empty self._advertiser_id
-        self.is_sandbox = bool(self._advertiser_id)
+        self.is_sandbox = kwargs.get("is_sandbox")
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
@@ -283,11 +281,13 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         return json.dumps(arr)
 
     def get_advertiser_ids(self) -> List[int]:
-        if self.is_sandbox:
+        if self._advertiser_id:
             # for sandbox: just return advertiser_id provided in spec
+            # for production: it will filter only the advertiser id provied in spec
             ids = [self._advertiser_id]
         else:
-            # for prod: return list of all available ids from AdvertiserIds stream:
+            # for prod: return list of all available ids from AdvertiserIds stream if the field is empty
+            # in the connector configuration
             advertiser_ids = AdvertiserIds(**self.kwargs).read_records(sync_mode=SyncMode.full_refresh)
             ids = [advertiser["advertiser_id"] for advertiser in advertiser_ids]
 
