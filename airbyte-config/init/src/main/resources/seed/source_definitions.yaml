@@ -1633,7 +1633,7 @@
   releaseStage: alpha
   allowedHosts:
     hosts:
-      - "*.redshift.amazonaws.com"
+      - "${host}"
 - name: Reply.io
   sourceDefinitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
   dockerRepository: airbyte/source-reply-io
