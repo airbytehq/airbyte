@@ -3,17 +3,16 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import backoff
-import logging
 import pendulum
 import requests
 from deprecated import deprecated
 
-from .core import HttpAuthenticator
 from ..exceptions import DefaultBackoffException
-
+from .core import HttpAuthenticator
 
 logger = logging.getLogger("airbyte")
 

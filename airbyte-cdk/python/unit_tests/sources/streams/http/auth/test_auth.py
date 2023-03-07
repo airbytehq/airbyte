@@ -4,8 +4,8 @@
 
 
 import logging
-import pytest
 
+import pytest
 from airbyte_cdk.sources.streams.http.auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,

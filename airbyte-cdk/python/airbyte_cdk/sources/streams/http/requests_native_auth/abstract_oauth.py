@@ -2,16 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import abstractmethod
 from typing import Any, List, Mapping, MutableMapping, Tuple, Union
 
 import backoff
-import logging
 import pendulum
 import requests
 from requests.auth import AuthBase
-from ..exceptions import DefaultBackoffException
 
+from ..exceptions import DefaultBackoffException
 
 logger = logging.getLogger("airbyte")
 
