@@ -122,9 +122,9 @@ jobs:
           docker pull airbyte/source-postgres:1.0.35
           kind load docker-image airbyte/source-postgres:1.0.35 --name chart-testing
           echo "pulling harness image..."
-          docker pull rodireich/perftestrepo:10
+          docker pull rodireich/perftestrepo:11
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
-          kind load docker-image rodireich/perftestrepo:10 --name chart-testing
+          kind load docker-image rodireich/perftestrepo:11 --name chart-testing
           echo "loading pod..."
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
           echo "get pods..."
