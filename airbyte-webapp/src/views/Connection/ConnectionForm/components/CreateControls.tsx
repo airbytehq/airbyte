@@ -2,17 +2,18 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, Spinner, StatusIcon } from "components";
+import { Button } from "components/ui/Button";
+import { Spinner } from "components/ui/Spinner";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 interface CreateControlsProps {
   isSubmitting: boolean;
   isValid: boolean;
   errorMessage?: React.ReactNode;
-  additionBottomControls?: React.ReactNode;
 }
 
 const ButtonContainer = styled.div`
-  margin-top: 34px;
+  padding: 15px 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -59,12 +60,7 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const CreateControls: React.FC<CreateControlsProps> = ({
-  isSubmitting,
-  errorMessage,
-  additionBottomControls,
-  isValid,
-}) => {
+const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMessage, isValid }) => {
   if (isSubmitting) {
     return (
       <LoadingContainer>
@@ -90,7 +86,6 @@ const CreateControls: React.FC<CreateControlsProps> = ({
         <div />
       )}
       <div>
-        {additionBottomControls || null}
         <Button type="submit" disabled={isSubmitting || !isValid}>
           <FormattedMessage id="onboarding.setUpConnection" />
         </Button>

@@ -18,6 +18,7 @@ properties:
       - normalization
       - dbt
       - airbyte_platform
+      - unknown
   failureType:
     description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
     type: string

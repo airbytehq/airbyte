@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -31,8 +32,6 @@ import org.jooq.SQLDialect;
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
-  private final List<String> HOST_KEY = List.of(MySQLDestination.HOST_KEY);
-  private final List<String> PORT_KEY = List.of(MySQLDestination.PORT_KEY);
   private String schemaName;
 
   public abstract Path getConfigFilePath();
@@ -45,7 +44,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected JsonNode getConfig() {
     final var config = getConfigFromSecretsFile();
-    ((ObjectNode) config).put("database", schemaName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, schemaName);
     return config;
   }
 
@@ -119,12 +118,12 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
-            config.get("port").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
     return new Database(dslContext);
   }
@@ -133,8 +132,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     final var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
         getConfig(),
-        HOST_KEY,
-        PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -151,8 +150,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     final var config = getConfig();
     SshTunnel.sshWrap(
         config,
-        HOST_KEY,
-        PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
         });
@@ -162,8 +161,8 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        HOST_KEY,
-        PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });

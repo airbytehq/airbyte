@@ -6,6 +6,10 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Low-code Connector-Development Framework
+
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
+
 ## Python Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
@@ -131,7 +135,8 @@ Once you've finished iterating on the changes to a connector as specified in its
    
    * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
    
-5. The new version of the connector is now available for everyone who uses it. Thank you!
+5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
+6. The new version of the connector is now available for everyone who uses it. Thank you!
 
 ### The /publish command
 

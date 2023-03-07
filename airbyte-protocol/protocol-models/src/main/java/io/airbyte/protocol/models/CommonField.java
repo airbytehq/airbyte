@@ -20,7 +20,7 @@ public class CommonField<T> {
     this.properties = null;
   }
 
-  public CommonField(final String name, final T type, List<CommonField<T>> properties) {
+  public CommonField(final String name, final T type, final List<CommonField<T>> properties) {
     this.name = name;
     this.type = type;
     this.properties = properties;
@@ -45,7 +45,7 @@ public class CommonField<T> {
 
     final CommonField<T> field = (CommonField<T>) o;
     return name.equals(field.name) &&
-        type == field.type && Objects.equals(properties, field.properties);
+        type.equals(field.type) && Objects.equals(properties, field.properties);
   }
 
   @Override
@@ -55,6 +55,11 @@ public class CommonField<T> {
 
   public List<CommonField<T>> getProperties() {
     return properties;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("CommonField{name='%s', type=%s, properties=%s}", name, type, properties);
   }
 
 }

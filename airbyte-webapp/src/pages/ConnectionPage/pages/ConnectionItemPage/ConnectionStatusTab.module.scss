@@ -1,0 +1,58 @@
+@use "../../../../scss/colors";
+@use "../../../../scss/variables";
+
+.title {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+
+  .resetButton,
+  .cancelButton,
+  .syncButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .resetButton {
+    margin-right: variables.$spacing-md;
+  }
+
+  .cancelButton {
+    border-color: transparent;
+    background-color: colors.$red;
+
+    .iconXmark {
+      margin-right: 12px;
+      font-size: 18px;
+    }
+  }
+
+  .syncButton {
+    .iconRotate {
+      display: flex;
+      margin-right: 12px;
+      align-items: center;
+    }
+  }
+}
+
+.contentCard {
+  margin-bottom: variables.$spacing-xl;
+}
+
+.footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:export {
+  syncIconHeight: 15px;
+}

@@ -155,6 +155,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details about an issue type."
 }

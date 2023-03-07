@@ -47,15 +47,15 @@ public class MigrationDevHelper {
     migrator.createBaseline();
 
     final List<MigrationInfo> preMigrationInfoList = migrator.list();
-    System.out.println("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
-    System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+    LOGGER.info("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
+    LOGGER.info("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
 
     final MigrateResult migrateResult = migrator.migrate();
-    System.out.println("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
+    LOGGER.info("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
 
     final List<MigrationInfo> postMigrationInfoList = migrator.list();
-    System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
-    System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+    LOGGER.info("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
+    LOGGER.info("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
 
   public static void createNextMigrationFile(final String dbIdentifier, final FlywayDatabaseMigrator migrator) throws IOException {
@@ -73,7 +73,7 @@ public class MigrationDevHelper {
     final String fileName = String.format("V%s__%s.java", versionId, description);
     final String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
 
-    System.out.println("\n==== New Migration File ====\n" + filePath);
+    LOGGER.info("\n==== New Migration File ====\n" + filePath);
 
     final File file = new File(Path.of(filePath).toUri());
     FileUtils.forceMkdirParent(file);
@@ -97,8 +97,8 @@ public class MigrationDevHelper {
     try (final PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()), StandardCharsets.UTF_8)) {
       writer.println(schema);
       if (printSchema) {
-        System.out.println("\n==== Schema ====\n" + schema);
-        System.out.println("\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
+        LOGGER.info("\n==== Schema ====\n" + schema);
+        LOGGER.info("\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
       }
     } catch (final FileNotFoundException e) {
       throw new IOException(e);
@@ -140,14 +140,15 @@ public class MigrationDevHelper {
   @VisibleForTesting
   static AirbyteVersion getCurrentAirbyteVersion() {
     try (final BufferedReader reader = new BufferedReader(new FileReader("../../.env", StandardCharsets.UTF_8))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
+      String line = reader.readLine();
+      while (line != null) {
         if (line.startsWith("VERSION")) {
           return new AirbyteVersion(line.split("=")[1]);
         }
+        line = reader.readLine();
       }
     } catch (final FileNotFoundException e) {
-      throw new IllegalStateException("Cannot find the .env file");
+      throw new IllegalStateException("Cannot find the .env file", e);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
@@ -214,9 +215,9 @@ public class MigrationDevHelper {
         migrationAirbyteVersion,
         currentAirbyteVersion);
     final String lastMigrationId = getMigrationId(migrationVersion);
-    System.out.println("lastMigrationId: " + lastMigrationId);
+    LOGGER.info("lastMigrationId: " + lastMigrationId);
     final String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
-    System.out.println("nextMigrationId: " + nextMigrationId);
+    LOGGER.info("nextMigrationId: " + nextMigrationId);
     return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.serialize(), nextMigrationId));
   }
 

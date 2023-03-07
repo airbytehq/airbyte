@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "creator_id": {
+      "type": ["null", "number"]
+    },
+    "owner_id": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": ["null", "number", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "hot": {
+      "type": ["null", "boolean"]
+    },
+    "stage_id": {
+      "type": ["null", "number"]
+    },
+    "last_stage_change_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "last_stage_change_by_id": {
+      "type": ["null", "number"]
+    },
+    "last_activity_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "source_id": {
+      "type": ["null", "number"]
+    },
+    "loss_reason_id": {
+      "type": ["null", "number"]
+    },
+    "unqualified_reason_id": {
+      "type": ["null", "number"]
+    },
+    "dropbox_email": {
+      "type": ["null", "string"]
+    },
+    "contact_id": {
+      "type": ["null", "number"]
+    },
+    "organization_id": {
+      "type": ["null", "number"]
+    },
+    "estimated_close_date": {
+      "type": ["null", "string"]
+    },
+    "customized_win_likelihood": {
+      "type": ["null", "number"]
+    },
+    "tags": {
+      "type": ["null", "array"]
+    },
+    "custom_fields": {
+      "type": ["null", "object"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "added_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}

@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.25", "pendulum~=2.1.2"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "pendulum~=2.1.2"]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",

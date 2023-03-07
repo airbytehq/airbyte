@@ -13,7 +13,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-json-validation')
     implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'com.networknt:json-schema-validator:1.0.42'
+    implementation 'com.networknt:json-schema-validator:1.0.72'
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     // random Json object generation from Json schema

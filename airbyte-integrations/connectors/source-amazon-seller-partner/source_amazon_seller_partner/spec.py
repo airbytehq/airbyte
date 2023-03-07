@@ -12,7 +12,7 @@ class AmazonSellerPartnerConfig(BaseModel):
         title = "Amazon Seller Partner Spec"
         schema_extra = {"additionalProperties": True}
 
-    app_id: str = Field(None, description="Your Amazon App ID", title="App Id *", airbyte_secret=True, order=0)
+    app_id: str = Field(None, description="Your Amazon App ID", title="App Id", airbyte_secret=True, order=0)
 
     auth_type: str = Field(default="oauth2.0", const=True, order=1)
 

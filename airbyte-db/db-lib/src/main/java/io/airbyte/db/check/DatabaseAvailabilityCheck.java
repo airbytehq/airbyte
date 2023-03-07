@@ -28,6 +28,7 @@ public interface DatabaseAvailabilityCheck extends DatabaseCheck {
    *
    * @throws DatabaseCheckException if unable to perform the check.
    */
+  @Override
   default void check() throws DatabaseCheckException {
     var initialized = false;
     var totalTime = 0;

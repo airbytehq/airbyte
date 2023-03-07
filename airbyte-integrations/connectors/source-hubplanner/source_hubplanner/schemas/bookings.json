@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "allDay": {
+      "type": ["null", "boolean"]
+    },
+    "scale": {
+      "type": ["null", "string"]
+    },
+    "start": {
+      "type": "string"
+    },
+    "end": {
+      "type": "string"
+    },
+    "categoryTemplateId": {
+      "type": ["null", "string"]
+    },
+    "categoryName": {
+      "type": ["null", "string"]
+    },
+    "stateValue": {
+      "type": ["null", "integer"]
+    },
+    "resource": {
+      "type": "string"
+    },
+    "project": {
+      "type": "string"
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "details": {
+      "properties": {
+        "offDaysCount": {
+          "type": ["null", "integer"]
+        },
+        "workDaysCount": {
+          "type": ["null", "integer"]
+        },
+        "holidayCount": {
+          "type": ["null", "integer"]
+        },
+        "workWeekDetails": {
+          "items": {
+            "type": ["null", "integer"]
+          },
+          "type": ["null", "array"]
+        },
+        "bookedMinutes": {
+          "type": ["null", "integer"]
+        },
+        "budgetBookedAmount": {
+          "type": ["null", "integer"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "createdDate": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "updatedDate": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "string"]
+    },
+    "customFields": {
+      "items": {
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "templateType": {
+            "type": "string"
+          },
+          "templateLabel": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "choices": {
+            "items": {
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "choiceId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "type": ["null", "array"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "bookingRate": {
+      "properties": {
+        "external": {
+          "properties": {
+            "defaultRateId": {
+              "type": ["null", "integer"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "internal": {
+          "properties": {
+            "defaultRateId": {
+              "type": ["null", "integer"]
+            }
+          },
+          "type": ["null", "object"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "bookingCreatorId": {
+      "type": ["null", "string"]
+    },
+    "lastUpdatedById": {
+      "type": ["null", "string"]
+    },
+    "backgroundColor": {
+      "type": ["null", "string"]
+    }
+  }
+}

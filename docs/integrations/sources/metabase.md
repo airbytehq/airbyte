@@ -16,21 +16,21 @@ This Source is capable of syncing the following Streams:
 
 ### Data type mapping
 
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `integer`, `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| Integration Type    | Airbyte Type | Notes |
+|:--------------------|:-------------|:------|
+| `string`            | `string`     |       |
+| `integer`, `number` | `number`     |       |
+| `array`             | `array`      |       |
+| `object`            | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| SSL connection | Yes |
-| Namespaces | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+|:------------------|:---------------------|:------|
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
+| SSL connection    | Yes                  |
+| Namespaces        | No                   |       |
 
 ## Getting started
 
@@ -68,6 +68,7 @@ authenticated query is running, which might trigger security alerts on the user'
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752) |  Initial (alpha) release |
+| Version | Date       | Pull Request                                             | Subject                    |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
+| 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release    |

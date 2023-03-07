@@ -12,6 +12,7 @@ export interface CloudWorkspace {
   remainingCredits: number;
   creditStatus?: CreditStatus;
   lastCreditPurchaseIncrementTimestamp?: number | null;
+  trialExpiryTimestamp?: number | null;
 }
 
 export interface CreditConsumptionByConnector {

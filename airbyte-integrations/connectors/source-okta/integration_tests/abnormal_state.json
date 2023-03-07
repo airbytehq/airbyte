@@ -2,5 +2,6 @@
   "users": { "lastUpdated": "3021-09-08T07:04:28.000Z" },
   "groups": { "lastUpdated": "3021-09-08T07:04:28.000Z" },
   "group_members": { "id": "00uzzzzzzzzzzzzzzzzz" },
-  "logs": { "published": "3021-09-08T07:04:28.000Z" }
+  "logs": { "published": "3021-09-08T07:04:28.000Z" },
+  "resource_sets": { "id": "iamzzzzzzzzzzzzzzzzz" }
 }

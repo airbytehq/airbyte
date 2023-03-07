@@ -23,17 +23,17 @@ class BraintreeConfig(BaseModel):
     merchant_id: str = Field(
         name="Merchant ID",
         title="Merchant ID",
-        description='The unique identifier for your entire gateway account. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this ID.',
+        description='The unique identifier for your entire gateway account. See the <a href="https://docs.airbyte.com/integrations/sources/braintree">docs</a> for more information on how to obtain this ID.',
     )
     public_key: str = Field(
         name="Public Key",
         title="Public Key",
-        description='Braintree Public Key. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
+        description='Braintree Public Key. See the <a href="https://docs.airbyte.com/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
     )
     private_key: str = Field(
         name="Private Key",
         title="Private Key",
-        description='Braintree Private Key. See the <a href="https://docs.airbyte.io/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
+        description='Braintree Private Key. See the <a href="https://docs.airbyte.com/integrations/sources/braintree">docs</a> for more information on how to obtain this key.',
         airbyte_secret=True,
     )
     start_date: datetime = Field(

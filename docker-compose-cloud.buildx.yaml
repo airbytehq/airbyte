@@ -68,3 +68,35 @@ services:
         platforms:
           - linux/amd64
           - linux/arm64
+  db:
+    image: airbyte/db:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-db/db-lib/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/db:${VERSION}
+          - airbyte/db:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
+  cron:
+    image: airbyte/cron:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-cron/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/cron:${VERSION}
+          - airbyte/cron:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64

@@ -7,14 +7,14 @@
     },
     "text": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "content": {
           "type": ["null", "string"]
         },
         "link": {
           "type": ["null", "object"],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "type": {
               "enum": ["url"]
@@ -28,14 +28,14 @@
     },
     "rich_text": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "content": {
           "type": ["null", "string"]
         },
         "link": {
           "type": ["null", "object"],
-          "additionalProperties": false,
+          "additionalProperties": true,
           "properties": {
             "type": {
               "enum": ["url"]
@@ -49,7 +49,7 @@
     },
     "annotations": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "bold": {
           "type": ["null", "boolean"]

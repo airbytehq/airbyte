@@ -14,7 +14,7 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 
 ## Connector
 
-An Airbyte component which pulls data from, or pushes data to, a source or destination.
+An Airbyte component which pulls data from a source or pushes data to a destination.
 
 ## Connection
 
@@ -155,50 +155,7 @@ A workspace is a grouping of sources, destinations, connections, and other confi
 
 When you [sign up](http://cloud.airbyte.io/signup) for Airbyte Cloud, we automatically create your first workspace where you are the only user with access. You can set up your sources and destinations to start syncing data and invite other users to join your workspace.
 
-## Credits
+## Glossary of Terms
 
-An Airbyte credit is a unit of measure used to pay for Airbyte resources when you run a sync. 
+You find and extended list of [Airbyte specific terms](https://glossary.airbyte.com/term/airbyte-glossary-of-terms/), [data engineering concepts](https://glossary.airbyte.com/term/data-engineering-concepts) or many [other data related terms](https://glossary.airbyte.com/).
 
-What one credit stands for depends on the source type:
-
-<table>
-  <tr>
-   <td><strong>Source type</strong>
-   </td>
-   <td><strong>What does one credit stand for?</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>API sources
-   </td>
-   <td>1 hour of compute (360k rows on average)
-   </td>
-  </tr>
-  <tr>
-   <td>Databases
-   </td>
-   <td>1/10 hour of compute (450k rows on average)
-   </td>
-  </tr>
-  <tr>
-   <td>Files
-   </td>
-   <td>1/4 hour of compute (65k rows on average)
-   </td>
-  </tr>
-  <tr>
-   <td>Custom connectors
-   </td>
-   <td>1 hour of compute (360k rows on average)
-   </td>
-  </tr>
-</table>
-
-
-Compute time is the time between replicating the first and last bytes.
-
-Credits are charged for successful syncs, normalization, and canceled jobs and attempts. Credits are not charged for failed jobs and attempts.
-
-*Note: Credits expire after one year.*
-
-**Warning:** Since our pricing model is linear, your costs will start rising as your data needs grow. Contact us for customized pricing if you want to replicate more than 1TB of data in your databases or 50 million records across your API sources on a monthly basis.

@@ -1,0 +1,17 @@
+@use "scss/colors";
+
+// Export colors to be used in monaco editor
+:export {
+  darkString: colors.$white;
+  darkType: colors.$blue-300;
+  darkNumber: colors.$orange-300;
+  darkDelimiter: colors.$yellow-300;
+  darkKeyword: colors.$green-300;
+  lightString: colors.$dark-blue;
+  lightType: colors.$blue-500;
+  lightNumber: colors.$orange-600;
+  lightDelimiter: colors.$black;
+  lightKeyword: colors.$green-600;
+  lightLineNumber: colors.$dark-blue-300;
+  lightLineNumberActive: colors.$dark-blue;
+}

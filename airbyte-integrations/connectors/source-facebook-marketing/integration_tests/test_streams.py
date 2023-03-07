@@ -4,6 +4,7 @@
 
 import copy
 import logging
+import tempfile
 from typing import Any, List, MutableMapping, Set, Tuple
 
 import pytest
@@ -23,14 +24,17 @@ def state_fixture() -> MutableMapping[str, MutableMapping[str, Any]]:
 
 @pytest.fixture(scope="session", name="configured_catalog")
 def configured_catalog_fixture(config) -> ConfiguredAirbyteCatalog:
-    catalog = SourceFacebookMarketing().discover(logger=logging.getLogger("airbyte"), config=config)
-    streams = []
-    # Prefer incremental if available
-    for stream in catalog.streams:
-        sync_mode = SyncMode.incremental if SyncMode.incremental in stream.supported_sync_modes else SyncMode.full_refresh
-        streams.append(ConfiguredAirbyteStream(stream=stream, sync_mode=sync_mode, destination_sync_mode=DestinationSyncMode.append))
+    with tempfile.TemporaryDirectory() as temp_dir:
+        source = SourceFacebookMarketing()
+        config = source.configure(config, temp_dir)
+        catalog = source.discover(logger=logging.getLogger("airbyte"), config=config)
+        streams = []
+        # Prefer incremental if available
+        for stream in catalog.streams:
+            sync_mode = SyncMode.incremental if SyncMode.incremental in stream.supported_sync_modes else SyncMode.full_refresh
+            streams.append(ConfiguredAirbyteStream(stream=stream, sync_mode=sync_mode, destination_sync_mode=DestinationSyncMode.append))
 
-    return ConfiguredAirbyteCatalog(streams=streams)
+        return ConfiguredAirbyteCatalog(streams=streams)
 
 
 class TestFacebookMarketingSource:

@@ -163,6 +163,29 @@ class Answers(ChildStreamMixin, IncrementalZenloopStream):
         yield from response_json.get("answers", [])
 
 
+class Properties(ChildStreamMixin, ZenloopStream):
+    # API Doc: https://docs.zenloop.com/reference/get-list-of-properties
+    primary_key = "id"
+    has_date_param = False
+    extra_params = {"page": "1"}
+    parent_stream_class = Surveys
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        # take optional survey_id if entered
+        if self.survey_id:
+            return f"surveys/{self.survey_id}/properties"
+        # slice all survey_id's if nothing provided
+        else:
+            return f"surveys/{stream_slice['survey_slice']}/properties"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        # select properties and surveys to be able to link properties to a survey
+        yield from response_json.get("properties", [])
+
+
 class SurveyGroups(ZenloopStream):
     # API Doc: https://docs.zenloop.com/reference#get-list-of-survey-groups
     primary_key = None
@@ -228,4 +251,4 @@ class SourceZenloop(AbstractSource):
             "survey_id": config.get("survey_id"),
             "survey_group_id": config.get("survey_group_id"),
         }
-        return [Surveys(**args), Answers(**args), SurveyGroups(**args), AnswersSurveyGroup(**args)]
+        return [Surveys(**args), Answers(**args), Properties(**args), SurveyGroups(**args), AnswersSurveyGroup(**args)]

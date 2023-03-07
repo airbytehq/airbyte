@@ -35,7 +35,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in header_values},
             },
-            supported_sync_modes=["full_refresh"],
+            supported_sync_modes=[SyncMode.full_refresh],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -66,7 +66,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {header: {"type": "string"} for header in expected_stream_header_values},
             },
-            supported_sync_modes=["full_refresh"],
+            supported_sync_modes=[SyncMode.full_refresh],
         )
 
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -84,7 +84,7 @@ class TestHelpers(unittest.TestCase):
                 # For simplicity, the type of every cell is a string
                 "properties": {"h1": {"type": "string"}},
             },
-            supported_sync_modes=["full_refresh"],
+            supported_sync_modes=[SyncMode.full_refresh],
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
 

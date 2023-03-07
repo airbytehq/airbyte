@@ -1,0 +1,69 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["{{ options['name'] }}"]
+  requester:
+    url_base: "https://api.sendinblue.com/v3"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "api-key"
+      api_token: "{{ config['api_key'] }}"
+  offset_paginator:
+    type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 100
+    page_token_option:
+      field_name: "offset"
+      inject_into: "request_parameter"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      $ref: "*ref(definitions.offset_paginator)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  campaigns_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/emailCampaigns"
+  campaign_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.campaigns_stream)"
+        parent_key: id
+        stream_slice_field: campaign_id
+  templates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: templates
+      primary_key: id
+      path: "/smtp/templates"
+  contacts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: contacts
+      primary_key: id
+      path: "/contacts"
+
+streams:
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.templates_stream)"
+  - "*ref(definitions.contacts_stream)"
+
+check:
+  stream_names:
+    - "campaigns"

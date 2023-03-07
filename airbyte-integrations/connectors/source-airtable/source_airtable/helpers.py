@@ -13,8 +13,8 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 
 class Helpers(object):
     @staticmethod
-    def get_first_row(auth: TokenAuthenticator, base_id: str, table: str) -> Dict[str, Any]:
-        url = f"https://api.airtable.com/v0/{base_id}/{table}?pageSize=1"
+    def get_most_complete_row(auth: TokenAuthenticator, base_id: str, table: str, sample_size: int = 100) -> Dict[str, Any]:
+        url = f"https://api.airtable.com/v0/{base_id}/{table}?pageSize={sample_size}"
         try:
             response = requests.get(url, headers=auth.get_auth_header())
             response.raise_for_status()
@@ -26,8 +26,12 @@ class Helpers(object):
             else:
                 raise Exception(f"Error getting first row from table {table}: {e}")
         json_response = response.json()
-        record = json_response.get("records", [])[0]
-        return record
+        records = json_response.get("records", [])
+        most_complete_row = records[0]
+        for record in records:
+            if len(record.keys()) > len(most_complete_row.keys()):
+                most_complete_row = record
+        return most_complete_row
 
     @staticmethod
     def get_json_schema(record: Dict[str, Any]) -> Dict[str, str]:

@@ -4,49 +4,35 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.persistence.StreamResetPersistence;
-import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.temporal.exception.RetryableException;
-import java.io.IOException;
-import java.util.List;
-import lombok.AllArgsConstructor;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+
+import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.StreamResetRecordsHelper;
+import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
-@AllArgsConstructor
 @Slf4j
+@Singleton
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class StreamResetActivityImpl implements StreamResetActivity {
 
-  private StreamResetPersistence streamResetPersistence;
-  private JobPersistence jobPersistence;
+  private final StreamResetRecordsHelper streamResetRecordsHelper;
 
+  public StreamResetActivityImpl(final StreamResetRecordsHelper streamResetRecordsHelper) {
+    this.streamResetRecordsHelper = streamResetRecordsHelper;
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public void deleteStreamResetRecordsForJob(final DeleteStreamResetRecordsForJobInput input) {
-    // if there is no job, there is nothing to delete
-    if (input.getJobId() == null) {
-      log.info("deleteStreamResetRecordsForJob was called with a null job id; returning.");
-      return;
-    }
-
-    try {
-      final Job job = jobPersistence.getJob(input.getJobId());
-      final ConfigType configType = job.getConfig().getConfigType();
-      if (!ConfigType.RESET_CONNECTION.equals(configType)) {
-        log.info("deleteStreamResetRecordsForJob was called for job {} with config type {}. Returning, as config type is not {}.",
-            input.getJobId(),
-            configType,
-            ConfigType.RESET_CONNECTION);
-        return;
-      }
-
-      final List<StreamDescriptor> resetStreams = job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset();
-      log.info("Deleting the following streams for reset job {} from the stream_reset table: {}", input.getJobId(), resetStreams);
-      streamResetPersistence.deleteStreamResets(input.getConnectionId(), resetStreams);
-    } catch (final IOException e) {
-      throw new RetryableException(e);
-    }
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId(), JOB_ID_KEY, input.getJobId()));
+    streamResetRecordsHelper.deleteStreamResetRecordsForJob(input.getJobId(), input.getConnectionId());
   }
 
 }

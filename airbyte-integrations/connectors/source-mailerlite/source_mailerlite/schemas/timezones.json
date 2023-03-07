@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "name_for_humans": {
+      "type": "string"
+    },
+    "offset_name": {
+      "type": "string"
+    },
+    "offset": {
+      "type": "integer"
+    }
+  },
+  "required": ["id", "name", "name_for_humans", "offset_name", "offset"]
+}

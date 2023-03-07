@@ -10,6 +10,7 @@ import com.azure.storage.blob.models.BlobItem;
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.azure.storage.common.StorageSharedKeyCredential;
+import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +38,16 @@ public class AzureBlobStorageConnectionChecker {
         new SpecializedBlobClientBuilder()
             .endpoint(azureBlobStorageConfig.getEndpointUrl())
             .credential(credential)
+            .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
+            .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
+            .buildAppendBlobClient();
+  }
+
+  public AzureBlobStorageConnectionChecker(final AzureBlobStorageConfig azureBlobStorageConfig) {
+    this.appendBlobClient =
+        new SpecializedBlobClientBuilder()
+            .endpoint(azureBlobStorageConfig.getEndpointUrl())
+            .sasToken(azureBlobStorageConfig.getSasToken())
             .containerName(azureBlobStorageConfig.getContainerName()) // Like schema in DB
             .blobName(TEST_BLOB_NAME_PREFIX + UUID.randomUUID()) // Like table in DB
             .buildAppendBlobClient();

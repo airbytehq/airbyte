@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "num_tokens": {
+      "type": ["null", "integer"]
+    },
+    "avg_price_change": {
+      "type": ["null", "number"]
+    },
+    "market_cap": {
+      "type": ["null", "number"]
+    },
+    "market_cap_change": {
+      "type": ["null", "number"]
+    },
+    "volume": {
+      "type": ["null", "number"]
+    },
+    "volume_change": {
+      "type": ["null", "number"]
+    },
+    "last_updated": {
+      "type": ["null", "string"]
+    }
+  }
+}

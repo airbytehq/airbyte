@@ -7,6 +7,7 @@ package io.airbyte.test.utils;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,15 +31,15 @@ public class GKEPostgresConfig {
 
   public static Map<Object, Object> dbConfig(final Type connectorType, final boolean hiddenPassword, final boolean withSchema) {
     final Map<Object, Object> dbConfig = new HashMap<>();
-    dbConfig.put("host", connectorType == Type.SOURCE ? SOURCE_HOST : DESTINATION_HOST);
-    dbConfig.put("password", hiddenPassword ? "**********" : PASSWORD);
+    dbConfig.put(JdbcUtils.HOST_KEY, connectorType == Type.SOURCE ? SOURCE_HOST : DESTINATION_HOST);
+    dbConfig.put(JdbcUtils.PASSWORD_KEY, hiddenPassword ? "**********" : PASSWORD);
 
-    dbConfig.put("port", PORT);
-    dbConfig.put("database", DB);
-    dbConfig.put("username", USERNAME);
+    dbConfig.put(JdbcUtils.PORT_KEY, PORT);
+    dbConfig.put(JdbcUtils.DATABASE_KEY, DB);
+    dbConfig.put(JdbcUtils.USERNAME_KEY, USERNAME);
 
     if (withSchema) {
-      dbConfig.put("schema", "public");
+      dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
     }
 
     return dbConfig;
@@ -51,7 +52,7 @@ public class GKEPostgresConfig {
 
   public static Database getDestinationDatabase() {
     return new Database(DSLContextFactory.create(USERNAME, PASSWORD, DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        "jdbc:postgresql://localhost:3000/postgresdb", SQLDialect.POSTGRES));
+        "jdbc:postgresql://localhost:4000/postgresdb", SQLDialect.POSTGRES));
   }
 
 }

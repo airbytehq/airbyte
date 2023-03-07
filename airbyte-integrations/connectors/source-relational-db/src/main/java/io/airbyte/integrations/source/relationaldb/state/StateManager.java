@@ -5,10 +5,10 @@
 package io.airbyte.integrations.source.relationaldb.state;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.CdcStateManager;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -140,10 +140,17 @@ public interface StateManager<T, S> {
    *         manager.
    */
   default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor) {
+    return updateAndEmit(pair, cursor, 0L);
+  }
+
+  default AirbyteStateMessage updateAndEmit(final AirbyteStreamNameNamespacePair pair, final String cursor, final long cursorRecordCount) {
     final Optional<CursorInfo> cursorInfo = getCursorInfo(pair);
     Preconditions.checkState(cursorInfo.isPresent(), "Could not find cursor information for stream: " + pair);
-    LOGGER.debug("Updating cursor value for {} to {}...", pair, cursor);
     cursorInfo.get().setCursor(cursor);
+    if (cursorRecordCount > 0L) {
+      cursorInfo.get().setCursorRecordCount(cursorRecordCount);
+    }
+    LOGGER.debug("Updating cursor value for {} to {} (count {})...", pair, cursor, cursorRecordCount);
     return emit(Optional.ofNullable(pair));
   }
 

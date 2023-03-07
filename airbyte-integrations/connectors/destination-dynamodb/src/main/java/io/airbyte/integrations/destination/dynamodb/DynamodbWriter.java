@@ -69,7 +69,7 @@ public class DynamodbWriter {
       final var table = createTableIfNotExists(amazonDynamodb, outputTableName);
       table.waitForActive();
     } catch (final Exception e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.getMessage(), e);
     }
 
     this.tableWriteItems = new TableWriteItems(outputTableName);
@@ -134,7 +134,7 @@ public class DynamodbWriter {
           LOGGER.warn(String.format("Unprocessed items count after retry %d times: %s", 5, Integer.toString(outcome.getUnprocessedItems().size())));
         }
       } catch (final Exception e) {
-        LOGGER.error(e.getMessage());
+        LOGGER.error(e.getMessage(), e);
       }
     }
   }
@@ -156,7 +156,7 @@ public class DynamodbWriter {
           }
         }
       } catch (final Exception e) {
-        LOGGER.error(e.getMessage());
+        LOGGER.error(e.getMessage(), e);
       }
       LOGGER.info("Data writing completed for DynamoDB.");
     }

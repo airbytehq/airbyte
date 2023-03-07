@@ -12,17 +12,17 @@ package io.airbyte.metrics.lib;
 public class NotImplementedMetricClient implements MetricClient {
 
   @Override
-  public void count(MetricsRegistry metric, long val, String... tags) {
+  public void count(final MetricsRegistry metric, final long val, final MetricAttribute... attributes) {
     // Not Implemented.
   }
 
   @Override
-  public void gauge(MetricsRegistry metric, double val, String... tags) {
+  public void gauge(final MetricsRegistry metric, final double val, final MetricAttribute... attributes) {
     // Not Implemented.
   }
 
   @Override
-  public void distribution(MetricsRegistry metric, double val, String... tags) {
+  public void distribution(final MetricsRegistry metric, final double val, final MetricAttribute... attributes) {
     // Not Implemented.
   }
 

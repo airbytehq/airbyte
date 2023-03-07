@@ -1,0 +1,5 @@
+-e ../../bases/source-acceptance-test
+-e .
+xmltodict==0.13.0
+requests-mock==1.9.3
+pandas==1.4.3

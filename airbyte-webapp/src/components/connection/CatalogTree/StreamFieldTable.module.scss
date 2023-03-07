@@ -1,0 +1,15 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  padding-bottom: variables.$spacing-md;
+
+  // HACK: Hot-fixes an issue in StreamHeader SCSS where the .catalogSectionRow margin-top is creating a spacing between rows
+  margin-bottom: -9px;
+}
+
+.rowsContainer {
+  background: colors.$white;
+  border-radius: variables.$border-radius-md;
+  margin: 0 variables.$spacing-md;
+}

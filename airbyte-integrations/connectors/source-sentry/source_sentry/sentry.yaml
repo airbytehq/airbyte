@@ -1,0 +1,110 @@
+version: "0.1.0"
+definitions:
+  page_size: 50
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_sentry/schemas/{{ options.name }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_pointer: []
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://{{ config.hostname }}/api/0/"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      api_token: "{{ config.auth_token }}"
+  paginator:
+    type: DefaultPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size: "*ref(definitions.page_size)"
+    limit_option:
+      inject_into: "request_parameter"
+      field_name: ""
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "cursor"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ headers.link.next.cursor }}"
+      stop_condition: "{{ headers.link.next.results != 'true' }}"
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+
+streams:
+  - type: DeclarativeStream
+    $options:
+      # https://docs.sentry.io/api/events/list-a-projects-events/
+      name: "events"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{config.organization}}/{{config.project}}/events/"
+        request_options_provider:
+          request_parameters:
+            full: "true"
+      paginator:
+        $ref: "*ref(definitions.paginator)"
+  - type: DeclarativeStream
+    $options:
+      name: "issues"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{config.organization}}/{{config.project}}/issues/"
+        request_options_provider:
+          request_parameters:
+            statsPeriod: ""
+            query: ""
+      paginator:
+        $ref: "*ref(definitions.paginator)"
+  - type: DeclarativeStream
+    $options:
+      name: "projects"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/"
+      paginator:
+        $ref: "*ref(definitions.paginator)"
+  - type: DeclarativeStream
+    $options:
+      name: "project_detail"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{config.organization}}/{{config.project}}/"
+      paginator:
+        type: NoPagination
+check:
+  type: CheckStream
+  stream_names: ["project_detail"]

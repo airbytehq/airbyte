@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "dimension_id": {
+      "type": ["null", "string"]
+    },
+    "dimension_id": {
+      "type": ["null", "string"]
+    },
+    "dimension_name": {
+      "type": ["null", "string"]
+    },
+    "dimension_short_name": {
+      "type": ["null", "string"]
+    },
+    "value_id": {
+      "type": ["null", "string"]
+    },
+    "value_name": {
+      "type": ["null", "string"]
+    },
+    "value_description": {
+      "type": ["null", "string"]
+    },
+    "value_short_name": {
+      "type": ["null", "string"]
+    },
+    "attribute_id": {
+      "type": ["null", "string"]
+    },
+    "attribute_name": {
+      "type": ["null", "string"]
+    },
+    "attribute_value_id": {
+      "type": ["null", "string"]
+    },
+    "attribute_value": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    }
+  }
+}

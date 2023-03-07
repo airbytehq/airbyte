@@ -8,8 +8,8 @@ import { Header } from "./Header";
 
 const MainBlock = styled.div`
   width: 100%;
-  height: calc(100% - 100px);
   display: flex;
+  flex: 1 0 auto;
   align-items: center;
   justify-content: center;
 `;
@@ -23,7 +23,7 @@ interface FormContentProps {
   toLogin?: boolean;
 }
 
-const FormContent: React.FC<FormContentProps> = ({ toLogin, children }) => {
+const FormContent: React.FC<React.PropsWithChildren<FormContentProps>> = ({ toLogin, children }) => {
   const hideSelfHostedCTA = useExperiment("authPage.hideSelfHostedCTA", false);
 
   return (

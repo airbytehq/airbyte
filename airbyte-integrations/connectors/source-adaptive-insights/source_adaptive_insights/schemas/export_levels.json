@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "short_name": {
+      "type": ["null", "string"]
+    },
+    "is_elimination": {
+      "type": ["null", "string"]
+    },
+    "is_linked": {
+      "type": ["null", "string"]
+    },
+    "workflow_status": {
+      "type": ["null", "string"]
+    },
+    "is_important": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    }
+  }
+}

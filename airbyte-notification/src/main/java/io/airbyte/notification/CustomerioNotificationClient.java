@@ -63,13 +63,21 @@ public class CustomerioNotificationClient extends NotificationClient {
   }
 
   @Override
-  public boolean notifyJobFailure(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  public boolean notifyJobFailure(final String sourceConnector,
+                                  final String destinationConnector,
+                                  final String jobDescription,
+                                  final String logUrl,
+                                  final Long jobId)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }
 
   @Override
-  public boolean notifyJobSuccess(final String sourceConnector, final String destinationConnector, final String jobDescription, final String logUrl)
+  public boolean notifyJobSuccess(final String sourceConnector,
+                                  final String destinationConnector,
+                                  final String jobDescription,
+                                  final String logUrl,
+                                  final Long jobId)
       throws IOException, InterruptedException {
     throw new NotImplementedException();
   }
@@ -113,6 +121,11 @@ public class CustomerioNotificationClient extends NotificationClient {
     throw new NotImplementedException();
   }
 
+  @Override
+  public boolean notifySchemaChange(final UUID connectionId, final boolean isBreaking) {
+    throw new NotImplementedException();
+  }
+
   private boolean notifyByEmail(final String requestBody) throws IOException, InterruptedException {
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers.ofString(requestBody))
@@ -139,6 +152,7 @@ public class CustomerioNotificationClient extends NotificationClient {
     return httpStatusCode / 100 == 2;
   }
 
+  @Override
   public String renderTemplate(final String templateFile, final String... data) throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, data);

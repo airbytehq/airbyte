@@ -42,7 +42,9 @@
       "type": ["null", "string"]
     },
     "parent": {
-      "type": ["null", "object"]
+      "type": ["null", "object"],
+      "properties": {},
+      "additionalProperties": true
     }
   }
 }

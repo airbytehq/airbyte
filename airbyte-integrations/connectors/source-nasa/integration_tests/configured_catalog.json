@@ -1,0 +1,16 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "nasa_apod",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["date"],
+        "source_defined_primary_key": [["date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

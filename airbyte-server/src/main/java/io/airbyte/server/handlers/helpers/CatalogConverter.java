@@ -9,7 +9,9 @@ import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -35,7 +37,7 @@ public class CatalogConverter {
         .withSupportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
         .withSourceDefinedCursor(stream.getSourceDefinedCursor())
         .withDefaultCursorField(stream.getDefaultCursorField())
-        .withSourceDefinedPrimaryKey(stream.getSourceDefinedPrimaryKey())
+        .withSourceDefinedPrimaryKey(Optional.ofNullable(stream.getSourceDefinedPrimaryKey()).orElse(Collections.emptyList()))
         .withNamespace(stream.getNamespace());
   }
 
@@ -119,7 +121,7 @@ public class CatalogConverter {
             .withCursorField(s.getConfig().getCursorField())
             .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),
                 io.airbyte.protocol.models.DestinationSyncMode.class))
-            .withPrimaryKey(s.getConfig().getPrimaryKey()))
+            .withPrimaryKey(Optional.ofNullable(s.getConfig().getPrimaryKey()).orElse(Collections.emptyList())))
         .collect(Collectors.toList());
     return new io.airbyte.protocol.models.ConfiguredAirbyteCatalog()
         .withStreams(streams);

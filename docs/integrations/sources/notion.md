@@ -1,83 +1,97 @@
 # Notion
 
-Notion is a productivity and project management software. It was designed to help organizations coordinate deadlines, objectives, and assignments.
+This page contains the setup guide and reference information for the Notion source connector.
 
-## Prerequisites
-* Created Notion account with integration on [my integrations](https://www.notion.so/my-integrations) page. 
+## Setup guide​
 
-## Airbyte OSS
-* Start Date
-* Token (received when integration was created). 
+### Step 1: Set up Notion​
 
-## Airbyte Cloud
-* Start Date
-* Client ID (received when integration was created).
-* Client Secret (received when integration was created).
+1. Create a new integration on the [My integrations](https://www.notion.so/my-integrations) page.
 
-## Setup guide
-### Step 1: Set up Notion
+:::note
 
-1. Create account on Notion by following link [signup](https://www.notion.so/signup)
-2. Login to your Notion account and go to [my integrations](https://www.notion.so/my-integrations) page.
-3. Create a **new integration**. Make sure to check the `Read content` capability.
-4. Check the appropriate user capability depending on your use case.
-5. Check the settings **Integration type** and select **Public** (OAuth2.0 authentication) or **Internal** (Token authorization) integration
-6. If you select Public integration you need to go to the opened section **OAuth Domain & URIs** and fill all fields of form you've received.
-7. Click `Submit`.
-8. Copy the **access_token** or **client_id** and **client_secret** from the next screen depending on selected authentication method.
+You must be the owner of a Notion workspace to create a new integration.
 
-## Step 2: Set up the Notion connector in Airbyte
+:::
 
-### For Airbyte Cloud:
+2. Fill out the form. Make sure to check **Read content** and check any other [capabilities](https://developers.notion.com/reference/capabilities) you want to authorize.
+3. Click **Submit**.
+4. In the **Integration type** section, select either **Internal integration** (token authorization) or **Public integration** (OAuth2.0 authentication).
+5. Check the capabilities you want to authorize.
+6. If you select **Public integration**, fill out the fields in the **OAuth Domain & URIs** section.
+7. Click **Save changes**.
+8. Copy the Internal Access Token if you are using the [internal integration](https://developers.notion.com/docs/authorization#authorizing-internal-integrations), or copy the `access_token`, `client_id`, and `client_secret` if you are using the [public integration](https://developers.notion.com/docs/authorization#authorizing-public-integrations).
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Notion** from the Source type dropdown and enter a name for this connector.
-4. Add required Start date
-5. Choose the method of authentication
-6. If you select Token authentication - fill the field **token** with **access_token** in setup Notion step (8)
-7. If you select OAuth2.0 authorization - Click `Authenticate your Notion account`.
-8. Log in and Authorize to the Notion account
-10. Click `Set up source`.
+### Step 2: Set up the Notion connector in Airbyte
 
-### For Airbyte OSS:
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Bing Ads** from the Source type dropdown. 
-4. Add required Start date
-5. Copy and paste values from setup Notion step (8):
-      1) **client_id**
-      2) **client_secret**
-7. Click `Set up source`.
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
+4. Enter a name for your source.
+5. Choose the method of authentication:
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+      * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
+          * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Click **Set up source**.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+1. Log in to your Airbyte Open Source account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Notion** from the **Source type** dropdown.
+4. Enter a name for your source.
+5. Choose the method of authentication:
+      * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
+      * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
 The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh
- - Incremental (partially)
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (partially)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
+
+The Notion source connector supports the following streams. For more information, see the [Notion API](https://developers.notion.com/reference/intro).
 
 * [blocks](https://developers.notion.com/reference/retrieve-a-block)
 * [databases](https://developers.notion.com/reference/retrieve-a-database)
 * [pages](https://developers.notion.com/reference/retrieve-a-page)
-* [users](https://developers.notion.com/reference/retrieve-a-get-users) (this stream is not support **Incremental** - _Append Sync_ mode)
+* [users](https://developers.notion.com/reference/get-user)
 
-For more information, see the [Notion API](https://developers.notion.com/reference/intro).
+:::note
+
+The users stream does not support Incremental - Append sync mode.
+
+:::
 
 ## Performance considerations
 
-The connector is restricted by normal Notion [rate limits and size limits](https://developers.notion.com/reference/errors#request-limits).
-
-The Notion connector should not run into Notion API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
-| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                   |
-| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through |
-| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                  |
-| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                           |
-| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description       |
-| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                 |
+| Version | Date       | Pull Request                                             | Subject                                                         |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------- |
+| 0.1.10  | 2022-09-28 | [17298](https://github.com/airbytehq/airbyte/pull/17298) | Use "Retry-After" header for backoff                            |
+| 0.1.9   | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                     |
+| 0.1.8   | 2022-09-05 | [16272](https://github.com/airbytehq/airbyte/pull/16272) | Update spec description to include working timestamp example    |
+| 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
+| 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec       |
+| 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                                   |
+| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through                 |
+| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                                  |
+| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                                           |
+| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description                       |
+| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                                 |

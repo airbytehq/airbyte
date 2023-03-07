@@ -1,0 +1,52 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+@use "../../../scss/z-indices";
+
+@keyframes fade-in-container {
+  from {
+    opacity: 0;
+  }
+}
+
+.modalPageContainer {
+  position: absolute;
+  z-index: z-indices.$modal;
+}
+
+.modalContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  animation: fade-in-container 0.2s ease-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modalPanel {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card {
+  margin-left: variables.$width-size-menu;
+  max-width: calc(100vw - #{variables.$width-size-menu} - #{variables.$spacing-lg} * 2);
+
+  &.sm {
+    width: variables.$width-modal-sm;
+  }
+
+  &.md {
+    width: variables.$width-modal-md;
+  }
+
+  &.lg {
+    width: variables.$width-modal-lg;
+  }
+
+  &.xl {
+    width: variables.$width-modal-xl;
+  }
+}

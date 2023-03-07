@@ -22,6 +22,8 @@ from source_stripe.streams import (
     Customers,
     Disputes,
     Events,
+    ExternalAccountBankAccounts,
+    ExternalAccountCards,
     InvoiceItems,
     InvoiceLineItems,
     Invoices,
@@ -49,7 +51,12 @@ class SourceStripe(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["client_secret"])
         start_date = pendulum.parse(config["start_date"]).int_timestamp
-        args = {"authenticator": authenticator, "account_id": config["account_id"], "start_date": start_date}
+        args = {
+            "authenticator": authenticator,
+            "account_id": config["account_id"],
+            "start_date": start_date,
+            "slice_range": config.get("slice_range"),
+        }
         incremental_args = {**args, "lookback_window_days": config.get("lookback_window_days")}
         return [
             BalanceTransactions(**incremental_args),
@@ -74,4 +81,6 @@ class SourceStripe(AbstractSource):
             SubscriptionItems(**args),
             Subscriptions(**incremental_args),
             Transfers(**incremental_args),
+            ExternalAccountBankAccounts(**args),
+            ExternalAccountCards(**args),
         ]

@@ -1,0 +1,28 @@
+# Runs internal automation for pull requests
+
+name: "Add labels to github PRs based on context"
+on:
+  pull_request_target:
+    types: [opened, labeled, unlabeled, ready_for_review, synchronize, reopened]
+
+jobs:
+  shared-pr-labeller:
+    name: "Add Labels to PRs.  Safe to Merge on fail"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte Repo for PAT command
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        # Cannot share PAT outside of JOB context
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
+      - name: Run Issue Command from workflow-actions
+        uses: nick-fields/private-action-loader@v3
+        with:
+          pal-repo-token: "${{ env.PAT }}"
+          pal-repo-name: airbytehq/workflow-actions@production
+          # the following input gets passed to the private action
+          token: "${{ env.PAT }}"
+          command: "pull"

@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.temporal.discover.catalog;
 
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
@@ -15,8 +15,8 @@ import io.temporal.activity.ActivityMethod;
 public interface DiscoverCatalogActivity {
 
   @ActivityMethod
-  AirbyteCatalog run(JobRunConfig jobRunConfig,
-                     IntegrationLauncherConfig launcherConfig,
-                     StandardDiscoverCatalogInput config);
+  ConnectorJobOutput run(JobRunConfig jobRunConfig,
+                         IntegrationLauncherConfig launcherConfig,
+                         StandardDiscoverCatalogInput config);
 
 }

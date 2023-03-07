@@ -153,6 +153,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+            - name: AUTO_DETECT_SCHEMA
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AUTO_DETECT_SCHEMA
           ports:
             - containerPort: 8001
           volumeMounts:

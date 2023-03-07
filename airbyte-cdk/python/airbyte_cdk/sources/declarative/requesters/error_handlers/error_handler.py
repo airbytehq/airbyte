@@ -2,14 +2,21 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class ErrorHandler(ABC):
+@dataclass
+class ErrorHandler(JsonSchemaMixin):
+    """
+    Defines whether a request was successful and how to handle a failure.
+    """
+
     @property
     @abstractmethod
     def max_retries(self) -> Union[int, None]:
@@ -19,9 +26,10 @@ class ErrorHandler(ABC):
         pass
 
     @abstractmethod
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
         """
         Evaluate response status describing whether a failing request should be retried or ignored.
+
         :param response: response to evaluate
         :return: response status
         """

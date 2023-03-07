@@ -18,7 +18,7 @@ else
 fi
 
 # if a string
-if $(git remote get-url origin | grep --quiet "http"); then
+if test "$(tty)" != "not a tty" && $(git remote get-url origin | grep --quiet "http"); then
   set +o xtrace
   echo -e "$red_text""This program requires a ssh-based github repo""$default_text"
   echo -e "$red_text""https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account""$default_text"
@@ -41,9 +41,9 @@ echo -e "$blue_text""Current path:""$default_text"
 pwd
 
 
-# Yarn check (which is commonly used to check for program existance)
+# Yarn check (which is commonly used to check for program existence)
 # -s/--silent doesn't exist in cloud's Ubuntu
-if ! which brew > /dev/null; then
+if [[ `uname -s` = 'Darwin' && ! `which brew` ]] > /dev/null; then
   echo -e "$red_text""homebrew not found HALP!!\n\n""$default_text"
   echo -e "$red_text""try this:  https://brew.sh\n\n""$default_text"
   exit 1
@@ -76,6 +76,7 @@ yarn install
 if ! yarn build; then
   echo -e  "$red_text""yarn build has failed.  Documentation probably has broken links""$default_text"
   echo -e  "$red_text""please fix the links, commit, and try again""$default_text"
+  exit 1
 fi
 
 # Check tty for local/remote deploys (we expect cloud to be non-interactive)
@@ -84,17 +85,16 @@ if test "$(tty)" == "not a tty"; then
   set +o xtrace
   echo -e "$blue_text""github email not found adding Octavia's""$default_text"
   set -o xtrace
-  git config user.email="octavia-squidington-iii@users.noreply.github.com"
-  git config user.name="octavia-squidington-iii"
+  git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
+  git config --global user.name "octavia-squidington-iii"
   echo "machine github.com login octavia-squidington-iii password $GITHUB_TOKEN" > $HOME/.netrc
   # context https://v1.docusaurus.io/docs/en/publishing#using-github-pages
   # write a prod website to airbytehq/airbyte gh_pages branch
-  # NOT ACTUALLY WORKING
-  GIT_USER="octavia-squidington-iii" yarn run publish-gh-pages
+  # 'publish-gh-pages' NOT ACTUALLY WORKING, we use 'deploy' instead:
+  GIT_USER="octavia-squidington-iii" yarn run deploy
 else
   yarn run deploy
 fi
-
 
 
 
@@ -128,21 +128,11 @@ git add CNAME
 # Skip pre-commit hooks fire_elmo.jpg
 PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit --message "Adds CNAME to deploy for $revision"
 
+git push
+
 # non functional. for debugging
 git rev-parse --abbrev-ref HEAD
 
-if test "$(tty)" == "not a tty"; then
-  # note that this is NOT airbyte repo
-  git push --force https://octavia-squidington-iii:$GITHUB_TOKEN@github.com/airbytehq/airbytehq.github.io.git
-else
-  git push --force git@github.com:airbytehq/airbytehq.github.io.git
-fi
-
-# Let's leave the tire fire of force pushes
-git checkout -
-
-
-# Want to push from your own computer? uncomment this line and comment out the push above
 
 set +o xtrace
 echo -e "$blue_text""Script exiting 0 GREAT SUCCESS!!!?""$default_text"

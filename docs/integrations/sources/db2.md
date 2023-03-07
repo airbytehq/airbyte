@@ -56,12 +56,16 @@ Your database user should now be ready for use with Airbyte.
 To set up an SSL connection, you need to use a client certificate. Add it to the "SSL PEM file" field and the connector will automatically add it to the secret keystore.
 You can also enter your own password for the keystore, but if you don't, the password will be generated automatically.
 
-**Note.** Unfortunately SSL and SSH are incompatible because SSH changes the visible name of the target.
-
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+|        | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
+| 0.1.16 | 2022-09-06 | [16354](https://github.com/airbytehq/airbyte/pull/16354) | Add custom JDBC params |
+| 0.1.15 | 2022-09-01 | [16238](https://github.com/airbytehq/airbyte/pull/16238) | Emit state messages more frequently |
+| 0.1.14 | 2022-08-18 | [14356](https://github.com/airbytehq/airbyte/pull/14356) | DB Sources: only show a table can sync incrementally if at least one column can be used as a cursor field |
+| 0.1.13 | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
+| 0.1.12 | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.1.11 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.10 | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |
 | 0.1.9 | 2022-02-21 | [10242](https://github.com/airbytehq/airbyte/pull/10242) | Fixed cursor for old connectors that use non-microsecond format. Now connectors work with both formats |

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "PRICEBOOK_ID": {
+      "type": "integer"
+    },
+    "NAME": {
+      "type": ["string", "null"]
+    },
+    "DESCRIPTION": {
+      "type": ["string", "null"]
+    },
+    "CURRENCY_CODE": {
+      "type": ["string", "null"]
+    },
+    "IS_STANDARD": {
+      "type": ["boolean", "null"]
+    },
+    "ACTIVE": {
+      "type": ["boolean", "null"]
+    },
+    "OWNER_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "CREATED_USER_ID": {
+      "type": ["integer", "null"]
+    },
+    "DATE_CREATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "DATE_UPDATED_UTC": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidReassigningParameters")
 public abstract class OAuthFlowIntegrationTest {
 
   /**

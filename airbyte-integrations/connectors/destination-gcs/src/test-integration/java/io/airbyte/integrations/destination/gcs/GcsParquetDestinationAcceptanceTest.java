@@ -100,7 +100,7 @@ public class GcsParquetDestinationAcceptanceTest extends GcsAvroParquetDestinati
           .build()) {
         GenericData.Record record;
         while ((record = parquetReader.read()) != null) {
-          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          final Map<String, Set<Type>> actualDataTypes = getTypes(record);
           resultDataTypes.putAll(actualDataTypes);
         }
       }

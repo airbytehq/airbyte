@@ -1,0 +1,156 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["results"]
+  requester:
+    url_base: "https://api.ashbyhq.com"
+    http_method: "POST"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.nextCursor }}"
+        page_size: 100
+      page_size_option:
+        field_name: "per_page"
+        inject_into: "body_json"
+      page_token_option:
+        inject_into: "body_json"
+        field_name: "cursor"
+      url_base:
+        $ref: "*ref(definitions.requester.url_base)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+
+  # base stream
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  # stream definitions
+  applications_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "applications"
+      primary_key: "id"
+      path: "/application.list"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_body_json:
+            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+  archive_reasons_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "archive_reasons"
+      primary_key: "id"
+      path: "/archiveReason.list"
+  candidate_tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "candidate_tags"
+      primary_key: "id"
+      path: "/candidateTag.list"
+  candidates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "candidates"
+      primary_key: "id"
+      path: "/candidate.list"
+  custom_fields_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "custom_fields"
+      primary_key: "id"
+      path: "/customField.list"
+  departments_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "departments"
+      primary_key: "id"
+      path: "/department.list"
+  feedback_form_definitions_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "feedback_form_definitions"
+      primary_key: "id"
+      path: "/feedbackFormDefinition.list"
+  interview_schedules_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "interview_schedules"
+      primary_key: "id"
+      path: "/interviewSchedule.list"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_body_json:
+            createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+  job_postings_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "job_postings"
+      primary_key: "id"
+      path: "/jobPosting.list"
+  jobs_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "jobs"
+      primary_key: "id"
+      path: "/job.list"
+  locations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "locations"
+      primary_key: "id"
+      path: "/location.list"
+  offers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "offers"
+      primary_key: "id"
+      path: "/offer.list"
+  sources_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sources"
+      primary_key: "id"
+      path: "/source.list"
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      primary_key: "id"
+      path: "/user.list"
+
+streams:
+  - "*ref(definitions.applications_stream)"
+  - "*ref(definitions.archive_reasons_stream)"
+  - "*ref(definitions.candidate_tags_stream)"
+  - "*ref(definitions.candidates_stream)"
+  - "*ref(definitions.custom_fields_stream)"
+  - "*ref(definitions.departments_stream)"
+  - "*ref(definitions.feedback_form_definitions_stream)"
+  - "*ref(definitions.interview_schedules_stream)"
+  - "*ref(definitions.job_postings_stream)"
+  - "*ref(definitions.jobs_stream)"
+  - "*ref(definitions.locations_stream)"
+  - "*ref(definitions.offers_stream)"
+  - "*ref(definitions.sources_stream)"
+  - "*ref(definitions.users_stream)"
+
+check:
+  stream_names:
+    - "users"

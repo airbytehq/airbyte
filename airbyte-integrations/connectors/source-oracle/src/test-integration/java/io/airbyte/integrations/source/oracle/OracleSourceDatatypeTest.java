@@ -25,11 +25,10 @@ import java.util.TimeZone;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  private OracleContainer container;
+  private AirbyteOracleTestContainer container;
   private JsonNode config;
   private DSLContext dslContext;
 
@@ -37,14 +36,19 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    container = new AirbyteOracleTestContainer()
+        .withUsername("TEST_ORA")
+        .withPassword("oracle")
+        .usingSid()
         .withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("sid", container.getSid())
+        .put("connection_data", ImmutableMap.builder()
+            .put("service_name", container.getSid())
+            .put("connection_type", "service_name").build())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
         .put("schemas", List.of("TEST"))
@@ -57,12 +61,12 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()),
+            config.get("connection_data").get("service_name").asText()),
         null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 
-    database.query(ctx -> ctx.fetch("CREATE USER test IDENTIFIED BY test DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
+    database.query(ctx -> ctx.fetch("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
 
     return database;
   }
@@ -277,15 +281,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("LONG")
-            .airbyteType(JsonSchemaType.STRING)
-            .fullSourceDataType("LONG RAW")
-            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
-            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
             .sourceType("XMLTYPE")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("xmltype('<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -293,11 +288,11 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "<config>1</config>\n" +
                 "<config>2</config>\n" +
                 "</list_configuration>')")
-            .addExpectedValues("<?xml version = '1.0' encoding = 'UTF-8'?>" +
-                "<list_configuration>\n" +
-                "   <config>1</config>\n" +
-                "   <config>2</config>\n" +
-                "</list_configuration>")
+            .addExpectedValues("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<list_configuration>\n"
+                + "  <config>1</config>\n"
+                + "  <config>2</config>\n"
+                + "</list_configuration>\n")
             .build());
   }
 

@@ -13,8 +13,9 @@ from pathlib import Path
 
 import jsonref
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 from pytest import raises as pytest_raises
 
@@ -57,12 +58,15 @@ def spec_object():
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
-    with pytest_raises(Exception) as ex_info:
+
+    with pytest_raises(AirbyteTracedException) as ex_info:
         check_config_against_spec_or_exit(config, spec_object)
-        exc = ex_info.value
-        traceback.print_exception(type(exc), exc, exc.__traceback__)
-        out, err = capsys.readouterr()
-        assert "really_a_secret" not in out + err
+
+    exc = ex_info.value
+    traceback.print_exception(type(exc), exc, exc.__traceback__)
+    out, err = capsys.readouterr()
+    assert "really_a_secret" not in out + err
+    assert exc.failure_type == FailureType.config_error, "failure_type should be config_error"
 
 
 def test_should_not_fail_validation_for_valid_config(spec_object):

@@ -3,9 +3,11 @@
 #
 
 import base64
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -32,6 +34,8 @@ from .streams import (
     Users,
     UserSettingsStream,
 )
+
+logger = logging.getLogger("airbyte")
 
 
 class BasicApiTokenAuthenticator(TokenAuthenticator):
@@ -104,8 +108,7 @@ class SourceZendeskSupport(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         args = self.convert_config2stream_args(config)
-        # sorted in alphabet order
-        return [
+        streams = [
             GroupMemberships(**args),
             Groups(**args),
             Macros(**args),
@@ -116,7 +119,6 @@ class SourceZendeskSupport(AbstractSource):
             TicketAudits(**args),
             TicketComments(**args),
             TicketFields(**args),
-            TicketForms(**args),
             TicketMetrics(**args),
             TicketMetricEvents(**args),
             Tickets(**args),
@@ -125,3 +127,15 @@ class SourceZendeskSupport(AbstractSource):
             CustomRoles(**args),
             Schedules(**args),
         ]
+        ticket_forms_stream = TicketForms(**args)
+        # TicketForms stream is only available for Enterprise Plan users but Zendesk API does not provide
+        # a public API to get user's subscription plan. That's why we try to read at least one record and expose this stream
+        # in case of success or skip it otherwise
+        try:
+            for stream_slice in ticket_forms_stream.stream_slices(sync_mode=SyncMode.full_refresh):
+                for _ in ticket_forms_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+                    streams.append(ticket_forms_stream)
+                    break
+        except Exception as e:
+            logger.warning(f"An exception occurred while trying to access TicketForms stream: {str(e)}. Skipping this stream.")
+        return streams

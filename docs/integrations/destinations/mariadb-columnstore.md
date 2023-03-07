@@ -76,6 +76,7 @@ Using this feature requires additional configuration, when creating the destinat
 
 | Version | Date       | Pull Request                                             | Subject                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------|
+| 0.1.7 | 2022-09-07 | [16391](https://github.com/airbytehq/airbyte/pull/16391) | Add custom JDBC parameters field |
 | 0.1.6 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.5   | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling            |

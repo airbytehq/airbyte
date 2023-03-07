@@ -30,10 +30,10 @@ import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class V0_35_1_001__RemoveForeignKeyFromActorOauth_Test extends AbstractConfigsDatabaseTest {
+class V0_35_1_001__RemoveForeignKeyFromActorOauth_Test extends AbstractConfigsDatabaseTest {
 
   @Test
-  public void testCompleteMigration() throws IOException, SQLException {
+  void testCompleteMigration() throws IOException, SQLException {
     final DSLContext context = getDslContext();
     SetupForNormalizedTablesTest.setup(context);
 

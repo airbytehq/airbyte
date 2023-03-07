@@ -4,12 +4,17 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -64,9 +69,16 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       final JdbcDatabase database = getDatabase(dataSource);
       final var nameTransformer = getNameTransformer();
       final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
-      AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
+      performCreateInsertTestOnDestination(outputSchema, database, nameTransformer);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (final ConnectionErrorException ex) {
+      LOGGER.info("Exception while checking connection: ", ex);
+      final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to connect to the warehouse: ", e);
       return new AirbyteConnectionStatus()
@@ -79,6 +91,13 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
         LOGGER.warn("Unable to close data source.", e);
       }
     }
+  }
+
+  protected void performCreateInsertTestOnDestination(final String outputSchema,
+                                                      final JdbcDatabase database,
+                                                      final NamingConventionTransformer nameTransformer)
+      throws Exception {
+    AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
   }
 
 }

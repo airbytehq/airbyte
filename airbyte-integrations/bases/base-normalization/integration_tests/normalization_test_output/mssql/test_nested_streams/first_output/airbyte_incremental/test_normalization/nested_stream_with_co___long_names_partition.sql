@@ -61,12 +61,12 @@ select
     
 
     concat(concat(coalesce(cast(_airbyte_nested_strea__nto_long_names_hashid as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(cast(double_array_data as 
-    VARCHAR(max)) as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(cast("DATA" as 
-    VARCHAR(max)) as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_partition_hashid,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(cast(double_array_data as 
+    NVARCHAR(max)) as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(cast("DATA" as 
+    NVARCHAR(max)) as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_partition_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_co___long_names_partition_ab2 tmp
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition

@@ -84,7 +84,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   public void createSchemaIfNotExists(final String datasetId, final String datasetLocation) {
     if (!existingSchemas.contains(datasetId)) {
       LOGGER.info("Creating dataset {}", datasetId);
-      BigQueryUtils.createDataset(bigQuery, datasetId, datasetLocation);
+      BigQueryUtils.getOrCreateDataset(bigQuery, datasetId, datasetLocation);
       existingSchemas.add(datasetId);
     }
   }
@@ -138,7 +138,8 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         BigQueryUtils.waitForJobFinish(loadJob);
         LOGGER.info("[{}] Tmp table {} (dataset {}) is successfully appended with staging files", loadJob.getJobId(), tmpTableId, datasetId);
       } catch (final BigQueryException | InterruptedException e) {
-        LOGGER.error(String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
+        throw new RuntimeException(
+            String.format("[%s] Failed to upload staging files to tmp table %s (%s)", loadJob.getJobId(), tmpTableId, datasetId), e);
       }
     });
   }

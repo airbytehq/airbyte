@@ -20,7 +20,7 @@ interface I18nProviderProps {
   locale: string;
 }
 
-export const I18nProvider: React.FC<I18nProviderProps> = ({ children, messages, locale }) => {
+export const I18nProvider: React.FC<React.PropsWithChildren<I18nProviderProps>> = ({ children, messages, locale }) => {
   const [overwrittenMessages, setOvewrittenMessages] = useState<Messages>();
 
   const i18nOverwriteContext = useMemo<I18nContext>(

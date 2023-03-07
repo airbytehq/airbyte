@@ -1,0 +1,81 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api
+    url_base: "https://api.tyntec.com"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "apikey"
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Send%20SMS%20(GET)
+  sms_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sms"
+      primary_key: "requestId"
+      path: "/messaging/v1/sms?to={{ config['to'] }}&from={{ config['from']}}&message={{ config['message'] or ''}}"
+  sms_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.sms_stream)"
+        parent_key: "requestId"
+        stream_slice_field: "requestId"
+  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-Read%20SMS%20status
+  messages_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "messages"
+      primary_key: "requestId"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/messaging/v1/messages/{{ stream_slice.requestId }}"
+      stream_slicer:
+        $ref: "*ref(definitions.sms_stream_slicer)"
+  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20contacts
+  contacts_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "contacts"
+      path: "/byon/contacts/v1"
+  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phone%20numbers
+  phones_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "phones"
+      path: "/byon/phonebook/v1/numbers"
+  # API Docs: https://api.tyntec.com/reference/sms/current.html#sms-api-List%20all%20phones
+  registrations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "registrations"
+      path: "/byon/provisioning/v1"
+
+streams:
+  - "*ref(definitions.sms_stream)"
+  - "*ref(definitions.messages_stream)"
+  - "*ref(definitions.contacts_stream)"
+  - "*ref(definitions.phones_stream)"
+  - "*ref(definitions.registrations_stream)"
+
+check:
+  stream_names:
+    - "phones"

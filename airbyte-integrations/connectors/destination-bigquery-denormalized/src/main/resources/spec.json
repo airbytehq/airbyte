@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/bigquery",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/bigquery",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": true,
@@ -25,7 +25,7 @@
       },
       "loading_method": {
         "type": "object",
-        "title": "Loading Method *",
+        "title": "Loading Method",
         "description": "Loading method used to send select the way data will be uploaded to BigQuery. <br/><b>Standard Inserts</b> - Direct uploading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In almost all cases, you should use staging. <br/><b>GCS Staging</b> - Writes large batches of records to a file, uploads the file to GCS, then uses <b>COPY INTO table</b> to upload the file. Recommended for most workloads for better speed and scalability. Read more about GCS Staging <a href=\"https://docs.airbyte.com/integrations/destinations/bigquery#gcs-staging\">here</a>.",
         "order": 2,
         "oneOf": [
@@ -113,7 +113,7 @@
               "keep_files_in_gcs-bucket": {
                 "type": "string",
                 "description": "This upload method is supposed to temporary store records in GCS bucket. By this select you can chose if these records should be removed from GCS when migration has finished. The default \"Delete all tmp files from GCS\" value is used if not set explicitly.",
-                "title": "GCS Tmp Files Afterward Processing (Optional)",
+                "title": "GCS Tmp Files Afterward Processing",
                 "default": "Delete all tmp files from GCS",
                 "enum": [
                   "Delete all tmp files from GCS",
@@ -135,7 +135,7 @@
       "dataset_location": {
         "type": "string",
         "description": "The location of the dataset. Warning: Changes made after creation will not be applied. The default \"US\" value is used if not set explicitly. Read more <a href=\"https://cloud.google.com/bigquery/docs/locations\">here</a>.",
-        "title": "Dataset Location (Optional)",
+        "title": "Dataset Location",
         "default": "US",
         "order": 4,
         "enum": [
@@ -173,7 +173,7 @@
         ]
       },
       "big_query_client_buffer_size_mb": {
-        "title": "Google BigQuery Client Chunk Size (Optional)",
+        "title": "Google BigQuery Client Chunk Size",
         "description": "Google BigQuery client's chunk (buffer) size (MIN=1, MAX = 15) for each table. The size that will be written by a single RPC. Written data will be buffered and only flushed upon reaching this size or closing the channel. The default 15MB value is used if not set explicitly. Read more <a href=\"https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html\">here</a>.",
         "type": "integer",
         "minimum": 1,

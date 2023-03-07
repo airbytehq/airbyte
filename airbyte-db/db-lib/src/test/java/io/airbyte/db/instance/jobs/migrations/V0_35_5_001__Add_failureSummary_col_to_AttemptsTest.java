@@ -12,10 +12,10 @@ import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class V0_35_5_001__Add_failureSummary_col_to_AttemptsTest extends AbstractJobsDatabaseTest {
+class V0_35_5_001__Add_failureSummary_col_to_AttemptsTest extends AbstractJobsDatabaseTest {
 
   @Test
-  public void test() throws SQLException, IOException {
+  void test() throws SQLException, IOException {
     final DSLContext context = getDslContext();
     Assertions.assertFalse(failureSummaryColumnExists(context));
     V0_35_5_001__Add_failureSummary_col_to_Attempts.addFailureSummaryColumn(context);

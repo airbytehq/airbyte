@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/looker",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/looker",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Looker Spec",
@@ -20,7 +20,7 @@
       "client_id": {
         "title": "Client ID",
         "type": "string",
-        "description": "The Client ID is first part of an API3 key that is specific to each Looker user. See the <a href=\"https://docs.airbyte.io/integrations/sources/looker\">docs</a> for more information on how to generate this key."
+        "description": "The Client ID is first part of an API3 key that is specific to each Looker user. See the <a href=\"https://docs.airbyte.com/integrations/sources/looker\">docs</a> for more information on how to generate this key."
       },
       "client_secret": {
         "title": "Client Secret",
@@ -34,7 +34,7 @@
           "type": "string",
           "pattern": "^[0-9]*$"
         },
-        "description": "The IDs of any Looks to run (optional)"
+        "description": "The IDs of any Looks to run"
       }
     }
   }

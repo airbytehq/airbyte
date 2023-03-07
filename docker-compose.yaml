@@ -32,6 +32,8 @@ services:
       - DATABASE_USER=${DATABASE_USER}
       - LOG_LEVEL=${LOG_LEVEL}
       - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
+    networks:
+      - airbyte_internal
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging
@@ -48,6 +50,8 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - db:/var/lib/postgresql/data
+    networks:
+      - airbyte_internal
   worker:
     image: airbyte/worker:${VERSION}
     logging: *default-logging
@@ -65,6 +69,7 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - DATABASE_USER=${DATABASE_USER}
       - DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
+      - INTERNAL_API_HOST=${INTERNAL_API_HOST}
       - JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION:-}
       - JOB_MAIN_CONTAINER_CPU_LIMIT=${JOB_MAIN_CONTAINER_CPU_LIMIT}
       - JOB_MAIN_CONTAINER_CPU_REQUEST=${JOB_MAIN_CONTAINER_CPU_REQUEST}
@@ -73,17 +78,23 @@ services:
       - LOCAL_DOCKER_MOUNT=${LOCAL_DOCKER_MOUNT}
       - LOCAL_ROOT=${LOCAL_ROOT}
       - LOG_LEVEL=${LOG_LEVEL}
+      - LOG_CONNECTOR_MESSAGES=${LOG_CONNECTOR_MESSAGES}
       - MAX_CHECK_WORKERS=${MAX_CHECK_WORKERS}
       - MAX_DISCOVER_WORKERS=${MAX_DISCOVER_WORKERS}
       - MAX_SPEC_WORKERS=${MAX_SPEC_WORKERS}
       - MAX_SYNC_WORKERS=${MAX_SYNC_WORKERS}
+      - MAX_NOTIFY_WORKERS=${MAX_NOTIFY_WORKERS}
+      - SHOULD_RUN_NOTIFY_WORKFLOW=${SHOULD_RUN_NOTIFY_WORKFLOW}
+      - NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT=${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT}
+      - NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST=${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST}
+      - NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT=${NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT}
+      - NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST=${NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST}
       - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
       - SYNC_JOB_MAX_ATTEMPTS=${SYNC_JOB_MAX_ATTEMPTS}
       - SYNC_JOB_MAX_TIMEOUT_DAYS=${SYNC_JOB_MAX_TIMEOUT_DAYS}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
       - WEBAPP_URL=${WEBAPP_URL}
-      - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_DOCKER_MOUNT=${WORKSPACE_DOCKER_MOUNT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
       - METRIC_CLIENT=${METRIC_CLIENT}
@@ -94,10 +105,17 @@ services:
       - ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS=${ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS}
       - ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS=${ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS}
       - WORKFLOW_FAILURE_RESTART_DELAY_SECONDS=${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS}
+      - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
+      - USE_STREAM_CAPABLE_STATE=${USE_STREAM_CAPABLE_STATE}
+      - MICRONAUT_ENVIRONMENTS=${WORKERS_MICRONAUT_ENVIRONMENTS}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+    ports:
+      - 9000
+    networks:
+      - airbyte_internal
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -124,39 +142,45 @@ services:
       - SECRET_PERSISTENCE=${SECRET_PERSISTENCE}
       - TEMPORAL_HOST=${TEMPORAL_HOST}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+      - JOB_ERROR_REPORTING_STRATEGY=${JOB_ERROR_REPORTING_STRATEGY}
+      - JOB_ERROR_REPORTING_SENTRY_DSN=${JOB_ERROR_REPORTING_SENTRY_DSN}
       - WEBAPP_URL=${WEBAPP_URL}
       - WORKER_ENVIRONMENT=${WORKER_ENVIRONMENT}
       - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - GITHUB_STORE_BRANCH=${GITHUB_STORE_BRANCH}
+      - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
     ports:
-      - 8001:8001
+      - 8001
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
+    networks:
+      - airbyte_internal
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
     container_name: airbyte-webapp
     restart: unless-stopped
     ports:
-      - 8000:80
+      - 80
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
       - API_URL=${API_URL:-}
-      - FULLSTORY=${FULLSTORY:-}
+      - CONNECTOR_BUILDER_API_URL=${CONNECTOR_BUILDER_API_URL:-}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
-      - IS_DEMO=${IS_DEMO:-}
+      - CONNECTOR_BUILDER_API_HOST=${CONNECTOR_BUILDER_API_HOST}
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
+    networks:
+      - airbyte_internal
   airbyte-temporal:
     image: airbyte/temporal:${VERSION}
     logging: *default-logging
     container_name: airbyte-temporal
     restart: unless-stopped
-    ports:
-      - 7233:7233
     environment:
       - DB=postgresql
       - DB_PORT=${DATABASE_PORT}
@@ -167,6 +191,58 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+    networks:
+      - airbyte_internal
+  airbyte-cron:
+    image: airbyte/cron:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-cron
+    restart: unless-stopped
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
+      - CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION=${CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
+      - LOG_LEVEL=${LOG_LEVEL}
+      - REMOTE_CONNECTOR_CATALOG_URL=${REMOTE_CONNECTOR_CATALOG_URL}
+      - TEMPORAL_HISTORY_RETENTION_IN_DAYS=${TEMPORAL_HISTORY_RETENTION_IN_DAYS}
+      - UPDATE_DEFINITIONS_CRON_ENABLED=${UPDATE_DEFINITIONS_CRON_ENABLED}
+      - WORKSPACE_ROOT=${WORKSPACE_ROOT}
+      - MICRONAUT_ENVIRONMENTS=${CRON_MICRONAUT_ENVIRONMENTS}
+    volumes:
+      - workspace:${WORKSPACE_ROOT}
+    networks:
+      - airbyte_internal
+  airbyte-connector-builder-server:
+    image: airbyte/connector-builder-server:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-connector-builder-server
+    restart: unless-stopped
+    ports:
+      - 80
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
+    networks:
+      - airbyte_internal
+  airbyte-proxy:
+    image: airbyte/proxy:${VERSION}
+    container_name: airbyte-proxy
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+      - 8001:8001
+      - 8003:8003
+    environment:
+      - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
+      - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}
+    networks:
+      - airbyte_internal
+      - airbyte_public
+    depends_on:
+      - webapp
+      - server
 volumes:
   workspace:
     name: ${WORKSPACE_DOCKER_MOUNT}
@@ -177,3 +253,6 @@ volumes:
     name: ${DATA_DOCKER_MOUNT}
   db:
     name: ${DB_DOCKER_MOUNT}
+networks:
+  airbyte_public:
+  airbyte_internal:

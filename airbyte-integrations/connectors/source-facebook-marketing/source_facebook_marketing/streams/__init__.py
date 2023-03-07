@@ -16,6 +16,7 @@ from .streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomConversions,
     Images,
     Videos,
 )
@@ -33,6 +34,7 @@ __all__ = [
     "AdsInsightsPlatformAndDevice",
     "AdsInsightsRegion",
     "Campaigns",
+    "CustomConversions",
     "Images",
     "Videos",
     "Activities",

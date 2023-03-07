@@ -48,24 +48,24 @@ def expected_json_schema():
     }
 
 
-def test_get_first_row(auth, base_id, table, json_response):
+def test_get_most_complete_row(auth, base_id, table, json_response):
     with patch("requests.get") as mock_get:
         mock_get.return_value.status_code = HTTPStatus.OK
         mock_get.return_value.json.return_value = json_response
-        assert Helpers.get_first_row(auth, base_id, table) == {"id": "abc", "fields": {"name": "test"}}
+        assert Helpers.get_most_complete_row(auth, base_id, table) == {"id": "abc", "fields": {"name": "test"}}
 
 
-def test_get_first_row_invalid_api_key(base_id, table):
+def test_get_most_complete_row_invalid_api_key(base_id, table):
     with pytest.raises(Exception):
         auth = TokenAuthenticator("invalid_api_key")
-        Helpers.get_first_row(auth, base_id, table)
+        Helpers.get_most_complete_row(auth, base_id, table)
 
 
-def test_get_first_row_table_not_found(auth, base_id, table):
+def test_get_most_complete_row_table_not_found(auth, base_id, table):
     with patch("requests.exceptions.HTTPError") as mock_get:
         mock_get.return_value.status_code = HTTPStatus.NOT_FOUND
         with pytest.raises(Exception):
-            Helpers.get_first_row(auth, base_id, table)
+            Helpers.get_most_complete_row(auth, base_id, table)
 
 
 def test_get_json_schema(json_response, expected_json_schema):

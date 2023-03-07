@@ -41,7 +41,6 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   private String projectId;
   private String apiKey;
   private KafkaProducer<String, String> kafkaProducer;
-  private AirbyteMessage lastStateMessage;
   private Set<String> streamNames;
 
   public KeenRecordsConsumer(final JsonNode config,
@@ -52,7 +51,6 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.outputRecordCollector = outputRecordCollector;
     this.kafkaProducer = null;
     this.streamNames = Set.of();
-    this.lastStateMessage = null;
     LOGGER.info("initializing consumer.");
   }
 
@@ -72,8 +70,7 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage msg) {
     if (msg.getType() == Type.STATE) {
-      lastStateMessage = msg;
-      outputRecordCollector.accept(lastStateMessage);
+      outputRecordCollector.accept(msg);
       return;
     } else if (msg.getType() != Type.RECORD) {
       return;
@@ -128,9 +125,6 @@ public class KeenRecordsConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) {
     kafkaProducer.flush();
     kafkaProducer.close();
-    if (!hasFailed) {
-      outputRecordCollector.accept(lastStateMessage);
-    }
   }
 
 }

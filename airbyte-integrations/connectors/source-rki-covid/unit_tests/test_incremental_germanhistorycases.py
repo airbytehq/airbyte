@@ -12,7 +12,7 @@ from source_rki_covid.source import GermanyHistoryCases
 
 @fixture
 def patch_incremental_german_history_cases(mocker):
-    # Mock abstract methods to enable instantiating abstract class
+    # Mock abstract methods to enable instantiating abstract class.
     mocker.patch.object(GermanyHistoryCases, "primary_key", None)
 
 
@@ -27,13 +27,17 @@ def test_parse_response(patch_incremental_german_history_cases):
     config = {"start_date": "2022-04-27"}
     stream = GermanyHistoryCases(config)
     response = requests.get("https://api.corona-zahlen.org/germany/history/cases/1")
-    expected_response = response.json().get("data")
-    assert stream.parse_response(response) == expected_response
+    if response.json().get("data"):
+        expected_response = response.json().get("data")
+        assert stream.parse_response(response) == expected_response
+    else:
+        expected_response = [{}]
+        assert stream.parse_response(response) == expected_response
 
 
 def check_diff(start_date):
     diff = datetime.now() - datetime.strptime(start_date, "%Y-%m-%d")
-    if diff.days == 0:
+    if diff.days <= 0:
         return str(1)
     return str(diff.days)
 

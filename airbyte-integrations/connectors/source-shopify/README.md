@@ -5,6 +5,8 @@ For information about how to use this connector within Airbyte, see [the documen
 
 ## Local development
 
+#### Minimum Python version required `= 3.9.0`
+
 ### Prerequisites
 **To iterate on this connector, make sure to complete this prerequisites section.**
 

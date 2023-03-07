@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "code": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "time_stratum": {
+      "type": ["null", "string"]
+    },
+    "display_as": {
+      "type": ["null", "string"]
+    },
+    "account_type_code": {
+      "type": ["null", "string"]
+    },
+    "decimal_precision": {
+      "type": ["null", "string"]
+    },
+    "is_assumption": {
+      "type": ["null", "string"]
+    },
+    "suppress_zeroes": {
+      "type": ["null", "string"]
+    },
+    "is_default_root": {
+      "type": ["null", "string"]
+    },
+    "short_name": {
+      "type": ["null", "string"]
+    },
+    "is_intercompany": {
+      "type": ["null", "string"]
+    },
+    "balance_type": {
+      "type": ["null", "string"]
+    },
+    "is_linked": {
+      "type": ["null", "string"]
+    },
+    "owning_sheet_id": {
+      "type": ["null", "string"]
+    },
+    "is_system": {
+      "type": ["null", "string"]
+    },
+    "is_importable": {
+      "type": ["null", "string"]
+    },
+    "data_entry_type": {
+      "type": ["null", "string"]
+    },
+    "plan_by": {
+      "type": ["null", "string"]
+    },
+    "actuals_by": {
+      "type": ["null", "string"]
+    },
+    "time_rollup": {
+      "type": ["null", "string"]
+    },
+    "time_weight_acct_id": {
+      "type": ["null", "string"]
+    },
+    "level_dim_rollup": {
+      "type": ["null", "string"]
+    },
+    "level_dim_weight_acct_id": {
+      "type": ["null", "string"]
+    },
+    "rollup_text": {
+      "type": ["null", "string"]
+    },
+    "start_expanded": {
+      "type": ["null", "string"]
+    },
+    "has_salary_detail": {
+      "type": ["null", "string"]
+    },
+    "data_privacy": {
+      "type": ["null", "string"]
+    },
+    "is_breakback_eligible": {
+      "type": ["null", "string"]
+    },
+    "sub_type": {
+      "type": ["null", "string"]
+    },
+    "enable_actuals": {
+      "type": ["null", "string"]
+    },
+    "is_group": {
+      "type": ["null", "string"]
+    },
+    "has_formula": {
+      "type": ["null", "string"]
+    },
+    "rollup_to_code": {
+      "type": ["null", "string"]
+    },
+    "rollup_to_text": {
+      "type": ["null", "string"]
+    },
+    "attributes": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    }
+  }
+}

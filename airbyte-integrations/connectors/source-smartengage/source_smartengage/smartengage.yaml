@@ -1,0 +1,93 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.smartengage.com"
+    http_method: "GET"
+    # API Docs: https://smartengage.com/docs/#authentication
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  # API Docs: https://smartengage.com/docs/#list-all-avatars
+  avatars_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "avatars"
+      primary_key: "avatar_id"
+      path: "/avatars/list"
+  avatars_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.avatars_stream)"
+        parent_key: "avatar_id"
+        stream_slice_field: "avatar_id"
+  # API Docs: https://smartengage.com/docs/#list-all-tags
+  tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tags"
+      primary_key: "tag_id"
+      path: "/tags/list"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+      stream_slicer:
+        $ref: "*ref(definitions.avatars_stream_slicer)"
+  # API Docs: https://smartengage.com/docs/#list-all-custom-fields
+  custom_fields_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "custom_fields"
+      primary_key: "custom_field_id"
+      path: "/customfields/list"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+      stream_slicer:
+        $ref: "*ref(definitions.avatars_stream_slicer)"
+  # API Docs: https://smartengage.com/docs/#list-all-sequences
+  sequences_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sequences"
+      primary_key: "sequence_id"
+      path: "/sequences/list"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            avatar_id: "{{ stream_slice.avatar_id }}"
+      stream_slicer:
+        $ref: "*ref(definitions.avatars_stream_slicer)"
+
+streams:
+  - "*ref(definitions.avatars_stream)"
+  - "*ref(definitions.tags_stream)"
+  - "*ref(definitions.custom_fields_stream)"
+  - "*ref(definitions.sequences_stream)"
+
+check:
+  stream_names: ["tags"]

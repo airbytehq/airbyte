@@ -43,5 +43,6 @@ To use the RabbitMQ destination, you'll need:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2022-09-09 | [16528](https://github.com/airbytehq/airbyte/pull/16528) | Marked password field in spec as airbyte_secret |
 | 0.1.0 | October 29, 2021 | [\#7560](https://github.com/airbytehq/airbyte/pull/7560) | Initial release |
 

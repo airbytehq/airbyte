@@ -19,6 +19,7 @@ dependencies {
     implementation 'org.apache.pulsar:pulsar-client:2.8.1'
 
     testImplementation libs.connectors.testcontainers.pulsar
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-pulsar')

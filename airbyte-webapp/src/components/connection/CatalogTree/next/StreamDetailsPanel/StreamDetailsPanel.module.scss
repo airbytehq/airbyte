@@ -1,0 +1,27 @@
+@use "scss/colors";
+@use "scss/variables" as vars;
+@use "scss/z-indices";
+
+$container-left-space: vars.$spacing-xl;
+$container-right-space: vars.$spacing-xl * 2;
+
+.dialog {
+  z-index: z-indices.$modal;
+}
+
+.container {
+  position: fixed;
+  bottom: 0;
+  left: vars.$width-size-menu + $container-left-space;
+  width: calc(100% - (vars.$width-size-menu + $container-right-space));
+  z-index: 1000;
+  height: calc(100vh - 100px);
+  background: colors.$white;
+  border-radius: vars.$border-radius-2xl vars.$border-radius-2xl 0 0;
+  box-shadow: 0 0 22px rgba(colors.$dark-blue-900, 12%);
+}
+
+.tableContainer {
+  height: calc(100% - 64px);
+  overflow: scroll;
+}

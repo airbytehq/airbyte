@@ -13,10 +13,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
@@ -25,14 +23,10 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -99,30 +93,6 @@ class SecretsRepositoryReaderTest {
     secretPersistence.write(COORDINATE, SECRET);
     when(configRepository.listDestinationConnection()).thenReturn(List.of(DESTINATION_WITH_PARTIAL_CONFIG));
     assertEquals(List.of(DESTINATION_WITH_FULL_CONFIG), secretsRepositoryReader.listDestinationConnectionWithSecrets());
-  }
-
-  @Test
-  void testDumpConfigsWithSecrets() throws IOException {
-    secretPersistence.write(COORDINATE, SECRET);
-    final StandardWorkspace workspace = new StandardWorkspace().withWorkspaceId(UUID.randomUUID());
-
-    final Map<String, Stream<JsonNode>> dumpFromConfigRepository = new HashMap<>();
-    dumpFromConfigRepository.put(ConfigSchema.STANDARD_WORKSPACE.name(), Stream.of(Jsons.jsonNode(workspace)));
-    dumpFromConfigRepository.put(ConfigSchema.SOURCE_CONNECTION.name(), Stream.of(Jsons.jsonNode(SOURCE_WITH_PARTIAL_CONFIG)));
-    dumpFromConfigRepository.put(ConfigSchema.DESTINATION_CONNECTION.name(), Stream.of(Jsons.jsonNode(DESTINATION_WITH_PARTIAL_CONFIG)));
-    when(configRepository.dumpConfigsNoSecrets()).thenReturn(dumpFromConfigRepository);
-
-    final Map<String, List<JsonNode>> expected = new HashMap<>();
-    expected.put(ConfigSchema.STANDARD_WORKSPACE.name(), List.of(Jsons.jsonNode(workspace)));
-    expected.put(ConfigSchema.SOURCE_CONNECTION.name(), List.of(Jsons.jsonNode(SOURCE_WITH_FULL_CONFIG)));
-    expected.put(ConfigSchema.DESTINATION_CONNECTION.name(), List.of(Jsons.jsonNode(DESTINATION_WITH_FULL_CONFIG)));
-
-    final Map<String, List<JsonNode>> actual = secretsRepositoryReader.dumpConfigsWithSecrets()
-        .entrySet()
-        .stream()
-        .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().collect(Collectors.toList())));
-
-    assertEquals(expected, actual);
   }
 
   @Test

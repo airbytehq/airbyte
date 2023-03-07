@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 TEMPORAL_VERSION=1.13.0
 
 curl -OL https://github.com/temporalio/temporal/archive/refs/tags/v"$TEMPORAL_VERSION".tar.gz

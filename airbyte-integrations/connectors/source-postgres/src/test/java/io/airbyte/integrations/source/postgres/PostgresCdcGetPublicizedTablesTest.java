@@ -17,7 +17,8 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
@@ -40,6 +41,7 @@ class PostgresCdcGetPublicizedTablesTest {
   private static final String SCHEMA_NAME = "public";
   private static final String PUBLICATION = "publication_test_12";
   private static final String REPLICATION_SLOT = "replication_slot_test_12";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
   private static PostgreSQLContainer<?> container;
   private JsonNode config;
 
@@ -82,25 +84,26 @@ class PostgresCdcGetPublicizedTablesTest {
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
   }
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -122,6 +125,7 @@ class PostgresCdcGetPublicizedTablesTest {
       // when config is cdc
       ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
           "replication_slot", REPLICATION_SLOT,
+          "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
           "publication", PUBLICATION)));
       database.setSourceConfig(config);
       final Set<AirbyteStreamNameNamespacePair> expectedTables = Set.of(

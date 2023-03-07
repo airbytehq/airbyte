@@ -5,7 +5,7 @@
     "title": "Faker Source Spec",
     "type": "object",
     "required": ["count"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "count": {
         "title": "Count",

@@ -14,16 +14,16 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.TemporalClient;
+import io.airbyte.commons.temporal.TemporalResponse;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.persistence.job.models.Job;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.scheduler.models.Job;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.temporal.TemporalClient;
-import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,14 +80,18 @@ class TemporalWorkerRunFactoryTest {
         .withDestinationDockerImage("airbyte/fusion_reactor")
         .withDestinationConfiguration(Jsons.jsonNode(ImmutableMap.of("a", 1)))
         .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
-        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog());
+        .withConfiguredAirbyteCatalog(new ConfiguredAirbyteCatalog())
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(false);
     final JobSyncConfig syncConfig = new JobSyncConfig()
         .withSourceDockerImage(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
         .withDestinationDockerImage(resetConfig.getDestinationDockerImage())
         .withDestinationConfiguration(resetConfig.getDestinationConfiguration())
         .withOperationSequence(List.of(new StandardSyncOperation().withName("b")))
         .withSourceConfiguration(Jsons.emptyObject())
-        .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog());
+        .withConfiguredAirbyteCatalog(resetConfig.getConfiguredAirbyteCatalog())
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(false);
     when(job.getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
     when(job.getConfig().getResetConnection()).thenReturn(resetConfig);
     final TemporalResponse<StandardSyncOutput> mockResponse = mock(TemporalResponse.class);

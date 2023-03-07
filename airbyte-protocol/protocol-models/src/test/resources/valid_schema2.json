@@ -1,6 +1,7 @@
 {
   "type": "object",
   "properties": {
+    "id": { "type": "number" },
     "date": { "type": "string", "format": "date-time" },
     "CAD": { "type": ["null", "string"] },
     "COD": { "type": ["null", "string"] },
@@ -23,6 +24,18 @@
       },
       "patternProperties": {
         ".+": {}
+      }
+    },
+    "someArray": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "newName": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
       }
     }
   }

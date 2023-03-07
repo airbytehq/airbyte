@@ -1,0 +1,15 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.streamFieldTableContainer {
+  margin-left: 83px;
+  background: colors.$grey-50;
+}
+
+.catalogSection:first-of-type > div:nth-child(1) > div:nth-child(3) {
+  border-radius: variables.$border-radius-md variables.$border-radius-md 0 0;
+}
+
+.catalogSection:last-of-type > div:nth-child(1) > div:nth-child(3) {
+  border-radius: 0 0 variables.$border-radius-md variables.$border-radius-md;
+}

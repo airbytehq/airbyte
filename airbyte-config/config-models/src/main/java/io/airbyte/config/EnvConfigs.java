@@ -10,12 +10,14 @@ import com.google.common.base.Strings;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,7 +34,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters"})
+@SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters", "PMD.ConstructorCallsOverridableMethod"})
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);
@@ -40,9 +42,14 @@ public class EnvConfigs implements Configs {
   // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MAX = "AIRBYTE_PROTOCOL_VERSION_MAX";
+  public static final String AIRBYTE_PROTOCOL_VERSION_MIN = "AIRBYTE_PROTOCOL_VERSION_MIN";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
+  public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
+  public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
   public static final String WORKER_ENVIRONMENT = "WORKER_ENVIRONMENT";
   public static final String SPEC_CACHE_BUCKET = "SPEC_CACHE_BUCKET";
+  public static final String GITHUB_STORE_BRANCH = "GITHUB_STORE_BRANCH";
   public static final String WORKSPACE_ROOT = "WORKSPACE_ROOT";
   public static final String WORKSPACE_DOCKER_MOUNT = "WORKSPACE_DOCKER_MOUNT";
   public static final String LOCAL_ROOT = "LOCAL_ROOT";
@@ -65,8 +72,20 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_ISOLATED_KUBE_NODE_SELECTORS = "JOB_ISOLATED_KUBE_NODE_SELECTORS";
+  public static final String USE_CUSTOM_NODE_SELECTOR = "USE_CUSTOM_NODE_SELECTOR";
   public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
+  private static final String DEFAULT_SIDECAR_MEMORY_REQUEST = "25Mi";
+  private static final String SIDECAR_MEMORY_REQUEST = "SIDECAR_MEMORY_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT = "50Mi";
+  private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
+  private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "0.2";
+  private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
+  private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
+  private static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -76,6 +95,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_CHECK_WORKERS = "MAX_CHECK_WORKERS";
   public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
+  public static final String MAX_NOTIFY_WORKERS = "MAX_NOTIFY_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
@@ -89,6 +109,8 @@ public class EnvConfigs implements Configs {
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
   public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
+  public static final String DD_AGENT_HOST = "DD_AGENT_HOST";
+  public static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
   private static final String CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
@@ -97,9 +119,7 @@ public class EnvConfigs implements Configs {
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
-  private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
-  private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
-
+  public static final String DD_CONSTANT_TAGS = "DD_CONSTANT_TAGS";
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
   public static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
@@ -128,12 +148,24 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
+  private static final String SHOULD_RUN_NOTIFY_WORKFLOWS = "SHOULD_RUN_NOTIFY_WORKFLOWS";
+
+  // Worker - Control plane configs
+  private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
+
+  // Worker - Data Plane configs
+  private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
+  private static final String CONTROL_PLANE_AUTH_ENDPOINT = "CONTROL_PLANE_AUTH_ENDPOINT";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH = "DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH";
+  private static final String DATA_PLANE_SERVICE_ACCOUNT_EMAIL = "DATA_PLANE_SERVICE_ACCOUNT_EMAIL";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
 
-  private static final String METRIC_CLIENT = "METRIC_CLIENT";
+  public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
+
+  public static final String REMOTE_CONNECTOR_CATALOG_URL = "REMOTE_CONNECTOR_CATALOG_URL";
 
   // job-type-specific overrides
   public static final String SPEC_JOB_KUBE_NODE_SELECTORS = "SPEC_JOB_KUBE_NODE_SELECTORS";
@@ -153,9 +185,19 @@ public class EnvConfigs implements Configs {
   static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
   static final String CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
 
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST";
+  static final String NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT = "NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT";
+
+  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
+  private static final String VAULT_PREFIX = "VAULT_PREFIX";
+  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
+
   // defaults
   private static final String DEFAULT_SPEC_CACHE_BUCKET = "io-airbyte-cloud-spec-cache";
-  public static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
+  private static final String DEFAULT_GITHUB_STORE_BRANCH = "master";
+  private static final String DEFAULT_JOB_KUBE_NAMESPACE = "default";
   private static final String DEFAULT_JOB_CPU_REQUIREMENT = null;
   private static final String DEFAULT_JOB_MEMORY_REQUIREMENT = null;
   private static final String DEFAULT_JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
@@ -166,17 +208,13 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
-
-  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
-  private static final String VAULT_PREFIX = "VAULT_PREFIX";
-  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
-
-  public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
-  public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
-  public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
-  public static final long DEFAULT_MAX_SYNC_WORKERS = 5;
-
-  public static final String DEFAULT_NETWORK = "host";
+  private static final long DEFAULT_MAX_SPEC_WORKERS = 5;
+  private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
+  private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
+  private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
+  private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
+  private static final String DEFAULT_NETWORK = "host";
+  private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -208,7 +246,7 @@ public class EnvConfigs implements Configs {
   public EnvConfigs(final Map<String, String> envMap) {
     this.getEnv = envMap::get;
     this.getAllEnvKeys = envMap::keySet;
-    this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
+    this.logConfigs = new LogConfigs(getLogConfiguration());
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
   }
 
@@ -269,8 +307,22 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public Version getAirbyteProtocolVersionMax() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MAX, "0.3.0"));
+  }
+
+  @Override
+  public Version getAirbyteProtocolVersionMin() {
+    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
+  }
+
+  @Override
   public String getAirbyteVersionOrWarning() {
     return Optional.ofNullable(getEnv(AIRBYTE_VERSION)).orElse("version not set");
+  }
+
+  public String getGithubStoreBranch() {
+    return getEnvOrDefault(GITHUB_STORE_BRANCH, DEFAULT_GITHUB_STORE_BRANCH);
   }
 
   @Override
@@ -303,6 +355,16 @@ public class EnvConfigs implements Configs {
   @Override
   public Path getWorkspaceRoot() {
     return getPath(WORKSPACE_ROOT);
+  }
+
+  @Override
+  public Optional<URI> getRemoteConnectorCatalogUrl() {
+    final String remoteConnectorCatalogUrl = getEnvOrDefault(REMOTE_CONNECTOR_CATALOG_URL, null);
+    if (remoteConnectorCatalogUrl != null) {
+      return Optional.of(URI.create(remoteConnectorCatalogUrl));
+    } else {
+      return Optional.empty();
+    }
   }
 
   // Docker Only
@@ -465,6 +527,16 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getAirbyteApiAuthHeaderName() {
+    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_NAME, "");
+  }
+
+  @Override
+  public String getAirbyteApiAuthHeaderValue() {
+    return getEnvOrDefault(AIRBYTE_API_AUTH_HEADER_VALUE, "");
+  }
+
+  @Override
   public String getWebappUrl() {
     return getEnsureEnv(WEBAPP_URL);
   }
@@ -545,6 +617,16 @@ public class EnvConfigs implements Configs {
   @Override
   public Map<String, String> getJobKubeNodeSelectors() {
     return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
+  }
+
+  @Override
+  public Map<String, String> getIsolatedJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_ISOLATED_KUBE_NODE_SELECTORS, ""));
+  }
+
+  @Override
+  public boolean getUseCustomKubeNodeSelector() {
+    return getEnvOrDefault(USE_CUSTOM_NODE_SELECTOR, false);
   }
 
   /**
@@ -666,8 +748,38 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_REQUEST, DEFAULT_SIDECAR_KUBE_CPU_REQUEST);
+  }
+
+  @Override
+  public String getSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_LIMIT, DEFAULT_SIDECAR_KUBE_CPU_LIMIT);
+  }
+
+  @Override
+  public String getSidecarKubeMemoryLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_MEMORY_LIMIT, DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT);
+  }
+
+  @Override
+  public String getSidecarMemoryRequest() {
+    return getEnvOrDefault(SIDECAR_MEMORY_REQUEST, DEFAULT_SIDECAR_MEMORY_REQUEST);
+  }
+
+  @Override
   public String getJobKubeSocatImage() {
     return getEnvOrDefault(JOB_KUBE_SOCAT_IMAGE, DEFAULT_JOB_KUBE_SOCAT_IMAGE);
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_REQUEST, getSidecarKubeCpuRequest());
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_LIMIT, getSidecarKubeCpuLimit());
   }
 
   @Override
@@ -710,6 +822,7 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(METRIC_CLIENT, "");
   }
 
+  @Override
   public String getOtelCollectorEndpoint() {
     return getEnvOrDefault(OTEL_COLLECTOR_ENDPOINT, "");
   }
@@ -766,6 +879,26 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getNormalizationJobMainContainerCpuRequest() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST, getJobMainContainerCpuRequest());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerCpuLimit() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT, getJobMainContainerCpuLimit());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerMemoryRequest() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST, getJobMainContainerMemoryRequest());
+  }
+
+  @Override
+  public String getNormalizationJobMainContainerMemoryLimit() {
+    return getEnvOrDefault(NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT, getJobMainContainerMemoryLimit());
+  }
+
+  @Override
   public LogConfigs getLogConfigs() {
     return logConfigs;
   }
@@ -793,6 +926,15 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDDDogStatsDPort() {
     return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
+  }
+
+  @Override
+  public List<String> getDDConstantTags() {
+    final String tagsString = getEnvOrDefault(DD_CONSTANT_TAGS, "");
+    return Splitter.on(",")
+        .splitToStream(tagsString)
+        .filter(s -> !s.trim().isBlank())
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -832,7 +974,8 @@ public class EnvConfigs implements Configs {
         Math.toIntExact(getEnvOrDefault(MAX_SPEC_WORKERS, DEFAULT_MAX_SPEC_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_NOTIFY_WORKERS, DEFAULT_MAX_NOTIFY_WORKERS)));
   }
 
   @Override
@@ -858,6 +1001,37 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean shouldRunConnectionManagerWorkflows() {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldRunNotifyWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_NOTIFY_WORKFLOWS, false);
+  }
+
+  // Worker - Data plane
+
+  @Override
+  public Set<String> getDataSyncTaskQueues() {
+    final var taskQueues = getEnvOrDefault(DATA_SYNC_TASK_QUEUES, DEFAULT_DATA_SYNC_TASK_QUEUES);
+    if (taskQueues.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(taskQueues.split(",")).collect(Collectors.toSet());
+  }
+
+  @Override
+  public String getControlPlaneAuthEndpoint() {
+    return getEnvOrDefault(CONTROL_PLANE_AUTH_ENDPOINT, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountCredentialsPath() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_CREDENTIALS_PATH, "");
+  }
+
+  @Override
+  public String getDataPlaneServiceAccountEmail() {
+    return getEnvOrDefault(DATA_PLANE_SERVICE_ACCOUNT_EMAIL, "");
   }
 
   @Override
@@ -927,6 +1101,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getWorkflowFailureRestartDelaySeconds() {
     return Integer.parseInt(getEnvOrDefault(WORKFLOW_FAILURE_RESTART_DELAY_SECONDS, String.valueOf(10 * 60)));
+  }
+
+  @Override
+  public boolean getAutoDetectSchema() {
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
   }
 
   @Override

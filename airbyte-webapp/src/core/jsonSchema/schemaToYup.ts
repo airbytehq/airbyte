@@ -54,7 +54,10 @@ export const buildYupFormForJsonSchema = (
 
   switch (jsonSchema.type) {
     case "string":
-      schema = yup.string().trim();
+      schema = yup
+        .string()
+        .transform((val) => String(val))
+        .trim();
 
       if (jsonSchema?.pattern !== undefined) {
         schema = schema.matches(new RegExp(jsonSchema.pattern), "form.pattern.error");
@@ -65,7 +68,8 @@ export const buildYupFormForJsonSchema = (
       schema = yup.boolean();
       break;
     case "integer":
-      schema = yup.number();
+    case "number":
+      schema = yup.number().transform((value) => (isNaN(value) ? undefined : value));
 
       if (jsonSchema?.minimum !== undefined) {
         schema = schema.min(jsonSchema?.minimum);

@@ -1,6 +1,7 @@
 [tool.black]
 line-length = 140
 target-version = ["py37"]
+extend-exclude = "(build|integration_tests|unit_tests|generated)"
 
 [tool.coverage.report]
 fail_under = 0
@@ -12,7 +13,7 @@ omit = [
     "setup.py",
     "unit_tests/*",
     "integration_tests/*",
-
+    "**/generated/*",
 ]
 
 [tool.flake8]
@@ -25,7 +26,7 @@ extend-exclude = [
     "airbyte-cdk/python/airbyte_cdk/models/__init__.py",
     ".tox",
     "airbyte_api_client",
-
+    "**/generated/*",
 ]
 max-complexity = 20
 max-line-length = 140
@@ -46,11 +47,12 @@ multi_line_output = 3
 include_trailing_comma = true
 force_grid_wrap = 0
 use_parentheses = true
+skip_glob = ["**/connector_builder/generated/**"]
 
 
 [tool.mypy]
 platform = "linux"
-exclude = "(build|integration_tests|unit_tests)"
+exclude = "(build|integration_tests|unit_tests|generated)"
 
 # Optionals
 ignore_missing_imports = true
@@ -78,7 +80,7 @@ color_output = true
 error_summary = true
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "6.2.5"
 addopts ="-r a --capture=no -vv --log-level=DEBUG --color=yes"
 
 

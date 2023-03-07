@@ -1,0 +1,68 @@
+{{- if .Values.minio.enabled }}
+apiVersion: apps/v1 #  for k8s versions before 1.9.0 use apps/v1beta2  and before 1.8.0 use extensions/v1beta1
+kind: StatefulSet
+metadata:
+  # This name uniquely identifies the Deployment
+  name: airbyte-minio
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
+  labels:
+    {{ include "airbyte.minioLabels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{ include "airbyte.minioSelectorLabels" . | nindent 6 }}
+  serviceName: airbyte-minio-svc
+  volumeClaimTemplates:
+      - metadata:
+          name: airbyte-minio-pv-claim
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          resources:
+            requests:
+              storage: 500Mi
+  template:
+    metadata:
+      labels:
+        # Label is used as selector in the service.
+        {{ include "airbyte.minioSelectorLabels" . | nindent 8 }}
+    spec:
+      # Refer to the PVC created earlier
+      containers:
+        - name: airbyte-minio
+          # Pulls the default Minio image from Docker Hub
+          image: minio/minio:latest
+          args:
+            - server
+            - /storage
+          env:
+            # Minio access key and secret key. This must match the S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY declared in /dev/.env.
+            - name: MINIO_ROOT_USER
+              value: {{ .Values.minio.auth.rootUser  }}
+            - name: MINIO_ROOT_PASSWORD
+              value: {{ .Values.minio.auth.rootPassword }}
+          ports:
+            - containerPort: 9000
+          # Mount the volume into the pod
+          volumeMounts:
+            - name: airbyte-minio-pv-claim # must match the volume name, above
+              mountPath: "/data"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airbyte-minio-svc
+  labels:
+    {{ include "airbyte.minioLabels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: "-1"
+spec:
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  selector:
+    {{ include "airbyte.minioSelectorLabels" . | nindent 4 }}
+{{- end }}

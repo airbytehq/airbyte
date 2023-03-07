@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "bpm": {
+      "type": ["number", "null"]
+    },
+    "source": {
+      "type": ["string", "null"]
+    },
+    "timestamp": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    }
+  }
+}

@@ -17,15 +17,16 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    // https://mvnrepository.com/artifact/ru.yandex.clickhouse/clickhouse-jdbc
-    implementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.1-patch'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     testImplementation libs.connectors.destination.testcontainers.clickhouse
+    testImplementation project(":airbyte-json-validation")
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-clickhouse')
-    integrationTestJavaImplementation project(':airbyte-workers')
+    integrationTestJavaImplementation project(':airbyte-commons-worker')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestJavaImplementation libs.connectors.destination.testcontainers.clickhouse
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }

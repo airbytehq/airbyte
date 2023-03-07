@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "account_name": {
+      "type": ["null", "string"]
+    },
+    "account_code": {
+      "type": ["null", "string"]
+    },
+    "level": {
+      "type": ["null", "string"]
+    },
+    "gl_account": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "contract": {
+      "type": ["null", "string"]
+    },
+    "assignment": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    },
+    "amount": {
+      "type": "number"
+    }
+  }
+}

@@ -17,6 +17,10 @@ select
     jsonb_extract_path_text(_airbyte_data, 'NZD') as nzd,
     jsonb_extract_path_text(_airbyte_data, 'USD') as usd,
     jsonb_extract_path_text(_airbyte_data, 'column`_''with"_quotes') as "column`_'with""_quotes",
+    jsonb_extract_path_text(_airbyte_data, 'datetime_tz') as datetime_tz,
+    jsonb_extract_path_text(_airbyte_data, 'datetime_no_tz') as datetime_no_tz,
+    jsonb_extract_path_text(_airbyte_data, 'time_tz') as time_tz,
+    jsonb_extract_path_text(_airbyte_data, 'time_no_tz') as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -49,6 +53,18 @@ select
     float
 ) as usd,
     cast("column`_'with""_quotes" as text) as "column`_'with""_quotes",
+    cast(nullif(datetime_tz, '') as 
+    timestamp with time zone
+) as datetime_tz,
+    cast(nullif(datetime_no_tz, '') as 
+    timestamp
+) as datetime_no_tz,
+    cast(nullif(time_tz, '') as 
+    time with time zone
+) as time_tz,
+    cast(nullif(time_no_tz, '') as 
+    time
+) as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -60,7 +76,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__exchange_rate_ab2
 select
-    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(currency as text), '') || '-' || coalesce(cast("date" as text), '') || '-' || coalesce(cast(timestamp_col as text), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as text), '') || '-' || coalesce(cast(hkd_special___characters as text), '') || '-' || coalesce(cast(nzd as text), '') || '-' || coalesce(cast(usd as text), '') || '-' || coalesce(cast("column`_'with""_quotes" as text), '') as text)) as _airbyte_exchange_rate_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(currency as text), '') || '-' || coalesce(cast("date" as text), '') || '-' || coalesce(cast(timestamp_col as text), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as text), '') || '-' || coalesce(cast(hkd_special___characters as text), '') || '-' || coalesce(cast(nzd as text), '') || '-' || coalesce(cast(usd as text), '') || '-' || coalesce(cast("column`_'with""_quotes" as text), '') || '-' || coalesce(cast(datetime_tz as text), '') || '-' || coalesce(cast(datetime_no_tz as text), '') || '-' || coalesce(cast(time_tz as text), '') || '-' || coalesce(cast(time_no_tz as text), '') as text)) as _airbyte_exchange_rate_hashid,
     tmp.*
 from __dbt__cte__exchange_rate_ab2 tmp
 -- exchange_rate
@@ -77,6 +93,10 @@ select
     nzd,
     usd,
     "column`_'with""_quotes",
+    datetime_tz,
+    datetime_no_tz,
+    time_tz,
+    time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at,

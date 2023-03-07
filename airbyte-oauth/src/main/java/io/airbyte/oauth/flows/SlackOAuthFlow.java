@@ -11,14 +11,15 @@ import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 public class SlackOAuthFlow extends BaseOAuth2Flow {
 
-  final String SLACK_CONSENT_URL_BASE = "https://slack.com/oauth/authorize";
-  final String SLACK_TOKEN_URL = "https://slack.com/api/oauth.access";
+  private static final String AUTHORIZE_URL = "https://slack.com/oauth/authorize";
+  private static final String ACCESS_TOKEN_URL = "https://slack.com/api/oauth.access";
 
   public SlackOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -41,7 +42,7 @@ public class SlackOAuthFlow extends BaseOAuth2Flow {
                                     final JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
-      return new URIBuilder(SLACK_CONSENT_URL_BASE)
+      return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
@@ -57,7 +58,16 @@ public class SlackOAuthFlow extends BaseOAuth2Flow {
    */
   @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
-    return SLACK_TOKEN_URL;
+    return ACCESS_TOKEN_URL;
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    if (data.has("access_token")) {
+      return Map.of("access_token", data.get("access_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
+    }
   }
 
 }

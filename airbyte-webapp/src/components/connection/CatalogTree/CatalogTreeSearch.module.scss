@@ -1,0 +1,15 @@
+@use "scss/_variables";
+
+.searchInput {
+  padding: 10px 8px 9px;
+}
+
+.searchContent {
+  position: relative;
+  width: 100%;
+  padding: 0 variables.$spacing-xl;
+
+  &::before {
+    content: attr(data-content);
+  }
+}

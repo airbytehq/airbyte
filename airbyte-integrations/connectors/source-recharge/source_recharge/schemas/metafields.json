@@ -19,7 +19,7 @@
       "type": ["null", "string"]
     },
     "owner_id": {
-      "type": ["null", "integer", "string"]
+      "type": ["null", "string"]
     },
     "owner_resource": {
       "type": ["null", "string"]
@@ -29,7 +29,7 @@
       "format": "date-time"
     },
     "value": {
-      "type": ["null", "string", "number", "integer"]
+      "type": ["null", "string"]
     },
     "value_type": {
       "type": ["null", "string"]

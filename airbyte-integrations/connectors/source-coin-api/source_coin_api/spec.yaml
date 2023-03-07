@@ -1,0 +1,63 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/coin-api
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Coin API Spec
+  type: object
+  required:
+    - api_key
+    - environment
+    - symbol_id
+    - period
+    - start_date
+  properties:
+    api_key:
+      type: string
+      description: API Key
+      airbyte_secret: true
+      order: 0
+    environment:
+      type: string
+      description: |
+        The environment to use. Either sandbox or production.
+      enum:
+        - sandbox
+        - production
+      default: sandbox
+      order: 1
+    symbol_id:
+      type: string
+      description: |
+        The symbol ID to use. See the documentation for a list.
+        https://docs.coinapi.io/#list-all-symbols-get
+      order: 2
+    period:
+      type: string
+      description: The period to use. See the documentation for a list.
+        https://docs.coinapi.io/#list-all-periods-get
+      examples:
+        - 5SEC
+        - 2MTH
+    start_date:
+      type: string
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+      description: The start date in ISO 8601 format.
+      examples:
+        - "2019-01-01T00:00:00"
+    end_date:
+      type: string
+      pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$"
+      description: |
+        The end date in ISO 8601 format. If not supplied, data will be returned
+        from the start date to the current time, or when the count of result
+        elements reaches its limit.
+      examples:
+        - "2019-01-01T00:00:00"
+    limit:
+      type: integer
+      description: |
+        The maximum number of elements to return. If not supplied, the default
+        is 100. For numbers larger than 100, each 100 items is counted as one
+        request for pricing purposes. Maximum value is 100000.
+      minimum: 1
+      maximum: 100000
+      default: 100

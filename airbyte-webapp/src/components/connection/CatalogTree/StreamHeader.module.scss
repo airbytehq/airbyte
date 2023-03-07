@@ -1,0 +1,66 @@
+@use "scss/colors";
+@use "scss/variables";
+@forward "./CatalogTreeHeader.module.scss";
+
+.icon {
+  margin-right: 7px;
+  margin-top: -1px;
+
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+}
+
+.streamRowCheckboxCell {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-left: 27px;
+}
+
+.streamHeaderContent {
+  background: colors.$grey-50;
+  transition: background-color variables.$transition;
+  width: 100%;
+  padding: 2px;
+  padding-left: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: middle;
+  height: 50px;
+}
+
+.catalogSectionRow {
+  height: 100%;
+  white-space: nowrap;
+  font-size: 12px;
+  display: flex;
+  flex-direction: row;
+  margin-top: 18px;
+  margin-bottom: 9px;
+}
+
+.redBackground {
+  background-color: colors.$red-50;
+}
+
+.greenBackground {
+  background-color: colors.$green-50;
+}
+
+.redBorder {
+  border: 1px solid colors.$red;
+}
+
+.purpleBackground {
+  background-color: colors.$blue-transparent;
+}
+
+.noHeader {
+  color: colors.$grey-300;
+}

@@ -4,45 +4,79 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.config.helpers.StateMessageHelper.isMigration;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToInternal;
+
 import com.google.common.annotations.VisibleForTesting;
+import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.config.persistence.StatePersistence;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
-import java.io.IOException;
+import io.airbyte.workers.helper.StateConverter;
+import jakarta.inject.Singleton;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@Singleton
 public class PersistStateActivityImpl implements PersistStateActivity {
 
-  private final StatePersistence statePersistence;
+  private final AirbyteApiClient airbyteApiClient;
   private final FeatureFlags featureFlags;
 
+  public PersistStateActivityImpl(final AirbyteApiClient airbyteApiClient, final FeatureFlags featureFlags) {
+    this.airbyteApiClient = airbyteApiClient;
+    this.featureFlags = featureFlags;
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
+    ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId.toString()));
     final State state = syncOutput.getState();
     if (state != null) {
+      // todo: these validation logic should happen on server side.
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final Optional<StateWrapper> previousState = statePersistence.getCurrentState(connectionId);
-          final StateType newStateType = maybeStateWrapper.get().getStateType();
-          if (statePersistence.isMigration(connectionId, newStateType, previousState) && newStateType == StateType.STREAM) {
-            validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
+          final ConnectionState previousState =
+              AirbyteApiClient.retryWithJitter(
+                  () -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)),
+                  "get state");
+          if (featureFlags.needStateValidation() && previousState != null) {
+            final StateType newStateType = maybeStateWrapper.get().getStateType();
+            final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
+
+            if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
+              validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
+            }
           }
 
-          statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
+          AirbyteApiClient.retryWithJitter(
+              () -> {
+                airbyteApiClient.getStateApi().createOrUpdateState(
+                    new ConnectionStateCreateOrUpdate()
+                        .connectionId(connectionId)
+                        .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
+                return null;
+              },
+              "create or update state");
         }
-      } catch (final IOException e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
       return true;
@@ -55,7 +89,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
     final List<StreamDescriptor> stateStreamDescriptors =
         state.getStateMessages().stream().map(stateMessage -> stateMessage.getStream().getStreamDescriptor()).toList();
-    final List<StreamDescriptor> catalogStreamDescriptors = CatalogHelpers.extractStreamDescriptors(configuredCatalog);
+    final List<StreamDescriptor> catalogStreamDescriptors = CatalogHelpers.extractIncrementalStreamDescriptors(configuredCatalog);
     catalogStreamDescriptors.forEach(streamDescriptor -> {
       if (!stateStreamDescriptors.contains(streamDescriptor)) {
         throw new IllegalStateException(

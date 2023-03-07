@@ -39,6 +39,11 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     this.baselineMigrator = getBaselineMigrator(fullMigrator);
   }
 
+  public DevDatabaseMigrator(final FlywayDatabaseMigrator fullMigrator, final MigrationVersion baselineVersion) {
+    this.fullMigrator = fullMigrator;
+    this.baselineMigrator = getBaselineMigratorForVersion(fullMigrator, baselineVersion);
+  }
+
   private static class NoOpDatabaseMigrator implements DatabaseMigrator {
 
     @Override
@@ -68,13 +73,10 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
 
   }
 
-  /**
-   * Create a baseline migration from a full migrator. The baseline migrator does not run the last
-   * migration, which will be usually the migration to be tested.
-   */
-  private static DatabaseMigrator getBaselineMigrator(final FlywayDatabaseMigrator fullMigrator) {
+  private static FluentConfiguration getBaselineConfig(final FlywayDatabaseMigrator fullMigrator) {
     final Configuration fullConfig = fullMigrator.getFlyway().getConfiguration();
-    final FluentConfiguration baselineConfig = Flyway.configure()
+
+    return Flyway.configure()
         .dataSource(fullConfig.getDataSource())
         .baselineVersion(fullConfig.getBaselineVersion())
         .baselineDescription(fullConfig.getBaselineDescription())
@@ -82,6 +84,14 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
         .installedBy(fullConfig.getInstalledBy())
         .table(fullConfig.getTable())
         .locations(fullConfig.getLocations());
+  }
+
+  /**
+   * Create a baseline migration from a full migrator. The baseline migrator does not run the last
+   * migration, which will be usually the migration to be tested.
+   */
+  private static DatabaseMigrator getBaselineMigrator(final FlywayDatabaseMigrator fullMigrator) {
+    final FluentConfiguration baselineConfig = getBaselineConfig(fullMigrator);
 
     final Optional<MigrationVersion> secondToLastMigrationVersion = MigrationDevHelper.getSecondToLastMigrationVersion(fullMigrator);
     if (secondToLastMigrationVersion.isEmpty()) {
@@ -93,6 +103,19 @@ public class DevDatabaseMigrator implements DatabaseMigrator {
     // version.
     LOGGER.info("Baseline migrator target version: {}", secondToLastMigrationVersion.get());
     baselineConfig.target(secondToLastMigrationVersion.get());
+
+    return new FlywayDatabaseMigrator(fullMigrator.getDatabase(), baselineConfig.load());
+  }
+
+  /**
+   * Create a baseline migration from a specified target migration version.
+   */
+  private static DatabaseMigrator getBaselineMigratorForVersion(final FlywayDatabaseMigrator fullMigrator, final MigrationVersion migrationVersion) {
+    final FluentConfiguration baselineConfig = getBaselineConfig(fullMigrator);
+
+    // Set the baseline flyway config to run up to a target migration version.
+    LOGGER.info("Baseline migrator target version: {}", migrationVersion);
+    baselineConfig.target(migrationVersion);
 
     return new FlywayDatabaseMigrator(fullMigrator.getDatabase(), baselineConfig.load());
   }

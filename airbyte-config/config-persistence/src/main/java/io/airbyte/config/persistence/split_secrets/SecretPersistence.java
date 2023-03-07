@@ -6,8 +6,8 @@ package io.airbyte.config.persistence.split_secrets;
 
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
-import java.io.IOException;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.jooq.DSLContext;
 
 /**
@@ -22,7 +22,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
 
   void write(final SecretCoordinate coordinate, final String payload);
 
-  static Optional<SecretPersistence> getLongLived(final DSLContext dslContext, final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getLongLived(final @Nullable DSLContext dslContext, final Configs configs) {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new Database(dslContext);
@@ -40,7 +40,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static SecretsHydrator getSecretsHydrator(final DSLContext dslContext, final Configs configs) throws IOException {
+  static SecretsHydrator getSecretsHydrator(final @Nullable DSLContext dslContext, final Configs configs) {
     final var persistence = getLongLived(dslContext, configs);
 
     if (persistence.isPresent()) {
@@ -50,7 +50,7 @@ public interface SecretPersistence extends ReadOnlySecretPersistence {
     }
   }
 
-  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) throws IOException {
+  static Optional<SecretPersistence> getEphemeral(final DSLContext dslContext, final Configs configs) {
     switch (configs.getSecretPersistenceType()) {
       case TESTING_CONFIG_DB_TABLE -> {
         final Database configDatabase = new Database(dslContext);

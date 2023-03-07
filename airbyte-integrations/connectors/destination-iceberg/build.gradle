@@ -1,0 +1,54 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.iceberg.IcebergDestination'
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+    implementation('org.apache.spark:spark-sql_2.13:3.3.0') {
+        exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
+    }
+    implementation('org.apache.spark:spark-hive_2.13:3.3.0') {
+        exclude(group: 'org.apache.hadoop', module: 'hadoop-common')
+    }
+    implementation 'org.apache.iceberg:iceberg-spark-runtime-3.3_2.13:1.0.0'
+    implementation "software.amazon.awssdk:bundle:2.17.131"
+    implementation "software.amazon.awssdk:url-connection-client:2.17.131"
+    implementation "org.apache.hadoop:hadoop-aws:3.3.2"
+    implementation "org.apache.hadoop:hadoop-client-api:3.3.2"
+    implementation "org.apache.hadoop:hadoop-client-runtime:3.3.2"
+    implementation "org.postgresql:postgresql:42.5.0"
+    implementation "commons-collections:commons-collections:3.2.2"
+//    implementation "software.amazon.awssdk:utils:2.17.131"
+
+    testImplementation libs.connectors.testcontainers.postgresql
+    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-iceberg')
+
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.24'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
+}
+
+test {
+    jvmArgs = ['--add-opens=java.base/sun.nio.ch=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED']
+}
+
+task prepareKotlinBuildScriptModel {
+
+}

@@ -76,6 +76,7 @@ class TestParquetParser(AbstractTestParser):
             "degrees": "number",
             "birthday": "string",
             "last_seen": "string",
+            "salary": "decimal",
             "created_at": "timestamp",
             "created_date_at": "date",
             "created_time_at": "time",
@@ -200,12 +201,14 @@ class TestParquetParser(AbstractTestParser):
             "degrees": -9.2,
             "birthday": cls._generate_value("string"),
             "last_seen": cls._generate_value("string"),
+            "salary": cls._generate_value("decimal"),
             "created_at": cls._generate_value("timestamp"),
             "created_date_at": cls._generate_value("date"),
             "created_time_at": cls._generate_value("time"),
         }
 
         expected_record = copy.deepcopy(test_record)
+        expected_record["salary"] = ParquetParser.convert_field_data("decimal", expected_record["salary"])
         expected_record["created_date_at"] = ParquetParser.convert_field_data("date", expected_record["created_date_at"])
         expected_record["created_time_at"] = ParquetParser.convert_field_data("time", expected_record["created_time_at"])
         expected_record["created_at"] = ParquetParser.convert_field_data("timestamp", expected_record["created_at"])

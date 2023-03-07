@@ -1,0 +1,19 @@
+@use "../../../scss/colors";
+@use "../../../scss/fonts";
+
+.iconContainer {
+  height: 25px;
+  width: 25px;
+  text-align: center;
+  overflow: hidden;
+  margin-right: 6px;
+}
+
+.small {
+  border-radius: 0%;
+}
+
+.icon {
+  max-height: 100%;
+  max-width: 100%;
+}

@@ -55,25 +55,25 @@ public class CockroachDBContainerHelper {
 
   public static JsonNode getDestinationConfig(final CockroachContainer psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("schema", "public")
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
   public static DataSource getDataSourceFromConfig(final JsonNode config) {
     return DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()));
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
   }
 
   public static Database getDatabaseFromConfig(final DSLContext dslContext) {// final JsonNode config) {

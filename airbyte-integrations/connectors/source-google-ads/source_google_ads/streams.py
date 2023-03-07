@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
@@ -256,6 +257,7 @@ class Campaigns(IncrementalGoogleAdsStream):
     Campaigns stream: https://developers.google.com/google-ads/api/fields/v11/campaign
     """
 
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["campaign.id", "segments.date"]
 
 

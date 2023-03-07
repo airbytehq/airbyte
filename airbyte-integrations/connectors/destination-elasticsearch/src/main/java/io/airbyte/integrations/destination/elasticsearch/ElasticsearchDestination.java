@@ -10,6 +10,7 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.protocol.models.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,10 +26,14 @@ public class ElasticsearchDestination extends BaseConnector implements Destinati
   private final ObjectMapper mapper = new ObjectMapper();
 
   public static void main(String[] args) throws Exception {
-    final var destination = new ElasticsearchDestination();
+    final var destination = sshWrappedDestination();
     LOGGER.info("starting destination: {}", ElasticsearchDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", ElasticsearchDestination.class);
+  }
+
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new ElasticsearchDestination(), "endpoint");
   }
 
   @Override

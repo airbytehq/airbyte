@@ -1,0 +1,9 @@
+plugins {
+    id 'airbyte-python'
+    id 'airbyte-docker'
+    id 'airbyte-source-acceptance-test'
+}
+
+airbytePython {
+    moduleDirectory 'source_k6_cloud'
+}

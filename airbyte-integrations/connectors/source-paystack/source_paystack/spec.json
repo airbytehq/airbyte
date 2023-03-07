@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/paystack",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/paystack",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Paystack Source Spec",

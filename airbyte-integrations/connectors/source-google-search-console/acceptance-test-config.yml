@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-search-console:dev
 tests:
@@ -17,16 +17,21 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
+      timeout_seconds: 1800
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/catalog.json"
+      timeout_seconds: 1800
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
+      timeout_seconds: 1800
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
         search_analytics_by_country: [ "https://airbyte.io", "web", "date" ]
+        search_analytics_by_country: [ "https://airbyte.io", "web", "image" ]
         search_analytics_by_device: [ "https://airbyte.io", "web", "date" ]
         search_analytics_by_page: [ "https://airbyte.io", "web", "date" ]
         search_analytics_by_query: [ "https://airbyte.io", "web", "date" ]
         search_analytics_all_fields: [ "https://airbyte.io", "web", "date" ]
+        custom_dimensions: [ "https://airbyte.io", "web", "date" ]

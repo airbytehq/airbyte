@@ -1,8 +1,7 @@
-ARG JDK_VERSION=17.0.1
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}-slim
+ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
 FROM ${JDK_IMAGE}
 
-ARG VERSION=0.39.37-alpha
+ARG VERSION=0.40.24
 
 ENV APPLICATION airbyte-bootloader
 ENV VERSION ${VERSION}

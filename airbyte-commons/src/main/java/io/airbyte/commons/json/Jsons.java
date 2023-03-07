@@ -16,10 +16,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.stream.MoreStreams;
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,10 +36,13 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+@SuppressWarnings({"PMD.AvoidReassigningParameters", "PMD.AvoidCatchingThrowable"})
 public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+
+  private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
 
   public static <T> String serialize(final T object) {
@@ -51,6 +56,30 @@ public class Jsons {
   public static <T> T deserialize(final String jsonString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(jsonString, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final String jsonString, final TypeReference<T> valueTypeRef) {
+    try {
+      return OBJECT_MAPPER.readValue(jsonString, valueTypeRef);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final File file, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER.readValue(file, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final File file, final TypeReference<T> valueTypeRef) {
+    try {
+      return OBJECT_MAPPER.readValue(file, valueTypeRef);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
@@ -86,6 +115,10 @@ public class Jsons {
 
   public static <T> JsonNode jsonNode(final T object) {
     return OBJECT_MAPPER.valueToTree(object);
+  }
+
+  public static JsonNode jsonNodeFromFile(final File file) throws IOException {
+    return YAML_OBJECT_MAPPER.readTree(file);
   }
 
   public static JsonNode emptyObject() {
@@ -180,7 +213,7 @@ public class Jsons {
   }
 
   private static void replaceNested(final JsonNode json, final List<String> keys, final BiConsumer<ObjectNode, String> typedReplacement) {
-    Preconditions.checkArgument(keys.size() > 0, "Must pass at least one key");
+    Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key");
     final JsonNode nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size() - 1));
     typedReplacement.accept((ObjectNode) nodeContainingFinalKey, keys.get(keys.size() - 1));
   }
@@ -222,6 +255,7 @@ public class Jsons {
   /**
    * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   public static Map<String, Object> flatten(final JsonNode node) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
@@ -269,6 +303,10 @@ public class Jsons {
           }
         },
         Entry::getValue)));
+  }
+
+  public static Map<String, String> deserializeToStringMap(JsonNode json) {
+    return OBJECT_MAPPER.convertValue(json, new TypeReference<>() {});
   }
 
   /**

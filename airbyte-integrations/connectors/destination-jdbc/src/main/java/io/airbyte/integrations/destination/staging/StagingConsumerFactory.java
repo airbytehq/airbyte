@@ -11,8 +11,6 @@ import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -22,6 +20,7 @@ import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -125,13 +124,9 @@ public class StagingConsumerFactory {
         LOGGER.info("Preparing staging area in destination started for schema {} stream {}: tmp table: {}, stage: {}",
             schema, stream, tmpTable, stagingPath);
 
-        AirbyteSentry.executeWithTracing("PrepareStreamStage",
-            () -> {
-              stagingOperations.createSchemaIfNotExists(database, schema);
-              stagingOperations.createTableIfNotExists(database, schema, tmpTable);
-              stagingOperations.createStageIfNotExists(database, stageName);
-            },
-            Map.of("schema", schema, "stream", stream, "tmpTable", tmpTable, "stage", stagingPath));
+        stagingOperations.createSchemaIfNotExists(database, schema);
+        stagingOperations.createTableIfNotExists(database, schema, tmpTable);
+        stagingOperations.createStageIfNotExists(database, stageName);
 
         LOGGER.info("Preparing staging area in destination completed for schema {} stream {}", schema, stream);
       }

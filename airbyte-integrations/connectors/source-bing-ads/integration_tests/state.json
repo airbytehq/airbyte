@@ -1,22 +1,46 @@
-{
-  "keyword_performance_report_hourly": {
-    "180278106": {
-      "TimePeriod": 1627820152
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "TimePeriod": 1627820152
+        }
+      },
+      "stream_descriptor": { "name": "keyword_performance_report_hourly" }
     }
   },
-  "budget_summary_report_hourly": {
-    "180278106": {
-      "Date": 1627800152
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "Date": 1627800152
+        }
+      },
+      "stream_descriptor": { "name": "budget_summary_report_hourly" }
     }
   },
-  "ad_performance_report_hourly": {
-    "180278106": {
-      "TimePeriod": 1627795152
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "TimePeriod": 1627795152
+        }
+      },
+      "stream_descriptor": { "name": "ad_performance_report_hourly" }
     }
   },
-  "campaign_performance_report_hourly": {
-    "180278106": {
-      "TimePeriod": 1727810152
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "180278106": {
+          "TimePeriod": 1727810152
+        }
+      },
+      "stream_descriptor": { "name": "campaign_performance_report_hourly" }
     }
   }
-}
+]

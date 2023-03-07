@@ -1,6 +1,6 @@
 version: 2
 sources:
-- name: test_normalization
+- name: test_normalization_bhhpj
   quoting:
     database: true
     schema: false
@@ -13,3 +13,4 @@ sources:
   - name: _airbyte_raw_multiple_column_names_conflicts
   - name: _airbyte_raw_pos_dedup_cdcx
   - name: _airbyte_raw_renamed_dedup_cdc_excluded
+  - name: _airbyte_raw_types_testing

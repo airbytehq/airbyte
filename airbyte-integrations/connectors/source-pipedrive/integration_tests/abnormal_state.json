@@ -1,23 +1,79 @@
-{
-  "deals": {
-    "update_time": "2217-06-26 21:20:07"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "deals"
+      }
+    }
   },
-  "activities": {
-    "update_time": "2217-06-26 21:20:07"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "activities"
+      }
+    }
   },
-  "persons": {
-    "update_time": "2217-06-26 21:20:07"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "persons"
+      }
+    }
   },
-  "pipelines": {
-    "update_time": "2217-06-26 21:20:07"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "pipelines"
+      }
+    }
   },
-  "stages": {
-    "update_time": "2217-06-26 21:20:07"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "stages"
+      }
+    }
   },
-  "users": {
-    "modified": "2217-06-26 21:20:07"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "modified": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "users"
+      }
+    }
   },
-  "organizations": {
-    "update_time": "2217-06-26 21:20:07"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "organizations"
+      }
+    }
   }
-}
+]

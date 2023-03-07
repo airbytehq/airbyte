@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/snowflake",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,
@@ -62,8 +62,8 @@
         "type": "object",
         "oneOf": [
           {
-            "type": "object",
             "title": "OAuth2.0",
+            "type": "object",
             "order": 0,
             "required": ["access_token", "refresh_token"],
             "properties": {
@@ -101,10 +101,38 @@
             }
           },
           {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 1,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
             "title": "Username and Password",
             "type": "object",
             "required": ["password"],
-            "order": 1,
+            "order": 2,
             "properties": {
               "password": {
                 "description": "Enter the password associated with the username.",
@@ -279,6 +307,19 @@
                     }
                   }
                 ]
+              },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern",
+                "examples": [
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
+                ],
+                "order": 7
               }
             }
           },

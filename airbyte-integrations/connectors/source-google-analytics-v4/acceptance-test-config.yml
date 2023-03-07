@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 
 connector_image: airbyte/source-google-analytics-v4:dev
@@ -21,10 +21,10 @@ tests:
       expect_records:
         path: "integration_tests/expected_records.txt"
   incremental:
-   - config_path: "secrets/service_config.json"
-     configured_catalog_path: "integration_tests/configured_catalog.json"
-     future_state_path: "integration_tests/abnormal_state.json"
-     threshold_days: 2
+    - config_path: "secrets/service_config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+      threshold_days: 2
   full_refresh:
     - config_path: "secrets/service_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

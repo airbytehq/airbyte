@@ -33,6 +33,10 @@ select
     json_value(_airbyte_data, ''$."NZD"'') as nzd,
     json_value(_airbyte_data, ''$."USD"'') as usd,
     json_value(_airbyte_data, ''$."column`_''''with\"_quotes"'') as "column`_''with""_quotes",
+    json_value(_airbyte_data, ''$."datetime_tz"'') as datetime_tz,
+    json_value(_airbyte_data, ''$."datetime_no_tz"'') as datetime_no_tz,
+    json_value(_airbyte_data, ''$."time_tz"'') as time_tz,
+    json_value(_airbyte_data, ''$."time_no_tz"'') as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -48,14 +52,14 @@ select
     bigint
 ) as id,
     cast(currency as 
-    VARCHAR(max)) as currency,
+    NVARCHAR(max)) as currency,
     try_parse(nullif("date", '''') as date) as "date",
-    try_parse(nullif(timestamp_col, '''') as datetime) as timestamp_col,
+    try_parse(nullif(timestamp_col, '''') as datetimeoffset) as timestamp_col,
     cast("HKD@spéçiäl & characters" as 
     float
 ) as "HKD@spéçiäl & characters",
     cast(hkd_special___characters as 
-    VARCHAR(max)) as hkd_special___characters,
+    NVARCHAR(max)) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,
@@ -63,7 +67,13 @@ select
     float
 ) as usd,
     cast("column`_''with""_quotes" as 
-    VARCHAR(max)) as "column`_''with""_quotes",
+    NVARCHAR(max)) as "column`_''with""_quotes",
+    try_parse(nullif(datetime_tz, '''') as datetimeoffset) as datetime_tz,
+    try_parse(nullif(datetime_no_tz, '''') as datetime2) as datetime_no_tz,
+    cast(nullif(time_tz, '''') as NVARCHAR(max)) as time_tz,
+    cast(nullif(time_no_tz, '''') as 
+    time
+) as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at
@@ -80,16 +90,20 @@ select
     
 
     concat(concat(coalesce(cast(id as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("date" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(timestamp_col as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("HKD@spéçiäl & characters" as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(hkd_special___characters as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(usd as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast("column`_''with""_quotes" as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_exchange_rate_hashid,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("date" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(timestamp_col as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("HKD@spéçiäl & characters" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(hkd_special___characters as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(usd as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast("column`_''with""_quotes" as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(datetime_tz as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(datetime_no_tz as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(time_tz as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(time_no_tz as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_exchange_rate_hashid,
     tmp.*
 from __dbt__cte__exchange_rate_ab2 tmp
 -- exchange_rate
@@ -106,6 +120,10 @@ select
     nzd,
     usd,
     "column`_''with""_quotes",
+    datetime_tz,
+    datetime_no_tz,
+    time_tz,
+    time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     SYSDATETIME() as _airbyte_normalized_at,

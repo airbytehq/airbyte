@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import ImageBlock from "components/ImageBlock";
+import { NumberBadge } from "components/ui/NumberBadge";
 
 interface IProps {
   values: Array<{
@@ -13,14 +13,14 @@ interface IProps {
   entity: "source" | "destination";
 }
 
+const Number = styled(NumberBadge)`
+  margin-right: 6px;
+`;
+
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
   align-items: center;
   color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
-`;
-
-const Image = styled(ImageBlock)`
-  margin-right: 6px;
 `;
 
 const Connector = styled.div`
@@ -34,7 +34,7 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   if (values.length === 1) {
     return (
       <Content enabled={enabled}>
-        <Image small />
+        <Number value={1} />
         <div>
           {values[0].name}
           <Connector>{values[0].connector}</Connector>
@@ -44,12 +44,16 @@ const ConnectEntitiesCell: React.FC<IProps> = ({ values, enabled, entity }) => {
   }
 
   if (!values.length) {
-    return null;
+    return (
+      <Content enabled={enabled}>
+        <Number value={0} />
+      </Content>
+    );
   }
 
   return (
     <Content enabled={enabled}>
-      <Image num={values.length} />
+      <Number value={values.length} />
       <div>
         <FormattedMessage id={`tables.${entity}ConnectWithNum`} values={{ num: values.length }} />
         <Connector>{`${values[0].connector}, ${values[1].connector}${values.length > 2 ? ",..." : ""}`}</Connector>

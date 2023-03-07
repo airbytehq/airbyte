@@ -19,7 +19,7 @@ public class AdaptiveDestinationRunner {
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveDestinationRunner.class);
 
   private static final String DEPLOYMENT_MODE_KEY = "DEPLOYMENT_MODE";
-  private static final String COULD_MODE = "CLOUD";
+  private static final String CLOUD_MODE = "CLOUD";
 
   public static OssDestinationBuilder baseOnEnv() {
     final String mode = System.getenv(DEPLOYMENT_MODE_KEY);
@@ -72,7 +72,7 @@ public class AdaptiveDestinationRunner {
 
     private Destination getDestination() {
       LOGGER.info("Running destination under deployment mode: {}", deploymentMode);
-      if (deploymentMode != null && deploymentMode.equals(COULD_MODE)) {
+      if (deploymentMode != null && deploymentMode.equals(CLOUD_MODE)) {
         return cloudDestinationSupplier.get();
       }
       if (deploymentMode == null) {

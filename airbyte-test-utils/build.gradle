@@ -2,13 +2,19 @@ plugins {
     id 'java-library'
 }
 
+configurations.all {
+    exclude group: 'io.micronaut.jaxrs'
+    exclude group: 'io.micronaut.sql'
+}
+
 dependencies {
     api project(':airbyte-db:db-lib')
     implementation project(':airbyte-api')
-    implementation project(':airbyte-workers')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-commons-worker')
 
     implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation libs.temporal.sdk
 
 
     api libs.junit.jupiter.api

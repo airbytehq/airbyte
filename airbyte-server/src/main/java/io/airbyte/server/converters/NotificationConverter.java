@@ -5,12 +5,16 @@
 package io.airbyte.server.converters;
 
 import io.airbyte.commons.enums.Enums;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class NotificationConverter {
 
   public static List<io.airbyte.config.Notification> toConfigList(final List<io.airbyte.api.model.generated.Notification> notifications) {
+    if (notifications == null) {
+      return Collections.emptyList();
+    }
     return notifications.stream().map(NotificationConverter::toConfig).collect(Collectors.toList());
   }
 

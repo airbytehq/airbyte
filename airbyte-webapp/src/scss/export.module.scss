@@ -3,6 +3,8 @@
 // New variables won't need to be added here, unless there would be any reason we need to access
 // its value from TypeScript.
 
+/* stylelint-disable */
+
 @use "./colors";
 @use "./fonts";
 
@@ -82,10 +84,6 @@
   red900: colors.$red-900;
   red: colors.$red;
 
-  beige50: colors.$beige-50;
-  beige100: colors.$beige-100;
-  beige: colors.$beige;
-
   black: colors.$black;
   white: colors.$white;
 
@@ -115,8 +113,5 @@
   transparentColor: colors.$transparentColor;
 
   // Fonts
-  regularFont: fonts.$regularFont;
-  highlightFont: fonts.$highlightFont;
-  codeFont: fonts.$codeFont;
-  italicFont: fonts.$italicFont;
+  regularFont: fonts.$primary;
 }

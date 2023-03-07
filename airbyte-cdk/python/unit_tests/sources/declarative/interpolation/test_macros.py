@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+
 import pytest
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 
@@ -14,6 +16,7 @@ from airbyte_cdk.sources.declarative.interpolation.macros import macros
         ("test_today_utc", "today_utc", True),
         ("test_max", "max", True),
         ("test_day_delta", "day_delta", True),
+        ("test_format_datetime", "format_datetime", True),
         ("test_not_a_macro", "thisisnotavalidmacro", False),
     ],
 )
@@ -22,3 +25,9 @@ def test_macros_export(test_name, fn_name, found_in_macros):
         assert fn_name in macros
     else:
         assert fn_name not in macros
+
+
+def test_format_datetime():
+    format_datetime = macros["format_datetime"]
+    assert format_datetime("2022-01-01T01:01:01Z", "%Y-%m-%d") == "2022-01-01"
+    assert format_datetime(datetime.datetime(2022, 1, 1, 1, 1, 1), "%Y-%m-%d") == "2022-01-01"

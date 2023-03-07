@@ -1,35 +1,50 @@
 {
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "description": "Gets a paginated list of Custom Roles",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "label": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "created": {
       "format": "date-time",
-      "type": "string"
+      "type": ["null", "string"]
     },
     "lastUpdated": {
       "format": "date-time",
-      "type": "string"
+      "type": ["null", "string"]
     },
     "_links": {
+      "type": ["null", "object"],
       "properties": {
         "assignee": {
+          "type": ["null", "object"],
+          "additionalProperties": true,
           "properties": {
             "self": {
-              "$ref": "shared-link.json"
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              }
             },
             "permissions": {
-              "$ref": "shared-link.json",
-              "description": "Gets a list of Permissions that is granted through this assignment"
+              "type": ["null", "object"],
+              "additionalProperties": true,
+              "properties": {
+                "href": {
+                  "type": ["null", "string"]
+                }
+              }
             }
           }
         }
-      },
-      "type": ["object", "null"]
+      }
     }
-  },
-  "type": "object"
+  }
 }

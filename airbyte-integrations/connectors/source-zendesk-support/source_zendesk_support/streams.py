@@ -47,7 +47,7 @@ class SourceZendeskException(Exception):
 
 class SourceZendeskSupportFuturesSession(FuturesSession):
     """
-    Check the docs at https://github.com/ross/requests-futures.
+    Check the docs at https://github.com/ross/requests-futures
     Used to async execute a set of requests.
     """
 
@@ -474,6 +474,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -484,6 +485,13 @@ class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     list_entities_from_event = ["via_reference_id", "ticket_id", "timestamp"]
     sideload_param = "comment_events"
     event_type = "Comment"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            # https://github.com/airbytehq/oncall/issues/1001
+            if type(record.get("via")) is not dict:
+                record["via"] = None
+            yield record
 
 
 class Groups(SourceZendeskSupportStream):
@@ -533,7 +541,7 @@ class TicketFields(SourceZendeskSupportStream):
 
 
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
-    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
+    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):
@@ -581,6 +589,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:

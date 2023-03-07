@@ -8,7 +8,6 @@ import static io.airbyte.server.ServerConstants.DEV_IMAGE_TAG;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
 import io.airbyte.api.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
@@ -23,17 +22,24 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.ActorType;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
+import io.airbyte.server.errors.UnsupportedProtocolVersionException;
+import io.airbyte.server.scheduler.SynchronousResponse;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -45,18 +51,16 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidCatchingNPE")
 public class DestinationDefinitionsHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DestinationDefinitionsHandler.class);
 
   private final ConfigRepository configRepository;
   private final Supplier<UUID> uuidSupplier;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final AirbyteGithubStore githubStore;
   private final DestinationHandler destinationHandler;
+  private final AirbyteProtocolVersionRange protocolVersionRange;
 
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -75,6 +79,10 @@ public class DestinationDefinitionsHandler {
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.destinationHandler = destinationHandler;
+
+    // TODO inject protocol min and max once this handler is being converted to micronaut
+    final Configs configs = new EnvConfigs();
+    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
   }
 
   @VisibleForTesting
@@ -87,6 +95,7 @@ public class DestinationDefinitionsHandler {
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardDestinationDefinition.getIcon()))
+          .protocolVersion(standardDestinationDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardDestinationDefinition))
           .releaseDate(getReleaseDate(standardDestinationDefinition))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardDestinationDefinition.getResourceRequirements()));
@@ -174,22 +183,16 @@ public class DestinationDefinitionsHandler {
     return getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(definitionId));
   }
 
-  public DestinationDefinitionRead createPrivateDestinationDefinition(final DestinationDefinitionCreate destinationDefCreate)
-      throws JsonValidationException, IOException {
-    final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(destinationDefCreate)
-        .withPublic(false)
-        .withCustom(false);
-    configRepository.writeStandardDestinationDefinition(destinationDefinition);
-
-    return buildDestinationDefinitionRead(destinationDefinition);
-  }
-
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate)
       throws IOException {
     final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(
         customDestinationDefinitionCreate.getDestinationDefinition())
             .withPublic(false)
             .withCustom(true);
+    if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
+      throw new UnsupportedProtocolVersionException(destinationDefinition.getProtocolVersion(), protocolVersionRange.min(),
+          protocolVersionRange.max());
+    }
     configRepository.writeCustomDestinationDefinition(destinationDefinition, customDestinationDefinitionCreate.getWorkspaceId());
 
     return buildDestinationDefinitionRead(destinationDefinition);
@@ -198,7 +201,11 @@ public class DestinationDefinitionsHandler {
   private StandardDestinationDefinition destinationDefinitionFromCreate(final DestinationDefinitionCreate destinationDefCreate) throws IOException {
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefCreate.getDockerRepository(),
-        destinationDefCreate.getDockerImageTag());
+        destinationDefCreate.getDockerImageTag(),
+        // Only custom connectors can be created via handlers.
+        true);
+
+    final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 
     final UUID id = uuidSupplier.get();
     final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
@@ -209,6 +216,7 @@ public class DestinationDefinitionsHandler {
         .withName(destinationDefCreate.getName())
         .withIcon(destinationDefCreate.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(false)
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
@@ -225,11 +233,16 @@ public class DestinationDefinitionsHandler {
     final boolean specNeedsUpdate = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag())
         || destinationDefinitionUpdate.getDockerImageTag().equals(DEV_IMAGE_TAG);
     final ConnectorSpecification spec = specNeedsUpdate
-        ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
+        ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), currentDestination.getCustom())
         : currentDestination.getSpec();
     final ActorDefinitionResourceRequirements updatedResourceReqs = destinationDefinitionUpdate.getResourceRequirements() != null
         ? ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
         : currentDestination.getResourceRequirements();
+
+    final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
+    if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
+      throw new UnsupportedProtocolVersionException(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
+    }
 
     final StandardDestinationDefinition newDestination = new StandardDestinationDefinition()
         .withDestinationDefinitionId(currentDestination.getDestinationDefinitionId())
@@ -238,7 +251,11 @@ public class DestinationDefinitionsHandler {
         .withName(currentDestination.getName())
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
         .withIcon(currentDestination.getIcon())
+        .withNormalizationRepository(currentDestination.getNormalizationRepository())
+        .withNormalizationTag(currentDestination.getNormalizationTag())
+        .withSupportsDbt(currentDestination.getSupportsDbt())
         .withSpec(spec)
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(currentDestination.getTombstone())
         .withPublic(currentDestination.getPublic())
         .withCustom(currentDestination.getCustom())
@@ -247,17 +264,8 @@ public class DestinationDefinitionsHandler {
         .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardDestinationDefinition(newDestination);
+    configRepository.clearUnsupportedProtocolVersionFlag(newDestination.getDestinationDefinitionId(), ActorType.DESTINATION, protocolVersionRange);
     return buildDestinationDefinitionRead(newDestination);
-  }
-
-  public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
-    final UUID definitionId = customDestinationDefinitionUpdate.getDestinationDefinition().getDestinationDefinitionId();
-    final UUID workspaceId = customDestinationDefinitionUpdate.getWorkspaceId();
-    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
-      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
-    }
-    return updateDestinationDefinition(customDestinationDefinitionUpdate.getDestinationDefinition());
   }
 
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
@@ -278,19 +286,9 @@ public class DestinationDefinitionsHandler {
     configRepository.writeStandardDestinationDefinition(persistedDestinationDefinition);
   }
 
-  public void deleteCustomDestinationDefinition(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
-    final UUID definitionId = destinationDefinitionIdWithWorkspaceId.getDestinationDefinitionId();
-    final UUID workspaceId = destinationDefinitionIdWithWorkspaceId.getWorkspaceId();
-    if (!configRepository.workspaceCanUseCustomDefinition(definitionId, workspaceId)) {
-      throw new IdNotFoundKnownException("Cannot find the requested definition with given id for this workspace", definitionId.toString());
-    }
-    deleteDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(definitionId));
-  }
-
-  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
+  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag, boolean isCustomConnector) throws IOException {
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
-    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName);
+    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName, isCustomConnector);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
   }
 

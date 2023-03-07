@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.tidb;
 
+import static com.mysql.cj.MysqlType.*;
 import static io.airbyte.db.jdbc.JdbcConstants.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,12 +20,17 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TiDBSourceOperations.class);
+  private static final Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
+      SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT,
+      FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP, TIME,
+      YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
   @Override
   public void setJsonField(ResultSet resultSet, int colIndex, ObjectNode json) throws SQLException {
@@ -103,7 +109,7 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
-      default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
+      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
     }
   }
 
@@ -138,12 +144,18 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
+  public boolean isCursorType(MysqlType type) {
+    return ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
+  @Override
   public JsonSchemaType getJsonType(MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
       // getFieldType}
-      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, MEDIUMINT, MEDIUMINT_UNSIGNED, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED -> JsonSchemaType.INTEGER;
+      case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case NULL -> JsonSchemaType.NULL;
       // BIT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link getFieldType}

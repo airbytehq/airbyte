@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.buffered_stream_consumer;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 
 @FunctionalInterface
 public interface CheckAndRemoveRecordWriter {

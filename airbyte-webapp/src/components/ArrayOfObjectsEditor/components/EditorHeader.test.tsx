@@ -1,11 +1,11 @@
-import { render } from "utils/testutils";
+import { render } from "test-utils/testutils";
 
 import { EditorHeader } from "./EditorHeader";
 
 describe("<ArrayOfObjectsEditor />", () => {
   let container: HTMLElement;
   describe("edit mode", () => {
-    test("it renders only relevant items for the mode", async () => {
+    it("renders only relevant items for the mode", async () => {
       const renderResult = await render(
         <EditorHeader
           mainTitle={<div data-testid="mainTitle">"This is the main title"</div>}
@@ -25,7 +25,7 @@ describe("<ArrayOfObjectsEditor />", () => {
     });
   });
   describe("readonly mode", () => {
-    test("it renders only relevant items for the mode", async () => {
+    it("renders only relevant items for the mode", async () => {
       const renderResult = await render(
         <EditorHeader
           mainTitle={<div data-testid="mainTitle">"This is the main title"</div>}

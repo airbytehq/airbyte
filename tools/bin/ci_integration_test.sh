@@ -135,6 +135,9 @@ write_logs() {
 echo "# $connector" >> $GITHUB_STEP_SUMMARY
 echo "" >> $GITHUB_STEP_SUMMARY
 
+# Cut the $GITHUB_STEP_SUMMARY with head if its larger than 1MB
+echo "$GITHUB_STEP_SUMMARY" | head -c 1048576 >> $GITHUB_STEP_SUMMARY
+
 # Copy command output to extract gradle scan link.
 run | tee build.out
 # return status of "run" command, not "tee"

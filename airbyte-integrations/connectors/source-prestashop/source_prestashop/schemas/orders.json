@@ -147,52 +147,50 @@
       "properties": {
         "order_rows": {
           "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "product_id": {
-                  "type": "string"
-                },
-                "product_attribute_id": {
-                  "type": "string"
-                },
-                "product_quantity": {
-                  "type": "string"
-                },
-                "product_name": {
-                  "type": "string"
-                },
-                "product_reference": {
-                  "type": "string"
-                },
-                "product_ean13": {
-                  "type": "string"
-                },
-                "product_isbn": {
-                  "type": "string"
-                },
-                "product_upc": {
-                  "type": "string"
-                },
-                "product_price": {
-                  "type": "string"
-                },
-                "id_customization": {
-                  "type": "string"
-                },
-                "unit_price_tax_incl": {
-                  "type": "string"
-                },
-                "unit_price_tax_excl": {
-                  "type": "string"
-                }
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "product_id": {
+                "type": "string"
+              },
+              "product_attribute_id": {
+                "type": "string"
+              },
+              "product_quantity": {
+                "type": "string"
+              },
+              "product_name": {
+                "type": "string"
+              },
+              "product_reference": {
+                "type": "string"
+              },
+              "product_ean13": {
+                "type": "string"
+              },
+              "product_isbn": {
+                "type": "string"
+              },
+              "product_upc": {
+                "type": "string"
+              },
+              "product_price": {
+                "type": "string"
+              },
+              "id_customization": {
+                "type": "string"
+              },
+              "unit_price_tax_incl": {
+                "type": "string"
+              },
+              "unit_price_tax_excl": {
+                "type": "string"
               }
             }
-          ]
+          }
         }
       }
     }

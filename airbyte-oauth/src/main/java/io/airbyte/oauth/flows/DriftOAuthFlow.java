@@ -25,6 +25,7 @@ import org.apache.http.client.utils.URIBuilder;
 public class DriftOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://driftapi.com/oauth2/token";
+  private static final String CODE = "code";
 
   public DriftOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -36,26 +37,27 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl, JsonNode inputOAuthConfiguration) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("dev.drift.com")
         .setPath("authorize")
-        .addParameter("response_type", "code")
+        .addParameter("response_type", CODE)
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
         .addParameter("state", getState());
     try {
       return builder.build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
-    if (queryParams.containsKey("code")) {
-      return (String) queryParams.get("code");
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
+    if (queryParams.containsKey(CODE)) {
+      return (String) queryParams.get(CODE);
     } else {
       throw new IOException("Undefined 'code' from consent redirected url.");
     }
@@ -67,16 +69,20 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)
-        .put("code", authCode)
+        .put(CODE, authCode)
         .put("grant_type", "authorization_code")
         .build();
   }
 
-  protected Map<String, Object> extractOAuthOutput(final JsonNode data, String accessTokenUrl) throws IOException {
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());

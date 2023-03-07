@@ -4,7 +4,8 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { LoadingButton, Input } from "components";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
 
 interface CreateWorkspaceFormProps {
   onSubmit: (values: { name: string }) => Promise<void>;
@@ -49,12 +50,12 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({ onSubmit }) =
         <CreationForm>
           <Field name="name">
             {({ field, meta }: FieldProps<string>) => (
-              <ClearInput {...field} autoFocus type="text" error={!!meta.error && meta.touched} />
+              <ClearInput {...field} type="text" error={!!meta.error && meta.touched} />
             )}
           </Field>
-          <LoadingButton type="submit" isLoading={isSubmitting} data-testid="workspaces.create">
+          <Button type="submit" isLoading={isSubmitting} data-testid="workspaces.create">
             <FormattedMessage id="workspaces.create" />
-          </LoadingButton>
+          </Button>
         </CreationForm>
       )}
     </Formik>

@@ -5,11 +5,14 @@
 package io.airbyte.config;
 
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -30,6 +33,7 @@ public interface Configs {
 
   // CORE
   // General
+
   /**
    * Distinguishes internal Airbyte deployments. Internal-use only.
    */
@@ -39,6 +43,16 @@ public interface Configs {
    * Defines the Airbyte deployment version.
    */
   AirbyteVersion getAirbyteVersion();
+
+  /**
+   * Defines the max supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMax();
+
+  /**
+   * Defines the min supported Airbyte Protocol Version
+   */
+  Version getAirbyteProtocolVersionMin();
 
   String getAirbyteVersionOrWarning();
 
@@ -70,7 +84,15 @@ public interface Configs {
    */
   Path getWorkspaceRoot();
 
+  /**
+   * Defines the URL to pull the remote connector catalog from.
+   *
+   * @return
+   */
+  Optional<URI> getRemoteConnectorCatalogUrl();
+
   // Docker Only
+
   /**
    * Defines the name of the Airbyte docker volume.
    */
@@ -90,6 +112,7 @@ public interface Configs {
   Path getLocalRoot();
 
   // Secrets
+
   /**
    * Defines the GCP Project to store secrets in. Alpha support.
    */
@@ -126,6 +149,7 @@ public interface Configs {
   String getVaultToken();
 
   // Database
+
   /**
    * Define the Jobs Database user.
    */
@@ -247,6 +271,7 @@ public interface Configs {
   String getWebappUrl();
 
   // Jobs
+
   /**
    * Define the number of attempts a sync will attempt before failing.
    */
@@ -319,6 +344,7 @@ public interface Configs {
   int getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable();
 
   // Jobs - Kube only
+
   /**
    * Define the check job container's minimum CPU request. Defaults to
    * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
@@ -332,16 +358,40 @@ public interface Configs {
   String getCheckJobMainContainerCpuLimit();
 
   /**
-   * Define the job container's minimum RAM usage. Defaults to
+   * Define the check job container's minimum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryRequest();
 
   /**
-   * Define the job container's maximum RAM usage. Defaults to
+   * Define the check job container's maximum RAM usage. Defaults to
    * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
    */
   String getCheckJobMainContainerMemoryLimit();
+
+  /**
+   * Define the normalization job container's minimum CPU request. Defaults to
+   * {@link #getJobMainContainerCpuRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuRequest();
+
+  /**
+   * Define the normalization job container's maximum CPU usage. Defaults to
+   * {@link #getJobMainContainerCpuLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerCpuLimit();
+
+  /**
+   * Define the normalization job container's minimum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryRequest()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryRequest();
+
+  /**
+   * Define the normalization job container's maximum RAM usage. Defaults to
+   * {@link #getJobMainContainerMemoryLimit()} if not set. Internal-use only.
+   */
+  String getNormalizationJobMainContainerMemoryLimit();
 
   /**
    * Define one or more Job pod tolerations. Tolerations are separated by ';'. Each toleration
@@ -354,6 +404,16 @@ public interface Configs {
    * job and as fallback in case job specific (spec, check, discover) node selectors are not defined.
    */
   Map<String, String> getJobKubeNodeSelectors();
+
+  /**
+   * Define an isolated kube node selectors, so we can run risky images in it.
+   */
+  Map<String, String> getIsolatedJobKubeNodeSelectors();
+
+  /**
+   * Define if we want to run custom connector related jobs in a separate node pool.
+   */
+  boolean getUseCustomKubeNodeSelector();
 
   /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
@@ -407,9 +467,39 @@ public interface Configs {
   String getJobKubeMainContainerImagePullSecret();
 
   /**
-   * Define the Job pod socat image.
+   * Define the Memory request for the Sidecar
+   */
+  String getSidecarMemoryRequest();
+
+  /**
+   * Define the Memory limit for the Sidecar
+   */
+  String getSidecarKubeMemoryLimit();
+
+  /**
+   * Define the CPU request for the Sidecar
+   */
+  String getSidecarKubeCpuRequest();
+
+  /**
+   * Define the CPU limit for the Sidecar
+   */
+  String getSidecarKubeCpuLimit();
+
+  /**
+   * Define the CPU request for the SOCAT Sidecar
    */
   String getJobKubeSocatImage();
+
+  /**
+   * Define the CPU limit for the SOCAT Sidecar
+   */
+  String getSocatSidecarKubeCpuLimit();
+
+  /**
+   * Define the Job pod socat image.
+   */
+  String getSocatSidecarKubeCpuRequest();
 
   /**
    * Define the Job pod busybox image.
@@ -427,6 +517,7 @@ public interface Configs {
   String getJobKubeNamespace();
 
   // Logging/Monitoring/Tracking
+
   /**
    * Define either S3, Minio or GCS as a logging backend. Kubernetes only. Multiple variables are
    * involved here. Please see {@link CloudStorageConfigs} for more info.
@@ -462,6 +553,12 @@ public interface Configs {
   String getDDDogStatsDPort();
 
   /**
+   * Set constant tags to be attached to all metrics. Useful for distinguishing between environments.
+   * Example: airbyte_instance:dev,k8s-cluster:aws-dev
+   */
+  List<String> getDDConstantTags();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();
@@ -479,6 +576,17 @@ public interface Configs {
 
   // APPLICATIONS
   // Worker
+
+  /**
+   * Define the header name used to authenticate from an Airbyte Worker to the Airbyte API
+   */
+  String getAirbyteApiAuthHeaderName();
+
+  /**
+   * Define the header value used to authenticate from an Airbyte Worker to the Airbyte API
+   */
+  String getAirbyteApiAuthHeaderValue();
+
   /**
    * Define the maximum number of workers each Airbyte Worker container supports. Multiple variables
    * are involved here. Please see {@link MaxWorkersConfig} for more info.
@@ -511,13 +619,48 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
+  /**
+   * Define if the worker should run notification workflows. Defaults to true. Internal-use only.
+   */
+  public boolean shouldRunNotifyWorkflows();
+
+  // Worker - Data Plane configs
+
+  /**
+   * Define a set of Temporal Task Queue names for which the worker should register handlers for to
+   * process tasks related to syncing data. - For workers within Airbyte's Control Plane, this returns
+   * the Control Plane's default task queue. - For workers within a Data Plane, this returns only task
+   * queue names specific to that Data Plane. Internal-use only.
+   */
+  Set<String> getDataSyncTaskQueues();
+
+  /**
+   * Return the Control Plane endpoint that workers in a Data Plane will hit for authentication. This
+   * is separate from the actual endpoint being hit for application logic. Internal-use only.
+   */
+  String getControlPlaneAuthEndpoint();
+
+  /**
+   * Return the service account a data plane uses to authenticate with a control plane. Internal-use
+   * only.
+   */
+  String getDataPlaneServiceAccountCredentialsPath();
+
+  /**
+   * Return the service account email a data plane uses to authenticate with a control plane.
+   * Internal-use only.
+   */
+  String getDataPlaneServiceAccountEmail();
+
   // Worker - Kube only
+
   /**
    * Define the local ports the Airbyte Worker pod uses to connect to the various Job pods.
    */
   Set<Integer> getTemporalWorkerPorts();
 
   // Container Orchestrator
+
   /**
    * Define if Airbyte should use the container orchestrator. Internal-use only.
    */
@@ -583,6 +726,8 @@ public interface Configs {
    * Get number of attempts of the non long running activities
    */
   int getActivityNumberOfAttempt();
+
+  boolean getAutoDetectSchema();
 
   enum TrackingStrategy {
     SEGMENT,

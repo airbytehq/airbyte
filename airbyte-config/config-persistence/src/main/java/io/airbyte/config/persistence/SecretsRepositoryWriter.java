@@ -7,12 +7,10 @@ package io.airbyte.config.persistence;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.config.persistence.split_secrets.SecretCoordinateToPayload;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -22,13 +20,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This class takes secrets as arguments but never returns a secrets as return values (even the ones
@@ -82,7 +75,8 @@ public class SecretsRepositoryWriter {
         source.getWorkspaceId(),
         previousSourceConnection,
         source.getConfiguration(),
-        connectorSpecification);
+        connectorSpecification.getConnectionSpecification(),
+        source.getTombstone() == null || !source.getTombstone());
     final SourceConnection partialSource = Jsons.clone(source).withConfiguration(partialConfig);
 
     configRepository.writeSourceConnectionNoSecrets(partialSource);
@@ -105,7 +99,8 @@ public class SecretsRepositoryWriter {
         destination.getWorkspaceId(),
         previousDestinationConnection,
         destination.getConfiguration(),
-        connectorSpecification);
+        connectorSpecification.getConnectionSpecification(),
+        destination.getTombstone() == null || !destination.getTombstone());
     final DestinationConnection partialDestination = Jsons.clone(destination).withConfiguration(partialConfig);
 
     configRepository.writeDestinationConnectionNoSecrets(partialDestination);
@@ -120,6 +115,7 @@ public class SecretsRepositoryWriter {
    * @param spec connector specification
    * @return partial config
    */
+  @SuppressWarnings("unused")
   private JsonNode statefulSplitSecrets(final UUID workspaceId, final JsonNode fullConfig, final ConnectorSpecification spec) {
     return splitSecretConfig(workspaceId, fullConfig, spec, longLivedSecretPersistence);
   }
@@ -137,39 +133,39 @@ public class SecretsRepositoryWriter {
    * @param oldConfig old full config
    * @param fullConfig new full config
    * @param spec connector specification
+   * @param validate should the spec be validated, tombstone entries should not be validated
    * @return partial config
    */
   private JsonNode statefulUpdateSecrets(final UUID workspaceId,
                                          final Optional<JsonNode> oldConfig,
                                          final JsonNode fullConfig,
-                                         final ConnectorSpecification spec)
+                                         final JsonNode spec,
+                                         final boolean validate)
       throws JsonValidationException {
-    validator.ensure(spec.getConnectionSpecification(), fullConfig);
+    if (validate) {
+      validator.ensure(spec, fullConfig);
+    }
 
-    if (longLivedSecretPersistence.isPresent()) {
-      if (oldConfig.isPresent()) {
-        final var splitSecretConfig = SecretsHelpers.splitAndUpdateConfig(
-            workspaceId,
-            oldConfig.get(),
-            fullConfig,
-            spec,
-            longLivedSecretPersistence.get());
-
-        splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-        return splitSecretConfig.getPartialConfig();
-      } else {
-        final var splitSecretConfig = SecretsHelpers.splitConfig(
-            workspaceId,
-            fullConfig,
-            spec);
-
-        splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
-
-        return splitSecretConfig.getPartialConfig();
-      }
-    } else {
+    if (longLivedSecretPersistence.isEmpty()) {
       return fullConfig;
     }
+
+    final SplitSecretConfig splitSecretConfig;
+    if (oldConfig.isPresent()) {
+      splitSecretConfig = SecretsHelpers.splitAndUpdateConfig(
+          workspaceId,
+          oldConfig.get(),
+          fullConfig,
+          spec,
+          longLivedSecretPersistence.get());
+    } else {
+      splitSecretConfig = SecretsHelpers.splitConfig(
+          workspaceId,
+          fullConfig,
+          spec);
+    }
+    splitSecretConfig.getCoordinateToPayload().forEach(longLivedSecretPersistence.get()::write);
+    return splitSecretConfig.getPartialConfig();
   }
 
   /**
@@ -186,79 +182,11 @@ public class SecretsRepositoryWriter {
                                      final ConnectorSpecification spec,
                                      final Optional<SecretPersistence> secretPersistence) {
     if (secretPersistence.isPresent()) {
-      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(workspaceId, fullConfig, spec);
+      final SplitSecretConfig splitSecretConfig = SecretsHelpers.splitConfig(workspaceId, fullConfig, spec.getConnectionSpecification());
       splitSecretConfig.getCoordinateToPayload().forEach(secretPersistence.get()::write);
       return splitSecretConfig.getPartialConfig();
     } else {
       return fullConfig;
-    }
-  }
-
-  public void replaceAllConfigs(final Map<AirbyteConfig, Stream<?>> configs, final boolean dryRun) throws IOException {
-    if (longLivedSecretPersistence.isPresent()) {
-      final var augmentedMap = new HashMap<>(configs);
-
-      // get all source defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardSourceDefinition> sourceDefs =
-          (List<StandardSourceDefinition>) augmentedMap.get(ConfigSchema.STANDARD_SOURCE_DEFINITION).collect(Collectors.toList());
-      // restore data in the map that gets consumed downstream.
-      augmentedMap.put(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceDefs.stream());
-      final Map<UUID, ConnectorSpecification> sourceDefIdToSpec = sourceDefs
-          .stream()
-          .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getSpec));
-
-      // get all destination defs so that we can use their specs when storing secrets.
-      @SuppressWarnings("unchecked")
-      final List<StandardDestinationDefinition> destinationDefs =
-          (List<StandardDestinationDefinition>) augmentedMap.get(ConfigSchema.STANDARD_DESTINATION_DEFINITION).collect(Collectors.toList());
-      augmentedMap.put(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destinationDefs.stream());
-      final Map<UUID, ConnectorSpecification> destinationDefIdToSpec = destinationDefs
-          .stream()
-          .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getSpec));
-
-      if (augmentedMap.containsKey(ConfigSchema.SOURCE_CONNECTION)) {
-        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.SOURCE_CONNECTION)
-            .map(config -> {
-              final SourceConnection source = (SourceConnection) config;
-
-              if (!sourceDefIdToSpec.containsKey(source.getSourceDefinitionId())) {
-                throw new RuntimeException(new ConfigNotFoundException(ConfigSchema.STANDARD_SOURCE_DEFINITION, source.getSourceDefinitionId()));
-              }
-
-              final var partialConfig = statefulSplitSecrets(
-                  source.getWorkspaceId(),
-                  source.getConfiguration(),
-                  sourceDefIdToSpec.get(source.getSourceDefinitionId()));
-
-              return source.withConfiguration(partialConfig);
-            });
-        augmentedMap.put(ConfigSchema.SOURCE_CONNECTION, augmentedValue);
-      }
-
-      if (augmentedMap.containsKey(ConfigSchema.DESTINATION_CONNECTION)) {
-        final Stream<?> augmentedValue = augmentedMap.get(ConfigSchema.DESTINATION_CONNECTION)
-            .map(config -> {
-              final DestinationConnection destination = (DestinationConnection) config;
-
-              if (!destinationDefIdToSpec.containsKey(destination.getDestinationDefinitionId())) {
-                throw new RuntimeException(
-                    new ConfigNotFoundException(ConfigSchema.STANDARD_DESTINATION_DEFINITION, destination.getDestinationDefinitionId()));
-              }
-
-              final var partialConfig = statefulSplitSecrets(
-                  destination.getWorkspaceId(),
-                  destination.getConfiguration(),
-                  destinationDefIdToSpec.get(destination.getDestinationDefinitionId()));
-
-              return destination.withConfiguration(partialConfig);
-            });
-        augmentedMap.put(ConfigSchema.DESTINATION_CONNECTION, augmentedValue);
-      }
-
-      configRepository.replaceAllConfigsNoSecrets(augmentedMap, dryRun);
-    } else {
-      configRepository.replaceAllConfigsNoSecrets(configs, dryRun);
     }
   }
 
@@ -315,6 +243,39 @@ public class SecretsRepositoryWriter {
     try {
       return Optional.of(configRepository.getWorkspaceServiceAccountNoSecrets(workspaceId));
     } catch (final ConfigNotFoundException e) {
+      return Optional.empty();
+    }
+  }
+
+  public void writeWorkspace(final StandardWorkspace workspace)
+      throws JsonValidationException, IOException {
+    // Get the schema for the webhook config so we can split out any secret fields.
+    final JsonNode webhookConfigSchema = Jsons.jsonNodeFromFile(ConfigSchema.WORKSPACE_WEBHOOK_OPERATION_CONFIGS.getConfigSchemaFile());
+    // Check if there's an existing config, so we can re-use the secret coordinates.
+    final var previousWorkspace = getWorkspaceIfExists(workspace.getWorkspaceId(), false);
+    Optional<JsonNode> previousWebhookConfigs = Optional.empty();
+    if (previousWorkspace.isPresent() && previousWorkspace.get().getWebhookOperationConfigs() != null) {
+      previousWebhookConfigs = Optional.of(previousWorkspace.get().getWebhookOperationConfigs());
+    }
+    // Split out the secrets from the webhook config.
+    final JsonNode partialConfig = workspace.getWebhookOperationConfigs() == null ? null
+        : statefulUpdateSecrets(
+            workspace.getWorkspaceId(),
+            previousWebhookConfigs,
+            workspace.getWebhookOperationConfigs(),
+            webhookConfigSchema, true);
+    final StandardWorkspace partialWorkspace = Jsons.clone(workspace);
+    if (partialConfig != null) {
+      partialWorkspace.withWebhookOperationConfigs(partialConfig);
+    }
+    configRepository.writeStandardWorkspaceNoSecrets(partialWorkspace);
+  }
+
+  private Optional<StandardWorkspace> getWorkspaceIfExists(final UUID workspaceId, final boolean includeTombstone) {
+    try {
+      final StandardWorkspace existingWorkspace = configRepository.getStandardWorkspaceNoSecrets(workspaceId, includeTombstone);
+      return existingWorkspace == null ? Optional.empty() : Optional.of(existingWorkspace);
+    } catch (final JsonValidationException | IOException | ConfigNotFoundException e) {
       return Optional.empty();
     }
   }

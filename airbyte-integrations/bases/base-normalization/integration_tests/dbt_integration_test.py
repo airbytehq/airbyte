@@ -27,7 +27,7 @@ NORMALIZATION_TEST_MSSQL_DB_PORT = "NORMALIZATION_TEST_MSSQL_DB_PORT"
 NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
-NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
+NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
 
 
 class DbtIntegrationTest(object):
@@ -56,6 +56,8 @@ class DbtIntegrationTest(object):
             self.setup_mssql_db()
         if DestinationType.CLICKHOUSE.value in destinations_to_test:
             self.setup_clickhouse_db()
+        if DestinationType.TIDB.value in destinations_to_test:
+            self.setup_tidb_db()
 
     def setup_postgres_db(self):
         start_db = True
@@ -221,28 +223,20 @@ class DbtIntegrationTest(object):
 
     def setup_clickhouse_db(self):
         """
-        ClickHouse official JDBC driver use HTTP port 8123, while Python ClickHouse
-        driver uses native port 9000, so we need to open both ports for destination
-        connector and dbt container respectively.
+        ClickHouse official JDBC driver uses HTTP port 8123.
 
         Ref: https://altinity.com/blog/2019/3/15/clickhouse-networking-part-1
         """
         start_db = True
         port = 8123
-        tcp_port = 9000
         if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT):
             port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT))
             start_db = False
-        if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT):
-            tcp_port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT))
-            start_db = False
         if start_db:
             port = self.find_free_port()
-            tcp_port = self.find_free_port()
         config = {
             "host": "localhost",
             "port": port,
-            "tcp-port": tcp_port,
             "database": self.target_schema,
             "username": "default",
             "password": "",
@@ -259,8 +253,6 @@ class DbtIntegrationTest(object):
                 f"{self.container_prefix}_clickhouse",
                 "--ulimit",
                 "nofile=262144:262144",
-                "-p",
-                f"{config['tcp-port']}:9000",  # Python clickhouse driver use native port
                 "-p",
                 f"{config['port']}:8123",  # clickhouse JDBC driver use HTTP port
                 "-d",
@@ -291,6 +283,59 @@ class DbtIntegrationTest(object):
         if not os.path.exists("../secrets"):
             os.makedirs("../secrets")
         with open("../secrets/clickhouse.json", "w") as fh:
+            fh.write(json.dumps(config))
+
+    def setup_tidb_db(self):
+        start_db = True
+        if os.getenv(NORMALIZATION_TEST_TIDB_DB_PORT):
+            port = int(os.getenv(NORMALIZATION_TEST_TIDB_DB_PORT))
+            start_db = False
+        else:
+            port = self.find_free_port()
+        config = {
+            "host": "127.0.0.1",
+            "port": port,
+            "database": self.target_schema,
+            "schema": self.target_schema,
+            "username": "root",
+            "password": "",
+            "ssl": False,
+        }
+        if start_db:
+            self.db_names.append("tidb")
+            print("Starting tidb container for tests")
+            commands = [
+                "docker",
+                "run",
+                "--rm",
+                "--name",
+                f"{self.container_prefix}_tidb",
+                "-p",
+                f"{config['port']}:4000",
+                "-d",
+                "pingcap/tidb:v5.4.0",
+            ]
+            print("Executing: ", " ".join(commands))
+            subprocess.call(commands)
+            print("....Waiting for TiDB to start...15 sec")
+            time.sleep(15)
+        command_create_db = [
+            "docker",
+            "run",
+            "--rm",
+            "--link",
+            f"{self.container_prefix}_tidb:tidb",
+            "arey/mysql-client",
+            "--host=tidb",
+            "--user=root",
+            "--port=4000",
+            f"--execute=CREATE DATABASE IF NOT EXISTS {self.target_schema}",
+        ]
+        print("Executing: ", " ".join(command_create_db))
+        subprocess.call(command_create_db)
+        if not os.path.exists("../secrets"):
+            os.makedirs("../secrets")
+        with open("../secrets/tidb.json", "w") as fh:
             fh.write(json.dumps(config))
 
     @staticmethod
@@ -396,6 +441,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-snowflake:dev"
         elif DestinationType.REDSHIFT.value == destination_type.value:
             return "airbyte/normalization-redshift:dev"
+        elif DestinationType.TIDB.value == destination_type.value:
+            return "airbyte/normalization-tidb:dev"
         else:
             return "airbyte/normalization:dev"
 
@@ -643,7 +690,7 @@ class DbtIntegrationTest(object):
             schemas_to_remove[destination.value] = []
 
             # based on test_type select path to source files
-            if test_type == "ephemeral":
+            if test_type == "ephemeral" or test_type == "test_reset_scd_overwrite":
                 if not tmp_folders:
                     raise TypeError("`tmp_folders` arg is not provided.")
                 for folder in tmp_folders:

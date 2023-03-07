@@ -2,52 +2,62 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class DeclarativeStream(Stream):
+@dataclass
+class DeclarativeStream(Stream, JsonSchemaMixin):
     """
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
+
+    Attributes:
+        name (str): stream name
+        primary_key (Optional[Union[str, List[str], List[List[str]]]]): the primary key of the stream
+        schema_loader (SchemaLoader): The schema loader
+        retriever (Retriever): The retriever
+        config (Config): The user-provided configuration as specified by the source's spec
+        stream_cursor_field (Optional[List[str]]): The cursor field
+        transformations (List[RecordTransformation]): A list of transformations to be applied to each output record in the
+        stream. Transformations are applied in the order in which they are defined.
+        checkpoint_interval (Optional[int]): How often the stream will checkpoint state (i.e: emit a STATE message)
     """
 
-    def __init__(
-        self,
-        name: str,
-        primary_key,
-        schema_loader: SchemaLoader,
-        retriever: Retriever,
-        cursor_field: Optional[List[str]] = None,
-        transformations: List[RecordTransformation] = None,
-        checkpoint_interval: Optional[int] = None,
-    ):
-        """
+    retriever: Retriever
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+    name: str
+    primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    schema_loader: Optional[SchemaLoader] = None
+    _name: str = field(init=False, repr=False, default="")
+    _primary_key: str = field(init=False, repr=False, default="")
+    _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
+    stream_cursor_field: Optional[Union[List[str], str]] = None
+    transformations: List[RecordTransformation] = None
+    checkpoint_interval: Optional[int] = None
 
-        :param name: stream name
-        :param primary_key: the primary key of the stream
-        :param schema_loader:
-        :param retriever:
-        :param cursor_field:
-        :param transformations: A list of transformations to be applied to each output record in the stream. Transformations are applied
-        in the order in which they are defined.
-        """
-        self._name = name
-        self._primary_key = primary_key
-        self._cursor_field = cursor_field or []
-        self._schema_loader = schema_loader
-        self._retriever = retriever
-        self._transformations = transformations or []
-        self._checkpoint_interval = checkpoint_interval
+    def __post_init__(self, options: Mapping[str, Any]):
+        self.stream_cursor_field = self.stream_cursor_field or []
+        self.transformations = self.transformations or []
+        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, options=options)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         return self._primary_key
+
+    @primary_key.setter
+    def primary_key(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._primary_key = value
 
     @property
     def name(self) -> str:
@@ -55,6 +65,11 @@ class DeclarativeStream(Stream):
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
         """
         return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._name = value
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -68,16 +83,16 @@ class DeclarativeStream(Stream):
         ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
         created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
         """
-        return self._checkpoint_interval
+        return self.checkpoint_interval
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._retriever.state
+        return self.retriever.state
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._retriever.state = value
+        self.retriever.state = value
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         return self.state
@@ -88,7 +103,7 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        return self._cursor_field
+        return self.stream_cursor_field
 
     def read_records(
         self,
@@ -97,13 +112,13 @@ class DeclarativeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in self._retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            yield self._apply_transformations(record)
+        for record in self.retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            yield self._apply_transformations(record, self.config, stream_slice)
 
-    def _apply_transformations(self, record: Mapping[str, Any]):
+    def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
-        for transformation in self._transformations:
-            output_record = transformation.transform(record)
+        for transformation in self.transformations:
+            output_record = transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
         return output_record
 
@@ -114,7 +129,6 @@ class DeclarativeStream(Stream):
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
@@ -129,4 +143,4 @@ class DeclarativeStream(Stream):
         :return:
         """
         # this is not passing the cursor field because it is known at init time
-        return self._retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)
+        return self.retriever.stream_slices(sync_mode=sync_mode, stream_state=stream_state)

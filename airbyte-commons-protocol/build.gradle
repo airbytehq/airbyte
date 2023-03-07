@@ -1,0 +1,11 @@
+dependencies {
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+    implementation libs.bundles.micronaut.annotation
+    testImplementation libs.bundles.micronaut.test
+
+    implementation project(':airbyte-protocol:protocol-models')
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

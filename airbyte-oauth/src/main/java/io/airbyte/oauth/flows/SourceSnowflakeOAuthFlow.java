@@ -45,15 +45,25 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
                                     JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
-      return new URIBuilder(String.format(AUTHORIZE_URL, extractUrl(inputOAuthConfiguration)))
+      String consentUrl = new URIBuilder(String.format(AUTHORIZE_URL, extractUrl(inputOAuthConfiguration)))
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
           .addParameter("state", getState())
           .build().toString();
+      String providedRole = extractRole(inputOAuthConfiguration);
+      return providedRole.isEmpty()
+          ? consentUrl
+          : getConsentUrlWithScopeRole(consentUrl, providedRole);
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
+  }
+
+  private static String getConsentUrlWithScopeRole(String consentUrl, String providedRole) throws URISyntaxException {
+    return new URIBuilder(consentUrl)
+        .addParameter("scope", "session:role:" + providedRole)
+        .build().toString();
   }
 
   @Override
@@ -139,6 +149,11 @@ public class SourceSnowflakeOAuthFlow extends BaseOAuth2Flow {
   private String extractUrl(JsonNode inputOAuthConfiguration) {
     var url = inputOAuthConfiguration.get("host");
     return url == null ? "snowflakecomputing.com" : url.asText();
+  }
+
+  private String extractRole(JsonNode inputOAuthConfiguration) {
+    var role = inputOAuthConfiguration.get("role");
+    return role == null ? "" : role.asText();
   }
 
 }

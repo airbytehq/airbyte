@@ -1,17 +1,79 @@
-{
-  "customers": {
-    "date_modified": "2021-08-11T15:18:55Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2021-08-11T15:18:55Z"
+      },
+      "stream_descriptor": {
+        "name": "customers"
+      }
+    }
   },
-  "orders": {
-    "date_modified": "2021-08-16T21:09:10+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2021-08-16T21:09:10+00:00"
+      },
+      "stream_descriptor": {
+        "name": "orders"
+      }
+    }
   },
-  "transactions": {
-    "id": 0
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 0
+      },
+      "stream_descriptor": {
+        "name": "transactions"
+      }
+    }
   },
-  "pages": {
-    "id": 4
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 4
+      },
+      "stream_descriptor": {
+        "name": "pages"
+      }
+    }
   },
-  "products": {
-    "date_modified": "2022-01-10T00:17:08+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2022-01-10T00:17:08+00:00"
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2022-01-10T00:17:08+00:00"
+      },
+      "stream_descriptor": {
+        "name": "channels"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "store_id": 0
+      },
+      "stream_descriptor": {
+        "name": "store"
+      }
+    }
   }
-}
+]

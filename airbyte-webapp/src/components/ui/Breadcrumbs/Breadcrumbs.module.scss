@@ -1,0 +1,18 @@
+@use "scss/colors";
+
+.container {
+  font-weight: normal;
+  cursor: default;
+}
+
+.item {
+  display: inline-block;
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.unlinked {
+  font-weight: bold;
+}

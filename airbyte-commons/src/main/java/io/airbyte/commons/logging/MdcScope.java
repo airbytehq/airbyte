@@ -12,7 +12,7 @@ import org.slf4j.MDC;
 
 /**
  * This class is an autoClosable class that will add some specific values into the log MDC. When
- * being close, it will restore the orginal MDC. It is advise to use it like that:
+ * being close, it will restore the original MDC. It is advised to use it like that:
  *
  * <pre>
  *   <code>
@@ -35,8 +35,7 @@ public class MdcScope implements AutoCloseable {
   public MdcScope(final Map<String, String> keyValuesToAdd) {
     originalContextMap = MDC.getCopyOfContextMap();
 
-    keyValuesToAdd.forEach(
-        (key, value) -> MDC.put(key, value));
+    keyValuesToAdd.forEach(MDC::put);
   }
 
   @Override

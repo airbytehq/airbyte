@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "template": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["string", "null"]
+        },
+        "preview_url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "completed_at": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["id"]
+}

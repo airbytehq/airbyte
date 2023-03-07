@@ -1,10 +1,17 @@
 $transition: 0.3s;
+$transition-out: $transition ease-out;
 
 $border-thin: 1px;
 $border-thick: 2px;
 
-$border-radius-sm: 8px;
-$border-radius-md: 10px;
+$border-radius-2xs: 3px;
+$border-radius-xs: 4px;
+$border-radius-sm: 6px;
+$border-radius-md: 8px;
+$border-radius-lg: 10px;
+$border-radius-xl: 12px;
+$border-radius-2xl: 15px;
+$border-radius-pill: 500px;
 
 $spacing-xs: 3px;
 $spacing-sm: 5px;
@@ -13,8 +20,11 @@ $spacing-lg: 15px;
 $spacing-xl: 20px;
 $spacing-2xl: 40px;
 $spacing-page-bottom: 150px;
+$main-page-content-min-width: 960px;
 
 $width-size-menu: 93px;
+$width-wide-menu: 200px;
+$width-max-notification: 600px;
 
 $width-modal-sm: 492px;
 $width-modal-md: 585px;

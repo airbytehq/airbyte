@@ -1,0 +1,113 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "product_id": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "price": {
+      "type": ["null", "number"],
+      "format": "float"
+    },
+    "sku": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "integer"]
+    },
+    "inventory_policy": {
+      "type": ["null", "string"]
+    },
+    "compare_at_price": {
+      "type": ["null", "string"]
+    },
+    "fulfillment_service": {
+      "type": ["null", "string"]
+    },
+    "inventory_management": {
+      "type": ["null", "string"]
+    },
+    "option1": {
+      "type": ["null", "string"]
+    },
+    "option2": {
+      "type": ["null", "string"]
+    },
+    "option3": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "taxable": {
+      "type": ["null", "boolean"]
+    },
+    "barcode": {
+      "type": ["null", "string"]
+    },
+    "grams": {
+      "type": ["null", "integer"]
+    },
+    "image_id": {
+      "type": ["null", "integer"]
+    },
+    "weight": {
+      "type": ["null", "number"],
+      "format": "float"
+    },
+    "weight_unit": {
+      "type": ["null", "string"]
+    },
+    "inventory_item_id": {
+      "type": ["null", "integer"]
+    },
+    "inventory_quantity": {
+      "type": ["null", "integer"]
+    },
+    "old_inventory_quantity": {
+      "type": ["null", "integer"]
+    },
+    "presentment_prices": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "price": {
+            "type": ["null", "object"],
+            "properties": {
+              "amount": {
+                "type": ["null", "number"]
+              },
+              "currency_code": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "compare_at_price": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "requires_shipping": {
+      "type": ["null", "boolean"]
+    },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

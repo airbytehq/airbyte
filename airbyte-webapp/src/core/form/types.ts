@@ -1,49 +1,55 @@
-import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+import { JSONSchema7TypeName } from "json-schema";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
-interface FormItem {
+/**
+ * When turning the JSON schema into `FormBlock`s,
+ * some often used props are copied over for easy access.
+ */
+type FormRelevantJSONSchema = Pick<
+  AirbyteJSONSchema,
+  | "default"
+  | "examples"
+  | "description"
+  | "pattern"
+  | "order"
+  | "const"
+  | "title"
+  | "airbyte_hidden"
+  | "enum"
+  | "format"
+>;
+
+interface FormItem extends FormRelevantJSONSchema {
   fieldKey: string;
   path: string;
   isRequired: boolean;
-  order?: number;
-  title?: string;
-  description?: string;
-
-  airbyte_hidden?: boolean;
 }
 
-export type FormBaseItem = {
+export interface FormBaseItem extends FormItem {
   _type: "formItem";
   type: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
-} & FormItem &
-  AirbyteJSONSchema;
+}
 
-type FormGroupItem = {
+export interface FormGroupItem extends FormItem {
   _type: "formGroup";
   jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
-  isLoading?: boolean;
-  hasOauth?: boolean;
-  default?: JSONSchema7Type;
-  examples?: JSONSchema7Type;
-} & FormItem;
+}
 
-type FormConditionItem = {
+export interface FormConditionItem extends FormItem {
   _type: "formCondition";
   conditions: Record<string, FormGroupItem | FormBaseItem>;
-} & FormItem;
+}
 
-type FormObjectArrayItem = {
+export interface FormObjectArrayItem extends FormItem {
   _type: "objectArray";
   properties: FormBlock;
-} & FormItem;
+}
 
-type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
-
-export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem };
+export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WidgetConfig = Record<string, any>;

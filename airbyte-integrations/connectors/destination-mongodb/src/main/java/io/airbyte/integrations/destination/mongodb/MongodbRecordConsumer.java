@@ -13,10 +13,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -65,6 +65,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
   @Override
   protected void acceptTracked(final AirbyteMessage message) {
     if (message.getType() == AirbyteMessage.Type.STATE) {
+      outputRecordCollector.accept(message);
       lastStateMessage = message;
     } else if (message.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = message.getRecord();
@@ -117,7 +118,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     try {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes(
+      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.sha256Hex(Jsons.toBytes(recordMessage.getData())).getBytes(
           Charset.defaultCharset())).toString();
       final var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));

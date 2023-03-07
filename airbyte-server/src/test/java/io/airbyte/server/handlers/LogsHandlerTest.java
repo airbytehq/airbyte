@@ -21,29 +21,27 @@ import org.junit.jupiter.api.Test;
 class LogsHandlerTest {
 
   @Test
-  public void testServerLogs() {
+  void testServerLogs() {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
     when(configs.getLogConfigs()).thenReturn(LogConfigs.EMPTY);
 
     final File expected = Path.of(String.format("/workspace/server/logs/%s", LogClientSingleton.LOG_FILENAME)).toFile();
-    final File actual = new LogsHandler().getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),
-        configs.getLogConfigs(), new LogsRequestBody().logType(LogType.SERVER));
+    final File actual = new LogsHandler(configs).getLogs(new LogsRequestBody().logType(LogType.SERVER));
 
     assertEquals(expected, actual);
   }
 
   @Test
-  public void testSchedulerLogs() {
+  void testSchedulerLogs() {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
     when(configs.getLogConfigs()).thenReturn(LogConfigs.EMPTY);
 
     final File expected = Path.of(String.format("/workspace/scheduler/logs/%s", LogClientSingleton.LOG_FILENAME)).toFile();
-    final File actual = new LogsHandler().getLogs(configs.getWorkspaceRoot(), configs.getWorkerEnvironment(),
-        configs.getLogConfigs(), new LogsRequestBody().logType(LogType.SCHEDULER));
+    final File actual = new LogsHandler(configs).getLogs(new LogsRequestBody().logType(LogType.SCHEDULER));
 
     assertEquals(expected, actual);
   }

@@ -3,40 +3,40 @@
   "type": "object",
   "properties": {
     "billable": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "note": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "timer_running": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "agent_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "ticket_id": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "company_id": {
       "type": ["integer", "null"]
     },
     "time_spent": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "executed_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "start_time": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

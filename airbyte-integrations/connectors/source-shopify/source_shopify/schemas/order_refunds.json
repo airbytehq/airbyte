@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "order_id": {
       "type": ["null", "integer"]

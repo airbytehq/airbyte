@@ -23,6 +23,7 @@ tests:
       cursor_paths:
         contacts: ["updated_at"]
         expenses_clients: ["to"]
+      timeout_seconds: 2400
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

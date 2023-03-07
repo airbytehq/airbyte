@@ -1,0 +1,79 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["results"]
+  base_requester:
+    url_base: "https://newsdata.io/api/1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-ACCESS-KEY"
+      api_token: "{{ config['api_key'] }}"
+  base_retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.base_retriever)"
+      requester:
+        $ref: "*ref(definitions.base_requester)"
+  cursor_paginator:
+    type: "DefaultPaginator"
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response['nextPage'] }}"
+      page_size: 10
+      # TODO: make page_size dynamic, depending on free or paid tier. See https://github.com/airbytehq/airbyte/issues/18783
+    page_token_option:
+      field_name: "page"
+      inject_into: "request_parameter"
+    page_size_option: # This is useless, only there because it is required, but page sizes are managed automatically by API subscription type
+      field_name: "X-Pagination-Page-Size"
+      inject_into: "header"
+    url_base: "*ref(definitions.base_requester.url_base)"
+  latest_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "latest"
+      primary_key: "link"
+      path: "/news"
+    retriever:
+      $ref: "*ref(definitions.base_retriever)"
+      requester:
+        $ref: "*ref(definitions.base_requester)"
+        request_options_provider:
+          request_parameters:
+            country: "{{ ','.join(config['country']) }}"
+            language: "{{ ','.join(config['language']) }}"
+            category: "{{ ','.join(config['category']) }}"
+            q: "{{ config['query'] | urlencode }}"
+            qInTitle: "{{ config['query_in_title'] | urlencode }}"
+            domain: "{{ ','.join(config['domain']) }}"
+      paginator:
+        $ref: "*ref(definitions.cursor_paginator)"
+  sources_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "sources"
+      primary_key: "id"
+      path: "/sources"
+    retriever:
+      $ref: "*ref(definitions.base_retriever)"
+      requester:
+        $ref: "*ref(definitions.base_requester)"
+        request_options_provider:
+          request_parameters:
+            country: "{{ config['country'][0] }}"
+            language: "{{ config['language'][0] }}"
+            category: "{{ config['category'][0] }}"
+
+streams:
+  - "*ref(definitions.latest_stream)"
+  - "*ref(definitions.sources_stream)"
+
+check:
+  stream_names:
+    - "latest"
+    - "sources"

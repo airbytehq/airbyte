@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response success="true">
+  <output>
+    <accounts seqNo="1">
+      <account id="2" code="" name="A" description="asas" timeStratum="" displayAs="NUMBER" accountTypeCode="" decimalPrecision="0" isAssumption="0" suppressZeroes="1" isDefaultRoot="1" shortName="" isIntercompany="0" balanceType="" isLinked="0" owningSheetId="" isSystem="0" isImportable="0" dataEntryType="" planBy="" actualsBy="" timeRollup="" timeWeightAcctId="" levelDimRollup="" levelDimWeightAcctId="" rollupText="" startExpanded="1" hasSalaryDetail="" dataPrivacy="" isBreakbackEligible="" subType="" enableActuals="" isGroup="1" hasFormula="0">
+        <account id="3" code="B" name="BB" description="zxc" timeStratum="month" displayAs="CURRENCY" accountTypeCode="A" decimalPrecision="0" isAssumption="0" suppressZeroes="1" isDefaultRoot="1" shortName="" isIntercompany="0" exchangeRateType="E" balanceType="DEBIT" isLinked="0" owningSheetId="" isSystem="0" isImportable="0" dataEntryType="" planBy="BALANCE" actualsBy="BALANCE" timeRollup="LAST" timeWeightAcctId="" levelDimRollup="SUM" levelDimWeightAcctId="" rollupText="" startExpanded="1" hasSalaryDetail="" dataPrivacy="PUBLIC_ALL" isBreakbackEligible="" subType="CUMULATIVE" enableActuals="1" isGroup="0" hasFormula="0">
+          <account id="4" code="C" name="CC" description="vnbm" timeStratum="month" displayAs="CURRENCY" accountTypeCode="B" decimalPrecision="0" isAssumption="0" suppressZeroes="1" isDefaultRoot="1" shortName="" isIntercompany="0" exchangeRateType="E" balanceType="DEBIT" isLinked="0" owningSheetId="" isSystem="0" isImportable="0" dataEntryType="" planBy="DELTA" actualsBy="DELTA" timeRollup="LAST" timeWeightAcctId="" levelDimRollup="SUM" levelDimWeightAcctId="" rollupText="" startExpanded="1" hasSalaryDetail="" dataPrivacy="PUBLIC_ALL" isBreakbackEligible="" subType="CUMULATIVE" enableActuals="1" isGroup="0" hasFormula="0">
+            <account id="5" code="D" name="TT" description="" timeStratum="month" displayAs="CURRENCY" accountTypeCode="B" decimalPrecision="0" isAssumption="0" suppressZeroes="1" isDefaultRoot="0" shortName="" isIntercompany="0" exchangeRateType="E" balanceType="DEBIT" isLinked="0" owningSheetId="" isSystem="0" isImportable="0" dataEntryType="" planBy="DELTA" actualsBy="BALANCE" timeRollup="LAST" timeWeightAcctId="" levelDimRollup="SUM" levelDimWeightAcctId="" rollupText="" startExpanded="1" hasSalaryDetail="" dataPrivacy="PUBLIC_ALL" isBreakbackEligible="" subType="CUMULATIVE" enableActuals="1" isGroup="0" hasFormula="0">
+              <account id="6" code="E" name="QQ" description="" timeStratum="month" displayAs="CURRENCY" accountTypeCode="B" decimalPrecision="0" isAssumption="0" suppressZeroes="1" isDefaultRoot="0" shortName="" isIntercompany="0" exchangeRateType="E" balanceType="DEBIT" isLinked="0" owningSheetId="" isSystem="0" isImportable="1" dataEntryType="STANDARD" planBy="DELTA" actualsBy="BALANCE" timeRollup="LAST" timeWeightAcctId="" levelDimRollup="SUM" levelDimWeightAcctId="" rollupText="" startExpanded="" hasSalaryDetail="0" dataPrivacy="PUBLIC_ALL" isBreakbackEligible="" subType="CUMULATIVE" enableActuals="1" isGroup="0" hasFormula="0">
+                <attributes>
+                  <attribute name="FF" value="ghjk" attributeId="22" valueId="11" />
+                </attributes>
+              </account>
+            </account>
+          </account>
+        </account>
+      </account>
+    </accounts>
+  </output>
+</response>

@@ -65,11 +65,6 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKSPACE_ROOT
-            - name: WORKER_ENVIRONMENT
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: WORKER_ENVIRONMENT
             - name: LOCAL_ROOT
               valueFrom:
                 configMapKeyRef:
@@ -119,6 +114,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOB_MAIN_CONTAINER_MEMORY_LIMIT
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_REQUEST
+            - name: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT
             - name: S3_LOG_BUCKET
               valueFrom:
                 configMapKeyRef:
@@ -210,6 +225,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: CONTAINER_ORCHESTRATOR_ENABLED
+            - name: CONTAINER_ORCHESTRATOR_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONTAINER_ORCHESTRATOR_IMAGE
             - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
               valueFrom:
                 configMapKeyRef:
@@ -250,6 +270,41 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+            - name: AUTO_DETECT_SCHEMA
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AUTO_DETECT_SCHEMA
+            - name: USE_STREAM_CAPABLE_STATE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: USE_STREAM_CAPABLE_STATE
+            - name: SHOULD_RUN_NOTIFY_WORKFLOWS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: SHOULD_RUN_NOTIFY_WORKFLOWS
+            - name: MAX_NOTIFY_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_NOTIFY_WORKERS
+            - name: MICRONAUT_ENVIRONMENTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKERS_MICRONAUT_ENVIRONMENTS
+            - name: WORKER_LOGS_STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_LOGS_STORAGE_TYPE
+            - name: WORKER_STATE_STORAGE_TYPE
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKER_STATE_STORAGE_TYPE
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

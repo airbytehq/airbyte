@@ -1,10 +1,12 @@
 name: Connector Integration Tests
 
+# Launches the connector integration tests
+
 on:
   workflow_dispatch:
   schedule:
     # 11am UTC is 4am PDT.
-    - cron: '0 11 * * *'
+    - cron: "0 11 * * *"
 
 jobs:
   launch_integration_tests:
@@ -13,12 +15,17 @@ jobs:
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Install Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          distribution: "zulu"
+          java-version: "17"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyYAML requests
       - name: Launch Integration Tests
-        run: ./tools/bin/ci_integration_workflow_launcher.sh
+        run: python ./tools/bin/ci_integration_workflow_launcher.py base-normalization source-acceptance-test source:beta source:GA destination:beta destination:GA
         env:
           GITHUB_TOKEN: ${{ secrets.SLASH_COMMAND_PAT }}

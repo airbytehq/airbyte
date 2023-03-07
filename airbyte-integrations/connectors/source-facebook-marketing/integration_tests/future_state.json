@@ -1,58 +1,142 @@
-{
-  "activities": {
-    "event_time": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "event_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "activities" }
+    }
   },
-  "campaigns": {
-    "updated_time": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "campaigns" }
+    }
   },
-  "images": {
-    "updated_time": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "images" }
+    }
   },
-  "ad_creatives": {
-    "updated_time": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ad_creatives" }
+    }
   },
-  "ad_sets": {
-    "updated_time": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ad_sets" }
+    }
   },
-  "ads": {
-    "updated_time": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated_time": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads" }
+    }
   },
-  "ads_insights": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights" }
+    }
   },
-  "ads_insights_age_and_gender": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights_age_and_gender" }
+    }
   },
-  "ads_insights_country": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights_country" }
+    }
   },
-  "ads_insights_dma": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights_dma" }
+    }
   },
-  "ads_insights_platform_and_device": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights_platform_and_device" }
+    }
   },
-  "ads_insights_region": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights_region" }
+    }
   },
-  "ads_insights_action_type": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "ads_insights_action_type" }
+    }
   },
-  "custommy_custom_insights": {
-    "date_start": "2121-07-25T13:34:26Z",
-    "include_deleted": true
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_start": "2121-07-25T13:34:26Z",
+        "include_deleted": true
+      },
+      "stream_descriptor": { "name": "custommy_custom_insights" }
+    }
   }
-}
+]

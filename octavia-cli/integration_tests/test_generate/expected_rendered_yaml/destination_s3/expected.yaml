@@ -34,14 +34,14 @@ configuration:
       # include_checksum: # OPTIONAL | boolean | If true, include a checksum with each data block.
       ## -------- Another valid structure for compression_codec: --------
       # codec: "snappy" # REQUIRED | string
-    part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
+    part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
     ## -------- Another valid structure for format: --------
     # format_type: "CSV" # REQUIRED | string
     # flattening: "No flattening" # REQUIRED | string | Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.
-    # part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
+    # part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
     ## -------- Another valid structure for format: --------
     # format_type: "JSONL" # REQUIRED | string
-    # part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes9 more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
+    # part_size_mb: 5 # OPTIONAL | integer | This is the size of a "Part" being buffered in memory. It limits the memory usage when writing. Larger values will allow to upload a bigger files and improve the speed, but consumes more memory. Allowed values: min=5MB, max=525MB Default: 5MB. | Example: 5
     ## -------- Another valid structure for format: --------
     # format_type: "Parquet" # REQUIRED | string
     # compression_codec: "UNCOMPRESSED" # OPTIONAL | string | The compression algorithm used to compress data pages.

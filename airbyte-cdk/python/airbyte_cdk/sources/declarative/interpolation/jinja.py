@@ -3,20 +3,41 @@
 #
 
 import ast
+from typing import Optional
 
+from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
+from airbyte_cdk.sources.declarative.types import Config
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 
 
 class JinjaInterpolation(Interpolation):
+    """
+    Interpolation strategy using the Jinja2 template engine.
+
+    If the input string is a raw string, the interpolated string will be the same.
+    `eval("hello world") -> "hello world"`
+
+    The engine will evaluate the content passed within {{}}, interpolating the keys from the config and context-specific arguments.
+    `eval("hello {{ name }}", name="airbyte") -> "hello airbyte")`
+    `eval("hello {{ config.name }}", config={"name": "airbyte"}) -> "hello airbyte")`
+
+    In additional to passing additional values through the kwargs argument, macros can be called from within the string interpolation.
+    For example,
+    "{{ max(2, 3) }}" will return 3
+
+    Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
+    """
+
     def __init__(self):
         self._environment = Environment()
+        self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
-    def eval(self, input_str: str, config, default=None, **kwargs):
-        context = {"config": config, **kwargs}
+    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):
+        context = {"config": config, **additional_options}
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)

@@ -15,13 +15,13 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.3.7
+version: 0.42.0
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
-appVersion: "0.39.37-alpha"
+appVersion: "0.40.24"
 
 dependencies:
   - name: common
@@ -29,11 +29,39 @@ dependencies:
     tags:
       - bitnami-common
     version: 1.x.x
-  - condition: postgresql.enabled
-    name: postgresql
-    version: 10.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - condition: logs.minio.enabled
-    name: minio
-    version: 11.x.x
-    repository: https://charts.bitnami.com/bitnami
+  - condition: airbyte-bootloader.enabled
+    name: airbyte-bootloader
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: temporal.enabled
+    name: temporal
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: webapp.enabled
+    name: webapp
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: server.enabled
+    name: server
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: worker.enabled
+    name: worker
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: pod-sweeper.enabled
+    name: pod-sweeper
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: metrics.enabled
+    name: metrics
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: cron.enabled
+    name: cron
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0
+  - condition: connector-builder-server.enabled
+    name: connector-builder-server
+    repository: "https://airbytehq.github.io/helm-charts/"
+    version: 0.42.0

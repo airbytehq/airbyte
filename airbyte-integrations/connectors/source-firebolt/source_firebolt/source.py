@@ -3,7 +3,6 @@
 #
 
 import json
-from asyncio import gather, get_event_loop
 from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -17,34 +16,11 @@ from airbyte_cdk.models import (
     SyncMode,
 )
 from airbyte_cdk.sources import Source
-from firebolt.async_db import Connection as AsyncConnection
 
-from .database import establish_async_connection, establish_connection, get_firebolt_tables
+from .database import establish_connection, get_table_structure
 from .utils import airbyte_message_from_data, convert_type
 
 SUPPORTED_SYNC_MODES = [SyncMode.full_refresh]
-
-
-async def get_table_stream(connection: AsyncConnection, table: str) -> AirbyteStream:
-    """
-    Get AirbyteStream for a particular table with table structure defined.
-
-    :param connection: Connection object connected to a database
-
-    :return: AirbyteStream object containing the table structure
-    """
-    column_mapping = {}
-    cursor = connection.cursor()
-    await cursor.execute(f"SHOW COLUMNS {table}")
-    for t_name, c_name, c_type, nullable in await cursor.fetchall():
-        airbyte_type = convert_type(c_type, nullable)
-        column_mapping[c_name] = airbyte_type
-    cursor.close()
-    json_schema = {
-        "type": "object",
-        "properties": column_mapping,
-    }
-    return AirbyteStream(name=table, json_schema=json_schema, supported_sync_modes=SUPPORTED_SYNC_MODES)
 
 
 class SourceFirebolt(Source):
@@ -87,14 +63,17 @@ class SourceFirebolt(Source):
             by their names and types)
         """
 
-        async def get_streams():
-            async with await establish_async_connection(config, logger) as connection:
-                tables = await get_firebolt_tables(connection)
-                logger.info(f"Found {len(tables)} available tables.")
-                return await gather(*[get_table_stream(connection, table) for table in tables])
+        with establish_connection(config, logger) as connection:
+            structure = get_table_structure(connection)
 
-        loop = get_event_loop()
-        streams = loop.run_until_complete(get_streams())
+        streams = []
+        for table, columns in structure.items():
+            column_mapping = {c_name: convert_type(c_type, nullable) for c_name, c_type, nullable in columns}
+            json_schema = {
+                "type": "object",
+                "properties": column_mapping,
+            }
+            streams.append(AirbyteStream(name=table, json_schema=json_schema, supported_sync_modes=SUPPORTED_SYNC_MODES))
         logger.info(f"Provided {len(streams)} streams to the Aribyte Catalog.")
         return AirbyteCatalog(streams=streams)
 

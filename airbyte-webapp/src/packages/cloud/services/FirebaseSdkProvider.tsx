@@ -4,7 +4,7 @@ import React from "react";
 import { useConfig } from "packages/cloud/services/config";
 import { FirebaseAppProvider, useFirebaseApp, AuthProvider } from "packages/firebaseReact";
 
-const FirebaseAppSdksProvider: React.FC = ({ children }) => {
+const FirebaseAppSdksProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const config = useConfig();
   const firebaseApp = useFirebaseApp();
   const auth = getAuth(firebaseApp);
@@ -19,7 +19,7 @@ const FirebaseAppSdksProvider: React.FC = ({ children }) => {
  * This Provider is responsible for injecting firebase app
  * based on airbyte app config and also injecting all required firebase sdks
  */
-const FirebaseSdkProvider: React.FC = ({ children }) => {
+const FirebaseSdkProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const config = useConfig();
 
   return (

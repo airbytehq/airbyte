@@ -1,0 +1,49 @@
+name: Deploy OSS Connector Catalog to GCS
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - airbyte-config/init/src/main/resources/seed/**
+
+  workflow_dispatch:
+
+jobs:
+  deploy-catalog:
+    name: "Deploy Catalog"
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    concurrency: deploy-oss-connector-catalog
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.PROD_SPEC_CACHE_SA_KEY }}
+          export_default_credentials: true
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Generate catalog
+        run: SUB_BUILD=PLATFORM ./gradlew :airbyte-config:init:processResources
+      - name: Upload catalog to GCS
+        shell: bash
+        run: |
+          gcs_bucket_name="prod-airbyte-cloud-connector-metadata-service"
+          catalog_path="airbyte-config/init/src/main/resources/seed/oss_catalog.json"
+          gsutil -h "Cache-Control:public, max-age=10" cp "$catalog_path" "gs://$gcs_bucket_name/oss_catalog.json"
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
+      - name: Trigger Cloud catalog generation
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ env.PAT }}
+          repository: airbytehq/airbyte-cloud
+          event-type: generate-cloud-catalog

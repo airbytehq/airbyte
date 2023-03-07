@@ -6,10 +6,7 @@ package io.airbyte.config.init;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.JsonSchemas;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,16 +21,14 @@ class SpecFormatTest {
 
   @Test
   void testOnAllExistingConfig() throws IOException, JsonValidationException {
-    final ConfigPersistence configPersistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+    final DefinitionsProvider definitionsProvider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
 
-    final List<JsonNode> sourceSpecs = configPersistence.listConfigs(
-        ConfigSchema.STANDARD_SOURCE_DEFINITION, StandardSourceDefinition.class)
+    final List<JsonNode> sourceSpecs = definitionsProvider.getSourceDefinitions()
         .stream()
         .map(standardSourceDefinition -> standardSourceDefinition.getSpec().getConnectionSpecification())
         .toList();
 
-    final List<JsonNode> destinationSpecs = configPersistence.listConfigs(
-        ConfigSchema.STANDARD_DESTINATION_DEFINITION, StandardDestinationDefinition.class)
+    final List<JsonNode> destinationSpecs = definitionsProvider.getDestinationDefinitions()
         .stream()
         .map(standardDestinationDefinition -> standardDestinationDefinition.getSpec().getConnectionSpecification())
         .toList();
@@ -46,6 +41,9 @@ class SpecFormatTest {
     Assertions.assertThat(allSpecs)
         .flatMap(spec -> {
           try {
+            if (!JsonSecretsProcessor.isValidJsonSchema(spec)) {
+              throw new RuntimeException("Fail JsonSecretsProcessor validation");
+            }
             JsonSchemas.traverseJsonSchema(spec, (node, path) -> {});
             return Collections.emptyList();
           } catch (final Exception e) {

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/gcs",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/gcs",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -26,7 +26,7 @@
         "examples": ["data_sync/test"]
       },
       "gcs_bucket_region": {
-        "title": "GCS Bucket Region (Optional)",
+        "title": "GCS Bucket Region",
         "type": "string",
         "order": 3,
         "default": "us",
@@ -149,7 +149,7 @@
                         "default": "Deflate"
                       },
                       "compression_level": {
-                        "title": "Deflate level (Optional)",
+                        "title": "Deflate level",
                         "description": "0: no compression & fastest, 9: best compression & slowest.",
                         "type": "integer",
                         "default": 0,
@@ -179,7 +179,7 @@
                         "default": "xz"
                       },
                       "compression_level": {
-                        "title": "Compression Level (Optional)",
+                        "title": "Compression Level",
                         "description": "The presets 0-3 are fast presets with medium compression. The presets 4-6 are fairly slow presets with high compression. The default preset is 6. The presets 7-9 are like the preset 6 but use bigger dictionaries and have higher compressor and decompressor memory requirements. Unless the uncompressed size of the file exceeds 8 MiB, 16 MiB, or 32 MiB, it is waste of memory to use the presets 7, 8, or 9, respectively. Read more <a href=\"https://commons.apache.org/proper/commons-compress/apidocs/org/apache/commons/compress/compressors/xz/XZCompressorOutputStream.html#XZCompressorOutputStream-java.io.OutputStream-int-\">here</a> for details.",
                         "type": "integer",
                         "default": 6,
@@ -198,7 +198,7 @@
                         "default": "zstandard"
                       },
                       "compression_level": {
-                        "title": "Compression Level (Optional)",
+                        "title": "Compression Level",
                         "description": "Negative levels are 'fast' modes akin to lz4 or snappy, levels above 9 are generally for archival purposes, and levels above 18 use a lot of memory.",
                         "type": "integer",
                         "default": 3,
@@ -206,7 +206,7 @@
                         "maximum": 22
                       },
                       "include_checksum": {
-                        "title": "Include Checksum (Optional)",
+                        "title": "Include Checksum",
                         "description": "If true, include a checksum with each data block.",
                         "type": "boolean",
                         "default": false
@@ -239,7 +239,7 @@
               },
               "flattening": {
                 "type": "string",
-                "title": "Normalization (Optional)",
+                "title": "Normalization",
                 "description": "Whether the input JSON data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
@@ -325,7 +325,7 @@
                 "default": "Parquet"
               },
               "compression_codec": {
-                "title": "Compression Codec (Optional)",
+                "title": "Compression Codec",
                 "description": "The compression algorithm used to compress data pages.",
                 "type": "string",
                 "default": "UNCOMPRESSED",
@@ -340,35 +340,35 @@
                 ]
               },
               "block_size_mb": {
-                "title": "Block Size (Row Group Size) (MB) (Optional)",
+                "title": "Block Size (Row Group Size) (MB)",
                 "description": "This is the size of a row group being buffered in memory. It limits the memory usage when writing. Larger values will improve the IO when reading, but consume more memory when writing. Default: 128 MB.",
                 "type": "integer",
                 "default": 128,
                 "examples": [128]
               },
               "max_padding_size_mb": {
-                "title": "Max Padding Size (MB) (Optional)",
+                "title": "Max Padding Size (MB)",
                 "description": "Maximum size allowed as padding to align row groups. This is also the minimum size of a row group. Default: 8 MB.",
                 "type": "integer",
                 "default": 8,
                 "examples": [8]
               },
               "page_size_kb": {
-                "title": "Page Size (KB) (Optional)",
+                "title": "Page Size (KB)",
                 "description": "The page size is for compression. A block is composed of pages. A page is the smallest unit that must be read fully to access a single record. If this value is too small, the compression will deteriorate. Default: 1024 KB.",
                 "type": "integer",
                 "default": 1024,
                 "examples": [1024]
               },
               "dictionary_page_size_kb": {
-                "title": "Dictionary Page Size (KB) (Optional)",
+                "title": "Dictionary Page Size (KB)",
                 "description": "There is one dictionary page per column per row group when dictionary encoding is used. The dictionary page size works like the page size but for dictionary. Default: 1024 KB.",
                 "type": "integer",
                 "default": 1024,
                 "examples": [1024]
               },
               "dictionary_encoding": {
-                "title": "Dictionary Encoding (Optional)",
+                "title": "Dictionary Encoding",
                 "description": "Default: true.",
                 "type": "boolean",
                 "default": true

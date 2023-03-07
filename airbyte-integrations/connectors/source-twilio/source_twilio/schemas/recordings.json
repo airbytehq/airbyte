@@ -73,11 +73,11 @@
         }
       },
       "type": ["null", "object"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "subresource_uris": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "transcriptions": {
           "type": ["null", "string"]
@@ -89,5 +89,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": false
+  "additionalProperties": true
 }

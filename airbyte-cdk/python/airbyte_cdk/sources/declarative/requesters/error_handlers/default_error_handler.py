@@ -2,7 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, MutableMapping, Optional, Union
+from dataclasses import InitVar, dataclass, field
+from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
@@ -14,11 +15,15 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.declarative.types import Config
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class DefaultErrorHandler(ErrorHandler):
+@dataclass
+class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     """
     Default error handler.
+
     By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.
 
     If the response is successful, then return SUCCESS
@@ -37,7 +42,7 @@ class DefaultErrorHandler(ErrorHandler):
     `
         error_handler:
           backoff_strategies:
-            - type: "ConstantBackoffStrategy"
+            - type: "ConstantBackoff"
               backoff_time_in_seconds: 5
     `
     3. retry on HTTP 404
@@ -50,8 +55,9 @@ class DefaultErrorHandler(ErrorHandler):
     4. ignore HTTP 404
     `
       error_handler:
-        - http_codes: [ 404 ]
-          action: IGNORE
+        response_filters:
+          - http_codes: [ 404 ]
+            action: IGNORE
     `
     5. retry if error message contains `retrythisrequest!` substring
     `
@@ -64,7 +70,7 @@ class DefaultErrorHandler(ErrorHandler):
     `
         error_handler:
           response_filters:
-            - predicate: "{{ 'code' in decoded_response }}"
+            - predicate: "{{ 'code' in response }}"
               action: IGNORE
     `
 
@@ -76,32 +82,37 @@ class DefaultErrorHandler(ErrorHandler):
         - http_codes: [ 404 ]
           action: RETRY
     `
+
+    Attributes:
+        response_filters (Optional[List[HttpResponseFilter]]): response filters to iterate on
+        max_retries (Optional[int]): maximum retry attempts
+        backoff_strategies (Optional[List[BackoffStrategy]]): list of backoff strategies to use to determine how long
+        to wait before retrying
     """
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
-    def __init__(
-        self,
-        response_filters: Optional[List[HttpResponseFilter]] = None,
-        max_retries: Optional[int] = 5,
-        backoff_strategies: Optional[List[BackoffStrategy]] = None,
-    ):
-        """
-        :param response_filters: response filters to iterate on
-        :param max_retries: maximum retry attemps
-        :param backoff_strategies: list of backoff strategies to use to determine how long to wait before retrying
-        """
-        self._max_retries = max_retries
-        self._response_filters = response_filters or []
+    config: Config
+    options: InitVar[Mapping[str, Any]]
+    config: Config
+    response_filters: Optional[List[HttpResponseFilter]] = None
+    max_retries: Optional[int] = 5
+    _max_retries: int = field(init=False, repr=False, default=5)
+    backoff_strategies: Optional[List[BackoffStrategy]] = None
 
-        if not response_filters:
-            self._response_filters.append(HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS))
-            self._response_filters.append(HttpResponseFilter(ResponseAction.IGNORE))
+    def __post_init__(self, options: Mapping[str, Any]):
+        self.response_filters = self.response_filters or []
 
-        if backoff_strategies:
-            self._backoff_strategies = backoff_strategies
-        else:
-            self._backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()]
+        if not self.response_filters:
+            self.response_filters.append(
+                HttpResponseFilter(
+                    ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=self.config, options={}
+                )
+            )
+            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config={}, options={}))
+
+        if not self.backoff_strategies:
+            self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(options=options, config=self.config)]
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 
@@ -109,28 +120,35 @@ class DefaultErrorHandler(ErrorHandler):
     def max_retries(self) -> Union[int, None]:
         return self._max_retries
 
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    @max_retries.setter
+    def max_retries(self, value: Union[int, None]):
+        # Covers the case where max_retries is not provided in the constructor, which causes the property object
+        # to be set which we need to avoid doing
+        if not isinstance(value, property):
+            self._max_retries = value
+
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
         request = response.request
-        if response.ok:
-            return response_status.SUCCESS
+
         if request not in self._last_request_to_attempt_count:
             self._last_request_to_attempt_count = {request: 1}
         else:
             self._last_request_to_attempt_count[request] += 1
+        for response_filter in self.response_filters:
+            matched_status = response_filter.matches(
+                response=response, backoff_time=self._backoff_time(response, self._last_request_to_attempt_count[request])
+            )
+            if matched_status is not None:
+                return matched_status
 
-        for response_filter in self._response_filters:
-            filter_action = response_filter.matches(response)
-            if filter_action is not None:
-                if filter_action == ResponseAction.RETRY:
-                    return ResponseStatus(ResponseAction.RETRY, self._backoff_time(response, self._last_request_to_attempt_count[request]))
-                else:
-                    return ResponseStatus(filter_action)
+        if response.ok:
+            return response_status.SUCCESS
         # Fail if the response matches no filters
         return response_status.FAIL
 
     def _backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         backoff = None
-        for backoff_strategies in self._backoff_strategies:
+        for backoff_strategies in self.backoff_strategies:
             backoff = backoff_strategies.backoff(response, attempt_count)
             if backoff:
                 return backoff

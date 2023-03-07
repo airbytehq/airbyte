@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.db.jdbc.JdbcUtils.ALLOWED_CURSOR_TYPES;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -54,6 +55,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case DATE -> putDate(json, columnName, resultSet, colIndex);
       case TIME -> putTime(json, columnName, resultSet, colIndex);
       case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
+      case TIMESTAMP_WITH_TIMEZONE -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
       case ARRAY -> putArray(json, columnName, resultSet, colIndex);
       default -> putDefault(json, columnName, resultSet, colIndex);
@@ -83,7 +85,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case BINARY, BLOB -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
-      default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
+      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
     }
   }
 
@@ -102,12 +104,17 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public boolean isCursorType(final JDBCType type) {
+    return ALLOWED_CURSOR_TYPES.contains(type);
+  }
+
+  @Override
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT -> JsonSchemaType.NUMBER;
-      case INTEGER -> JsonSchemaType.NUMBER;
-      case BIGINT -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;
+      case INTEGER -> JsonSchemaType.INTEGER;
+      case BIGINT -> JsonSchemaType.INTEGER;
       case FLOAT, DOUBLE -> JsonSchemaType.NUMBER;
       case REAL -> JsonSchemaType.NUMBER;
       case NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;

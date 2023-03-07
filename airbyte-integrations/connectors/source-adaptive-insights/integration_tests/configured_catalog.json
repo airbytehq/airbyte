@@ -1,0 +1,31 @@
+{
+ "streams": [
+   {
+     "stream": {
+       "name": "export_dimensions",
+       "json_schema": {
+       }
+     },
+     "sync_mode": "full_refresh",
+     "destination_sync_mode": "overwrite"
+   },
+   {
+     "stream": {
+       "name": "export_levels",
+       "json_schema": {
+       }
+     },
+     "sync_mode": "full_refresh",
+     "destination_sync_mode": "overwrite"
+   },
+   {
+     "stream": {
+       "name": "export_accounts",
+       "json_schema": {
+       }
+     },
+     "sync_mode": "full_refresh",
+     "destination_sync_mode": "overwrite"
+   }
+ ]
+}

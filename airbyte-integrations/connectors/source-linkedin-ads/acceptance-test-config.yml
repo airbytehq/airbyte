@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/contributing-to-airbyte/building-new-connector/source-acceptance-tests)
+# See [Source Acceptance Tests](https://docs.airbyte.com/contributing-to-airbyte/building-new-connector/source-acceptance-tests)
 # for more information about how to configure these tests
 connector_image: airbyte/source-linkedin-ads:dev
 tests:
@@ -7,10 +7,12 @@ tests:
   connection:
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
+      timeout_seconds: 60
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config_oauth.json"
+      timeout_seconds: 60
   basic_read:
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

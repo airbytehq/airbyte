@@ -6,19 +6,18 @@ interface IProps {
   nextLine?: boolean;
   success?: boolean;
   message?: string | React.ReactNode;
-  additionLength?: number;
   className?: string;
   onClick?: (data: unknown) => void;
+  htmlFor?: string;
 }
 
-const Content = styled.label<{ additionLength?: number | string }>`
+const Content = styled.label`
   display: block;
   font-weight: 500;
   font-size: 14px;
   line-height: 17px;
   color: ${({ theme }) => theme.textColor};
   padding-bottom: 5px;
-  width: calc(100% + ${({ additionLength }) => (additionLength === 0 || additionLength ? additionLength : 30)}px);
 
   & a {
     text-decoration: underline;
@@ -30,11 +29,18 @@ const MessageText = styled.span<Pick<IProps, "error" | "success">>`
   white-space: break-spaces;
   color: ${(props) =>
     props.error ? props.theme.dangerColor : props.success ? props.theme.successColor : props.theme.greyColor40};
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 400;
+
+  a:link,
+  a:hover,
+  a:visited {
+    color: ${(props) => props.theme.greyColor40};
+  }
 `;
 
-const Label: React.FC<IProps> = (props) => (
-  <Content additionLength={props.additionLength} className={props.className} onClick={props.onClick}>
+const Label: React.FC<React.PropsWithChildren<IProps>> = (props) => (
+  <Content className={props.className} onClick={props.onClick} htmlFor={props.htmlFor}>
     {props.children}
     {props.message && (
       <span>

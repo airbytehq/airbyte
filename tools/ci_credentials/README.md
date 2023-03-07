@@ -1,6 +1,8 @@
 # CI Credentials
+CLI tooling to read and manage GSM secrets:
+- `write-to-storage` download a connector's secrets locally in the connector's `secret` folder
+- `update-secrets` uploads new connector secret version that were locally updated.
 
-Connects to GSM to download connection details.
 
 ## Development
 
@@ -25,14 +27,22 @@ After making a change, you have to reinstall it to run the bash command: `pip in
 
 The `VERSION=dev` will make it so it knows to use your local current working directory and not the Github Action one.
 
-Pass in a connector name. For example:
 
+### Help
 ```bash
-VERSION=dev ci_credentials destination-snowflake
+ci_credentials --help
 ```
 
-To make sure it get's all changes every time, you can run this:
+### Write to storage
+To download GSM secrets to `airbyte-integrations/connectors/source-bings-ads/secrets`:
+```bash
+ci_credentials source-bing-ads write-to-storage
+```
+
+### Update secrets
+To upload to GSM newly updated configurations from `airbyte-integrations/connectors/source-bings-ads/secrets/updated_configurations`:
 
 ```bash
-pip install --quiet -e ./tools/ci_* && VERSION=dev ci_credentials destination-snowflake
+ci_credentials source-bing-ads update-secrets
 ```
+

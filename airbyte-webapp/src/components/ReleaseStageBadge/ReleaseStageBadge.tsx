@@ -2,7 +2,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { GAIcon } from "components/icons/GAIcon";
-import ToolTip from "components/ToolTip";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 
@@ -41,9 +41,9 @@ export const ReleaseStageBadge: React.FC<ReleaseStageBadgeProps> = ({ stage, sma
     );
 
   return tooltip ? (
-    <ToolTip control={badge} cursor="help">
+    <Tooltip control={badge}>
       <FormattedMessage id={`connector.releaseStage.${stage}.description`} />
-    </ToolTip>
+    </Tooltip>
   ) : (
     badge
   );

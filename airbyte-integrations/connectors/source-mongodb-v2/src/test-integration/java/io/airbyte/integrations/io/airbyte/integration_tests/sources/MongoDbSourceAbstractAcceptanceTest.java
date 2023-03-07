@@ -24,7 +24,7 @@ import java.util.List;
 public abstract class MongoDbSourceAbstractAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String DATABASE_NAME = "test";
-  protected static final String COLLECTION_NAME = "acceptance_test";
+  protected static final String COLLECTION_NAME = "acceptance_test1";
 
   protected JsonNode config;
   protected MongoDatabase database;

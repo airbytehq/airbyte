@@ -113,6 +113,11 @@ def test_secret_filtering():
     filtered = filter_secrets(sensitive_str)
     assert filtered == sensitive_str
 
+    # the empty secret should not affect the result
+    update_secrets([""])
+    filtered = filter_secrets(sensitive_str)
+    assert filtered == sensitive_str
+
     update_secrets([SECRET_STRING_VALUE, SECRET_STRING_2_VALUE])
     filtered = filter_secrets(sensitive_str)
     assert filtered == f"**** {NOT_SECRET_VALUE} **** ****"

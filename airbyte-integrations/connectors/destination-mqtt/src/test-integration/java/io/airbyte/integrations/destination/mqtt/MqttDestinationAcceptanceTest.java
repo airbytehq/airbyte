@@ -63,6 +63,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put("clean_session", true)
         .put("message_retained", false)
         .put("message_qos", "EXACTLY_ONCE")
+        .put("max_in_flight", 1000)
         .build());
   }
 
