@@ -106,6 +106,13 @@ class DealFields(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields"""
 
 
+class Files(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Files#getFiles
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
 class Leads(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Leads#getLeads"""
 
