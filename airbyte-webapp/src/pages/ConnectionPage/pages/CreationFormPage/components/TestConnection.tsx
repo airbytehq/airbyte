@@ -28,7 +28,7 @@ const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish })
       <Container>{isLoading ? <TestingLoading /> : <TestingSuccess type={type} />}</Container>
       <ButtonRows>
         {((isLoading && type === "connection") || type !== "connection") && (
-          <BigButton disabled={isLoading} white onClick={onBack}>
+          <BigButton disabled={isLoading} secondary onClick={onBack}>
             <FormattedMessage id="form.button.back" />
           </BigButton>
         )}

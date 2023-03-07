@@ -54,13 +54,13 @@ export const TitleBlock = styled(H3)`
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
-  font-size: 28px;
+  font-size: 20px;
   line-height: 32px;
   color: #000;
 `;
 
 export const RemarkBlock = styled.div`
-  font-size: 18px;
+  font-size: 14px;
   line-height: 30px;
   color: #6b6b6f;
   margin-top: 10px;

@@ -24,7 +24,7 @@ interface State {
 }
 
 const Container = styled.div`
-  max-width: 858px;
+  max-width: 758px;
   margin: 0 auto 40px auto;
 `;
 
@@ -258,7 +258,7 @@ const SelectNewConnectionCard: React.FC<{
           </>
         )}
 
-        <ButtonRows>
+        <ButtonRows full>
           {(currentStep === CreateStepTypes.CREATE_DESTINATION || backtrack) && (
             <BigButton onClick={clickCancel} secondary>
               <FormattedMessage id="form.button.back" />

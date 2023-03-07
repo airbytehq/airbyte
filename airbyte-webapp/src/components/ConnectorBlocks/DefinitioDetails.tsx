@@ -25,16 +25,16 @@ const Content = styled.div`
 
 const Title = styled.div`
   font-weight: 700;
-  font-size: 28px;
+  font-size: 20px;
   line-height: 30px;
 `;
 
 const Text = styled.div`
   font-weight: 400;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 22px;
   color: #6b6b6f;
-  margin-top: 28px;
+  margin-top: 20px;
   max-width: 432px;
 `;
 

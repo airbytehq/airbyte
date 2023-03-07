@@ -66,7 +66,7 @@ const BtnText = styled.div`
 
 const LeftPanel = styled.div`
   font-weight: 500;
-  font-size: 24px;
+  font-size: 16px;
   line-height: 30px;
   color: #27272a;
 `;

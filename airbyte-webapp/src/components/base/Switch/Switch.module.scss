@@ -17,6 +17,11 @@
   width: 42px;
   height: 26px;
 
+  &.medium {
+    width: 36px;
+    height: 20px;
+  }
+
   &.small {
     width: 28px;
     height: 18px;
@@ -37,6 +42,11 @@
     &.small::before {
       height: 16px;
       width: 16px;
+    }
+
+    &.medium::before {
+      height: 18px;
+      width: 18px;
     }
 
     &::before {

@@ -9,7 +9,7 @@ const BreadcrumbsContainer = styled.div`
   display: flex;
   align-items: center;
   height: 80px;
-  font-size: 16px;
+  font-size: 15px;
 `;
 
 const BreadcrumbsItem = styled.div<{ active: boolean }>`

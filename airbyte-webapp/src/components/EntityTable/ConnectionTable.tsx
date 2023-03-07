@@ -44,6 +44,7 @@ interface IProps {
   onSync: (id: string) => void;
   rowId?: string;
   statusLoading?: boolean;
+  switchSize?: string;
 }
 
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSync, rowId, statusLoading }) => {
@@ -107,6 +108,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
               }}
             >
               <LabeledSwitch
+                swithSize="medium"
                 id={`${cell.row.original.connectionId}`}
                 checked={cell.row.original.status === "Active" ? true : false}
                 // onClick={() => {

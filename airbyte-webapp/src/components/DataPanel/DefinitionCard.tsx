@@ -13,13 +13,13 @@ interface SourcePanelProps {
 }
 
 export const Container = styled.div`
-  max-width: 858px;
+  max-width: 758px;
   margin: 60px auto 0 auto;
 `;
 
 export const Title = styled.div`
   font-weight: 500;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 30px;
   color: #27272a;
   margin-bottom: 30px;
