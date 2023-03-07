@@ -15,7 +15,7 @@ See [docs](https://www.twilio.com/docs/iam/api) for more details.
 <!-- env:cloud -->
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio** from the <Source/Destination> type dropdown.
 4. Enter your `account_sid`.
@@ -83,6 +83,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.1.16  | 2023-02-10 | [22825](https://github.com/airbytehq/airbyte/pull/22825) | Specified date formatting in specification                                                     |
+| 0.1.15  | 2023-01-27 | [22025](https://github.com/airbytehq/airbyte/pull/22025) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                     |
 | 0.1.14  | 2022-11-16 | [19479](https://github.com/airbytehq/airbyte/pull/19479) | Fix date range slicing                                                                                  |
 | 0.1.13  | 2022-10-25 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs                                     |
 | 0.1.11  | 2022-09-30 | [17478](https://github.com/airbytehq/airbyte/pull/17478) | Add lookback_window parameters                                                                          |

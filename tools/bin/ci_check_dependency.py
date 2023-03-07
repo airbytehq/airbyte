@@ -46,7 +46,7 @@ def main():
 
     # Get changed files
     changed_files = get_changed_files(git_diff_file_path)
-    # Get changed modules. e.g. source-acceptance-test from airbyte-integrations/bases/
+    # Get changed modules. e.g. connector-acceptance-test from airbyte-integrations/bases/
     # or destination-mysql from airbyte-integrations/connectors/
     changed_modules = get_changed_modules(changed_files)
 

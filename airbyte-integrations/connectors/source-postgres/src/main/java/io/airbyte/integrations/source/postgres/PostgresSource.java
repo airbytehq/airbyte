@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -43,6 +44,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
+import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
@@ -91,7 +93,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-
   public static final String PARAM_SSLMODE = "sslmode";
   public static final String SSL_MODE = "ssl_mode";
   public static final String PARAM_SSL = "ssl";
@@ -203,6 +204,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
+  protected Set<String> getExcludedViews() {
+    return Set.of("pg_stat_statements", "pg_stat_statements_info");
+  }
+
+  @Override
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
@@ -283,7 +289,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
         if (matchingSlots.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one replication slot but found " + matchingSlots.size()
                   + ". Please read the docs and add a replication slot to your database.");
         }
@@ -299,7 +305,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
         }, sourceOperations::rowToJson);
 
         if (matchingPublications.size() != 1) {
-          throw new RuntimeException(
+          throw new ConfigErrorException(
               "Expected exactly one publication but found " + matchingPublications.size()
                   + ". Please read the docs and add a publication to your database.");
         }
@@ -308,6 +314,18 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       checkOperations.add(database -> {
         PostgresUtils.checkFirstRecordWaitTime(config);
+      });
+
+      // Verify that a CDC connection can be created
+      checkOperations.add(database -> {
+        /**
+         * TODO: Next line is required for SSL connections so the JDBC_URL is set with all required
+         * parameters. This needs to be handle by createConnection function instead. Created issue
+         * https://github.com/airbytehq/airbyte/issues/23380.
+         */
+        final JsonNode databaseConfig = database.getDatabaseConfig();
+        // Empty try statement as we only need to verify that the connection can be created.
+        try (final Connection connection = PostgresReplicationConnection.createConnection(databaseConfig)) {}
       });
     }
 
@@ -352,6 +370,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           state,
           sourceConfig);
 
+      // We should always be able to extract offset out of state if it's not null
+      if (state != null && savedOffset.isEmpty()) {
+        throw new RuntimeException(
+            "Unable extract the offset out of state, State mutation might not be working. " + state.asText());
+      }
+
       final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
           // We can assume that there will be only 1 replication slot cause before the sync starts for
           // Postgres CDC,
@@ -379,7 +403,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(database),
-          emittedAt);
+          emittedAt,
+          false);
       if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
@@ -557,12 +582,19 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
 
-      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
 
       if (!tableEstimateResult.isEmpty() && tableEstimateResult.get(0).has(ROW_COUNT_RESULT_COL) &&
           tableEstimateResult.get(0).has(TOTAL_BYTES_RESULT_COL)) {
         final long syncRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
         final long syncByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+        // The fast count query can return negative or otherwise invalid results for small tables. In this
+        // case, we can skip emitting an
+        // estimate trace altogether since the sync will likely complete quickly.
+        if (syncRowCount <= 0) {
+          return;
+        }
 
         // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
         // is to
@@ -588,20 +620,23 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       final String fullTableName =
           getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
 
-      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName, schemaName, tableName);
 
       final long tableRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
       final long tableByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+      // The fast count query can return negative or otherwise invalid results for small tables. In this
+      // case, we can skip emitting an
+      // estimate trace altogether since the sync will likely complete quickly.
+      if (tableRowCount <= 0) {
+        return;
+      }
 
       final long syncRowCount;
       final long syncByteCount;
 
       syncRowCount = getIncrementalTableRowCount(database, fullTableName, cursorInfo, cursorFieldType);
-      if (tableRowCount == 0) {
-        syncByteCount = 0;
-      } else {
-        syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
-      }
+      syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
 
       // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
       // is to
@@ -615,10 +650,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
-  private List<JsonNode> getFullTableEstimate(final JdbcDatabase database, final String fullTableName) throws SQLException {
+  private List<JsonNode> getFullTableEstimate(final JdbcDatabase database,
+                                              final String fullTableName,
+                                              final String schemaName,
+                                              final String tableName)
+      throws SQLException {
     // Construct the table estimate query.
     final String tableEstimateQuery =
-        String.format(TABLE_ESTIMATE_QUERY, fullTableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
+        String.format(TABLE_ESTIMATE_QUERY, schemaName, tableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
     LOGGER.debug("table estimate query: {}", tableEstimateQuery);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));

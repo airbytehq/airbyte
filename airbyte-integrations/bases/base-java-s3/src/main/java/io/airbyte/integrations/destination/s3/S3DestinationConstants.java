@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -16,8 +16,10 @@ public final class S3DestinationConstants {
   // gzip compression for CSV and JSONL
   public static final String COMPRESSION_ARG_NAME = "compression";
   public static final String COMPRESSION_TYPE_ARG_NAME = "compression_type";
-  public static final String FLATTEN_DATA = "flatten_data";
   public static final CompressionType DEFAULT_COMPRESSION_TYPE = CompressionType.GZIP;
+
+  // Flattening for CSV and JSONL
+  public static final String FLATTENING_ARG_NAME = "flattening";
 
   private S3DestinationConstants() {}
 

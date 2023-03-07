@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -12,8 +12,10 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.auth import AuthBase
 
 from .utils import EagerlyCachedStreamState as stream_state_cache
@@ -41,6 +43,10 @@ class IntercomStream(HttpStream, ABC):
         if self._session.auth:
             return self._session.auth
         return super().authenticator
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        return None
 
     def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         """
@@ -250,6 +256,7 @@ class Companies(IncrementalIntercomStream):
     """
 
     page_size = 50  # default is 15
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     class EndpointType(Enum):
         scroll = "companies/scroll"

@@ -39,7 +39,7 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for Authentication.
@@ -105,6 +105,10 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 1.0.3   | 2023-02-14 | [22992](https://github.com/airbytehq/airbyte/pull/22992) |Specified date formatting in specification                                |
+| 1.0.2   | 2023-01-27 | [22001](https://github.com/airbytehq/airbyte/pull/22001) | Set `AvailabilityStrategy` for streams explicitly to `None`                                |
+| 1.0.1   | 2023-01-23 | [21713](https://github.com/airbytehq/airbyte/pull/21713) | Fix missing data issue                                                                     |
+| 1.0.0   | 2022-12-05 | [7506](https://github.com/airbytehq/airbyte/pull/7506)   | Add `OAuth2.0` authentication option                                                       |
 | 0.1.12  | 2022-12-15 | [20542](https://github.com/airbytehq/airbyte/pull/20542) | Revert HttpAvailability changes, run on cdk 0.15.0                                         |
 | 0.1.11  | 2022-12-14 | [20479](https://github.com/airbytehq/airbyte/pull/20479) | Use HttpAvailabilityStrategy + add unit tests                                              |
 | 0.1.10  | 2022-12-12 | [20384](https://github.com/airbytehq/airbyte/pull/20384) | Fetch groups along with their subgroups                                                    |

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -16,32 +16,34 @@ import org.slf4j.LoggerFactory;
 
 @TestInstance(PER_CLASS)
 public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestinationAcceptanceTest {
+
   private AmazonS3 s3Client;
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   /**
-   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup
-   * This function will be called before EACH test.
-   * @see  DestinationAcceptanceTest#setUpInternal()
+   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This
+   * function will be called before EACH test.
+   *
+   * @see DestinationAcceptanceTest#setUpInternal()
    * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
    */
   @Override
   protected void setup(TestDestinationEnv testEnv) throws Exception {
-    //use secrets file with GCS staging config
+    // use secrets file with GCS staging config
     secretsFile = Path.of("secrets/credentials-gcs-staging.json");
     setUpBigQuery();
 
-    //the setup steps below are specific to GCS staging use case
+    // the setup steps below are specific to GCS staging use case
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
     this.s3Client = gcsDestinationConfig.getS3Client();
   }
 
   /**
-   * Removes data from bigquery and GCS
-   * This function will be called after EACH test
-   * @see  DestinationAcceptanceTest#tearDownInternal()
+   * Removes data from bigquery and GCS This function will be called after EACH test
+   *
+   * @see DestinationAcceptanceTest#tearDownInternal()
    * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
    */
@@ -54,4 +56,5 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   protected void tearDownGcs() {
     BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
   }
+
 }

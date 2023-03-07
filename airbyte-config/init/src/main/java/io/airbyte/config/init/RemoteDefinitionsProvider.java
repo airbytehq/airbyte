@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -9,7 +9,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.config.CombinedConnectorCatalog;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.micronaut.cache.annotation.CacheConfig;
 import io.micronaut.cache.annotation.Cacheable;
 import io.micronaut.context.annotation.Primary;
@@ -49,8 +48,8 @@ public class RemoteDefinitionsProvider implements DefinitionsProvider {
                                    @Value("${airbyte.platform.remote-connector-catalog.timeout-ms}") final long remoteCatalogTimeoutMs)
       throws URISyntaxException {
     log.info("Creating remote definitions provider for URL '{}'...", remoteCatalogUrl);
-    this.remoteDefinitionCatalogUrl = new URI(remoteCatalogUrl);
-    this.timeout = Duration.ofMillis(remoteCatalogTimeoutMs);
+    remoteDefinitionCatalogUrl = new URI(remoteCatalogUrl);
+    timeout = Duration.ofMillis(remoteCatalogTimeoutMs);
   }
 
   private Map<UUID, StandardSourceDefinition> getSourceDefinitionsMap() {
