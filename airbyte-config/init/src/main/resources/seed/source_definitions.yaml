@@ -1913,6 +1913,9 @@
   icon: tempo.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.tempo.io
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
@@ -2236,6 +2239,9 @@
   icon: zenloop.svg
   sourceType: api
   releaseStage: beta
+  allowedHosts:
+    hosts:
+      - api.zenloop.com
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
