@@ -23,6 +23,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -41,10 +42,6 @@ import org.testcontainers.utility.MountableFile;
 // todo (cgardens) - Sanity check that when configured for CDC that postgres performs like any other
 // incremental source. As we have more sources support CDC we will find a more reusable way of doing
 // this, but for now this is a solid sanity check.
-/**
- * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
- * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
- */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
@@ -64,11 +61,6 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
 
-    /**
-     * The publication is not being set as part of the config and because of it
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#isCdc(JsonNode)} returns false, as
-     * a result no test in this class runs through the cdc path.
-     */
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("replication_slot", SLOT_NAME_BASE)
@@ -98,14 +90,10 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 
-      /**
-       * cdc expects the INCREMENTAL tables to contain primary key checkout
-       * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
-       */
       database.query(ctx -> {
-        ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.execute("CREATE TABLE id_and_name(id INTEGER  primary key, name VARCHAR(200));");
         ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-        ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.execute("CREATE TABLE starships(id INTEGER primary key, name VARCHAR(200));");
         ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
         ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
         ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
@@ -147,55 +135,51 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
                 NAMESPACE,
                 Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 NAMESPACE,
                 Field.of("id", JsonSchemaType.INTEGER),
                 Field.of("name", JsonSchemaType.STRING))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
-    /**
-     * This catalog config is incorrect for CDC replication. We specify
-     * withCursorField(Lists.newArrayList("id")) but with CDC customers can't/shouldn't be able to
-     * specify cursor field for INCREMENTAL tables Take a look at
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#setIncrementalToSourceDefined(AirbyteStream)}
-     * We should also specify the primary keys for INCREMENTAL tables checkout
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
-     */
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
                 NAMESPACE,
                 Field.of("id", JsonSchemaType.INTEGER)
             /* no name field */)
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("name"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 NAMESPACE,
                 /* no id field */
                 Field.of("name", JsonSchemaType.STRING))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
