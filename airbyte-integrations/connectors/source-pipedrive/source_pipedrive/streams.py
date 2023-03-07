@@ -110,6 +110,13 @@ class Leads(PipedriveStream):
     """https://developers.pipedrive.com/docs/api/v1/Leads#getLeads"""
 
 
+class Notes(PipedriveStream):
+    """
+    API docs: https://developers.pipedrive.com/docs/api/v1/Notes#getNotes
+    retrieved by https://developers.pipedrive.com/docs/api/v1/Recents#getRecents
+    """
+
+
 class Activities(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Activities#getActivities,
