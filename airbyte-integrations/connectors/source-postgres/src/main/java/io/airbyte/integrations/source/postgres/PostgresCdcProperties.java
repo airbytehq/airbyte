@@ -62,51 +62,32 @@ public class PostgresCdcProperties {
     }
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
-    // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode
+    // https://debezium.io/documentation/reference/2.1/connectors/postgresql.html#postgresql-property-database-sslmode
     if (!sourceConfig.has(JdbcUtils.SSL_KEY) || sourceConfig.get(JdbcUtils.SSL_KEY).asBoolean()) {
       if (sourceConfig.has(JdbcUtils.SSL_MODE_KEY) && sourceConfig.get(JdbcUtils.SSL_MODE_KEY).has(JdbcUtils.MODE_KEY)) {
+
         if (dbConfig.has(SSL_MODE) && !dbConfig.get(SSL_MODE).asText().isEmpty()) {
           LOGGER.debug("sslMode: {}", dbConfig.get(SSL_MODE).asText());
           props.setProperty("database.sslmode", PostgresSource.toSslJdbcParamInternal(SslMode.valueOf(dbConfig.get(SSL_MODE).asText())));
-          props.setProperty("database.history.producer.security.protocol", "SSL");
-          props.setProperty("database.history.consumer.security.protocol", "SSL");
         }
 
         if (dbConfig.has(PostgresSource.CA_CERTIFICATE_PATH) && !dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText().isEmpty()) {
           props.setProperty("database.sslrootcert", dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
-          props.setProperty("database.history.producer.ssl.truststore.location",
-              dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
-          props.setProperty("database.history.consumer.ssl.truststore.location",
-              dbConfig.get(PostgresSource.CA_CERTIFICATE_PATH).asText());
-          props.setProperty("database.history.producer.ssl.truststore.type", "PKCS12");
-          props.setProperty("database.history.consumer.ssl.truststore.type", "PKCS12");
-
         }
+
         if (dbConfig.has(TRUST_KEY_STORE_PASS) && !dbConfig.get(TRUST_KEY_STORE_PASS).asText().isEmpty()) {
           props.setProperty("database.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-          props.setProperty("database.history.producer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-          props.setProperty("database.history.consumer.ssl.truststore.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-          props.setProperty("database.history.producer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-          props.setProperty("database.history.consumer.ssl.key.password", dbConfig.get(TRUST_KEY_STORE_PASS).asText());
-
         }
+
         if (dbConfig.has(CLIENT_KEY_STORE_URL) && !dbConfig.get(CLIENT_KEY_STORE_URL).asText().isEmpty()) {
           props.setProperty("database.sslkey", Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.producer.ssl.keystore.location",
-              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.consumer.ssl.keystore.location",
-              Path.of(URI.create(dbConfig.get(CLIENT_KEY_STORE_URL).asText())).toString());
-          props.setProperty("database.history.producer.ssl.keystore.type", "PKCS12");
-          props.setProperty("database.history.consumer.ssl.keystore.type", "PKCS12");
-
         }
+
         if (dbConfig.has(CLIENT_KEY_STORE_PASS) && !dbConfig.get(CLIENT_KEY_STORE_PASS).asText().isEmpty()) {
           props.setProperty("database.sslpassword", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
-          props.setProperty("database.history.producer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
-          props.setProperty("database.history.consumer.ssl.keystore.password", dbConfig.get(CLIENT_KEY_STORE_PASS).asText());
         }
       } else {
-        props.setProperty("database.ssl.mode", "required");
+        props.setProperty("database.sslmode", "required");
       }
     }
     return props;
