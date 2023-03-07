@@ -343,6 +343,7 @@
   "connection.updateSchema.namespace": "Namespace",
   "connection.updateSchema.dataType": "Data type",
 
+  "connection.pageTitle": "Connections",
   "connection.newConnection": "New connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",
@@ -375,7 +376,7 @@
   "connection.filter.allDestinations": "All Destinations",
 
   "tables.name": "Name",
-  "tables.connector": "Connector",
+  "tables.connector": "Integration",
   "tables.connections": "Connections",
   "tables.sourceConnectWith": "Destination",
   "tables.destinationConnectWith": "Source",
@@ -657,7 +658,7 @@
   "login.yourEmail.placeholder": "Enter your email",
   "login.yourPassword.placeholder": "Enter your password",
   "login.email.error": "Please enter a valid email",
-  "login.signup": "Signup",
+  "login.signup": "Sign up",
   "login.signupDescription": "Don’t have an account yet? {signupLink} here",
   "sidebar.DaspireLogo": "Daspire",
   "sidebar.DaspireDashboard": "Dashboard",

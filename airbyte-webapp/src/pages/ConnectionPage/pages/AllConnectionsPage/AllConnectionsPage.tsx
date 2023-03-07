@@ -128,7 +128,7 @@ const AllConnectionsPage: React.FC = () => {
           <MessageBox message={messageId} onClose={() => setMessageId("")} type="info" position="center" />
           <MainPageWithScroll
             // withPadding
-            headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+            headTitle={<HeadTitle titles={[{ id: "connection.pageTitle" }]} />}
             pageTitle={
               <PageTitle
                 withPadding

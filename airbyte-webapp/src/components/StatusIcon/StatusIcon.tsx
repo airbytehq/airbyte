@@ -52,6 +52,10 @@ const Badge = styled(Container)<{ status: Exclude<StatusIconStatus, "loading"> }
   color: ${({ theme }) => theme.whiteColor};
   padding-top: ${({ status }) => (status === "warning" || status === "inactive" ? 3 : 4)}px;
 
+  &:hover {
+    cursor: pointer;
+  }
+
   > svg {
     height: 1em;
     vertical-align: -0.125em;
@@ -74,7 +78,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...pro
   if (status === "loading") {
     return (
       <Container>
-        <CircleLoader title={title} />
+        <CircleLoader />
         {valueElement}
       </Container>
     );
@@ -83,11 +87,11 @@ const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error", ...pro
   return (
     <Badge {...props} status={status}>
       {status === "inactive" ? (
-        <PauseIcon title={title} />
+        <PauseIcon />
       ) : status === "sleep" ? (
-        <MoonIcon title={title} />
+        <MoonIcon />
       ) : (
-        <FontAwesomeIcon icon={_iconByStatus[status]} title={title} />
+        <FontAwesomeIcon icon={_iconByStatus[status]} />
       )}
       {valueElement}
     </Badge>
