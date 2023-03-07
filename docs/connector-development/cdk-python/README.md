@@ -1,5 +1,9 @@
 # Connector Development Kit (Python)
 
+:::info
+Developer updates will be announced via our #using-the-cdk Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
+:::
+
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
 * HTTP APIs \(REST APIs, GraphQL, etc..\)
@@ -99,9 +103,8 @@ All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_c
 
 #### Publishing a new version to PyPi
 
-1. Bump the package version in `setup.py`
-2. Open a PR
-3. An Airbyte member must comment `/publish-cdk dry-run=true` to publish the package to test.pypi.org or `/publish-cdk dry-run=false` to publish it to the real index of pypi.org.
+1. Open a PR
+2. Once it is approved and merge, an Airbyte member must run the `Publish CDK Manually` workflow using `release-type=major|manor|patch` and setting the changelog message.
 
 ## Coming Soon
 

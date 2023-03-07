@@ -74,24 +74,20 @@ function docker_tag_exists() {
   fi
 }
 
-checkPlatformImages() {
-  echo -e "$blue_text""Checking platform images exist...""$default_text"
-  # Check dockerhub to see if the images exist
-  check_compose_image_exist docker-compose.yaml $VERSION
-}
-
 checkNormalizationImages() {
   echo -e "$blue_text""Checking Normalization images exist...""$default_text"
-  # the only way to know what version of normalization the platform is using is looking in NormalizationRunnerFactory.
   local image_version;
-  factory_path=airbyte-commons-worker/src/main/java/io/airbyte/workers/normalization/NormalizationRunnerFactory.java
+  definition_file_path=airbyte-config/init/src/main/resources/seed/destination_definitions.yaml
   # -f True if file exists and is a regular file
-  if ! test -f $factory_path; then
-    echo -e "$red_text""No NormalizationRunnerFactory found at path! H4LP!!!""$default_text"
+  if ! test -f $definition_file_path; then
+    echo -e "$red_text""Destination definition file not found at path! H4LP!!!""$default_text"
   fi
-  image_version=$(cat $factory_path | grep 'NORMALIZATION_VERSION =' | cut -d"=" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
-  echo -e "$blue_text""Checking normalization images with version $image_version exist...""$default_text"
-  VERSION=$image_version 
+  normalization_image_versions=$(cat $definition_file_path | grep 'normalizationTag:' | cut -d":" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
+  IFS=' ' read -r -a array <<< "$normalization_image_versions"
+  # Get the first value of the normalization tag
+  normalization_image=${array[0]}
+  echo -e "$blue_text""Checking normalization images with version $normalization_image exist...""$default_text"
+  VERSION=$normalization_image
   check_compose_image_exist airbyte-integrations/bases/base-normalization/docker-compose.yaml $VERSION
 }
 
@@ -116,11 +112,10 @@ main() {
   assert_root
 
   SUBSET=${1:-all} # default to all.
-  [[ ! "$SUBSET" =~ ^(all|platform|connectors)$ ]] && echo "Usage ./tools/bin/check_image_exists.sh [all|platform|connectors]" && exit 1
+  [[ ! "$SUBSET" =~ ^(all|connectors)$ ]] && echo "Usage ./tools/bin/check_image_exists.sh [all|connectors]" && exit 1
   echo -e "$blue_text""checking images for: $SUBSET""$default_text"
 
-  [[ "$SUBSET" =~ ^(all|platform)$ ]] && checkPlatformImages
-  [[ "$SUBSET" =~ ^(all|platform|connectors)$ ]] && checkNormalizationImages
+  [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkNormalizationImages
   [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkConnectorImages
   echo -e "$blue_text""Image check complete.""$default_text"
   test -f header.txt     && rm header.txt

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -29,14 +29,20 @@ public class MssqlCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean reachedTargetPosition(final JsonNode valueAsJson) {
-    final Lsn recordLsn = extractLsn(valueAsJson);
+    final SnapshotMetadata snapshotMetadata = SnapshotMetadata.fromString(valueAsJson.get("source").get("snapshot").asText());
 
-    if (targetLsn.compareTo(recordLsn) > 0) {
+    if (SnapshotMetadata.isSnapshotEventMetadata(snapshotMetadata)) {
       return false;
+    } else if (SnapshotMetadata.LAST == snapshotMetadata) {
+      LOGGER.info("Signalling close because Snapshot is complete");
+      return true;
     } else {
-      final SnapshotMetadata snapshotMetadata = SnapshotMetadata.valueOf(valueAsJson.get("source").get("snapshot").asText().toUpperCase());
-      // if not snapshot or is snapshot but last record in snapshot.
-      return SnapshotMetadata.TRUE != snapshotMetadata;
+      final Lsn recordLsn = extractLsn(valueAsJson);
+      final boolean isEventLSNAfter = targetLsn.compareTo(recordLsn) <= 0;
+      if (isEventLSNAfter) {
+        LOGGER.info("Signalling close because record's LSN : " + recordLsn + " is after target LSN : " + targetLsn);
+      }
+      return isEventLSNAfter;
     }
   }
 

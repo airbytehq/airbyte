@@ -1,92 +1,92 @@
 # Facebook Pages
 
-## Sync overview
+This page contains the setup guide and reference information for the Facebook Pages source connector.
 
-The Facebook Pages source uses [Facebook Graph API](https://developers.facebook.com/docs/graph-api/?locale=en_US) to read data from the Facebook social graph.
+## Prerequisites
 
-### Output schema
+To set up the Facebook Pages source connector with Airbyte, you'll need to create your Facebook Application and use both long-lived Page access token and Facebook Page ID.
 
-This Source is capable of syncing the following core Streams:
 
-* [Page](https://developers.facebook.com/docs/graph-api/reference/v11.0/page/#fields)
-* [Post](https://developers.facebook.com/docs/graph-api/reference/v11.0/page/feed#pubfields)
-* [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v11.0/page/insights/#fields)
-* [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v11.0/insights)
+## Setup guide
+### Step 1: Set up Facebook Pages
 
-The linked Facebook docs go into detail about the fields present on those streams.
-
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
-
-### Features
-
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
-| Namespaces | No |  |
-
-### Rate Limiting & Performance Considerations
-
-Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
-
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
-
-## Getting started
-
-### Requirements
-
-* A Facebook Developer Account
-* A Facebook App
-* A Facebook API Page Access Token
-* A Facebook `Page` ID
-
-### Setup guide
-
-### Facebook Developer Account
-
-Follow the [Facebook Developer Account ](https://developers.facebook.com/async/registration/) link to create new account.
-
-### Facebook App
-
-#### If you don't have a Facebook App
-
-Visit the [Facebook Developers App hub](https://developers.facebook.com/apps/) and create an App and choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
-
-#### Connect a User Page
-
-Follow the [Graph API Explorer](https://developers.facebook.com/tools/explorer/) link. 1. Choose your app at `Facebook App` field 2. Choose your Page at `User or Page` field 3. Add next permission:
-
-* pages\_read\_engagement
-* pages\_read\_user\_content 
-* pages\_show\_list
-* read\_insights
-  1. Click Generate Access Token and follow instructions.
+1. Create Facebook Developer Account. Follow [instruction](https://developers.facebook.com/async/registration/) to create one.
+2. Create [Facebook App](https://developers.facebook.com/apps/). Choose "Company" as the purpose of the app. Fill out the remaining fields to create your app, then follow along the "Connect a User Page" section.
+3. Connect a User [Page](https://developers.facebook.com/tools/explorer/). Choose your app at `Meta App` field. Choose your Page at `User or Page` field. Add next permission:
+   * pages\_read\_engagement
+   * pages\_read\_user\_content 
+   * pages\_show\_list
+   * read\_insights
+4. Click Generate Access Token and follow instructions.
 
 After all the steps, it should look something like this
 
 ![](../../.gitbook/assets/facebook-pages-1.png)
 
-Now can copy your Access Token from `Access Token` field \(This is a short live Page access token, if you need a long-lived Page access token, you can [generate](https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing#get-a-long-lived-page-access-token) one from a long-lived User access token. Long-lived Page access token do not have an expiration date and only expire or are invalidated under certain conditions.\)
+5. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#get-a-long-lived-user-access-token) Long-Lived User Access Token.
+6. [Generate](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived#long-lived-page-token) Long-Lived Page Token.
 
-#### Getting Page ID
+### Step 2: Set up the Facebook Pages connector in Airbyte
 
-You can easily get the page id from the page url. For example, if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`.
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
+4. Fill in Page Access Token with Long-Lived Page Token
+5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+
+### For Airbyte OSS:
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source. 
+3. On the Set up the source page, enter the name for the Facebook Pages connector and select **Facebook Pages** from the Source type dropdown.
+4. Fill in Page Access Token with Long-Lived Page Token
+5. Fill in Page ID (if you have a page URL such as `https://www.facebook.com/Test-1111111111`, the ID would be`Test-1111111111`)
+
+## Supported sync modes
+
+The Facebook Pages source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
+
+## Supported Streams
+
+* [Page](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/#overview)
+* [Post](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/feed)
+* [Page Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/page/insights)
+* [Post Insights](https://developers.facebook.com/docs/graph-api/reference/v15.0/insights)
+
+## Data type map
+
+| Integration Type | Airbyte Type | Notes |
+|:-----------------|:-------------|:------|
+| `string`         | `string`     |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
+
+
+
+## Performance considerations
+
+Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting follow the instructions in the Setup Guide below to access better rate limits.
+
+See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.6 | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032) | Remove deprecated field `live_encoders` from Page stream |
-| 0.1.5 | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/) | updated all empty objects in schemas for Page and Post streams |
-| 0.1.4 | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/) | Remove unsupported insights_export field from Pages request |
-| 0.1.3 | 2021-10-28 | [7440](https://github.com/airbytehq/airbyte/pull/7440) | Generate Page token from config access token |
-| 0.1.2 | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128) | Upgrade Facebook API to v.12 |
-| 0.1.1 | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438) | Annotate Oauth2 flow initialization parameters in connector specification |
-| 0.1.0 | 2021-09-01 | [5158](https://github.com/airbytehq/airbyte/pull/5158) | Initial Release |
+| Version | Date       | Pull Request                                             | Subject                                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------|
+| 0.2.3   | 2023-02-23 | [23395](https://github.com/airbytehq/airbyte/pull/23395) | Parse datetime to rfc3339                                                 |
+| 0.2.2   | 2023-02-10 | [22804](https://github.com/airbytehq/airbyte/pull/22804) | Retry 500 errors                                                          |
+| 0.2.1   | 2022-12-29 | [20925](https://github.com/airbytehq/airbyte/pull/20925) | Fix tests; modify expected records                                        |
+| 0.2.0   | 2022-11-24 | [19788](https://github.com/airbytehq/airbyte/pull/19788) | Migrate lo low-code; Beta certification; Upgrade Facebook API to v.15     |
+| 0.1.6   | 2021-12-22 | [9032](https://github.com/airbytehq/airbyte/pull/9032)   | Remove deprecated field `live_encoders` from Page stream                  |
+| 0.1.5   | 2021-11-26 | [8267](https://github.com/airbytehq/airbyte/pull/8267)   | updated all empty objects in schemas for Page and Post streams            |
+| 0.1.4   | 2021-11-26 | [](https://github.com/airbytehq/airbyte/pull/)           | Remove unsupported insights_export field from Pages request               |
+| 0.1.3   | 2021-10-28 | [7440](https://github.com/airbytehq/airbyte/pull/7440)   | Generate Page token from config access token                              |
+| 0.1.2   | 2021-10-18 | [7128](https://github.com/airbytehq/airbyte/pull/7128)   | Upgrade Facebook API to v.12                                              |
+| 0.1.1   | 2021-09-30 | [6438](https://github.com/airbytehq/airbyte/pull/6438)   | Annotate Oauth2 flow initialization parameters in connector specification |
+| 0.1.0   | 2021-09-01 | [5158](https://github.com/airbytehq/airbyte/pull/5158)   | Initial Release                                                           |

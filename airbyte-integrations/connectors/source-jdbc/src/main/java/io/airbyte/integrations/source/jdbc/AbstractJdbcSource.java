@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -20,8 +20,9 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,7 +41,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.JdbcStreamingQueryConfig;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
@@ -48,9 +48,10 @@ import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.sql.Connection;
@@ -141,13 +142,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   protected AutoCloseableIterator<JsonNode> queryTableFullRefresh(final JdbcDatabase database,
-      final List<String> columnNames,
-      final String schemaName,
-      final String tableName) {
+                                                                  final List<String> columnNames,
+                                                                  final String schemaName,
+                                                                  final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullTableName(schemaName, tableName, getQuoteString())));
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
   }
 
   /**
@@ -205,8 +206,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
             .fields(fields.stream()
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
-                  final Datatype datatype = getFieldType(f);
-                  final JsonSchemaType jsonType = getType(datatype);
+                  final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
+                  final JsonSchemaType jsonType = getAirbyteType(datatype);
                   LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
@@ -224,7 +225,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   private List<String> extractCursorFields(final List<JsonNode> fields) {
     return fields.stream()
-        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> isCursorType(sourceOperations.getDatabaseFieldType(field)))
         .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
@@ -268,14 +269,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .build());
   }
 
-  /**
-   * @param field Essential column information returned from
-   *        {@link AbstractJdbcSource#getColumnMetadata}.
-   */
-  private Datatype getFieldType(final JsonNode field) {
-    return sourceOperations.getFieldType(field);
-  }
-
   @Override
   public List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database)
       throws Exception {
@@ -283,8 +276,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   @Override
-  public JsonSchemaType getType(final Datatype columnType) {
-    return sourceOperations.getJsonType(columnType);
+  public JsonSchemaType getAirbyteType(final Datatype columnType) {
+    return sourceOperations.getAirbyteType(columnType);
   }
 
   @Override
@@ -299,7 +292,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = sourceOperations.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
@@ -312,11 +305,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> sourceOperations
-                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = sourceOperations
-                  .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
+              final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
                     connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
@@ -352,8 +343,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String fullTableName = sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName);
-              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField());
+              final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+              final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
               final String operator;
               if (cursorInfo.getCursorRecordCount() <= 0L) {
@@ -383,7 +374,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
               LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+              sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               return preparedStatement;
             },
             sourceOperations::rowToJson);
@@ -403,18 +394,18 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                          final String schemaName,
                                          final String tableName)
       throws SQLException {
-    return sourceOperations.enquoteIdentifierList(connection, columnNames);
+    return enquoteIdentifierList(columnNames, getQuoteString());
   }
 
   protected String getCountColumnName() {
     return "record_count";
   }
 
-  private long getActualCursorRecordCount(final Connection connection,
-                                          final String fullTableName,
-                                          final String quotedCursorField,
-                                          final Datatype cursorFieldType,
-                                          final String cursor)
+  protected long getActualCursorRecordCount(final Connection connection,
+                                            final String fullTableName,
+                                            final String quotedCursorField,
+                                            final Datatype cursorFieldType,
+                                            final String cursor)
       throws SQLException {
     final String columnName = getCountColumnName();
     final PreparedStatement cursorRecordStatement;
@@ -430,7 +421,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
           fullTableName,
           quotedCursorField);
       cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
-      sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
+      sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor);
     }
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
     if (resultSet.next()) {
@@ -440,28 +431,30 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     }
   }
 
-  protected DataSource createDataSource(final JsonNode config) {
-    final JsonNode jdbcConfig = toDatabaseConfig(config);
+  protected DataSource createDataSource(final JsonNode sourceConfig) {
+    final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        getConnectionProperties(config));
+        getConnectionProperties(sourceConfig));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
   }
 
   @Override
-  public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
-    final DataSource dataSource = createDataSource(config);
+  public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
+    final DataSource dataSource = createDataSource(sourceConfig);
     final JdbcDatabase database = new StreamingJdbcDatabase(
         dataSource,
         sourceOperations,
         streamingQueryConfigProvider);
 
     quoteString = (quoteString == null ? database.getMetaData().getIdentifierQuoteString() : quoteString);
+    database.setSourceConfig(sourceConfig);
+    database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
   }
 
@@ -617,7 +610,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
 
     return catalog.getStreams().stream()
-        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream())))
+        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }

@@ -1,0 +1,607 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1667208363.json",
+  "title": "Root",
+  "type": "object",
+  "required": ["certifications"],
+  "properties": {
+    "certifications": {
+      "$id": "#root/certifications",
+      "title": "Certifications",
+      "type": "object",
+      "required": [
+        "US",
+        "CA",
+        "AU",
+        "DE",
+        "FR",
+        "NZ",
+        "IN",
+        "GB",
+        "NL",
+        "BR",
+        "FI",
+        "BG",
+        "ES",
+        "PH",
+        "PT"
+      ],
+      "properties": {
+        "US": {
+          "$id": "#root/certifications/US",
+          "title": "Us",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/US/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/US/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["G"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/US/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "All ages admitted. There is no content that would be objectionable to most parents. This is one of only two ratings dating back to 1968 that still exists today."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/US/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "CA": {
+          "$id": "#root/certifications/CA",
+          "title": "Ca",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/CA/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/CA/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["18A"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/CA/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Persons under 18 years of age must be accompanied by an adult. In the Maritimes & Manitoba, children under the age of 14 are prohibited from viewing the film."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/CA/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [4],
+                "default": 0
+              }
+            }
+          }
+        },
+        "AU": {
+          "$id": "#root/certifications/AU",
+          "title": "Au",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/AU/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/AU/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["E"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/AU/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Exempt from classification. Films that are exempt from classification must not contain contentious material (i.e. material that would ordinarily be rated M or higher)."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/AU/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "DE": {
+          "$id": "#root/certifications/DE",
+          "title": "De",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/DE/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/DE/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["0"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/DE/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["No age restriction."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/DE/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "FR": {
+          "$id": "#root/certifications/FR",
+          "title": "Fr",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/FR/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/FR/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["U"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/FR/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["(Tous publics) valid for all audiences."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/FR/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "NZ": {
+          "$id": "#root/certifications/NZ",
+          "title": "Nz",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/NZ/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/NZ/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["M"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/NZ/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Suitable for (but not restricted to) mature audiences 16 years and up."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/NZ/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [3],
+                "default": 0
+              }
+            }
+          }
+        },
+        "IN": {
+          "$id": "#root/certifications/IN",
+          "title": "In",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/IN/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/IN/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["U"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/IN/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Unrestricted Public Exhibition throughout India, suitable for all age groups. Films under this category should not upset children over 4. Such films may contain educational, social or family-oriented themes. Films under this category may also contain fantasy violence and/or mild bad language."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/IN/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [0],
+                "default": 0
+              }
+            }
+          }
+        },
+        "GB": {
+          "$id": "#root/certifications/GB",
+          "title": "Gb",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/GB/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/GB/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["15"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/GB/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "Only those over 15 years are admitted. Nobody younger than 15 can rent or buy a 15-rated VHS, DVD, Blu-ray Disc, UMD or game, or watch a film in the cinema with this rating. Films under this category can contain adult themes, hard drugs, frequent strong language and limited use of very strong language, strong violence and strong sex references, and nudity without graphic detail. Sexual activity may be portrayed but without any strong detail. Sexual violence may be shown if discreet and justified by context."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/GB/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [5],
+                "default": 0
+              }
+            }
+          }
+        },
+        "NL": {
+          "$id": "#root/certifications/NL",
+          "title": "Nl",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/NL/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/NL/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["AL"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/NL/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["All ages."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/NL/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "BR": {
+          "$id": "#root/certifications/BR",
+          "title": "Br",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/BR/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/BR/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["L"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/BR/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "General Audiences. Do not expose children to potentially harmful content."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/BR/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "FI": {
+          "$id": "#root/certifications/FI",
+          "title": "Fi",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/FI/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/FI/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["S"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/FI/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["For all ages."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/FI/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "BG": {
+          "$id": "#root/certifications/BG",
+          "title": "Bg",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/BG/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/BG/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["A"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/BG/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["Recommended for children."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/BG/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "ES": {
+          "$id": "#root/certifications/ES",
+          "title": "Es",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/ES/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/ES/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["APTA"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/ES/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": ["General admission."],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/ES/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "PH": {
+          "$id": "#root/certifications/PH",
+          "title": "Ph",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/PH/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/PH/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["G"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/PH/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "General Audiences. Viewers of all ages are admitted."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/PH/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        },
+        "PT": {
+          "$id": "#root/certifications/PT",
+          "title": "Pt",
+          "type": "array",
+          "default": [],
+          "items": {
+            "$id": "#root/certifications/PT/items",
+            "title": "Items",
+            "type": "object",
+            "required": ["certification", "meaning", "order"],
+            "properties": {
+              "certification": {
+                "$id": "#root/certifications/PT/items/certification",
+                "title": "Certification",
+                "type": "string",
+                "default": "",
+                "examples": ["Públicos"],
+                "pattern": "^.*$"
+              },
+              "meaning": {
+                "$id": "#root/certifications/PT/items/meaning",
+                "title": "Meaning",
+                "type": "string",
+                "default": "",
+                "examples": [
+                  "For all the public (especially designed for children under 3 years of age)."
+                ],
+                "pattern": "^.*$"
+              },
+              "order": {
+                "$id": "#root/certifications/PT/items/order",
+                "title": "Order",
+                "type": "integer",
+                "examples": [1],
+                "default": 0
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

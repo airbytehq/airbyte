@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -10,14 +10,15 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_inc
 
 
 @pytest.mark.parametrize(
-    "test_name, page_size, expected_next_page_token, expected_offset",
+    "test_name, page_size, parameters, expected_next_page_token, expected_offset",
     [
-        ("test_same_page_size", 2, 2, 2),
-        ("test_larger_page_size", 3, None, 0),
+        ("test_same_page_size", "2", {}, 2, 2),
+        ("test_same_page_size", 2, {}, 2, 2),
+        ("test_larger_page_size", "{{ parameters['page_size'] }}", {"page_size": 3}, None, 0),
     ],
 )
-def test_offset_increment_paginator_strategy(test_name, page_size, expected_next_page_token, expected_offset):
-    paginator_strategy = OffsetIncrement(page_size, options={})
+def test_offset_increment_paginator_strategy(test_name, page_size, parameters, expected_next_page_token, expected_offset):
+    paginator_strategy = OffsetIncrement(page_size=page_size, parameters=parameters, config={})
     assert paginator_strategy._offset == 0
 
     response = requests.Response()
@@ -33,3 +34,10 @@ def test_offset_increment_paginator_strategy(test_name, page_size, expected_next
 
     paginator_strategy.reset()
     assert 0 == paginator_strategy._offset
+
+
+def test_offset_increment_paginator_strategy_rises():
+    paginator_strategy = OffsetIncrement(page_size="{{ parameters['page_size'] }}", parameters={"page_size": "invalid value"}, config={})
+    with pytest.raises(Exception) as exc:
+        paginator_strategy.get_page_size()
+    assert str(exc.value) == "invalid value is of type <class 'str'>. Expected <class 'int'>"

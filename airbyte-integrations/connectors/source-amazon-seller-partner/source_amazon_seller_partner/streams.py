@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -182,8 +182,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._replication_start_date = replication_start_date
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
-        self.period_in_days = period_in_days
-        self._report_options = report_options
+        self.period_in_days = max(period_in_days, self.replication_start_date_limit_in_days)  # ensure old configs work as well
+        self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
 
     @property
@@ -241,23 +241,10 @@ class ReportsAmazonSPStream(Stream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
-        replication_start_date = max(
-            pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=self.replication_start_date_limit_in_days)
-        )
-
-        params = {
-            "reportType": self.name,
-            "marketplaceIds": [self.marketplace_id],
-            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
-        }
-
-        if self._replication_end_date and sync_mode == SyncMode.full_refresh:
-            params["dataEndTime"] = self._replication_end_date
-            # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
-            # when replication_end_date is present, we should use the user provided replication_start_date.
-            # user may provide a date range which is older than 90 days.
-            params["dataStartTime"] = self._replication_start_date
-
+        params = {"reportType": self.name, "marketplaceIds": [self.marketplace_id], **stream_slice}
+        options = self.report_options()
+        if options is not None:
+            params.update({"reportOptions": options})
         return params
 
     def _create_report(
@@ -317,6 +304,31 @@ class ReportsAmazonSPStream(Stream, ABC):
         else:
             return {}
 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        start_date = max(pendulum.parse(self._replication_start_date), pendulum.now("utc").subtract(days=90))
+        end_date = pendulum.now()
+        if self._replication_end_date and sync_mode == SyncMode.full_refresh:
+            # if replication_start_date is older than 90 days(from current date), we are overriding the value above.
+            # when replication_end_date is present, we should use the user provided replication_start_date.
+            # user may provide a date range which is older than 90 days.
+            end_date = min(end_date, pendulum.parse(self._replication_end_date))
+            start_date = pendulum.parse(self._replication_start_date)
+
+        if stream_state:
+            state = stream_state.get(self.cursor_field)
+            start_date = state and pendulum.parse(state) or start_date
+
+        start_date = min(start_date, end_date)
+        while start_date < end_date:
+            end_date_slice = start_date.add(days=self.period_in_days)
+            yield {
+                "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
+                "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
+            }
+            start_date = end_date_slice
+
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -374,14 +386,6 @@ class FlatFileOrdersReports(ReportsAmazonSPStream):
     """
 
     name = "GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL"
-
-
-class FbaInventoryReports(ReportsAmazonSPStream):
-    """
-    Field definitions: https://sellercentral.amazon.com/gp/help/200740930
-    """
-
-    name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
 class FbaAfnInventoryReports(ReportsAmazonSPStream):
@@ -456,10 +460,6 @@ class RestockInventoryReports(ReportsAmazonSPStream):
     name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
 
 
-class VendorInventoryHealthReports(ReportsAmazonSPStream):
-    name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
-
-
 class GetXmlBrowseTreeData(ReportsAmazonSPStream):
     def parse_document(self, document):
         parsed = xmltodict.parse(
@@ -525,36 +525,10 @@ class XmlAllOrdersDataByOrderDataGeneral(ReportsAmazonSPStream):
 
 
 class MerchantListingsReportBackCompat(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_MERCHANT_LISTINGS_DATA_BACK_COMPAT"
 
 
 class MerchantCancelledListingsReport(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_MERCHANT_CANCELLED_LISTINGS_DATA"
 
 
@@ -581,25 +555,14 @@ class FlatFileArchivedOrdersDataByOrderDate(ReportsAmazonSPStream):
 class FlatFileReturnsDataByReturnDate(ReportsAmazonSPStream):
     name = "GET_FLAT_FILE_RETURNS_DATA_BY_RETURN_DATE"
 
+    replication_start_date_limit_in_days = 60
+
 
 class FbaInventoryPlaningReport(ReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
 
 
 class LedgerSummaryViewReport(ReportsAmazonSPStream):
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        params = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        options = self.report_options()
-        if options is not None:
-            params.update({"reportOptions": options})
-        return params
-
     name = "GET_LEDGER_SUMMARY_VIEW_DATA"
 
 
@@ -617,45 +580,42 @@ class AnalyticsStream(ReportsAmazonSPStream):
     ) -> Mapping[str, Any]:
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
-        if options is not None:
+        if options and options.get("reportPeriod") is not None:
             data.update(self._augmented_data(self, options))
         return data
 
     @staticmethod
     def _augmented_data(self, report_options) -> Mapping[str, Any]:
-        if report_options.get("reportPeriod") is None:
-            return {"reportOptions": report_options}
+        now = pendulum.now("utc")
+        if report_options["reportPeriod"] == "DAY":
+            now = now.subtract(days=self.availability_sla_days)
+            data_start_time = now.start_of("day")
+            data_end_time = now.end_of("day")
+        elif report_options["reportPeriod"] == "WEEK":
+            now = now.subtract(days=self.availability_sla_days).subtract(weeks=1)
+            # According to report api docs
+            # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
+            pendulum.week_starts_at(pendulum.SUNDAY)
+            pendulum.week_ends_at(pendulum.SATURDAY)
+
+            data_start_time = now.start_of("week")
+            data_end_time = now.end_of("week")
+
+            # Reset week start and end
+            pendulum.week_starts_at(pendulum.MONDAY)
+            pendulum.week_ends_at(pendulum.SUNDAY)
+        elif report_options["reportPeriod"] == "MONTH":
+            now = now.subtract(months=1)
+            data_start_time = now.start_of("month")
+            data_end_time = now.end_of("month")
         else:
-            now = pendulum.now("utc")
-            if report_options["reportPeriod"] == "DAY":
-                now = now.subtract(days=self.availability_sla_days)
-                data_start_time = now.start_of("day")
-                data_end_time = now.end_of("day")
-            elif report_options["reportPeriod"] == "WEEK":
-                now = now.subtract(days=self.availability_sla_days).subtract(weeks=1)
-                # According to report api docs
-                # dataStartTime must be a Sunday and dataEndTime must be the following Saturday
-                pendulum.week_starts_at(pendulum.SUNDAY)
-                pendulum.week_ends_at(pendulum.SATURDAY)
+            raise Exception([{"message": "This reportPeriod is not implemented."}])
 
-                data_start_time = now.start_of("week")
-                data_end_time = now.end_of("week")
-
-                # Reset week start and end
-                pendulum.week_starts_at(pendulum.MONDAY)
-                pendulum.week_ends_at(pendulum.SUNDAY)
-            elif report_options["reportPeriod"] == "MONTH":
-                now = now.subtract(months=1)
-                data_start_time = now.start_of("month")
-                data_end_time = now.end_of("month")
-            else:
-                raise Exception([{"message": "This reportPeriod is not implemented."}])
-
-            return {
-                "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
-                "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
-                "reportOptions": report_options,
-            }
+        return {
+            "dataStartTime": data_start_time.strftime(DATE_TIME_FORMAT),
+            "dataEndTime": data_end_time.strftime(DATE_TIME_FORMAT),
+            "reportOptions": report_options,
+        }
 
 
 class BrandAnalyticsMarketBasketReports(AnalyticsStream):
@@ -703,24 +663,6 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
     def cursor_field(self) -> Union[str, List[str]]:
         pass
 
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
-        if stream_slice:
-            data_times = {}
-            if stream_slice.get("dataStartTime"):
-                data_times["dataStartTime"] = stream_slice["dataStartTime"]
-            if stream_slice.get("dataEndTime"):
-                data_times["dataEndTime"] = stream_slice["dataEndTime"]
-            data.update(data_times)
-
-        return data
-
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
@@ -730,35 +672,6 @@ class IncrementalReportsAmazonSPStream(ReportsAmazonSPStream):
         if current_stream_state.get(self.cursor_field):
             return {self.cursor_field: max(latest_benchmark, current_stream_state[self.cursor_field])}
         return {self.cursor_field: latest_benchmark}
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-
-        start_date = pendulum.parse(self._replication_start_date)
-        end_date = pendulum.now()
-
-        if self._replication_end_date and sync_mode == SyncMode.full_refresh:
-            end_date = pendulum.parse(self._replication_end_date)
-
-        if stream_state:
-            state = stream_state.get(self.cursor_field)
-            start_date = pendulum.parse(state)
-
-        start_date = min(start_date, end_date)
-        slices = []
-
-        while start_date < end_date:
-            end_date_slice = start_date.add(days=self.period_in_days)
-            slices.append(
-                {
-                    "dataStartTime": start_date.strftime(DATE_TIME_FORMAT),
-                    "dataEndTime": min(end_date_slice.subtract(seconds=1), end_date).strftime(DATE_TIME_FORMAT),
-                }
-            )
-            start_date = end_date_slice
-
-        return slices
 
 
 class SellerFeedbackReports(IncrementalReportsAmazonSPStream):
@@ -962,6 +875,9 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now().subtract(days=self.availability_sla_days)
 
+        if self._replication_end_date:
+            end_date = pendulum.parse(self._replication_end_date)
+
         if stream_state:
             state = stream_state.get(self.cursor_field)
             start_date = pendulum.parse(state)
@@ -1141,22 +1057,6 @@ class ListFinancialEvents(FinanceStream):
 class FbaCustomerReturnsReports(ReportsAmazonSPStream):
 
     name = "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA"
-
-    def _report_data(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        replication_start_date = pendulum.parse(self._replication_start_date)
-
-        data = {
-            "reportType": self.name,
-            "marketplaceIds": [self.marketplace_id],
-            "dataStartTime": replication_start_date.strftime(DATE_TIME_FORMAT),
-        }
-        return data
 
 
 class FlatFileSettlementV2Reports(ReportsAmazonSPStream):

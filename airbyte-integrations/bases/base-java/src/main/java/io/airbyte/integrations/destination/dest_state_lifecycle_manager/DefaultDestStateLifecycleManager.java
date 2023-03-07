@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import java.util.Queue;
 import java.util.function.Supplier;
 
@@ -19,10 +19,14 @@ import java.util.function.Supplier;
  * during a sync, so a single instance of this manager is sufficient for a destination to track
  * state during a sync.
  *
+ * <p>
  * Strategy: Delegates state messages of each type to a StateManager that is appropriate to that
  * state type.
+ * </p>
  *
+ * <p>
  * Per the protocol, if state type is not set, assumes the LEGACY state type.
+ * </p>
  */
 public class DefaultDestStateLifecycleManager implements DestStateLifecycleManager {
 
@@ -107,8 +111,23 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   }
 
   @Override
+  public void markPendingAsCommitted() {
+    internalStateManagerSupplier.get().markPendingAsCommitted();
+  }
+
+  @Override
+  public void clearCommitted() {
+    internalStateManagerSupplier.get().clearCommitted();
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return internalStateManagerSupplier.get().listCommitted();
+  }
+
+  @Override
+  public boolean supportsPerStreamFlush() {
+    return internalStateManagerSupplier.get().supportsPerStreamFlush();
   }
 
 }

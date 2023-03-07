@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.logging;
@@ -35,8 +35,7 @@ public class MdcScope implements AutoCloseable {
   public MdcScope(final Map<String, String> keyValuesToAdd) {
     originalContextMap = MDC.getCopyOfContextMap();
 
-    keyValuesToAdd.forEach(
-        (key, value) -> MDC.put(key, value));
+    keyValuesToAdd.forEach(MDC::put);
   }
 
   @Override

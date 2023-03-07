@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -22,7 +22,7 @@ from pendulum import Date
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
-from source_amazon_ads.utils import iterate_one_by_one
+from source_amazon_ads.utils import get_typed_env, iterate_one_by_one
 
 
 class RecordType(str, Enum):
@@ -89,9 +89,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     Common base class for report streams
     """
 
-    primary_key = ["profileId", "recordType", "reportDate", "updatedAt"]
-    # Amazon ads updates the data for the next 3 days
-    LOOK_BACK_WINDOW = 3
+    primary_key = ["profileId", "recordType", "reportDate", "recordId"]
     # https://advertising.amazon.com/API/docs/en-us/reporting/v2/faq#what-is-the-available-report-history-for-the-version-2-reporting-api
     REPORTING_PERIOD = 60
     # (Service limits section)
@@ -108,18 +106,21 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Check if the connector received an error: 'Report date is too far in the past. Reports are only available for 60 days.'
         # In theory, it does not have to get such an error because the connector correctly calculates the start date,
         # but from practice, we can still catch such errors from time to time.
-        (406, "Report date is too far in the past."),
+        (406, re.compile(r"^Report date is too far in the past\.")),
     ]
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
+        super().__init__(config, profiles)
         self._state = {}
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = config.get("report_wait_timeout", 60)
-        self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         self._start_date: Optional[Date] = config.get("start_date")
-        super().__init__(config, profiles)
+        self._look_back_window: int = config["look_back_window"]
+        # Timeout duration in minutes for Reports. Default is 180 minutes.
+        self.report_wait_timeout: int = get_typed_env("REPORT_WAIT_TIMEOUT", 180)
+        # Maximum retries Airbyte will attempt for fetching report data. Default is 5.
+        self.report_generation_maximum_retries: int = get_typed_env("REPORT_GENERATION_MAX_RETRIES", 5)
 
     @property
     def model(self) -> CatalogModel:
@@ -159,7 +160,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
-                    updatedAt=pendulum.now(tz=profile.timezone).replace(microsecond=0).to_iso8601_string(),
+                    recordId=metric_object[self.metrics_type_to_id_map[report_info.record_type]],
                     metric=metric_object,
                 ).dict()
 
@@ -244,6 +245,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :return: Map record type to list of available metrics
         """
 
+    @property
+    @abstractmethod
+    def metrics_type_to_id_map(self) -> Dict[str, List]:
+        """
+        :return: Map record type to to its unique identifier in metrics
+        """
+
     def _check_status(self, report_info: ReportInfo) -> Tuple[Status, str]:
         """
         Check report status and return download link if report generated successfuly
@@ -289,6 +297,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
         if start_date:
             start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
+            # Taking date from state if it's not older than 60 days
             return max(start_date, today.subtract(days=self.REPORTING_PERIOD))
         if self._start_date:
             return max(self._start_date, today.subtract(days=self.REPORTING_PERIOD))
@@ -327,7 +336,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def _update_state(self, profile: Profile, report_date: str):
         report_date = pendulum.from_format(report_date, self.REPORT_DATE_FORMAT).date()
-        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW - 1)
+        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self._look_back_window - 1)
         start_date = self.get_start_date(profile, self._state)
         updated_state = max(min(report_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
 
@@ -360,13 +369,13 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 continue
             # Some of the record types has subtypes. For example asins type
             # for  product report have keyword and targets subtypes and it
-            # repseneted as asins_keywords and asins_targets types. Those
-            # subtypes have mutualy excluded parameters so we requesting
+            # represented as asins_keywords and asins_targets types. Those
+            # subtypes have mutually excluded parameters so we requesting
             # different metric list for each record.
-            record_type = record_type.split("_")[0]
+            request_record_type = record_type.split("_")[0]
             self.logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {report_date} date")
             response = self._send_http_request(
-                urljoin(self._url, self.report_init_endpoint(record_type)),
+                urljoin(self._url, self.report_init_endpoint(request_record_type)),
                 profile.profileId,
                 report_init_body,
             )
@@ -407,7 +416,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if isinstance(exception, ReportGenerationInProgress):
-            return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
+            return f"Report(s) generation time took more than {self.report_wait_timeout} minutes and failed because of Amazon API issues. Please wait some time and run synchronization again."
         return super().get_error_display_message(exception)
 
     def _get_response_error_details(self, response) -> Optional[str]:

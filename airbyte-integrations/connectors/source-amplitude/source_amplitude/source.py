@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -26,7 +26,7 @@ class SourceAmplitude(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
-            list(Cohorts(authenticator=auth).read_records(SyncMode.full_refresh))
+            list(Cohorts(authenticator=auth, data_region=config.get("data_region", "Standard Server")).read_records(SyncMode.full_refresh))
             return True, None
         except Exception as error:
             return False, f"Unable to connect to Amplitude API with the provided credentials - {repr(error)}"
@@ -49,12 +49,14 @@ class SourceAmplitude(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         config["start_date"] = self._validate_start_date(config.get("start_date"))
+        if not config.get("data_region"):
+            config["data_region"] = "Standard Server"
 
         auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
         return [
-            Cohorts(authenticator=auth),
-            Annotations(authenticator=auth),
-            Events(authenticator=auth, start_date=config["start_date"]),
-            ActiveUsers(authenticator=auth, start_date=config["start_date"]),
-            AverageSessionLength(authenticator=auth, start_date=config["start_date"]),
+            Cohorts(authenticator=auth, data_region=config["data_region"]),
+            Annotations(authenticator=auth, data_region=config["data_region"]),
+            Events(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
+            ActiveUsers(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
+            AverageSessionLength(authenticator=auth, start_date=config["start_date"], data_region=config["data_region"]),
         ]

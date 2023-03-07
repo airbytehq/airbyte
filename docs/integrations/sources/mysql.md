@@ -3,7 +3,7 @@
 ## Features
 
 | Feature                       | Supported | Notes                             |
-|:------------------------------|:----------|:----------------------------------|
+| :---------------------------- | :-------- | :-------------------------------- |
 | Full Refresh Sync             | Yes       |                                   |
 | Incremental - Append Sync     | Yes       |                                   |
 | Replicate Incremental Deletes | Yes       |                                   |
@@ -23,7 +23,6 @@ Some users reported that they could not connect to Amazon RDS MySQL or MariaDB. 
 To solve this issue add `enabledTLSProtocols=TLSv1.2` in the JDBC parameters.
 
 Another error that users have reported when trying to connect to Amazon RDS MySQL is `Error: HikariPool-1 - Connection is not available, request timed out after 30001ms.`. Many times this is can be due to the VPC not allowing public traffic, however, we recommend going through [this AWS troubleshooting checklist](https://aws.amazon.com/premiumsupport/knowledge-center/rds-cannot-connect/) to the correct permissions/settings have been granted to allow connection to your database.
-
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -74,15 +73,15 @@ Your database user should now be ready for use with Airbyte.
 
 ## Change Data Capture \(CDC\)
 
-* If you need a record of deletions and can accept the limitations posted below, you should be able to use CDC for MySQL.
-* If your data set is small, and you just want snapshot of your table in the destination, consider using Full Refresh replication for your table instead of CDC.
-* If the limitations prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
-* If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
+- If you need a record of deletions and can accept the limitations posted below, you should be able to use CDC for MySQL.
+- If your data set is small, and you just want snapshot of your table in the destination, consider using Full Refresh replication for your table instead of CDC.
+- If the limitations prevent you from using CDC and your goal is to maintain a snapshot of your table in the destination, consider using non-CDC incremental and occasionally reset the data and re-sync.
+- If your table has a primary key but doesn't have a reasonable cursor field for incremental syncing \(i.e. `updated_at`\), CDC allows you to sync your table incrementally.
 
 #### CDC Limitations
 
-* Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
-* Our CDC implementation uses at least once delivery for all change records.
+- Make sure to read our [CDC docs](../../understanding-airbyte/cdc.md) to see limitations that impact all databases using CDC replication.
+- Our CDC implementation uses at least once delivery for all change records.
 
 **1. Enable binary logging**
 
@@ -96,18 +95,18 @@ binlog_row_image           = FULL
 binlog_expire_log_seconds  = 864000
 ```
 
-* server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
-* log\_bin :  The value of log\_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
-* binlog\_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
-* binlog\_row\_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
-* binlog_expire_log_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
+- server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
+- log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
+- binlog_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
+- binlog_row_image : The `binlog_row_image` must be set to `FULL`. It determines how row images are written to the binary log. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/5.7/en/replication-options-binary-log.html#sysvar_binlog_row_image)
+- binlog_expire_log_seconds : This is the number of seconds for automatic binlog file removal. We recommend 864000 seconds (10 days) so that in case of a failure in sync or if the sync is paused, we still have some bandwidth to start from the last point in incremental sync. We also recommend setting frequent syncs for CDC.
 
 **2. Enable GTIDs \(Optional\)**
 
 Global transaction identifiers \(GTIDs\) uniquely identify transactions that occur on a server within a cluster. Though not required for a Airbyte MySQL connector, using GTIDs simplifies replication and enables you to more easily confirm if primary and replica servers are consistent. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-gtids.html#option_mysqld_gtid-mode)
 
-* Enable gtid\_mode : Boolean that specifies whether GTID mode of the MySQL server is enabled or not. Enable it via `mysql> gtid_mode=ON`
-* Enable enforce\_gtid\_consistency : Boolean that specifies whether the server enforces GTID consistency by allowing the execution of statements that can be logged in a transactionally safe manner. Required when using GTIDs. Enable it via `mysql> enforce_gtid_consistency=ON`
+- Enable gtid_mode : Boolean that specifies whether GTID mode of the MySQL server is enabled or not. Enable it via `mysql> gtid_mode=ON`
+- Enable enforce_gtid_consistency : Boolean that specifies whether the server enforces GTID consistency by allowing the execution of statements that can be logged in a transactionally safe manner. Required when using GTIDs. Enable it via `mysql> enforce_gtid_consistency=ON`
 
 **3. Set up initial waiting time\(Optional\)**
 
@@ -134,7 +133,6 @@ In CDC mode, the MySQl connector may need a timezone configured if the existing 
 
 In this case, you can configure the server timezone to the equivalent IANA timezone compliant timezone. (e.g. CEST -> Europe/Berlin).
 
-
 **Note**
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
@@ -149,11 +147,12 @@ Using this feature requires additional configuration, when creating the source. 
 
 1. Configure all fields for the source as you normally would, except `SSH Tunnel Method`.
 2. `SSH Tunnel Method` defaults to `No Tunnel` \(meaning a direct connection\). If you want to use an SSH Tunnel choose `SSH Key Authentication` or `Password Authentication`.
+
    1. Choose `Key Authentication` if you will be using an RSA private key as your secret for establishing the SSH Tunnel \(see below for more information on generating this key\).
    2. Choose `Password Authentication` if you will be using a password as your secret for establishing the SSH Tunnel.
 
    :::warning
-    Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **preferred** as the **SSL Mode**; otherwise, the connection will fail.
+   Since Airbyte Cloud requires encrypted communication, select **SSH Key Authentication** or **Password Authentication** if you selected **preferred** as the **SSL Mode**; otherwise, the connection will fail.
    :::
 
 3. `SSH Tunnel Jump Server Host` refers to the intermediate \(bastion\) server that Airbyte will connect to. This should be a hostname or an IP Address.
@@ -177,7 +176,7 @@ This produces the private key in pem format, and the public key remains in the s
 MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
-|:------------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------|
+| :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
 | `bit(1)`                                  | boolean                |                                                                                                                |
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
@@ -217,8 +216,9 @@ MySQL data types are mapped to the following data types when synchronizing data.
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 ## Upgrading from 0.6.8 and older versions to 0.6.9 and later versions
+
 There is a backwards incompatible spec change between MySQL Source connector versions 0.6.8 and 0.6.9. As part of that spec change
-`replication_method` configuration parameter was changed to `object` from `string`. 
+`replication_method` configuration parameter was changed to `object` from `string`.
 
 In MySQL source connector versions 0.6.8 and older, `replication_method` configuration parameter was saved in the configuration database as follows:
 
@@ -227,6 +227,7 @@ In MySQL source connector versions 0.6.8 and older, `replication_method` configu
 ```
 
 Starting with version 0.6.9, `replication_method` configuration parameter is saved as follows:
+
 ```
 "replication_method": {
     "method": "STANDARD"
@@ -238,21 +239,35 @@ in Airbyte database. To do so, you need to run the following two SQL queries. Fo
 run SQL queries on Airbyte database.
 
 If you have connections with MySQL Source using _Standard_ replication method, run this SQL:
+
 ```sql
-update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)  
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "STANDARD"}', true)
 WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'STANDARD');
 ```
 
 If you have connections with MySQL Source using _Logicai Replication (CDC)_ method, run this SQL:
+
 ```sql
-update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)  
+update public.actor set configuration =jsonb_set(configuration, '{replication_method}', '{"method": "CDC"}', true)
 WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configuration->>'replication_method' = 'CDC');
 ```
 
 ## Changelog
+
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.11  | 2022-11-03 | [18851](https://github.com/airbytehq/airbyte/pull/18851)   | Fix bug with unencrypted CDC connections                                                                                      |
+| 2.0.0   | 2022-03-06 | [23112](https://github.com/airbytehq/airbyte/pull/23112)   | Upgrade Debezium version to 2.1.2                                                                                                                |
+| 1.0.21  | 2022-01-25 | [20939](https://github.com/airbytehq/airbyte/pull/20939)   | Adjust batch selection memory limits databases.                                                                                                  |
+| 1.0.20  | 2023-01-24 | [20593](https://github.com/airbytehq/airbyte/pull/20593)   | Handle ssh time out exception                                                                                                                    |
+| 1.0.19  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                                                                                            |
+| 1.0.18  | 2022-12-14 | [20378](https://github.com/airbytehq/airbyte/pull/20378)   | Improve descriptions                                                                                                                             |
+| 1.0.17  | 2022-12-13 | [20289](https://github.com/airbytehq/airbyte/pull/20289)   | Mark unknown column exception as config error                                                                                                    |
+| 1.0.16  | 2022-12-12 | [18959](https://github.com/airbytehq/airbyte/pull/18959)   | CDC : Don't timeout if snapshot is not complete.                                                                                                 |
+| 1.0.15  | 2022-12-06 | [20000](https://github.com/airbytehq/airbyte/pull/20000)   | Add check and better messaging when user does not have permission to access binary log in CDC mode                                               |
+| 1.0.14  | 2022-11-22 | [19514](https://github.com/airbytehq/airbyte/pull/19514)   | Adjust batch selection memory limits databases.                                                                                                  |
+| 1.0.13  | 2022-11-14 | [18956](https://github.com/airbytehq/airbyte/pull/18956)   | Clean up Tinyint Unsigned data type identification                                                                                               |
+| 1.0.12  | 2022-11-07 | [19025](https://github.com/airbytehq/airbyte/pull/19025)   | Stop enforce SSL if ssl mode is disabled                                                                                                         |
+| 1.0.11  | 2022-11-03 | [18851](https://github.com/airbytehq/airbyte/pull/18851)   | Fix bug with unencrypted CDC connections                                                                                                         |
 | 1.0.10  | 2022-11-02 | [18619](https://github.com/airbytehq/airbyte/pull/18619)   | Fix bug with handling Tinyint(1) Unsigned values as boolean                                                                                      |
 | 1.0.9   | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)   | Encode database name                                                                                                                             |
 | 1.0.8   | 2022-10-25 | [18383](https://github.com/airbytehq/airbyte/pull/18383)   | Better SSH error handling + messages                                                                                                             |
@@ -305,7 +320,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 | 0.4.6   | 2021-09-29 | [6510](https://github.com/airbytehq/airbyte/pull/6510)     | Support SSL connection                                                                                                                           |
 | 0.4.5   | 2021-09-17 | [6146](https://github.com/airbytehq/airbyte/pull/6146)     | Added option to connect to DB via SSH                                                                                                            |
 | 0.4.1   | 2021-07-23 | [4956](https://github.com/airbytehq/airbyte/pull/4956)     | Fix log link                                                                                                                                     |
-| 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973)     | Add AIRBYTE\_ENTRYPOINT for Kubernetes support                                                                                                   |
+| 0.3.7   | 2021-06-09 | [3179](https://github.com/airbytehq/airbyte/pull/3973)     | Add AIRBYTE_ENTRYPOINT for Kubernetes support                                                                                                    |
 | 0.3.6   | 2021-06-09 | [3966](https://github.com/airbytehq/airbyte/pull/3966)     | Fix excessive logging for CDC method                                                                                                             |
 | 0.3.5   | 2021-06-07 | [3890](https://github.com/airbytehq/airbyte/pull/3890)     | Fix CDC handle tinyint\(1\) and boolean types                                                                                                    |
 | 0.3.4   | 2021-06-04 | [3846](https://github.com/airbytehq/airbyte/pull/3846)     | Fix max integer value failure                                                                                                                    |
@@ -326,4 +341,3 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 | 0.1.6   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307)     | Migrate Postgres and MySQL to use new JdbcSource                                                                                                 |
 | 0.1.5   | 2020-12-11 | [1267](https://github.com/airbytehq/airbyte/pull/1267)     | Support incremental sync                                                                                                                         |
 | 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046)     | Add connectors using an index YAML file                                                                                                          |
-

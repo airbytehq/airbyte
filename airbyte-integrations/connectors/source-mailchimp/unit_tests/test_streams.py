@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
@@ -41,9 +41,9 @@ def test_next_page_token(auth):
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
-    resp = {"lists": [{"id": i} for i in range(101)]}
+    resp = {"lists": [{"id": i} for i in range(1001)]}
     inputs = {"response": MagicMock(json=MagicMock(return_value=resp))}
-    expected_token = {"offset": 100}
+    expected_token = {"offset": 1000}
     assert stream.next_page_token(**inputs) == expected_token
 
 
@@ -52,11 +52,11 @@ def test_next_page_token(auth):
     [
         (
             {"stream_slice": None, "stream_state": None, "next_page_token": None},
-            {"count": 100, "sort_dir": "ASC", "sort_field": "date_created"},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created"},
         ),
         (
-            {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 100}},
-            {"count": 100, "sort_dir": "ASC", "sort_field": "date_created", "offset": 100},
+            {"stream_slice": None, "stream_state": None, "next_page_token": {"offset": 1000}},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "date_created", "offset": 1000},
         ),
     ],
 )

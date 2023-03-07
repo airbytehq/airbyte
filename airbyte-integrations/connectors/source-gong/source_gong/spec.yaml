@@ -1,0 +1,29 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/gong
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Gong Spec
+  type: object
+  required:
+    - access_key
+    - access_key_secret
+  additionalProperties: true
+  properties:
+    access_key:
+      type: string
+      title: Gong Access Key
+      description: Gong Access Key
+      airbyte_secret: true
+    access_key_secret:
+      type: string
+      title: Gong Access Key Secret
+      description: Gong Access Key Secret
+      airbyte_secret: true
+    start_date:
+      type: string
+      title: Start date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        The date from which to list calls, in the ISO-8601 format; if not specified, the calls start with the earliest recorded call.
+        For web-conference calls recorded by Gong, the date denotes its scheduled time, otherwise, it denotes its actual start time.
+      examples:
+        - "2018-02-18T08:00:00Z"

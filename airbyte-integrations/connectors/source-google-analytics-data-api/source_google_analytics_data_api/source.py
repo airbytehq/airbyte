@@ -1,23 +1,24 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import collections
 import datetime
 import json
 import logging
 import pkgutil
 import uuid
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple
 
+import jsonschema
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, auth
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
+from source_google_analytics_data_api.utils import DATE_FORMAT
 
 metrics_data_types_map: Dict = {
     "METRIC_TYPE_UNSPECIFIED": "string",
@@ -66,7 +67,7 @@ def get_dimensions_type(d: str) -> str:
 
 
 authenticator_class_map: Dict = {
-    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": json.loads(credentials["credentials_json"])}),
+    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": credentials["credentials_json"]}),
     "Client": (
         auth.Oauth2Authenticator,
         lambda credentials: {
@@ -80,12 +81,8 @@ authenticator_class_map: Dict = {
 }
 
 
-def get_authenticator(credentials):
-    try:
-        authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
-    except KeyError as e:
-        raise e
-    return authenticator_class(**get_credentials(credentials))
+class ConfigurationError(Exception):
+    pass
 
 
 class MetadataDescriptor:
@@ -94,17 +91,10 @@ class MetadataDescriptor:
 
     def __get__(self, instance, owner):
         if not self._metadata:
-            authenticator = (
-                instance.authenticator
-                if not isinstance(instance.authenticator, auth.NoAuth)
-                else get_authenticator(instance.config["credentials"])
-            )
-            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=authenticator)
-            try:
-                metadata = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
-            except Exception as e:
-                raise e
-
+            stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
+            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+            if not metadata:
+                raise Exception("failed to get metadata, over quota, try later")
             self._metadata = {
                 "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
                 "metrics": {m["apiName"]: m for m in metadata["metrics"]},
@@ -117,23 +107,39 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     url_base = "https://analyticsdata.googleapis.com/v1beta/"
     http_method = "POST"
 
-    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *, config: Mapping[str, Any], **kwargs):
+        super().__init__(**kwargs)
         self._config = config
+        self._stop_iteration = False
 
     @property
     def config(self):
         return self._config
 
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429:
+            return False
+        return super().should_retry(response)
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(**kwargs)
+        except requests.exceptions.HTTPError as e:
+            self._stop_iteration = True
+            if e.response.status_code != 429:
+                raise e
+
 
 class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
-    row_limit = 100000
+    """
+    https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/runReport
+    """
+
+    _record_date_format = "%Y%m%d"
+    primary_key = "uuid"
+    cursor_field = "date"
 
     metadata = MetadataDescriptor()
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return "uuid"
 
     @staticmethod
     def add_primary_key() -> dict:
@@ -219,47 +225,19 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         metrics = [h["name"] for h in r["metricHeaders"]]
         metrics_type_map = {h["name"]: h["type"] for h in r["metricHeaders"]}
 
-        rows = []
-
         for row in r.get("rows", []):
-            rows.append(
-                collections.ChainMap(
-                    *[
-                        self.add_primary_key(),
-                        self.add_property_id(self.config["property_id"]),
-                        self.add_dimensions(dimensions, row),
-                        self.add_metrics(metrics, metrics_type_map, row),
-                    ]
-                )
-            )
-        r["records"] = rows
+            yield self.add_primary_key() | self.add_property_id(self.config["property_id"]) | self.add_dimensions(
+                dimensions, row
+            ) | self.add_metrics(metrics, metrics_type_map, row)
 
-        yield r
-
-
-class IncrementalGoogleAnalyticsDataApiStream(GoogleAnalyticsDataApiBaseStream, IncrementalMixin, ABC):
-    _date_format = "%Y-%m-%d"
-
-    def __init__(self, *args, **kwargs):
-        super(IncrementalGoogleAnalyticsDataApiStream, self).__init__(*args, **kwargs)
-        self._cursor_value = None
-
-
-class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStream):
-    _default_window_in_days = 1
-    _record_date_format = "%Y%m%d"
-
-    @property
-    def cursor_field(self) -> Union[str, List[str]]:
-        return "date"
-
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value or utils.string_to_date(self.config["date_ranges_start_date"], self._date_format)}
-
-    @state.setter
-    def state(self, value):
-        self._cursor_value = utils.string_to_date(value[self.cursor_field], self._date_format) + datetime.timedelta(days=1)
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
+        return current_stream_state
 
     def request_body_json(
         self,
@@ -273,50 +251,35 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
             "dateRanges": [stream_slice],
         }
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        if not stream_slice:
-            return []
-        records = super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
-        for record in records:
-            for row in record["records"]:
-                next_cursor_value = utils.string_to_date(row[self.cursor_field], self._record_date_format)
-                self._cursor_value = max(self._cursor_value, next_cursor_value) if self._cursor_value else next_cursor_value
-                yield row
-
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        dates = []
 
         today: datetime.date = datetime.date.today()
-        start_date: datetime.date = self.state[self.cursor_field]
 
-        timedelta: int = self.config["window_in_days"] or self._default_window_in_days
+        start_date = stream_state and stream_state.get(self.cursor_field)
+        if start_date:
+            start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
+            start_date = max(start_date, self.config["date_ranges_start_date"])
+        else:
+            start_date = self.config["date_ranges_start_date"]
 
         while start_date <= today:
-            end_date: datetime.date = start_date + datetime.timedelta(days=timedelta)
-            if timedelta > 1 and end_date > today:
-                end_date: datetime.date = start_date + datetime.timedelta(days=timedelta - (end_date - today).days)
+            if self._stop_iteration:
+                return
 
-            dates.append(
-                {
-                    "startDate": utils.date_to_string(start_date, self._date_format),
-                    "endDate": utils.date_to_string(end_date, self._date_format),
-                }
-            )
-
-            start_date: datetime.date = end_date + datetime.timedelta(days=1)
-
-        return dates or [None]
+            yield {
+                "startDate": utils.date_to_string(start_date),
+                "endDate": utils.date_to_string(min(start_date + datetime.timedelta(days=self.config["window_in_days"] - 1), today)),
+            }
+            start_date += datetime.timedelta(days=self.config["window_in_days"])
 
 
-class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractStream):
+class GoogleAnalyticsDataApiMetadataStream(GoogleAnalyticsDataApiAbstractStream):
+    """
+    https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/properties/getMetadata
+    """
+
     primary_key = None
     http_method = "GET"
 
@@ -328,48 +291,96 @@ class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractS
     ) -> str:
         return f"properties/{self.config['property_id']}/metadata"
 
-    def parse_response(
-        self,
-        response: requests.Response,
-        *,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
-    def __init__(self, *args, **kwargs):
-        super(SourceGoogleAnalyticsDataApi, self).__init__(*args, **kwargs)
+    def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
+        if "custom_reports" in config:
+            try:
+                config["custom_reports"] = json.loads(config["custom_reports"])
+            except ValueError:
+                raise ConfigurationError("custom_reports is not valid JSON")
+        else:
+            config["custom_reports"] = []
 
-        self._authenticator = None
+        schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
+        try:
+            jsonschema.validate(instance=config["custom_reports"], schema=schema)
+        except jsonschema.ValidationError as e:
+            key_path = "custom_reports"
+            if e.path:
+                key_path += "." + ".".join(map(str, e.path))
+            raise ConfigurationError(f"{key_path}: {e.message}")
+
+        existing_names = {r["name"] for r in config["custom_reports"]} & report_names
+        if existing_names:
+            existing_names = ", ".join(existing_names)
+            raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
+
+        for report in config["custom_reports"]:
+            # "date" dimension is mandatory because it's cursor_field
+            if "date" not in report["dimensions"]:
+                report["dimensions"].append("date")
+
+        if "credentials_json" in config["credentials"]:
+            try:
+                config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
+            except ValueError:
+                raise ConfigurationError("credentials.credentials_json is not valid JSON")
+
+        try:
+            config["date_ranges_start_date"] = utils.string_to_date(config["date_ranges_start_date"])
+        except ValueError as e:
+            raise ConfigurationError(str(e))
+
+        if not config.get("window_in_days"):
+            source_spec = self.spec(logging.getLogger("airbyte"))
+            config["window_in_days"] = source_spec.connectionSpecification["properties"]["window_in_days"]["default"]
+
+        return config
 
     def get_authenticator(self, config: Mapping[str, Any]):
-        if not self._authenticator:
-            self._authenticator = get_authenticator(config["credentials"])
-        return self._authenticator
+        credentials = config["credentials"]
+        authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
+        return authenticator_class(**get_credentials(credentials))
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        authenticator = self.get_authenticator(config)
-        stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=authenticator)
+        reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         try:
-            next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
-        except Exception as e:
+            config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
+        except ConfigurationError as e:
             return False, str(e)
+        config["authenticator"] = self.get_authenticator(config)
+
+        stream = GoogleAnalyticsDataApiMetadataStream(config=config, authenticator=config["authenticator"])
+        metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
+        if not metadata:
+            return False, "failed to get metadata, over quota, try later"
+
+        dimensions = {d["apiName"] for d in metadata["dimensions"]}
+        metrics = {d["apiName"] for d in metadata["metrics"]}
+
+        for report in config["custom_reports"]:
+            invalid_dimensions = set(report["dimensions"]) - dimensions
+            if invalid_dimensions:
+                invalid_dimensions = ", ".join(invalid_dimensions)
+                return False, f"custom_reports: invalid dimension(s): {invalid_dimensions} for the custom report: {report['name']}"
+            invalid_metrics = set(report["metrics"]) - metrics
+            if invalid_metrics:
+                invalid_metrics = ", ".join(invalid_metrics)
+                return False, f"custom_reports: invalid metric(s): {invalid_metrics} for the custom report: {report['name']}"
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self.get_authenticator(config)
-
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
-        if "custom_reports" in config:
-            custom_reports = json.loads(config["custom_reports"])
-            reports += custom_reports
+        config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
+        config["authenticator"] = self.get_authenticator(config)
 
         return [
-            type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(
-                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=authenticator
+            type(report["name"], (GoogleAnalyticsDataApiBaseStream,), {})(
+                config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=config["authenticator"]
             )
-            for report in reports
+            for report in reports + config["custom_reports"]
         ]

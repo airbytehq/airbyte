@@ -1,49 +1,16 @@
 # Typeform
 
-## Overview
+This page guides you through the process of setting up the Typeform source connector.
 
-The Typeform Connector can be used to sync your [Typeform](https://developer.typeform.com/get-started/) data
-
-Useful links:
-
-* [Token generation](https://developer.typeform.com/get-started/personal-access-token/)
-
-#### Output schema
-
-This Source is capable of syncing the following Streams:
-
-* [Forms](https://developer.typeform.com/create/reference/retrieve-form/) \(Full Refresh\)
-* [Responses](https://developer.typeform.com/responses/reference/retrieve-responses/) \(Incremental\)
-* [Webhooks](https://developer.typeform.com/webhooks/reference/retrieve-webhooks/) \(Full Refresh\)
-* [Workspaces](https://developer.typeform.com/create/reference/retrieve-workspaces/) \(Full Refresh\)
-* [Images](https://developer.typeform.com/create/reference/retrieve-images-collection/) \(Full Refresh\)
-* [Themes](https://developer.typeform.com/create/reference/retrieve-themes/) \(Full Refresh\)
-
-#### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
-| `string`         | `string`     |       |
-| `integer`        | `integer`    |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
-| `boolean`        | `boolean`    |       |
-
-#### Features
-
-| Feature                   | Supported? |
-|:--------------------------|:-----------|
-| Full Refresh Sync         | Yes        |
-| Incremental - Append Sync | Yes        |
-| Namespaces                | No         |
-
-### Requirements
+## Prerequisites
 
 * token - The Typeform API key token.
 * start\_date - Date to start fetching Responses stream data from.
 * form_ids (Optional) - List of Form Ids to sync. If not passed - sync all account`s forms.
 
-### Setup guide
+## Setup guide
+
+### Step 1: Set up Typeform
 
 To get the API token for your application follow this [steps](https://developer.typeform.com/get-started/personal-access-token/)
 
@@ -54,6 +21,39 @@ To get the API token for your application follow this [steps](https://developer.
 * In the Token name field, type a name for the token to help you identify it.
 * Choose needed scopes \(API actions this token can perform - or permissions it has\). See here for more details on scopes.
 * Click Generate token.
+
+### Step 2: Set up the source connector in Airbyte
+
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Typeform** from the Source type dropdown and enter a name for this connector.
+4. Fill-in 'API Token' and 'Start Date'
+5. click `Set up source`.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+1. Go to local Airbyte page.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
+4. Fill-in 'API Token' and 'Start Date'
+5. click `Set up source`.
+<!-- /env:oss -->
+
+## Supported streams and sync modes
+
+| Stream     | Key         | Incremental | API Link                                                                    |
+|:-----------|-------------|:------------|-----------------------------------------------------------------------------|
+| Forms      | id          | No          | https://developer.typeform.com/create/reference/retrieve-form/              |
+| Responses  | response_id | Yes         | https://developer.typeform.com/responses/reference/retrieve-responses       |
+| Webhooks   | id          | No          | https://developer.typeform.com/webhooks/reference/retrieve-webhooks/        |
+| Workspaces | id          | No          | https://developer.typeform.com/create/reference/retrieve-workspaces/        |
+| Images     | id          | No          | https://developer.typeform.com/create/reference/retrieve-images-collection/ |
+| Themes     | id          | No          | https://developer.typeform.com/create/reference/retrieve-themes/            |
 
 ## Performance considerations
 
@@ -70,6 +70,8 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.11  | 2023-02-20 | [23248](https://github.com/airbytehq/airbyte/pull/23248) | Store cursor value as a string                                          |
+| 0.1.10  | 2023-01-07 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Certification to Beta                                                   |
 | 0.1.9   | 2022-08-30 | [16125](https://github.com/airbytehq/airbyte/pull/16125) | Improve `metadata.referer` url parsing                                  |
 | 0.1.8   | 2022-08-09 | [15435](https://github.com/airbytehq/airbyte/pull/15435) | Update Forms   stream schema                                            |
 | 0.1.7   | 2022-06-20 | [13935](https://github.com/airbytehq/airbyte/pull/13935) | Update Responses stream schema                                          |

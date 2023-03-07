@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -16,8 +16,18 @@ SHOPIFY_SUB_STREAM = OrderRefunds(config={"authenticator": None})
     "stream, cur_stream_state, state_object, expected_output",
     [
         # When Full-Refresh: state_object: empty.
-        (SHOPIFY_STREAM, {SHOPIFY_STREAM.cursor_field: ""}, {}, {SHOPIFY_STREAM.name: {SHOPIFY_STREAM.cursor_field: ""}}),
-        (SHOPIFY_SUB_STREAM, {SHOPIFY_SUB_STREAM.cursor_field: ""}, {}, {SHOPIFY_SUB_STREAM.name: {SHOPIFY_SUB_STREAM.cursor_field: ""}}),
+        (
+            SHOPIFY_STREAM,
+            {SHOPIFY_STREAM.cursor_field: ""},
+            {},
+            {SHOPIFY_STREAM.name: {SHOPIFY_STREAM.cursor_field: ""}},
+        ),
+        (
+            SHOPIFY_SUB_STREAM,
+            {SHOPIFY_SUB_STREAM.cursor_field: ""},
+            {},
+            {SHOPIFY_SUB_STREAM.name: {SHOPIFY_SUB_STREAM.cursor_field: ""}},
+        ),
     ],
     ids=["Sync Started. Parent.", "Sync Started. Child."],
 )

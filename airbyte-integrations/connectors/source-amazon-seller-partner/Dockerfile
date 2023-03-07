@@ -12,5 +12,6 @@ RUN pip install .
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.28
+
+LABEL io.airbyte.version=0.2.33
 LABEL io.airbyte.name=airbyte/source-amazon-seller-partner

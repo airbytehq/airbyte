@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -19,7 +19,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
-from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
@@ -135,12 +135,9 @@ class API:
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
         self.credentials = credentials
-        credentials_title = credentials.get("credentials_title")
 
         if self.is_oauth2() or self.is_private_app():
             self._session.auth = self.get_authenticator()
-        elif credentials_title == API_KEY_CREDENTIALS:
-            self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
@@ -208,7 +205,8 @@ class Stream(HttpStream, ABC):
     primary_key = None
     filter_old_records: bool = True
     denormalize_records: bool = False  # one record from API response can result in multiple records emitted
-    raise_on_http_errors: bool = True
+    granted_scopes: Set = None
+    properties_scopes: Set = None
 
     @property
     @abstractmethod
@@ -216,6 +214,7 @@ class Stream(HttpStream, ABC):
         """Set of required scopes. Users need to grant at least one of the scopes for the stream to be avaialble to them"""
 
     def scope_is_granted(self, granted_scopes: Set[str]) -> bool:
+        self.granted_scopes = set(granted_scopes)
         if not self.scopes:
             return True
         else:
@@ -255,16 +254,8 @@ class Stream(HttpStream, ABC):
         if isinstance(self._start_date, str):
             self._start_date = pendulum.parse(self._start_date)
         creds_title = self._credentials["credentials_title"]
-        if creds_title == API_KEY_CREDENTIALS:
-            self._session.params["hapikey"] = credentials.get("api_key")
-        elif creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
+        if creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
             self._authenticator = api.get_authenticator()
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code == HTTPStatus.FORBIDDEN:
-            setattr(self, "raise_on_http_errors", False)
-            logger.warning("You have not permission to API for this stream. " "Please check your scopes for Hubspot account.")
-        return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
@@ -631,15 +622,23 @@ class Stream(HttpStream, ABC):
     @lru_cache()
     def properties(self) -> Mapping[str, Any]:
         """Some entities has dynamic set of properties, so we trying to resolve those at runtime"""
-        if not self.entity:
-            return {}
-
         props = {}
+        if not self.entity:
+            return props
+        if not self.properties_scope_is_granted():
+            logger.warning(
+                f"Check your API key has the following permissions granted: {self.properties_scopes}, "
+                f"to be able to fetch all properties available."
+            )
+            return props
         data, response = self._api.get(f"/properties/v2/{self.entity}/properties")
         for row in data:
             props[row["name"]] = self._get_field_props(row["type"])
 
         return props
+
+    def properties_scope_is_granted(self):
+        return not self.properties_scopes - self.granted_scopes if self.properties_scopes and self.granted_scopes else True
 
     def _flat_associations(self, records: Iterable[MutableMapping]) -> Iterable[MutableMapping]:
         """When result has associations we prefer to have it flat, so we transform this:
@@ -1127,6 +1126,7 @@ class ContactsListMemberships(Stream):
     page_field = "vid-offset"
     primary_key = "canonical-vid"
     scopes = {"crm.objects.contacts.read"}
+    properties_scopes = {"crm.schemas.contacts.read"}
 
     def _transform(self, records: Iterable) -> Iterable:
         """Extracting list membership records from contacts
@@ -1421,6 +1421,7 @@ class PropertyHistory(Stream):
     limit_field = "count"
     limit = 100
     scopes = {"crm.objects.contacts.read"}
+    properties_scopes = {"crm.schemas.contacts.read"}
 
     def request_params(
         self,
@@ -1561,10 +1562,3 @@ class Tickets(CRMSearchStream):
     primary_key = "id"
     scopes = {"tickets"}
     last_modified_field = "hs_lastmodifieddate"
-
-
-class Quotes(CRMObjectIncrementalStream):
-    entity = "quote"
-    associations = ["deals"]
-    primary_key = "id"
-    scopes = {"e-commerce"}

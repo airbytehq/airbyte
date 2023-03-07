@@ -1,0 +1,13 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/instatus
+connectionSpecification:
+  title: Instatus Spec
+  type: object
+  additionalProperties: true
+  required:
+    - api_key
+  properties:
+    api_key:
+      type: string
+      title: Rest API Key
+      airbyte_secret: true
+      description: Instatus REST API key

@@ -6,10 +6,13 @@
     "aws_access_key_id": "123456",
     "aws_secret_access_key": "123456key",
     "path_prefix": "",
-    "endpoint": "http://10.0.56.135:9000"
+    "endpoint": "http://10.0.45.4:9000"
   },
   "format": {
-    "filetype": "csv"
+    "filetype": "csv",
+    "delimiter": ",",
+    "quote_char": "'",
+    "encoding": "utf8"
   },
   "path_pattern": "*.csv",
   "schema": "{}"
