@@ -125,6 +125,7 @@ jobs:
           kubectl get po
           POD=$(kubectl get pod -l app=run-postgres-test-final -o jsonpath="{.items[0].metadata.name}")
           echo "pod name is $POD"
+          kubectl logs --follow $POD
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
