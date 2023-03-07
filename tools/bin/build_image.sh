@@ -10,7 +10,7 @@ ID_FILE="$5"
 FOLLOW_SYMLINKS="$6"
 DOCKER_BUILD_ARCH="${DOCKER_BUILD_ARCH:-amd64}"
 # https://docs.docker.com/develop/develop-images/build_enhancements/
-export DOCKER_BUILDKIT=0
+export DOCKER_BUILDKIT=1
 
 cd "$ROOT_DIR"
 . tools/lib/lib.sh
