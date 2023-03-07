@@ -2,10 +2,10 @@
 
 If you want to understand the difference between Airbyte and Singer, you might be interested in 2 articles we wrote:
 
-* “[Airbyte vs. Singer: Why Airbyte is not built on top of Singer](https://airbyte.io/articles/data-engineering-thoughts/airbyte-vs-singer-why-airbyte-is-not-built-on-top-of-singer/).”
-* “[The State of Open-Source Data Integration and ETL](https://airbyte.io/articles/data-engineering-thoughts/the-state-of-open-source-data-integration-and-etl/),” in which we list and compare all ETL-related open-source projects, including Singer and Airbyte. As a summary, here are the differences:
+* “[Airbyte vs. Singer: Why Airbyte is not built on top of Singer](https://airbyte.com/articles/data-engineering-thoughts/airbyte-vs-singer-why-airbyte-is-not-built-on-top-of-singer/).”
+* “[The State of Open-Source Data Integration and ETL](https://airbyte.com/articles/data-engineering-thoughts/the-state-of-open-source-data-integration-and-etl/),” in which we list and compare all ETL-related open-source projects, including Singer and Airbyte. As a summary, here are the differences:
 
-![](https://airbyte.io/wp-content/uploads/2020/10/Landscape-of-open-source-data-integration-platforms-4.png)
+![](https://airbyte.com/wp-content/uploads/2020/10/Landscape-of-open-source-data-integration-platforms-4.png)
 
 ## **Singer:**
 
