@@ -38,7 +38,7 @@ We're working with the Exchange Rates API, so we need to define our input schema
 
 ```javascript
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/exchangeratesapi",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Python Http Example Spec",

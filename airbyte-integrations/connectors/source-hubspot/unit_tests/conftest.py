@@ -42,11 +42,6 @@ def some_credentials_fixture():
     return {"credentials_title": "Private App Credentials", "access_token": "wrong token"}
 
 
-@pytest.fixture(name="creds_with_wrong_permissions")
-def creds_with_wrong_permissions():
-    return {"credentials_title": "Private App Credentials", "access_token": "THIS-IS-THE-ACCESS_TOKEN"}
-
-
 @pytest.fixture(name="fake_properties_list")
 def fake_properties_list():
     return [f"property_number_{i}" for i in range(NUMBER_OF_PROPERTIES)]
