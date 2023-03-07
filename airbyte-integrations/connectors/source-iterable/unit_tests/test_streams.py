@@ -159,6 +159,21 @@ def test_iterable_export_stream_backoff_time():
     stream = Users(authenticator=NoAuth(), start_date="2019-10-10T00:00:00")
     assert stream.backoff_time(response=None) is None
 
+@pytest.mark.parametrize(
+    "status, json, expected",
+    [
+        (429, {}, True),
+        (500, {"msg": "...Please try again later...", "code": "Generic Error"}, True)
+    ],
+)
+def test_should_retry(status, json, expected, requests_mock):
+    stream = Lists(authenticator=NoAuth())
+    url = f"{stream.url_base}/{stream.path()}"
+    requests_mock.get(url, json=json, status_code=status)
+    test_response = requests.get(url)
+    result = stream.should_retry(test_response)
+    assert result is expected
+
 
 @pytest.mark.parametrize(
     "current_state,record_date,expected_state",

@@ -80,8 +80,16 @@ class IterableStream(HttpStream, ABC):
             yield record
 
     def should_retry(self, response: requests.Response) -> bool:
+        # check the authentication
         if not self.check_unauthorized_key(response):
             return False
+        # retry on generic error 500 meaning
+        if response.status_code == 500:
+            if response.json().get('code') == "GenericError" and "Please try again later" in response.json().get('msg'):
+                self.logger.warn(f"Generic Server Error occured for stream: `{self.name}`.")
+                setattr(self, "raise_on_http_errors", False)
+                return True
+        # all other cases                
         return super().should_retry(response)
 
     def read_records(
@@ -133,7 +141,7 @@ class IterableExportStream(IterableStream, ABC):
     def retry_factor(self) -> int:
         return 20
 
-    # With factor 20 it woud be 20, 40, 80 and 160 seconds delays.
+    # With factor 20 it would be 20, 40, 80 and 160 seconds delays.
     @property
     def max_retries(self) -> Union[int, None]:
         return 4
@@ -260,14 +268,14 @@ class IterableExportStreamAdjustableRange(IterableExportStream, ABC):
 
     In case of slice processing request failed with ChunkedEncodingError (which
     means that API server closed connection cause of request takes to much
-    time) make CHUNKED_ENCODING_ERROR_RETRIES (3) retries each time reducing
+    time) make CHUNKED_ENCODING_ERROR_RETRIES (6) retries each time reducing
     slice length.
 
     See AdjustableSliceGenerator description for more details on next slice length adjustment alghorithm.
     """
 
     _adjustable_generator: AdjustableSliceGenerator = None
-    CHUNKED_ENCODING_ERROR_RETRIES = 3
+    CHUNKED_ENCODING_ERROR_RETRIES = 6
 
     def stream_slices(
         self,
