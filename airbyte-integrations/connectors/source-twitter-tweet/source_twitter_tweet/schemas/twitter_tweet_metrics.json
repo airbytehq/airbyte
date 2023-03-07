@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "retweet_count": {
+      "type": ["null", "number"]
+    },
+    "reply_count": {
+      "type": ["null", "number"]
+    },
+    "like_count": {
+      "type": ["null", "number"]
+    },
+    "quote_count": {
+      "type": ["null", "number"]
+    },
+    "impression_count": {
+      "type": ["null", "number"]
+    }
+  }
+}
