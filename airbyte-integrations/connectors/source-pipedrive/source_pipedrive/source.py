@@ -25,6 +25,7 @@ from source_pipedrive.streams import (
     Persons,
     Pipelines,
     Products,
+    Roles,
     Stages,
     Users,
 )
@@ -65,6 +66,7 @@ class SourcePipedrive(AbstractSource):
             PersonFields(**stream_kwargs),
             Pipelines(**incremental_kwargs),
             Products(**incremental_kwargs),
+            Roles(**stream_kwargs),
             Stages(**incremental_kwargs),
             Users(**incremental_kwargs),
         ]

@@ -82,6 +82,8 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [Products](https://developers.pipedrive.com/docs/api/v1/Products#getProducts)
 
+* [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)
+
 * [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
 
 * [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers)

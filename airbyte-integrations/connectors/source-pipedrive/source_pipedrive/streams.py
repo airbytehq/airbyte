@@ -163,6 +163,10 @@ class Products(PipedriveStream):
     """
 
 
+class Roles(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/Roles#getRoles"""
+
+
 class Stages(PipedriveStream):
     """
     API docs: https://developers.pipedrive.com/docs/api/v1/Stages#getStages,
