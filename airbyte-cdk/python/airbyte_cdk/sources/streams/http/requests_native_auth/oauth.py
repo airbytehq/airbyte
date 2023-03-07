@@ -231,12 +231,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         return self.access_token
 
     def refresh_access_token(self) -> Tuple[str, int, str]:
-        try:
-            response_json = self._get_refresh_access_token_response()
-            return (
-                response_json[self.get_access_token_name()],
-                response_json[self.get_expires_in_name()],
-                response_json[self.get_refresh_token_name()],
-            )
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token and refresh token: {e}") from e
+        response_json = self._get_refresh_access_token_response()
+        return (
+            response_json[self.get_access_token_name()],
+            response_json[self.get_expires_in_name()],
+            response_json[self.get_refresh_token_name()],
+        )
