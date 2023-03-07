@@ -2,7 +2,7 @@ resource_name: revenue_db
 definition_type: source
 definition_id: decd338e-5647-4c0b-adf4-da0e75f5a750
 definition_image: airbyte/source-postgres
-definition_version: 1.0.36
+definition_version: 1.0.44
 configuration:
   ssl: false
   host: dpg-cdoivmta499b1lliths0-a.oregon-postgres.render.com
@@ -10,7 +10,7 @@ configuration:
   schemas:
   - public
   database: revenue_db
-  password: '**********'
+  password: ${REVENUE_DB_AIRBYTE}
   ssl_mode:
     mode: disable
   username: airbyte

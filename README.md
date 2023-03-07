@@ -52,57 +52,18 @@ cd airbyte
 docker compose up
 ```
 
-Login to the web app at [http://localhost:8000](http://localhost:8000) by entering the default credentials found in your .env file.
+#### How to restart the Service:
 
-```
-BASIC_AUTH_USERNAME=airbyte
-BASIC_AUTH_PASSWORD=password
-```
+If the Airbyte service is down and we need to start it up again. Follow the next steps
 
-Follow web app UI instructions to set up a source, destination and connection to replicate data. Connections support the most popular sync modes: full refresh, incremental and change data capture for databases.
-
-Read the [Airbyte docs](https://docs.airbyte.com).
-
-### Manage Airbyte configurations with code
-
-You can also programmatically manage sources, destinations, and connections with YAML files, [Octavia CLI](https://github.com/airbytehq/airbyte/tree/master/octavia-cli), and API.
-
-### Deploy Airbyte to production
-
-Deployment options: [Docker](https://docs.airbyte.com/deploying-airbyte/local-deployment), [AWS EC2](https://docs.airbyte.com/deploying-airbyte/on-aws-ec2), [Azure](https://docs.airbyte.com/deploying-airbyte/on-azure-vm-cloud-shell), [GCP](https://docs.airbyte.com/deploying-airbyte/on-gcp-compute-engine), [Kubernetes](https://docs.airbyte.com/deploying-airbyte/on-kubernetes), [Restack](https://docs.airbyte.com/deploying-airbyte/on-restack), [Plural](https://docs.airbyte.com/deploying-airbyte/on-plural), [Oracle Cloud](https://docs.airbyte.com/deploying-airbyte/on-oci-vm), [Digital Ocean](https://docs.airbyte.com/deploying-airbyte/on-digitalocean-droplet)...
-
-### Use Airbyte Cloud
-
-Airbyte Cloud is the fastest and most reliable way to run Airbyte. You can get started with free credits in minutes.
-
-Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
-
-## Contributing
-
-Get started by checking Github issues and creating a Pull Request. An easy way to start contributing is to update an existing connector or create a new connector using the low-code and Python CDKs. You can find the code for existing connectors in the [connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) directory. The Airbyte platform is written in Java, and the frontend in React. You can also contribute to our docs and tutorials. Advanced Airbyte users can apply to the [Maintainer program](https://airbyte.com/maintainer-program) and [Writer Program](https://airbyte.com/write-for-the-community).
-
-Read the [Contributing guide](https://docs.airbyte.com/contributing-to-airbyte/).
-
-## Reporting vulnerabilities
-
-⚠️ Please do not file GitHub issues or post on our public forum for security vulnerabilities as they are public! ⚠️
-
-Airbyte takes security issues very seriously. If you have any concerns about Airbyte or believe you have uncovered a vulnerability, please get in touch via the e-mail address security@airbyte.io. In the message, try to provide a description of the issue and ideally a way of reproducing it. The security team will get back to you as soon as possible.
-
-Note that this security address should be used only for undisclosed vulnerabilities. Dealing with fixed issues or general questions on how to use the security features should be handled regularly via the user and the dev lists. Please report any security problems to us before disclosing it publicly.
-
-## License
-
-See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic.
-
-## Resources
-
-- [Weekly office hours](https://airbyte.io/weekly-office-hours/) for live informal sessions with the Airbyte team
-- [Slack](https://slack.airbyte.io) for quick discussion with the Community and Airbyte team
-- [Discourse](https://discuss.airbyte.io/) for deeper conversations about features, connectors, and problems
-- [GitHub](https://github.com/airbytehq/airbyte) for code, issues and pull requests
-- [Youtube](https://www.youtube.com/c/AirbyteHQ) for videos on data engineering
-- [Newsletter](https://airbyte.com/newsletter) for product updates and data news
-- [Blog](https://airbyte.com/blog) for data insigts articles, tutorials and updates
-- [Docs](https://docs.airbyte.com/) for Airbyte features
-- [Roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) for planned features
+1. Destroy the current AirbyteStack and create another one from scrath:
+    1. Go to the infrastructure repo and cd to `infrastructure/stacks/data_platform`
+    2. Destroy the current stack: `cdk destroy --exclusively AirbyteStack --context config=datascience`
+    3. Recreate the the stack: `cdk deploy --exclusively AirbyteStack --context config=datascience`
+2. Go to the EC2 instance and copy the Public IPv4 DNS of the recently created EC2 instance.
+3. Copy the IPv4 DNS in the SERVER variable in the Makefile in the root of this repo.
+4. Make sure that you have the `airyte.pem` key in your ssh folder.
+5. From the root of this repo run `make disaster_recovery`. It will take some minutes to run all the commands.
+6. From the root of this repo run `make forward_ec2_port`. Now the Airbyte instance shoudl be accesible in `http://localhost:8000/`.
+7. Now it is time deploy the Sources, Destinations and Connections. From the root of this repo run `make octavia_apply`. Once it is done, go to the Airbyte UI and 
+enable all the connections.

@@ -11,7 +11,7 @@ configuration:
   username: airbyte
   warehouse: LOADING
   credentials:
-    password: '**********'
+    password: ${SNOWFLAKE_AIRBYTE}
     auth_type: Username and Password
   loading_method:
     method: Internal Staging
