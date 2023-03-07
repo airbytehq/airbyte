@@ -51,6 +51,15 @@
     "BidMatchType": {
       "type": ["null", "string"]
     },
+    "AccountName": {
+      "type": ["null", "string"]
+    },
+    "CampaignName": {
+      "type": ["null", "string"]
+    },
+    "AdGroupName": {
+      "type": ["null", "string"]
+    },
     "KeywordStatus": {
       "type": ["null", "string"]
     },
