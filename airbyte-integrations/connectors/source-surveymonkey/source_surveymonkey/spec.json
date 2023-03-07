@@ -19,7 +19,7 @@
         "title": "SurveyMonkey Authorization Method",
         "description": "The authorization method to use to retrieve data from SurveyMonkey",
         "type": "object",
-        "required": ["auth_method", "access_token"],
+        "required": ["auth_method", "access_token", "client_id", "client_secret"],
         "order": 2,
         "properties": {
           "auth_method": {
