@@ -2,9 +2,21 @@ name: POC Connectors CI - test pipeline
 
 on:
   workflow_dispatch:
-
+    inputs:
+      connectors_under_test:
+        description: "List of connectors to tests"
+      test_modified_connectors:
+        description: "Test only modified connectors on the current branch"
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - "airbyte-integrations/connectors/**"
+  push:
+    paths:
+      - "airbyte-integrations/connectors/**"
 jobs:
-  start-connectors-integration-test-runner:
+  start-runner:
     name: "Connectors Integration Test: Start Build EC2 Runner"
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -27,30 +39,57 @@ jobs:
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
           ec2-instance-type: "c5.2xlarge" # https://aws.amazon.com/ec2/instance-types/
-  launch_integration_tests:
+  launch_connector_tests:
     timeout-minutes: 120
-    runs-on: ${{ needs.start-connectors-integration-test-runner.outputs.label }} # run the job on the newly created runner
+    needs: start-runner
+    runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.STATUS_API_AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.STATUS_API_AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: "us-east-2"
+      TEST_REPORTS_BUCKET_NAME: "airbyte-connector-build-status"
     steps:
-      - name: Checkout Airbyte
+      - name: Checkout master
         uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: master
+      - name: Checkout current branch
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Install Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-      - name: Upgrade pip
-        run: pip install --upgrade pip
       - name: Install ci-connector-ops package
         run: pip install --quiet -e ./tools/ci_connector_ops
-  stop-connectors-integration-test-runner:
+      - name: Run connectors-ci for specific connectors
+        if: "${{ github.event.inputs.connectors_under_test != '' }}"
+        run: connectors-ci --is-local=False test-connectors ${{ github.event.inputs.connectors_under_test }}
+        env:
+          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+      - name: Run connectors-ci for modified connectors
+        if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event.inputs.test_modified_connectors == 'true'
+        run: connectors-ci --is-local=False test-all-modified-connectors --diffed-branch=refs/remotes/origin/master
+        env:
+          CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
+  stop-runner:
     name: "Connectors Integration Test: Stop Build EC2 Runner"
     timeout-minutes: 10
     needs:
-      - start-connectors-integration-test-runner # required to get output from the start-runner job
-      - launch_integration_tests # required to wait when the main job is done
+      - start-runner # required to get output from the start-runner job
+      - launch_connector_tests # required to wait when the main job is done
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-connectors-integration-test-runner.result != 'skipped'}}
+    if: ${{ always() && needs.start-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -70,5 +109,5 @@ jobs:
         with:
           mode: stop
           github-token: ${{ env.PAT }}
-          label: ${{ needs.start-connectors-integration-test-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-connectors-integration-test-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}

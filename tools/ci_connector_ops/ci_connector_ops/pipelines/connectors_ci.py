@@ -17,7 +17,13 @@ from ci_connector_ops.pipelines.models import ConnectorTestReport, Step, StepRes
 from ci_connector_ops.pipelines.utils import get_current_git_branch, get_current_git_revision
 from ci_connector_ops.utils import Connector, ConnectorLanguage, get_changed_connectors_between_branches
 
-REQUIRED_ENV_VARS_FOR_CI = ["GCP_GSM_CREDENTIALS", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "TEST_REPORTS_BUCKET_NAME"]
+REQUIRED_ENV_VARS_FOR_CI = [
+    "GCP_GSM_CREDENTIALS",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_DEFAULT_REGION",
+    "TEST_REPORTS_BUCKET_NAME",
+]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -199,17 +205,18 @@ def test_connectors(ctx: click.Context, connector_name: str):
 
 @connectors_ci.command()
 @click.pass_context
-@click.option("--diffed-branch", default="origin/master")
+@click.option("--diffed-branch", default="master")
 def test_all_modified_connectors(ctx: click.Context, diffed_branch: str):
     """Launches a CI pipeline for all the connectors that got modified compared to the DIFFED_BRANCH environment variable.
 
     Args:
         ctx (click.Context): The click context.
     """
-
-    changed_connectors = get_changed_connectors_between_branches(ctx.obj["git_branch"], diffed_branch)
-    connectors_tests_contexts = [ConnectorTestContext(connector, **ctx.obj) for connector in changed_connectors]
-    if changed_connectors:
+    connectors_tests_contexts = []
+    for changed_connector in get_changed_connectors_between_branches(ctx.obj["git_branch"], diffed_branch):
+        connectors_tests_contexts.append(ConnectorTestContext(changed_connector, **ctx.obj))
+        logger.info(f"Will run test pipeline for {changed_connector.technical_name}")
+    if connectors_tests_contexts:
         try:
             anyio.run(run_connectors_test_pipelines, connectors_tests_contexts)
         except dagger.DaggerError as e:

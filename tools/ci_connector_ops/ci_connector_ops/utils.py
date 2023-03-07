@@ -53,7 +53,7 @@ def get_connector_name_from_path(path):
     return path.split("/")[2]
 
 
-def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[str]:
+def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[str]:
     """Retrieve the set of connectors for which the acceptance_test_config file was changed in the current branch (compared to master).
 
     Args:
@@ -193,8 +193,7 @@ class Connector:
 
 
 def get_changed_connectors() -> Set[Connector]:
-    """Retrieve a set of Connectors that were changed in the current branch (compared to master).
-    """
+    """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
     changed_source_connector_files = {
         file_path
         for file_path in AIRBYTE_REPO.git.diff("--name-only", DIFFED_BRANCH).split("\n")
@@ -209,7 +208,7 @@ def get_changed_connectors_between_branches(branch_a: str, branch_b: str) -> Set
     AIRBYTE_REPO.git.checkout(branch_a)
     changed_source_connector_files = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff("--name-only", branch_b).split("\n")
+        for file_path in AIRBYTE_REPO.git.diff("--diff-filter=MA", "--name-only", branch_b).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
     }
     AIRBYTE_REPO.git.checkout(original_branch)
