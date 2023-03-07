@@ -5,23 +5,23 @@
 import json
 import logging
 from typing import Any, Dict
+
+import pytest
+import responses
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStream,
     AirbyteStateMessage,
-    ConfiguredAirbyteStream,
+    AirbyteStream,
     ConfiguredAirbyteCatalog,
-    SyncMode,
+    ConfiguredAirbyteStream,
     DestinationSyncMode,
+    SyncMode,
     Type,
 )
-import responses
 from destination_convex.client import ConvexClient
-
 from destination_convex.config import ConvexConfig
 from destination_convex.destination import DestinationConvex
-import pytest
 
 DEDUP_TABLE_NAME = "dedup_stream"
 DEDUP_INDEX_FIELD = "int_col"

@@ -2,8 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from collections.abc import Mapping
 import time
+from collections.abc import Mapping
 from typing import Any, List
 
 from destination_convex.client import ConvexClient

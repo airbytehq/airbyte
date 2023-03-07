@@ -7,7 +7,6 @@ from logging import Logger
 from typing import Any, Iterable, List, Mapping, cast
 
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
