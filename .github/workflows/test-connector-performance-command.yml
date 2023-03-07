@@ -60,7 +60,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
-  integration-test:
+  performance-test:
     timeout-minutes: 240
     needs: start-test-runner
     runs-on: ${{ needs.start-test-runner.outputs.label }}
@@ -109,7 +109,7 @@ jobs:
     timeout-minutes: 10
     needs:
       - start-test-runner # required to get output from the start-runner job
-      - integration-test # required to wait when the main job is done
+      - performance-test # required to wait when the main job is done
       - uuid
     runs-on: ubuntu-latest
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
