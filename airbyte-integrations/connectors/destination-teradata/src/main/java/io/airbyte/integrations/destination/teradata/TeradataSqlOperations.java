@@ -10,14 +10,15 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import java.sql.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TeradataSqlOperations extends JdbcSqlOperations {
 
@@ -77,7 +78,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
-      database.execute(String.format("CREATE DATABASE \"%s\" AS PERM = 20e9;", schemaName));
+      database.execute(String.format("CREATE DATABASE \"%s\" AS PERMANENT = 120e6, SPOOL = 120e6;", schemaName));
     } catch (SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Database " + schemaName + " already exists.");
@@ -158,5 +159,4 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
           "Connector failed while executing queries : " + appendedQueries.toString());
     }
   }
-
 }
