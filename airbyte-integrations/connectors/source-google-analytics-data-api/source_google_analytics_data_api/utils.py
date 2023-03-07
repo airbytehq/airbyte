@@ -197,7 +197,6 @@ class GoogleAnalyticsApiQuota:
             remaining: int = quota_value.get("remaining")
             remaining_percent: float = remaining / total_available
             # make an early stop if we faced with the quota that is going to run out
-            print(quota_name, remaining, total_available)
             if remaining_percent <= self.treshold:
                 self.logger.warn(f"The `{quota_name}` quota is running out of tokens. Available {remaining} out of {total_available}.")
                 self._set_attrs_values_for_quota(quota_name)
