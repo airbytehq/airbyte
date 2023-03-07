@@ -117,10 +117,13 @@ jobs:
           echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
           kind load docker-image airbyte/source-postgres:dev --name chart-testing
+          echo "Loading connector image into kind" >> $GITHUB_STEP_SUMMARY
+          docker pull airbyte/source-postgres:1.0.35
+          kind load docker-image airbyte/source-postgres:1.0.35 --name chart-testing
           echo "pulling harness image..."
-          docker pull rodireich/perftestrepo:9
+          docker pull rodireich/perftestrepo:10
           echo "Loading harness image into kind" >> $GITHUB_STEP_SUMMARY
-          kind load docker-image rodireich/perftestrepo:9 --name chart-testing
+          kind load docker-image rodireich/perftestrepo:10 --name chart-testing
           echo "loading pod..."
           kubectl create -f ./tools/bin/test-postgres-source-process.yaml
           echo "get pods..."
