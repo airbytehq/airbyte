@@ -28,7 +28,7 @@ Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=e
 
 **For Airbyte Cloud:**
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
 4. Select `Sign in with Google`.
