@@ -2008,7 +2008,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
   icon: twitter.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
   allowedHosts:
     hosts:
       - api.twitter.com
