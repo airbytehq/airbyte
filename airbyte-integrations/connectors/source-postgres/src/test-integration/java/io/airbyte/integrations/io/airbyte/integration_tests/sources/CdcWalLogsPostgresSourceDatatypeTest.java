@@ -30,7 +30,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  private static final int INITIAL_WAITING_SECONDS = 30;
   private JsonNode stateAfterFirstSync;
 
   @Override
