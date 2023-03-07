@@ -214,10 +214,18 @@ class Nfe(BaseClass):
     downloadevent = False
 
     def get_created_at(self, xml_item):
-        return xml_item["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"]
+        try:
+            return xml_item["nfeProc"]["NFe"]["infNFe"]["ide"]["dhEmi"]
+        except:
+            logger.info(f"Didn't find the PROC field:\n {xml_item}")
+            return xml_item["NFe"]["infNFe"]["ide"]["dhEmi"]
     
     def get_invoice_id(self, xml_item):
-        return xml_item["nfeProc"]["NFe"]["infNFe"]["@Id"]
+        try:
+            return xml_item["nfeProc"]["NFe"]["infNFe"]["@Id"]
+        except:
+            logger.info(f"Didn't find the PROC field:\n {xml_item}")
+            return xml_item["NFe"]["infNFe"]["@Id"]
 
     def get_invoice_type(self, xml_item):
         tpnf = xml_item["nfeProc"]["NFe"]["infNFe"]["ide"]["tpNF"]
@@ -256,10 +264,18 @@ class Cte(BaseClass):
     downloadevent = False
 
     def get_created_at(self, xml_item):
-        return xml_item["cteProc"]["CTe"]["infCte"]["ide"]["dhEmi"]
+        try:
+            return xml_item["cteProc"]["CTe"]["infCte"]["ide"]["dhEmi"]
+        except:
+            logger.info(f"Didn't find the PROC field:\n {xml_item}")
+            return xml_item["CTe"]["infCte"]["ide"]["dhEmi"]
     
     def get_invoice_id(self, xml_item):
-        return xml_item["cteProc"]["CTe"]["infCte"]["@Id"]
+        try:
+            return xml_item["cteProc"]["CTe"]["infCte"]["@Id"]
+        except:
+            logger.info(f"Didn't find the PROC field:\n {xml_item}")
+            return xml_item["CTe"]["infCte"]["@Id"]
 
     def get_invoice_type(self, xml_item):
         return "cte"
