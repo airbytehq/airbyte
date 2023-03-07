@@ -261,11 +261,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}
-
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
@@ -276,16 +271,13 @@ jobs:
           node-version: "lts/*"
 
       - uses: actions/setup-python@v4
+        env:
+          ACTIONS_STEP_DEBUG: true
         with:
           python-version: "3.9"
 
       - name: Install & Setup Pyenv
-        # Normally, the `ru.vyarus.use-python` lib should create this environment properly. However, we have seen cases
-        # where the .venv folder exists, but we get "Cannot run program ".venv/bin/python": error=2, No such file or directory"
-        # Running `python3 -m venv .venv` here seems to fix the issue
-        run: |
-          python3 -m pip install virtualenv==16.7.9 --user
-          python3 -m venv airbyte-cdk/python/.venv
+        run: python3 -m pip install virtualenv==16.7.9 --user
 
       - name: Install automake
         run: apt-get install -y automake build-essential libtool libtool-bin autoconf
