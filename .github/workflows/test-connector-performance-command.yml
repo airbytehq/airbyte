@@ -139,10 +139,10 @@ jobs:
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v1
         with:
-          reactions: +1
+          reactions: '+1'
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
-            > Result: $RUN_RESULT
+            > Result: ${{ RUN_RESULT }}
       # need to add credentials here
   # In case of self-hosted EC2 errors, remove this block.
   stop-test-runner:
