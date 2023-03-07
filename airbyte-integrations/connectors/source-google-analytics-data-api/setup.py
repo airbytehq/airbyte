@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.16", "PyJWT==2.4.0", "cryptography==37.0.4", "requests==2.28.1"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "PyJWT==2.4.0", "cryptography==37.0.4", "requests==2.28.1"]
 
 TEST_REQUIREMENTS = [
     "freezegun",
