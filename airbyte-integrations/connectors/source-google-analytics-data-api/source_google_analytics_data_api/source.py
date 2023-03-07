@@ -18,13 +18,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.utils import DATE_FORMAT
-from .utils import (
-    GoogleAnalyticsApiQuota, 
-    metrics_type_to_python, 
-    get_dimensions_type, 
-    get_metrics_type, 
-    authenticator_class_map,
-)
+
+from .utils import GoogleAnalyticsApiQuota, authenticator_class_map, get_dimensions_type, get_metrics_type, metrics_type_to_python
 
 # set the quota handler globaly since limitations are the same for all streams
 # the initial values should be saved once and tracked for each stream, inclusivelly.
@@ -210,7 +205,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        
+
         today: datetime.date = datetime.date.today()
 
         start_date = stream_state and stream_state.get(self.cursor_field)
