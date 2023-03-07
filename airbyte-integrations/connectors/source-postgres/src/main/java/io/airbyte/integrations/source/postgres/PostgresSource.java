@@ -8,16 +8,29 @@ import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
+import static io.airbyte.integrations.source.postgres.PostgresSourceStrictEncrypt.SSL_MODE;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.FALSE_STRING_VALUE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.INVALID_CDC_SSL_MODES;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_CA_CERTIFICATE_PATH;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSLMODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_KEY;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_PASSWORD;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_ROOT_CERT;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.TRUE_STRING_VALUE;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -47,6 +60,7 @@ import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.debezium.internals.PostgresReplicationConnection;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -93,22 +107,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
-  public static final String PARAM_SSLMODE = "sslmode";
-  public static final String SSL_MODE = "ssl_mode";
-  public static final String PARAM_SSL = "ssl";
-  public static final String PARAM_SSL_TRUE = "true";
-  public static final String PARAM_SSL_FALSE = "false";
-  public static final String SSL_ROOT_CERT = "sslrootcert";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  public static final String CA_CERTIFICATE_PATH = "ca_certificate_path";
-  public static final String SSL_KEY = "sslkey";
-  public static final String SSL_PASSWORD = "sslpassword";
-  public static final String MODE = "mode";
 
   private List<String> schemas;
   private final FeatureFlags featureFlags;
-  private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
@@ -139,11 +142,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append(AMPERSAND);
     }
 
-    final Map<String, String> sslParameters = parseSSLConfig(config);
+    final Map<String, String> sslParameters = JdbcSSLConnectionUtils.parseSSLConfig(config);
     if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_CA_CERTIFICATE)) {
-      sslParameters.put(CA_CERTIFICATE_PATH,
+      sslParameters.put(PARAM_CA_CERTIFICATE_PATH,
           JdbcSSLConnectionUtils.fileFromCertPem(config.get(PARAM_SSL_MODE).get(PARAM_CA_CERTIFICATE).asText()).toString());
-      LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(CA_CERTIFICATE_PATH));
+      LOGGER.debug("root ssl ca crt file: {}", sslParameters.get(PARAM_CA_CERTIFICATE_PATH));
     }
 
     if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
@@ -174,7 +177,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  @Override
   public String toJDBCQueryParams(final Map<String, String> sslParams) {
     return Objects.isNull(sslParams) ? ""
         : sslParams.entrySet()
@@ -182,11 +184,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
             .map((entry) -> {
               try {
                 final String result = switch (entry.getKey()) {
-                  case AbstractJdbcSource.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
-                      + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
-                  case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
-                  case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
-                  case CLIENT_KEY_STORE_PASS -> SSL_PASSWORD + EQUALS + entry.getValue();
+                  case SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParamInternal(SslMode.valueOf(entry.getValue()))
+                      + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? FALSE_STRING_VALUE : TRUE_STRING_VALUE);
+                  case PARAM_CA_CERTIFICATE_PATH -> PARAM_SSL_ROOT_CERT + EQUALS + entry.getValue();
+                  case CLIENT_KEY_STORE_URL -> PARAM_SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
+                  case CLIENT_KEY_STORE_PASS -> PARAM_SSL_PASSWORD + EQUALS + entry.getValue();
                   default -> "";
                 };
                 return result;
@@ -511,8 +513,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
-      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+      if (config.has(PARAM_SSL_MODE) && config.get(PARAM_SSL_MODE).has(PARAM_MODE)) {
+        final String sslModeValue = config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
@@ -523,11 +525,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       }
     }
     return super.check(config);
-  }
-
-  @Override
-  protected String toSslJdbcParam(final SslMode sslMode) {
-    return toSslJdbcParamInternal(sslMode);
   }
 
   protected static String toSslJdbcParamInternal(final SslMode sslMode) {
