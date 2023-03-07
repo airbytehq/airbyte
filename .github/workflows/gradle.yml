@@ -280,10 +280,12 @@ jobs:
           python-version: "3.9"
 
       - name: Install & Setup Pyenv
+        # Normally, the `ru.vyarus.use-python` lib should create this environment properly. However, we have seen cases
+        # where the .venv folder exists, but we get "Cannot run program ".venv/bin/python": error=2, No such file or directory"
+        # Running `python3 -m venv .venv` here seems to fix the issue
         run: |
           python3 -m pip install virtualenv==16.7.9 --user
-          cd airbyte-cdk/python
-          python3 -m venv .venv
+          python3 -m venv airbyte-cdk/python/.venv
 
       - name: Install automake
         run: apt-get install -y automake build-essential libtool libtool-bin autoconf
