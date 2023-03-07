@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.0
+OAuth: retry refresh access token requests
+
 ## 0.29.3
 Low-Code CDK: duration macro added
 
