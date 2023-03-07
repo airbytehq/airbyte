@@ -132,7 +132,9 @@ jobs:
           echo "pod name is $POD"
           kubectl wait --for=condition=Ready --timeout=20s "pod/$POD"
           kubectl logs --follow $POD
-          export RUN_RESULT=${kubectl logs --tail=5 $POD}
+          echo "reading end of log"
+          kubectl logs --tail=5 $POD
+          export RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
           echo "run result is $RUN_RESULT"
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v1
