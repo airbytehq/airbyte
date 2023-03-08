@@ -13,8 +13,8 @@ export class NotificationService extends AirbyteRequestService {
     return getNotificationSetting(this.requestOptions);
   }
 
-  public saveUsage(saveNotificationUsageBody: SaveNotificationUsageBody) {
-    return saveNotificationUsageSetting(saveNotificationUsageBody, this.requestOptions);
+  public saveUsage(notificationUsage: SaveNotificationUsageBody) {
+    return saveNotificationUsageSetting(notificationUsage, this.requestOptions);
   }
 
   public edit(editNotificationBody: EditNotificationBody) {
