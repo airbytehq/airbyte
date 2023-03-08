@@ -141,6 +141,7 @@ jobs:
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           echo "aaa" >> $GITHUB_OUTPUT
           echo "bbb" >> $GITHUB_OUTPUT
+          kubectl logs --tail=5 $POD | while read line ; do echo $line >> $GITHUB_OUTPUT ; done 
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
