@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Button, Card } from "components";
+import { Button } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { Tooltip } from "components/base/Tooltip";
 import { JobItem } from "components/JobItem/JobItem";
@@ -96,10 +96,10 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <Card>
+      <>
         <TryAfterErrorBlock onClick={onDiscoverSchema} />
         {job && <JobItem job={job} />}
-      </Card>
+      </>
     );
   }
 

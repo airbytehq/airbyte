@@ -19,7 +19,7 @@ export const Container = styled.div`
 
 export const Title = styled.div`
   font-weight: 500;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 30px;
   color: #27272a;
   margin-bottom: 30px;

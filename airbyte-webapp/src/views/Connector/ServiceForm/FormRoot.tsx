@@ -22,10 +22,13 @@ const FormContainer = styled(Form)`
 const LoaderContainer = styled.div`
   text-align: center;
   padding: 22px 0 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const LoadingMessage = styled.div`
-  margin-top: 10px;
+  margin-left: 14px;
 `;
 
 interface FormRootProps {
@@ -84,18 +87,21 @@ const FormRoot: React.FC<FormRootProps> = ({
           successMessage={successMessage}
         />
       ) : ( */}
-      <CreateControls
-        isTestConnectionInProgress={isTestConnectionInProgress}
-        onCancelTesting={onStopTestingConnector}
-        isSubmitting={isSubmitting || isTestConnectionInProgress}
-        errorMessage={errorMessage}
-        formType={formType}
-        isLoadSchema={isLoadingSchema}
-        fetchingConnectorError={fetchingConnectorError}
-        hasSuccess={hasSuccess}
-        disabled={isEditMode || isCopyMode ? !isValid : !(isValid && dirty)}
-        onBack={onBack}
-      />
+      {!isLoadingSchema && (
+        <CreateControls
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
+          errorMessage={errorMessage}
+          formType={formType}
+          isLoadSchema={isLoadingSchema}
+          fetchingConnectorError={fetchingConnectorError}
+          hasSuccess={hasSuccess}
+          disabled={isEditMode || isCopyMode ? !isValid : !(isValid && dirty)}
+          onBack={onBack}
+        />
+      )}
+
       {/* )} */}
     </FormContainer>
   );

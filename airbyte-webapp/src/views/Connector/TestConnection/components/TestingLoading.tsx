@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import styled, { keyframes } from "styled-components";
 
 const Text = styled.div`
-  font-size: 36px;
-  line-height: 58px;
+  font-size: 28px;
+  line-height: 40px;
   margin-bottom: 120px;
 `;
 
@@ -19,8 +19,8 @@ const Loading = keyframes`
 `;
 
 const LoadingImage = styled.img`
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   display: inline-block;
   animation: ${Loading} 1.8s linear infinite;
 `;
