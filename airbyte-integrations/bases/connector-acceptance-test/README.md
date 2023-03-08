@@ -1,31 +1,48 @@
 # Connector Acceptance Tests
-This package gathers multiple test suites to assess the sanity of any Airbyte connector. 
+This package gathers multiple test suites to assess the sanity of any Airbyte connector.
 It is shipped as a [pytest](https://docs.pytest.org/en/7.1.x/) plugin and relies on pytest to discover, configure and execute tests.
 Test-specific documentation can be found [here](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/)).
 
 ## Running the acceptance tests on a source connector:
-1. `cd` into your connector project (e.g. `airbyte-integrations/connectors/source-pokeapi`) 
+1. `cd` into your connector project (e.g. `airbyte-integrations/connectors/source-pokeapi`)
 2. Edit `acceptance-test-config.yml` according to your need. Please refer to our [Connector Acceptance Test Reference](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference/) if you need details about the available options.
 3. Build the connector docker image ( e.g.: `docker build . -t airbyte/source-pokeapi:dev`)
 4. Use one of the following ways to run tests (**from your connector project directory**)
 
-**Using python**
+### Using python
+_Note: these will assume that docker image for connector is already built_
+
+**Running the whole suite**
 ```bash
 python -m pytest integration_tests -p integration_tests.acceptance
 ```
-_Note: this will assume that docker image for connector is already built_
 
-**Using Gradle**
+**Running a specific test**
+```bash
+python -m pytest integration_tests -p integration_tests.acceptance -k "<TEST_NAME>"
+```
+
+
+### Using Gradle
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-<name>:connectorAcceptanceTest
 ```
 _Note: this way will also build docker image for the connector_
 
-**Using Bash**
+### Using Bash
 ```bash
 ./acceptance-test-docker.sh
 ```
 _Note: this will use the latest docker image for connector-acceptance-test and will also build docker image for the connector_
+
+You can also use the following environment variables with the Gradle and Bash commands:
+- `LOCAL_CDK=1`: Run tests against the local python CDK, if relevant. If not set, tests against the latest package published to pypi, or the version specified in the connector's setup.py.
+- `FETCH_SECRETS=1`: Fetch secrets required by CATs. This requires you to have a Google Service Account, and the GCP_GSM_CREDENTIALS environment variable to be set, per the instructions [here](https://github.com/airbytehq/airbyte/tree/b03653a24ef16be641333380f3a4d178271df0ee/tools/ci_credentials).
+
+## Running the acceptance tests on multiple connectors:
+If you are contributing to the python CDK, you may want to validate your changes by running acceptance tests against multiple connectors.
+
+To do so, from the root of the `airbyte` repo, run `./airbyte-cdk/python/bin/run-cats-with-local-cdk.sh -c <connector1>,<connector2>,...`
 
 ## When does acceptance test run?
 * When running local acceptance tests on connector:

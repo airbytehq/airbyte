@@ -22,7 +22,6 @@ select
     json_value("_AIRBYTE_DATA", '$."datetime_no_tz"') as datetime_no_tz,
     json_value("_AIRBYTE_DATA", '$."time_tz"') as time_tz,
     json_value("_AIRBYTE_DATA", '$."time_no_tz"') as time_no_tz,
-    json_value("_AIRBYTE_DATA", '$."property_binary_data"') as property_binary_data,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
     
@@ -69,7 +68,6 @@ select
     cast(nullif(time_no_tz, '') as 
     varchar2(4000)
 ) as time_no_tz,
-    cast(property_binary_data as varchar2(4000)) as property_binary_data,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
     
@@ -121,10 +119,7 @@ select
                 time_tz || '~' ||
             
             
-                time_no_tz || '~' ||
-            
-            
-                property_binary_data
+                time_no_tz
             
     ) as "_AIRBYTE_EXCHANGE_RATE_HASHID",
     tmp.*
@@ -147,7 +142,6 @@ select
     datetime_no_tz,
     time_tz,
     time_no_tz,
-    property_binary_data,
     "_AIRBYTE_AB_ID",
     "_AIRBYTE_EMITTED_AT",
     

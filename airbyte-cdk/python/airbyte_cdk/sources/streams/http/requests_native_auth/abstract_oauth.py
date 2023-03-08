@@ -1,13 +1,19 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import abstractmethod
 from typing import Any, List, Mapping, MutableMapping, Tuple, Union
 
+import backoff
 import pendulum
 import requests
 from requests.auth import AuthBase
+
+from ..exceptions import DefaultBackoffException
+
+logger = logging.getLogger("airbyte")
 
 
 class AbstractOauth2Authenticator(AuthBase):
@@ -64,10 +70,25 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_time=300,
+    )
     def _get_refresh_access_token_response(self):
-        response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            raise
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
@@ -75,11 +96,8 @@ class AbstractOauth2Authenticator(AuthBase):
 
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
-        try:
-            response_json = self._get_refresh_access_token_response()
-            return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+        response_json = self._get_refresh_access_token_response()
+        return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:

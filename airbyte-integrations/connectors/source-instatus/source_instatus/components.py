@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 from dataclasses import InitVar, dataclass
@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 import dpath.util
 from airbyte_cdk.models import AirbyteMessage, SyncMode, Type
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.transformations import AddFields
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
@@ -64,17 +64,17 @@ class ListAddFields(AddFields):
 
 
 @dataclass
-class UpdatesSubstreamSlicer(SubstreamSlicer):
+class UpdatesSubstreamPartitionRouter(SubstreamPartitionRouter):
     """
-    UpdatesSubstreamSlicer iterates over the list of id to create a correct stream slices.
+    UpdatesSubstreamPartitionRouter iterates over the list of id to create a correct stream slices.
 
     In case we need to make request from parent stream with list of object by their ids we need to use
-    a ListAddFields transformer class -> put oll object ids in custom list field -> UpdatesSubstreamSlicer puts every
+    a ListAddFields transformer class -> put oll object ids in custom list field -> UpdatesSubstreamPartitionRouter puts every
     id from that list to slices.
     """
 
     parent_stream_configs: List[ParentStreamConfig]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         if not self.parent_stream_configs:
@@ -83,7 +83,6 @@ class UpdatesSubstreamSlicer(SubstreamSlicer):
             for parent_stream_config in self.parent_stream_configs:
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key
-                stream_state_field = parent_stream_config.stream_slice_field
 
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
@@ -104,7 +103,7 @@ class UpdatesSubstreamSlicer(SubstreamSlicer):
 
                         for stream_state_value in stream_state_values:
                             yield {
-                                stream_state_field: stream_state_value,
+                                parent_stream_config.partition_field: stream_state_value,
                                 "updates_object_id": updates_object_id,
                                 "parent_slice": parent_slice,
                             }

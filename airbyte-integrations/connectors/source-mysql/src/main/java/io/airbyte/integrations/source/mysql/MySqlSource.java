@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -254,7 +254,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           new MySqlCdcStateHandler(stateManager),
           new MySqlCdcConnectorMetadataInjector(),
           MySqlCdcProperties.getDebeziumProperties(database),
-          emittedAt);
+          emittedAt,
+          false);
 
       if (streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());

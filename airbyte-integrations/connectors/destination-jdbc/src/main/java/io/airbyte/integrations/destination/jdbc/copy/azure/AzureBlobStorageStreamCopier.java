@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.azure;
@@ -10,7 +10,7 @@ import com.azure.storage.blob.specialized.SpecializedBlobClientBuilder;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
@@ -47,7 +47,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   protected final String streamName;
   protected final JdbcDatabase db;
   protected final Set<String> activeStagingWriterFileNames = new HashSet<>();
-  private final ExtendedNameTransformer nameTransformer;
+  private final StandardNameTransformer nameTransformer;
   private final SqlOperations sqlOperations;
   private final DestinationSyncMode destSyncMode;
   private final SpecializedBlobClientBuilder specializedBlobClientBuilder;
@@ -62,7 +62,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
                                       final SpecializedBlobClientBuilder specializedBlobClientBuilder,
                                       final JdbcDatabase db,
                                       final AzureBlobStorageConfig azureBlobConfig,
-                                      final ExtendedNameTransformer nameTransformer,
+                                      final StandardNameTransformer nameTransformer,
                                       final SqlOperations sqlOperations) {
     this.stagingFolder = stagingFolder;
     this.destSyncMode = destSyncMode;

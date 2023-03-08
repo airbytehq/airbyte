@@ -8,7 +8,7 @@ To set up the Harvest source connector, you'll need a Mixpanel [Service Account]
 
 ## Set up the Mixpanel connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Mixpanel** from the Source type dropdown.
 4. Enter the name for the Mixpanel connector.

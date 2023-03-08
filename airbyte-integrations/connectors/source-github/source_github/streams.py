@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import time
@@ -41,7 +41,6 @@ class GithubStream(HttpStream, ABC):
         MAX_RETRIES = 3
         adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
         self._session.mount("https://", adapter)
-        self._session.mount("http://", adapter)
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:

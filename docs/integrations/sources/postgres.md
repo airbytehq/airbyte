@@ -48,7 +48,7 @@ To replicate data from multiple Postgres schemas, re-run the command to grant ac
 Grant the user read-only access to the relevant tables:
 
 ```
-GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
+GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ```
 
 Allow user to see tables created in the future:
@@ -57,17 +57,12 @@ Allow user to see tables created in the future:
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
 ```
 
-Additionally, if you plan to configure CDC for the Postgres source connector, grant `REPLICATION` and `LOGIN` permissions to the user:
+Additionally, if you plan to configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user:
 
 ```
-CREATE ROLE <role_name> REPLICATION LOGIN;
+ALTER USER <user_name> REPLICATION;
 ```
 
-and grant that role to the user:
-
-```
-GRANT <role_name> to <user_name>;
-```
 
 **Syncing a subset of columns​**
 
@@ -91,7 +86,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
 ### Step 2: Set up the Postgres connector in Airbyte
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Postgres** from the Source type dropdown.
 4. Enter a name for your source.
@@ -214,22 +209,12 @@ az postgres server configuration set --resource-group group --server-name server
 az postgres server restart --resource-group group --name server
 ```
 
-#### Step 2: Select a replication plugin​
-
-We recommend using a [pgoutput](https://www.postgresql.org/docs/9.6/logicaldecoding-output-plugin.html) plugin (the standard logical decoding plugin in Postgres). If the replication table contains multiple JSON blobs and the table size exceeds 1 GB, we recommend using a [wal2json](https://github.com/eulerto/wal2json) instead. Note that wal2json may require additional installation for Bare Metal, VMs (EC2/GCE/etc), Docker, etc. For more information read the [wal2json documentation](https://github.com/eulerto/wal2json).
-
 #### Step 3: Create replication slot​
 
-To create a replication slot called `airbyte_slot` using pgoutput, run:
+Airbyte currently supports pgoutput plugin only. To create a replication slot called `airbyte_slot` using pgoutput, run:
 
 ```
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
-```
-
-To create a replication slot called `airbyte_slot` using wal2json, run:
-
-```
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 ```
 
 #### Step 4: Create publications and replication identities for tables​
@@ -411,6 +396,17 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2022-03-06 | [23112](https://github.com/airbytehq/airbyte/pull/23112) | Upgrade Debezium version to 2.1.2                                                                                                                                          |
+| 1.0.51  | 2022-03-02 | [23642](https://github.com/airbytehq/airbyte/pull/23642) | Revert : Support JSONB datatype for Standard sync mode                                                                                                                     |
+| 1.0.50  | 2022-02-27 | [21695](https://github.com/airbytehq/airbyte/pull/21695) | Support JSONB datatype for Standard sync mode                                                                                                                              |
+| 1.0.49  | 2022-02-24 | [23383](https://github.com/airbytehq/airbyte/pull/23383) | Fixed bug with non readable double-quoted values within a database name or column name                                                                                     |
+| 1.0.48  | 2022-02-23 | [22623](https://github.com/airbytehq/airbyte/pull/22623) | Increase max fetch size of JDBC streaming mode                                                                                                                             |
+| 1.0.47  | 2022-02-22 | [22221](https://github.com/airbytehq/airbyte/pull/23138) | Fix previous versions which doesn't verify privileges correctly, preventing CDC syncs to run.                                                                              |
+| 1.0.46  | 2022-02-21 | [23105](https://github.com/airbytehq/airbyte/pull/23105) | Include log levels and location information (class, method and line number) with source connector logs published to Airbyte Platform.                                      |
+| 1.0.45  | 2022-02-09 | [22221](https://github.com/airbytehq/airbyte/pull/22371) | Ensures that user has required privileges for CDC syncs.                                                                                                                   |  
+|         | 2022-02-15 | [23028](https://github.com/airbytehq/airbyte/pull/23028) |                                                                                                                                                                            |
+| 1.0.44  | 2022-02-06 | [22221](https://github.com/airbytehq/airbyte/pull/22221) | Exclude new set of system tables when using `pg_stat_statements` extension.                                                                                                |  
+| 1.0.43  | 2022-02-06 | [21634](https://github.com/airbytehq/airbyte/pull/21634) | Improve Standard sync performance by caching objects.                                                                                                                      |  
 | 1.0.42  | 2022-01-23 | [21523](https://github.com/airbytehq/airbyte/pull/21523) | Check for null in cursor values before replacing.                                                                                                                          |  
 | 1.0.41  | 2022-01-25 | [20939](https://github.com/airbytehq/airbyte/pull/20939) | Adjust batch selection memory limits databases.                                                                                                                            |  
 | 1.0.40  | 2023-01-24 | [21825](https://github.com/airbytehq/airbyte/pull/21825) | Put back the original change that will cause an incremental sync to error if table contains a NULL value in cursor column.                                                 |

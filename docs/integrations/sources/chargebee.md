@@ -8,7 +8,7 @@ To set up the Chargebee source connector, you'll need the [Chargebee API key](ht
 
 ## Set up the Chargebee connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
@@ -72,22 +72,25 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject                                                                                                                     |
-|:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------------------------------|
-| 0.1.16  | 2022-10-06 | [17661](https://github.com/airbytehq/airbyte/pull/17661) | Make `transaction` stream to be consistent with `S3` by using type transformer |
-| 0.1.15  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                                                |
-| 0.1.14  | 2022-09-23 | [17056](https://github.com/airbytehq/airbyte/pull/17056) | Add "custom fields" to the relevant Chargebee source data streams                                                           |
-| 0.1.13  | 2022-08-18 | [15743](https://github.com/airbytehq/airbyte/pull/15743) | Fix transaction `exchange_rate` field type                                                                                  |
-| 0.1.12  | 2022-07-13 | [14672](https://github.com/airbytehq/airbyte/pull/14672) | Fix transaction sort by                                                                                                     |
-| 0.1.11  | 2022-03-03 | [10827](https://github.com/airbytehq/airbyte/pull/10827) | Fix Credit Note stream                                                                                                      |
-| 0.1.10  | 2022-03-02 | [10795](https://github.com/airbytehq/airbyte/pull/10795) | Add support for Credit Note stream                                                                                          |
-| 0.1.9   | 2022-0224  | [10312](https://github.com/airbytehq/airbyte/pull/10312) | Add support for Transaction Stream                                                                                          |
-| 0.1.8   | 2022-02-22 | [10366](https://github.com/airbytehq/airbyte/pull/10366) | Fix broken `coupon` stream + add unit tests                                                                                 |
-| 0.1.7   | 2022-02-14 | [10269](https://github.com/airbytehq/airbyte/pull/10269) | Add support for Coupon stream                                                                                               |
-| 0.1.6   | 2022-02-10 | [10143](https://github.com/airbytehq/airbyte/pull/10143) | Add support for Event stream                                                                                                |
-| 0.1.5   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications                                                                           |
-| 0.1.4   | 2021-09-27 | [6454](https://github.com/airbytehq/airbyte/pull/6454) | Fix examples in spec file                                                                                                   |
-| 0.1.3   | 2021-08-17 | [5421](https://github.com/airbytehq/airbyte/pull/5421) | Add support for "Product Catalog 2.0" specific streams: `Items`, `Item prices` and `Attached Items`                         |
-| 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067) | Prepare connector for publishing                                                                                            |
-| 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539) | Add entrypoint and bump version for connector                                                                               |
-| 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410) | New Source: Chargebee                                                                                                       |
+| Version | Date       | Pull Request                                             | Subject                                                                                             |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.2.2   | 2023-02-17 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to CDK beta 0.29; fix schemas                                                               |
+| 0.2.1   | 2023-02-17 | [23207](https://github.com/airbytehq/airbyte/pull/23207) | Edited stream schemas to get rid of unnecessary `enum`                                              |
+| 0.2.0   | 2023-01-21 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to YAML; add new streams                                                                    |
+| 0.1.16  | 2022-10-06 | [17661](https://github.com/airbytehq/airbyte/pull/17661) | Make `transaction` stream to be consistent with `S3` by using type transformer                      |
+| 0.1.15  | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state.                                                                        |
+| 0.1.14  | 2022-09-23 | [17056](https://github.com/airbytehq/airbyte/pull/17056) | Add "custom fields" to the relevant Chargebee source data streams                                   |
+| 0.1.13  | 2022-08-18 | [15743](https://github.com/airbytehq/airbyte/pull/15743) | Fix transaction `exchange_rate` field type                                                          |
+| 0.1.12  | 2022-07-13 | [14672](https://github.com/airbytehq/airbyte/pull/14672) | Fix transaction sort by                                                                             |
+| 0.1.11  | 2022-03-03 | [10827](https://github.com/airbytehq/airbyte/pull/10827) | Fix Credit Note stream                                                                              |
+| 0.1.10  | 2022-03-02 | [10795](https://github.com/airbytehq/airbyte/pull/10795) | Add support for Credit Note stream                                                                  |
+| 0.1.9   | 2022-0224  | [10312](https://github.com/airbytehq/airbyte/pull/10312) | Add support for Transaction Stream                                                                  |
+| 0.1.8   | 2022-02-22 | [10366](https://github.com/airbytehq/airbyte/pull/10366) | Fix broken `coupon` stream + add unit tests                                                         |
+| 0.1.7   | 2022-02-14 | [10269](https://github.com/airbytehq/airbyte/pull/10269) | Add support for Coupon stream                                                                       |
+| 0.1.6   | 2022-02-10 | [10143](https://github.com/airbytehq/airbyte/pull/10143) | Add support for Event stream                                                                        |
+| 0.1.5   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications                                                   |
+| 0.1.4   | 2021-09-27 | [6454](https://github.com/airbytehq/airbyte/pull/6454)   | Fix examples in spec file                                                                           |
+| 0.1.3   | 2021-08-17 | [5421](https://github.com/airbytehq/airbyte/pull/5421)   | Add support for "Product Catalog 2.0" specific streams: `Items`, `Item prices` and `Attached Items` |
+| 0.1.2   | 2021-07-30 | [5067](https://github.com/airbytehq/airbyte/pull/5067)   | Prepare connector for publishing                                                                    |
+| 0.1.1   | 2021-07-07 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add entrypoint and bump version for connector                                                       |
+| 0.1.0   | 2021-06-30 | [3410](https://github.com/airbytehq/airbyte/pull/3410)   | New Source: Chargebee                                                                               |

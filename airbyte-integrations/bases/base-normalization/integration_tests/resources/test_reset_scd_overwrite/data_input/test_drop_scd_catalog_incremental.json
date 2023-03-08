@@ -7,25 +7,29 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "date": {
-              "$ref": "WellKnownTypes.json#/definitions/Date"
+              "type": "string",
+              "format": "date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time"
             },
             "datetime_to_string": {
-              "$ref": "WellKnownTypes.json#/definitions/String"
+              "type": "string"
             },
             "string_to_dt": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
             },
             "number_to_int": {
-              "$ref": "WellKnownTypes.json#/definitions/Integer"
+              "type": "integer"
             },
             "int_to_number": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "type": "number"
             }
           }
         },
