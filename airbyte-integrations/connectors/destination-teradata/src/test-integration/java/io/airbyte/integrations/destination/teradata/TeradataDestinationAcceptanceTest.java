@@ -35,76 +35,77 @@ import org.slf4j.LoggerFactory;
 
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
-  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
+    private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
+    private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
-  private JsonNode configJson;
-  private JdbcDatabase database;
-  private DataSource dataSource;
-  private TeradataDestination destination = new TeradataDestination();
-  private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
+    private JsonNode configJson;
+    private JdbcDatabase database;
+    private DataSource dataSource;
+    private TeradataDestination destination = new TeradataDestination();
+    private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
 
-  @Override
-  protected String getImageName() {
-      return "airbyte/destination-teradata:dev";
-  }
+    @Override
+    protected String getImageName() {
+        return "airbyte/destination-teradata:dev";
+    }
 
-  @Override
-  protected JsonNode getConfig() {
-    return configJson;
-  }
+    @Override
+    protected JsonNode getConfig() {
+      return configJson;
+    }
 
-  public JsonNode getStaticConfig() throws Exception {
-    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
-    return config;
-  }
+    public JsonNode getStaticConfig() throws Exception {
+      final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/config.json")));
+      return config;
+    }
 
-  @Override
-  protected JsonNode getFailCheckConfig() throws Exception {
-    final JsonNode credentialsJsonString = Jsons
-        .deserialize(Files.readString(Paths.get("secrets/failureconfig.json")));
-    final AirbyteConnectionStatus check = new TeradataDestination().check(credentialsJsonString);
-    assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
-    return credentialsJsonString;
-  }
+    @Override
+    protected JsonNode getFailCheckConfig() throws Exception {
+      final JsonNode credentialsJsonString = Jsons
+          .deserialize(Files.readString(Paths.get("secrets/failureconfig.json")));
+      final AirbyteConnectionStatus check = new TeradataDestination().check(credentialsJsonString);
+      assertEquals(AirbyteConnectionStatus.Status.FAILED, check.getStatus());
+      return credentialsJsonString;
+    }
 
-  @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
-      throws Exception {
-    final List<JsonNode> records = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
-    return records;
+    @Override
+    protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                             final String streamName,
+                                             final String namespace,
+                                             final JsonNode streamSchema)
+        throws Exception {
+      final List<JsonNode> records = retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace);
+      return records;
 
-  }
+    }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
-      throws SQLException {
-    return database.bufferedResultSetQuery(
-        connection -> {
-          var statement = connection.createStatement();
-          return statement.executeQuery(
-              String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
-                  JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
-        },
-        rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
-  }
+    private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
+        throws SQLException {
+      return database.bufferedResultSetQuery(
+          connection -> {
+            var statement = connection.createStatement();
+            return statement.executeQuery(
+                String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                    JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          },
+          rs -> Jsons.deserialize(rs.getString(JavaBaseConstants.COLUMN_NAME_DATA)));
+    }
 
-  @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    final String schemaName = Strings.addRandomSuffix("integration_test_teradata", "_", 5);
-    final String createSchemaQuery = String
-        .format(String.format("CREATE DATABASE \"%s\" AS PERM = 1e9 SKEW = 10 PERCENT", schemaName));
-    try {
-      this.configJson = Jsons.clone(getStaticConfig());
-      ((ObjectNode) configJson).put("schema", schemaName);
+    @Override
+    protected void setup(TestDestinationEnv testEnv) {
+      final String schemaName = Strings.addRandomSuffix("integration_test_teradata", "_", 5);
+      final String createSchemaQuery = String
+          .format(String.format("CREATE DATABASE \"%s\" AS PERM = 1e9 SKEW = 10 PERCENT", schemaName));
+      try {
+        this.configJson = Jsons.clone(getStaticConfig());
+        ((ObjectNode) configJson).put("schema", schemaName);
 
-      dataSource = getDataSource(configJson);
-      database = getDatabase(dataSource);
-      database.execute(createSchemaQuery);
-    } catch (Exception e) {
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + schemaName + " creation got failed.");
+        dataSource = getDataSource(configJson);
+        database = getDatabase(dataSource);
+        database.execute(createSchemaQuery);
+      } catch (Exception e) {
+        AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "Database " + schemaName + " creation got failed.");
+      }
     }
 
     @Override
