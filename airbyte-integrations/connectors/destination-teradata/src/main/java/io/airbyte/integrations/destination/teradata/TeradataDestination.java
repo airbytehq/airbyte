@@ -43,11 +43,11 @@ public class TeradataDestination extends AbstractJdbcDestination implements Dest
     private static final String CA_CERTIFICATE = "ca.pem";
 
     public static void main(String[] args) throws Exception {
-      new IntegrationRunner(new TeradataDestination()).run(args);
+        new IntegrationRunner(new TeradataDestination()).run(args);
     }
 
     public TeradataDestination() {
-        super(DRIVER_CLASS, new ExtendedNameTransformer(), new TeradataSqlOperations());
+        super(DRIVER_CLASS, new StandardNameTransformer(), new TeradataSqlOperations());
     }
 
     @Override
