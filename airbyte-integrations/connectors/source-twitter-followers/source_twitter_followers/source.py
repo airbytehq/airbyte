@@ -6,7 +6,7 @@ import datetime
 import time
 import json
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -14,48 +14,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-"""
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
-
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.yaml file.
-"""
-
 
 # Basic full refresh stream
 class TwitterFollowersStream(HttpStream, ABC):
-    """
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class TwitterFollowersStream(HttpStream, ABC)` which is the current class
-    `class Customers(TwitterFollowersStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(TwitterFollowersStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalTwitterFollowersStream((TwitterFollowersStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
-
-    # Fill in the url base. Required.
     url_base = "https://api.twitter.com"
 
     def __init__(self, authenticator: TokenAuthenticator, config: Mapping[str, Any], **kwargs):
@@ -67,26 +28,33 @@ class TwitterFollowersStream(HttpStream, ABC):
         self.job_time = datetime.datetime.now()
         self.auth = authenticator
 
+    @property
+    def use_cache(self):
+        """
+        Override if needed. If True, all records will be cached.
+        """
+        return True
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        """
+        return 10
+
+    @property
+    def retry_factor(self) -> float:
+        """
+        Override if needed. Specifies factor for backoff policy.
+        """
+        return 10
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Override this method to define a pagination strategy. If you will not be using pagination, no action is required - just return None.
-
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
-
-        For example, if the API accepts a 'page' parameter to determine which page of the result to return, and a response from the API contains a
-        'page' number, then this method should probably return a dict {'page': response.json()['page'] + 1} to increment the page count by 1.
-        The request_params method should then read the input next_page_token and set the 'page' param to next_page_token['page'].
-
-        :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
-                If there are no more pages in the result, return None.
-        """
         # api 限制 15 calls/min,所以要sleep 一下
         print("next_page_token \n", response.json()["next_cursor"])
         if response.json()["next_cursor"]:
-            print("next_page_token find next page,sleep 10 seconds!")
-            time.sleep(10)
+            print("next_page_token find next page,sleep 60 seconds!")
+            time.sleep(60)
             return {"cursor": response.json()["next_cursor"]}
         else:
             return None
@@ -129,20 +97,10 @@ class TwitterFollowersStream(HttpStream, ABC):
 
 
 class Followers(TwitterFollowersStream):
-    """
-    Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = "id"
-
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         return "/1.1/followers/ids.json"
 
 
@@ -152,10 +110,6 @@ class TwitterTweetMetrics(TwitterFollowersStream):
     def path(
             self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
         user_result = requests.get(f'{self.url_base}/2/users/by?usernames={self.screen_name}', headers=self.auth.get_auth_header())
         user_result = json.loads(user_result.text)
         user_id = user_result['data'][0]['id']
@@ -177,8 +131,8 @@ class TwitterTweetMetrics(TwitterFollowersStream):
 
         # api 限制 15 calls/min,所以要sleep 一下
         if 'next_token' in meta.keys():
-            print("next_page_token find next page,sleep 10 seconds!")
-            time.sleep(10)
+            print("next_page_token find next page,sleep 60 seconds!")
+            time.sleep(60)
             return {"pagination_token": meta["next_token"]}
         else:
             return None
