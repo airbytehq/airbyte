@@ -4,7 +4,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { CheckBox, H3 } from "components";
+import { CheckBox, H4 } from "components";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/base/Tooltip";
 import { LoadingBackdrop } from "components/LoadingBackdrop";
 import { Cell, Header } from "components/SimpleTableComponents";
@@ -204,15 +204,15 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
         <HeaderBlock>
           {mode !== "readonly" ? (
             <>
-              <H3 bold>
+              <H4 bold>
                 <FormattedMessage id="form.dataSync" />
-              </H3>
+              </H4>
               {additionalControl}
             </>
           ) : (
-            <H3 bold>
+            <H4 bold>
               <FormattedMessage id="form.dataSync.readonly" />
-            </H3>
+            </H4>
           )}
         </HeaderBlock>
         {mode !== "readonly" && <Search onSearch={setSearchString} />}

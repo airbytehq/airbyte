@@ -130,7 +130,6 @@ const StatusView: React.FC<StatusViewProps> = ({
 
   useEffect(() => {
     const jobRunningOrPending = getJobRunningOrPending(jobs);
-    // console.log(JSON.stringify(jobs[0], null, 2));
     // getLastSyncTime(jobs[0].job?.updatedAt);
     findLastSyncTime();
 

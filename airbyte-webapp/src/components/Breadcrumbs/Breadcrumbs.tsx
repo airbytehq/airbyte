@@ -8,8 +8,8 @@ const BreadcrumbsContainer = styled.div`
   cursor: default;
   display: flex;
   align-items: center;
-  height: 80px;
-  font-size: 16px;
+  height: 70px;
+  font-size: 15px;
 `;
 
 const BreadcrumbsItem = styled.div<{ active: boolean }>`

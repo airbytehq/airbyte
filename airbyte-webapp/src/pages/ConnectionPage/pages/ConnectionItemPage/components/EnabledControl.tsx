@@ -14,14 +14,14 @@ import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/
 
 const ToggleLabel = styled.label`
   //text-transform: uppercase;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 19px;
   font-weight: 500;
   color: ${({ theme }) => theme.black};
   display: inline-block;
   text-align: right;
   cursor: pointer;
-  margin-left: 16px;
+  margin-left: 12px;
 `;
 
 const Content = styled.div`
@@ -29,8 +29,8 @@ const Content = styled.div`
   align-items: center;
   justify-content: center;
   border: 1px solid #d1d5db;
-  width: 168px;
-  height: 46px;
+  width: 152px;
+  height: 40px;
   border-radius: 6px;
 
   &:hover {
@@ -75,6 +75,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
   return (
     <Content>
       <Switch
+        swithSize="medium"
         disabled={disabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}

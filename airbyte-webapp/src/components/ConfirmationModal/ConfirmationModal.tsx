@@ -9,7 +9,7 @@ import Modal from "components/Modal";
 import useLoadingState from "../../hooks/useLoadingState";
 
 const Content = styled.div`
-  width: 585px;
+  width: 540px;
   // font-size: 14px;
   // line-height: 28px;
   //padding: 30px;
@@ -23,8 +23,8 @@ const ButtonContent = styled.div`
 `;
 
 const ButtonWithMargin = styled(Button)`
-  width: 160px;
-  height: 46px;
+  min-width: 140px;
+  height: 44px;
   border-radius: 6px;
   font-size: 16px;
   color: #27272a;
@@ -36,14 +36,14 @@ const ButtonLoadingContainer = styled(LoadingButton)`
   border-radius: 6px;
   font-size: 16px;
   margin-right: 12px;
-  min-width: 160px;
+  min-width: 140px;
 `;
 
 const Text = styled.div<{
   center?: boolean;
 }>`
   white-space: pre-line;
-  font-size: 18px;
+  font-size: 15px;
   line-height: 30px;
   text-align: ${({ center }) => (center ? "center" : "left")};
   padding: ${({ center }) => (center ? "20px 30px" : "0 0 20px 0")};

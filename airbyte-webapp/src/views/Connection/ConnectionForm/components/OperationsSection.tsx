@@ -3,7 +3,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { H3 } from "components";
+import { H4 } from "components";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
@@ -19,7 +19,7 @@ interface OperationsSectionProps {
   wrapper: React.ComponentType;
 }
 
-const SectionTitle = styled(H3)`
+const SectionTitle = styled(H4)`
   margin-bottom: 30px;
 `;
 

@@ -50,7 +50,7 @@ const Container = styled.div`
 `;
 
 const TabContainer = styled.div`
-  margin: 20px 20px 40px 0;
+  margin: 20px 20px 20px 0;
 `;
 
 const TableContainer = styled.div`
@@ -243,7 +243,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <ConnectorDocumentationWrapper>
         <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" />
         <TabContainer>
-          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} size="16" lastOne />
+          <TabMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} lastOne />
         </TabContainer>
         <ApiErrorBoundary>
           <Suspense fallback={<LoadingPage />}>

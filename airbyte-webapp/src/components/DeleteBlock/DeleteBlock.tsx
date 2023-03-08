@@ -14,27 +14,27 @@ interface IProps {
 
 const Title = styled.div`
   font-weight: 500;
-  font-size: 20px;
+  font-size: 18px;
   line-height: 30px;
   color: #27272a;
 `;
 
 const Text = styled.div`
   font-weight: 500;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 30px;
   color: #999999;
-  margin: 12px 0;
+  margin: 16px 0;
   white-space: pre-line;
 `;
 
 const DeleteButton = styled(Button)`
   // width: 168px;
-  height: 46px;
+  height: 36px;
   background: #ff5454;
   border-radius: 6px;
   border-color: #ff5454;
-  font-size: 16px;
+  font-size: 14px;
   color: #ffffff;
 `;
 

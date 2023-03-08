@@ -19,7 +19,7 @@ export interface ButtonItems {
 }
 
 const Container = styled.div`
-  max-width: 858px;
+  max-width: 758px;
   margin: 0 auto 40px auto;
 `;
 

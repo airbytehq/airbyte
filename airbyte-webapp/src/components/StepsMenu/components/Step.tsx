@@ -33,7 +33,7 @@ const StepView = styled.div<{
   // background: ${({ theme, isActive }) => (isActive ? theme.primaryColor12 : "none")};
   // color: ${({ theme, isActive }) => (isActive ? theme.primaryColor : theme.greyColor60)};
   font-weight: 500;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 20px;
   transition: 0.3s;
   display: flex;
@@ -62,8 +62,8 @@ const StepBlock = styled.div<{
   lightMode?: boolean;
   nonClickable?: boolean;
 }>`
-  width: 162px;
-  height: 44px;
+  width: 152px;
+  height: 40px;
   border-radius: 34px;
   display: flex;
   align-items: center;

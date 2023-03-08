@@ -16,16 +16,16 @@ export const Box = styled.div<{
   checked: boolean;
 }>`
   box-sizing: border-box;
-  width: 210px;
-  height: 172px;
+  width: 174px;
+  height: 160px;
   border: 2px solid ${({ checked, theme }) => (checked ? theme.primaryColor : "#eff0f5")};
   border-radius: 8px;
   display: flex;
   align-items: center;
   flex-direction: column;
-  margin-right: 84px;
-  margin-bottom: 43px;
-  font-size: 20px;
+  margin-right: 114px;
+  margin-bottom: 44px;
+  font-size: 16px;
   text-align: center;
   background: #fff;
   padding: 10px;
@@ -39,9 +39,9 @@ export const Box = styled.div<{
 `;
 
 export const Image = styled(ConnectorIcon)`
-  width: 106px;
-  height: 106px;
-  margin-bottom: 6px;
+  width: 88px;
+  height: 88px;
+  margin-bottom: 10px;
 `;
 
 const Card: React.FC<CardProps> = ({ data, onClick, checked }) => {
