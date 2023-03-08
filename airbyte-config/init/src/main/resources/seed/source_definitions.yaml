@@ -163,9 +163,6 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
-  allowedHosts:
-    hosts:
-      - "${host}"
 - name: Babelforce
   sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
   dockerRepository: airbyte/source-babelforce
@@ -585,9 +582,6 @@
   icon: fauna.svg
   sourceType: database
   releaseStage: alpha
-  allowedHosts:
-    hosts:
-      - "${domain}"
 - name: File (CSV, JSON, Excel, Feather, Parquet)
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
@@ -1623,9 +1617,6 @@
   icon: redshift.svg
   sourceType: database
   releaseStage: alpha
-  allowedHosts:
-    hosts:
-      - "${host}"
 - name: Reply.io
   sourceDefinitionId: 8cc6537e-f8a6-423c-b960-e927af76116e
   dockerRepository: airbyte/source-reply-io

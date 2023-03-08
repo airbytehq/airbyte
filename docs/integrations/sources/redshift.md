@@ -54,7 +54,6 @@ All Redshift connections are encrypted using SSL
 
 | Version | Date       | Pull Request | Subject                                                                                                   |
 |:--------|:-----------| :-----       |:----------------------------------------------------------------------------------------------------------|
-| 0.3.17  | 2023-03-06 | [23455](https://github.com/airbytehq/airbyte/pull/23455)   | For network isolation, source connector accepts a list of hosts it is allowed to connect to |
 | 0.3.16  | 2022-12-14 | [20436](https://github.com/airbytehq/airbyte/pull/20346)   | Consolidate date/time values mapping for JDBC sources                          |
 | 0.3.15  | 2022-10-13 | [15535](https://github.com/airbytehq/airbyte/pull/16238) | Update incremental query to avoid data missing when new data is inserted at the same time as a sync starts under non-CDC incremental mode |
 | 0.3.14  | 2022-09-01 | [16258](https://github.com/airbytehq/airbyte/pull/16258) | Emit state messages more frequently |
