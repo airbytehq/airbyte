@@ -1908,7 +1908,7 @@
 - name: Tempo
   sourceDefinitionId: d1aa448b-7c54-498e-ad95-263cbebcd2db
   dockerRepository: airbyte/source-tempo
-  dockerImageTag: 0.3.0
+  dockerImageTag: 0.3.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/tempo
   icon: tempo.svg
   sourceType: api
