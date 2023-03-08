@@ -18,6 +18,7 @@ from source_pipedrive.streams import (
     ActivityTypes,
     Currencies,
     DealFields,
+    DealProducts,
     Deals,
     Files,
     Filters,
@@ -60,12 +61,14 @@ class SourcePipedrive(AbstractSource):
         config = self._validate_and_transform(config)
         stream_kwargs = {"authenticator": self.get_authenticator(config)}
         incremental_kwargs = {**stream_kwargs, "replication_start_date": config["replication_start_date"]}
+        deals_stream = Deals(**incremental_kwargs)
         streams = [
             Activities(**incremental_kwargs),
             ActivityFields(**stream_kwargs),
             ActivityTypes(**incremental_kwargs),
             Currencies(**stream_kwargs),
-            Deals(**incremental_kwargs),
+            deals_stream,
+            DealProducts(parent=deals_stream, **stream_kwargs),
             DealFields(**stream_kwargs),
             Files(**incremental_kwargs),
             Filters(**incremental_kwargs),

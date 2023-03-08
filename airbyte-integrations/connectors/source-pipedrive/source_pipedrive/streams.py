@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
@@ -228,3 +229,22 @@ class Users(PipedriveStream):
         record_gen = super().parse_response(response=response, **kwargs)
         for records in record_gen:
             yield from records
+
+
+class DealProducts(PipedriveStream):
+    """https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts"""
+
+    def __init__(self, parent, **kwargs):
+        self.parent = parent
+        super().__init__(**kwargs)
+
+    def path(self, stream_slice, **kwargs) -> str:
+        return f"deals/{stream_slice['deal_id']}/products"
+
+    def stream_slices(self, sync_mode, cursor_field=None, stream_state=None):
+        stream_slices = self.parent.stream_slices(sync_mode=SyncMode.full_refresh)
+        for stream_slice in stream_slices:
+            records = self.parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+            for record in records:
+                if record["products_count"]:
+                    yield {"deal_id": record["id"]}

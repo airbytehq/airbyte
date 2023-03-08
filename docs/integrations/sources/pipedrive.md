@@ -68,6 +68,8 @@ Apart from `Fields` streams, all other streams support incremental.
 
 * [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
 
+* [DealProducts](https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts)
+
 * [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
 
 * [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
@@ -110,7 +112,7 @@ The Pipedrive connector will gracefully handle rate limits. For more information
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
-| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 10 new streams                                             |
+| 0.1.16  | 2023-03-08 | [23789](https://github.com/airbytehq/airbyte/pull/23789) | Add 11 new streams                                             |
 | 0.1.15  | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth                                                  |
 | 0.1.14  | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals"    |
 | 0.1.13  | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state                                    |
