@@ -354,7 +354,10 @@ subprojects { subproj ->
     }
 
     test {
-        maxParallelForks = Runtime.runtime.availableProcessors() ?: 1
+        //This allows to set up a `gradle.properties` file inside the connector folder to reduce number of threads and reduce parallelization.
+        //Specially useful for connectors that shares resources (like Redshift or Snowflake).
+        ext.numThreads = project.hasProperty('numThreads') ? project.getProperty('numThreads') : Runtime.runtime.availableProcessors() ?: 1
+        maxParallelForks = numThreads
 
         jacoco {
             enabled = true
