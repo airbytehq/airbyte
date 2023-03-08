@@ -79,7 +79,7 @@ def record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
     )
 
 
-def setup_responses(config):
+def setup_good_responses(config):
     responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=200)
     responses.add(responses.POST, f"{config['deployment_url']}/api/streaming_import/import_airbyte_records", status=200)
     responses.add(responses.GET, f"{config['deployment_url']}/version", status=200)
@@ -92,9 +92,22 @@ def setup_responses(config):
     )
 
 
+def setup_bad_response(config):
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=400, json={"code": "ErrorCode", "message": "error message"})
+
+
+@responses.activate
+def test_bad_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog):
+    setup_bad_response(config)
+    client = ConvexClient(config, {})
+    with pytest.raises(Exception) as e:
+        client.delete([])
+    assert "/api/streaming_import/clear_tables failed with: 400: {'code': 'ErrorCode', 'message': 'error message'}" in str(e.value)
+
+
 @responses.activate
 def test_check(config: ConvexConfig):
-    setup_responses(config)
+    setup_good_responses(config)
     destination = DestinationConvex()
     logger = logging.getLogger("airbyte")
     destination.check(logger, config)
@@ -102,7 +115,7 @@ def test_check(config: ConvexConfig):
 
 @responses.activate
 def test_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog):
-    setup_responses(config)
+    setup_good_responses(config)
     append_stream, overwrite_stream, dedup_stream = (
         configured_catalog.streams[0].stream.name,
         configured_catalog.streams[1].stream.name,
