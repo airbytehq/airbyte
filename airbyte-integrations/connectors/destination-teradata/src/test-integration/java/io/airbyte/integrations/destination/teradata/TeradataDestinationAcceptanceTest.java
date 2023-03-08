@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class TeradataDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TeradataDestinationAcceptanceTest.class);
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final StandardNameTransformer namingResolver = new StandardNameTransformer();
 
   private JsonNode configJson;
   private JdbcDatabase database;
