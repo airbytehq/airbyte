@@ -37,7 +37,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
-          ec2-instance-type: "c5.2xlarge" # https://aws.amazon.com/ec2/instance-types/
+          ec2-instance-type: "c5.4xlarge" # https://aws.amazon.com/ec2/instance-types/
   launch_connector_tests:
     timeout-minutes: 120
     needs: start-runner
@@ -68,7 +68,7 @@ jobs:
         # TODO update the git url before merge
         run: pip install --quiet 'git+https://github.com/airbytehq/airbyte.git@augustin/poc/ci-in-python#subdirectory=tools/ci_connector_ops'
       - name: Run connectors-ci test-connectors
-        run: connectors-ci --is-ci test-connectors ${{ github.event.inputs.test-connectors-options }}
+        run: connectors-ci --is-ci --gha-workflow-run-id=${{ github.run_id }}test-connectors ${{ github.event.inputs.test-connectors-options }}
         env:
           CI_GIT_BRANCH: ${{ steps.extract_branch.outputs.branch }}
   stop-runner:
