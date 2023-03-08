@@ -6,6 +6,5 @@
     "aws_access_key_id": "dummy",
     "aws_secret_access_key": "dummykey"
   },
-  "format": { "format_type": "Parquet", "compression_codec": "SNAPPY" },
   "partitioning": "NO PARTITIONING"
 }

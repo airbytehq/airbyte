@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import json
-import pytest
 from typing import Any, Mapping
 
+import pytest
 from destination_aws_datalake import DestinationAwsDatalake
 from destination_aws_datalake.aws import AwsHandler
 from destination_aws_datalake.config_reader import CompressionCodec, ConnectorConfig

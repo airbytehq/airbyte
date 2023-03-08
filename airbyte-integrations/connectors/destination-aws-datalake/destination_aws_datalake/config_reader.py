@@ -96,8 +96,8 @@ class ConnectorConfig:
         lakeformation_governed_tables: bool = False,
         glue_catalog_float_as_decimal: bool = False,
         table_name: str = None,
-        format: dict = None,
-        partitioning: PartitionOptions = None,
+        format: dict = {},
+        partitioning: str = None,
     ):
         self.aws_account_id = aws_account_id
         self.credentials = credentials
@@ -112,8 +112,8 @@ class ConnectorConfig:
         self.glue_catalog_float_as_decimal = glue_catalog_float_as_decimal
         self.table_name = table_name
 
-        self.format_type = OutputFormat.from_string(format.get("format_type"))
-        self.compression_codec = CompressionCodec.from_config(format.get("compression_codec"))
+        self.format_type = OutputFormat.from_string(format.get("format_type", OutputFormat.PARQUET.value))
+        self.compression_codec = CompressionCodec.from_config(format.get("compression_codec", CompressionCodec.UNCOMPRESSED.value))
 
         self.partitioning = PartitionOptions.from_string(partitioning)
 

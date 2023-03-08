@@ -7,6 +7,5 @@
     "aws_secret_access_key": "dummykey"
   },
   "bucket_name": "my-bucket",
-  "format": { "format_type": "Parquet", "compression_codec": "SNAPPY" },
   "partitioning": "NO PARTITIONING"
 }

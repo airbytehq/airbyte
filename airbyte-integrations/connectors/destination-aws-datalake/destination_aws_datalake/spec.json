@@ -7,12 +7,10 @@
     "title": "AWS Datalake Destination Spec",
     "type": "object",
     "required": [
-      "aws_account_id",
       "credentials",
       "region",
       "bucket_name",
-      "lakeformation_database_name",
-      "format"
+      "lakeformation_database_name"
     ],
     "additionalProperties": false,
     "properties": {
