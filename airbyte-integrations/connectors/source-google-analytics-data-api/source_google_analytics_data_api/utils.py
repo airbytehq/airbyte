@@ -175,11 +175,12 @@ class GoogleAnalyticsApiQuota:
         return current_quota
 
     def _set_attrs_values_for_quota(self, quota_name: str) -> None:
-        quota = self.quota_mapping.get(quota_name)
-        self.should_retry = quota.get("should_retry")
-        self.raise_on_http_errors = quota.get("raise_on_http_errors")
-        self.stop_iter = quota.get("stop_iter")
-        self.backoff_time = quota.get("backoff")
+        quota = self.quota_mapping.get(quota_name, {})
+        if quota:
+            self.should_retry = quota.get("should_retry")
+            self.raise_on_http_errors = quota.get("raise_on_http_errors")
+            self.stop_iter = quota.get("stop_iter")
+            self.backoff_time = quota.get("backoff")
 
     def _set_default_attrs(self) -> None:
         self.should_retry = True
@@ -207,11 +208,14 @@ class GoogleAnalyticsApiQuota:
             # revert to default values after successul retry
             self._set_default_attrs()
             error = response.json().get("error")
+            print(f"\nERROR_check_for_errors: {error, response.json()}\n")
             if error:
                 quota_name = self._get_quota_name_from_error_message(error.get("message"))
-                self._set_attrs_values_for_quota(quota_name)
-                self.logger.warn(f"The `{quota_name}` quota is exceeded!")
-                return None
+                if quota_name:
+                    print(f"\nAFTER_check_for_errors: {quota_name}\n")
+                    self._set_attrs_values_for_quota(quota_name)
+                    self.logger.warn(f"The `{quota_name}` quota is exceeded!")
+                    return None
         except Exception as e:
             self.logger.fatal(f"Other `GoogleAnalyticsApiQuota` error: {e}")
             raise
