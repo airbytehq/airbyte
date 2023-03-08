@@ -135,12 +135,13 @@ jobs:
           kubectl logs --follow $POD
           echo "reading end of log"
           kubectl logs --tail=5 $POD
-          export RUN_RESULT=$(kubectl logs --tail=1 $POD 2>&1)
+          export RUN_RESULT=$(kubectl logs --tail=5 $POD 2>&1)
           echo "run result is $RUN_RESULT"
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
           echo "RUN_RESULT<<$EOF" >> $GITHUB_OUTPUT
           echo $RUN_RESULT >> $GITHUB_OUTPUT
           echo $EOF >> $GITHUB_OUTPUT
+          echo "gh output: $GITHUB_OUTPUT"
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v1
         with:
