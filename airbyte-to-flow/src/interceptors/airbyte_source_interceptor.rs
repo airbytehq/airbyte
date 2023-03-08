@@ -52,11 +52,9 @@ const STREAM_PK_SUFFIX: &str = ".pk.json";
 const STREAM_PATCH_SUFFIX: &str = ".patch.json";
 const SELECTED_STREAMS_FILE_NAME: &str = "selected_streams.json";
 
-type IndexedBinding = (usize, Option<sj::Value>);
-
 pub struct AirbyteSourceInterceptor {
     validate_request: Arc<Mutex<Option<ValidateRequest>>>,
-    stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
+    stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
     tmp_dir: TempDir,
 }
 
@@ -335,7 +333,7 @@ impl AirbyteSourceInterceptor {
         config_file_path: String,
         catalog_file_path: String,
         state_file_path: String,
-        stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
+        stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         let runtime_messages_stream = Box::pin(stream_runtime_messages::<PullRequest>(in_stream));
@@ -368,10 +366,7 @@ impl AirbyteSourceInterceptor {
                         for (i, binding) in c.bindings.iter().enumerate() {
                             let resource: ResourceSpec =
                                 serde_json::from_str(&binding.resource_spec_json)?;
-
-                            let schema = binding.collection.as_ref().
-                                and_then(|col| Some(serde_json::from_str(&col.schema_json).expect("deserializing collection schema")));
-                            stb.lock().await.insert(resource.stream.clone(), (i, schema));
+                            stb.lock().await.insert(resource.stream.clone(), i);
 
                             let mut projections = HashMap::new();
                             if let Some(ref collection) = binding.collection {
@@ -428,7 +423,7 @@ impl AirbyteSourceInterceptor {
     fn adapt_pull_response_stream(
         &mut self,
         normalizations: Option<Vec<NormalizationEntry>>,
-        stream_to_binding: Arc<Mutex<HashMap<String, IndexedBinding>>>,
+        stream_to_binding: Arc<Mutex<HashMap<String, usize>>>,
         in_stream: InterceptorStream,
     ) -> InterceptorStream {
         // Respond first with Opened.
@@ -473,7 +468,7 @@ impl AirbyteSourceInterceptor {
                     let arena = sj::to_string(&record.data)?.as_bytes().to_vec();
                     let arena_len: u32 = arena.len() as u32;
                     resp.documents = Some(Documents {
-                        binding: binding.0 as u32,
+                        binding: *binding as u32,
                         arena,
                         docs_json: vec![Slice {
                             begin: 0,
