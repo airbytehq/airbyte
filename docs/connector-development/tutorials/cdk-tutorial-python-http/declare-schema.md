@@ -1,6 +1,6 @@
 # Step 5: Declare the Schema
 
-The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
+The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.com/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
 This is a simple task with the Airbyte CDK. For each stream in our connector we'll need to: 
 
