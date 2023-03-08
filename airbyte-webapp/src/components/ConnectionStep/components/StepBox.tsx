@@ -47,7 +47,7 @@ export const CircleNumber = styled.div<{
 export const StepLine = styled.div<{
   isActive?: boolean;
 }>`
-  width: 110px;
+  width: 160px;
   border: 1px solid ${({ theme, isActive }) => (isActive ? theme.primaryColor : " #d1d5db")};
   margin: 0 30px;
 `;

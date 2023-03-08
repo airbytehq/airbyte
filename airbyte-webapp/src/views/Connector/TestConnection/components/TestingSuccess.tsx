@@ -4,13 +4,13 @@ import styled from "styled-components";
 
 const Text = styled.div`
   font-size: 28px;
-  line-height: 58px;
+  line-height: 48px;
   margin-bottom: 120px;
 `;
 
 const Image = styled.img`
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
 `;
 
 const TestingSuccess: React.FC<{
